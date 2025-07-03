@@ -14,6 +14,7 @@ ${SNMPPORT}             2024
 ${SNMPVERSION}          2c
 ${PERCENT}              %
 ${MOCKOON_LOG_FILE}    /tmp/mockoon.log
+${TIMEOUT}             30
 
 *** Keywords ***
 Start Mockoon
@@ -54,6 +55,19 @@ Ctn Generic Suite Setup
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
 
+Start connector
+   Ctn Cleanup Cache
+   Set Environment Variable    TZ    UTC
+   Remove Files    /tmp/connector.output.*
+   Remove File     /tmp/connector.log
+   Ctn Start Connector
+
+Stop Connector
+   Terminate All Processes
+   Remove Files    /tmp/connector.output.*
+   Remove File     /tmp/connector.log
+   Ctn Stop Connector
+
 Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
@@ -85,3 +99,17 @@ Ctn Verify Command Output
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
+
+Ctn Run Command With Connector And Check Result As Strings
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    Remove File    /tmp/connector.output
+    Remove File    /tmp/connector.command.log
+#    Ctn Start Connector
+    Ctn Send To Connector    ${tc}    ${command}    ${timeout}
+    # 1. Extract the result from the log and write to /tmp/connector.output
+    Ctn Extract Result From Log    ${tc}
+    # 2. Read the file
+    ${output}    Get File    /tmp/connector.output
+    ${output}    Strip String    ${output}
+    # 3. Compare with expected
+    Should Be Equal As Strings    ${output}    ${expected_result}
