@@ -610,7 +610,7 @@ Specify https if needed (default: 'https').
 
 Set Proxmox VE Username
 API user need to have this privileges
-'VM.Monitor, VM.Audit, Datastore.Audit, C<Sys.Audit>, C<Sys.Syslog>'
+C<VM.Monitor>, C<VM.Audit>, C<Datastore.Audit>, C<Sys.Audit>, C<Sys.Syslog>
 
 =item B<--api-password>
 
