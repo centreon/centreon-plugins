@@ -95,3 +95,10 @@ Ctn Run Command And Check Result As Json
     ${json_expected}=    evaluate    json.loads('''${expected}''')    json
     Dictionaries Should Be Equal    ${json_output}    ${json_expected}    ignore_keys=['end_time', 'start_time', 'duration']
     Log Dictionary    ${json_output}
+
+Ctn Run Command And Return Parsed XML
+    [Arguments]    ${command}
+    ${output}    Run    ${command}
+    ${output}    Strip String    ${output}
+    ${parsed}=    Parse XML     ${output}
+    RETURN    ${parsed}
