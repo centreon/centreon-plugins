@@ -126,12 +126,11 @@ sub set_counters {
         },
         { label            => 'state',
           type             => 2,
-          warning_default  => '%{state} =~ /Paused/',
-          critical_default => '%{state} =~ /Exited/',
+          warning_default  => '%{state} =~ /Paused/i',
+          critical_default => '%{state} =~ /Exited/i',
           set              => {
               key_values                     => [ { name => 'state' } ],
               output_template                => 'State: %s',
-              closure_custom_perfdata        => sub { return 0; },
               closure_custom_threshold_check => \&catalog_status_threshold_ng
           }
         }
@@ -166,6 +165,11 @@ sub manage_selection {
     my $container = $options{custom}->get_container_infos(
         container_name => $self->{option_results}->{container_name}
     );
+    # if there is no state, it means the container could not be found
+    if (centreon::plugins::misc::is_empty($container->{state})) {
+        $self->{output}->add_option_msg(short_msg => "State of pod " . $self->{option_results}->{container_name} . " not found.");
+        $self->{output}->option_exit();
+    }
 
     $self->{container} = $container;
 }
