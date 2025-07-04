@@ -202,40 +202,38 @@ Example: --filter-counters='^total$'
 
 Filter licenses by name (regular expression).
 
-=item B<--warning-*> B<--critical-*>
-
-Thresholds for counters and license validity remaining time in seconds.
-* may be replaced with:
-
-C<total>: applies to the total number of licenses.
-C<expired>: applies to the number of expired licenses.
-C<license-expiration>: applies to the remaining time in seconds until the licenses will expire.
-
 =item B<--warning-expired>
 
 Threshold.
+Applies to the number of expired licenses.
 
 =item B<--critical-expired>
 
 Threshold.
 Default: C<:0>
+Applies to the number of expired licenses.
 
 =item B<--warning-license-expiration>
 
 Threshold in seconds.
+Applies to the remaining time in seconds until the licenses expire.
 
 =item B<--critical-license-expiration>
 
 Threshold in seconds.
+Applies to the remaining time in seconds until the licenses expire.
 
 =item B<--warning-total>
 
 Threshold.
+Applies to the total number of licenses.
+
 
 =item B<--critical-total>
 
 Threshold.
 Default: C<1:>
+Applies to the total number of licenses.
 
 =back
 

@@ -281,11 +281,6 @@ Default: '%{status} =~ /failed/'
 Define the condition to match for the returned status to be UNKNOWN.
 Default: '%{status} =~ /NOT_DOCUMENTED$/'
 
-=item B<--warning-*> B<--critical-*>
-
-Thresholds. C<*> may stand for C<disks-total>, C<disks-normal>, C<disks-degraded>, C<disks-new>,
-C<disks-failed>, C<disks-unknown>.
-
 =item B<--warning-disks-degraded>
 
 Threshold.

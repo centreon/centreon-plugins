@@ -247,11 +247,11 @@ This option will be treated as a regular expression.
 Define which volumes should be monitored based on the volume names.
 This option will be treated as a regular expression.
 
-=item B<--warning-*> B<--critical-*>
+=back
 
-Thresholds for volume usage metrics.
-* may be replaced with:
-C<usage>, C<usage-free>, C<usage-prct>.
+=head2 Thresholds for volume usage metrics
+
+=over 8
 
 =item B<--warning-usage>
 

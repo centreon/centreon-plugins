@@ -288,17 +288,47 @@ This option will be treated as a regular expression.
 
 Define which volumes should be monitored based on the disk position.
 The position is composed of 3 integers, separated by colons:
-- Cage number where the physical disk is in.
+ Cage number where the physical disk is in.
 - Magazine number where the physical disk is in.
 - For DC4 cages, disk position within the magazine. For non-DC4 cages, 0.
 Example: 7:5:0
 This option will be treated as a regular expression.
 
-=item B<--warning-*> B<--critical-*>
+=back
 
-Thresholds for disk usage metrics. * may be replaced with:
-- For individual disks: C<usage>, C<usage-free>, C<usage-prct>.
-- For global statistics: C<total-usage>, C<total-free>, C<total-usage-prct>.
+=head2 Thresholds for individual disks
+
+=over 8
+
+=item B<--warning-usage>
+
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
+
+=back
+
+=head2 Thresholds for global statistics
+
+=over 8
 
 =item B<--warning-total-free>
 
@@ -324,29 +354,6 @@ Threshold in percentage.
 
 Threshold in percentage.
 
-=item B<--warning-usage>
-
-Threshold in bytes.
-
-=item B<--critical-usage>
-
-Threshold in bytes.
-
-=item B<--warning-usage-free>
-
-Threshold in bytes.
-
-=item B<--critical-usage-free>
-
-Threshold in bytes.
-
-=item B<--warning-usage-prct>
-
-Threshold in percentage.
-
-=item B<--critical-usage-prct>
-
-Threshold in percentage.
 
 =back
 

@@ -359,84 +359,11 @@ Example: --filter-counters='^compaction$'
 Filter storage by type (regular expression).
 The known types are: C<allCapacity>, C<FCCapacity>, C<SSDCapacity> and C<NLCapacity>.
 
-=item B<--warning-*> B<--critical-*>
+=back
 
-Thresholds that can apply to:
-- Space oriented metrics: C<space-usage>, C<space-usage-free>, C<space-usage-prct>, C<space-unavailable>, C<space-failed>
-- Provisioning metrics: C<provisioning-virtual-size>, C<provisioning-used>, C<provisioning-allocated>, C<provisioning-free>
-- Storage optimization metrics: C<compaction>, C<deduplication>, C<compression>, C<data-reduction>, C<overprovisioning>
+=head2 Thresholds for space oriented metrics
 
-=item B<--warning-compaction>
-
-Threshold.
-
-=item B<--critical-compaction>
-
-Threshold.
-
-=item B<--warning-compression>
-
-Threshold.
-
-=item B<--critical-compression>
-
-Threshold.
-
-=item B<--warning-data-reduction>
-
-Threshold.
-
-=item B<--critical-data-reduction>
-
-Threshold.
-
-=item B<--warning-deduplication>
-
-Threshold.
-
-=item B<--critical-deduplication>
-
-Threshold.
-
-=item B<--warning-overprovisioning>
-
-Threshold.
-
-=item B<--critical-overprovisioning>
-
-Threshold.
-
-=item B<--warning-provisioning-allocated>
-
-Threshold in bytes.
-
-=item B<--critical-provisioning-allocated>
-
-Threshold in bytes.
-
-=item B<--warning-provisioning-free>
-
-Threshold in bytes.
-
-=item B<--critical-provisioning-free>
-
-Threshold in bytes.
-
-=item B<--warning-provisioning-used>
-
-Threshold in bytes.
-
-=item B<--critical-provisioning-used>
-
-Threshold in bytes.
-
-=item B<--warning-provisioning-virtual-size>
-
-Threshold in bytes.
-
-=item B<--critical-provisioning-virtual-size>
-
-Threshold in bytes.
+=over 8
 
 =item B<--warning-space-failed>
 
@@ -477,6 +404,90 @@ Threshold in percentage.
 =item B<--critical-space-usage-prct>
 
 Threshold in percentage.
+
+=back
+
+=head2 Thresholds for provisioning metrics
+
+=over 8
+
+=item B<--warning-provisioning-allocated>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-allocated>
+
+Threshold in bytes.
+
+=item B<--warning-provisioning-free>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-free>
+
+Threshold in bytes.
+
+=item B<--warning-provisioning-used>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-used>
+
+Threshold in bytes.
+
+=item B<--warning-provisioning-virtual-size>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-virtual-size>
+
+Threshold in bytes.
+
+=back
+
+=head2 Thresholds for storage optimization metrics
+
+=over 8
+
+=item B<--warning-compaction>
+
+Threshold.
+
+=item B<--critical-compaction>
+
+Threshold.
+
+=item B<--warning-compression>
+
+Threshold.
+
+=item B<--critical-compression>
+
+Threshold.
+
+=item B<--warning-data-reduction>
+
+Threshold.
+
+=item B<--critical-data-reduction>
+
+Threshold.
+
+=item B<--warning-deduplication>
+
+Threshold.
+
+=item B<--critical-deduplication>
+
+Threshold.
+
+=item B<--warning-overprovisioning>
+
+Threshold.
+
+=item B<--critical-overprovisioning>
+
+Threshold.
 
 =back
 
