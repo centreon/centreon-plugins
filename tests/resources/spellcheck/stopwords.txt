@@ -13,6 +13,7 @@ ACS
 ADSL
 Alcatel
 allCapacity
+Alletra
 allsteps
 Ansible
 --api-filter-orgs
