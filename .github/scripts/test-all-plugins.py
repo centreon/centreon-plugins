@@ -104,7 +104,7 @@ def remove_plugin(plugin, archi):
 
         elif archi == "rpm":
             outfile.write("export SUDO_FORCE_REMOVE=yes; dnf remove --setopt=keepcache=True -y " + plugin + "\n")
-            output_status = (subprocess.run("dnf remove --setopt=keepcache=True -y " + plugin, shell=True, check=False,
+            output_status = (subprocess.run("export SUDO_FORCE_REMOVE=yes; dnf remove --setopt=keepcache=True -y " + plugin, shell=True, check=False,
                                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
