@@ -176,7 +176,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
             }
         },
-        { label => 'gracefuly-finished', nlabel => 'apache.slot.gracefulyfinished.count', set => {
+        { label => 'gracefully-finishing', nlabel => 'apache.slot.gracefullyfinishing.count', set => {
                 key_values => [ { name => 'gracefuly_finished' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefuly_finished' },
                 closure_custom_output => $self->can('custom_value_output'),
@@ -315,14 +315,14 @@ Threshold unit (default: '%'. Can be: '%' or 'absolute')
 Warning threshold.
 Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
 'sending', 'keepalive', 'dns-lookup', 'closing',
-'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+'logging', 'gracefully-finishing', 'idle-cleanup-worker'.
 
 =item B<--critical-*>
 
 Critical threshold.
 Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
 'sending', 'keepalive', 'dns-lookup', 'closing',
-'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+'logging', 'gracefully-finishing', 'idle-cleanup-worker'.
 
 =over 8)
 
