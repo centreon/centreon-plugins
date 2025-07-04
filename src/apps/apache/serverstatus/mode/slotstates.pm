@@ -213,9 +213,9 @@ sub new {
         'timeout:s'   => { name => 'timeout' },
         'units:s'     => { name => 'units', default => '%' },
         # To keep compatibility with old thresholds
-        'warning-gracefuly-finished:s' => { name => 'warning_gracefuly_finished', redirect => 'warning-gracefully-finishing' },
-        'warning-apache-slot-gracefulyfinished-count:s' => { name => 'warning_apache_smpt_gracefulyfinished_count', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
-        'critical-gracefuly-finished:s' => { name => 'critical_gracefuly_finished', redirect => 'critical-gracefully-finishing' },
+        'warning-gracefuly-finished:s' => { name => 'warning_gracefully_finishing', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
+        'warning-apache-slot-gracefulyfinished-count:s' => { name => 'warning_gracefully_finishing', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
+        'critical-gracefuly-finished:s' => { name => 'critical_gracefuly_finished', redirect => 'critical-apache-slot-gracefullyfinishing-count' },
         'critical-apache-slot-gracefulyfinished-count:s' => { name => 'critical_apache_smpt_gracefulyfinished_count', redirect => 'critical-apache-slot-gracefullyfinishing-count' },
     });
     
@@ -315,21 +315,101 @@ Set HTTP headers (multiple option)
 
 Threshold unit (default: '%'. Can be: '%' or 'absolute')
 
-=item B<--warning-*>
+=item B<--warning-busy>
 
-Warning threshold.
-Can be: C<busy>, C<free>, C<waiting>, C<starting>, C<reading>,
-C<sending>, C<keepalive>, C<dns-lookup>, C<closing>,
-C<logging>, C<gracefully-finishing>, C<idle-cleanup-worker>.
+Threshold.
 
-=item B<--critical-*>
+=item B<--critical-busy>
 
-Critical threshold.
-Can be: C<busy>, C<free>, C<waiting>, C<starting>, C<reading>,
-C<sending>, C<keepalive>, C<dns-lookup>, C<closing>,
-C<logging>, C<gracefully-finishing>, C<idle-cleanup-worker>.
+Threshold.
 
-=over 8)
+=item B<--warning-closing>
+
+Threshold.
+
+=item B<--critical-closing>
+
+Threshold.
+
+=item B<--warning-dns-lookup>
+
+Threshold.
+
+=item B<--critical-dns-lookup>
+
+Threshold.
+
+=item B<--warning-free>
+
+Threshold.
+
+=item B<--critical-free>
+
+Threshold.
+
+=item B<--warning-gracefully-finishing>
+
+Threshold.
+
+=item B<--critical-gracefully-finishing>
+
+Threshold.
+
+=item B<--warning-idle-cleanup-worker>
+
+Threshold.
+
+=item B<--critical-idle-cleanup-worker>
+
+Threshold.
+
+=item B<--warning-keepalive>
+
+Threshold.
+
+=item B<--critical-keepalive>
+
+Threshold.
+
+=item B<--warning-logging>
+
+Threshold.
+
+=item B<--critical-logging>
+
+Threshold.
+
+=item B<--warning-reading>
+
+Threshold.
+
+=item B<--critical-reading>
+
+Threshold.
+
+=item B<--warning-sending>
+
+Threshold.
+
+=item B<--critical-sending>
+
+Threshold.
+
+=item B<--warning-starting>
+
+Threshold.
+
+=item B<--critical-starting>
+
+Threshold.
+
+=item B<--warning-waiting>
+
+Threshold.
+
+=item B<--critical-waiting>
+
+Threshold.
 
 =back
 
