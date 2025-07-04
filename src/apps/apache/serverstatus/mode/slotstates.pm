@@ -176,9 +176,9 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
             }
         },
-        { label => 'gracefuly-finished', nlabel => 'apache.slot.gracefulyfinished.count', set => {
-                key_values => [ { name => 'gracefuly_finished' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefuly_finished' },
+        { label => 'gracefully-finishing', nlabel => 'apache.slot.gracefullyfinishing.count', set => {
+                key_values => [ { name => 'gracefully_finishing' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefully_finishing' },
                 closure_custom_output => $self->can('custom_value_output'),
                 closure_custom_threshold_check => $self->can('custom_value_threshold'),
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
@@ -197,7 +197,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -211,7 +211,12 @@ sub new {
         'password:s'  => { name => 'password' },
         'header:s@'   => { name => 'header' },
         'timeout:s'   => { name => 'timeout' },
-        'units:s'     => { name => 'units', default => '%' }
+        'units:s'     => { name => 'units', default => '%' },
+        # To keep compatibility with old thresholds
+        'warning-gracefuly-finished:s' => { name => 'warning_gracefuly_finished', redirect => 'warning-gracefully-finishing' },
+        'warning-apache-slot-gracefulyfinished-count:s' => { name => 'warning_apache_smpt_gracefulyfinished_count', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
+        'critical-gracefuly-finished:s' => { name => 'critical_gracefuly_finished', redirect => 'critical-gracefully-finishing' },
+        'critical-apache-slot-gracefulyfinished-count:s' => { name => 'critical_apache_smpt_gracefulyfinished_count', redirect => 'critical-apache-slot-gracefullyfinishing-count' },
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -248,7 +253,7 @@ sub manage_selection {
         reading => ($ScoreBoard =~ tr/R//), sending => ($ScoreBoard =~ tr/W//),
         keepalive => ($ScoreBoard =~ tr/K//), dns_lookup => ($ScoreBoard =~ tr/D//),
         closing => ($ScoreBoard =~ tr/C//), logging => ($ScoreBoard =~ tr/L//),
-        gracefuly_finished => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)
+        gracefully_finishing => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)
     };
 }
 
@@ -258,7 +263,7 @@ __END__
 
 =head1 MODE
 
-Check Apache WebServer Slots informations
+Check Apache WebServer Slots information
 
 =over 8
 
@@ -313,16 +318,16 @@ Threshold unit (default: '%'. Can be: '%' or 'absolute')
 =item B<--warning-*>
 
 Warning threshold.
-Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
-'sending', 'keepalive', 'dns-lookup', 'closing',
-'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+Can be: C<busy>, C<free>, C<waiting>, C<starting>, C<reading>,
+C<sending>, C<keepalive>, C<dns-lookup>, C<closing>,
+C<logging>, C<gracefully-finishing>, C<idle-cleanup-worker>.
 
 =item B<--critical-*>
 
 Critical threshold.
-Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
-'sending', 'keepalive', 'dns-lookup', 'closing',
-'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+Can be: C<busy>, C<free>, C<waiting>, C<starting>, C<reading>,
+C<sending>, C<keepalive>, C<dns-lookup>, C<closing>,
+C<logging>, C<gracefully-finishing>, C<idle-cleanup-worker>.
 
 =over 8)
 
