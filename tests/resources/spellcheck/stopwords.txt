@@ -318,6 +318,7 @@ vdomain
 VDSL2
 Veeam
 VeloCloud
+vhost
 VM
 VMs
 VMware
