@@ -767,18 +767,30 @@ sub check_security_whitelist {
 }
 
 sub json_decode {
-    my ($content) = @_;
+    my ($content, %options) = @_;
 
     $content =~ s/\r//mg;
     my $object;
+
+    my $decoder = JSON::XS->new->utf8;
+    # this option
+    if ($options{booleans_as_strings}) {
+        # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
+        if (JSON::XS->can('boolean_values')) {
+            $decoder = $decoder->boolean_values("false", "true");
+        } else {
+            # if boolean_values is not available, perform a dirty substitution of booleans
+            $content =~ s/"(\w+)"\s*:\s*(true|false)(\s*,?)/"$1": "$2"$3/gm;
+        }
+    }
+
     eval {
-        $object = JSON::XS->new->utf8->decode($content);
+        $object = $decoder->decode($content);
     };
     if ($@) {
         print STDERR "Cannot decode JSON string: $@" . "\n";
         return undef;
     }
-
     return $object;
 }
 
@@ -798,6 +810,15 @@ sub json_encode {
     return $encoded;
 }
 
+# function to assess if a string has to be excluded given an include regexp and an exclude regexp
+sub is_excluded {
+    my ($string, $include_regexp, $exclude_regexp) = @_;
+    return 1 unless defined($string);
+    return 1 if (defined($exclude_regexp) && $exclude_regexp ne '' && $string =~ /$exclude_regexp/);
+    return 0 if (!defined($include_regexp) || $include_regexp eq '' || $string =~ /$include_regexp/);
+
+    return 1;
+}
 
 1;
 
@@ -1287,13 +1308,22 @@ Checks if a command is in the security whitelist.
 
 =head2 json_decode
 
-    my $decoded = centreon::plugins::misc::json_decode($content);
+    my $decoded = centreon::plugins::misc::json_decode($content, %options);
 
 Decodes a JSON string.
 
 =over 4
 
 =item * C<$content> - The JSON string to decode and transform into an object.
+
+=item * C<%options> - Options passed to the function.
+
+=over 4
+
+=item * C<booleans_as_strings> - Defines whether booleans must be converted to C<true>/C<false> strings instead of
+JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
+
+=back
 
 =back
 
@@ -1308,6 +1338,28 @@ Encodes an object to a JSON string.
 =item * C<$object> - The object to encode.
 
 =back
+
+=head2 is_excluded
+
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+
+Determines whether a string should be excluded based on include and exclude regular expressions.
+
+=over 4
+
+=item * C<$string> - The string to evaluate. If undefined, the function returns 1 (excluded).
+
+=item * C<$include_regexp> - A regular expression to include the string.
+
+=item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
+
+=back
+
+Returns 1 if the string is excluded, 0 if it is included.
+The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
+not match the string. The string will also be excluded if it is undefined.
+
+=cut
 
 =head1 AUTHOR
 
