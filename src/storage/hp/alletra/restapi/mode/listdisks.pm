@@ -109,8 +109,8 @@ sub run {
             manufacturer => $disk->{manufacturer},
             model        => $disk->{model},
             serial       => $disk->{serialNumber},
-            protocol     => $connection_type{$disk->{protocol}},
-            type         => $media_type{$disk->{type}}
+            protocol     => $disk->{protocol},
+            type         => $disk->{type}
         };
 
         $self->{output}->output_add(
