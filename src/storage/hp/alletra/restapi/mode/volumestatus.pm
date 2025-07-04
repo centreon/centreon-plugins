@@ -259,9 +259,45 @@ Default: '%{status} =~ /failed/'
 Define the condition to match for the returned status to be UNKNOWN.
 Default: '%{status} =~ /NOT_DOCUMENTED$/'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-volumes-degraded>
 
-Thresholds. Can be 'volumes-total', 'volumes-normal', 'volumes-degraded', 'volumes-failed', 'volumes-unknown'.
+Threshold.
+
+=item B<--critical-volumes-degraded>
+
+Threshold.
+
+=item B<--warning-volumes-failed>
+
+Threshold.
+
+=item B<--critical-volumes-failed>
+
+Threshold.
+
+=item B<--warning-volumes-normal>
+
+Threshold.
+
+=item B<--critical-volumes-normal>
+
+Threshold.
+
+=item B<--warning-volumes-total>
+
+Threshold.
+
+=item B<--critical-volumes-total>
+
+Threshold.
+
+=item B<--warning-volumes-unknown>
+
+Threshold.
+
+=item B<--critical-volumes-unknown>
+
+Threshold.
 
 =back
 

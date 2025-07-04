@@ -297,8 +297,56 @@ This option will be treated as a regular expression.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds for disk usage metrics. * may be replaced with:
-- For individual disks: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
-- For global statistics: 'total-usage' (B), 'total-free' (B), 'total-usage-prct' (%).
+- For individual disks: C<usage>, C<usage-free>, C<usage-prct>.
+- For global statistics: C<total-usage>, C<total-free>, C<total-usage-prct>.
+
+=item B<--warning-total-free>
+
+Threshold in bytes.
+
+=item B<--critical-total-free>
+
+Threshold in bytes.
+
+=item B<--warning-total-usage>
+
+Threshold in bytes.
+
+=item B<--critical-total-usage>
+
+Threshold in bytes.
+
+=item B<--warning-total-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-total-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-usage>
+
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 

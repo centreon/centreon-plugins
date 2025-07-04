@@ -251,7 +251,31 @@ This option will be treated as a regular expression.
 
 Thresholds for volume usage metrics.
 * may be replaced with:
-'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+C<usage>, C<usage-free>, C<usage-prct>.
+
+=item B<--warning-usage>
+
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 

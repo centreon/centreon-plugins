@@ -207,9 +207,35 @@ Filter licenses by name (regular expression).
 Thresholds for counters and license validity remaining time in seconds.
 * may be replaced with:
 
-'total': applies to the total number of licenses.
-'expired': applies to the number of expired licenses.
-'license-expiration': applies to the remaining time in seconds until the licenses will expire.
+C<total>: applies to the total number of licenses.
+C<expired>: applies to the number of expired licenses.
+C<license-expiration>: applies to the remaining time in seconds until the licenses will expire.
+
+=item B<--warning-expired>
+
+Threshold.
+
+=item B<--critical-expired>
+
+Threshold.
+Default: C<:0>
+
+=item B<--warning-license-expiration>
+
+Threshold in seconds.
+
+=item B<--critical-license-expiration>
+
+Threshold in seconds.
+
+=item B<--warning-total>
+
+Threshold.
+
+=item B<--critical-total>
+
+Threshold.
+Default: C<1:>
 
 =back
 

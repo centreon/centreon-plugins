@@ -283,8 +283,64 @@ Default: '%{status} =~ /NOT_DOCUMENTED$/'
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds. '*' may stand for 'disks-total', 'disks-normal', 'disks-degraded', 'disks-new',
-'disks-failed', 'disks-unknown'.
+Thresholds. C<*> may stand for C<disks-total>, C<disks-normal>, C<disks-degraded>, C<disks-new>,
+C<disks-failed>, C<disks-unknown>.
+
+=item B<--warning-disks-degraded>
+
+Threshold.
+
+=item B<--critical-disks-degraded>
+
+Threshold.
+
+=item B<--warning-disks-failed>
+
+Threshold.
+
+=item B<--critical-disks-failed>
+
+Threshold.
+
+=item B<--warning-disks-new>
+
+Threshold.
+
+=item B<--critical-disks-new>
+
+Threshold.
+
+=item B<--warning-disks-normal>
+
+Threshold.
+
+=item B<--critical-disks-normal>
+
+Threshold.
+
+=item B<--warning-disks-total>
+
+Threshold.
+
+=item B<--critical-disks-total>
+
+Threshold.
+
+=item B<--warning-disks-unknown>
+
+Threshold.
+
+=item B<--critical-disks-unknown>
+
+Threshold.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
 
 =back
 

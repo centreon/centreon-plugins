@@ -112,11 +112,11 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile =>
-        'hpe_alletra_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{api_username}));
+    $self->{cache}->read(statefile =>
+            'hpe_alletra_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{api_username}));
     my $auth_key = $self->{cache}->get(name => 'auth_key');
 
-    if ($has_cache_file == 0 || !defined($auth_key) || $auth_key eq '') {
+    if (! $auth_key) {
         my $json_request = {
             user     => $self->{option_results}->{api_username},
             password => $self->{option_results}->{api_password}

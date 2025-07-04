@@ -357,14 +357,126 @@ Example: --filter-counters='^compaction$'
 =item B<--filter-type>
 
 Filter storage by type (regular expression).
-The known types are: allCapacity, FCCapacity, SSDCapacity and NLCapacity.
+The known types are: C<allCapacity>, C<FCCapacity>, C<SSDCapacity> and C<NLCapacity>.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds that can apply to:
-- Space oriented metrics: 'space-usage', 'space-usage-free', 'space-usage-prct', 'space-unavailable', 'space-failed',
-- Provisioning metrics: 'provisioning-virtual-size', 'provisioning-used', 'provisioning-allocated', 'provisioning-free'
-- Storage optimization metrics: 'compaction', 'deduplication', 'compression', 'data-reduction', 'overprovisioning'.
+- Space oriented metrics: C<space-usage>, C<space-usage-free>, C<space-usage-prct>, C<space-unavailable>, C<space-failed>
+- Provisioning metrics: C<provisioning-virtual-size>, C<provisioning-used>, C<provisioning-allocated>, C<provisioning-free>
+- Storage optimization metrics: C<compaction>, C<deduplication>, C<compression>, C<data-reduction>, C<overprovisioning>
+
+=item B<--warning-compaction>
+
+Threshold.
+
+=item B<--critical-compaction>
+
+Threshold.
+
+=item B<--warning-compression>
+
+Threshold.
+
+=item B<--critical-compression>
+
+Threshold.
+
+=item B<--warning-data-reduction>
+
+Threshold.
+
+=item B<--critical-data-reduction>
+
+Threshold.
+
+=item B<--warning-deduplication>
+
+Threshold.
+
+=item B<--critical-deduplication>
+
+Threshold.
+
+=item B<--warning-overprovisioning>
+
+Threshold.
+
+=item B<--critical-overprovisioning>
+
+Threshold.
+
+=item B<--warning-provisioning-allocated>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-allocated>
+
+Threshold in bytes.
+
+=item B<--warning-provisioning-free>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-free>
+
+Threshold in bytes.
+
+=item B<--warning-provisioning-used>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-used>
+
+Threshold in bytes.
+
+=item B<--warning-provisioning-virtual-size>
+
+Threshold in bytes.
+
+=item B<--critical-provisioning-virtual-size>
+
+Threshold in bytes.
+
+=item B<--warning-space-failed>
+
+Threshold in bytes.
+
+=item B<--critical-space-failed>
+
+Threshold in bytes.
+
+=item B<--warning-space-unavailable>
+
+Threshold in bytes.
+
+=item B<--critical-space-unavailable>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 
