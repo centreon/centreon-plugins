@@ -300,6 +300,23 @@ sub set_extra_curl_opt {
         }
 
         $value = centreon::plugins::misc::trim($value);
+
+        # Here we want to convert a string containing curl options into a single value or into
+        # an array of values depending on whether it begins with '[' and ends with ']'.
+        # We also remove the quotes.
+        # for example:
+        #
+        # $opt = ["CURLOPT_SSL_VERIFYPEER =>[opt1,'opt2','opt3']"];
+        # is converted to a Perl array like this:
+        # $VAR1 = [
+        #  'opt1',
+        #  'opt2',
+        #  'opt3'
+        # ];
+        #
+        # $opt = [ "CURLOPT_SSL_VERIFYPEER => 'opt1'" ];
+        # is converted to:
+        # $VAR1 = 'opt1';
         if ($value =~ /^\[(.*)\]$/) {
             $entries->{$key}->{force_array} = 1;
             $value = centreon::plugins::misc::trim($1);

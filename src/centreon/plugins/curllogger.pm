@@ -85,6 +85,11 @@ our %curlopt_to_parameter = (
                             'CURL_REDIR_POST_302' => [ '--post302' ],
                             'CURL_REDIR_POST_303' => [ '--post303' ],
                           },
+   'CURLOPT_SSLVERSION' => { 'CURL_SSLVERSION_TLSv1_0' => [ '--tlsv1.0' ],
+                             'CURL_SSLVERSION_TLSv1_1' => [ '--tlsv1.1' ],
+                             'CURL_SSLVERSION_TLSv1_2' => [ '--tlsv1.2' ],
+                             'CURL_SSLVERSION_TLSv1_3' => [ '--tlsv1.3' ],
+                           },
    'CURLOPT_SSL_VERIFYPEER' => { '0' => [ '--insecure' ] },
    'CURLOPT_SSL_VERIFYHOST' => { '0' => [ '--insecure' ] },
 
