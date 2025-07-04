@@ -246,29 +246,33 @@ sub get_container_infos {
     my ($self, %options) = @_;
 
     my $stats = $self->request(
-        endpoint => 'containers/stats?stream=false&containers=' . $options{container_name},
+        endpoint => 'containers/stats',
+        get_param => [
+            'stream=false',
+            'containers=' . $options{container_name}
+        ],
         method   => 'GET'
     );
 
-    my $containers = $self->list_containers();
-    my $state;
-    foreach my $container_id (sort keys %{$containers}) {
-        if ($containers->{$container_id}->{Name} eq $options{container_name}) {
-            $state = $containers->{$container_id}->{State};
-        }
+    my $container_info;
+    my $state = 'unknown';
+    foreach my $stat (@{$stats->{Stats}}) {
+        next if ($stat->{Name} ne $options{container_name});
+        $container_info = {
+            cpu_usage    => $stat->{CPU},
+            memory_usage => $stat->{MemUsage},
+            io_read      => $stat->{BlockInput},
+            io_write     => $stat->{BlockOutput},
+            network_in   => $stat->{NetInput},
+            network_out  => $stat->{NetOutput}
+        };
     }
-
-    my $container = {
-        cpu_usage    => $stats->{Stats}->[0]->{CPU},
-        memory_usage => $stats->{Stats}->[0]->{MemUsage},
-        io_read      => $stats->{Stats}->[0]->{BlockInput},
-        io_write     => $stats->{Stats}->[0]->{BlockOutput},
-        network_in   => $stats->{Stats}->[0]->{NetInput},
-        network_out  => $stats->{Stats}->[0]->{NetOutput},
-        state        => $state
-    };
-
-    return $container;
+    my $containers = $self->list_containers();
+    foreach my $container_id (sort keys %{$containers}) {
+        next if ($containers->{$container_id}->{Name} ne $options{container_name});
+        $container_info->{state} = $containers->{$container_id}->{State};
+    }
+    return $container_info;
 }
 
 1;
