@@ -203,7 +203,7 @@ sub try_request_api {
     }
 
 
-    my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content) : {};
+    my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content, booleans_as_strings => 1) : {};
 
     return $decoded;
 }
