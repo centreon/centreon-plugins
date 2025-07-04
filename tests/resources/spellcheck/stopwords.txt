@@ -58,6 +58,8 @@ Cyberoam
 Datacore
 Datastore
 datasource
+datastore
+datastores
 dBm
 DC4
 dcdiag
@@ -205,6 +207,7 @@ NTLMv2
 NTP
 NVOS
 --oid
+OAuth
 OID
 --oid-display
 --oid-extra-display
@@ -311,6 +314,9 @@ v1
 v2
 v2c
 v3
+vCenter
+VCENTER
+vCPU
 vdom
 vdomain
 VDSL2
@@ -318,6 +324,7 @@ Veeam
 VeloCloud
 VE
 VM
+VMs
 VMware
 VMWARE
 vpn

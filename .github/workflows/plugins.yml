@@ -14,7 +14,7 @@ on:
         default: false
         type: boolean
   schedule:
-    - cron: "30 1 * * 3"
+    - cron: "30 1 * * 1"
   pull_request:
     paths:
       - '.github/workflows/plugins.yml'
