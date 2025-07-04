@@ -832,6 +832,7 @@ sub sort_ips($$) {
     my @a = split /\./, $_[0];
     my @b = split /\./, $_[1];
     return $a[0] <=> $b[0] || $a[1] <=> $b[1] || $a[2] <=> $b[2] || $a[3] <=> $b[3]
+}
 
 # function to assess if a string has to be excluded given an include regexp and an exclude regexp
 sub is_excluded {
