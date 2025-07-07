@@ -216,7 +216,12 @@ sub manage_selection {
             manufacturer => $disk->{manufacturer},
             model        => $disk->{model},
             serial       => $disk->{serialNumber}
-        };
+        }
+    }
+
+    if (scalar(keys %{$self->{disks}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No disk found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -326,14 +331,6 @@ Threshold.
 Threshold.
 
 =item B<--critical-disks-unknown>
-
-Threshold.
-
-=item B<--warning-status>
-
-Threshold.
-
-=item B<--critical-status>
 
 Threshold.
 
