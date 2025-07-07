@@ -176,9 +176,9 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
             }
         },
-        { label => 'gracefully-finishing', nlabel => 'apache.slot.gracefullyfinishing.count', set => {
-                key_values => [ { name => 'gracefully_finishing' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefully_finishing' },
+        { label => 'gracefuly-finished', nlabel => 'apache.slot.gracefulyfinished.count', set => {
+                key_values => [ { name => 'gracefuly_finished' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefuly_finished' },
                 closure_custom_output => $self->can('custom_value_output'),
                 closure_custom_threshold_check => $self->can('custom_value_threshold'),
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
@@ -197,7 +197,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -211,12 +211,7 @@ sub new {
         'password:s'  => { name => 'password' },
         'header:s@'   => { name => 'header' },
         'timeout:s'   => { name => 'timeout' },
-        'units:s'     => { name => 'units', default => '%' },
-        # To keep compatibility with old thresholds
-        'warning-gracefuly-finished:s' => { name => 'warning_gracefuly_finished', redirect => 'warning-gracefully-finishing' },
-        'warning-apache-slot-gracefulyfinished-count:s' => { name => 'warning_apache_smpt_gracefulyfinished_count', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
-        'critical-gracefuly-finished:s' => { name => 'critical_gracefuly_finished', redirect => 'critical-gracefully-finishing' },
-        'critical-apache-slot-gracefulyfinished-count:s' => { name => 'critical_apache_smpt_gracefulyfinished_count', redirect => 'critical-apache-slot-gracefullyfinishing-count' },
+        'units:s'     => { name => 'units', default => '%' }
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -253,7 +248,7 @@ sub manage_selection {
         reading => ($ScoreBoard =~ tr/R//), sending => ($ScoreBoard =~ tr/W//),
         keepalive => ($ScoreBoard =~ tr/K//), dns_lookup => ($ScoreBoard =~ tr/D//),
         closing => ($ScoreBoard =~ tr/C//), logging => ($ScoreBoard =~ tr/L//),
-        gracefully_finishing => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)
+        gracefuly_finished => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)
     };
 }
 

@@ -34,7 +34,6 @@ sub new {
         'cpuload'      => 'apps::apache::serverstatus::mode::cpuload',
         'responsetime' => 'apps::apache::serverstatus::mode::responsetime',
         'requests'     => 'apps::apache::serverstatus::mode::requests',
-        'requestsori'     => 'apps::apache::serverstatus::mode::requestsori',
         'slotstates'   => 'apps::apache::serverstatus::mode::slotstates',
         'workers'      => 'apps::apache::serverstatus::mode::workers'
     };
