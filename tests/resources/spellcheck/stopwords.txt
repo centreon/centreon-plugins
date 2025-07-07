@@ -13,6 +13,7 @@ ACS
 ADSL
 Alcatel
 allCapacity
+Alletra
 allsteps
 Ansible
 --api-filter-orgs
@@ -323,6 +324,7 @@ VDSL2
 Veeam
 VeloCloud
 VE
+vhost
 VM
 VMs
 VMware
