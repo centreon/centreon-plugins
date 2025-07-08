@@ -39,6 +39,13 @@ contents:
     dst: "/usr/share/perl5/centreon/script/centreon_vmware.pm"
     packager: deb
 
+  - src: "../src/centreon/script/centreon_vmware_requirements.pm"
+    dst: "/usr/share/perl5/vendor_perl/centreon/script/centreon_vmware_requirements.pm"
+    packager: rpm
+  - src: "../src/centreon/script/centreon_vmware_requirements.pm"
+    dst: "/usr/share/perl5/centreon/script/centreon_vmware_requirements.pm"
+    packager: deb
+
   - src: "../src/centreon/script/centreonvault.pm"
     dst: "/usr/share/perl5/vendor_perl/centreon/script/centreonvault.pm"
     packager: rpm
@@ -102,6 +109,9 @@ overrides:
       - perl(ZMQ::Constants)
       - perl(ZMQ::LibZMQ4)
       - perl-Net-Curl
+      - perl(XML::LibXML)
+      - perl(Sys::Syslog)
+      - perl(JSON)
   deb:
     depends:
       - libclass-methodmaker-perl
@@ -116,6 +126,8 @@ overrides:
       - libuuid-perl
       - libzmq-constants-perl
       - libzmq-libzmq4-perl
+      - libxml-libxml-perl
+      - libjson-perl
 
 rpm:
   signature:
