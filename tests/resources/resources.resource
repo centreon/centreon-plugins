@@ -55,11 +55,15 @@ Ctn Generic Suite Setup
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
 
+Ctn Clear Connector Log
+    [Documentation]    Safely empties the connector log file without deleting it
+    Create File    /tmp/connector.log
+
 Start connector
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
+   Ctn Clear Connector Log
    Remove Files    /tmp/connector.output.*
-   Remove File     /tmp/connector.log
    Ctn Start Connector
 
 Stop Connector
@@ -112,6 +116,34 @@ Ctn Run Command With Connector And Check Result As Strings
     ${output}    Get File    /tmp/connector.output
     ${output}    Strip String    ${output}
     # 3. Compare with expected
+    Should Be Equal As Strings    ${output}    ${expected_result}
+
+
+
+Ctn Run Command With Connector And Check Result As Regexp
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    Remove File    /tmp/connector.output
+    Remove File    /tmp/connector.command.log
+#    Ctn Start Connector
+    Ctn Send To Connector    ${tc}    ${command}    ${timeout}
+    # 1. Extract the result from the log and write to /tmp/connector.output
+    Ctn Extract Result From Log    ${tc}
+    # 2. Read the file
+    ${output}    Get File    /tmp/connector.output
+    ${output}    Strip String    ${output}
+    # 3. Compare with expected
+    Should Match Regexp    ${output}    ${expected_result}
+
+
+Ctn Run Command With Connector And Check Multiline Result
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    Remove File    /tmp/connector.output
+    Remove File    /tmp/connector.command.log
+    Ctn Send To Connector    ${tc}    ${command}    ${timeout}
+    Ctn Extract Multiline Result From Log    ${tc}    timeout=10
+    ${output}    Get File    /tmp/connector.output
+    ${output}    Replace String    ${output}    \n    ${SPACE}
+    ${output}    Strip String    ${output}
     Should Be Equal As Strings    ${output}    ${expected_result}
 
 Ctn Run Command And Check Result As Json

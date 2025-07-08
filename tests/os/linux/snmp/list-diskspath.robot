@@ -21,7 +21,7 @@ list-diskspath ${tc}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=os/linux/snmp/linux
-    ...    --snmp-timeout=1
+    ...    --snmp-timeout=5
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
@@ -34,3 +34,4 @@ list-diskspath ${tc}
             ...      5     --skip-total-size-zero                  List disk path: ${SPACE}'/run/user/0' [id = 25] ${SPACE} '/run' [id = 5] ${SPACE} '/' [id = 6] ${SPACE} '/dev/shm' [id = 8] ${SPACE} '/run/lock' [id = 9]
             ...      6     --regexp-insensitive                    List disk path: ${SPACE}'/run/user/0' [id = 25] ${SPACE} '/run' [id = 5] ${SPACE} '/' [id = 6] ${SPACE} '/dev/shm' [id = 8] ${SPACE} '/run/lock' [id = 9] 
             ...      7     --regexp                                List disk path: ${SPACE}'/run/user/0' [id = 25] ${SPACE} '/run' [id = 5] ${SPACE} '/' [id = 6] ${SPACE} '/dev/shm' [id = 8] ${SPACE} '/run/lock' [id = 9]
+            ...      8     --verbose                               List disk path: ${SPACE}'/run/user/0' [id = 25]

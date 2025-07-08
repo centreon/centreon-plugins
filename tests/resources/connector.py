@@ -181,3 +181,43 @@ def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=N
                         shutil.copyfile(output_path, "/tmp/connector.output")
                     return output
         raise Exception(f"No result found for id {tc} in log {log_path}")
+    
+@keyword
+def ctn_extract_multiline_result_from_log(tc, log_path="/tmp/connector.log", output_path=None, timeout=10):
+    """
+    Extracts multi-line result for check ID from log, waits up to `timeout` seconds.
+    """
+    import re
+    deadline = time.time() + timeout
+    result_lines = []
+
+    while time.time() < deadline:
+        with open(log_path, 'r') as f:
+            lines = f.readlines()
+
+        result_lines.clear()
+        in_result = False
+
+        for line in lines:
+            if not in_result:
+                m = re.search(r'reporting check result #(\d+).*output:(.*)', line)
+                if m and str(m.group(1)) == str(tc):
+                    result_lines.append(m.group(2).strip())
+                    in_result = True
+            else:
+                if line.strip().startswith("error:") or re.match(r"^\d+ \[.*", line):
+                    break
+                result_lines.append(line.strip())
+
+        if result_lines:
+            output_path = output_path or f"/tmp/connector.output.{tc}"
+            with open(output_path, 'w') as out:
+                out.write('\n'.join(result_lines))
+            if output_path != "/tmp/connector.output":
+                import shutil
+                shutil.copyfile(output_path, "/tmp/connector.output")
+            return '\n'.join(result_lines)
+
+        time.sleep(0.2)  # wait before retry
+
+    raise Exception(f"No result found for id {tc} in log {log_path} after {timeout}s")
