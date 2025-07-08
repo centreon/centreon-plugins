@@ -1,6 +1,6 @@
 *** Settings ***
 Documentation       Network citrix netscaler health
-
+Suite Setup         Ctn Generic Suite Setup
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
