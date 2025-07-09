@@ -204,6 +204,7 @@ sub tagsByResource {
     return $code if ($code);
 
     my $tags = {};
+    my $categories = {};
     my $result = { esx => {} , vm => {} };
     if (defined($tag_ids->{value})) {
         my $json_req = { tag_ids => [] };
@@ -214,8 +215,21 @@ sub tagsByResource {
             );
             return $code if ($code);
 
+            if (!defined($categories->{$tag_detail->{value}->{category_id}})) {
+                my ($code, $category_detail) = $self->request(
+                    method => 'GET',
+                    endpoint => '/rest/com/vmware/cis/tagging/category/id:' . $tag_detail->{value}->{category_id}
+                );
+                return $code if ($code);
+                $categories->{$tag_detail->{value}->{category_id}} = $category_detail->{value}->{name};
+            }
+
             push @{$json_req->{tag_ids}}, $tag_id; 
-            $tags->{ $tag_id } = { name => $tag_detail->{value}->{name}, description => $tag_detail->{value}->{description} };
+            $tags->{ $tag_id } = {
+                category => $categories->{$tag_detail->{value}->{category_id}},
+                description => $tag_detail->{value}->{description},
+                name => $tag_detail->{value}->{name}
+            };
         }
 
         my $data;
