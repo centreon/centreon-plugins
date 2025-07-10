@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -103,7 +103,7 @@ sub manage_selection {
     my $oid_fwDiscardedConnectionsS = '.1.3.6.1.4.1.47565.1.1.1.11.5.0';
     my $oid_fwRefusedConnectionsS = '.1.3.6.1.4.1.47565.1.1.1.11.6.0';
     my $snmp_result = $options{snmp}->get_leef(
-        oids         =>
+        oids =>
             [
                 $oid_fwConnNumber,
                 $oid_fwNewConnectionsS,
@@ -131,15 +131,43 @@ Check firewall connections.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--filter-counters>
 
-Warning threshold.
-Can be: 'connections', 'new-connections-sec', 'discarded-connections-sec', 'refused-connections-sec'.
+Only display some counters (regexp can be used).
+Can be : connections, new-connections-sec, discarded-connections-sec, refused-connections-sec
+Example : --filter-counters='^connections$'
 
-=item B<--critical-*>
+=item B<--warning-connections>
 
-Critical threshold.
-Can be: 'connections', 'new-connections-sec', 'discarded-connections-sec', 'refused-connections-sec'.
+Threshold in con.
+
+=item B<--critical-connections>
+
+Threshold in con.
+
+=item B<--warning-discarded-connections-sec>
+
+Threshold in con/s.
+
+=item B<--critical-discarded-connections-sec>
+
+Threshold in con/s.
+
+=item B<--warning-new-connections-sec>
+
+Threshold in con/s.
+
+=item B<--critical-new-connections-sec>
+
+Threshold in con/s.
+
+=item B<--warning-refused-connections-sec>
+
+Threshold in con/s.
+
+=item B<--critical-refused-connections-sec>
+
+Threshold in con/s
 
 =back
 

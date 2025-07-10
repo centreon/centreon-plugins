@@ -1,0 +1,36 @@
+*** Settings ***
+Documentation       Forcepoint SD-WAN Mode Load
+
+Resource            ${CURDIR}${/}../..${/}..${/}..${/}resources/import.resource
+
+Test Timeout        120s
+Test Setup          Ctn Generic Suite Setup
+
+*** Variables ***
+${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::forcepoint::sdwan::snmp::plugin
+
+
+*** Test Cases ***
+load ${tc}
+    [Tags]    network    forcepoint    sdwan     snmp
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --mode=load
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=40000
+    ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-load
+    ...    --critical=${critical}
+    ...    --warning=${warning}
+    ...    --average
+    ...    ${extra_options}
+ 
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:        tc     critical         warning           extra_options            expected_result    --
+            ...      1      '6,5,4'          '4,3,2'           ${EMPTY}           OK: Load average: 0.04 [0.09/2 CPUs], 0.02 [0.04/2 CPUs], 0.01 [0.01/2 CPUs] | 'avg_load1'=0.04;0:4;0:6;0; 'avg_load5'=0.02;0:3;0:5;0; 'avg_load15'=0.01;0:2;0:4;0; 'load1'=0.09;0:8;0:12;0; 'load5'=0.04;0:6;0:10;0; 'load15'=0.01;0:4;0:8;0;
+            ...      2      '0,0,0'          '4,3,2'           ${EMPTY}           CRITICAL: Load average: 0.04 [0.09/2 CPUs], 0.02 [0.04/2 CPUs], 0.01 [0.01/2 CPUs] | 'avg_load1'=0.04;0:4;0:0;0; 'avg_load5'=0.02;0:3;0:0;0; 'avg_load15'=0.01;0:2;0:0;0; 'load1'=0.09;0:8;0:0;0; 'load5'=0.04;0:6;0:0;0; 'load15'=0.01;0:4;0:0;0;
+            ...      3      '600,500,100'    '0,0,0'           ${EMPTY}           WARNING: Load average: 0.04 [0.09/2 CPUs], 0.02 [0.04/2 CPUs], 0.01 [0.01/2 CPUs] | 'avg_load1'=0.04;0:0;0:600;0; 'avg_load5'=0.02;0:0;0:500;0; 'avg_load15'=0.01;0:0;0:100;0; 'load1'=0.09;0:0;0:1200;0; 'load5'=0.04;0:0;0:1000;0; 'load15'=0.01;0:0;0:200;0;
+            ...      4      '6,5,4'          '4,3,2'           --change-output-adv='%(short_output) =~ /OK:/ and %(exit_code) == 0,Forced from OK to WARNING,WARNING'           Forced from OK to WARNING| 'avg_load1'=0.04;0:4;0:6;0; 'avg_load5'=0.02;0:3;0:5;0; 'avg_load15'=0.01;0:2;0:4;0; 'load1'=0.09;0:8;0:12;0; 'load5'=0.04;0:6;0:10;0; 'load15'=0.01;0:4;0:8;0;
+            ...      5      '0,0,0'          '4,3,2'           --change-output-adv='%(short_output) =~ /CRITICAL:/ and %(exit_code) == 2,Forced from CRITICAL to OK,OK'           Forced from CRITICAL to OK| 'avg_load1'=0.04;0:4;0:0;0; 'avg_load5'=0.02;0:3;0:0;0; 'avg_load15'=0.01;0:2;0:0;0; 'load1'=0.09;0:8;0:0;0; 'load5'=0.04;0:6;0:0;0; 'load15'=0.01;0:4;0:0;0;
+            ...      6      '600,500,100'    '0,0,0'           --change-output-adv='%(short_output) =~ /WARNING:/ and %(exit_code) == 1,Forced from WARNING to CRITICAL,CRITICAL'           Forced from WARNING to CRITICAL| 'avg_load1'=0.04;0:0;0:600;0; 'avg_load5'=0.02;0:0;0:500;0; 'avg_load15'=0.01;0:0;0:100;0; 'load1'=0.09;0:0;0:1200;0; 'load5'=0.04;0:0;0:1000;0; 'load15'=0.01;0:0;0:200;0;

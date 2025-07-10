@@ -302,12 +302,77 @@ Thresholds are on free space left (deprecated. Please use new counters directly)
 
 Check swap also.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-buffer>
 
-Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
-'swap' (B), 'swap-free' (B), 'swap-prct' (%),
-'buffer' (B), 'cached' (B), 'shared' (B).
+Threshold in bytes.
+
+=item B<--critical-buffer>
+
+Threshold in bytes.
+
+=item B<--warning-cached>
+
+Threshold in bytes.
+
+=item B<--critical-cached>
+
+Threshold in bytes.
+
+=item B<--warning-shared>
+
+Threshold in bytes.
+
+=item B<--critical-shared>
+
+Threshold in bytes.
+
+=item B<--warning-swap>
+
+Threshold in bytes.
+
+=item B<--critical-swap>
+
+Threshold in bytes.
+
+=item B<--warning-swap-free>
+
+Threshold in bytes.
+
+=item B<--critical-swap-free>
+
+Threshold in bytes.
+
+=item B<--warning-swap-prct>
+
+Threshold in percentage.
+
+=item B<--critical-swap-prct>
+
+Threshold in percentage.
+
+=item B<--warning-usage>
+
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =item B<--patch-redhat>
 
