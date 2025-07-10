@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -182,6 +182,11 @@ sub manage_selection {
             prct_free_space => $result->{free} * 100 / $result->{total},
         };
     }
+
+    if (scalar(keys %{$self->{disks}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No disk found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -198,10 +203,29 @@ Check disks.
 
 Filter disks by partition dev name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-space-usage>
 
-Thresholds.
-Can be: 'space-usage' (B), 'space-usage-free' (B), 'space-usage-prct' (%).
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

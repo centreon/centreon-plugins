@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -81,10 +81,14 @@ Check cluster CPU load.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
 
-Thresholds.
-Can be: 'cpu-load' (%).
+=item B<--warning-cpu-load>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-load>
+
+Threshold in percentage.
 
 =back
 
