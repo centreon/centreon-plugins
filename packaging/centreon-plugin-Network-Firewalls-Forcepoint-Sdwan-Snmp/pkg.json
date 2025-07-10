@@ -1,5 +1,5 @@
 {
-    "pkg_name": "centreon-plugin-Network-Firewalls-Forcepoint-Sdwan",
+    "pkg_name": "centreon-plugin-Network-Firewalls-Forcepoint-Sdwan-Snmp",
     "pkg_summary": "Centreon Plugin",
     "plugin_name": "centreon_forcepoint.pl",
     "files": [
