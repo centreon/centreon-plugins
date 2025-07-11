@@ -19,7 +19,7 @@ cpu-detailed ${tc}
     ...    --mode=cpu-detailed
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port=40000
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-cpudetailed
     ...    ${extra_options}
  

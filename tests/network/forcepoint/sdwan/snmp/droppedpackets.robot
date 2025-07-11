@@ -18,7 +18,7 @@ Connections ${tc}
     ...    --mode=dropped-packets
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port=40000
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-droppedpackets
     ...    ${extra_options}
  

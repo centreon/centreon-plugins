@@ -18,7 +18,7 @@ Diskusage ${tc}
     ...    --mode=disk-usage
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port=40000
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-diskusage
     ...    ${extra_options}
  

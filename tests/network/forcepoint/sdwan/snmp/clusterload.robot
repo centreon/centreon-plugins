@@ -18,7 +18,7 @@ Connections ${tc}
     ...    --mode=cluster-load
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port=40000
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-clusterload
     ...    ${extra_options}
  

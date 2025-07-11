@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=network::forcepoint::sdwan::snmp::plugin
 ...         --mode=interfaces
 ...         --hostname=${HOSTNAME}
-...         --snmp-port=40000
+...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-interfaces
 
 ${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
