@@ -76,7 +76,6 @@ dns-resolve-time
 Ekara
 -EncodedCommand
 env
-equipments
 ESX
 eth
 Exense

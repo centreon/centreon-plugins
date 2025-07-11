@@ -19,7 +19,7 @@ Connections ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint-clusterload
+    ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint
     ...    ${extra_options}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

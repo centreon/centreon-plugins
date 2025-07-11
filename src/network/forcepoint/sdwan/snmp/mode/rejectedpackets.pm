@@ -82,17 +82,13 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-
-    if ($self->{snmp}->is_snmpv1()) {
+    if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
     }
 
     my $oid_fwRejected = '.1.3.6.1.4.1.47565.1.1.1.9.0';
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_fwRejected ], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(oids => [ $oid_fwRejected ], nothing_quit => 1);
 
     $self->{global} = {
         rejected => $result->{$oid_fwRejected}

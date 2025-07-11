@@ -82,11 +82,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-
-    if ($self->{snmp}->is_snmpv1()) {
+    if ($options->{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Can't check SNMP 64 bits counters with SNMPv1.");
         $self->{output}->option_exit();
     }
