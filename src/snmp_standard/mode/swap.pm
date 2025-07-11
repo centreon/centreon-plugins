@@ -140,10 +140,29 @@ Check swap memory (UCD-SNMP-MIB).
 
 Threshold if no active swap (default: 'critical').
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-usage>
 
-Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 
