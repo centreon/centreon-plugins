@@ -18,7 +18,7 @@ Connections ${tc}
     ...    --mode=rejected-packets
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port={SNMPPORT}
+    ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint
     ...    ${extra_options}
  
