@@ -35,7 +35,7 @@ sub custom_status_output {
 sub prefix_module_output {
     my ($self, %options) = @_;
 
-    return sprintf("Ont '%s' - %s(%s) ethernet port %d (%s) ",
+    return sprintf("ONT '%s' - %s(%s) ethernet port %d (%s) ",
         $options{instance_value}->{display},
         $options{instance_value}->{serial_hex},
         $options{instance_value}->{serial},
@@ -52,7 +52,7 @@ sub set_counters {
             name             => 'ethernet_ports',
             type             => 1,
             cb_prefix_output => 'prefix_module_output',
-            message_multiple => 'All Ont ethernet port are ok',
+            message_multiple => 'All ONT ethernet port are ok',
             skipped_code     => { -10 => 1 }
         }
     ];
@@ -61,10 +61,14 @@ sub set_counters {
         {
             label            => 'status',
             type             => 2,
-            critical_default => '%{online_state} ne "linkup"',
+            critical_default => '%{online_state} ne "linkup" || %{speed} eq "invalid"',
             set              =>
                 {
-                    key_values                     => [ { name => 'online_state' }, { name => 'display' } ],
+                    key_values                     => [
+                        { name => 'online_state' },
+                        { name => 'display' },
+                        { name => 'speed' }
+                    ],
                     closure_custom_output          => $self->can('custom_status_output'),
                     closure_custom_perfdata        => sub {return 0;},
                     closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -154,12 +158,12 @@ sub manage_selection {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        my $serial_hex = uc(unpack("H*", $result->{serial}));
+        my $serial = $self->get_serial_string($result->{serial});
 
         if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $serial_hex !~ /$self->{option_results}->{filter_serial}/) {
+            $serial !~ /$self->{option_results}->{filter_serial}/) {
             $self->{output}->output_add(
-                long_msg => "skipping '" . $serial_hex . "': no matching filter.",
+                long_msg => "skipping '" . $serial . "': no matching filter.",
                 debug    => 1
             );
             next;
@@ -167,8 +171,8 @@ sub manage_selection {
 
         $ont{$instance} = {
             name       => $result->{name},
-            serial     => $self->get_serial_string($result->{serial}),
-            serial_hex => $serial_hex,
+            serial     => $serial,
+            serial_hex => uc(unpack("H*", $result->{serial})),
         };
     }
 
@@ -221,13 +225,31 @@ __END__
 
 =head1 MODE
 
-Shows the Ont ethernet port
+Shows the status of a ONT module ETH port
 
 =over 8
 
 =item B<--filter-serial>
 
 Filter otn by serial (can be a regexp).
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: C<%{online_state}>, C<%{display}>, C<%(speed)>.
+C<%(online_state)> can have one of these values: C<linkup>, C<linkdown>, C<invalid>.
+C<%(speed)> can have one of these values: C<speed10M>, C<speed100M>, C<speed1000M>, C<autoneg>, C<autospeed10M>,
+C<autospeed100M>, C<autospeed1000M>, C<speed10G>, C<autospeed10G>, C<speed2500M>, C<autospeed2500M>, C<speed5000M>,
+C<autospeed5000M>, C<speed25000M>, C<autospeed25000M>, C<speed40000M>, C<autospeed40000M>, C<invalid>
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL. (default: C<'%{online_state} ne "linkup" || %{speed} eq "invalid"'>).
+You can use the following variables: C<%{online_state}>, C<%{display}>, C<%(speed)>.
+C<%(online_state)> can have one of these values: C<linkup>, C<linkdown>, C<invalid>.
+C<%(speed)> can have one of these values: C<speed10M>, C<speed100M>, C<speed1000M>, C<autoneg>, C<autospeed10M>,
+C<autospeed100M>, C<autospeed1000M>, C<speed10G>, C<autospeed10G>, C<speed2500M>, C<autospeed2500M>, C<speed5000M>,
+C<autospeed5000M>, C<speed25000M>, C<autospeed25000M>, C<speed40000M>, C<autospeed40000M>, C<invalid>
 
 =back
 
