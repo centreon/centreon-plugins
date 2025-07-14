@@ -42,7 +42,8 @@ sub new {
     $options{options}->add_options(
         arguments => {
             'filter-name:s'   => { name => 'filter_name' },
-            'filter-status:s' => { name => 'filter_status' }
+            'filter-status:s' => { name => 'filter_status' },
+            'filter-serial:s' => { name => 'filter_serial' }
         }
     );
 
@@ -59,11 +60,11 @@ sub manage_selection {
 
     my $mapping = {
         serial =>
-            { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.3' }, # hwGponDeviceOntSn
+            { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.3' },# hwGponDeviceOntSn
         name   =>
-            { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.9' }, # hwGponDeviceOntDespt
+            { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.9' },# hwGponDeviceOntDespt
         state  =>
-            { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.10', map => $mapping_status }, # hwGponDeviceOntEntryStatus
+            { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.10', map => $mapping_status },# hwGponDeviceOntEntryStatus
     };
 
     my $snmp_result = $options{snmp}->get_multiple_table(
@@ -82,10 +83,22 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
+        $result->{serial} = $self->get_serial_string($result->{serial});
+        $result->{serial_hex} = uc(unpack("H*", $result->{serial}));
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(
                 long_msg => "skipping '" . $result->{name} . "': no matching filter.",
+                debug    => 1
+            );
+            next;
+        }
+
+        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
+            $result->{serial} !~ /$self->{option_results}->{filter_serial}/) {
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $result->{serial} . "': no matching filter.",
                 debug    => 1
             );
             next;
@@ -120,8 +133,8 @@ sub run {
                 sprintf(
                     "[Name = %s] [Serial = %s] [Serial Hex = %s] [State = %s]",
                     $_->{name},
-                    $self->get_serial_string($_->{serial}),
-                    uc(unpack("H*", $_->{serial})),
+                    $_->{serial},
+                    $_->{serial_hex},
                     $_->{state}
                 )
         );
@@ -129,7 +142,7 @@ sub run {
 
     $self->{output}->output_add(
         severity  => 'OK',
-        short_msg => 'List switches:'
+        short_msg => 'List ONT:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -159,7 +172,7 @@ sub get_serial_string($) {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => [ 'name', 'serial', 'state' ]);
+    $self->{output}->add_disco_format(elements => [ 'name', 'serial', 'serial_hex', 'state' ]);
 }
 
 sub disco_show {
@@ -170,8 +183,8 @@ sub disco_show {
     foreach (@{$self->{otn}}) {
         $self->{output}->add_disco_entry(
             name       => $_->{name},
-            serial     => $self->get_serial_string($_->{serial}),
-            serial_hex => uc(unpack("H*", $_->{serial})),
+            serial     => $_->{serial},
+            serial_hex => $_->{serial_hex},
             state      => $_->{state}
         );
     }
@@ -183,13 +196,17 @@ __END__
 
 =head1 MODE
 
-List switches managed through Fortigate Switch Controller.
+List ONT.
 
 =over 8
 
 =item B<--filter-name>
 
 Filter otn by name (can be a regexp).
+
+=item B<--filter-serial>
+
+Filter otn by serial (can be a regexp).
 
 =item B<--filter-status>
 

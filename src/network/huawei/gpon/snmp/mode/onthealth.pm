@@ -35,7 +35,7 @@ sub custom_status_output {
 sub prefix_module_output {
     my ($self, %options) = @_;
 
-    return sprintf("Ont %s %s(%s) ",
+    return sprintf("ONT %s %s(%s) ",
         $options{instance_value}->{display},
         $options{instance_value}->{serial_hex},
         $options{instance_value}->{serial}
@@ -50,7 +50,7 @@ sub set_counters {
             name             => 'ont',
             type             => 1,
             cb_prefix_output => 'prefix_module_output',
-            message_multiple => 'All Ont modules are ok',
+            message_multiple => 'All ONT modules are ok',
             skipped_code     => { -10 => 1 }
         }
     ];
@@ -72,8 +72,7 @@ sub set_counters {
                         \&catalog_status_threshold_ng
                 }
         },
-        {
-            label => 'temperature', nlabel => 'module.temperature.celsius', set => {
+        { label => 'temperature', nlabel => 'module.temperature.celsius', set => {
             key_values      => [ { name => 'temperature' } ],
             output_template => 'module temperature: %sC',
             perfdatas       => [
@@ -81,8 +80,7 @@ sub set_counters {
             ]
         }
         },
-        {
-            label => 'voltage', nlabel => 'module.voltage.volt', display_ok => 0, set => {
+        { label => 'voltage', nlabel => 'module.voltage.volt', display_ok => 0, set => {
             key_values      => [ { name => 'voltage', no_value => 0 } ],
             output_template => 'module voltage: %s V',
             perfdatas       => [
@@ -92,7 +90,7 @@ sub set_counters {
         },
         { label => 'tx-power', nlabel => 'module.tx.power.dbm', set => {
             key_values      => [ { name => 'tx_power' }, { name => 'display' } ],
-            output_template => 'Tx Power : %s dBm',
+            output_template => 'Tx Power: %s dBm',
             perfdatas       => [
                 { template => '%s', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
@@ -100,7 +98,7 @@ sub set_counters {
         },
         { label => 'rx-power', nlabel => 'module.rx.power.dbm', set => {
             key_values      => [ { name => 'rx_power' }, { name => 'display' } ],
-            output_template => 'Rx power : %s dBm',
+            output_template => 'Rx power: %s dBm',
             perfdatas       => [
                 { template => '%s', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
@@ -108,7 +106,7 @@ sub set_counters {
         },
         { label => 'bias-current', nlabel => 'module.bias.current.milliampere', set => {
             key_values      => [ { name => 'bias_current' }, { name => 'display' } ],
-            output_template => 'Bias current : %s mA',
+            output_template => 'Bias current: %s mA',
             perfdatas       => [
                 { template => '%s', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
             ]
@@ -116,7 +114,7 @@ sub set_counters {
         },
         { label => 'olt-rx-ont-power', nlabel => 'olt.rx.ont.power.dbm', set => {
             key_values      => [ { name => 'olt_rx_ont_power' }, { name => 'display' } ],
-            output_template => 'Olt Rx Ont power : %s dBm',
+            output_template => 'Olt Rx ONT power: %s dBm',
             perfdatas       => [
                 { template => '%s', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
@@ -195,11 +193,12 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         my $serial_hex = uc(unpack("H*", $result->{serial}));
+        my $serial = $self->get_serial_string($result->{serial});
 
         if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $serial_hex !~ /$self->{option_results}->{filter_serial}/) {
+            $serial !~ /$self->{option_results}->{filter_serial}/) {
             $self->{output}->output_add(
-                long_msg => "skipping '" . $serial_hex . "': no matching filter serial.",
+                long_msg => "skipping '" . $serial . "': no matching filter serial.",
                 debug    => 1
             );
             next;
@@ -208,7 +207,7 @@ sub manage_selection {
         $self->{ont}{$serial_hex} = {
             instance   => $instance,
             display    => $result->{name},
-            serial     => $self->get_serial_string($result->{serial}),
+            serial     => $serial,
             serial_hex => $serial_hex,
             status     => $result->{status}
         };
@@ -256,13 +255,74 @@ __END__
 
 =head1 MODE
 
-Shows the Ont health
+Shows the ONT health with performance data for power, temperature and voltage
 
 =over 8
 
 =item B<--filter-serial>
 
 Filter otn by serial (can be a regexp).
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: C<%{status}>, C<%{display}>.
+C<%(status)> can have one of these values: C<active>, C<notInService>, C<notReady>, C<createAndGo>, C<createAndWait>, C<destroy>.
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL. (default: C<'%{status} ne "active"'>).
+You can use the following variables: C<%{status}>, C<%{display}>.
+C<%(status)> can have one of these values: C<active>, C<notInService>, C<notReady>, C<createAndGo>, C<createAndWait>, C<destroy>.
+
+
+=item B<--warning-temperature>
+
+Warning threshold in celsius degrees.
+
+=item B<--critical-temperature>
+
+Critical threshold in celsius degrees
+
+=item B<--warning-voltage>
+
+Warning threshold for the power feed voltage of the optical module (V).
+
+=item B<--critical-voltage>
+
+Critical threshold for the power feed voltage of the optical module (V).
+
+=item B<--warning-tx-power>
+
+Warning threshold for the transmitting power of the optical module (dBm).
+
+=item B<--critical-tx-power>
+
+Critical threshold for the transmitting power of the optical module (dBm).
+
+=item B<--warning-rx-power>
+
+Warning threshold for the receiving power of the optical module (dBm).
+
+=item B<--critical-rx-power>
+
+Critical threshold for the receiving power of the optical module (dBm).
+
+=item B<--warning-bias-current>
+
+Warning threshold for the bias current of the optical module (mA).
+
+=item B<--critical-bias-current>
+
+Critical threshold for the bias current of the optical module (mA).
+
+=item B<--warning-olt-rx-ont-power>
+
+Warning threshold for the ONT optical power received on the OLT (dBm).
+
+=item B<--critical-olt-rx-ont-power>
+
+Critical threshold for the ONT optical power received on the OLT (dBm).
 
 =back
 

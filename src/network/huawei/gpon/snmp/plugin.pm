@@ -30,16 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'               => 'centreon::common::huawei::standard::snmp::mode::cpu',
-        'hardware'          => 'centreon::common::huawei::standard::snmp::mode::hardware',
-        'interfaces'        => 'centreon::common::huawei::standard::snmp::mode::interfaces',
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
         'list-ont'          => 'network::huawei::gpon::snmp::mode::listont',
-        'memory'            => 'centreon::common::huawei::standard::snmp::mode::memory',
         'ont-ethernet-port' => 'network::huawei::gpon::snmp::mode::ontethernetport',
         'ont-health'        => 'network::huawei::gpon::snmp::mode::onthealth',
-        'ont-traffic'       => 'network::huawei::gpon::snmp::mode::onttraffic',
-        'uptime'            => 'snmp_standard::mode::uptime'
+        'ont-traffic'       => 'network::huawei::gpon::snmp::mode::onttraffic'
     };
 
     return $self;
@@ -51,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Huawei equipments in SNMP.
+Check GPON ONT (Gigabit Passive Optical Network) of Huawei OLT like the SmartAX MA5800 series in SNMP.
 
 =cut
