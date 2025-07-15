@@ -214,7 +214,12 @@ sub manage_selection {
             provisioning_type => defined($provisioning_type{$volume->{provisioningType}}) ?
                 $provisioning_type{$volume->{provisioningType}} : 'NOT_DOCUMENTED',
             readonly          => $volume->{readOnly}
-        };
+        }
+    }
+
+    if (scalar(keys %{$self->{volumes}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No volume found.");
+        $self->{output}->option_exit();
     }
 }
 
