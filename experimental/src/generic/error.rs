@@ -1,5 +1,5 @@
 use snafu::prelude::Snafu;
-use std::{io, path::PathBuf};
+use std::io;
 
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub))]
@@ -28,6 +28,9 @@ pub enum Error {
 
     #[snafu(transparent)]
     SerdeJson { source: serde_json::Error },
+
+    #[snafu(transparent)]
+    Regex { source: regex::Error },
 }
 
 impl From<std::ffi::OsString> for Error {

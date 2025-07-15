@@ -214,8 +214,8 @@ impl Command {
         target: &str,
         version: &str,
         community: &str,
-        filter_in: &Option<String>,
-        filter_out: &Option<String>,
+        filter_in: &Vec<String>,
+        filter_out: &Vec<String>,
     ) -> Result<CmdResult> {
         let mut collect = self.execute_snmp_collect(target, version, community);
 
@@ -225,16 +225,17 @@ impl Command {
         let mut status = Status::Ok;
 
         // Prepare filters
-        let re_in = if let Some(filter_in) = filter_in {
-            Some(Regex::new(filter_in).unwrap())
-        } else {
-            None
-        };
-        let re_out: Option<Regex> = if let Some(filter_out) = filter_out {
-            Some(Regex::new(filter_out).unwrap())
-        } else {
-            None
-        };
+        let mut re_in: Vec<Regex> = Vec::new();
+        for f in filter_in.iter() {
+            let re = Regex::new(f)?;
+            re_in.push(re);
+        }
+
+        let mut re_out: Vec<Regex> = Vec::new();
+        for f in filter_out.iter() {
+            let re = Regex::new(f)?;
+            re_out.push(re);
+        }
 
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
@@ -278,13 +279,13 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
-                        if let Some(ref re) = re_in {
-                            if !re.is_match(&name) {
+                        if !re_in.is_empty() {
+                            if !re_in.iter().any(|re| re.is_match(&name)) {
                                 continue;
                             }
                         }
-                        if let Some(ref re) = re_out {
-                            if re.is_match(&name) {
+                        if !re_out.is_empty() {
+                            if re_out.iter().any(|re| re.is_match(&name)) {
                                 continue;
                             }
                         }
@@ -323,13 +324,14 @@ impl Command {
                             res
                         }
                     };
-                    if let Some(ref re) = re_in {
-                        if !re.is_match(&name) {
+                    if !re_in.is_empty() {
+                        // If one filter is matched, we keep the metric
+                        if !re_in.iter().any(|re| re.is_match(&name)) {
                             continue;
                         }
                     }
-                    if let Some(ref re) = re_out {
-                        if re.is_match(&name) {
+                    if !re_out.is_empty() {
+                        if re_out.iter().any(|re| re.is_match(&name)) {
                             continue;
                         }
                     }
