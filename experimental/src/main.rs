@@ -49,8 +49,8 @@ fn main() -> Result<(), Error> {
     let mut port = 161;
     let mut snmp_version = "2c".to_string();
     let mut snmp_community = "public".to_string();
-    let mut filter_in = None;
-    let mut filter_out = None;
+    let mut filter_in = Vec::new();
+    let mut filter_out = Vec::new();
     let mut cmd: Option<Command> = None;
     loop {
         let arg = parser.next();
@@ -79,16 +79,14 @@ fn main() -> Result<(), Error> {
                         trace!("snmp_community: {}", snmp_community);
                     }
                     Short('i') | Long("filter-in") => {
-                        filter_in = Some(parser.value()?.into_string()?);
-                        if let Some(ref filter) = filter_in {
-                            trace!("filter_in: {}", filter);
-                        }
+                        let f = parser.value()?.into_string()?;
+                        trace!("New filter_in: {}", f);
+                        filter_in.push(f);
                     }
                     Short('o') | Long("filter-out") => {
-                        filter_out = Some(parser.value()?.into_string()?);
-                        if let Some(ref filter) = filter_out {
-                            trace!("filter_out: {}", filter);
-                        }
+                        let f = parser.value()?.into_string()?;
+                        trace!("New filter_out: {}", f);
+                        filter_out.push(f);
                     }
                     t => {
                         if let Arg::Long(name) = t {
