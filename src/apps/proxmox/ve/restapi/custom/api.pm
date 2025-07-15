@@ -201,7 +201,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    if (!defined($decoded->{data})) {
+    if (!exists($decoded->{data})) {
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
@@ -358,7 +358,7 @@ sub internal_api_get_network_interfaces {
     # We use the silently_fail option because we don't want to crash the module when QEMU agent is not running
     # In this case we simply ignore the IP retrieval
     my $vm_network = $self->request_api(method => 'GET',
-                                        url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/agent/network-get-interfaces',
+                                        url_path => '/api2/json/nodes/' . $options{node_id} . '/qemu/' . $options{vm_id} . '/agent/network-get-interfaces',
                                         silently_fail => 1);
 
     return $vm_network;
@@ -370,7 +370,7 @@ sub internal_api_get_osinfo {
     # We use the silently_fail option because we don't want to crash the module when QEMU agent is not running
     # In this case we simply ignore the osinfo retrieval
     my $vm_osinfo = $self->request_api(method => 'GET',
-                                       url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/agent/get-osinfo',
+                                       url_path => '/api2/json/nodes/' . $options{node_id} . '/qemu/' . $options{vm_id} . '/agent/get-osinfo',
                                        silently_fail => 1);
     return $vm_osinfo;
 }
@@ -379,10 +379,10 @@ sub api_get_osinfo {
     my ($self, %options) = @_;
 
     my $vm_osinfo = $self->internal_api_get_osinfo(node_id => $options{Node}, vm_id => $options{Vmid});
-
-    unless ($vm_osinfo && ref $vm_osinfo eq 'HASH') {
-        return { PrettyName => '', Name => '', Version => '', Machine => '', Kernel => ''}
-    }
+    # Retrieve the os info HASH from result HASH
+    return { PrettyName => '', Name => '', Version => '', Machine => '', Kernel => ''}
+        unless $vm_osinfo && ref $vm_osinfo eq 'HASH' && exists $vm_osinfo->{result};
+    $vm_osinfo = $vm_osinfo->{result};
 
     # Defined values depend on the guest OS
     return { PrettyName => $vm_osinfo->{'pretty-name'} // $vm_osinfo->{name} // '',
@@ -397,7 +397,9 @@ sub api_get_network_interfaces {
     my ($self, %options) = @_;
 
     my $vm_network = $self->internal_api_get_network_interfaces(node_id => $options{Node}, vm_id => $options{Vmid});
-    return  unless $vm_network && ref $vm_network eq 'ARRAY';
+    # Retrieve the network interfaces ARRAY from result HASH
+    return unless $vm_network && ref $vm_network eq 'HASH' && exists $vm_network->{'result'} && ref $vm_network->{'result'} eq 'ARRAY';
+    $vm_network=$vm_network->{'result'};
 
     # We returns only IPv4 addresses
     # We also sort IPs to return public IPs first, then local IPs, and loopback addresses last
