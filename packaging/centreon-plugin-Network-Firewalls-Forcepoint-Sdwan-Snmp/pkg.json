@@ -1,7 +1,7 @@
 {
     "pkg_name": "centreon-plugin-Network-Firewalls-Forcepoint-Sdwan-Snmp",
-    "pkg_summary": "Centreon Plugin",
-    "plugin_name": "centreon_forcepoint.pl",
+    "pkg_summary": "Centreon Plugin to monitor Forcepoint SD-WAN using SNMP",
+    "plugin_name": "centreon_forcepoint_sdwan_snmp.pl",
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
