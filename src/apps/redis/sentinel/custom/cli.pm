@@ -75,17 +75,17 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{ssh_hostname} = defined($self->{option_results}->{ssh_hostname}) && $self->{option_results}->{ssh_hostname} ne '' ? $self->{option_results}->{ssh_hostname} : '';
-    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
-    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 26379;
-    $self->{username} = defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
-    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{ssh_hostname} = $self->{option_results}->{ssh_hostname} // '';
+    $self->{server} = $self->{option_results}->{server} // '';
+    $self->{port} = $self->{option_results}->{port} || 26379;
+    $self->{username} = $self->{option_results}->{username} // '';
+    $self->{password} = $self->{option_results}->{password} // '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
     $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
-    $self->{cacert} = defined($self->{option_results}->{cacert}) && $self->{option_results}->{cacert} ne '' ? $self->{option_results}->{cacert} : '';
-    $self->{cert} = defined($self->{option_results}->{cert}) && $self->{option_results}->{cert} ne '' ? $self->{option_results}->{cert} : '';
-    $self->{key} = defined($self->{option_results}->{key}) && $self->{option_results}->{key} ne '' ? $self->{option_results}->{key} : '';
+    $self->{cacert} = $self->{option_results}->{cacert} // '';
+    $self->{cert} = $self->{option_results}->{cert} // '';
+    $self->{key} = $self->{option_results}->{key} // '';
 
     if ($self->{server} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --server option.');
@@ -234,11 +234,11 @@ CA Certificate file to verify with (redis-cli >= 6.x mandatory).
 
 =item B<--cert>
 
-Client certificate to authenticate with.
+Client certificate to authenticate with (redis-cli >= 6.x mandatory).
 
 =item B<--key>
 
-Private key file to authenticate with.
+Private key file to authenticate with (redis-cli >= 6.x mandatory).
 
 =item B<--insecure>
 

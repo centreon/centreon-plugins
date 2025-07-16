@@ -78,33 +78,33 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{ssh_hostname} = defined($self->{option_results}->{ssh_hostname}) && $self->{option_results}->{ssh_hostname} ne '' ? $self->{option_results}->{ssh_hostname} : '';
-    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
-    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 6379;
-    $self->{sentinel_port} = defined($self->{option_results}->{sentinel_port}) && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
-    $self->{username} = defined($self->{option_results}->{password}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
-    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{ssh_hostname} = $self->{option_results}->{ssh_hostname} // '';
+    $self->{server} = $self->{option_results}->{server} // '';
+    $self->{port} = $self->{option_results}->{port} || 6379;
+    $self->{sentinel_port} = $self->{option_results}->{sentinel_port} && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
+    $self->{username} = $self->{option_results}->{username} // '';
+    $self->{password} = $self->{option_results}->{password} // '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
     $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
-    $self->{cacert} = defined($self->{option_results}->{cacert}) && $self->{option_results}->{cacert} ne '' ? $self->{option_results}->{cacert} : '';
-    $self->{cert} = defined($self->{option_results}->{cert}) && $self->{option_results}->{cert} ne '' ? $self->{option_results}->{cert} : '';
-    $self->{key} = defined($self->{option_results}->{key}) && $self->{option_results}->{key} ne '' ? $self->{option_results}->{key} : '';
+    $self->{cacert} = $self->{option_results}->{cacert} // '';
+    $self->{cert} = $self->{option_results}->{cert} // '';
+    $self->{key} = $self->{option_results}->{key} // '';
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
             next if ($addr eq '');
 
-            push @{$self->{sentinel}}, $addr . ($self->{sentinel_port} ne '' ? ':' . $self->{sentinel_port} : '') 
+            push @{$self->{sentinel}}, $addr . ':' . $self->{sentinel_port};
         }
     }
-    $self->{service} = defined($self->{option_results}->{service}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
+    $self->{service} = $self->{option_results}->{service} // '';
 
-    if ($self->{server} eq '' && scalar(@{$self->{sentinel}}) <= 0) {
+    if ($self->{server} eq '' && not @{$self->{sentinel}}) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --server or --sentinel option.');
         $self->{output}->option_exit();
     }
-    if (scalar(@{$self->{sentinel}}) > 0 && $self->{service} eq '') {
+    if (@{$self->{sentinel}} && $self->{service} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
         $self->{output}->option_exit();
     }
@@ -215,7 +215,7 @@ sub get_info {
     my ($self, %options) = @_;
 
     my $command_options;
-    if (scalar(@{$self->{sentinel}}) > 0) {
+    if (@{$self->{sentinel}}) {
         my ($host, $port) = $self->sentinels_get_master();
         $command_options = "-h '" . $host . "' -p " . $port;
     } else {
@@ -277,11 +277,11 @@ CA Certificate file to verify with (redis-cli >= 6.x mandatory).
 
 =item B<--cert>
 
-Client certificate to authenticate with.
+Client certificate to authenticate with (redis-cli >= 6.x mandatory).
 
 =item B<--key>
 
-Private key file to authenticate with.
+Private key file to authenticate with (redis-cli >= 6.x mandatory).
 
 =item B<--insecure>
 
