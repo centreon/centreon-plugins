@@ -36,6 +36,7 @@ sub check {
         my $instance = $chassis->{Id};
         
         next if ($self->check_filter(section => 'chassis', instance => $instance));
+        next if ($chassis->{ChassisType} eq 'Enclosure');
         $self->{components}->{chassis}->{total}++;
 
         $self->{output}->output_add(
