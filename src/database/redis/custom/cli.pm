@@ -52,6 +52,8 @@ sub new {
             'service:s'       => { name => 'service' },
             'tls'             => { name => 'tls' },
             'cacert:s'        => { name => 'cacert' },
+            'cert:s'          => { name => 'cert' },
+            'key:s'           => { name => 'key' },
             'insecure'        => { name => 'insecure' },
             'timeout:s'       => { name => 'timeout' }
         });
@@ -86,6 +88,8 @@ sub check_options {
     $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
     $self->{cacert} = defined($self->{option_results}->{cacert}) && $self->{option_results}->{cacert} ne '' ? $self->{option_results}->{cacert} : '';
+    $self->{cert} = defined($self->{option_results}->{cert}) && $self->{option_results}->{cert} ne '' ? $self->{option_results}->{cert} : '';
+    $self->{key} = defined($self->{option_results}->{key}) && $self->{option_results}->{key} ne '' ? $self->{option_results}->{key} : '';
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
@@ -172,6 +176,8 @@ sub get_extra_options {
     my $options = '';
     $options .= ' --tls' if ($self->{tls} == 1);
     $options .= " --cacert '" . $self->{cacert} . "'" if ($self->{cacert} ne '');
+    $options .= " --cert '" . $self->{cert} . "'" if ($self->{cert} ne '');
+    $options .= " --key '" . $self->{key} . "'" if ($self->{key} ne '');
     $options .= ' --insecure' if ($self->{insecure} == 1);
     $options .= " --user '" . $self->{username} . "'" if ($self->{username} ne '');
     $options .= " -a '" . $self->{password} . "'" if ($self->{password} ne '');
@@ -268,6 +274,14 @@ Establish a secure TLS connection (redis-cli >= 6.x mandatory).
 =item B<--cacert>
 
 CA Certificate file to verify with (redis-cli >= 6.x mandatory).
+
+=item B<--cert>
+
+Client certificate to authenticate with.
+
+=item B<--key>
+
+Private key file to authenticate with.
 
 =item B<--insecure>
 
