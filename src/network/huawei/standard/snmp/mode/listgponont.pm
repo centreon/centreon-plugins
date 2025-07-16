@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::gpon::snmp::mode::listont;
+package network::huawei::standard::snmp::mode::listgponont;
 
 use base qw(centreon::plugins::mode);
 
@@ -83,8 +83,9 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $result->{serial} = $self->get_serial_string($result->{serial});
+        my $serial = $self->get_serial_string($result->{serial});
         $result->{serial_hex} = uc(unpack("H*", $result->{serial}));
+        $result->{serial} = $serial;
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{name} !~ /$self->{option_results}->{filter_name}/) {
@@ -113,7 +114,7 @@ sub manage_selection {
             next;
         }
 
-        push @{$self->{otn}}, $result;
+        push @{$self->{ont}}, $result;
     }
 }
 
@@ -122,12 +123,12 @@ sub run {
 
     $self->manage_selection(%options);
 
-    if (scalar(keys @{$self->{otn}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No otn found matching.");
+    if (scalar(keys @{$self->{ont}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No ONT found matching.");
         $self->{output}->option_exit();
     }
 
-    foreach (sort @{$self->{otn}}) {
+    foreach (sort @{$self->{ont}}) {
         $self->{output}->output_add(
             long_msg =>
                 sprintf(
@@ -180,7 +181,7 @@ sub disco_show {
 
     $self->manage_selection(%options);
 
-    foreach (@{$self->{otn}}) {
+    foreach (@{$self->{ont}}) {
         $self->{output}->add_disco_entry(
             name       => $_->{name},
             serial     => $_->{serial},
@@ -196,21 +197,21 @@ __END__
 
 =head1 MODE
 
-List ONT.
+List ONT for GPON.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter otn by name (can be a regexp).
+Filter ONT by name (can be a regexp).
 
 =item B<--filter-serial>
 
-Filter otn by serial (can be a regexp).
+Filter ONT by serial (can be a regexp).
 
 =item B<--filter-status>
 
-Filter otn by status
+Filter ONT by status
 
 =back
 

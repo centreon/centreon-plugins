@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::gpon::snmp::mode::ontethernetport;
+package network::huawei::standard::snmp::mode::gponontethernetport;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -37,8 +37,8 @@ sub prefix_module_output {
 
     return sprintf("ONT '%s' - %s(%s) ethernet port %d (%s) ",
         $options{instance_value}->{display},
-        $options{instance_value}->{serial_hex},
         $options{instance_value}->{serial},
+        $options{instance_value}->{serial_hex},
         $options{instance_value}->{port_id},
         $options{instance_value}->{speed}
     );
@@ -225,13 +225,13 @@ __END__
 
 =head1 MODE
 
-Shows the status of a ONT module ETH port
+Shows the status of a ONT module ETH port for GPON
 
 =over 8
 
 =item B<--filter-serial>
 
-Filter otn by serial (can be a regexp).
+Filter ONT by serial (can be a regexp).
 
 =item B<--warning-status>
 

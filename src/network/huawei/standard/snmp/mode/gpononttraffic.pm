@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::huawei::gpon::snmp::mode::onttraffic;
+package network::huawei::standard::snmp::mode::gpononttraffic;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -32,8 +32,8 @@ sub prefix_module_output {
 
     return sprintf("ONT %s %s(%s) ",
         $options{instance_value}->{display},
-        $options{instance_value}->{serial_hex},
-        $options{instance_value}->{serial}
+        $options{instance_value}->{serial},
+        $options{instance_value}->{serial_hex}
     );
 }
 
@@ -231,13 +231,13 @@ __END__
 
 =head1 MODE
 
-Shows the traffic on the ONT module
+Shows the traffic on the ONT module for GPON
 
 =over 8
 
 =item B<--filter-serial>
 
-Filter otn by serial (can be a regexp).
+Filter ONT by serial (can be a regexp).
 
 =item B<--warning-traffic-in>
 
