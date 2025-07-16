@@ -18,7 +18,7 @@ package main;
 
 use Test2::V0;
 use FindBin;
-use lib "$FindBin::RealBin/../../../../src";
+use lib "$FindBin::RealBin/../../../src";
 use apps::redis::sentinel::mode::listclusters;
 use apps::redis::sentinel::custom::cli;
 
