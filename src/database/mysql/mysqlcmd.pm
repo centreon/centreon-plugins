@@ -53,7 +53,7 @@ sub new {
             'sql-errors-exit:s' => { name => 'sql_errors_exit', default => 'unknown' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'MYSQLCMD OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'MYSQL COMMAND OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{sqlmode_name} = $options{sqlmode_name};
@@ -209,8 +209,8 @@ sub set_version {
 
     $self->{is_mariadb} = 0;
     $self->{version} = $options{version};
-    # MariaDB: 5.5.5-10.1.36-MariaDB or 10.1.36-MariaDB
-    if ($self->{version} =~ /([0-9\.]*?)-MariaDB/i) {
+    # MariaDB: 5.5.5-10.1.36-MariaDB, 10.1.36-MariaDB or 11.4.4-2-MariaDB-enterprise-log
+    if ($self->{version} =~ /(?:\d\.\d\.\d-)?(\d+\.\d+\.\d+).*MariaDB/i) {
         $self->{version} = $1;
         $self->{is_mariadb} = 1;
     }
@@ -307,13 +307,13 @@ __END__
 
 =head1 NAME
 
-mysqlcmd global
+MySQL command global
 
 =head1 SYNOPSIS
 
-mysqlcmd class
+MySQL command class
 
-=head1 MYSQLCMD OPTIONS
+=head1 MYSQL COMMAND OPTIONS
 
 =over 8
 

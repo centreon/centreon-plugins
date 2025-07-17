@@ -13,6 +13,7 @@ ACS
 ADSL
 Alcatel
 allCapacity
+Alletra
 allsteps
 Ansible
 --api-filter-orgs
@@ -58,6 +59,8 @@ CX
 Cyberoam
 Datacore
 datasource
+datastore
+datastores
 dBm
 DC4
 dcdiag
@@ -98,6 +101,7 @@ Fortinet
 FQDN
 FreeBSD
 frsevent
+GCP
 --get-param
 GPON
 HAProxy
@@ -204,6 +208,7 @@ NTLMv2
 NTP
 NVOS
 --oid
+OAuth
 OID
 --oid-display
 --oid-extra-display
@@ -269,6 +274,7 @@ SRX
 SSDCapacity
 SSG
 SSH
+Stackdriver
 standAlone
 statefile
 --statefile-concat-cwd
@@ -308,12 +314,17 @@ v1
 v2
 v2c
 v3
+vCenter
+VCENTER
+vCPU
 vdom
 vdomain
 VDSL2
 Veeam
 VeloCloud
+vhost
 VM
+VMs
 VMware
 VMWARE
 vpn
