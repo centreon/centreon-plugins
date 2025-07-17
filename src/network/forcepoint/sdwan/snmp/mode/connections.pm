@@ -34,13 +34,13 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         {
-            label  => 'connections',
+            label  => 'total-connections',
             nlabel => 'connections.total.count',
             set    => {
                 key_values      => [ { name => 'fwConnNumber' } ],
                 output_template => 'Total connections : %s',
                 perfdatas       => [
-                    { label => 'connections', template => '%s', unit => 'con', min => 0 },
+                    { label => 'total_connections', template => '%s', unit => 'con', min => 0 },
                 ],
             }
         },
@@ -134,14 +134,14 @@ Check firewall connections.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Can be : connections, new-connections-sec, discarded-connections-sec, refused-connections-sec
-Example : --filter-counters='^connections$'
+Can be : total-connections, new-connections-sec, discarded-connections-sec, refused-connections-sec
+Example : --filter-counters='^total-connections$'
 
-=item B<--warning-connections>
+=item B<--warning-total-connections>
 
 Threshold in con.
 
-=item B<--critical-connections>
+=item B<--critical-total-connections>
 
 Threshold in con.
 
