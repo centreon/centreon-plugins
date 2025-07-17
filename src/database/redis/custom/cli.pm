@@ -85,11 +85,12 @@ sub check_options {
     $self->{username} = $self->{option_results}->{username} // '';
     $self->{password} = $self->{option_results}->{password} // '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
-    $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
     $self->{cacert} = $self->{option_results}->{cacert} // '';
     $self->{cert} = $self->{option_results}->{cert} // '';
     $self->{key} = $self->{option_results}->{key} // '';
+    # --tls is implied by --key and --cert
+    $self->{tls} = ($self->{cert} ne '' || $self->{key} ne '' || defined($self->{option_results}->{tls})) ? 1 : 0;
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
@@ -191,6 +192,7 @@ sub sentinels_get_master {
     foreach my $addr (@{$self->{sentinel}}) {
         my ($sentinel_host, $sentinel_port) = split(/:/, $addr);
         my $command_options = "-h '" . $sentinel_host . "' -p " . (defined($sentinel_port) ? $sentinel_port : 26379);
+        $command_options .= $self->get_extra_options();
         $command_options .= ' --no-raw';
         $command_options .= ' sentinel get-master-addr-by-name ' . $self->{service};
         my ($stdout, $exit_code) = $self->execute_command(
@@ -270,6 +272,7 @@ Redis port (default: 6379).
 =item B<--tls>
 
 Establish a secure TLS connection (redis-cli >= 6.x mandatory).
+--tls is automatically enabled when --cert or --key are used.
 
 =item B<--cacert>
 

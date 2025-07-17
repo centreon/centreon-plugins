@@ -81,11 +81,12 @@ sub check_options {
     $self->{username} = $self->{option_results}->{username} // '';
     $self->{password} = $self->{option_results}->{password} // '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
-    $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
     $self->{cacert} = $self->{option_results}->{cacert} // '';
     $self->{cert} = $self->{option_results}->{cert} // '';
     $self->{key} = $self->{option_results}->{key} // '';
+    # --tls is implied by --key and --cert
+    $self->{tls} = ($self->{cert} ne '' || $self->{key} ne '' || defined($self->{option_results}->{tls})) ? 1 : 0;
 
     if ($self->{server} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --server option.');
@@ -227,6 +228,7 @@ Sentinel port (default: 26379).
 =item B<--tls>
 
 Establish a secure TLS connection (redis-cli >= 6.x mandatory).
+--tls is automatically enabled when --cert or --key are used.
 
 =item B<--cacert>
 
