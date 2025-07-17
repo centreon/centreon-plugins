@@ -109,7 +109,7 @@ sub set_counters {
             }
         },
         { label => 'exchanges-inflight', nlabel => 'route.exchanges.inflight.count', set => {
-                key_values => [ { name => 'inFlight', diff => 1 }, { name => 'name' }, { name => 'context' } ],
+                key_values => [ { name => 'inFlight' }, { name => 'name' }, { name => 'context' } ],
                 output_template => 'inflight: %s',
                 closure_custom_perfdata => $self->can('custom_exchange_perfdata')
             }
