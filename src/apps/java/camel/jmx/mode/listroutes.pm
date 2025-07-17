@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::java::camel::jmx::jmx::mode::listroutes;
+package apps::java::camel::jmx::mode::listroutes;
 
 use base qw(centreon::plugins::mode);
 
@@ -61,9 +61,11 @@ sub manage_selection {
         my ($name, $context);
 
         $name = $1 if ($mbean =~ /name=(.*?)(?:,|$)/);
-        $context = $1 if ($context =~ /context=(.*?)(?:,|$)/);
+        $context = $1 if ($mbean =~ /context=(.*?)(?:,|$)/);
         $name =~ s/^"(.*)"$/$1/;
+        $name =~ s/<.*?>//g;
         $context =~ s/^"(.*)"$/$1/;
+        $context =~ s/<.*?>//g;
 
         $results->{$name} = { name => $name, context => $context, state => $datas->{$mbean}->{State} };
     }
