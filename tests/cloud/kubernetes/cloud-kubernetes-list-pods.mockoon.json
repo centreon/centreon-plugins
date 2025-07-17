@@ -1,0 +1,164 @@
+{
+  "uuid": "0021a5a9-e58d-4be4-84df-389d001c2eda",
+  "lastMigration": 33,
+  "name": "Kube",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "f219925b-ea52-4c91-a159-4fe4a3dfa27f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/pods",
+      "responses": [
+        {
+          "uuid": "286bb17e-ed98-425b-9e79-655571488900",
+          "body": "{\n  \"kind\": \"PodList\",\n  \"apiVersion\": \"v1\",\n  \"metadata\": {\n    \"selfLink\": \"/api/v1/pods\",\n    \"resourceVersion\": \"123456\"\n  },\n  \"items\": [\n    {\n      \"metadata\": {\n        \"name\": \"test-1\",\n        \"namespace\": \"default\",\n        \"uid\": \"uuid-1234\",\n        \"creationTimestamp\": \"2025-06-20T10:00:00Z\",\n        \"labels\": {\n          \"app\": \"test\",\n          \"pod-template-hash\": \"12345\"\n        }\n      },\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"test\",\n            \"image\": \"test:2.19.3\",\n            \"ports\": [\n              {\n                \"containerPort\": 80,\n                \"protocol\": \"TCP\"\n              }\n            ],\n            \"resources\": {\n              \"limits\": {\n                \"cpu\": \"500m\",\n                \"memory\": \"128Mi\"\n              },\n              \"requests\": {\n                \"cpu\": \"250m\",\n                \"memory\": \"64Mi\"\n              }\n            }\n          }\n        ],\n        \"nodeName\": \"test-1\",\n        \"restartPolicy\": \"Always\"\n      },\n      \"status\": {\n        \"phase\": \"Running\",\n        \"conditions\": [\n          {\n            \"type\": \"Ready\",\n            \"status\": \"True\",\n            \"lastProbeTime\": null,\n            \"lastTransitionTime\": \"2025-06-20T10:05:00Z\"\n          }\n        ],\n        \"hostIP\": \"192.168.1.10\",\n        \"podIP\": \"192.168.1.210\",\n        \"startTime\": \"2025-06-20T10:00:30Z\",\n        \"containerStatuses\": [\n          {\n            \"name\": \"test\",\n            \"state\": {\n              \"running\": {\n                \"startedAt\": \"2025-06-20T10:01:00Z\"\n              }\n            },\n            \"ready\": true,\n            \"restartCount\": 0,\n            \"image\": \"test:2.19.3\",\n            \"imageID\": \"docker-pullable://test@sha256:abcdef0\"\n          }\n        ]\n      }\n    },\n    {\n      \"metadata\": {\n        \"name\": \"test-2\",\n        \"namespace\": \"default\",\n        \"uid\": \"uuid-4567\",\n        \"creationTimestamp\": \"2025-06-20T10:00:00Z\",\n        \"labels\": {\n          \"app\": \"test\",\n          \"pod-template-hash\": \"12345\"\n        }\n      },\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"test2\",\n            \"image\": \"test:2.19.4\",\n            \"ports\": [\n              {\n                \"containerPort\": 80,\n                \"protocol\": \"TCP\"\n              }\n            ],\n            \"resources\": {\n              \"limits\": {\n                \"cpu\": \"500m\",\n                \"memory\": \"128Mi\"\n              },\n              \"requests\": {\n                \"cpu\": \"250m\",\n                \"memory\": \"64Mi\"\n              }\n            }\n          }\n        ],\n        \"nodeName\": \"test-2\",\n        \"restartPolicy\": \"Always\"\n      },\n      \"status\": {\n        \"phase\": \"Running\",\n        \"conditions\": [\n          {\n            \"type\": \"Ready\",\n            \"status\": \"True\",\n            \"lastProbeTime\": null,\n            \"lastTransitionTime\": \"2025-06-20T10:05:00Z\"\n          }\n        ],\n        \"hostIP\": \"192.168.1.10\",\n        \"startTime\": \"2025-06-20T10:00:30Z\",\n        \"containerStatuses\": [\n          {\n            \"name\": \"test2\",\n            \"state\": {\n              \"running\": {\n                \"startedAt\": \"2025-06-20T10:01:00Z\"\n              }\n            },\n            \"ready\": true,\n            \"restartCount\": 0,\n            \"image\": \"test:2.19.3\",\n            \"imageID\": \"docker-pullable://test@sha256:abcdef1\"\n          }\n        ]\n      }\n    }    \n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "228d9145-732e-4af0-986c-dd6c98684076",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/namespaces/flux-test/pods",
+      "responses": [
+        {
+          "uuid": "6f062f6c-3bb3-47f8-a326-8ae81fe8aa79",
+          "body": "{\n  \"kind\": \"PodList\",\n  \"apiVersion\": \"v1\",\n  \"metadata\": {\n    \"selfLink\": \"/api/v1/pods\",\n    \"resourceVersion\": \"123456\"\n  },\n  \"items\": [\n    {\n      \"metadata\": {\n        \"name\": \"test-1\",\n        \"namespace\": \"default\",\n        \"uid\": \"uuid-1234\",\n        \"creationTimestamp\": \"2025-06-20T10:00:00Z\",\n        \"labels\": {\n          \"app\": \"test\",\n          \"pod-template-hash\": \"12345\"\n        }\n      },\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"test\",\n            \"image\": \"test:2.19.3\",\n            \"ports\": [\n              {\n                \"containerPort\": 80,\n                \"protocol\": \"TCP\"\n              }\n            ],\n            \"resources\": {\n              \"limits\": {\n                \"cpu\": \"500m\",\n                \"memory\": \"128Mi\"\n              },\n              \"requests\": {\n                \"cpu\": \"250m\",\n                \"memory\": \"64Mi\"\n              }\n            }\n          }\n        ],\n        \"nodeName\": \"test-1\",\n        \"restartPolicy\": \"Always\"\n      },\n      \"status\": {\n        \"phase\": \"Running\",\n        \"conditions\": [\n          {\n            \"type\": \"Ready\",\n            \"status\": \"True\",\n            \"lastProbeTime\": null,\n            \"lastTransitionTime\": \"2025-06-20T10:05:00Z\"\n          }\n        ],\n        \"hostIP\": \"192.168.1.10\",\n        \"podIP\": \"192.168.1.210\",\n        \"startTime\": \"2025-06-20T10:00:30Z\",\n        \"containerStatuses\": [\n          {\n            \"name\": \"test\",\n            \"state\": {\n              \"running\": {\n                \"startedAt\": \"2025-06-20T10:01:00Z\"\n              }\n            },\n            \"ready\": true,\n            \"restartCount\": 0,\n            \"image\": \"test:2.19.3\",\n            \"imageID\": \"docker-pullable://test@sha256:abcdef0\"\n          }\n        ]\n      }\n    },\n    {\n      \"metadata\": {\n        \"name\": \"test-2\",\n        \"namespace\": \"default\",\n        \"uid\": \"uuid-4567\",\n        \"creationTimestamp\": \"2025-06-20T10:00:00Z\",\n        \"labels\": {\n          \"app\": \"test\",\n          \"pod-template-hash\": \"12345\"\n        }\n      },\n      \"spec\": {\n        \"containers\": [\n          {\n            \"name\": \"test2\",\n            \"image\": \"test:2.19.4\",\n            \"ports\": [\n              {\n                \"containerPort\": 80,\n                \"protocol\": \"TCP\"\n              }\n            ],\n            \"resources\": {\n              \"limits\": {\n                \"cpu\": \"500m\",\n                \"memory\": \"128Mi\"\n              },\n              \"requests\": {\n                \"cpu\": \"250m\",\n                \"memory\": \"64Mi\"\n              }\n            }\n          }\n        ],\n        \"nodeName\": \"test-2\",\n        \"restartPolicy\": \"Always\"\n      },\n      \"status\": {\n        \"phase\": \"Running\",\n        \"conditions\": [\n          {\n            \"type\": \"Ready\",\n            \"status\": \"True\",\n            \"lastProbeTime\": null,\n            \"lastTransitionTime\": \"2025-06-20T10:05:00Z\"\n          }\n        ],\n        \"hostIP\": \"192.168.1.10\",\n        \"startTime\": \"2025-06-20T10:00:30Z\",\n        \"containerStatuses\": [\n          {\n            \"name\": \"test2\",\n            \"state\": {\n              \"running\": {\n                \"startedAt\": \"2025-06-20T10:01:00Z\"\n              }\n            },\n            \"ready\": true,\n            \"restartCount\": 0,\n            \"image\": \"test:2.19.3\",\n            \"imageID\": \"docker-pullable://test@sha256:abcdef1\"\n          }\n        ]\n      }\n    }    \n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "cd25c112-e540-4b7b-ba99-664b457ef10a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/nodes",
+      "responses": [
+        {
+          "uuid": "4f7bd468-3ae6-456a-8035-6497115e96d3",
+          "body": "{\n  \"kind\": \"NodeList\",\n  \"apiVersion\": \"v1\",\n  \"metadata\": {\n    \"resourceVersion\": \"123456\"\n  },\n  \"items\": [\n    {\n      \"metadata\": {\n        \"name\": \"node-1\",\n        \"uid\": \"uuid-node-1\",\n        \"creationTimestamp\": \"2025-06-25T10:00:00Z\",\n        \"labels\": {\n          \"kubernetes.io/hostname\": \"test-1\",\n          \"beta.kubernetes.io/os\": \"linux\",\n          \"beta.kubernetes.io/arch\": \"amd64\"\n        }\n      },\n      \"spec\": {\n        \"podCIDR\": \"10.244.0.0/24\",\n        \"providerID\": \"fake://test-1\",\n        \"taints\": []\n      },\n      \"status\": {\n        \"capacity\": {\n          \"cpu\": \"4\",\n          \"memory\": \"8192Mi\",\n          \"pods\": \"110\"\n        },\n        \"allocatable\": {\n          \"cpu\": \"4\",\n          \"memory\": \"8192Mi\",\n          \"pods\": \"110\"\n        },\n        \"conditions\": [\n          {\n            \"type\": \"Ready\",\n            \"status\": \"True\",\n            \"lastHeartbeatTime\": \"2025-06-25T10:01:00Z\",\n            \"lastTransitionTime\": \"2025-06-25T10:00:30Z\",\n            \"reason\": \"KubeletReady\",\n            \"message\": \"kubelet is posting ready status\"\n          }\n        ],\n        \"addresses\": [\n          {\n            \"type\": \"InternalIP\",\n            \"address\": \"192.168.1.101\"\n          },\n          {\n            \"type\": \"Hostname\",\n            \"address\": \"test-1\"\n          }\n        ],\n        \"daemonEndpoints\": {\n          \"kubeletEndpoint\": {\n            \"Port\": 10250\n          }\n        },\n        \"nodeInfo\": {\n          \"machineID\": \"machine-id-test-1\",\n          \"systemUUID\": \"uuid-test-1\",\n          \"bootID\": \"boot-id-test-1\",\n          \"kernelVersion\": \"5.1.0\",\n          \"osImage\": \"Ubuntu 22.04.1 LTS\",\n          \"containerRuntimeVersion\": \"docker://20.1.7\",\n          \"kubeletVersion\": \"v1.28.0\",\n          \"kubeProxyVersion\": \"v1.28.0\",\n          \"operatingSystem\": \"linux\",\n          \"architecture\": \"amd64\"\n        }\n      }\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "f219925b-ea52-4c91-a159-4fe4a3dfa27f"
+    },
+    {
+      "type": "route",
+      "uuid": "228d9145-732e-4af0-986c-dd6c98684076"
+    },
+    {
+      "type": "route",
+      "uuid": "cd25c112-e540-4b7b-ba99-664b457ef10a"
+    }
+  ],
+  "proxyMode": true,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
