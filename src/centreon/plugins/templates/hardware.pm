@@ -77,7 +77,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'component:s'            => { name => 'component', default => '.*' },
-        'no-component:s'         => { name => 'no_component' },
+        'no-component:s'         => { name => 'no_component', default => 'critical' },
         'threshold-overload:s@'  => { name => 'threshold_overload' },
         'add-name-instance'      => { name => 'add_name_instance' },
         'no-component-count'     => { name => 'no_component_count' }
@@ -137,19 +137,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    use Data::Dumper;
-    print Dumper("Hardware template check_options start here");
-
-    print Dumper("\$self->{option_results}->{no_component} is defined ? ".defined($self->{option_results}->{no_component}));
-    print Dumper("\$self->{option_results}->{no_component} ne '' ? ".($self->{option_results}->{no_component} ne ''));
-
-    if (defined($self->{option_results}->{no_component}) && ($self->{option_results}->{no_component} ne '')) {
-        $self->{no_components} = $self->{option_results}->{no_component};
-    } else {
-        print Dumper("\$self->{option_results}->{no_component} not defined so set as critical");
-        $self->{no_components} = 'critical';
-        print Dumper("\$self->{no_components} =".$self->{no_components});
-    }
+    # For compatibility both $self->{option_results}->{no_component} and $self->{no_components} are initialized.
+    # If unset or empty the default value 'critical' is used.
+    $self->{option_results}->{no_component} = $self->{no_components} = $self->{option_results}->{no_component} || 'critical';
 
     if ($self->{filter_exclude} == 1) {
         $self->{filter} = [];
@@ -324,10 +314,6 @@ sub display {
             )
         );
     }
-
-    print Dumper("\$total_components = ".$total_components);
-    print Dumper("(option set by the user) : \$self->{option_results}->{no_component} = ".$self->{option_results}->{no_component});
-        print Dumper("(option in self after check_option function) : \$self->{no_components} = ".$self->{no_components});
 
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
         $self->{output}->output_add(
