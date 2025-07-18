@@ -154,11 +154,11 @@ __END__
 
 =head1 NAME
 
-REDIS perlmod
+REDIS Perl mode
 
 =head1 SYNOPSIS
 
-Redis perlmod
+Redis Perl mode
 
 =head1 REDIS OPTIONS
 
