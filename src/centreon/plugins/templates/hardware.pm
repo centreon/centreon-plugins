@@ -130,6 +130,8 @@ sub new {
 
     $self->{request} = [];
 
+    $options{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL HARDWARE OPTIONS', once => 1) if $options{display_template_help};
+
     return $self;
 }
 
@@ -513,9 +515,9 @@ sub get_severity {
 
 __END__
 
-=head1 MODE
+=head1 GLOBAL HARDWARE OPTIONS
 
-Default template for hardware. Should be extended.
+Global options for hardware.
 
 =over 8
 
