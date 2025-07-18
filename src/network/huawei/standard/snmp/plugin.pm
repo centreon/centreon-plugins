@@ -30,12 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'              => 'centreon::common::huawei::standard::snmp::mode::cpu',
-        'hardware'         => 'centreon::common::huawei::standard::snmp::mode::hardware',
-        'interfaces'       => 'centreon::common::huawei::standard::snmp::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'centreon::common::huawei::standard::snmp::mode::memory',
-        'uptime'           => 'snmp_standard::mode::uptime'
+        'cpu'                    => 'centreon::common::huawei::standard::snmp::mode::cpu',
+        'hardware'               => 'centreon::common::huawei::standard::snmp::mode::hardware',
+        'interfaces'             => 'centreon::common::huawei::standard::snmp::mode::interfaces',
+        'list-interfaces'        => 'snmp_standard::mode::listinterfaces',
+        'list-gpon-ont'          => 'network::huawei::standard::snmp::mode::listgponont',
+        'memory'                 => 'centreon::common::huawei::standard::snmp::mode::memory',
+        'gpon-ont-ethernet-port' => 'network::huawei::standard::snmp::mode::gponontethernetport',
+        'gpon-ont-health'        => 'network::huawei::standard::snmp::mode::gpononthealth',
+        'gpon-ont-traffic'       => 'network::huawei::standard::snmp::mode::gpononttraffic',
+        'uptime'                 => 'snmp_standard::mode::uptime'
     };
 
     return $self;

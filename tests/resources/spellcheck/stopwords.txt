@@ -40,6 +40,7 @@ blocked-by-uf
 BPL
 --cacert-file
 cardtemperature
+celsius
 centreon
 Centreon
 centreonvault
@@ -102,6 +103,7 @@ FreeBSD
 frsevent
 GCP
 --get-param
+GPON
 HAProxy
 HashiCorp
 hashicorpvault
@@ -213,6 +215,7 @@ OID
 --oid-filter
 OIDs
 okta
+OLT
 oneaccess-sys-mib
 OpenMetrics
 OSPF
