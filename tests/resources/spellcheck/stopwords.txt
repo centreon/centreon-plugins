@@ -247,6 +247,7 @@ ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
+redis-cli
 rsrp
 rsrq
 rssi
@@ -286,6 +287,7 @@ Teldat
 temperatureambient
 timeframe
 TiMOS
+TLS
 TMM
 tmnxSasAlarmInputDescription
 topic-messages-inflighted

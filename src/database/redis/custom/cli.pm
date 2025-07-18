@@ -52,6 +52,8 @@ sub new {
             'service:s'       => { name => 'service' },
             'tls'             => { name => 'tls' },
             'cacert:s'        => { name => 'cacert' },
+            'cert:s'          => { name => 'cert' },
+            'key:s'           => { name => 'key' },
             'insecure'        => { name => 'insecure' },
             'timeout:s'       => { name => 'timeout' }
         });
@@ -76,31 +78,34 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{ssh_hostname} = defined($self->{option_results}->{ssh_hostname}) && $self->{option_results}->{ssh_hostname} ne '' ? $self->{option_results}->{ssh_hostname} : '';
-    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
-    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 6379;
-    $self->{sentinel_port} = defined($self->{option_results}->{sentinel_port}) && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
-    $self->{username} = defined($self->{option_results}->{password}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
-    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{ssh_hostname} = $self->{option_results}->{ssh_hostname} // '';
+    $self->{server} = $self->{option_results}->{server} // '';
+    $self->{port} = $self->{option_results}->{port} || 6379;
+    $self->{sentinel_port} = $self->{option_results}->{sentinel_port} && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
+    $self->{username} = $self->{option_results}->{username} // '';
+    $self->{password} = $self->{option_results}->{password} // '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
-    $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
-    $self->{cacert} = defined($self->{option_results}->{cacert}) && $self->{option_results}->{cacert} ne '' ? $self->{option_results}->{cacert} : '';
+    $self->{cacert} = $self->{option_results}->{cacert} // '';
+    $self->{cert} = $self->{option_results}->{cert} // '';
+    $self->{key} = $self->{option_results}->{key} // '';
+    # --tls is implied by --key and --cert
+    $self->{tls} = ($self->{cert} ne '' || $self->{key} ne '' || defined($self->{option_results}->{tls})) ? 1 : 0;
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
             next if ($addr eq '');
 
-            push @{$self->{sentinel}}, $addr . ($self->{sentinel_port} ne '' ? ':' . $self->{sentinel_port} : '') 
+            push @{$self->{sentinel}}, $addr . ':' . $self->{sentinel_port};
         }
     }
-    $self->{service} = defined($self->{option_results}->{service}) && $self->{option_results}->{service} ne '' ? $self->{option_results}->{service} : '';
+    $self->{service} = $self->{option_results}->{service} // '';
 
-    if ($self->{server} eq '' && scalar(@{$self->{sentinel}}) <= 0) {
+    if ($self->{server} eq '' && not @{$self->{sentinel}}) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --server or --sentinel option.');
         $self->{output}->option_exit();
     }
-    if (scalar(@{$self->{sentinel}}) > 0 && $self->{service} eq '') {
+    if (@{$self->{sentinel}} && $self->{service} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
         $self->{output}->option_exit();
     }
@@ -172,6 +177,8 @@ sub get_extra_options {
     my $options = '';
     $options .= ' --tls' if ($self->{tls} == 1);
     $options .= " --cacert '" . $self->{cacert} . "'" if ($self->{cacert} ne '');
+    $options .= " --cert '" . $self->{cert} . "'" if ($self->{cert} ne '');
+    $options .= " --key '" . $self->{key} . "'" if ($self->{key} ne '');
     $options .= ' --insecure' if ($self->{insecure} == 1);
     $options .= " --user '" . $self->{username} . "'" if ($self->{username} ne '');
     $options .= " -a '" . $self->{password} . "'" if ($self->{password} ne '');
@@ -185,6 +192,7 @@ sub sentinels_get_master {
     foreach my $addr (@{$self->{sentinel}}) {
         my ($sentinel_host, $sentinel_port) = split(/:/, $addr);
         my $command_options = "-h '" . $sentinel_host . "' -p " . (defined($sentinel_port) ? $sentinel_port : 26379);
+        $command_options .= $self->get_extra_options();
         $command_options .= ' --no-raw';
         $command_options .= ' sentinel get-master-addr-by-name ' . $self->{service};
         my ($stdout, $exit_code) = $self->execute_command(
@@ -209,7 +217,7 @@ sub get_info {
     my ($self, %options) = @_;
 
     my $command_options;
-    if (scalar(@{$self->{sentinel}}) > 0) {
+    if (@{$self->{sentinel}}) {
         my ($host, $port) = $self->sentinels_get_master();
         $command_options = "-h '" . $host . "' -p " . $port;
     } else {
@@ -264,10 +272,19 @@ Redis port (default: 6379).
 =item B<--tls>
 
 Establish a secure TLS connection (redis-cli >= 6.x mandatory).
+--tls is automatically enabled when --cert or --key are used.
 
 =item B<--cacert>
 
 CA Certificate file to verify with (redis-cli >= 6.x mandatory).
+
+=item B<--cert>
+
+Client certificate to authenticate with (redis-cli >= 6.x mandatory).
+
+=item B<--key>
+
+Private key file to authenticate with (redis-cli >= 6.x mandatory).
 
 =item B<--insecure>
 
