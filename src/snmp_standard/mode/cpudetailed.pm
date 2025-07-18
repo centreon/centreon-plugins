@@ -255,20 +255,98 @@ __END__
 
 =head1 MODE
 
-Check system CPUs (UCD-SNMP-MIB) (User, Nice, System, Idle, Wait, Kernel, Interrupt, SoftIRQ, Steal, Guest, GuestNice)
+Check system CPUs (UCD-SNMP-MIB) (C<User>, C<Nice>, C<System>, C<Idle>, C<Wait>, C<Kernel>, C<Interrupt>, C<SoftIRQ>, C<Steal>, C<Guest>, C<GuestNice>)
 An average of all CPUs.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-guest>
 
-Warning threshold in percent.
-Can be: 'user', 'nice', 'system', 'idle', 'wait', 'kernel', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
+Threshold in percentage.
 
-=item B<--critical-*>
+=item B<--critical-guest>
 
-Critical threshold in percent.
-Can be: 'user', 'nice', 'system', 'idle', 'wait', 'kernel', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
+Threshold in percentage.
+
+=item B<--warning-guestnice>
+
+Threshold in percentage.
+
+=item B<--critical-guestnice>
+
+Threshold in percentage.
+
+=item B<--warning-idle>
+
+Threshold in percentage.
+
+=item B<--critical-idle>
+
+Threshold in percentage.
+
+=item B<--warning-interrupt>
+
+Threshold in percentage.
+
+=item B<--critical-interrupt>
+
+Threshold in percentage.
+
+=item B<--warning-kernel>
+
+Threshold in percentage.
+
+=item B<--critical-kernel>
+
+Threshold in percentage.
+
+=item B<--warning-nice>
+
+Threshold in percentage.
+
+=item B<--critical-nice>
+
+Threshold in percentage.
+
+=item B<--warning-softirq>
+
+Threshold in percentage.
+
+=item B<--critical-softirq>
+
+Threshold in percentage.
+
+=item B<--warning-steal>
+
+Threshold in percentage.
+
+=item B<--critical-steal>
+
+Threshold in percentage.
+
+=item B<--warning-system>
+
+Threshold in percentage.
+
+=item B<--critical-system>
+
+Threshold in percentage.
+
+=item B<--warning-user>
+
+Threshold in percentage.
+
+=item B<--critical-user>
+
+Threshold in percentage.
+
+=item B<--warning-wait>
+
+Threshold in percentage.
+
+=item B<--critical-wait>
+
+Threshold in percentage.
 
 =back
 
