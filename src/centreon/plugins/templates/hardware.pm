@@ -77,7 +77,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'component:s'            => { name => 'component', default => '.*' },
-        'no-component:s'         => { name => 'no_component' },
+        'no-component:s'         => { name => 'no_component', default => 'critical' },
         'threshold-overload:s@'  => { name => 'threshold_overload' },
         'add-name-instance'      => { name => 'add_name_instance' },
         'no-component-count'     => { name => 'no_component_count' }
@@ -137,13 +137,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
+    # For compatibility both $self->{option_results}->{no_component} and $self->{no_components} are initialized.
+    # If unset or empty the default value 'critical' is used.
+    $self->{option_results}->{no_component} = $self->{no_components} = $self->{option_results}->{no_component} || 'critical';
 
     if ($self->{filter_exclude} == 1) {
         $self->{filter} = [];

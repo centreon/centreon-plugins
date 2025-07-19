@@ -48,7 +48,7 @@ sub check {
     return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_bladeTemperatureTable}})) {
-        next if ($oid !~ /^$mapping->{oid_bladeTemperatureTable}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{bladeTemperatureIndex}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_bladeTemperatureTable}, instance => $instance);
 

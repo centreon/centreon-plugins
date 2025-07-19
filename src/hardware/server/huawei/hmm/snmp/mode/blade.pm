@@ -66,7 +66,7 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{blade_id}) || $self->{option_results}->{blade_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please set --blade-id option.");
