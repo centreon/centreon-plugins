@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::java::camel::jmx::mode::listroutes;
+package apps::java::cxf::jmx::mode::listservices;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-my @mapping = ('name', 'context', 'state');
+my @mapping = ('name', 'state');
 
 sub new {
     my ($class, %options) = @_;
@@ -48,9 +48,9 @@ sub manage_selection {
 
     my $request = [
         {
-            mbean => 'org.apache.camel:context=*,name=*,type=routes',
+            mbean => 'org.apache.cxf:bus.id=*,type=Performance.Counter.Server,service=*,port=*',
             attributes => [
-                { name => 'State' }
+                { name => 'NumInvocations' }
             ] 
         }
     ];
@@ -58,16 +58,16 @@ sub manage_selection {
 
     my $results = {}; 
     foreach my $mbean (keys %$datas) {
-        my ($name, $context);
+        my ($service, $port);
 
-        $name = $1 if ($mbean =~ /name=(.*?)(?:,|$)/);
-        $context = $1 if ($mbean =~ /context=(.*?)(?:,|$)/);
-        $name =~ s/^"(.*)"$/$1/;
-        $name =~ s/<.*?>//g;
-        $context =~ s/^"(.*)"$/$1/;
-        $context =~ s/<.*?>//g;
+        $service = $1 if ($mbean =~ /service=(.*?)(?:,|$)/);
+        $port = $1 if ($mbean =~ /port=(.*?)(?:,|$)/);
+        $service =~ s/^"(.*)"$/$1/;
+        $port =~ s/^"(.*)"$/$1/;
 
-        $results->{$name} = { name => $name, context => $context, state => $datas->{$mbean}->{State} };
+        my $name = $service . ':' . $port;
+
+        $results->{$name} = { name => $name, state => $datas->{$mbean}->{State} };
     }
 
     return $results;
@@ -85,7 +85,7 @@ sub run {
     
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List routes:'
+        short_msg => 'List services:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -114,7 +114,7 @@ __END__
 
 =head1 MODE
 
-List routes.
+List services.
 
 =over 8
 
