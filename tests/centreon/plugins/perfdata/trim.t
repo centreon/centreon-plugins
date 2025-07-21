@@ -5,7 +5,7 @@ use Test2::V0;
 use Test2::Plugin::NoWarnings echo => 1;
 
 use FindBin;
-use lib "$FindBin::RealBin/../../../src";
+use lib "$FindBin::RealBin/../../../../src";
 use centreon::plugins::perfdata;
 
 my $perfdata = centreon::plugins::perfdata->new();

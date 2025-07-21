@@ -13,6 +13,7 @@ ACS
 ADSL
 Alcatel
 allCapacity
+Alletra
 allsteps
 Ansible
 --api-filter-orgs
@@ -57,6 +58,8 @@ CX
 Cyberoam
 Datacore
 datasource
+datastore
+datastores
 dBm
 DC4
 dcdiag
@@ -308,12 +311,17 @@ v1
 v2
 v2c
 v3
+vCenter
+VCENTER
+vCPU
 vdom
 vdomain
 VDSL2
 Veeam
 VeloCloud
+vhost
 VM
+VMs
 VMware
 VMWARE
 vpn

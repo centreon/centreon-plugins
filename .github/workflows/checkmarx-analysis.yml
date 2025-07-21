@@ -21,43 +21,43 @@ on:
         required: true
 
 jobs:
-  build:
-    name: Binary preparation
+  pipeline-scan:
+    name: Run a pipeline scan
     runs-on: ubuntu-24.04
-    outputs:
-      enable_analysis: ${{ steps.routing.outputs.enable_analysis }}
 
     steps:
       - name: routing
-        id: routing
         run: |
           # Quality gate settings
           ENABLE_QG="true"
-          if [[ "${{ vars.CHECKMARX_QUALITY_GATE }}" != "true" ]]; then
+          if [[ "${{ vars.CHECKMARX_QUALITY_GATE }}" != "yes" ]]; then
             # disabling all QG in case of incident with the service
             ENABLE_QG="false"
             echo "Skipping analysis. Caused by QG override"
           elif [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.user.id }}" == "49699333" ]]; then
             # disabling the QG in case of pull request opened by dependabot bot
-            # As dependabot will ne be able to access GH secrets
+            # As dependabot will not be able to access GH secrets
             ENABLE_QG="false"
             echo "Skipping analysis. Caused by dependabot PR"
           fi
-          echo "enable_analysis=$ENABLE_QG" >> $GITHUB_OUTPUT
-          cat $GITHUB_OUTPUT
 
-  pipeline-scan:
-    needs: [build]
-    name: Run a pipeline scan
-    runs-on: ubuntu-24.04
-    if: needs.build.outputs.enable_analysis == 'true'
+          # Check forced full scan
+          SCAN_MODE="--sast-incremental"
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ vars.CHECKMARX_FORCE_FULL_SCAN }}" == "yes" ]]; then
+            SCAN_MODE="--sast-incremental=false"
+          fi
 
-    steps:
+          echo "scan_mode=$SCAN_MODE" >> $GITHUB_ENV
+          echo "enable_analysis=$ENABLE_QG" >> $GITHUB_ENV
+          cat $GITHUB_ENV
+
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        if: env.enable_analysis  == 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Checkmarx One CLI Action
-        uses: checkmarx/ast-github-action@88c60148b7b9689d67eb05bf66a65bbb871f2f2c # v.2.3.20
+        if: env.enable_analysis  == 'true'
+        uses: checkmarx/ast-github-action@88c60148b7b9689d67eb05bf66a65bbb871f2f2c # v2.3.20
         with:
           project_name: ${{ inputs.module_name }}
           base_uri: ${{ secrets.base_uri }}
@@ -65,4 +65,4 @@ jobs:
           cx_client_id: ${{ secrets.cx_client_id }}
           cx_client_secret: ${{ secrets.cx_client_secret }}
           source_dir: "./"
-          additional_params: --file-filter "!**/.githooks/**" --scan-types "sast,sca,api-security"
+          additional_params: --scan-types "sast,sca,api-security" ${{ env.scan_mode }}
