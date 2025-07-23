@@ -108,6 +108,7 @@ hashicorpvault
 HPE
 HTTPR
 Huawei
+ICMP
 ifAlias
 ifDesc
 ifName
@@ -144,6 +145,7 @@ kccevent
 keepass
 Keysight
 Kubernetes
+LatenceTech
 ldap
 LDP
 --legacy-api-beta
@@ -296,6 +298,7 @@ total-oper-up
 tower-cli
 TrendMicro
 tsdb-version
+TWAMP
 UCD
 UDP
 unicast
