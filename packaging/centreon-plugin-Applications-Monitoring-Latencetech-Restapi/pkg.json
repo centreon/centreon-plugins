@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Latencetech-Restapi",
+    "pkg_summary": "Centreon Plugin LatenceTech Restapi",
+    "plugin_name": "centreon_latencetech_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/latencetech/restapi/"
+    ]
+}

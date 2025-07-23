@@ -1,0 +1,154 @@
+{
+  "uuid": "b09e1a07-2cb1-462d-a3ce-a1de418a25c7",
+  "lastMigration": 32,
+  "name": "Mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "2a664365-e4a5-470d-a21e-08006280ba55",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/ci",
+      "responses": [
+        {
+          "uuid": "b4da99eb-b02f-41c1-8316-eb6a146e9096",
+          "body": "{\n  \"CustomerID\": \"0\",\n  \"AgentID\": \"0\",\n  \"KPIs\": {\n    \"tcpMs\": 8.94,\n    \"udpMs\": 9.53,\n    \"httpMs\": 9.09,\n    \"httpsMs\": 18,\n    \"icmpMs\": 9.2,\n    \"twampMs\": 9.45,\n    \"downloadThroughputMbps\": 1383.58,\n    \"uploadThroughputMbps\": 950.06,\n    \"networkLatencyMs\": 9.32,\n    \"applicationLatencyMs\": 11.39,\n    \"packetLossRatePercent\": 0.07,\n    \"jitterMs\": 6.1,\n    \"volatilityPercent\": 46.2,\n    \"networkStabilityPercent\": 65.5,\n    \"connectivityHealth\": \"OK\",\n    \"qualityOfExperience\": 4.921,\n    \"expectedLatencyMS\": 40,\n    \"expectedStabilityPercent\": 98,\n    \"expectedPacketLossPercent\": 0.1\n  },\n  \"Attributes\": {\n    \"time\": \"2025-03-26T14:01:23.305Z\",\n    \"agentName\": \"GenericQoSAgent\",\n    \"hardware\": \"Not-Applicable\",\n    \"networkName\": \"OutScale-Network\",\n    \"networkType\": \"Outscale\",\n    \"gpsPos\": \"48.864716,2.349014\",\n    \"details\": \"Generic QoSAgent preinstalled with OMI\"\n  },\n  \"APInotes\": {\n    \"comment\": \"Results from LatenceTech ConnectivityInsight API version 2.1\",\n    \"documentation\": \"Refer to docs.latence.ca for API details and data structure\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "ok",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "customer_id",
+              "value": "0",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0c182a08-81a8-4f13-a97e-802cf77375e5",
+          "body": "{\n  \"CustomerID\": \"1\",\n  \"AgentID\": \"1\",\n  \"KPIs\": {\n    \"tcpMs\": 8.94,\n    \"udpMs\": 9.53,\n    \"httpMs\": 9.09,\n    \"httpsMs\": 18,\n    \"icmpMs\": 9.2,\n    \"twampMs\": 9.45,\n    \"downloadThroughputMbps\": 1383.58,\n    \"uploadThroughputMbps\": 950.06,\n    \"networkLatencyMs\": 9.32,\n    \"applicationLatencyMs\": 11.39,\n    \"packetLossRatePercent\": 0,\n    \"jitterMs\": 6.1,\n    \"volatilityPercent\": 46.2,\n    \"networkStabilityPercent\": 65.5,\n    \"connectivityHealth\": \"Warning\",\n    \"qualityOfExperience\": 4.921,\n    \"expectedLatencyMS\": 40,\n    \"expectedStabilityPercent\": 98,\n    \"expectedPacketLossPercent\": 0.1\n  },\n  \"Attributes\": {\n    \"time\": \"2025-03-26T14:01:23.305Z\",\n    \"agentName\": \"GenericQoSAgent\",\n    \"hardware\": \"Not-Applicable\",\n    \"networkName\": \"OutScale-Network\",\n    \"networkType\": \"Outscale\",\n    \"gpsPos\": \"48.864716,2.349014\",\n    \"details\": \"Generic QoSAgent preinstalled with OMI\"\n  },\n  \"APInotes\": {\n    \"comment\": \"Results from LatenceTech ConnectivityInsight API version 2.1\",\n    \"documentation\": \"Refer to docs.latence.ca for API details and data structure\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "warning",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "customer_id",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ac915179-9b07-49ec-9cf5-560396ee464e",
+          "body": "{\n  \"CustomerID\": \"2\",\n  \"AgentID\": \"2\",\n  \"KPIs\": {\n    \"tcpMs\": 8.94,\n    \"udpMs\": 9.53,\n    \"httpMs\": 9.09,\n    \"httpsMs\": 18,\n    \"icmpMs\": 9.2,\n    \"twampMs\": 9.45,\n    \"downloadThroughputMbps\": 1383.58,\n    \"uploadThroughputMbps\": 950.06,\n    \"networkLatencyMs\": 9.32,\n    \"applicationLatencyMs\": 11.39,\n    \"packetLossRatePercent\": 0,\n    \"jitterMs\": 6.1,\n    \"volatilityPercent\": 46.2,\n    \"networkStabilityPercent\": 65.5,\n    \"connectivityHealth\": \"Need Attention\",\n    \"qualityOfExperience\": 4.921,\n    \"expectedLatencyMS\": 40,\n    \"expectedStabilityPercent\": 98,\n    \"expectedPacketLossPercent\": 0.1\n  },\n  \"Attributes\": {\n    \"time\": \"2025-03-26T14:01:23.305Z\",\n    \"agentName\": \"GenericQoSAgent\",\n    \"hardware\": \"Not-Applicable\",\n    \"networkName\": \"OutScale-Network\",\n    \"networkType\": \"Outscale\",\n    \"gpsPos\": \"48.864716,2.349014\",\n    \"details\": \"Generic QoSAgent preinstalled with OMI\"\n  },\n  \"APInotes\": {\n    \"comment\": \"Results from LatenceTech ConnectivityInsight API version 2.1\",\n    \"documentation\": \"Refer to docs.latence.ca for API details and data structure\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "critical",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "customer_id",
+              "value": "2",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "2a664365-e4a5-470d-a21e-08006280ba55"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
