@@ -32,7 +32,8 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         
-        'connectivity' => 'apps::monitoring::latencetech::restapi::mode::connectivity'
+        'connectivity' => 'apps::monitoring::latencetech::restapi::mode::connectivity',
+        'discovery'    => 'apps::monitoring::latencetech::restapi::mode::discovery'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::latencetech::restapi::custom::api';
