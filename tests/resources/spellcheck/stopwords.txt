@@ -245,6 +245,7 @@ Primera
 Procurve
 Proxmox
 proto
+Proxmox
 --proxyurl
 psu
 QoS
@@ -332,6 +333,7 @@ vCPU
 vdom
 vdomain
 VDSL2
+VE
 Veeam
 VeloCloud
 VE

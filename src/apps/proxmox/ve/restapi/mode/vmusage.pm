@@ -325,38 +325,38 @@ __END__
 
 =head1 MODE
 
-Check Virtual Machines usage on Proxmox VE Cluster.
+Check virtual machines usage on Proxmox VE Cluster.
 
 =over 8
 
 =item B<--vm-id>
 
-Exact Virtual Machine ID.
+Exact virtual machine ID.
 
 =item B<--vm-name>
 
-Exact Virtual Machine name (if multiple names: names separated by ':').
+Exact virtual machine name (if multiple names: names separated by ':').
 
 =item B<--use-name>
 
-Use Virtual Machine name for perfdata and display.
+Use virtual machine name for perfdata and display.
 
 =item B<--include-node-name>
 
-Filter only Virtual Machine running on specified node name (can be a regexp).
+Filter only virtual machine running on specified node name (can be a regexp).
 
 =item B<--exclude-name>
 
-Exclude by vm name (can be a regexp).
+Exclude by virtual machine name (can be a regexp).
 
 =item B<--filter-name>
 
-Filter by vm name (can be a regexp).
+Filter by virtual machine name (can be a regexp).
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^vm-status$'
+Example: C<--filter-counters='^vm-status$'>
 
 =item B<--warning-*>
 
