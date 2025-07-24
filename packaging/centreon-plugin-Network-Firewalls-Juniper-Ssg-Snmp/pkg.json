@@ -7,8 +7,8 @@
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	"snmp_standard/mode/resources/",
-        "network/juniper/common/screenos",
-        "network/juniper/ssg"
+        "snmp_standard/mode/resources/",
+        "network/juniper/common/screenos/snmp",
+        "network/juniper/ssg/snmp"
     ]
 }
