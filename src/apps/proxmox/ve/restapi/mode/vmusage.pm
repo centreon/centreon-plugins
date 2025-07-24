@@ -234,10 +234,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vm-id:s'       => { name => 'vm_id' },
-        'vm-name:s'     => { name => 'vm_name' },
-        'filter-name:s' => { name => 'filter_name' },
-        'use-name'      => { name => 'use_name' }
+        'vm-id:s'             => { name => 'vm_id' },
+        'vm-name:s'           => { name => 'vm_name' },
+        'filter-name:s'       => { name => 'filter_name' },
+        'exclude-name:s'      => { name => 'exclude_name' },
+        'include-node-name:s' => { name => 'include_node_name' },
+        'use-name'            => { name => 'use_name' }
     });
 
     $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
@@ -265,16 +267,27 @@ sub manage_selection {
     foreach my $vm_id (keys %{$result}) {
         next if (!defined($result->{$vm_id}->{Stats}));
 
-        my $name = $result->{$vm_id}->{Name};
+        my $vm_name = $result->{$vm_id}->{Name};
+        my $node_name = $result->{$vm_id}->{Node};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            $vm_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $vm_name . "': no matching with include filter:" . $self->{option_results}->{filter_name}, debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
+            $vm_name =~ /$self->{option_results}->{exclude_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $vm_name . "': no matching with exclude filter: " . $self->{option_results}->{exclude_name}, debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{include_node_name}) && $self->{option_results}->{include_node_name} ne '' &&
+            $node_name !~ /$self->{option_results}->{include_node_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node_name . "': not running on include node:" . $self->{option_results}->{include_node_name}, debug => 1);
             next;
         }
 
         $self->{vms}->{$vm_id} = {
-            display => defined($self->{option_results}->{use_name}) ? $name : $vm_id,
-            name => $name,
+            display => defined($self->{option_results}->{use_name}) ? $vm_name : $vm_id,
+            name => $vm_name,
             state => $result->{$vm_id}->{State},
             read_io => $result->{$vm_id}->{Stats}->{diskread},
             write_io => $result->{$vm_id}->{Stats}->{diskwrite},
@@ -325,6 +338,14 @@ Exact VM name (if multiple names: names separated by ':').
 =item B<--use-name>
 
 Use VM name for perfdata and display.
+
+=item B<--include-node-name>
+
+Filter only VM running on specified node name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude by vm name (can be a regexp).
 
 =item B<--filter-name>
 
