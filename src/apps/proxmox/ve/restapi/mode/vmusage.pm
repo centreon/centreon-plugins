@@ -312,6 +312,8 @@ sub manage_selection {
         md5_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
             (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
+            (defined($self->{option_results}->{exclude_name}) ? $self->{option_results}->{exclude_name} : '') . '_' .
+            (defined($self->{option_results}->{include_node_name}) ? $self->{option_results}->{include_node_name} : '') . '_' .
             (defined($self->{option_results}->{vm_id}) ? $self->{option_results}->{vm_id} : '') . '_' .
             (defined($self->{option_results}->{vm_name}) ? $self->{option_results}->{vm_name} : '')
         );
