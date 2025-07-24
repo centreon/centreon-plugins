@@ -377,7 +377,8 @@ sub build_workflow_message {
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
         push @{$self->{body}}, {
             type => "TextBlock",
-            text => "Status: " . $self->{option_results}->{$resource_type . '_output'}
+            text => "Status: " . $self->{option_results}->{$resource_type . '_output'},
+            wrap => "true"
         };
     }
 
@@ -393,7 +394,7 @@ sub build_workflow_message {
             push @{$self->{body}}, {
                 type   => "TextBlock",
                 text   => "Additional Information:  \n" . sprintf($self->{option_results}->{extra_info_format}, $1, $2),
-                "wrap" => "true"
+                wrap => "true"
             };
         }
     }
