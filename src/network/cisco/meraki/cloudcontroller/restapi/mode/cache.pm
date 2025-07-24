@@ -30,7 +30,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'add-clients'                 => { name => 'add_clients' },
+    });
 
     return $self;
 }
@@ -38,7 +40,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $options{custom}->cache_datas();
+    $options{custom}->cache_datas(add_clients => $self->{option_results}->{add_clients} // 0);
     $self->{output}->output_add(
         severity => 'OK',
         short_msg => 'Cache files created successfully'

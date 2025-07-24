@@ -284,13 +284,23 @@ sub call_datas {
         foreach my $orgId (keys %{$self->{datas}->{orgs}}) {
             $self->get_organization_uplink_loss_and_latency(orgId => $orgId);
         }
+        
+        if (defined($options{addDeviceClient}) && $options{addDeviceClient} == 1) {
+            $self->{datas}->{device_clients} = {};
+            foreach my $serial (keys %{$self->{datas}->{devices}}) {
+                $self->{datas}->{device_clients}->{$serial} = $self->get_device_clients(
+                    serial => $serial
+                );
+            }
+        }
+
     }
 }
 
 sub cache_datas {
     my ($self, %options) = @_;
 
-    $self->call_datas(cache => 1);
+    $self->call_datas(cache => 1, addDeviceClient => $options{add_clients} // 0);
     $self->write_cache_file();
 
     return $self->{datas};
