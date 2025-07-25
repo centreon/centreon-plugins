@@ -34,7 +34,8 @@ sub new {
         'connectivity' => 'apps::monitoring::latencetech::restapi::mode::connectivity',
         'discovery'    => 'apps::monitoring::latencetech::restapi::mode::discovery',
         'forecast'     => 'apps::monitoring::latencetech::restapi::mode::forecast',
-        'latency'      => 'apps::monitoring::latencetech::restapi::mode::latency'
+        'latency'      => 'apps::monitoring::latencetech::restapi::mode::latency',
+        'radio'        => 'apps::monitoring::latencetech::restapi::mode::radio'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::latencetech::restapi::custom::api';

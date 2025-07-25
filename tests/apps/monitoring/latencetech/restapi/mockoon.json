@@ -328,6 +328,35 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "6ba46385-639a-41c6-8890-c487af160499",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/radio",
+      "responses": [
+        {
+          "uuid": "0d20ae09-1365-42e9-913c-e75c0fcc7ba4",
+          "body": "{\n  \"CustomerID\": \"0\",\n  \"agentID\": \"1\",\n  \"time\": \"2025-02-04T17:12:56.062Z\",\n  \"networkName\": \"Bell\",\n  \"networkType\": \"4G LTE\",\n  \"cellID\": \"40\",\n  \"SINR_dB\": \"2.147489\",\n  \"RSSI_dBm\": \"-63\",\n  \"RSRP_dBm\": \"-10\",\n  \"RSRQ_dB\": \"-94\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -346,6 +375,10 @@
     {
       "type": "route",
       "uuid": "febdf454-e06c-4f7c-9ff4-99eecdc98447"
+    },
+    {
+      "type": "route",
+      "uuid": "6ba46385-639a-41c6-8890-c487af160499"
     }
   ],
   "proxyMode": false,
