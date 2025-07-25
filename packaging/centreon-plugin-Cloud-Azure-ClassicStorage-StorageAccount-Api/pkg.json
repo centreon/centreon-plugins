@@ -6,7 +6,7 @@
         "centreon/plugins/script_custom.pm",
         "cloud/azure/custom/",
         "cloud/azure/common/storageaccount/",
-        "cloud/azure/management/monitor/mode/discovery.pm",
+        "cloud/azure/common/discovery.pm",
         "cloud/azure/management/monitor/mode/health.pm",
         "cloud/azure/classicstorage/storageaccount/"
     ]
