@@ -4,6 +4,7 @@
     "plugin_name": "centreon_azure_devtools_appconfiguration_api.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "cloud/azure/common/discovery.pm",
         "cloud/azure/custom/",
         "cloud/azure/devtools/appconfiguration/"
     ]
