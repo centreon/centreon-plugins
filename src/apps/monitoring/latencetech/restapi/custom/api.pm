@@ -71,10 +71,10 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
-    $self->{customer_id} = (defined($self->{option_results}->{customer_id})) ? $self->{option_results}->{customer_id} : undef;
-    $self->{agent_id} = (defined($self->{option_results}->{agent_id})) ? $self->{option_results}->{agent_id} : undef;
-    $self->{api_key} = (defined($self->{option_results}->{api_key})) ? $self->{option_results}->{api_key} : undef;
+    $self->{hostname} = $self->{option_results}->{hostname};
+    $self->{customer_id} = $self->{option_results}->{customer_id};
+    $self->{agent_id} = $self->{option_results}->{agent_id};
+    $self->{api_key} = $self->{option_results}->{api_key};
     $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/v1';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : '12099';
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
@@ -83,15 +83,15 @@ sub check_options {
     $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if (centreon::plugins::misc::is_empty($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{customer_id}) || $self->{customer_id} eq '') {
+    if (centreon::plugins::misc::is_empty($self->{customer_id})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --customer-id option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_key}) || $self->{api_key} eq '') {
+    if (centreon::plugins::misc::is_empty($self->{api_key})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-key option.");
         $self->{output}->option_exit();
     }
@@ -106,9 +106,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 500';
 }
 
 sub settings {
@@ -139,20 +136,18 @@ sub request_api {
         get_param => $get_param,
         method => $options{method},
         url_path => $self->{api_path} . $options{endpoint},
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->output_add(long_msg => $response);
         $self->{output}->option_exit();
-    }    
-    eval {
-        $json = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode JSON response: $response");
-        $self->{output}->option_exit();
-    };
+    }
+
+    $json = centreon::plugins::misc::json_decode($response);
 
     return $json;
 }

@@ -203,7 +203,6 @@ sub set_counters {
             set => {
                 key_values => [ { name => 'connectivityHealth' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
