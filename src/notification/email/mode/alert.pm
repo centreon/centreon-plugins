@@ -801,15 +801,15 @@ Send Email alerts.
 
 Example for a host:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='john.doe@example.com' --host-address='192.168.1.1' --host-name='webserver' --host-alias='Web Server' --host-state='DOWN' --host-output='CRITICAL - Socket timeout after 10 seconds' --host-attempts='3' --max-host-attempts='3' --host-duration='6d 18h 33m 51s' --date='2023-04-12 10:30:00' --type='PROBLEM' --service-description='' --service-state='' --service-output='' --service-longoutput='' --service-attempts='' --max-service-attempts='' --service-duration='' --host-id='123' --service-id='' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon-engine@centreon.com' --centreon-user='admin' --centreon-token='Toi5Ve7ie' --smtp-user='john.doe@example.com' --smtp-password='mysecret'
+C<centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='john.doe@example.com' --host-address='192.168.1.1' --host-name='webserver' --host-alias='Web Server' --host-state='DOWN' --host-output='CRITICAL - Socket timeout after 10 seconds' --host-attempts='3' --max-host-attempts='3' --host-duration='6d 18h 33m 51s' --date='2023-04-12 10:30:00' --type='PROBLEM' --service-description='' --service-state='' --service-output='' --service-longoutput='' --service-attempts='' --max-service-attempts='' --service-duration='' --host-id='123' --service-id='' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon-engine@centreon.com' --centreon-user='admin' --centreon-token='Toi5Ve7ie' --smtp-user='john.doe@example.com' --smtp-password='mysecret'>
 
 Example for a service:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'
+C<centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'>
 
 Example for Centreon configuration:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-displayname='$SERVICEDISPLAYNAME$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts='$SERVICEATTEMPT$' --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
+C<centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-displayname='$SERVICEDISPLAYNAME$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts='$SERVICEATTEMPT$' --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password'>
 
 =over 8
 
@@ -924,7 +924,7 @@ service's graph (leave empty to not retrieve and display graph).
 
 =item B<--centreon-token>
 
-Autologin token for the Centreon web interface (if --centreon-user is defined).
+Auto-login token for the Centreon web interface (if --centreon-user is defined).
 
 =item B<--date>
 
@@ -941,13 +941,13 @@ Comment for the notification.
 =item B<--centreon-url>
 
 URL of the Centreon web interface. Use either HTTP or HTTPS protocol depending on your setup, for example:
---centreon-url='http://your-centreon-server'
---centreon-url='https://your-centreon-server'
+C<--centreon-url='http://your-centreon-server'>
+C<--centreon-url='https://your-centreon-server'>
 
 =item B<--url-path>
 
 Pathname for Centreon (default: /centreon) 
---url-path='/centreon'
+C<--url-path='/centreon'>
 
 =item B<--type>
 
