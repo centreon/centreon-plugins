@@ -3,3 +3,4 @@ output.xml
 report.html
 .editorconfig
 .idea
+.venv

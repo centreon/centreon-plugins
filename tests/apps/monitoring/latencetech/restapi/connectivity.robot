@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check the connectivity mode with api custom mode
+Documentation       Check the LatenceTech connectivity mode with api custom mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -25,6 +25,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 connectivity ${tc}
     [Documentation]    Check the number of returned jobs
     [Tags]    apps    monitoring    latencetech    restapi
+
     ${command}    Catenate
     ...    ${cmd}
     ...    --customer-id=${customer_id}

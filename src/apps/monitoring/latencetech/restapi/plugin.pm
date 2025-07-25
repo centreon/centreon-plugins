@@ -45,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check LatenceTech agent's metrics using the Rest API (https://docs.latence.ca/14-analyzer-api/).
+Check LatenceTech agents metrics using the Rest API (https://docs.latence.ca/14-analyzer-api/).
 
 =cut
