@@ -32,8 +32,8 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'alert'                  => 'cloud::azure::management::monitor::mode::alert',
-        'discovery'              => 'cloud::azure::management::monitor::mode::discovery',
-        'discovery-tenant'       => 'cloud::azure::management::monitor::mode::discoverytenant',
+        'discovery'              => 'cloud::azure::common::discovery',
+        'discovery-tenant'       => 'cloud::azure::common::discoverytenant',
         'get-metrics'            => 'cloud::azure::management::monitor::mode::getmetrics',
         'health'                 => 'cloud::azure::management::monitor::mode::health'
     );
