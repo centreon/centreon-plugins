@@ -22,8 +22,8 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-connectivity ${tc}
-    [Documentation]    Check the number of returned jobs
+Connectivity ${tc}
+    [Documentation]    Check the agent connectivity statistics.
     [Tags]    apps    monitoring    latencetech    restapi
 
     ${command}    Catenate
