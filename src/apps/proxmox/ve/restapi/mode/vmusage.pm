@@ -345,13 +345,13 @@ Use virtual machine name for perfdata and display.
 
 Filter only virtual machine running on specified node name (can be a regexp).
 
-=item B<--exclude-name>
-
-Exclude by virtual machine name (can be a regexp).
-
 =item B<--filter-name>
 
 Filter by virtual machine name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude by virtual machine name (can be a regexp).
 
 =item B<--filter-counters>
 
