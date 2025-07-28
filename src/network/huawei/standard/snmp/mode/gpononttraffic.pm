@@ -218,8 +218,11 @@ sub manage_selection {
 
         $self->{ont}->{$_}->{up_packets} = $result->{up_packets};
         $self->{ont}->{$_}->{down_packets} = $result->{down_packets};
-        $self->{ont}->{$_}->{up_bytes} = $result->{up_bytes};
-        $self->{ont}->{$_}->{down_bytes} = $result->{down_bytes};
+
+        # convert to bits
+        $self->{ont}->{$_}->{up_bytes} = $result->{up_bytes} * 8;
+        $self->{ont}->{$_}->{down_bytes} = $result->{down_bytes} * 8;
+
         $self->{ont}->{$_}->{up_drop_packets} = $result->{up_drop_packets};
         $self->{ont}->{$_}->{down_drop_packets} = $result->{down_drop_packets};
     }
