@@ -161,6 +161,10 @@ Redis server.
 
 Redis port (default: 6379).
 
+=item B<--username>
+
+Redis username.
+
 =item B<--password>
 
 Redis password.
