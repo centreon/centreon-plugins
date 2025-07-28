@@ -316,13 +316,7 @@ jobs:
               console.log(`Stable version based on .version.plugins file will be: ${version}`)
 
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
-              const branchName = "${{ github.head_ref || github.ref_name }}";
-              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
-              if (matches) {
-                version = matches[1];
-              } else {
-                throw new Error('invalid version');
-              }
+              version = "20250600"
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'unstable') {
               const currentDate = new Date();
               version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}${String(currentDate.getDate()).padStart(2, '0')}`;
