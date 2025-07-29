@@ -1,7 +1,7 @@
 {
   "uuid": "b09e1a07-2cb1-462d-a3ce-a1de418a25c7",
   "lastMigration": 32,
-  "name": "Mockoon",
+  "name": "LatenceTech",
   "endpointPrefix": "",
   "latency": 0,
   "port": 3000,
@@ -127,6 +127,35 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "06ed6f2b-578e-4beb-94e0-f37f5c436038",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/forecast",
+      "responses": [
+        {
+          "uuid": "8740d870-74b8-4846-a90b-1a27f8b59d45",
+          "body": "{\n  \"CustomerID\": \"0\",\n  \"agentID\": \"2\",\n  \"time\": \"2025-07-25T07:52:01.849Z\",\n  \"projectedLatencyMs\": 10.63,\n  \"forecastingIntervalMs\": 6.94,\n  \"confidenceLevel\": 50.74\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -137,6 +166,10 @@
     {
       "type": "route",
       "uuid": "a8045b6a-886a-4ba0-a2b4-9c9d425f9124"
+    },
+    {
+      "type": "route",
+      "uuid": "06ed6f2b-578e-4beb-94e0-f37f5c436038"
     }
   ],
   "proxyMode": false,
