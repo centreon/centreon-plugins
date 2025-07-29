@@ -52,6 +52,7 @@ sub new {
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' },
+            'token:s'                => { name => 'token' },
             'cache-use'              => { name => 'cache_use' }
         });
     }
