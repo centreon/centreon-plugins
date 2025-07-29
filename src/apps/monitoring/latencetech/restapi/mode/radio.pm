@@ -35,7 +35,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'snr-dbm', nlabel => 'signal.noise.ratio.db', set => {
                 key_values => [ { name => 'SINR_dB' }, { name => 'display' } ],
-                output_template => 'Signal noise ration: %.2fdb',
+                output_template => 'Signal noise ratio: %.2fdb',
                 perfdatas => [
                     { value => 'SINR_dB', template => '%.2f',
                       unit => 'dbm', label_extra_instance => 1, instance_use => 'display' },
