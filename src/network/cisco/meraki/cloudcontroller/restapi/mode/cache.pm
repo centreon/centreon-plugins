@@ -32,7 +32,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'add-devices-clients'     => { name => 'add_devices_clients' },
-        'add-devices-connections' => { name => 'add__devicesconnections' }
+        'add-devices-connections' => { name => 'add_devices_connections' }
     });
 
     return $self;
