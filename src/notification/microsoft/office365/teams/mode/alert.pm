@@ -523,7 +523,7 @@ Specify the date & time of the event.
 
 =item B<--extra-info>
 
-Specify extra information about author and comment (only for ACKNOWLEDGEMENT and DOWNTIME types).
+Specify extra information about author and comment (only for ACKNOWLEDGMENT and DOWNTIME types).
 
 =item B<--extra-info-format>
 
