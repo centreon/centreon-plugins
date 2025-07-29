@@ -146,7 +146,7 @@ Microsoft Office 365 Teams Workflows API
 
 Define the Workflow URL (required).
 Example: 
-perl centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=workflowapi --teams-workflow='https://url.logic.azure.com:443/workflows/workflowId/triggers/manual/paths/invoke?api-version=2023-11-01&sp=%2Ftriggers%2Fmanual%2Frunsv=1.0&sig=sigId' 
+C<perl centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=workflowapi --teams-workflow='https://url.logic.azure.com:443/workflows/workflowId/triggers/manual/paths/invoke?api-version=2023-11-01&sp=%2Ftriggers%2Fmanual%2Frunsv=1.0&sig=sigId'>
 
 =item B<--teams-workflow-params>
 
