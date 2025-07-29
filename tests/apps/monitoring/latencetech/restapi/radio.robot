@@ -36,11 +36,11 @@ Radio ${tc}
 
     Examples:         tc    extraoptions    expected_result    --
             ...       1     ${EMPTY}
-            ...       OK: Agent '1' Signal noise ration: 2.15db, Received Signal Strength Indicator: -63.00dbm, Reference signal receive power: -10.00dbm, Reference signal receive quality: -94.00db | '1#signal.noise.ratio.db'=2.15dbm;;;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
+            ...       OK: Agent '1' Signal noise ratio: 2.15db, Received Signal Strength Indicator: -63.00dbm, Reference signal receive power: -10.00dbm, Reference signal receive quality: -94.00db | '1#signal.noise.ratio.db'=2.15dbm;;;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
             ...       2     --warning-snr-dbm=1.5
-            ...       WARNING: Agent '1' Signal noise ration: 2.15db | '1#signal.noise.ratio.db'=2.15dbm;0:1.5;;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
+            ...       WARNING: Agent '1' Signal noise ratio: 2.15db | '1#signal.noise.ratio.db'=2.15dbm;0:1.5;;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
             ...       3     --critical-snr-dbm=2.05
-            ...       CRITICAL: Agent '1' Signal noise ration: 2.15db | '1#signal.noise.ratio.db'=2.15dbm;;0:2.05;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
+            ...       CRITICAL: Agent '1' Signal noise ratio: 2.15db | '1#signal.noise.ratio.db'=2.15dbm;;0:2.05;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
             ...       4     --warning-rssi-dbm=-65.5
             ...       WARNING: Agent '1' Received Signal Strength Indicator: -63.00dbm | '1#signal.noise.ratio.db'=2.15dbm;;;; '1#received.signalstrength.indicator.dbm'=-63.00dbm;0:-65.5;;; '1#reference.signalreceive.power.dbm'=-10.00dbm;;;; '1#reference.signalreceive.quality.dbm'=-94.00db;;;;
             ...       5     --critical-rssi-dbm=-70.3
