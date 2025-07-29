@@ -294,13 +294,24 @@ sub call_datas {
             }
         }
 
+        if (defined($options{addDeviceConnection}) && $options{addDeviceConnection} == 1) {
+            $self->{datas}->{devices_connection_stats} = {};
+            foreach my $network_id (keys %{$self->{datas}->{networks}}) {
+                $self->get_network_device_connection_stats(network_id => $network_id);
+                $self->{datas}->{devices_connection_stats}->{$network_id} = $self->{devices_connection_stats}->{$network_id};
+            }
+        }
     }
 }
 
 sub cache_datas {
     my ($self, %options) = @_;
 
-    $self->call_datas(cache => 1, addDeviceClient => $options{add_clients} // 0);
+    $self->call_datas(
+        cache => 1, 
+        addDeviceClient => $options{add_devices_clients} // 0,
+        addDeviceConnection => $options{add_devices_connections} // 0
+    );
     $self->write_cache_file();
 
     return $self->{datas};

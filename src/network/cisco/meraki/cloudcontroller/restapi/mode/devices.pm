@@ -325,10 +325,16 @@ sub new {
 sub add_connection_stats {
     my ($self, %options) = @_;
 
-    my $connections = $options{custom}->get_network_device_connection_stats(
-        serial => $options{serial},
-        network_id => $options{network_id}
-    );
+    my $connections;
+    if (defined($options{cache_datas})) {
+        $connections = $options{cache_datas}->{ $options{serial} };
+
+    } else {
+        $connections = $options{custom}->get_network_device_connection_stats(
+            serial => $options{serial},
+            network_id => $options{network_id}
+        );
+    }
 
     $self->{devices}->{ $options{serial} }->{device_connections} = {
         assoc => defined($connections->{assoc}) ? $connections->{assoc} : 0,
@@ -344,7 +350,7 @@ sub add_clients {
 
     my $clients;
     if (defined($options{cache_datas})) {
-        $clients = $options{cache_datas}->{ $options{serial} };
+        $clients = $options{cache_datas};
 
     } else {
         $clients = $options{custom}->get_device_clients(
@@ -523,11 +529,14 @@ sub manage_selection {
         };
 
         if (!defined($self->{option_results}->{skip_connections}) && $datas->{devices}->{$serial}->{model} =~ /^(?:MG|MR)/) {
+            my $network_id = $datas->{devices}->{$serial}->{networkId};
             $self->add_connection_stats(
                 custom => $options{custom},
                 serial => $serial,
                 name => $datas->{devices}->{$serial}->{name},
-                network_id => $datas->{devices}->{$serial}->{networkId}
+                network_id => $network_id,
+                cache_datas => (defined($self->{option_results}->{cache_use}) 
+                                && defined($datas->{devices_connection_stats}->{$network_id}->{$serial})) ? $datas->{devices_connection_stats}->{$network_id}->{$serial} : undef
             );
         }
         if (!defined($self->{option_results}->{skip_clients}) && $datas->{devices}->{$serial}->{model} =~ /^(?:MS|MG|MR|MX)/) {
@@ -535,7 +544,7 @@ sub manage_selection {
                 custom      => $options{custom},
                 serial      => $serial,
                 name        => $datas->{devices}->{$serial}->{name},
-                cache_datas => (defined($self->{option_results}->{cache_use}) && defined($datas->{device_clients})) ? $datas->{device_clients} : undef
+                cache_datas => (defined($self->{option_results}->{cache_use}) && defined($datas->{device_clients}->{$serial})) ? $datas->{device_clients}->{$serial} : undef
             );
         }
         if ($datas->{devices}->{$serial}->{model} =~ /^(?:MV|MS|MG|MR|MX)/) {

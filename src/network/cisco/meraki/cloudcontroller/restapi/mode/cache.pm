@@ -31,7 +31,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-clients'                 => { name => 'add_clients' },
+        'add-devices-clients'     => { name => 'add_devices_clients' },
+        'add-devices-connections' => { name => 'add__devicesconnections' }
     });
 
     return $self;
@@ -40,7 +41,10 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $options{custom}->cache_datas(add_clients => $self->{option_results}->{add_clients} // 0);
+    $options{custom}->cache_datas(
+        add_devices_clients => $self->{option_results}->{add_devices_clients} // 0,
+        add_devices_connections => $self->{option_results}->{add_devices_connections} // 0
+    );
     $self->{output}->output_add(
         severity => 'OK',
         short_msg => 'Cache files created successfully'
@@ -56,6 +60,16 @@ __END__
 Create cache files (other modes could use it with --cache-use option).
 
 =over 8
+
+=item B<--add-devices-clients>
+
+Add clients traffic on device to the cache file.
+The cache file must be updated before each new request, 
+otherwise the devices traffic metrics won't be relevant.
+
+=item B<--add-devices-connections>
+
+Add connection stats to the cache file.
 
 =back
 
