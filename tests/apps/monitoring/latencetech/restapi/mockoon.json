@@ -98,12 +98,45 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "a8045b6a-886a-4ba0-a2b4-9c9d425f9124",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/agents",
+      "responses": [
+        {
+          "uuid": "0dfb8c64-6ee8-40aa-8f42-aefb39d9dd9d",
+          "body": "{\n  \"CustomerID\": \"0\",\n  \"count\": 3,\n  \"agents\": [\n    {\n      \"id\": \"0\",\n      \"name\": \"GenericQoSAgent\",\n      \"networkName\": \"OutScale-Network\",\n      \"networkType\": \"Outscale\",\n      \"hardware\": \"Not-Applicable\",\n      \"details\": \"Generic QoSAgent preinstalled with OMI\",\n      \"gpsPosition\": \"48.864716,2.349014\"\n    },\n    {\n      \"id\": \"2\",\n      \"name\": \"Germany WEST\",\n      \"networkName\": \"Azure Net 2\",\n      \"networkType\": \"Azure Server Network\",\n      \"hardware\": \"Azure Server\",\n      \"details\": \"Azure Agent used for demonstration purposes\",\n      \"gpsPosition\": \",undefined\"\n    },\n    {\n      \"id\": \"3\",\n      \"name\": \"South Central US\",\n      \"networkName\": \"\",\n      \"networkType\": \"Azure Server Network\",\n      \"hardware\": \"Azure Server\",\n      \"details\": \"Uses india beacon reflector\",\n      \"gpsPosition\": \",undefined\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
     {
       "type": "route",
       "uuid": "2a664365-e4a5-470d-a21e-08006280ba55"
+    },
+    {
+      "type": "route",
+      "uuid": "a8045b6a-886a-4ba0-a2b4-9c9d425f9124"
     }
   ],
   "proxyMode": false,
