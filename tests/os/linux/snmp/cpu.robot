@@ -9,7 +9,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${GS_CMD}   ${GENERIC_SNMP} -j experimental/examples/cpu.json
+${CGS_CMD}   ${CENTREON_GENERIC_SNMP} -j experimental/examples/cpu.json
 
 
 *** Test Cases ***
@@ -39,10 +39,10 @@ cpu ${tc}
             ...      9     --warning-core='0'              WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
             ...      10    --critical-core='0'             CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
 
-gs-cpu ${tc}
-    [Tags]    os    linux    generic-snmp
+cgs-cpu ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
     ${command}    Catenate
-    ...    ${GS_CMD}
+    ...    ${CGS_CMD}
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}

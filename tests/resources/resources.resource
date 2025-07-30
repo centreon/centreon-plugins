@@ -6,7 +6,7 @@ Library             Process
 
 *** Variables ***
 ${CENTREON_PLUGINS}     perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
-${GENERIC_SNMP}         experimental/target/release/generic-snmp
+${CENTREON_GENERIC_SNMP}         experimental/target/release/centreon-generic-snmp
 
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.
@@ -81,8 +81,8 @@ Ctn Verify Command Output
     [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
-    Should Contain    
-    ...    ${output}    
+    Should Contain
+    ...    ${output}
     ...    ${expected_result}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
