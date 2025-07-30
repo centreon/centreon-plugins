@@ -41,8 +41,6 @@ fn main() -> Result<(), Error> {
     )
     .init();
 
-    //env_logger::init();
-
     use lexopt::prelude::*;
     let mut parser = lexopt::Parser::from_env();
     let mut hostname = "localhost".to_string();
