@@ -394,12 +394,12 @@ sub check {
     my $oid_upsBasicIdentModel = '.1.3.6.1.4.1.318.1.1.1.1.1.1.0';
     my $result = $self->{snmp}->get_leef(oids => [ $oid_upsBasicIdentModel ], nothing_quit => 1);
 
+    check_uoi($self);
+    check_iem($self);
+
     # if the model is an Galaxy VS we use other MIB for the temperature sensor
     if (defined($result->{$oid_upsBasicIdentModel}) && $result->{$oid_upsBasicIdentModel} =~ /Galaxy VS/) {
         check_galaxy_vs_temp($self);
-    } else {
-        check_uoi($self);
-        check_iem($self);
     }
 
 }
