@@ -87,16 +87,36 @@ sub get_hasharray {
 
     my $result = [];
     return $result if ($options{content} eq '');
-    my ($header, @lines) = split /\n/, $options{content};
-    my @header_names = split /$options{delim}/, $header;
-    
-    for (my $i = 0; $i <= $#lines; $i++) {
-        my @content = split /$options{delim}/, $lines[$i];
-        my $data = {};
-        for (my $j = 0; $j <= $#header_names; $j++) {
-            $data->{$header_names[$j]} = $content[$j];
+
+    my @lines = split /\n/, $options{content};
+    my $header;
+    my @clean_lines;
+
+    while (@lines) {
+        my $line = shift @lines;
+        my @fields = split /$options{delim}/, $line;
+
+        # Check if this line is the header
+        if (scalar(@fields) > 1 ) {
+            # Found the header — keep this line and the rest
+            $header = $line;
+            @clean_lines = @lines;
+            last;
         }
-        push @$result, $data;
+        # skip line and continue
+    }
+
+    if (@clean_lines) {
+        my @header_names = split /$options{delim}/, $header;
+
+        for (my $i = 0; $i <= $#clean_lines; $i++) {
+            my @content = split /$options{delim}/, $clean_lines[$i];
+            my $data = {};
+            for (my $j = 0; $j <= $#header_names; $j++) {
+                $data->{$header_names[$j]} = $content[$j];
+            }
+            push @$result, $data;
+        }
     }
 
     return $result;
