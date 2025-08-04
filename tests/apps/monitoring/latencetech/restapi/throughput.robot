@@ -34,7 +34,7 @@ Throughput ${tc}
 
     Examples:    tc    extraoptions    expected_result    --
     ...          1     ${EMPTY}
-    ...          OK: Agent '2' LIFBE Download: 531.58mbps, LifBE Upload: 47.05mbps, Jitter Download Time: 1.17ms, Jitter Upload Time: 3.38ms | '2#lifbe.download.bandwidth.mbps'=531.58mbps;;;0; '2#lifbe.upload.bandwidth.mbps'=47.05mbps;;;0; '2#jitter.download.time.milliseconds'=1.17ms;;;0; '2#jitter.upload.time.milliseconds'=3.38ms;;;0;
+    ...          OK: Agent '2' LIFBE Download: 531.58mbps, LIFBE Upload: 47.05mbps, Jitter Download Time: 1.17ms, Jitter Upload Time: 3.38ms | '2#lifbe.download.bandwidth.mbps'=531.58mbps;;;0; '2#lifbe.upload.bandwidth.mbps'=47.05mbps;;;0; '2#jitter.download.time.milliseconds'=1.17ms;;;0; '2#jitter.upload.time.milliseconds'=3.38ms;;;0;
     ...          2     --warning-lifbe-download=500
     ...          WARNING: Agent '2' LIFBE Download: 531.58mbps | '2#lifbe.download.bandwidth.mbps'=531.58mbps;0:500;;0; '2#lifbe.upload.bandwidth.mbps'=47.05mbps;;;0; '2#jitter.download.time.milliseconds'=1.17ms;;;0; '2#jitter.upload.time.milliseconds'=3.38ms;;;0;
     ...          3     --critical-lifbe-download=450
