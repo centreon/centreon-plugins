@@ -266,11 +266,11 @@ Syntax: --critical-scenario-status='%{status} =~ "xxx"'
 
 =item B<--warning-availability>
 
-Thresholds in %.
+Thresholds in percentage.
 
 =item B<--critical-availability>
 
-Thresholds in %.
+Thresholds in percentage.
 
 =item B<--warning-time-total-allsteps>
 
