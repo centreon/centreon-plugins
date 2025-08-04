@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Forcepoint SD-WAN Mode RejectedPackets
+Documentation       Forcepoint SD-WAN Mode Diskusage
 
 Resource            ${CURDIR}${/}../..${/}..${/}..${/}resources/import.resource
 

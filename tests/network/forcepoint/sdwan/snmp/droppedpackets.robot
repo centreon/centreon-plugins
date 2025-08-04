@@ -11,7 +11,7 @@ Test Timeout        120s
 ${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::forcepoint::sdwan::snmp::plugin
 
 *** Test Cases ***
-Connections ${tc}
+DroppedPackets ${tc}
     [Tags]    network    forcepoint    sdwan     snmp
     ${command}    Catenate
     ...    ${CMD}
