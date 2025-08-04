@@ -35,7 +35,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'lifbe-download', nlabel => 'lifbe.download.bandwidth.mbps', set => {
                 key_values => [ { name => 'lifbeDownload' }, { name => 'display' } ],
-                output_template => 'LifBE Download: %.2fmbps',
+                output_template => 'LIFBE Download: %.2fmbps',
                 perfdatas => [
                     { value => 'lifbeDownload', template => '%.2f',
                       min => 0, unit => 'mbps', label_extra_instance => 1, instance_use => 'display' },
@@ -44,7 +44,7 @@ sub set_counters {
         },
         { label => 'lifbe-upload', nlabel => 'lifbe.upload.bandwidth.mbps', set => {
                 key_values => [ { name => 'lifbeUpload' }, { name => 'display' } ],
-                output_template => 'LifBE Upload: %.2fmbps',
+                output_template => 'LIFBE Upload: %.2fmbps',
                 perfdatas => [
                     { value => 'lifbeUpload', template => '%.2f',
                       min => 0, unit => 'mbps', label_extra_instance => 1, instance_use => 'display' },
@@ -120,19 +120,19 @@ Set the ID of the agent (mandatory option).
 
 =item B<--warning-lifbe-download>
 
-Warning thresholds for LifBE download bandwidth (in Mbps).
+Warning thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) download bandwidth (in Mbps).
 
 =item B<--critical-lifbe-download>
 
-Critical thresholds for LifBE download bandwidth (in Mbps).
+Critical thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) download bandwidth (in Mbps).
 
 =item B<--warning-lifbe-upload>
 
-Warning thresholds for LifBE upload bandwidth (in Mbps).
+Warning thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) upload bandwidth (in Mbps).
 
 =item B<--critical-lifbe-upload>
 
-Critical thresholds for LifBE upload bandwidth (in Mbps).
+Critical thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) upload bandwidth (in Mbps).
 
 =item B<--warning-jitter-download>
 
