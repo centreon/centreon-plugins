@@ -88,6 +88,8 @@ sub get_hasharray {
     my $result = [];
     return $result if ($options{content} eq '');
 
+    $self->{output}->add_option_msg(long_msg => "Response: $options{content}", debug => 1);
+
     my @lines = split /\n/, $options{content};
     my $header;
     my @clean_lines;
