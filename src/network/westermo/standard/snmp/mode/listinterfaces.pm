@@ -52,7 +52,7 @@ __END__
 
 =item B<--interface>
 
-Set the interface (number expected) example: 1,2,... (empty means 'check all interfaces').
+Define which interfaces to monitor (number expected). Example: 1,2... (empty means 'check all interfaces').
 
 =item B<--name>
 
@@ -64,39 +64,41 @@ Set interface speed (in Mb).
 
 =item B<--skip-speed0>
 
-Don't display interface with speed 0.
+Avoid displaying interfaces with bandwidth/speed equal to 0.
 
 =item B<--filter-status>
 
-Display interfaces matching the filter (example: 'up').
+Filter interfaces based on their status using a regular expression (example: 'up|UP').
 
 =item B<--use-adminstatus>
 
-Display interfaces with AdminStatus 'up'.
+Display interfaces with C<AdminStatus> 'up'.
 
 =item B<--oid-filter>
 
-Define the OID to be used to filter interfaces (default: ifDesc) (values: ifDesc, ifAlias, ifName).
+Define the OID to be used to filter interfaces (default: C<ifName>).
+Available OIDs: C<ifDesc>, C<ifAlias>, C<ifName>).
 
 =item B<--oid-display>
 
-Define the OID that will be used to name the interfaces (default: ifDesc) (values: ifDesc, ifAlias, ifName).
+Define the OID that will be used to name the interfaces (default: ifName).
+Available OIDs: C<ifDesc>, C<ifAlias>, C<ifName>).
 
 =item B<--display-transform-src> B<--display-transform-dst>
 
 Modify the interface name displayed by using a regular expression.
 
-Example: adding --display-transform-src='eth' --display-transform-dst='ens'  will replace all occurrences of 'eth' with 'ens'
+Example: adding C<--display-transform-src='eth' --display-transform-dst='ens'>  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--add-extra-oid>
 
 Display an OID.
-Example: --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'
-or --add-extra-oid='vlan,.1.3.6.1.2.1.31.19,%{instance}\..*'
+Example: C<--add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'>
+or C<--add-extra-oid='vlan,.1.3.6.1.2.1.31.19,%{instance}\..*'>
 
 =item B<--add-mac-address>
 
-Display interface mac address.
+Display interfaces MAC addresses.
 
 =back
 

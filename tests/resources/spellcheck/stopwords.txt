@@ -340,6 +340,7 @@ vSphere
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
 WLAN
 WLC
 WSMAN

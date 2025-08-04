@@ -53,7 +53,7 @@ __END__
 
 =head1 MODE
 
-Check interfaces of moxa industrial switches.
+Check interfaces.
 
 =over 8
 
