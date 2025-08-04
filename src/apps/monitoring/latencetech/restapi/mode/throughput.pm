@@ -33,41 +33,59 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'lifbe-download', nlabel => 'lifbe.download.bandwidth.mbps', set => {
-                key_values => [ { name => 'lifbeDownload' }, { name => 'display' } ],
-                output_template => 'LIFBE Download: %.2fmbps',
-                perfdatas => [
-                    { value => 'lifbeDownload', template => '%.2f',
-                      min => 0, unit => 'mbps', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+        { label => 'lifbe-download', nlabel => 'lifbe.download.bandwidth.bps', set => {
+            key_values          => [ { name => 'lifbeDownload' }, { name => 'display' } ],
+            output_template     => 'LIFBE Download: %s%sps',,
+            output_change_bytes => 2,
+            perfdatas           => [
+                { value                => 'lifbeDownload',
+                  template             => '%s',
+                  min                  => 0,
+                  unit                 => 'bps',
+                  label_extra_instance => 1,
+                  instance_use         => 'display' },
+            ],
+        }
         },
-        { label => 'lifbe-upload', nlabel => 'lifbe.upload.bandwidth.mbps', set => {
-                key_values => [ { name => 'lifbeUpload' }, { name => 'display' } ],
-                output_template => 'LIFBE Upload: %.2fmbps',
-                perfdatas => [
-                    { value => 'lifbeUpload', template => '%.2f',
-                      min => 0, unit => 'mbps', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+        { label => 'lifbe-upload', nlabel => 'lifbe.upload.bandwidth.bps', set => {
+            key_values          => [ { name => 'lifbeUpload' }, { name => 'display' } ],
+            output_template     => 'LIFBE Upload: %s%sps',,
+            output_change_bytes => 2,
+            perfdatas           => [
+                { value                => 'lifbeUpload',
+                  template             => '%s',
+                  min                  => 0,
+                  unit                 => 'bps',
+                  label_extra_instance => 1,
+                  instance_use         => 'display' },
+            ],
+        }
         },
         { label => 'jitter-download', nlabel => 'jitter.download.time.milliseconds', set => {
-                key_values => [ { name => 'jitterDownload' }, { name => 'display' } ],
-                output_template => 'Jitter Download Time: %.2fms',
-                perfdatas => [
-                    { value => 'jitterDownload', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+            key_values      => [ { name => 'jitterDownload' }, { name => 'display' } ],
+            output_template => 'Jitter Download Time: %.2fms',
+            perfdatas       => [
+                { value                => 'jitterDownload',
+                  template             => '%.2f',
+                  min                  => 0,
+                  unit                 => 'ms',
+                  label_extra_instance => 1,
+                  instance_use         => 'display' },
+            ],
+        }
         },
         { label => 'jitter-upload', nlabel => 'jitter.upload.time.milliseconds', set => {
-                key_values => [ { name => 'jitterUpload' }, { name => 'display' } ],
-                output_template => 'Jitter Upload Time: %.2fms',
-                perfdatas => [
-                    { value => 'jitterUpload', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
+            key_values      => [ { name => 'jitterUpload' }, { name => 'display' } ],
+            output_template => 'Jitter Upload Time: %.2fms',
+            perfdatas       => [
+                { value                => 'jitterUpload',
+                  template             => '%.2f',
+                  min                  => 0,
+                  unit                 => 'ms',
+                  label_extra_instance => 1,
+                  instance_use         => 'display' },
+            ],
+        }
         }
     ];
 }
@@ -100,7 +118,12 @@ sub manage_selection {
     my $results = $options{custom}->request_api(endpoint => '/lifbe');
     $self->{global}->{display} = $results->{agentID};
     foreach my $kpi (keys %{$results}) {
-        $self->{global}->{$kpi} = $results->{$kpi};        
+        if ($kpi eq 'lifbeDownload' || $kpi eq 'lifbeUpload') {
+            my $value = centreon::plugins::misc::convert_bytes(value => $results->{$kpi}, unit => 'Mb', network => 'true');
+            $self->{global}->{$kpi} = $value;
+        } else {
+            $self->{global}->{$kpi} = $results->{$kpi};
+        }
     }
 }
 
@@ -120,19 +143,19 @@ Set the ID of the agent (mandatory option).
 
 =item B<--warning-lifbe-download>
 
-Warning thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) download bandwidth (in Mbps).
+Warning thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) download bandwidth (in bps).
 
 =item B<--critical-lifbe-download>
 
-Critical thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) download bandwidth (in Mbps).
+Critical thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) download bandwidth (in bps).
 
 =item B<--warning-lifbe-upload>
 
-Warning thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) upload bandwidth (in Mbps).
+Warning thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) upload bandwidth (in bps).
 
 =item B<--critical-lifbe-upload>
 
-Critical thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) upload bandwidth (in Mbps).
+Critical thresholds for LIFBE (Low Intrusive Fast Bandwidth Estimation) upload bandwidth (in bps).
 
 =item B<--warning-jitter-download>
 
