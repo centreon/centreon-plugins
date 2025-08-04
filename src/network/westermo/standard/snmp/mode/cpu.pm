@@ -29,13 +29,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_load_output' }
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'cpu-load-1min', set => {
             key_values      => [ { name => 'cpu_load1' } ],
-            output_template => '%s',
+            output_template => '1min load average: %s%%',
             perfdatas       => [
                 { label => 'cpu_load1', value => 'cpu_load1', template => '%s', min => 0 },
             ],
@@ -43,7 +43,7 @@ sub set_counters {
         },
         { label => 'cpu-load-5min', set => {
             key_values      => [ { name => 'cpu_load5' } ],
-            output_template => '%s',
+            output_template => '5min load average: %s%%',
             perfdatas       => [
                 { label => 'cpu_load5', value => 'cpu_load5', template => '%s', min => 0 },
             ],
@@ -51,19 +51,13 @@ sub set_counters {
         },
         { label => 'cpu-load-15min', set => {
             key_values      => [ { name => 'cpu_load15' } ],
-            output_template => '%s',
+            output_template => '15min load average: %s%%',
             perfdatas       => [
                 { label => 'cpu_load15', value => 'cpu_load15', template => '%s', min => 0 },
             ],
         }
         },
     ];
-}
-
-sub prefix_load_output {
-    my ($self, %options) = @_;
-
-    return "Load average: ";
 }
 
 sub new {
@@ -83,6 +77,7 @@ sub manage_selection {
     my $oid_cpuLoadAvg1Min = '.1.3.6.1.4.1.16177.2.1.5.3.2.1.0';
     my $oid_cpuLoadAvg5Min = '.1.3.6.1.4.1.16177.2.1.5.3.2.2.0';
     my $oid_cpuLoadAvg15Min = '.1.3.6.1.4.1.16177.2.1.5.3.2.3.0';
+
     my $snmp_result = $options{snmp}->get_leef(
         oids         => [ $oid_cpuLoadAvg1Min, $oid_cpuLoadAvg5Min, $oid_cpuLoadAvg15Min ],
         nothing_quit => 1
@@ -112,27 +107,27 @@ Example: C<--filter-counters='cpu-load-15min'>
 
 =item B<--warning-cpu-load-1min>
 
-Thresholds.
+Warning thresholds for CPU load for C<1min> (in %).
 
 =item B<--critical-cpu-load-1min>
 
-Thresholds.
+Critical thresholds for CPU load for C<1min> (in %).
 
 =item B<--warning-cpu-load-5min>
 
-Thresholds.
+Warning thresholds for CPU load for C<5min> (in %).
 
 =item B<--critical-cpu-load-5min>
 
-Thresholds.
+Critical thresholds for CPU load for C<5min> (in %).
 
 =item B<--warning-cpu-load-15min>
 
-Thresholds.
+Warning thresholds for CPU load for C<15min> (in %).
 
 =item B<--critical-cpu-load-15min>
 
-Thresholds.
+Critical thresholds for CPU load for C<15min> (in %).
 
 =back
 
