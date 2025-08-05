@@ -357,6 +357,35 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "232fe410-d4af-42c9-8efa-919b0c576625",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/lifbe",
+      "responses": [
+        {
+          "uuid": "93141e59-7bca-44f8-b094-72f56ffec4f6",
+          "body": "{\n  \"CustomerID\": \"0\",\n  \"agentID\": \"2\",\n  \"time\": \"2025-07-25T13:53:19.725Z\",\n  \"lifbeDownload\": 531.58,\n  \"lifbeUpload\": 47.05,\n  \"jitterDownload\": 1.17,\n  \"jitterUpload\": 3.38,\n  \"packetLossDownload\": 0,\n  \"packetLossUpload\": 0,\n  \"networkInterface\": \"MOBILE\",\n  \"networkType\": \"MOBILE_5G\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -379,6 +408,10 @@
     {
       "type": "route",
       "uuid": "6ba46385-639a-41c6-8890-c487af160499"
+    },
+    {
+      "type": "route",
+      "uuid": "232fe410-d4af-42c9-8efa-919b0c576625"
     }
   ],
   "proxyMode": false,
