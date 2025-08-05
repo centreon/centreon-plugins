@@ -22,7 +22,7 @@ listlteinterfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                expected_result    --
             ...      1     ${EMPTY}                                                     List interfaces: 'lte1' [speed = ][status = up][id = 9]

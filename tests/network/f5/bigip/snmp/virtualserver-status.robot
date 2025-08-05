@@ -21,7 +21,7 @@ virtualserver-status ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                        expected_result    --
             ...      1     ${EMPTY}                                                                             OK: All virtual servers are ok | '/Common/OWA_vs#virtualserver.connections.client.current.count'=0;;;0; '/Common/Ibcm_vs#virtualserver.connections.client.current.count'=22;;;0; '/Common/SAML_vs#virtualserver.connections.client.current.count'=22;;;0; '/Common/Wtop_vs#virtualserver.connections.client.current.count'=0;;;0;

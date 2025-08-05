@@ -32,7 +32,7 @@ Mosquitto MQTT clients help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ^Plugin Description:
 
 Mosquitto MQTT clients ${tc}
     [Documentation]    Check Mosquitto MQTT clients
@@ -41,7 +41,7 @@ Mosquitto MQTT clients ${tc}
     ...    ${CMD}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                       expected_result    --
         ...      1     ${EMPTY}                           ^OK: Connected clients: \\\\d+, Maximum clients: \\\\d+, Active clients: \\\\d+, Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$

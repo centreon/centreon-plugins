@@ -23,7 +23,7 @@ ap-status ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc     extra_options                                                                                                                                                                         expected_result    --
             ...      1      --verbose --filter-name='Anonymized 015'                                                                                                                                              OK: Access points total: 1, idle: 0, autofind: 0, fault: 0, config: 0, config failed: 0, download: 0, normal: 1, committing: 0, commit failed: 0, standby: 0, version mismatch: 0, name conflicted: 0, invalid: 0, country code mismatch: 0 - access point 'Anonymized 015' status: normal | 'total'=1;;;0; 'total_idle'=0;;;0; 'total_autofind'=0;;;0; 'total_type_not_match'=0;;;0; 'total_fault'=0;;;0; 'total_config'=0;;;0; 'total_config_failed'=0;;;0; 'total_download'=0;;;0; 'total_normal'=1;;;0; 'total_committing'=0;;;0; 'total_commit_failed'=0;;;0; 'total_standby'=0;;;0; 'total_version_mismatch'=0;;;0; 'total_name_conflicted'=0;;;0; 'total_invalid'=0;;;0; 'total_country_code_mismatch'=0;;;0; checking access point 'Anonymized 015' status: normal

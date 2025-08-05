@@ -20,7 +20,7 @@ configuration ${tc}
     ...    --snmp-community=network/cisco/standard/snmp/cisco
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                     expected_result    --
             ...      1     ${EMPTY}                                          OK: running config is ahead of startup config since -1y 3M 1w 4d 18h 40m 35s. changes will be lost in case of a reboot | 'configuration.running.ahead.since.seconds'=-40463790.78s;;;0;

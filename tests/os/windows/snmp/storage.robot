@@ -24,7 +24,7 @@ storage ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                    expected_result    --
             ...      1     --filter-storage-type            OK: All storages are ok | 'count'=4;;;0; 'used_Serial Number 5a987053'=31299354624B;;;0;63720910848 'used_D:\\\\ Label:SSS_X64FRE_FR-FR_DV9 Serial Number cf70e675'=5566558208B;;;0;5566558208 'used_Virtual Memory'=493027328B;;;0;5099683840 'used_Physical Memory'=585039872B;;;0;4294377472

@@ -24,7 +24,7 @@ interfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                               expected_result    --
             ...      1     --verbose                                                                   OK: All interfaces are ok Interface 'lo' Status : up (admin: up) Interface 'Anonymized 012' Status : up (admin: up) Interface 'Anonymized 118' Status : down (admin: down) Interface 'Anonymized 073' Status : down (admin: down) Interface 'Anonymized 071' Status : up (admin: up) Interface 'Anonymized 073' Status : up (admin: up) Interface 'Anonymized 232' Status : up (admin: up) Interface 'Anonymized 191' Status : up (admin: up) Interface 'Anonymized 242' Status : up (admin: up) Interface 'Anonymized 175' Status : up (admin: up) Interface 'Anonymized 128' Status : up (admin: up) Interface 'Anonymized 037' Status : down (admin: down) Interface 'Anonymized 184' Status : down (admin: down) Interface 'Anonymized 252' Status : down (admin: down) Interface 'Anonymized 012' Status : down (admin: down) Interface 'Anonymized 232' Status : up (admin: up) Interface 'Anonymized 072' Status : up (admin: up) Interface 'Anonymized 037' Status : up (admin: up) 

@@ -23,7 +23,7 @@ Process ${tc}
     ...    --critical-total='${critical}'
     ...    --filter-command='${filter_command}'
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc   ps_output               filter_command    warning    critical    expected_result    --
             ...      1    ps-centreon.output      cs.sapC4P_C00     ${EMPTY}    ${EMPTY}   OK: Number of current processes: 0 | 'processes.total.count'=0;;;0;

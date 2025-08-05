@@ -23,7 +23,7 @@ list-vpns ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                       expected_result    --
             ...      1     ${EMPTY}                                                                                                           List vpn [oid_path: 1] [name: Anonymized 093] [policy: Anonymized 208] [description: Anonymized 022] [connection_mode: Anonymized 245] [connection_type: site-to-site] [connection_status: active] [activated: active] [oid_path: 2] [name: Anonymized 252] [policy: Anonymized 055] [description: Anonymized 070] [connection_mode: Anonymized 123] [connection_type: site-to-site] [connection_status: active] [activated: active] [oid_path: 3] [name: Anonymized 029] [policy: Anonymized 151] [description: Anonymized 157] [connection_mode: Anonymized 055] [connection_type: site-to-site] [connection_status: inactive] [activated: active] [oid_path: 4] [name: Anonymized 132] [policy: Anonymized 089] [description: ] [connection_mode: Anonymized 185] [connection_type: site-to-site] [connection_status: active] [activated: active]

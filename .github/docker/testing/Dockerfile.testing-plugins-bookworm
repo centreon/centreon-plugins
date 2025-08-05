@@ -50,7 +50,7 @@ echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | t
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 
 # Update
-apt-get update -y 
+apt-get update
 
 apt-get install -y centreon-clib centreon-connector-perl centreon-plugins
 

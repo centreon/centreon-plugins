@@ -21,7 +21,7 @@ tmm-usage ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                           expected_result    --
             ...      1     ${EMPTY}                                                                OK: All TMM are ok | '0.0#tmm.memory.usage.bytes'=2175382320B;;;0;22695378944 '0.0#tmm.cpu.utilization.1m.percentage'=15%;;;0;100 '0.0#tmm.cpu.utilization.5m.percentage'=15%;;;0;100 '0.0#tmm.connections.client.curent.count'=1324;;;0; '0.0#tmm.connections.server.current.count'=1303;;;0; '0.2#tmm.cpu.utilization.1m.percentage'=12%;;;0;100 '0.2#tmm.cpu.utilization.5m.percentage'=11%;;;0;100 '0.2#tmm.connections.client.curent.count'=1368;;;0; '0.2#tmm.connections.server.current.count'=1291;;;0; '0.4#tmm.cpu.utilization.1m.percentage'=11%;;;0;100 '0.4#tmm.cpu.utilization.5m.percentage'=10%;;;0;100 '0.4#tmm.connections.client.curent.count'=1369;;;0; '0.4#tmm.connections.server.current.count'=1331;;;0; '0.6#tmm.cpu.utilization.1m.percentage'=18%;;;0;100 '0.6#tmm.cpu.utilization.5m.percentage'=12%;;;0;100 '0.6#tmm.connections.client.curent.count'=1331;;;0; '0.6#tmm.connections.server.current.count'=1324;;;0;

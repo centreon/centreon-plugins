@@ -23,7 +23,7 @@ equipment ${tc}
     ...    --snmp-community=hardware/server/cisco/ucs/snmp/slim-ucs-equipment
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                expected_result    --
             ...      1     ${EMPTY}                                                                                                     WARNING: memory 'Anonymized-001/mem-12' presence is: 'missing' - memory 'Anonymized-001/mem-15' presence is: 'missing'

@@ -21,7 +21,7 @@ stac ${tc}
     ...    --snmp-community=network/cisco/smallbusiness/snmp/stack
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                     expected_result    --
             ...      1     ${EMPTY}                                                                          OK: Number of members detected: 2 - All stack members are ok | 'stack.members.detected.count'=2;;;0; 'stack.member.connected.members.count'=1;;;0; 'stack.member.connected.members.count'=1;;;0;

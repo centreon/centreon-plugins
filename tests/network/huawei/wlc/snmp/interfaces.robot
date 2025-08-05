@@ -24,7 +24,7 @@ interfaces ${tc}
     ...    ${extra_options}
  
     Run     ${command}
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                        expected_result    --
             ...      1     --verbose                                                                                            CRITICAL: Interface 'Anonymized 012' Status : down (admin: up) - Interface 'Anonymized 221' Status : down (admin: up) - Interface 'Anonymized 003' Status : down (admin: up) - Interface 'Anonymized 232' Status : down (admin: up) - Interface 'Anonymized 109' Status : down (admin: up) - Interface 'Anonymized 034' Status : down (admin: up) - Interface 'Anonymized 012' Status : down (admin: up) - Interface 'Anonymized 016' Status : down (admin: up) - Interface 'Anonymized 214' Status : down (admin: up) - Interface 'Anonymized 118' Status : down (admin: up) - Interface 'Anonymized 039' Status : down (admin: up) - Interface 'Anonymized 180' Status : down (admin: up) - Interface 'Anonymized 164' Status : down (admin: up) - Interface 'Anonymized 082' Status : down (admin: up) - Interface 'Anonymized 149' Status : down (admin: up) - Interface 'Anonymized 144' Status : down (admin: up) - Interface 'Anonymized 052' Status : down (admin: up) - Interface 'Anonymized 126' Status : down (admin: up)

@@ -29,7 +29,7 @@ intellichecks ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                        expected_result    --
             ...       1     ${EMPTY}                            OK: All intellichecks are ok | 'All#intellicheck.total.count'=12;;;0; 'All#intellicheck.success.count'=3;;;0;12 'All#intellicheck.suspect.count'=4;;;0;12 'All#intellicheck.failure.count'=5;;;0;12 'IntelliCheck1#intellicheck.total.count'=12;;;0; 'IntelliCheck1#intellicheck.success.count'=5;;;0;12 'IntelliCheck1#intellicheck.suspect.count'=4;;;0;12 'IntelliCheck1#intellicheck.failure.count'=3;;;0;12

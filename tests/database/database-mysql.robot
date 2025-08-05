@@ -17,7 +17,7 @@ Database Mysql sql string mode ${tc}
     ...    ${CMD}
     ...    --mode=sql-string
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc  expected_result    --
             ...       1   UNKNOWN: Need to specify data_source arguments.

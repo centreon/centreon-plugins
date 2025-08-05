@@ -21,7 +21,7 @@ Hardware${tc}
     ...    --snmp-community=storage/wd/nas/snmp/nas-wd
     ...    ${extra_option}
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc  extra_option                                                                        expected_result    --
             ...       1   --warning-fan-status='\\\%{status} =~ "running"'                                    WARNING: fan '0' status: running | 'system#hardware.temperature.celsius'=34C;;;; 'drive:WD-WCC130163701#hardware.temperature.celsius'=40C;;;; 'drive:WD-WCC4E0HRX2TN#hardware.temperature.celsius'=36C;;;; 'drive:WD-WCC4E6KA8V1T#hardware.temperature.celsius'=37C;;;; 'drive:WD-WCC4E7ZHA6A7#hardware.temperature.celsius'=36C;;;;

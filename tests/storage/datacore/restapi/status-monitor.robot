@@ -23,7 +23,7 @@ Datacore check status monitor ${tc}
     ...    --mode=status-monitor
     ...    --statefile-dir=/dev/shm/
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc      expected_result   --
         ...      1       CRITICAL: 'State of HostVM2' status : 'Critical', message is 'Connected'

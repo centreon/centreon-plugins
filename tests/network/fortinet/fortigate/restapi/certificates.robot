@@ -25,7 +25,7 @@ certificates ${tc}
     ...    ${extra_options}
  
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc      extra_options                                                                    expected_result    --
             ...       1       --filter-name='Fortinet_CA_SSL'                                                  OK: All certificates are ok \\\| 'Fortinet_CA_SSL#certificate.expires.seconds=\\\d+;;;0; 'Fortinet_CA_SSL1#certificate.expires.seconds=\\\d+;;;0; 'Fortinet_CA_SSL2#certificate.expires.seconds=\\\d+;;;0;

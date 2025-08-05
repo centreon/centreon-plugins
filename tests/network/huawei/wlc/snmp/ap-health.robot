@@ -23,7 +23,7 @@ ap-health ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                             expected_result    --
             ...      1     --verbose --filter-name='Anonymized 065'                                                                                                  OK: access point 'Anonymized 065' data link state: run, power-supply: normal, access point temperature: 42.00 C, access point Anonymized 065 online time is: 1d 22h 48m 58s, access point bootcount total: 424, access point memory: 22.00 %, access point cpu: 1.00%, access point up-Port speed: 1000 b/s, access point up-Port packet errors: 0.00%, access online user nums: 2 | 'Anonymized 065#ap.temperature.celsius'=42.00C;;;; 'Anonymized 065#ap.online.time'=168538;;;; 'Anonymized 065#ap.boot.total.count'=424;;;; 'Anonymized 065#ap.memory.used.percentage'=22.00%;;;; 'Anonymized 065#ap.cpu.used.percentage'=1.00%;;;; 'Anonymized 065#ap.up.port.bitspersecond'=1000b/s;;;; 'Anonymized 065#ap.up.port.package.error.percentage'=0.00;;;; 'Anonymized 065#ap.online.user.count'=2;;;; checking access point 'Anonymized 065' data link state: run, power-supply: normal, access point temperature: 42.00 C, access point Anonymized 065 online time is: 1d 22h 48m 58s, access point bootcount total: 424, access point memory: 22.00 %, access point cpu: 1.00%, access point up-Port speed: 1000 b/s, access point up-Port packet errors: 0.00%, access online user nums: 2

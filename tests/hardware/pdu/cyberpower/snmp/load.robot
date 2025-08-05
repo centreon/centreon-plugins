@@ -22,7 +22,7 @@ load ${tc}
     ...    --snmp-community=hardware/pdu/cyberpower/snmp/CyberPower
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extraoptions                                                                         expected_result    --
             ...      1     --warning-phase-status='\\\%{state} =~ /low|nearOverload/i'                          OK: Device 'ATS011' bank '1' current : 1 A - phase '1' state: normal, current : 1 A, power : 219 W, voltage : 217.8 V | 'ATS011~1#bank.current.ampere'=1A;;;0; 'ATS011~1#phase.current.ampere'=1A;;;0; 'ATS011~1#phase.power.watt'=219W;;;0; 'ATS011~1#phase.voltage.volt'=217.8V;;;0;

@@ -25,7 +25,7 @@ Cpu with lwp ${tc}
     [Tags]    apps    api    vmware   vsphere8    esx
     ${command}    Catenate    ${CMD} --http-backend=lwp ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                                        expected_result   --
         ...      1     ${EMPTY}                                            OK: usage-prct : skipped (no value(s)), usage-frequency : skipped (no value(s)) - no data for host host-22 counter cpu.capacity.provisioned.HOST at the moment.

@@ -23,7 +23,7 @@ wlan-global ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                       expected_result    --
             ...      1     --verbose                                                                                           OK: Access Points normal state 509 on 525 (96.95%), Access Points user authentications 92.06% (1113 on 1209) | 'total'=525;;;0; 'normal'=509;;;0; 'fault'=16;;;0; 'normal-prct'=96.95%;;;0;100 'fault-prct'=3.05%;;;0;100 'current-user'=1209;;;0; 'current-auth-user'=1113;;;0; 'current-auth-user-prct'=92.06%;;;0;100 

@@ -26,7 +26,7 @@ memory ${tc}
     ...    --force-64bits-counters
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    snmpver  extra_options                   expected_result    --
             ...      1     1        --verbose                       OK: Ram Total: 1.92 GB Used (-buffers/cache): 702.20 MB (35.70%) Free: 1.24 GB (64.30%), Buffer: 35.86 MB, Cached: 498.80 MB, Shared: 28.91 MB | 'used'=736309248B;;;0;2062598144 'free'=1326288896B;;;0;2062598144 'used_prct'=35.70%;;;0;100 'buffer'=37601280B;;;0; 'cached'=523030528B;;;0; 'shared'=30310400B;;;0; 

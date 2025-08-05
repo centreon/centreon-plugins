@@ -24,7 +24,7 @@ storage ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                       expected_result    --
             ...      1     ${EMPTY}                            OK: All storages are ok | 'count'=3;;;0; 'used_/'=4534042624B;;;0;10352734208 'used_/dev'=0B;;;0;1024 'used_/boot/efi'=662528B;;;0;33550336

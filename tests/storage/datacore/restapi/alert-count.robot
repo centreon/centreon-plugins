@@ -26,7 +26,7 @@ Datacore check alert count ${tc}
     ...    --warning-warning=${warning-warning} 
     ...    --critical-warning=${critical-warning}
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc      warning-error    critical-error    warning-warning    critical-warning    expected_result   --
         ...      1       0                1                 5                  5                   WARNING: number of error alerts : 1 | 'datacore.event.error.count'=1;0:0;0:1;0; 'datacore.alerts.warning.count'=1;0:5;0:5;0; 'datacore.alerts.info.count'=0;;;0; 'datacore.alerts.trace.count'=0;;;0;

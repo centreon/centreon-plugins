@@ -21,7 +21,7 @@ interfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                           expected_result    --
             ...      1     ${EMPTY}                                                                                                                CRITICAL: Interface '1/1/10' Status : down (admin: up) - Interface '1/1/11' Status : down (admin: up) - Interface '1/1/12' Status : down (admin: up) - Interface '1/1/13' Status : down (admin: up) - Interface '1/1/14' Status : down (admin: up) - Interface '1/1/2' Status : down (admin: up) - Interface '1/1/4' Status : down (admin: up) - Interface '1/1/5' Status : down (admin: up) - Interface '1/1/6' Status : down (admin: up) - Interface '1/1/7' Status : down (admin: up) - Interface '1/1/8' Status : down (admin: up) - Interface '1/1/9' Status : down (admin: up)

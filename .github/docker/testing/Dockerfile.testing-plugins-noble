@@ -50,7 +50,7 @@ echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ noble main" | tee
 echo "deb https://packages.centreon.com/ubuntu-plugins-testing/ noble main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
 echo "deb https://packages.centreon.com/ubuntu-plugins-unstable/ noble main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
-apt-get update -y
+apt-get update
 
 apt-get install -y centreon-connector-perl centreon-clib
 

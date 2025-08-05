@@ -25,7 +25,7 @@ Storage ${tc}
     ...    --resource-group=${resource_group}
     ...    ${thresholds}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc  resource                                                             resource_group          thresholds                                        expected_result    --
             ...       1   sql-bb-stsw-prod-do/elasticpools/sql-epool-bb-psme-prod-do           emsp-tf-prod-va-rg      ${EMPTY}                                          OK: Elastic Pool 'sql-bb-stsw-prod-do/sql-epool-bb-psme-prod-do' Statistic 'average' Metrics Allocated data storage: 201.00 GB, Allocated data storage percentage: 67.00 %, Storage usage percentage: 38.00 %, Storage usage: 114.00 GB | 'sql-bb-stsw-prod-do/sql-epool-bb-psme-prod-do~average#elasticpool.storage.data.allocated.bytes'=215822106624.00B;;;; 'sql-bb-stsw-prod-do/sql-epool-bb-psme-prod-do~average#elasticpool.storage.data.allocated.percentage'=67.00%;;;; 'sql-bb-stsw-prod-do/sql-epool-bb-psme-prod-do~average#elasticpool.storage.usage.percentage'=38.00%;;;; 'sql-bb-stsw-prod-do/sql-epool-bb-psme-prod-do~average#elasticpool.storage.used.bytes'=122406567936.00B;;;;

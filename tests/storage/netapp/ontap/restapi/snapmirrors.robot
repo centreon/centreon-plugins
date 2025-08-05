@@ -28,7 +28,7 @@ Snapmirrors ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc  extra_options                                                      expected_result    --
             ...       1   --critical-status=''                                               OK: Snapmirror 'svm1:volume1-svm1:volume1' healthy: false [state: snapmirrored] [transfer state: string]

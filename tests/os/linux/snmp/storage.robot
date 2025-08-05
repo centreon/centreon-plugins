@@ -24,7 +24,7 @@ storage ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                       expected_result    --
             ...      1     --filter-duplicate=''               OK: All storages are ok | 'count'=5;;;0; 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176 

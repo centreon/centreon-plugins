@@ -26,7 +26,7 @@ interfaces ${tc}
     # first run to build cache
     Run    ${command}
     # second run to control the output
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                                                                                                            expected_result    --
             ...      1     ${EMPTY}                                                                                                                                                                                                                 CRITICAL: Interface 'Anonymized 232' Status : down (admin: up) - Interface 'Anonymized 191' Status : down (admin: up) - Interface 'Anonymized 141' Status : down (admin: up)

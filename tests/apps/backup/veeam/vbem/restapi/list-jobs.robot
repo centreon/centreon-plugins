@@ -28,7 +28,7 @@ list-jobs ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
     
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:    tc     extraoptions                      expected_result   --
         ...      1      --timeframe=''                    List jobs: [uid: urn:veeam:Job][jobName: Backup client 2 - Tous les jours][jobType: Backup] [uid: urn:veeam:Job:xxxxxxxx-yyyy-zzzz-1111-aaaaaaaaaaaa][jobName: PROD Job 1][jobType: Backup]

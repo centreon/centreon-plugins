@@ -24,7 +24,7 @@ list-diskspath ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                           expected_result    --
             ...      1     --skip-total-size-zero=''               List disk path: ${SPACE}'/run/user/0' [id = 25] ${SPACE} '/run' [id = 5] ${SPACE} '/' [id = 6] ${SPACE} '/dev/shm' [id = 8] ${SPACE} '/run/lock' [id = 9]

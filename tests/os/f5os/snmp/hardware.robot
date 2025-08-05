@@ -21,7 +21,7 @@ hardware ${tc}
     ...    --snmp-community=os/f5os/snmp/f5os
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                    expected_result    --
             ...      1     ${EMPTY}                                                                         OK: Current temperature: 31.6 C, average: 32.1 C, minimum: 31.2 C, maximum: 33.8 C - All fans are ok | 'temperature.current.celsius'=31.6C;;;; 'temperature.average.1h.celsius'=32.1C;;;; 'temperature.min.1h.celsius'=31.2C;;;; 'temperature#temperature.max.1h.celsius'=33.8C;;;; '1#fantray.fanspeed.rpm'=15482rpm;;;0; '2#fantray.fanspeed.rpm'=17323rpm;;;0; '3#fantray.fanspeed.rpm'=17121rpm;;;0; '4#fantray.fanspeed.rpm'=17512rpm;;;0; '5#fantray.fanspeed.rpm'=17695rpm;;;0; '6#fantray.fanspeed.rpm'=13543rpm;;;0; '7#fantray.fanspeed.rpm'=16678rpm;;;0; '8#fantray.fanspeed.rpm'=17843rpm;;;0;

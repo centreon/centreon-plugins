@@ -27,7 +27,7 @@ cpu ${tc}
     ...    --warning-core=${warning-core}
     ...    --critical-core=${critical-core}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    critical-average    warning-average    warning-core    critical-core    expected_result    --
             ...      2     '90'                '80'               ${EMPTY}        ${EMPTY}         OK: 2 CPU(s) average usage is 0.50 % | 'total_cpu_avg'=0.50%;0:80;0:90;0;100 'cpu_0'=1.00%;;;0;100 'cpu_1'=0.00%;;;0;100

@@ -32,7 +32,7 @@ Mosquitto MQTT uptime help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ^Plugin Description:
 
 Mosquitto MQTT uptime ${tc}
     [Documentation]    Check Mosquitto MQTT uptime
@@ -41,7 +41,7 @@ Mosquitto MQTT uptime ${tc}
     ...    ${CMD}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions           expected_result    --
         ...      1     ${EMPTY}               ^OK: uptime is:( \\\\d+d)?( \\\\d+h)?( \\\\d+m)?( \\\\d+s)? \\\\| 'uptime'=\\\\d+s;;;\\\\d+;$

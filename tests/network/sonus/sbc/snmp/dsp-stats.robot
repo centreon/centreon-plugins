@@ -22,7 +22,7 @@ dsp-stats ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc     extra_options                                                                               expected_result    --
             ...      1      ${EMPTY}                                                                                     OK: DSP '9' state is 'up', CPU usage: 1.00 %, active channels: 0 | '9#dsp.cpu.utilization.percentage'=1.00%;;;0;100 '9#dsp.channels.active.count'=0;;;0;

@@ -25,7 +25,7 @@ Avigilon camera Storage ${tc}/3
     ...    --critical-status='${critical_status}'
     ...    --unknown-status='${unknown_status}'
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    warning_status                              critical_status                            unknown_status                                expected_result    --
             ...      1     ${EMPTY}                                    ${EMPTY}                                   ${EMPTY}                                      OK: state of the SD card: mediaNotPresent

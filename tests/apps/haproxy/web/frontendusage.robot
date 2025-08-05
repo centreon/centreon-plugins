@@ -28,7 +28,7 @@ frontend-usage ${tc}
     ...    --filter-name='${filter_name}'
     ...    ${extra_options}
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    filter_name          extra_options                                           expected_result    --
             ...      1      ${EMPTY}            ${EMPTY}                                                OK: Frontend 'hafrontend' frontend status: OPEN, current session rate: 1/s, max session rate: 6/s, current sessions: 10, total sessions: 3980, max sessions: 16, frontend-traffic-in : Buffer creation, frontend-traffic-out : Buffer creation, denied requests: 0, denied responses: 0, error requests: 42 | 'hafrontend#frontend.session.current.rate.countpersecond'=1;;;0; 'hafrontend#frontend.session.max.rate.countpersecond'=6;;;0; 'hafrontend#frontend.sessions.current.count'=10;;;0; 'hafrontend#frontend.sessions.total.count'=3980;;;0; 'hafrontend#frontend.sessions.maximum.count'=16;;;0; 'hafrontend#frontend.requests.denied.count'=0;;;0; 'hafrontend#frontend.responses.denied.count'=0;;;0; 'hafrontend#frontend.requests.error.count'=42;;;0;

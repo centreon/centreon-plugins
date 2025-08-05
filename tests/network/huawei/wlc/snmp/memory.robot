@@ -23,7 +23,7 @@ memory ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                             expected_result    --
             ...      1     ${EMPTY}                                                  OK: All memory usages are ok | 'used_1'=271388616B;;;0;1765801984 'used_2'=271382292B;;;0;1765801984 'used_3'=73684888B;;;0;1765801984 'used_4'=73684936B;;;0;1765801984 'used_5'=73708228B;;;0;1765801984 'used_6'=73690100B;;;0;1765801984 'used_7'=385327944B;;;0;1832910848 'used_8'=397826128B;;;0;1832910848

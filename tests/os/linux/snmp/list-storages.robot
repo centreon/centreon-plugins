@@ -24,7 +24,7 @@ list-storages ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                   expected_result    --
             ...      1     --display-transform-src='dev'                                                                   List storage: ${SPACE}Skipping storage 'Physical memory': no type or no matching filter type ${SPACE}Skipping storage 'Swap space': no type or no matching filter type ${SPACE}Skipping storage 'Available memory': no type or no matching filter type ${SPACE}Skipping storage 'Virtual memory': no type or no matching filter type ${SPACE}'/run' [size = 206262272B] [id = 35] ${SPACE} '/' [size = 105088212992B] [id = 36] ${SPACE} '//shm' [size = 1031299072B] [id = 38] ${SPACE} '/run/lock' [size = 5242880B] [id = 39] ${SPACE}'/run/user/0' [size = 206258176B] [id = 55] ${SPACE} Skipping storage 'Memory buffers': no type or no matching filter type ${SPACE} Skipping storage 'Cached memory': no type or no matching filter type ${SPACE} Skipping storage 'Shared memory': no type or no matching filter type

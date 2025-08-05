@@ -25,7 +25,7 @@ Hardware UPS Standard SNMP input lines ${tc}
     ...    --warning-frequence=${warningfrequence}
     ...    --exclude-id=${excludeid}
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc  snmpcommunity                                         warningpower    criticalcurrent     warningvoltage    warningfrequence    excludeid    expected_result    --
             ...       1   hardware/ups/standard/snmp/ups-standard               ${EMPTY}        ${EMPTY}            ${EMPTY}          ${EMPTY}            ${EMPTY}     OK: All input lines are ok | '1#line.input.frequence.hertz'=49.9Hz;;;; '1#line.input.voltage.volt'=233V;;;; '1#line.input.current.ampere'=0A;;;; '1#line.input.power.watt'=0W;;;; '2#line.input.frequence.hertz'=49.9Hz;;;; '2#line.input.voltage.volt'=234V;;;; '2#line.input.current.ampere'=0A;;;; '2#line.input.power.watt'=0W;;;; '3#line.input.frequence.hertz'=49.9Hz;;;; '3#line.input.voltage.volt'=234V;;;; '3#line.input.current.ampere'=0A;;;; '3#line.input.power.watt'=0W;;;;

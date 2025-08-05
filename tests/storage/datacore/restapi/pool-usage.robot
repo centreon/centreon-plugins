@@ -27,7 +27,7 @@ Datacore check pool usage ${tc}
     ...    --critical-bytesallocatedpercentage=${critical-bytesallocatedpercentage} 
     ...    --pool-id=B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:{4dec1b5a-2577-11e5-80c3-00155d651622}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc      warning-bytesallocatedpercentage      critical-bytesallocatedpercentage    warning-oversubscribed      critical-oversubscribed    expected_result   --
         ...      1       2                                     5                                    -1                          3                          CRITICAL: Bytes Allocated : 12 % WARNING: Over subscribed bytes : 0 | 'datacore.pool.bytesallocated.percentage'=12%;0:2;0:5;0;100 'datacore.pool.oversubscribed.bytes'=0bytes;0:-1;0:3;0;

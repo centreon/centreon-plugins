@@ -23,7 +23,7 @@ ha-status ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                          expected_result    --
             ...      1     ${EMPTY}                                                               OK: All licenses are ok \\\\| 'base_fw#license.expires.seconds'=\\\\d+s;;;0; 'net_protection#license.expires.seconds'=\\\\d+s;;;0; 'web_protection#license.expires.seconds'=\\\\d+s;;;0;

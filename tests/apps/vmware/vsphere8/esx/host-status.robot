@@ -25,8 +25,8 @@ Host-Status ${tc}
     ${command}    Catenate    ${CMD} ${filter_host} ${extraoptions}
     ${command_curl}    Catenate    ${command} --http-backend=curl
     ${command_lwp}     Catenate    ${command} --http-backend=lwp  
-    Ctn Run Command And Check Result As Strings    ${command_curl}    ${expected_result}
-    Ctn Run Command And Check Result As Strings    ${command_lwp}     ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command_curl}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command_lwp}     ${expected_result}
     
     
     Examples:    tc     filter_host                 extraoptions                        expected_result   --

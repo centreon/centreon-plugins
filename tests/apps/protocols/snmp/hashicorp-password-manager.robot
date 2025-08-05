@@ -35,7 +35,7 @@ check hashicorp vault manager${Name}
     ...    --format-details-warning='current value is: \\%{details_warning}'
     ...    --format-details-critical='current value is: \\%{details_critical}'
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:    Name    path-param    expected_result   --
     ...    default path    --auth-path='' --auth-settings="password=secrethashicorpPassword"    OK: current value is: Linux centreon-devbox 5.10.0-28-amd64 #1 SMP Debian 5.10.209-2 (2024-01-31) x86_64

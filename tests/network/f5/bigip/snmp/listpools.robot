@@ -21,7 +21,7 @@ list-pools ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                           expected_result    --
             ...      1     ${EMPTY}                                                                List pools: [name: /Common/AN-577_pool] [status: green] [state: enabled] [name: /Common/ActiveDirectory_pool] [status: green] [state: enabled] [name: /Common/ActiveSync.app/ActiveSync_as_pool7] [status: green] [state: enabled] [name: /Common/ActiveSync_cert.app/ActiveSync_cert_as_pool7] [status: green] [state: enabled]

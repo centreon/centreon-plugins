@@ -28,7 +28,7 @@ System status ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                          expected_result    --
             ...       1     ${EMPTY}                              OK: CPU: 1.19%, Memory: 1.84GB, Swap: 69.46MB, Running containers: 3, Stopped containers: 2, Uptime: 52440 s | 'podman.system.cpu.usage.percent'=1.19%;;;0;100 'podman.system.memory.usage.bytes'=1980252160B;;;0; 'podman.system.swap.usage.bytes'=72836626B;;;0; 'podman.system.containers.running.count'=3;;;0;6 'podman.system.containers.stopped.count'=2;;;0;6 'podman.system.uptime.seconds'=52440s;;;0;

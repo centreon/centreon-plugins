@@ -72,8 +72,8 @@ Stop Connector
    Remove File     /tmp/connector.log
    Ctn Stop Connector
 
-Ctn Run Command And Check Result As Regexp
-    [Arguments]    ${command}    ${expected_result}
+Ctn Run Command Without Connector And Check Result As Regexp
+    [Arguments]    ${tc}    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Match Regexp
@@ -82,8 +82,8 @@ Ctn Run Command And Check Result As Regexp
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
     ...    values=False
 
-Ctn Run Command And Check Result As Strings
-    [Arguments]    ${command}    ${expected_result}
+Ctn Run Command Without Connector And Check Result As Strings
+    [Arguments]    ${tc}    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
@@ -93,8 +93,8 @@ Ctn Run Command And Check Result As Strings
     ...    values=False
     ...    collapse_spaces=True
 
-Ctn Verify Command Output
-    [Arguments]    ${command}    ${expected_result}
+Ctn Verify Command Without Connector Output
+    [Arguments]    ${tc}    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Contain    
@@ -108,7 +108,6 @@ Ctn Run Command With Connector And Check Result As Strings
     [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
-#    Ctn Start Connector
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
     # 1. Extract the result from the log and write to /tmp/connector.output
     Ctn Extract Result From Log    ${tc}
@@ -119,12 +118,10 @@ Ctn Run Command With Connector And Check Result As Strings
     Should Be Equal As Strings    ${output}    ${expected_result}
 
 
-
 Ctn Run Command With Connector And Check Result As Regexp
     [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
-#    Ctn Start Connector
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
     # 1. Extract the result from the log and write to /tmp/connector.output
     Ctn Extract Result From Log    ${tc}
@@ -145,6 +142,27 @@ Ctn Run Command With Connector And Check Multiline Result
     ${output}    Replace String    ${output}    \n    ${SPACE}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings    ${output}    ${expected_result}
+
+
+Run Command And Check Result As Strings
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    Remove File    /tmp/connector.output
+    Remove File    /tmp/connector.command.log
+    IF    "centreon_plugins.pl" in $command
+        Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    ELSE
+        Ctn Run Command With Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}    ${timeout}
+    END
+
+Run Command And Check Result As Regexp
+    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    Remove File    /tmp/connector.output
+    Remove File    /tmp/connector.command.log
+    IF    "centreon_plugins.pl" in $command
+        Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    ELSE
+        Ctn Run Command With Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}    ${timeout}
+    END
 
 Ctn Run Command And Check Result As Json
     [Arguments]    ${command}    ${expected}

@@ -22,7 +22,7 @@ uptime ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
             ...      1     ${EMPTY}                                                                                                OK: System uptime is: 273d 7h 15m 11s | 'uptime'=23613311.00s;;;0;

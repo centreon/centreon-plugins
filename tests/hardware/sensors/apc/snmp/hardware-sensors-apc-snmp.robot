@@ -22,7 +22,7 @@ APC Sensors ${tc}/9
     ${command}    Append Option To Command    ${command}    --critical    ${critical}
     ${command}    Append Option To Command    ${command}    --component    ${component}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 # --component 'temperature' --warning='humidity,.,45:65' --critical='humidity,.,35:70'
     Examples:        tc    component      warning                 critical               expected_result    --
             ...      1     _empty_        _empty_                 _empty_                OK: All 2 components are ok [2/2 temperatures]. | 'Main Module:Sonde de temperature#hardware.sensor.temperature.celsius'=23C;;;; 'Main Module:Sonde de temperature#hardware.sensor.humidity.percentage'=35%;;;0;100 'hardware.temperature.count'=2;;;;

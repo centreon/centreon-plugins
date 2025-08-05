@@ -24,7 +24,7 @@ HyperV 2022-1 ${tc}
     ...    --command-options=${CURDIR}/nodeintegrationservice-2022-1.json
     ...    --filter-vm='${filter_vm}'
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    filter_vm       expected_result    --
             ...      1     ${EMPTY}        CRITICAL: 1 problem(s) detected

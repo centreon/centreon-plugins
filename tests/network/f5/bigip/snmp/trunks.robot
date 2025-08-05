@@ -21,7 +21,7 @@ trunks ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                           expected_result    --
             ...      1     ${EMPTY}                                                                OK: Trunk 'Anonymized 234' status is 'up', traffic in: Buffer creation, traffic out: Buffer creation, packets in error: Buffer creation, packets out error: Buffer creation, packets in drop: Buffer creation, packets out drop: Buffer creation

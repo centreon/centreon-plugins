@@ -28,7 +28,7 @@ backend-usage ${tc}
     ...    --filter-name='${filter_name}'
     ...    ${extra_options}
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    filter_name         extra_options                                    expected_result    --
             ...      1     STATIC_BG_IMAGE     ${EMPTY}                                         OK: Backend 'STATIC_BG_IMAGE' backend status: UP, current queue: 0, current session rate: 0/s, max session rate: 1/s, current sessions: 0, backend-total-sessions : Buffer creation, backend-traffic-in : Buffer creation, backend-traffic-out : Buffer creation, denied requests: 0, denied responses: 0, connection errors: 0, responses errors: 0 | 'STATIC_BG_IMAGE#backend.queue.current.count'=0;;;0; 'STATIC_BG_IMAGE#backend.session.current.rate.countpersecond'=0;;;0; 'STATIC_BG_IMAGE#backend.session.max.rate.countpersecond'=1;;;0; 'STATIC_BG_IMAGE#backend.sessions.current.count'=0;;;0; 'STATIC_BG_IMAGE#backend.requests.denied.count'=0;;;0; 'STATIC_BG_IMAGE#backend.responses.denied.count'=0;;;0; 'STATIC_BG_IMAGE#backend.connections.error.count'=0;;;0; 'STATIC_BG_IMAGE#backend.responses.error.count'=0;;;0;

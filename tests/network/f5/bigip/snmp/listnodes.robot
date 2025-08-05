@@ -21,7 +21,7 @@ list-nodes ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                        expected_result    --
             ...      1     ${EMPTY}                                             List nodes: [name: /Common/172.20.15.202] [status: blue] [state: enabled] [name: /Common/172.20.2.117] [status: blue] [state: enabled] [name: /Common/172.20.2.127] [status: blue] [state: enabled] [name: /Common/172.20.2.132] [status: blue] [state: enabled]

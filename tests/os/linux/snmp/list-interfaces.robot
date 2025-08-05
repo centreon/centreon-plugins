@@ -24,7 +24,7 @@ list-interfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                               expected_result    --
             ...      1     --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'                            List interfaces: ${SPACE}'lo' [speed = 10][status = up][id = 1][alias = ][type = softwareLoopback] 'eth0' [speed = 1000][status = up][id = 2][alias = ][type = ethernetCsmacd] ${SPACE} 'eth1' [speed = 1000][status = up][id = 3][alias = ][type = ethernetCsmacd]

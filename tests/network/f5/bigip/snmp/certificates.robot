@@ -26,7 +26,7 @@ certificates ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                       expected_result    --
             ...      1     ${EMPTY}                                                                            CRITICAL: Certificate 'Anonymized 165' has expired - Certificate 'Anonymized 186' has expired | 'certificates-count'=9;;;0; '_Anonymized 981'=212738332s;;@0:0;0; '_Anonymized 165'=0s;;@0:0;0; '_Anonymized 982'=384058793s;;@0:0;0; '_Anonymized 983'=145466616s;;@0:0;0; '_Anonymized 196'=122214889s;;@0:0;0; '_Anonymized 141'=67955030s;;@0:0;0; '_Anonymized 881'=68447205s;;@0:0;0; '_Anonymized 068'=145466616s;;@0:0;0; '_Anonymized 186'=0s;;@0:0;0;

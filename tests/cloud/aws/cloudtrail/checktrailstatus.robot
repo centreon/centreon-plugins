@@ -24,7 +24,7 @@ AWS CloudTrail check trail status ${tc}
     ...    --mode=checktrailstatus
     ...    --endpoint=http://${HOSTNAME}:${APIPORT}/cloudtrail/gettrailstatus/${trailstatus}
     ...    --trail-name=trailname
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
         
     Examples:         tc    trailstatus     expected_result    --
     ...               1     true            OK: Trail is logging: 1 | 'trail_is_logging'=1;;;0;

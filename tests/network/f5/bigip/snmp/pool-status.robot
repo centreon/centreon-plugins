@@ -21,7 +21,7 @@ pool-status ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                                     expected_result    --
             ...      1     ${EMPTY}                                                                                                                                          OK: All pools are ok | '/Common/IDM_pool#pool.connections.server.current.count'=0;;;0; '/Common/IDM_pool#pool.members.active.count'=0;;;0;

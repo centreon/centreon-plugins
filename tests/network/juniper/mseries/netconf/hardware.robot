@@ -22,7 +22,7 @@ Hardware ${tc}
     ...    --sshcli-option="-f=${CURDIR}${/}data${/}hardware.netconf"
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:      tc    extraoptions    expected_result    --
             ...    1     --component=fan
@@ -43,7 +43,7 @@ Hardware no fan ${tc}
     ...    --sshcli-option="-f=${CURDIR}${/}data${/}hardware_no_fan.netconf"
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:      tc    extraoptions    expected_result    --
             ...    1     --component=fan --no-component=unknown

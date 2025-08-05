@@ -23,7 +23,7 @@ Battery ${tc}
     ...    ${extra_options}
 
    
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
             ...      1     {EMPTY}                                                                                                 OK: battery status is normal - charge remaining: 100% (0 minutes remaining) | 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=0;;;0; 'battery.voltage.volt'=339.1V;;;; 'battery.temperature.celsius'=2C;;;; 'battery.temperatureambient.celsius'=2.2C;;;;

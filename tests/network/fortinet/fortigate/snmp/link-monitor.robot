@@ -34,7 +34,7 @@ Network Fortinet Fortigate SNMP link monitor ${tc}
     ...    --warning-packet-loss=${warningpacketloss}
     ...    --critical-packet-loss=${criticalpacketloss}
   
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:         tc   filterid         filtername        filtervdom     customperfdatainstances    unknownstatus                warningstatus                criticalstatus                warninglatency    criticallatency    warningjitter    criticaljitter    warningpacketloss    criticalpacketloss    expected_result    --
             ...       1    ${EMPTY}         ${EMPTY}          ${EMPTY}       ${EMPTY}                   ${EMPTY}                     ${EMPTY}                     ${EMPTY}                      ${EMPTY}          ${EMPTY}           ${EMPTY}         ${EMPTY}          ${EMPTY}             ${EMPTY}              OK: All link monitors are ok | 'MonitorWAN1~root#linkmonitor.latency.milliseconds'=39.739;;;0; 'MonitorWAN1~root#linkmonitor.jitter.milliseconds'=0.096;;;0; 'MonitorWAN1~root#linkmonitor.packet.loss.percentage'=0;;;0; 'MonitorWAN2~root#linkmonitor.latency.milliseconds'=46.446;;;0; 'MonitorWAN2~root#linkmonitor.jitter.milliseconds'=1.868;;;0; 'MonitorWAN2~root#linkmonitor.packet.loss.percentage'=1;;;0; 'MonitorWAN3~root#linkmonitor.latency.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.jitter.milliseconds'=0.000;;;0; 'MonitorWAN3~root#linkmonitor.packet.loss.percentage'=100;;;0; 

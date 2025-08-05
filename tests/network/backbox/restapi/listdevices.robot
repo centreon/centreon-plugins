@@ -29,7 +29,7 @@ List-Devices ${tc}
     ${command}    Catenate
     ...    ${cmd}
     ...    ${extraoptions}
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions              expected_result   --
         ...      1     ${EMPTY}                  ^Devices: (\\\\n\\\\[.*\\\\]){5}\\\\Z

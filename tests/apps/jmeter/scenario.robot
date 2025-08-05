@@ -22,7 +22,7 @@ Scenario ${tc}
     ...    --command-path=${CURDIR}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:
     ...    tc    scenario    extraoptions         expected_result    --

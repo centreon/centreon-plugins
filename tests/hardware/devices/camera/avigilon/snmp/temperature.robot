@@ -26,7 +26,7 @@ Avigilon camera Temperature ${tc}/5
     ...    --warning-status='${warning_status}'
     ...    --critical-status='${critical_status}'
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    warning_temperature  critical_temperature    warning_status          critical_status         expected_result    --
             ...      1     ${EMPTY}             ${EMPTY}                ${EMPTY}                ${EMPTY}                OK: temperature: 23.00 C, sensor 1 [type:mainSensor] status: ok | 'sensor.temperature.celsius'=23C;;;0;

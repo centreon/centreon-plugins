@@ -32,7 +32,7 @@ Mosquitto MQTT numeric-value help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ^Plugin Description:
 
 Mosquitto MQTT numeric-value ${tc}
     [Documentation]    Check Mosquitto MQTT numeric-value
@@ -50,7 +50,7 @@ Mosquitto MQTT numeric-value ${tc}
     ...    --perfdata-min=${perfdata_min}
     ...    --perfdata-max=${perfdata_max}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
 
     Examples:    tc    topic                         warning     critical    extracted_pattern     format                         format_custom    perfdata_unit    perfdata_name     perfdata_min    perfdata_max    expected_result    --
         ...      1     $SYS/broker/messages/sent     ${EMPTY}    ${EMPTY}    ${EMPTY}              current value is %s            ${EMPTY}         ${EMPTY}         value             ${EMPTY}        ${EMPTY}        ^OK: current value is \\\\d* \\\\| 'value'=\\\\d*;;;;$

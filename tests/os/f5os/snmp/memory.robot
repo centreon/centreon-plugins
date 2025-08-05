@@ -21,7 +21,7 @@ memory ${tc}
     ...    --snmp-community=os/f5os/snmp/f5os
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                    expected_result    --
             ...      1     ${EMPTY}                                                                         OK: Memory total: 15.00 GB used: 6.60 GB (43.99%) free: 8.40 GB (56.01%) | 'memory.usage.bytes'=7085105152B;;;0;16107667456 'memory.free.bytes'=9022562304B;;;0;16107667456 'memory.usage.percent'=43.99%;;;0;100 'memory.free.percent'=56.01%;;;0;100

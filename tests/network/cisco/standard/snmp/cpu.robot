@@ -20,7 +20,7 @@ cpu ${tc}
     ...    --snmp-community=network/cisco/standard/snmp/cisco
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                 expected_result    --
             ...      1     --verbose                                                                     OK: 1 CPU(s) average usage is 60.00 % (5s) 57.00 % (1m) 48.00 % (5m) - CPU '1' usage 60.00 % (5s) 57.00 % (1m) 48.00 % (5m) | 'total_cpu_5s_avg'=60.00%;;;0;100 'total_cpu_1m_avg'=57.00%;;;0;100 'total_cpu_5m_avg'=48.00%;;;0;100 'cpu_5s'=60.00%;;;0;100 'cpu_1m'=57.00%;;;0;100 'cpu_5m'=48.00%;;;0;100 CPU '1' usage 60.00 % (5s) 57.00 % (1m) 48.00 % (5m)

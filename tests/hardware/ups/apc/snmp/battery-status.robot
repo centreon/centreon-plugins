@@ -25,7 +25,7 @@ battery status ${tc}
     ...    --snmp-community=hardware/ups/apc/snmp/ups-apc-battery-ok
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_regexp}
 
     Examples:    tc    extra_options                                                             expected_regexp    --
     ...          1     ${EMPTY}                                                              ^OK: battery status is 'batteryNormal' \\\\[battery needs replace: no\\\\] \\\\[last replace date: 10-05-2022\\\\], remaining capacity: 100 %, remaining time: 665.00 minutes, time on battery: 205761.00 minutes, voltage: 110 V, temperature: 23 C - All battery packs are ok \\\\| 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=665.00m;;;0; 'battery.timeon.minutes'=205761.00m;;;0; 'battery.voltage.volt'=110V;;;; 'battery.temperature.celsius'=23C;;;;
@@ -45,7 +45,7 @@ battery low status ${tc}
     ...    --critical-cartridge-status='${critical_cartridge_status}'
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_regexp}
 
     Examples:    tc    warning_status                   critical_status            critical_battery_pack_status    critical_cartridge_status    extra_options    expected_regexp    --
     ...          1     \\\%{status} =~ /batteryLow/i    \\\%{replace} =~ /yes/i    \\\%{status} ne "OK"            \\\%{status} ne "OK"         ${EMPTY}         ^CRITICAL: battery status is 'batteryLow' \\\\[battery needs replace: yes\\\\] \\\\[last replace date: 10/05/2022\\\\] - battery pack '1' status is 'needsReplacement' - cartridge '1' status is 'needsReplacement' - cartridge '2' status is 'needsReplacement' - battery pack '2' status is 'needsReplacement' \\\\| 'battery.charge.remaining.percent'=75%;;;0;100 'battery.charge.remaining.minutes'=665.00m;;;0; 'battery.timeon.minutes'=390946.00m;;;0; 'battery.voltage.volt'=110V;;;; 'battery.temperature.celsius'=23C;;;; 'battery.replace.lasttime.seconds'=\\\\d*s;;;;$
