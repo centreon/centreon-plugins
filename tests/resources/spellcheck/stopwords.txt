@@ -40,6 +40,7 @@ blocked-by-uf
 BPL
 --cacert-file
 cardtemperature
+CDN
 centreon
 Centreon
 centreonvault
@@ -99,6 +100,7 @@ Fortigate
 Fortinet
 FQDN
 FreeBSD
+FrontDoor
 frsevent
 GCP
 --get-param
@@ -258,6 +260,7 @@ scenarii
 --scope-datacenter
 SFOS
 sfp.temperature
+SignalR
 sinr
 --skip-ssl-check
 SkyHigh
