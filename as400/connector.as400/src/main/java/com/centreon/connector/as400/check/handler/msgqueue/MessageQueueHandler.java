@@ -94,11 +94,6 @@ public class MessageQueueHandler extends AbstractHandler implements IMessageQueu
                         .debug("Message found : " + message.getID() + " - " + message.getText().replace('|', ' '));
 
                 if ((message.getSeverity() >= minSeverityLevel) && (message.getSeverity() < maxSeverityLevel)) {
-                    //if ("A".equals(message.getReplyStatus())) {
-                    // The message has been acknowledge already and we don't take it into account
-                    //    continue;
-                    //}
-
                     final String messageId = message.getID();
                     if (messageIdfilterPattern != null && !messageId.matches(messageIdfilterPattern)) {
                         continue;
