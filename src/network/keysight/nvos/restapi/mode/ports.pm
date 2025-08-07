@@ -314,13 +314,13 @@ sub manage_selection {
         if ($_->{type} eq 'Port Group') {
             $info = $options{custom}->request_api(
                 method => 'GET',
-                endpoint => '/internal/port_groups/' . $_->{id},
+                endpoint => '/internal/port_groups/' . $_->{default_name},
                 get_param => ['properties=name,link_status']
             );
         } else {
             $info = $options{custom}->request_api(
                 method => 'GET',
-                endpoint => '/api/ports/' . $_->{id},
+                endpoint => '/api/ports/' . $_->{default_name},
                 get_param => ['properties=name,enabled,license_status,link_status']
             );
         }
