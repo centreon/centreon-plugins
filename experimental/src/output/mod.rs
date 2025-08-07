@@ -183,7 +183,19 @@ impl<'a> OutputFormatter<'a> {
     }
 
     fn build_detail(&self, prefix: &str) -> String {
-        std::format!("{}{}", prefix, "blabla")
+        let mut v = Vec::new();
+        for m in self.metrics.iter() {
+            if let Some(status) = m.status {
+                if status.is_worse_than(self.status) {
+                    v.push(std::format!("{} is {}{}", m.name, m.value, m.uom));
+                }
+            }
+        }
+        std::format!(
+            "{}{}",
+            prefix,
+            v.join::<&str>(&self.output_formatter.metric_separator)
+        )
     }
 }
 

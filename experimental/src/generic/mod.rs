@@ -24,6 +24,7 @@ pub struct Perfdata<'p> {
     pub max: Option<f64>,
     pub warning: Option<&'p str>,
     pub critical: Option<&'p str>,
+    pub status: Option<Status>,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -42,6 +43,22 @@ impl Status {
             Status::Critical => "CRITICAL",
             Status::Unknown => "UNKNOWN",
         }
+    }
+
+    pub fn is_worse_than(&self, other: Status) -> bool {
+        let self_int = match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Critical => 3,
+            Status::Unknown => 2,
+        };
+        let other_int = match other {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Critical => 3,
+            Status::Unknown => 2,
+        };
+        self_int >= other_int
     }
 }
 
@@ -308,6 +325,7 @@ impl Command {
                             max: compute_threshold(i, &max),
                             warning: w,
                             critical: c,
+                            status: Some(current_status),
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -353,6 +371,7 @@ impl Command {
                         max: compute_threshold(0, &max),
                         warning: w,
                         critical: c,
+                        status: Some(current_status),
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
@@ -432,6 +451,7 @@ impl Command {
                                 max,
                                 warning: w,
                                 critical: c,
+                                status: Some(current_status),
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
@@ -457,6 +477,7 @@ impl Command {
                             max,
                             warning: w,
                             critical: c,
+                            status: Some(current_status),
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
