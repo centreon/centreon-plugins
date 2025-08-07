@@ -148,7 +148,7 @@ Ctn Run Command With Connector And Check Multiline Result
     Should Be Equal As Strings    ${output}    ${expected_result}
 
 
-Run Command And Check Result As Strings
+Ctn Run Command And Check Result As Strings
     [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
@@ -158,7 +158,7 @@ Run Command And Check Result As Strings
         Ctn Run Command With Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}    ${timeout}
     END
 
-Run Command And Check Result As Regexp
+Ctn Run Command And Check Result As Regexp
     [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log

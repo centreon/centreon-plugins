@@ -23,7 +23,7 @@ cpu ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}       
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${tc}    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                   expected_result    --
             ...      1     --use-ucd='0'                   OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
