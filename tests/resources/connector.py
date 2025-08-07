@@ -125,7 +125,6 @@ def ctn_clean_connector_output(line):
         line = str(line)
     line = line.strip()
     print(f"CLEAN DEBUG RAW: {repr(line)}")  # This will show hidden chars
-    # If 'OK:' is in the line, just return everything from 'OK:' onward!
     idx = line.find("OK:")
     if idx != -1:
         cleaned = line[idx:]

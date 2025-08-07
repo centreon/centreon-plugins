@@ -2,8 +2,8 @@
 Documentation       Check time table
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Suite Setup         Start Connector
-Suite Teardown      Stop Connector
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Stop Connector
 Test Timeout        120s
 
 
