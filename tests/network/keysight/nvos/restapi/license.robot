@@ -30,7 +30,7 @@ license ${tc}
     ...    ${extraoptions}
 
     Log    ${cmd}
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc    extraoptions                                            expected_result    --
             ...       1     --verbose                                               OK: status : skipped (no value(s))

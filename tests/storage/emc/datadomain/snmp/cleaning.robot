@@ -27,7 +27,7 @@ cleaning ${tc}
     # first run to build cache
     Run    ${command}
     # second run to control the output
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
     
 
     Examples:        tc    extra_options                                                                      snmp_community                                                                      expected_result    --

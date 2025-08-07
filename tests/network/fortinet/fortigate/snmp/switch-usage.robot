@@ -21,7 +21,7 @@ switch-usage ${tc}
     ...    --snmp-community=network/fortinet/fortigate/snmp/slim_fortigate-switches
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                          expected_result    --
             ...      1     ${EMPTY}                                               OK: All switches are ok | 'cpu_Anonymized 188'=21.00%;;;0;100 'memory_Anonymized 188'=38.00%;;;0;100 'cpu_Anonymized 152'=7.00%;;;0;100 'memory_Anonymized 152'=65.00%;;;0;100

@@ -24,7 +24,7 @@ inlet ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                                 expected_result    --
             ...      1     ${EMPTY}                                                                      OK: All 7 components are ok [1/1 activeEnergy, 1/1 activePower, 1/1 apparentPower, 1/1 frequency, 1/1 powerFactor, 1/1 rmsCurrent, 1/1 rmsVoltage]. | 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.activeenergy.watthour'=1444088wattHour;;;; 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.activepower.watt'=242W;;;; 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.apparentpower.voltamp'=379voltamp;;;; 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.frequency.hertz'=50Hz;;;; 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.powerfactor'=0.64;;;; 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.rmscurrent.ampere'=1.626A;~:10.4;~:12.8;; 'Anonymized 102~Anonymized 027#hardware.sensor.inlet.rmsvoltage.volt'=233V;194:247;188:254;; 'hardware.activeEnergy.count'=1;;;; 'hardware.activePower.count'=1;;;; 'hardware.apparentPower.count'=1;;;; 'hardware.frequency.count'=1;;;; 'hardware.powerFactor.count'=1;;;; 'hardware.rmsCurrent.count'=1;;;; 'hardware.rmsVoltage.count'=1;;;;

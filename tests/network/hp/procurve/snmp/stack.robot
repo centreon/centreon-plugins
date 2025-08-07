@@ -25,7 +25,7 @@ stack ${tc}
     # first run to build cache
     Run    ${command}
     # second run to control the output
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
             ...      1     --verbose                                                                                               OK: All stack members are ok ${\n}checking stack member 'Anonymized 238'${\n}${SPACE}${SPACE}${SPACE}${SPACE}role: active [state: standby]${\n}${SPACE}${SPACE}${SPACE}${SPACE}port '1' operational status: up [admin status: enabled]${\n}${SPACE}${SPACE}${SPACE}${SPACE}port '2' operational status: up [admin status: enabled]${\n}checking stack member 'Anonymized 239'${\n}${SPACE}${SPACE}${SPACE}${SPACE}role: notReady [state: commander]${\n}${SPACE}${SPACE}${SPACE}${SPACE}port '1' operational status: up [admin status: enabled]${\n}${SPACE}${SPACE}${SPACE}${SPACE}port '2' operational status: up [admin status: enabled]

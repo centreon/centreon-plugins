@@ -26,7 +26,7 @@ load ${tc}
     ...    --average
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc     critical         warning           extra_options            expected_result    --
             ...      1      '6,5,4'          '4,3,2'           ${EMPTY}           OK: Load average: 0.43 [0.87/2 CPUs], 0.32 [0.63/2 CPUs], 0.23 [0.47/2 CPUs] | 'avg_load1'=0.43;0:4;0:6;0; 'avg_load5'=0.32;0:3;0:5;0; 'avg_load15'=0.23;0:2;0:4;0; 'load1'=0.87;0:8;0:12;0; 'load5'=0.63;0:6;0:10;0; 'load15'=0.47;0:4;0:8;0; 

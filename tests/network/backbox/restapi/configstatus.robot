@@ -29,7 +29,7 @@ configstatus ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc    extraoptions                expected_result    --
             ...       1     ${EMPTY}                    OK: identical: 3, changed: 4, n/a: 5 | 'config.identical.count'=3;;;0; 'config.changed.count'=4;;;0; 'config.na.count'=5;;;0;

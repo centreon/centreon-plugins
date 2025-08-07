@@ -27,7 +27,7 @@ CPU ${tc}
     ...    --warning-cpu-utilization-5m=${warningcpuutilization5m}
     ...    --critical-cpu-utilization-5m=${criticalcpuutilization5m}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
 
     Examples:         tc  warningcpuutilization5s  criticalcpuutilization5s  warningcpuutilization1m  criticalcpuutilization1m  warningcpuutilization5m  criticalcpuutilization5m  expected_result    --

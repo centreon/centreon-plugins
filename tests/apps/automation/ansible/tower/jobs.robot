@@ -29,7 +29,7 @@ jobs ${tc}
     ...    --mode=jobs
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc  extraoptions                                 expected_result    --
             ...       1   --filter-name=''                             OK: Jobs total: 4, successful: 0, failed: 0, running: 0 | 'jobs.total.count'=4;;;0; 'jobs.successful.count'=0;;;0;4 'jobs.failed.count'=0;;;0;4 'jobs.running.count'=0;;;0;4 'jobs.canceled.count'=0;;;0;4 'jobs.pending.count'=0;;;0;4 'jobs.default.count'=0;;;0;4

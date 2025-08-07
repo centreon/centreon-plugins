@@ -28,7 +28,7 @@ plans ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
 
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc  extraoptions                                                                                                     expected_result    --
             ...       1   ${EMPTY}                                                                                                         OK: All plans are ok \\\| 'plans.detected.count'=3;;;0; 'test-plan#plan.executions.detected.count'=6;;;0; 'test-plan#plan.executions.failed.percentage'=0.00%;;;0;100 'test-plan#plan.execution.last.seconds'=17822466s;;;0; 'test-plan_Copy#plan.executions.detected.count'=0;;;0; 'test-plan_Copy#plan.executions.failed.percentage'=0.00%;;;0;100 'plop2-test#plan.executions.detected.count'=3;;;0; 'plop2-test#plan.executions.failed.percentage'=0.00%;;;0;100 'plop2-test#plan.execution.last.seconds'=17822867s;;;0;

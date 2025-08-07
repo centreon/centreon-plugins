@@ -25,7 +25,7 @@ Network ${tc}
     [Tags]    apps    api    vmware   vsphere8    esx
     ${command}    Catenate    ${CMD} ${extraoptions}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:    tc    extraoptions                         expected_result   --
         ...      1     ${EMPTY}                             OK: usage-bps : skipped (no value(s)), usage-prct : skipped (no value(s)) - no data for host host-22 counter net.throughput.usable.HOST at the moment.

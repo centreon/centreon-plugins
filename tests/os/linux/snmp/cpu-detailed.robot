@@ -24,7 +24,7 @@ cpu-detailed ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                   expected_result    --
             ...      1     --critical-guest                OK: CPU Usage: user : Buffer creation, nice : Buffer creation, system : Buffer creation, idle : Buffer creation, wait : Buffer creation, kernel : Buffer creation, interrupt : Buffer creation, softirq : Buffer creation, steal : Buffer creation, guest : Buffer creation, guestnice : Buffer creation

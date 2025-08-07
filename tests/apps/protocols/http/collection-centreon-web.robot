@@ -25,7 +25,7 @@ Check if ${test_desc} on Centreon
     [Tags]    centreon    collections    http
     ${command}    Catenate
     ...    ${CMD}    --config=${CURDIR}/${collection}
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:    test_desc                  collection                                                       expected_result   --
         ...      authentication succeeds    collection-centreon-web-check-auth.collection.json               OK: Authentication resulted in 200 HTTP code

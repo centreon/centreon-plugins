@@ -41,7 +41,7 @@ Mosquitto MQTT messages ${tc}
     ...    ${CMD}
     ...    ${extraoptions}
 
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:    tc   extraoptions                         expected_result    --
         ...      1     ${EMPTY}                            ^OK: Stored messages: \\\\d+, Received messages: \\\\d+, Sent messages: \\\\d+ \\\\| 'stored_messages'=\\\\d+;;;\\\\d+; 'received_messages'=\\\\d+;;;\\\\d+; 'sent_messages'=\\\\d+;;;\\\\d+;$

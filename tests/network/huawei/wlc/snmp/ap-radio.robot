@@ -23,7 +23,7 @@ ap-radio ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc     extra_options                                                                                                                             expected_result    --
             ...      1      --filter-name='Anonymized 015'                                                                                                            OK: access point 'Anonymized 015' run state: up, radio package error rate: 0.00%, radio noise: -95 dBm, radio channel utilization rate: 13.00%, radio channel interference rate: 6.00%, radio channel receive rate: 0 b/s, radio channel send rate: 523000 b/s | 'Anonymized 015#ap.radio.packageerror.percentage'=0.00%;;;; 'Anonymized 015#ap.radio.noise.dbm'=-95dBm;;;; 'Anonymized 015#ap.radio.channel.utilization.percentage'=13.00%;;;; 'Anonymized 015#ap.radio.channel.interference.percentage'=6.00%;;;; 'Anonymized 015#ap.radio.receive.bitspersecond'=0b/s;;;; 'Anonymized 015#ap.radio.send.bitspersecond'=523000b/s;;;;

@@ -24,7 +24,7 @@ list-processes ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                       expected_result    -- 
             ...      2     --filter-name='centreontrapd'       List processes: [name = centreontrapd] [path = /usr/bin/perl] [parameters = /usr/share/centreon/bin/centreontrapd --logfile=/var/log/centreon/centreontrapd.log --severity=error --config=/etc/centreon/conf] [type = application] [pid = 317] [status = runnable]

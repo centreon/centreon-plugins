@@ -21,7 +21,7 @@ logfile-usage ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
             ...      1     --verbose                                                                                               OK: All dbspace log files usage are ok | 'used_default.linies'=0.00%;;;0;100 'used_default.logical_log'=0.73%;;;0;100 'used_default.rootdbs'=0.00%;;;0;100 Dbspace 'default.linies' Log Files Used: 0.00% Dbspace 'default.logical_log' Log Files Used: 0.73% Dbspace 'default.rootdbs' Log Files Used: 0.00%

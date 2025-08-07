@@ -24,7 +24,7 @@ Avigilon camera Memory ${tc}/3
     ...    --warning-available='${warning_available}'
     ...    --critical-available='${critical_available}'
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    warning_available    critical_available      expected_result    --
             ...      1     ${EMPTY}             ${EMPTY}                OK: total system memory available: 464.85 KB | 'memory.available'=476004B;;;0;

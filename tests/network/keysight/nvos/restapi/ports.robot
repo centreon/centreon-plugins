@@ -29,7 +29,7 @@ ports ${tc}
     ...    --mode=ports
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc    extraoptions                                                                                    expected_result    --
             ...       1     --verbose                                                                                       OK: All ports are ok | 'P14#port.traffic.out.percentage'=0.00%;;;0;100 'P17#port.traffic.out.percentage'=0.00%;;;0;100 checking port 'P01' license status: valid link operational status: up [admin: enabled] checking port 'P12' license status: valid link operational status: up [admin: enabled] checking port 'P14' license status: valid link operational status: up [admin: enabled] traffic out: 0.00%, traffic-out : Buffer creation packets packets-out : Buffer creation, packets-dropped : Buffer creation, packets-pass : Buffer creation, packets-insp : Buffer creation checking port 'P17' license status: valid link operational status: up [admin: enabled] traffic out: 0.00%, traffic-out : Buffer creation packets packets-out : Buffer creation, packets-dropped : Buffer creation, packets-pass : Buffer creation, packets-insp : Buffer creation

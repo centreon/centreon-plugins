@@ -21,7 +21,7 @@ Volumes${tc}
     ...    --snmp-community=storage/wd/nas/snmp/nas-wd
     ...    ${extra_option}
     
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc  extra_option                                        expected_result    --
             ...       1   --filter-name                                       OK: volume 'Volume_1' space usage total: 7.20 TB used: 5.30 TB (73.61%) free: 1.90 TB (26.39%) | 'Volume_1#volume.space.usage.bytes'=5827411627212B;;;0;7916483719987.2 'Volume_1#volume.space.free.bytes'=2089072092774B;;;0;7916483719987.2 'Volume_1#volume.space.usage.percentage'=73.61%;;;0;100

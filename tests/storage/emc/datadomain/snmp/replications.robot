@@ -24,7 +24,7 @@ replications ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                                       expected_result    --
             ...      1     --filter-counters='^status$'                                                        OK: All replications are ok

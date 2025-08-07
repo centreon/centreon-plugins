@@ -21,7 +21,7 @@ hardware ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                         expected_result    --
             ...      1     ${EMPTY}                                                              OK: All 7 components are ok [4/4 fans, 2/2 psus, 1/1 temperatures]. | '1#hardware.fan.speed.rpm'=0rpm;;;0; '2#hardware.fan.speed.rpm'=0rpm;;;0; '3#hardware.fan.speed.rpm'=0rpm;;;0; '4#hardware.fan.speed.rpm'=0rpm;;;0; '1#hardware.temperature.celsius'=18.00C;;;; 'hardware.fan.count'=4;;;; 'hardware.psu.count'=2;;;; 'hardware.temperature.count'=1;;;;

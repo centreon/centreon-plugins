@@ -23,7 +23,7 @@ lenovo xcc hardware Alarms ${tc}
     ...    --snmp-community=hardware/server/lenovo/xcc/snmp/${arguments}
     ...    --component=${component}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    arguments                                                               component    expected_result    --
         ...      1     system-health-critical                                                  health         CRITICAL: 'Error' health status for 'Anonymized 144' - 'Error' health status for 'Anonymized 149' - 'Error' health status for 'Anonymized 127' - 'Warning' health status for 'Anonymized 130' | 'count_health'=4;;;;

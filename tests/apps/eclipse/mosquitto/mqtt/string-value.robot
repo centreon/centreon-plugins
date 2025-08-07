@@ -44,7 +44,7 @@ Mosquitto MQTT string-value ${tc}
     ...    --critical-regexp='${critical}'
     ...    ${extraoptions}
 
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:   tc    topic                 warning        critical                          extraoptions                                         expected_result    --
         ...     1    $SYS/broker/version    ${EMPTY}       ${EMPTY}                          ${EMPTY}                                             ^OK: value: mosquitto version \\\\d*\.\\\\d*\.\\\\d*$

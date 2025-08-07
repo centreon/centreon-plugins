@@ -21,7 +21,7 @@ listvolumes${tc}
     ...    --snmp-community=storage/wd/nas/snmp/nas-wd
     ...    ${extra_option}
     
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc  extra_option                                        expected_result    --
             ...       1   --snmp-tls-their-identity                           List volumes: [name: Volume_1] [type: ext4]

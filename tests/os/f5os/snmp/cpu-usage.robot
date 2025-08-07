@@ -21,7 +21,7 @@ cpu-usage ${tc}
     ...    --snmp-community=os/f5os/snmp/f5os
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                                    expected_result    --
             ...      1     ${EMPTY}                                                                         OK: CPU(s) average usage is: 8.00 % | 'cpu.usage.percent'=8.00%;;;0;100 '0#cpu.core.current.usage.percent'=0%;;;0;100 '0#cpu.core.usage.avg.5s.percent'=0%;;;0;100 '0#cpu.core.usage.avg.1m.percent'=1%;;;0;100 '0#cpu.core.usage.avg.5m.percent'=1%;;;0;100 '1#cpu.core.current.usage.percent'=16%;;;0;100 '1#cpu.core.usage.avg.5s.percent'=10%;;;0;100 '1#cpu.core.usage.avg.1m.percent'=15%;;;0;100 '1#cpu.core.usage.avg.5m.percent'=50%;;;0;100

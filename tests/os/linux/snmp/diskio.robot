@@ -24,7 +24,7 @@ diskio ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                        expected_result    --
             ...      1     --device='1'                         OK: Device 'sda' Read I/O : Buffer creation, Write I/O : Buffer creation, Read IOPs : Buffer creation, Write IOPs : Buffer creation

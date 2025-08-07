@@ -23,7 +23,7 @@ swap ${tc}
     ...    --snmp-community=os/windows/snmp/windows_anon
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                expected_result    --
             ...      1     --real-swap=0                OK: Swap Total: 4.75 GB Used: 470.19 MB (9.67%) Free: 4.29 GB (90.33%) | 'used'=493027328B;;;0;5099683840 

@@ -21,7 +21,7 @@ network interface ${tc}
     ...    ${CMD}
     ...    ${arguments}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:    tc    arguments    expected_result    --
         ...    1    --verbose --add-duplex-status    OK: All interfaces are ok Interface 'lo' Status : up (admin: up) (duplex: fullDuplex) Interface 'eth0' Status : up (admin: up) (duplex: halfDuplex) Interface 'eth1' Status : up (admin: up) (duplex: unknown) Interface 'eth2' Status : up (admin: up) (duplex: fullDuplex) Interface 'eth3' Status : up (admin: up) (duplex: fullDuplex)

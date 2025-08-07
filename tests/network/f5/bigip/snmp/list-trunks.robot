@@ -21,7 +21,7 @@ list-trunks ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                     expected_result    --
             ...      1     ${EMPTY}                          List trunks: 'Anonymized 234' [status: up] [speed: 20000]

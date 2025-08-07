@@ -27,7 +27,7 @@ Memory ${tc}
     ...    --warning-usage-prct=${warningusageprct}
     ...    --critical-usage-prct=${criticalusageprct}
     
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
 
     Examples:         tc  warningusage  criticalusage  warningusagefree  criticalusagefree  warningusageprct  criticalusageprct    expected_result    --

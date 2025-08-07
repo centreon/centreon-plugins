@@ -21,7 +21,7 @@ hardware ${tc}
     ...    --snmp-community=network/3com/snmp/3com-hardware-fake
     ...    ${extra_options}
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                         expected_result    --
             ...      1     --verbose                                                             CRITICAL: Fan '196611' status is deactive | 'count_fan'=2;;;; ${SPACE} Checking power supplies ${SPACE}Checking fans ${SPACE}Fan '65536' status is 'active' [instance: 65536] ${SPACE}Fan '196611' status is 'deactive' [instance: 196611]

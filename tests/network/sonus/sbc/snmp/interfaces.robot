@@ -22,7 +22,7 @@ interfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc     extra_options                                                                 expected_result    --
             ...      1      ${EMPTY}                                                                      CRITICAL: Interface 'Anonymized 073' Status : down (admin: up) - Interface 'Anonymized 232' Status : down (admin: up)
