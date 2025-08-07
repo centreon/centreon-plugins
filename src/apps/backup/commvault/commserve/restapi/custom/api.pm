@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -148,6 +148,7 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = $self->{hostname};
+    $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
 }
@@ -335,11 +336,21 @@ sub request_jobs {
         }
     }
 
-    my $response = $self->request_internal(
-        endpoint => $options{endpoint},
-        get_param => ['completedJobLookupTime=' . $lookup_time],
-        header => ['limit: 10000']
-    );
+    my $offset = 0;
+
+    my @items;
+    while (1) {
+        my $content = $self->request_internal(
+            endpoint => $options{endpoint},
+            get_param => ['completedJobLookupTime=' . $lookup_time],
+            header => [ 'limit: 100', "offset: $offset" ]
+        );
+        push @items, @{$content->{jobs}};
+        last if @items >= $content->{totalRecordsWithoutPaging} // 0;
+        $offset += 100;
+    }
+
+    my $response = { jobs => \@items };
 
     $self->create_cache_file(type => 'jobs', response => $response)
         if (defined($self->{cache_create}));
