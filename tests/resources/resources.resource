@@ -77,7 +77,7 @@ Stop Connector
    Ctn Stop Connector
 
 Ctn Run Command Without Connector And Check Result As Regexp
-    [Arguments]    ${tc}    ${command}    ${expected_result}
+    [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Match Regexp
@@ -87,7 +87,7 @@ Ctn Run Command Without Connector And Check Result As Regexp
     ...    values=False
 
 Ctn Run Command Without Connector And Check Result As Strings
-    [Arguments]    ${tc}    ${command}    ${expected_result}
+    [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
@@ -98,7 +98,7 @@ Ctn Run Command Without Connector And Check Result As Strings
     ...    collapse_spaces=True
 
 Ctn Verify Command Without Connector Output
-    [Arguments]    ${tc}    ${command}    ${expected_result}
+    [Arguments]    ${command}    ${expected_result}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Contain    
@@ -109,7 +109,7 @@ Ctn Verify Command Without Connector Output
     ...    collapse_spaces=True
 
 Ctn Run Command With Connector And Check Result As Strings
-    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
@@ -123,7 +123,7 @@ Ctn Run Command With Connector And Check Result As Strings
 
 
 Ctn Run Command With Connector And Check Result As Regexp
-    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
@@ -137,11 +137,11 @@ Ctn Run Command With Connector And Check Result As Regexp
 
 
 Ctn Run Command With Connector And Check Multiline Result
-    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
-    Ctn Extract Multiline Result From Log    ${tc}    timeout=10
+    Ctn Extract Multiline Result From Log    ${tc}    timeout=${timeout}
     ${output}    Get File    /tmp/connector.output
     ${output}    Replace String    ${output}    \n    ${SPACE}
     ${output}    Strip String    ${output}
@@ -149,23 +149,23 @@ Ctn Run Command With Connector And Check Multiline Result
 
 
 Ctn Run Command And Check Result As Strings
-    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    "centreon_plugins.pl" in $command
-        Ctn Run Command Without Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}
+        Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
     ELSE
-        Ctn Run Command With Connector And Check Result As Strings    ${tc}    ${command}    ${expected_result}    ${timeout}
+        Ctn Run Command With Connector And Check Result As Strings    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
 Ctn Run Command And Check Result As Regexp
-    [Arguments]    ${tc}    ${command}    ${expected_result}    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
-    IF    "centreon_plugins.pl" in $command
-        Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    IF    ${tc}==0     OR     "centreon_plugins.pl" in ${command}
+        Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
     ELSE
-        Ctn Run Command With Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}    ${timeout}
+        Ctn Run Command With Connector And Check Result As Regexp    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
 Ctn Run Command And Check Result As Json
