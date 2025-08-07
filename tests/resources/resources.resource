@@ -54,6 +54,10 @@ Ctn Cleanup Cache
 Ctn Generic Suite Setup
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
+   Ctn Clear Connector Log
+   Remove Files    /tmp/connector.output.*
+   Remove File    /tmp/connector.log
+   Ctn Start Connector
 
 Ctn Clear Connector Log
     [Documentation]    Safely empties the connector log file without deleting it
