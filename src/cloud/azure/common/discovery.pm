@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::management::monitor::mode::discovery;
+package cloud::azure::common::discovery;
 
 use base qw(centreon::plugins::mode);
 
