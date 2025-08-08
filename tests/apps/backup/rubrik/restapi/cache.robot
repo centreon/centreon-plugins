@@ -27,12 +27,7 @@ cache ${tc}/1
     ...    ${cmd}
     ...    --mode=cache
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options            expected_result    --
             ...      1     ${EMPTY}                 OK: Cache files created successfully

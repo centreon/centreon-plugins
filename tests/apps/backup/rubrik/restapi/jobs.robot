@@ -22,16 +22,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 jobs ${tc}/11
     [Tags]    apps    backup   rubrik    restapi    jobs
     
-    ${command}    Catenate
-    ...    ${cmd}
-    ...    --mode=jobs
-    ...    ${extraoptions}
-    
-    Log    ${command}
-    
-    ${output}    Run    ${command}
-    
-    Should Match Regexp    ${output}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:    tc     extraoptions            expected_result   --
         ...      1      ${EMPTY}                                                                             OK: job 'centreon.groupe.active volumes' \[type: backup\] number of failed executions: 0.00 % - last execution .* - last execution started: 2024-07-18T20:00:01.382Z status: Success \| 'jobs.executions.detected.count'=2;;;0; 'centreon.groupe.active volumes~backup#job.executions.failed.percentage'=0.00%;;;0;100 'centreon.groupe.active volumes~backup#job.execution.last.seconds'=.*s;;;0;
