@@ -24,7 +24,7 @@ list-interfaces ${tc}
     ...    --snmp-community=os/linux/snmp/linux
     ...    ${extra_options}
  
-    Ctn Run Command With Connector And Check Multiline Result    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command With Connector And Check Multiline Result    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                                                               expected_result    --
             ...      1     --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'                            List interfaces: 'lo' [speed = 10][status = up][id = 1][alias = ][type = softwareLoopback] 'eth0' [speed = 1000][status = up][id = 2][alias = ][type = ethernetCsmacd] 'eth1' [speed = 1000][status = up][id = 3][alias = ][type = ethernetCsmacd]

@@ -24,7 +24,7 @@ list-diskspath ${tc}
     ...    --snmp-community=os/linux/snmp/linux
     ...    ${extra_options}
 
-    Ctn Run Command With Connector And Check Multiline Result    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command With Connector And Check Multiline Result    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                           expected_result    --
             ...      1     --skip-total-size-zero=''               List disk path: '/run/user/0' [id = 25] '/run' [id = 5] '/' [id = 6] '/dev/shm' [id = 8] '/run/lock' [id = 9]

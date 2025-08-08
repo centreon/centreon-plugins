@@ -119,7 +119,12 @@ Ctn Run Command With Connector And Check Result As Strings
     ${output}    Get File    /tmp/connector.output
     ${output}    Strip String    ${output}
     # 3. Compare with expected
-    Should Be Equal As Strings    ${output}    ${expected_result}
+    Should Be Equal As Strings
+    ...    ${expected_result}
+    ...    ${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
 
 
 Ctn Run Command With Connector And Check Result As Regexp
@@ -133,7 +138,11 @@ Ctn Run Command With Connector And Check Result As Regexp
     ${output}    Get File    /tmp/connector.output
     ${output}    Strip String    ${output}
     # 3. Compare with expected
-    Should Match Regexp    ${output}    ${expected_result}
+    Should Match Regexp
+    ...    ${output}
+    ...    ${expected_result}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
+    ...    values=False
 
 
 Ctn Run Command With Connector And Check Multiline Result
@@ -145,7 +154,12 @@ Ctn Run Command With Connector And Check Multiline Result
     ${output}    Get File    /tmp/connector.output
     ${output}    Replace String    ${output}    \n    ${SPACE}
     ${output}    Strip String    ${output}
-    Should Be Equal As Strings    ${output}    ${expected_result}
+    Should Be Equal As Strings
+    ...    ${expected_result}
+    ...    ${output}
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
+    ...    values=False
+    ...    collapse_spaces=True
 
 
 Ctn Run Command And Check Result As Strings

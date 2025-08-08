@@ -24,7 +24,7 @@ time ${tc}
     ...    --snmp-timeout=5
     ...    ${extra_options}
 
-    Ctn Run Command With Connector And Check Result As Regexp    ${tc}    ${command}    ${expected_result}
+    Ctn Run Command With Connector And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                   expected_result    --
             ...      1     --oid=''                        OK: Time offset (-?\\\\d+) second\\\\(s\\\\): Local Time : (\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}) \\\\(\\\\+\\\\d{4}\\\\) \\\\| 'offset'=(-?\\\\d+)s;.*$
