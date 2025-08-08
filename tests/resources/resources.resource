@@ -67,7 +67,6 @@ Ctn Clear Connector Log
     Create File    /tmp/connector.log
 
 Ctn Stop Connector
-   Log To Console    Killing connector
    Terminate All Processes
    Ctn Kill Connector
    Remove Files    /tmp/connector.output*
@@ -164,10 +163,8 @@ Ctn Run Command And Check Result As Strings
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    '${tc}' == '0' or "centreon_plugins.pl" in $command
-        Log To Console    s
         Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
     ELSE
-        Log To Console    c
         Ctn Run Command With Connector And Check Result As Strings    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
@@ -176,10 +173,8 @@ Ctn Run Command And Check Result As Regexp
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    '${tc}' == '0' or "centreon_plugins.pl" in $command
-        Log To Console    s
         Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
     ELSE
-        Log To Console    c
         Ctn Run Command With Connector And Check Result As Regexp    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
