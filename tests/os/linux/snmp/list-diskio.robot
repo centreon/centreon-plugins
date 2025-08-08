@@ -24,9 +24,11 @@ List diskio ${tc}
     ...    --disco-show
     ...    --snmp-community=${snmpcommunity}
     ${output}    Run    ${command}
+
     ${nb_results}    Get Element Count
     ...    ${output}
     ...    label
+
     Should Be Equal As Integers
     ...    ${expected_result}
     ...    ${nb_results}

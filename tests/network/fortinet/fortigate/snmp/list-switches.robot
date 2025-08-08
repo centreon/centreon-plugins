@@ -21,7 +21,7 @@ list-switches ${tc}
     ...    --snmp-community=network/fortinet/fortigate/snmp/slim_fortigate-switches
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                            expected_result    --
             ...      1     ${EMPTY}                                                 List switches: [Name = Anonymized 188] [Serial = Anonymized 209] [IP = 10.255.1.2] [Version = Anonymized 103] [State = up] [Admin = authorized] [Name = Anonymized 152] [Serial = Anonymized 146] [IP = 10.255.1.3] [Version = Anonymized 056] [State = up] [Admin = authorized]

@@ -22,7 +22,7 @@ List Service Rpm ${tc}
     ...    ${CMD}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions              expected_result   --
         ...      1     ${EMPTY}                  ^List services RPM: (\\\\n\\\\[.*\\\\]){2}\\\\Z

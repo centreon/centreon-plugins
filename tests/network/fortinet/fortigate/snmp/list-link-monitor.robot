@@ -24,7 +24,7 @@ Network Fortinet Fortigate SNMP list link monitor ${tc}
     ...    --filter-name=${filtername}
     ...    --filter-vdom=${filtervdom}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  filterstate          filtername         filtervdom        expected_result    --
             ...       1   ${EMPTY}             ${EMPTY}           ${EMPTY}          List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive]\n[Name = MonitorWAN3] [Vdom = root] [State = dead] 

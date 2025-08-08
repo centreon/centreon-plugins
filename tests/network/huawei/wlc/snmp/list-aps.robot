@@ -23,7 +23,7 @@ list-aps ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                             expected_result    --
             ...      1     --verbose --filter-name='Anonymized 058'                                  List aps [oid_path: 100.19.171.37.61.112] [name: Anonymized 058] [serial: Anonymized 021] [address: 192.168.42.33] [hardware: Anonymized 104] [software: Anonymized 014] [run_time: 1w 4d 3h 1m 45s] [ap_group: Anonymized 214] [oid_path: 128.105.51.109.163.32] [name: Anonymized 058] [serial: Anonymized 025] [address: 192.168.42.225] [hardware: Anonymized 167] [software: Anonymized 034] [run_time: 11M 1w 1d 6h 12m 17s] [ap_group: Anonymized 040] [oid_path: 52.30.107.186.232.64] [name: Anonymized 058] [serial: Anonymized 073] [address: 192.168.42.66] [hardware: Anonymized 033] [software: Anonymized 168] [run_time: 11M 1w 1d 6h 15m 30s] [ap_group: Anonymized 124]
