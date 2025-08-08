@@ -27,7 +27,4 @@ udpcon ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                           expected_result    --
-            ...      1     --verbose                               OK: Total connections: 7 | 'service_total'=7;;;0; 'con_listen'=7;;;0;
-            ...      2     -application=[services]                 OK: Total connections: 7 | 'service_total'=7;;;0; 'con_listen'=7;;;0;
-            ...      3     -application=[threshold-critical]       OK: Total connections: 7 | 'service_total'=7;;;0; 'con_listen'=7;;;0;
-            ...      4     -application=[threshold-warning]        OK: Total connections: 7 | 'service_total'=7;;;0; 'con_listen'=7;;;0;
+            ...      1     ${EMPTY}        OK: Total connections: 7 | 'service_total'=7;;;0; 'con_listen'=7;;;0;

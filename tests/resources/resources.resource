@@ -163,7 +163,7 @@ Ctn Run Command And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
-    IF    $tc == 0 or "centreon_plugins.pl" in $command
+    IF    '${tc}' == '0' or "centreon_plugins.pl" in $command
         Log To Console    s
         Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
     ELSE
@@ -175,7 +175,7 @@ Ctn Run Command And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
-    IF    $tc == 0 or "centreon_plugins.pl" in $command
+    IF    '${tc}' == '0' or "centreon_plugins.pl" in $command
         Log To Console    s
         Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
     ELSE

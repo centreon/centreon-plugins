@@ -40,6 +40,10 @@ Interfaces by id ${tc}
 # theese test are linked together. The test 3 create the cache file in /dev/shm/, and the test 4 use this cache file
 # to calculate traffic throughput by second.
 
+Cleanup
+    Ctn Generic Suite Teardown
+    Ctn Generic Suite Setup
+
 Interfaces by id regexp ${tc}
     [Tags]    os    linux    network    interfaces
     ${command}    Catenate
