@@ -377,7 +377,8 @@ sub build_workflow_message {
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
         push @{$self->{body}}, {
             type => "TextBlock",
-            text => "Status: " . $self->{option_results}->{$resource_type . '_output'}
+            text => "Status: " . $self->{option_results}->{$resource_type . '_output'},
+            wrap => "true"
         };
     }
 
@@ -393,7 +394,7 @@ sub build_workflow_message {
             push @{$self->{body}}, {
                 type   => "TextBlock",
                 text   => "Additional Information:  \n" . sprintf($self->{option_results}->{extra_info_format}, $1, $2),
-                "wrap" => "true"
+                wrap => "true"
             };
         }
     }
@@ -470,9 +471,7 @@ __END__
 Send notifications to a Microsoft Teams Channel.
 
 Example for a Host:
-centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --teams-webhook='https:/teams.microsoft.com/1/channel/...'
---host-name='my_host_1' --host-state='DOWN' --host-output='CRITICAL - my_host_1: rta nan, lost 100%'
---centreon-url='https://127.0.0.1/centreon' --action-links'
+C<centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --teams-webhook='https:/teams.microsoft.com/1/channel/...' --host-name='my_host_1' --host-state='DOWN' --host-output='CRITICAL - my_host_1: rta nan, lost 100%' --centreon-url='https://127.0.0.1/centreon' --action-links'>
 
 =over 8
 
@@ -512,7 +511,7 @@ Add actions links buttons to the notification card (resource status & graph page
 =item B<--centreon-url>
 
 Specify the Centreon interface URL (to be used with the action links).
-Syntax: --centreon-url='https://mycentreon.mydomain.local/centreon'
+Syntax: C<--centreon-url='https://mycentreon.mydomain.local/centreon'>
 
 =item B<--bam>
 
@@ -524,7 +523,7 @@ Specify the date & time of the event.
 
 =item B<--extra-info>
 
-Specify extra information about author and comment (only for ACK and DOWNTIME types).
+Specify extra information about author and comment (only for ACKNOWLEDGMENT and DOWNTIME types).
 
 =item B<--extra-info-format>
 
@@ -534,7 +533,7 @@ Specify the extra info display format (default: 'Author: %s, Comment: %s').
 
 Only to be used with Centreon.
 Permit redirection to Centreon legacy resource status pages.
-To be used with --action-links.
+To be used with C<--action-links>.
 
 =back
 
