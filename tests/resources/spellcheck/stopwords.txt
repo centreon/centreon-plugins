@@ -96,6 +96,7 @@ fibre
 --force-counters32
 --force-counters64
 --force-oid
+Forcepoint
 Fortigate
 Fortinet
 FQDN
