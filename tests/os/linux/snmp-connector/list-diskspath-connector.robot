@@ -13,7 +13,7 @@ ${CMD}      /usr/lib/centreon/plugins/centreon_linux_snmp.pl --plugin=os::linux:
 
 
 *** Test Cases ***
-list-diskspath ${tc}
+list-diskspath-connector ${tc}
     [Tags]    os    linux
     ${command}    Catenate
     ...    ${CMD}

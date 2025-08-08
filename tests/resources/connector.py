@@ -204,7 +204,7 @@ def ctn_extract_multiline_result_from_log(tc, log_path="/tmp/connector.log", out
                     result_lines.append(m.group(2).strip())
                     in_result = True
             else:
-                if line.strip().startswith("error:") or re.match(r"^\d+ \[.*", line):
+                if line.strip().startswith("error:") or re.match(r"^\d+ \[20.*", line):
                     break
                 result_lines.append(line.strip())
 

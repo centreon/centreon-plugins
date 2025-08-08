@@ -12,7 +12,7 @@ ${CMD}      /usr/lib/centreon/plugins/centreon_linux_snmp.pl --plugin=os::linux:
 
 
 *** Test Cases ***
-time ${tc}
+time-connector ${tc}
     [Tags]    os    linux
     ${command}    Catenate
     ...    ${CMD}
