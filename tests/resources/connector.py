@@ -58,7 +58,7 @@ class ConnectorLibrary:
                 return line
         return None
 
-    def ctn_stop_connector(self):
+    def ctn_kill_connector(self):
         if self.process:
             self.process.terminate()
             self.process = None
@@ -87,10 +87,10 @@ def ctn_start_connector():
     connector.ctn_start_connector()
     return connector
 
-def ctn_stop_connector():
+def ctn_kill_connector():
     global connector
     if connector:
-        connector.ctn_stop_connector()
+        connector.ctn_kill_connector()
         connector = None
     else:
         print("No connector to stop.")

@@ -52,10 +52,11 @@ Ctn Cleanup Cache
     Remove File    ${/}dev${/}shm${/}*
 
 Ctn Generic Suite Setup
+   Log To Console    Starting connector
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
    Ctn Clear Connector Log
-   Remove Files    /tmp/connector.output.*
+   Remove Files    /tmp/connector.output*
    Remove File    /tmp/connector.log
    Ctn Start Connector
 
@@ -63,18 +64,12 @@ Ctn Clear Connector Log
     [Documentation]    Safely empties the connector log file without deleting it
     Create File    /tmp/connector.log
 
-Start connector
-   Ctn Cleanup Cache
-   Set Environment Variable    TZ    UTC
-   Ctn Clear Connector Log
-   Remove Files    /tmp/connector.output.*
-   Ctn Start Connector
-
-Stop Connector
+Ctn Stop Connector
+   Log To Console    Killing connector
    Terminate All Processes
-   Remove Files    /tmp/connector.output.*
+   Ctn Kill Connector
+   Remove Files    /tmp/connector.output*
    Remove File     /tmp/connector.log
-   Ctn Stop Connector
 
 Ctn Run Command Without Connector And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
@@ -167,8 +162,10 @@ Ctn Run Command And Check Result As Strings
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    $tc == 0 or "centreon_plugins.pl" in $command
+        Log To Console    [PS]
         Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
     ELSE
+        Log To Console    [PC]
         Ctn Run Command With Connector And Check Result As Strings    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
@@ -177,8 +174,10 @@ Ctn Run Command And Check Result As Regexp
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    $tc == 0 or "centreon_plugins.pl" in $command
+        Log To Console    [PS]
         Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
     ELSE
+        Log To Console    [PC]
         Ctn Run Command With Connector And Check Result As Regexp    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
