@@ -5,6 +5,8 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resour
 
 Test Timeout        120s
 Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::aruba::aoscx::snmp::plugin

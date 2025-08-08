@@ -3,7 +3,7 @@ Documentation       Check time table
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
-Suite Teardown      Ctn Stop Connector
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -24,7 +24,7 @@ time-connector ${tc}
     ...    --snmp-timeout=5
     ...    ${extra_options}
 
-    Ctn Run Command With Connector And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:        tc    extra_options                   expected_result    --
             ...      1     --oid=''                        OK: Time offset (-?\\\\d+) second\\\\(s\\\\): Local Time : (\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}) \\\\(\\\\+\\\\d{4}\\\\) \\\\| 'offset'=(-?\\\\d+)s;.*$

@@ -3,7 +3,6 @@ Documentation       Centreon Plugins for Robot Framework
 
 Library             Process
 
-
 *** Variables ***
 ${CENTREON_PLUGINS}     perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
@@ -46,19 +45,22 @@ Start Mockoon
 Stop Mockoon
     Terminate All Processes
     Remove File    ${MOCKOON_LOG_FILE}
+    Ctn Generic Suite Teardown
 
 Ctn Cleanup Cache
     Remove File    ${/}var${/}lib${/}centreon${/}centplugins${/}*
     Remove File    ${/}dev${/}shm${/}*
 
 Ctn Generic Suite Setup
-   Log To Console    Starting connector
    Ctn Cleanup Cache
    Set Environment Variable    TZ    UTC
    Ctn Clear Connector Log
    Remove Files    /tmp/connector.output*
    Remove File    /tmp/connector.log
    Ctn Start Connector
+
+Ctn Generic Suite Teardown
+    Ctn Stop Connector
 
 Ctn Clear Connector Log
     [Documentation]    Safely empties the connector log file without deleting it
@@ -162,10 +164,10 @@ Ctn Run Command And Check Result As Strings
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    $tc == 0 or "centreon_plugins.pl" in $command
-        Log To Console    [PS]
+        Log To Console    s
         Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
     ELSE
-        Log To Console    [PC]
+        Log To Console    c
         Ctn Run Command With Connector And Check Result As Strings    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
@@ -174,10 +176,10 @@ Ctn Run Command And Check Result As Regexp
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    $tc == 0 or "centreon_plugins.pl" in $command
-        Log To Console    [PS]
+        Log To Console    s
         Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
     ELSE
-        Log To Console    [PC]
+        Log To Console    c
         Ctn Run Command With Connector And Check Result As Regexp    ${command}    ${expected_result}    ${tc}    ${timeout}
     END
 
