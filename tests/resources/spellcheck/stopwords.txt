@@ -58,6 +58,7 @@ cpu-utilization-5s
 CX
 Cyberoam
 Datacore
+Datastore
 datasource
 datastore
 datastores
@@ -128,6 +129,7 @@ in-ucast
 io-cards
 iops
 IpAddr
+IPs
 ip-label
 ipsec
 ipv4
@@ -238,6 +240,7 @@ PPID
 prct
 Primera
 Procurve
+Proxmox
 proto
 --proxyurl
 psu
@@ -298,6 +301,7 @@ total-online-prct
 total-oper-down
 total-oper-up
 tower-cli
+TLSv1
 TrendMicro
 tsdb-version
 UCD
@@ -323,6 +327,7 @@ vdomain
 VDSL2
 Veeam
 VeloCloud
+VE
 vhost
 VM
 VMs
