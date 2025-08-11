@@ -22,7 +22,7 @@ List-Systemdservices v252 ${tc}
     ...    --filter-name='${filtername}'
     ...    --filter-description='${filterdescription}'
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filtername                filterdescription            expected_result    --
             ...      1     toto                      ${EMPTY}                      List systemd services:
