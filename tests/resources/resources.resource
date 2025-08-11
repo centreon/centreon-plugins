@@ -74,6 +74,7 @@ Ctn Stop Connector
 
 Ctn Run Command Without Connector And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}
+    Log To Console    s
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Match Regexp
@@ -84,6 +85,7 @@ Ctn Run Command Without Connector And Check Result As Regexp
 
 Ctn Run Command Without Connector And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}
+    Log To Console    s
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Be Equal As Strings
@@ -95,6 +97,7 @@ Ctn Run Command Without Connector And Check Result As Strings
 
 Ctn Verify Command Without Connector Output
     [Arguments]    ${command}    ${expected_result}
+    Log To Console    w
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Contain    
@@ -106,6 +109,7 @@ Ctn Verify Command Without Connector Output
 
 Ctn Run Command With Connector And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
+    Log To Console    c
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
@@ -125,6 +129,7 @@ Ctn Run Command With Connector And Check Result As Strings
 
 Ctn Run Command With Connector And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
+    Log To Console    c
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
@@ -143,6 +148,7 @@ Ctn Run Command With Connector And Check Result As Regexp
 
 Ctn Run Command With Connector And Check Multiline Result
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
+    Log To Console    c
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
@@ -186,7 +192,7 @@ Ctn Run Command And Check Result As Regexp
 
 Ctn Run Command And Check Result As Json
     [Arguments]    ${command}    ${expected}
-    Log To Console    ${command}
+    Log To Console    j
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     ${json_output}=    evaluate    json.loads('''${output}''')    json
@@ -196,6 +202,7 @@ Ctn Run Command And Check Result As Json
 
 Ctn Run Command And Return Parsed XML
     [Arguments]    ${command}
+    Log To Console    x
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     ${parsed}=    Parse XML     ${output}

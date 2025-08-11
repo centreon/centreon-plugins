@@ -25,7 +25,7 @@ list-storages ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                   expected_result    --
             ...      1     --display-transform-src='dev'                                                                   List storage: 'Serial Number 5a987053' [size = 63720910848B] [id = 1] Skipping storage 'D:\\\\ Label:SSS_X64FRE_FR-FR_DV9 Serial Number cf70e675': no type or no matching filter type Skipping storage 'Virtual Memory': no type or no matching filter type Skipping storage 'Physical Memory': no type or no matching filter type
