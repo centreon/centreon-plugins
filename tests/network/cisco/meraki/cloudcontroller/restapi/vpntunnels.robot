@@ -5,6 +5,8 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Test Timeout        120s
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 
 *** Variables ***
