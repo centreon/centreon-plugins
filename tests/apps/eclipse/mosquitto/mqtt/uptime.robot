@@ -32,7 +32,7 @@ Mosquitto MQTT uptime help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ^Plugin Description:
+    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:    ${tc}
 
 Mosquitto MQTT uptime ${tc}
     [Documentation]    Check Mosquitto MQTT uptime

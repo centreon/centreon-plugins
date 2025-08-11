@@ -32,7 +32,7 @@ Mosquitto MQTT string-value help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command Without Connector And Check Result As Regexp    ${tc}    ${command}    ^Plugin Description:
+    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:    ${tc}
 
 Mosquitto MQTT string-value ${tc}
     [Documentation]    Check Mosquitto MQTT string-value

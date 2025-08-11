@@ -22,6 +22,11 @@ ${cmd}              ${CENTREON_PLUGINS}
 jobs ${tc}/11
     [Tags]    apps    backup   rubrik    restapi    jobs
     
+   ${command}    Catenate
+    ...    ${cmd}
+    ...    --mode=jobs
+    ...    ${extraoptions}
+    
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
 
     Examples:    tc     extraoptions            expected_result   --
