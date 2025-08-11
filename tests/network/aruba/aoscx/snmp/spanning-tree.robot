@@ -4,7 +4,6 @@ Documentation       Check port Spanning Tree Protocol current state (BRIDGE-MIB)
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
 
@@ -24,7 +23,7 @@ spanning-tree ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --
             ...      1     ${EMPTY}                                                                                                OK: All spanning trees are ok
