@@ -25,7 +25,7 @@ list-mtrees ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                 expected_result    --
             ...      1     --verbose                                                     List MTrees: [name = /data/col1/SQL_prod_DTX][status = readOnly] [name = /data/col1/Veeam_StorageUnit_DTX][status = readOnly] [name = /data/col1/Veeam_StorageUnit_PA6][status = retentionLockEnabled] [name = /data/col1/backup][status = readWrite] [name = /data/col1/cofpr3ubkp01p][status = readWrite]

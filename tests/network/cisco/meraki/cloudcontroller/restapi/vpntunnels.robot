@@ -4,9 +4,8 @@ Documentation       Meraki VPN Tunnels
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
+Suite Teardown      Stop Mockoon
 Test Timeout        120s
-Suite Setup         Ctn Generic Suite Setup
-Suite Teardown      Ctn Generic Suite Teardown
 
 
 *** Variables ***

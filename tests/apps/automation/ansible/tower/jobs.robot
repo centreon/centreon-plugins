@@ -29,7 +29,7 @@ jobs ${tc}
     ...    --mode=jobs
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extraoptions                                 expected_result    --
             ...       1   --filter-name=''                             OK: Jobs total: 4, successful: 0, failed: 0, running: 0 | 'jobs.total.count'=4;;;0; 'jobs.successful.count'=0;;;0;4 'jobs.failed.count'=0;;;0;4 'jobs.running.count'=0;;;0;4 'jobs.canceled.count'=0;;;0;4 'jobs.pending.count'=0;;;0;4 'jobs.default.count'=0;;;0;4
@@ -47,3 +47,4 @@ jobs ${tc}
             ...       13  --critical-total=3:4                         OK: Jobs total: 4, successful: 0, failed: 0, running: 0 | 'jobs.total.count'=4;;3:4;0; 'jobs.successful.count'=0;;;0;4 'jobs.failed.count'=0;;;0;4 'jobs.running.count'=0;;;0;4 'jobs.canceled.count'=0;;;0;4 'jobs.pending.count'=0;;;0;4 'jobs.default.count'=0;;;0;4
             ...       14  --filter-time=24                             OK: Jobs total: 2, successful: 0, failed: 0, running: 0 | 'jobs.total.count'=2;;;0; 'jobs.successful.count'=0;;;0;2 'jobs.failed.count'=0;;;0;2 'jobs.running.count'=0;;;0;2 'jobs.canceled.count'=0;;;0;2 'jobs.pending.count'=0;;;0;2 'jobs.default.count'=0;;;0;2
             ...       15  --filter-time=48                               OK: Jobs total: 4, successful: 0, failed: 0, running: 0 | 'jobs.total.count'=4;;;0; 'jobs.successful.count'=0;;;0;4 'jobs.failed.count'=0;;;0;4 'jobs.running.count'=0;;;0;4 'jobs.canceled.count'=0;;;0;4 'jobs.pending.count'=0;;;0;4 'jobs.default.count'=0;;;0;4
+

@@ -21,13 +21,13 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 
 *** Test Cases ***
-List Edges ${tc}
+Health ${tc}
     [Tags]    apps    hashicorp    vault    restapi    mockoon   
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
 
     Examples:         tc  extra_options                                                                      expected_result    --
             ...       1   ${EMPTY}                                                                           OK: Server test-cluster-master seal status : unsealed, init status : initialized, standby status : false

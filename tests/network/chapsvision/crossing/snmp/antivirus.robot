@@ -27,7 +27,7 @@ Antivirus new ${tc}
     ...    ${extra_options}
 
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                         expected_result    --
             ...      1     ${empty}                              OK: All antivirus are ok | 'antivirus.database.lastupdate.seconds'=\\\\d+s;;;0; 'Anonymized 008#antivirus.license.expires.seconds'=\\\\d+s;;;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;;;0; 'Anonymized 106#antivirus.license.expires.seconds'=\\\\d+s;;;0;
@@ -48,7 +48,7 @@ Antivirus old ${tc}
     ...    ${extra_options}
 
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                         expected_result    --
             ...      1     ${empty}                              OK: All antivirus are ok | 'antivirus.database.lastupdate.seconds'=\\\\d+s;;;0; 'Anonymized 008-old#antivirus.license.expires.seconds'=\\\\d+s;;;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;;;0; 'Anonymized 106-old#antivirus.license.expires.seconds'=\\\\d+s;;;0;

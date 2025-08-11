@@ -34,7 +34,7 @@ Mosquitto MQTT clients help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:    ${tc}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ^Plugin Description:
 
 Mosquitto MQTT clients ${tc}
     [Documentation]    Check Mosquitto MQTT clients
@@ -55,3 +55,4 @@ Mosquitto MQTT clients ${tc}
         ...      7     --critical-clients-active=@0:1     ^CRITICAL: Active clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;@0:1;\\\\d+; 'inactive_clients'=\\\\d+;;;\\\\d+;$
         ...      8     --warning-clients-inactive=@0      ^WARNING: Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;@0:0;;\\\\d+;$
         ...      9     --critical-clients-inactive=@0      ^CRITICAL: Inactive clients: \\\\d+ \\\\| 'connected_clients'=\\\\d+;;;\\\\d+; 'maximum_clients'=\\\\d+;;;\\\\d+; 'active_clients'=\\\\d+;;;\\\\d+; 'inactive_clients'=\\\\d+;;@0:0;\\\\d+;$
+
