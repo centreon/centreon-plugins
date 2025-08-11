@@ -296,11 +296,21 @@ Syntax: --critical-trigger-status='%{status} =~ "xxx"'
 Can be 'Unknown', 'Success', 'Failure', 'Aborted', 'No execution',
 'Stopped', 'Excluded', 'Degraded'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-incidents-total>
 
-Thresholds.
-Can be: 'warning-incidents-total' (count) 'critical-incidents-total' (count),
-'warning-incident-duration' (s), 'critical-incident-duration' (s).
+Threshold.
+
+=item B<--critical-incidents-total>
+
+Threshold.
+
+=item B<--warning-incident-duration>
+
+Threshold in seconds.
+
+=item B<--critical-incident-duration>
+
+Threshold in seconds.
 
 =back
 
