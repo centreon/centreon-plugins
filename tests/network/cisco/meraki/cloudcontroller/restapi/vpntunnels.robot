@@ -27,7 +27,6 @@ Create cache from API
     ...    OK: Cache files created successfully
     ...    Wrong output result:\n\n ${output}\nInstead of:\n OK: Cache files created successfully\n\n
     # Mockoon is not needed any longer since the data are cached
-    Stop Mockoon
 
 vpn-tunnels ${tc}
     [Tags]    meraki    api    vpn    network
