@@ -28,7 +28,7 @@ Discovery ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:        tc       extraoptions                                          expected_regexp    --
             ...      1        ${EMPTY}                                              "discovered_items":3

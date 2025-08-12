@@ -199,8 +199,8 @@ def ctn_extract_multiline_result_from_log(tc, log_path="/tmp/connector.log", out
 
         for line in lines:
             if not in_result:
-                m = re.search(r'reporting check result #(\d+).*output:(.*)', line)
-                if m and str(m.group(1)) == str(tc):
+                m = re.search(r'reporting check result #(\d+) check:' + str(tc) + ' .*output:(.*)', line)
+                if m:
                     result_lines.append(m.group(2).strip())
                     in_result = True
             else:

@@ -109,8 +109,8 @@ Ctn Verify Command Without Connector Output
 
 Ctn Connector Log Contains Result
     [Arguments]    ${tc}
-    ${result}=    Grep File	/tmp/connector.log    reporting check result
-     #\d+ check:${tc}${SPACE}
+    ${result}=    Grep File	/tmp/connector.log    reporting check result*check:${tc}
+
 
     IF    "${result}" == ''
         ${toto}=    Grep File	/tmp/connector.log    .
@@ -125,7 +125,6 @@ Ctn Wait Until Connector Result Available
     ...     ${timeout}
     ...     .2
     ...     File Should Not Be Empty	/tmp/connector.log
-    File Should Not Be Empty	/tmp/connector.log
     Wait Until Keyword Succeeds
     ...     ${timeout}
     ...     .2
@@ -136,13 +135,12 @@ Ctn Run Command With Connector And Return Result
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     Create File      /tmp/connector.log
-    File Should Be Empty	/tmp/connector.log
 
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
     Ctn Wait Until Connector Result Available    ${tc}    ${timeout}
 
     # 1. Extract the result from the log and write to /tmp/connector.output
-    Ctn Extract Result From Log    ${tc}
+    Ctn Extract Multiline Result From Log    ${tc}    timeout=${timeout}
     # 2. Read the file
     ${output}    Get File    /tmp/connector.output
     ${output}    Strip String    ${output}
