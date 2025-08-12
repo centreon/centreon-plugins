@@ -142,9 +142,9 @@ def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=N
     with open(log_path, 'r') as f:
         for line in f:
             # Pattern: reporting check result #<id> ...
-            m = re.search(r'reporting check result #(\d+).*output:(.*)', line)
+            m = re.search(r'reporting check result #(\d+) check:(\d+) .*output:(.*)', line)
             if m:
-                found_id, output = m.group(1), m.group(2).strip()
+                test_number, found_id, output = m.group(1), m.group(2), m.group(3).strip()
                 if str(found_id) == str(tc):
                     # Write the output to the file
                     output_path = output_path or f"/tmp/connector.output.{tc}"
@@ -167,9 +167,9 @@ def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=N
     import re
     with open(log_path, 'r') as f:
         for line in f:
-            m = re.search(r'reporting check result #(\d+).*output:(.*)', line)
+            m = re.search(r'reporting check result #(\d+) check:(\d+) .*output:(.*)', line)
             if m:
-                found_id, output = m.group(1), m.group(2).strip()
+                test_number, found_id, output = m.group(1), m.group(2), m.group(3).strip()
                 if str(found_id) == str(tc):
                     output_path = output_path or f"/tmp/connector.output.{tc}"
                     with open(output_path, 'w') as out:

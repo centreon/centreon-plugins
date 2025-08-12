@@ -107,18 +107,53 @@ Ctn Verify Command Without Connector Output
     ...    values=False
     ...    collapse_spaces=True
 
-Ctn Run Command With Connector And Check Result As Strings
-    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
-    Log To Console    c
+Ctn Connector Log Contains Result
+    [Arguments]    ${tc}
+    ${result}=    Grep File	/tmp/connector.log    reporting check result
+     #\d+ check:${tc}${SPACE}
+
+    IF    "${result}" == ''
+        ${toto}=    Grep File	/tmp/connector.log    .
+        Fail    Result not available yet
+    ELSE
+        RETURN    ${TRUE}
+    END
+
+Ctn Wait Until Connector Result Available
+    [Arguments]    ${tc}    ${timeout}=${TIMEOUT}
+    Wait Until Keyword Succeeds
+    ...     ${timeout}
+    ...     .2
+    ...     File Should Not Be Empty	/tmp/connector.log
+    File Should Not Be Empty	/tmp/connector.log
+    Wait Until Keyword Succeeds
+    ...     ${timeout}
+    ...     .2
+    ...     Ctn Connector Log Contains Result	${tc}
+
+Ctn Run Command With Connector And Return Result
+    [Arguments]    ${tc}    ${command}    ${timeout}=${TIMEOUT}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
+    Create File      /tmp/connector.log
+    File Should Be Empty	/tmp/connector.log
+
     Ctn Send To Connector    ${tc}    ${command}    ${timeout}
+    Ctn Wait Until Connector Result Available    ${tc}    ${timeout}
+
     # 1. Extract the result from the log and write to /tmp/connector.output
     Ctn Extract Result From Log    ${tc}
     # 2. Read the file
     ${output}    Get File    /tmp/connector.output
     ${output}    Strip String    ${output}
-    # 3. Compare with expected
+    RETURN    ${output}
+
+Ctn Run Command With Connector And Check Result As Strings
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
+    Log To Console    c
+
+    ${output}    Ctn Run Command With Connector And Return Result    ${tc}    ${command}    ${timeout}
+
     Should Be Equal As Strings
     ...    ${expected_result}
     ...    ${output}
@@ -130,14 +165,8 @@ Ctn Run Command With Connector And Check Result As Strings
 Ctn Run Command With Connector And Check Result As Regexp
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
     Log To Console    c
-    Remove File    /tmp/connector.output
-    Remove File    /tmp/connector.command.log
-    Ctn Send To Connector    ${tc}    ${command}    ${timeout}
-    # 1. Extract the result from the log and write to /tmp/connector.output
-    Ctn Extract Result From Log    ${tc}
-    # 2. Read the file
-    ${output}    Get File    /tmp/connector.output
-    ${output}    Strip String    ${output}
+    ${output}    Ctn Run Command With Connector And Return Result    ${tc}    ${command}    ${timeout}
+
     # 3. Compare with expected
     Should Match Regexp
     ...    ${output}
