@@ -72,15 +72,6 @@ def ctn_wait_for_output_file(output_file="/tmp/connector.output", timeout=10, po
         time.sleep(poll_interval)
     raise FileNotFoundError(f"Output file {output_file} not found after {timeout} seconds")
 
-def ctn_read_from_output_file(idf: int, output_file="/tmp/connector.output", wait_timeout=10):
-    ctn_wait_for_output_file(output_file, wait_timeout)
-    with open(output_file, "r") as f:
-        lines = f.readlines()
-    for line in lines:
-        if line.strip().startswith(str(idf)):
-            return line.strip().split(" ", 1)[1]
-    return None
-
 def ctn_start_connector():
     global connector
     connector = ConnectorLibrary()
@@ -110,16 +101,6 @@ def ctn_send_to_connector(idf: int, command: str, timeout: int = 5, output_file=
     else:
         raise RuntimeError("Connector is not running.")
 
-
-def ctn_wait_for_result(idf: int, timeout: int = 5, poll_interval=0.2):
-    end_time = time.time() + timeout
-    while time.time() < end_time:
-        result = ctn_read_from_output_file(idf)
-        if result:
-            return result
-        time.sleep(poll_interval)
-    raise TimeoutError(f"No result found for id {idf} within {timeout} seconds.")
-
 def ctn_clean_connector_output(line):
     if not isinstance(line, str):
         line = str(line)
@@ -134,53 +115,6 @@ def ctn_clean_connector_output(line):
     print(f"CLEANED: {repr(cleaned)}")
     return cleaned
 
-def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
-    """
-    Find the line with 'reporting check result' and the right check id.
-    Write the 'output:' content to output_path.
-    """
-    with open(log_path, 'r') as f:
-        for line in f:
-            # Pattern: reporting check result #<id> ...
-            m = re.search(r'reporting check result #(\d+) check:(\d+) .*output:(.*)', line)
-            if m:
-                test_number, found_id, output = m.group(1), m.group(2), m.group(3).strip()
-                if str(found_id) == str(tc):
-                    # Write the output to the file
-                    output_path = output_path or f"/tmp/connector.output.{tc}"
-                    with open(output_path, 'w') as out:
-                        out.write(output + "\n")
-                                # Also copy to shared output
-                    if output_path != "/tmp/connector.output":
-                        import shutil
-                        shutil.copyfile(output_path, "/tmp/connector.output")
-                    return output
-            # If not found, raise or return None
-        raise Exception(f"No result found for id {tc} in log {log_path}")
-
-@keyword
-def ctn_extract_result_from_log(tc, log_path="/tmp/connector.log", output_path=None):
-    """
-    Find the line with 'reporting check result' and the right check id.
-    Write the 'output:' content to output_path.
-    """
-    import re
-    with open(log_path, 'r') as f:
-        for line in f:
-            m = re.search(r'reporting check result #(\d+) check:(\d+) .*output:(.*)', line)
-            if m:
-                test_number, found_id, output = m.group(1), m.group(2), m.group(3).strip()
-                if str(found_id) == str(tc):
-                    output_path = output_path or f"/tmp/connector.output.{tc}"
-                    with open(output_path, 'w') as out:
-                        out.write(output + "\n")
-                                # Also copy to shared output
-                    if output_path != "/tmp/connector.output":
-                        import shutil
-                        shutil.copyfile(output_path, "/tmp/connector.output")
-                    return output
-        raise Exception(f"No result found for id {tc} in log {log_path}")
-    
 @keyword
 def ctn_extract_multiline_result_from_log(tc, log_path="/tmp/connector.log", output_path=None, timeout=10):
     """
