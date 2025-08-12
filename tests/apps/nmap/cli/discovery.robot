@@ -25,7 +25,7 @@ Container usage ${tc}
     ...    --subnet='127.0.0.1/32'
     ...    ${extraoptions}
 
-    Ctn Run Command Without Connector And Check Result As Json    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Json    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions          expected_result    --
     ...       1     ${EMPTY}                       {"end_time":1747232859,"discovered_items":1,"results":[{"hostname":"localhost","ip":"127.0.0.1","hostnames":[{"type":"PTR","name":"localhost"}],"vendor":null,"status":"up","addresses":[{"address":"127.0.0.1","type":"ipv4"}],"os_accuracy":null,"os":null,"services":null,"type":"unknown"}],"duration":0,"start_time":1747232859}
