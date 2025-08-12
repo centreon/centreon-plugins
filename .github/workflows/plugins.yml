@@ -521,5 +521,5 @@ jobs:
           jira_base_url: ${{ secrets.JIRA_BASE_URL }}
           jira_user_email: ${{ secrets.XRAY_JIRA_USER_EMAIL }}
           jira_api_token: ${{ secrets.XRAY_JIRA_TOKEN }}
-          module_name: "centreon-collect"
+          module_name: "centreon-plugins"
           ticket_reason_for_creation: "Nightly"
