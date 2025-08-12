@@ -86,8 +86,8 @@ runs:
               squad_name = "DEVSECOPS"
               project_name = "MON"
             } else if (["unit-tests", "fatpacker", "test-plugins"].includes(failed_job)) {
-              ticket_squad_id=10504
-              ticket_board_id=222
+              ticket_squad_id = 10504
+              ticket_board_id = 222
               squad_name = "COLLECT"
               project_name = "CTOR"
             } else {
