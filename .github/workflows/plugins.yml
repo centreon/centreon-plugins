@@ -510,7 +510,6 @@ jobs:
     ]
     if: |
       needs.get-environment.outputs.is_nightly == 'true' && github.run_attempt == 1 &&
-      startsWith(github.ref_name, 'dev') &&
       (failure() || cancelled() || contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
     steps:
       - name: Checkout sources
