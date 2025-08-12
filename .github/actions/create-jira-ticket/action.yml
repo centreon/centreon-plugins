@@ -85,7 +85,7 @@ runs:
               ticket_board_id = 184
               squad_name = "DEVSECOPS"
               project_name = "MON"
-            } else if (["unit-test", "robot-test"].includes(failed_job)) {
+            } else if (["unit-tests", "fatpacker", "test-plugins"].includes(failed_job)) {
               ticket_squad_id=10504
               ticket_board_id=222
               squad_name = "COLLECT"
