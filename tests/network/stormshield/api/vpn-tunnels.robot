@@ -29,7 +29,7 @@ vpn-tunnels ${tc}
     ...    --mode=vpn-tunnels
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                                                                                                        expected_result    --
             ...       1     ${EMPTY}                                                                                                            OK: Total VPN tunnels: 22 - All VPN tunnels are ok | 'vpn.tunnels.total.count'=22;;;0;

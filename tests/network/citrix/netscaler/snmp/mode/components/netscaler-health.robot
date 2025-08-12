@@ -25,7 +25,7 @@ check psu components ${tc}/2
     ...    --component=psu
     ...    --alternative-status-mapping='${alternative_status_mapping}'
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    alternative_status_mapping    community    expected_result    --
             ...      1     true        psu-citrix-v13    OK: All 4 components are ok [4/4 psus]. | 'count_psu'=4;;;;

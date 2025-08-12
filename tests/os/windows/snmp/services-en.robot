@@ -26,7 +26,7 @@ Windows Services EN ${tc}
     ...    --filter-name='${filter}'
     ...    ${extra_option}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter           extra_option            expected_result    --
             ...      1     ${EMPTY}         ${EMPTY}                OK: All services are ok | 'services.total.count'=168;;;0; 'services.active.count'=168;;;0; 'services.continue.pending.count'=0;;;0; 'services.pause.pending.count'=0;;;0; 'services.paused.count'=0;;;0;

@@ -25,7 +25,7 @@ alerts ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                 expected_result    --
             ...      1     --truly-alert='\\\%{severity} =~ /emergency|alert|warning|critical/i'         OK: current alerts: 0 | 'alerts.current.count'=0;;;0;

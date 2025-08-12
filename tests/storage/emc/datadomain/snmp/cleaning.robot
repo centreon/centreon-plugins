@@ -28,7 +28,7 @@ cleaning ${tc}
     # first run to build cache
     Run    ${command}
     # second run to control the output
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
     
 
     Examples:        tc    extra_options                                                                      snmp_community                                                                      expected_result    --

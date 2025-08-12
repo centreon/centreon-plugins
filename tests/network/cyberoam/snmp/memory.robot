@@ -24,7 +24,7 @@ memory ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                  expected_result    --
             ...      1     ${EMPTY}                                                                                       OK: Physical memory Total: 7.61 GB Used: 4.41 GB (58.00%) Free: 3.20 GB (42.00%) - Swap memory Total: 7.73 GB Used: 791.10 MB (10.00%) Free: 6.95 GB (90.00%) | 'physical_used'=4738284257.28B;;;0;8169455616 'swap_used'=829528473.6B;;;0;8295284736

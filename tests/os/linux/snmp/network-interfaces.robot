@@ -27,7 +27,7 @@ Interfaces by id ${tc}
     ...    --interface='${filter}'
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter                    extra_options                 expected_result    --
             ...      1     1                         ${EMPTY}                      OK: Interface 'lo' Status : up (admin: up)
@@ -52,7 +52,7 @@ Interfaces by id regexp ${tc}
     ...    --regex-id
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter         extra_options      expected_result    --
             ...      1     ^1$            ${EMPTY}           OK: Interface 'lo' Status : up (admin: up)

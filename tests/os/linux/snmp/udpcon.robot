@@ -24,7 +24,7 @@ udpcon ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                           expected_result    --
             ...      1     ${EMPTY}        OK: Total connections: 7 | 'service_total'=7;;;0; 'con_listen'=7;;;0;

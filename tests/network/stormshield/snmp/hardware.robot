@@ -25,7 +25,7 @@ hardware ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                expected_result    --
             ...      1     --critical='temperature,.*,50'                                               CRITICAL: temperature 'cpu1' is 70 celsius | 'cpu1#hardware.temperature.celsius'=70C;;0:50;0; 'cpu2#hardware.temperature.celsius'=30C;;0:50;0; 'cpu3#hardware.temperature.celsius'=0C;;0:50;0; 'hardware.temperature.count'=3;;;;

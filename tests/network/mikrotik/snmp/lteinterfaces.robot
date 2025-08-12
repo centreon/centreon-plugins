@@ -26,7 +26,7 @@ lteinterfaces ${tc}
     # first run to build cache
     Run    ${command}
     # second run to control the output
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc     extra_options                                                 expected_result    --
             ...      1      ${EMPTY}                                                      OK: Interface 'lte1' [imei: 863359044096580] Status : up (admin: up), rsrp: -94 dBm, rsrq: -13 dB, rssi: -65 dBm, sinr: 0 dB | 'lte1~863359044096580#interface.signal.rsrp.dbm'=-94;;;0; 'lte1~863359044096580#interface.signal.rsrq.db'=-13;;;0; 'lte1~863359044096580#interface.signal.rssi.dbm'=-65;;;0; 'lte1~863359044096580#interface.signal.sinr.dbm'=0;;;0;

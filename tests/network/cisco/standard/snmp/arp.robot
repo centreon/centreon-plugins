@@ -22,7 +22,7 @@ arp ${tc}
     ...    --snmp-community=network/cisco/standard/snmp/cisco
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                         expected_result    --
             ...      1     --warning-total-entries=2 --critical-total-entries=0                  CRITICAL: total entries 3 | 'arp.total.entries.count'=3;0:2;0:0;0; 'arp.duplicate.macaddr.count'=0;;;0; 'arp.duplicate.ipaddr.count'=0;;;0;

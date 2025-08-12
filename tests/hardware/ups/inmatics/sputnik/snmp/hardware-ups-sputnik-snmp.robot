@@ -35,7 +35,7 @@ Sputnik UPS - Environment ${tc}/9
     ${opt}    Append Option    --filter-id    ${filter_id}
     ${command}    Catenate    ${command}    ${opt}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter_id    w_temperature    c_temperature    w_humidity    c_humidity    expected_result    --
             ...      1     1            30               50               50            70            OK: 'Sensor 1': temperature 20.06 C, humidity 33 % | 'Sensor 1#environment.temperature.celsius'=20.06C;0:30;0:50;; 'Sensor 1#environment.humidity.percentage'=33%;0:50;0:70;0;100

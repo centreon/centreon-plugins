@@ -28,7 +28,7 @@ Hardware ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extra_options                            expected_result    --
             ...       1   ${EMPTY}                                 OK: All 4 components are ok [1/1 bays, 1/1 disks, 1/1 frus, 1/1 shelfs]. | 'hardware.bay.count'=1;;;; 'hardware.disk.count'=1;;;; 'hardware.fru.count'=1;;;; 'hardware.shelf.count'=1;;;;

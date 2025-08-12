@@ -25,7 +25,7 @@ sdwan ${tc}
     ...    --snmp-retries=3
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                expected_result    --
             ...      1     --filter-vdom='root'                                                                                         OK: sd-wan 'fgVWLHealthCheckLinkName' [vdom: root] [interface: wan1] state: up - traffic traffic-in : Buffer creation, traffic-out : Buffer creation, traffic-bi : Buffer creation - latency: 8.617ms - jitter: 0.065ms - packet loss: 0.000% | 'root~fgVWLHealthCheckLinkName~wan1#sdwan.latency.milliseconds'=8.62ms;;;0; 'root~fgVWLHealthCheckLinkName~wan1#sdwan.jitter.milliseconds'=0.07ms;;;0; 'root~fgVWLHealthCheckLinkName~wan1#sdwan.packetloss.percentage'=0.000%;;;0;100

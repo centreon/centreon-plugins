@@ -25,7 +25,7 @@ process ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                     expected_result    --
             ...      1     --verbose                                                         OK: NFS status: enabled - CIFS status: enabledRunning - DDBoost status: enabled - VTL process state: stopped [admin state: disabled] 

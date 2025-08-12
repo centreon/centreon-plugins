@@ -24,7 +24,7 @@ Uptime ${tc}
     ...    --warning-uptime=${warning}
     ...    --critical-uptime=${critical}
             
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc   warning                critical                   expected_result    --
             ...      1    ${Empty}               ${Empty}                   OK: System uptime is: 46m 5s | 'uptime'=2765.00s;;;0;

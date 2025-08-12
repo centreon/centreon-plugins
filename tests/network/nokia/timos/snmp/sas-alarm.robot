@@ -25,7 +25,7 @@ sas-alarm ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                                                          expected_result    --
             ...      1     --verbose                                                                                                                                                              CRITICAL: Alarm input 'PSU_1_Sammelalarm' Alarm input status : alarm (Alarm input admin state: up (Alarm output severity: major) Alarm input 'PSU_1_Sammelalarm' Alarm input status : alarm (Alarm input admin state: up (Alarm output severity: major) Alarm input 'PSU_1_230V_fehlt' Alarm input status : noAlarm (Alarm input admin state: up (Alarm output severity: major) Alarm input 'PSU_2_Sammelalarm' Alarm input status : noAlarm (Alarm input admin state: up (Alarm output severity: major) Alarm input 'PSU_2_230V_fehlt' Alarm input status : noAlarm (Alarm input admin state: up (Alarm output severity: major)

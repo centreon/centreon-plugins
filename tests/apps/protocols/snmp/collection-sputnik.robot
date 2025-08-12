@@ -24,7 +24,7 @@ SNMP Collection - Sputnik Environment ${tc}/3
     ...    --snmp-community=apps/protocols/snmp/collection-sputnik
     ...    --config=${CURDIR}${/}..${/}..${/}..${/}..${/}src/contrib/collection/snmp/sputnik-environment.json
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    expected_result    --
             ...      1     OK: Sensor '1' temperature is '20.06'°C and humidity is '33'% | '1#environment.temperature.celsius'=20.06C;;;; '1#environment.humidity.percent'=33%;;;0;100

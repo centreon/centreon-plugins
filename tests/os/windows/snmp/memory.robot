@@ -25,7 +25,7 @@ memory ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
     
     Examples:        tc    extra_options                                              expected_result    --
             ...      1     --verbose                                                  OK: Ram Total: 4.00GB Used: 557.94MB (13.62%) Free: 3.45GB (86.38%) | 'used'=585039872B;;;0;4294377472

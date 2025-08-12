@@ -30,7 +30,7 @@ Device backup ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                                                                               expected_result    --
             ...       1     ${EMPTY}                                                                                   UNKNOWN: Need to specify --device-id or --device-name option.

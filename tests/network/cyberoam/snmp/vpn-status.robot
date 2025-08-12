@@ -24,7 +24,7 @@ vpn-status ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                              expected_result    --
             ...      1     --filter-counters='^total$|^total-normal$'                                                                                 OK: VPN total: 4 - All VPNs are ok | 'total'=4;;;0;

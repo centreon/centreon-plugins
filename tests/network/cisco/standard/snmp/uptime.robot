@@ -21,7 +21,7 @@ uptime ${tc}
     ...    --snmp-community=network/cisco/standard/snmp/cisco
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                         expected_result    --
             ...      1     ${EMPTY}                                                              OK: System uptime is: 19d 16h 25m 40s | 'uptime'=1700740.00s;;;0;

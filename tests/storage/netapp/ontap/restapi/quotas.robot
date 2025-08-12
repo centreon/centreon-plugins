@@ -28,7 +28,7 @@ Quotas ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extra_options                            expected_result    --
             ...       1   ${EMPTY}                                 OK: Quota 'vserver:svm1,volume:volume1,qtree:qt1' total: 100.00 B used: 50.00 B (50.00%) free: 50.00 B (50.00%) | 'vserver:svm1~volume:volume1~qtree:qt1#quota.space.usage.bytes'=50B;0:90;;0;100 'vserver:svm1~volume:volume1~qtree:qt1#quota.space.free.bytes'=50B;;;0;100 'vserver:svm1~volume:volume1~qtree:qt1#quota.space.usage.percentage'=50.00%;;;0;100

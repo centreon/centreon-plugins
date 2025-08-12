@@ -25,7 +25,7 @@ Azure PolicyInsights PolicyStates compliance ${tc}
     ...    --mode=compliance
     ...    --management-endpoint=${endpoint}
        
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  endpoint                     policyname                                resourcelocation    resourcetype    expected_result    --
             ...       1   ${BASE_URL}/ok               ${EMPTY}                                  ${EMPTY}            ${EMPTY}        OK: Number of non compliant policies: 0 - All compliances states are ok | 'policies.non_compliant.count'=0;;;0;

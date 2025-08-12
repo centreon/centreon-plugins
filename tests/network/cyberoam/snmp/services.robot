@@ -24,7 +24,7 @@ services ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                          expected_result    --
             ...      1     --component='service'                                                  OK: All 21 components are ok [21/21 services]. | 'hardware.service.count'=21;;;;

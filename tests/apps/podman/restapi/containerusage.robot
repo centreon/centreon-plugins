@@ -29,7 +29,7 @@ Container usage ${tc}
     ...    --container-name=wordpress
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                        expected_result    --
             ...       1     ${EMPTY}                            OK: CPU: 0.11%, Memory: 10.85MB, Read : 435.65MB, Write : 941.43MB, Network in: 1006.00B, Network out: 2.10KB, State: running | 'podman.container.cpu.usage.percent'=0.11%;;;0;100 'podman.container.memory.usage.bytes'=11374592B;;;0; 'podman.container.io.read'=456812354B;;;0; 'podman.container.io.write'=987156423B;;;0; 'podman.container.network.in'=1006B;;;0; 'podman.container.network.out'=2146B;;;0;
@@ -51,7 +51,7 @@ Container usage ${tc}
     ...    --container-name=wordpress
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                    expected_result    --
             ...       10    --warning-network-in=500                       WARNING: Network in: 1006.00B | 'podman.container.cpu.usage.percent'=0.11%;;;0;100 'podman.container.memory.usage.bytes'=11374592B;;;0; 'podman.container.io.read'=456812354B;;;0; 'podman.container.io.write'=987156423B;;;0; 'podman.container.network.in'=1006B;0:500;;0; 'podman.container.network.out'=2146B;;;0;

@@ -27,7 +27,7 @@ Linux Memory with vault ${tc}
     ...    --vault-cache=${VAULT_CACHE}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:         tc  secret    vault_config                                     extra_options       expected_regexp    --
             ...       1   Linux     ${EMPTY}                                         ${EMPTY}                                   UNKNOWN: Please provide a Centreon Vault configuration file path with --vault-config option

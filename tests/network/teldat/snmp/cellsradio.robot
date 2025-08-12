@@ -35,7 +35,7 @@ Cells radio ${tc}
     ...    --warning-module-cellradio-snr=${warningmodulecellradiosnr}
     ...    --critical-module-cellradio-snr=${criticalmodulecellradiosnr}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
 
     Examples:    tc   customperfdatainstances     criticalstatus                                warningmodulescellradiodetected    criticalmodulescellradiodetected    warningmodulecellradiorsrp    criticalmodulecellradiorsrp    warningmodulecellradiorsrq    criticalmodulecellradiorsrq    warningmodulecellradiocsq    criticalmodulecellradiocsq    warningmodulecellradiosnr    criticalmodulecellradiosnr    expected_result    --

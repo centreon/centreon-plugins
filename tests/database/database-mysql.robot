@@ -19,7 +19,7 @@ Database Mysql sql string mode ${tc}
     ...    ${CMD}
     ...    --mode=sql-string
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  expected_result    --
             ...       1   UNKNOWN: Need to specify data_source arguments.

@@ -22,7 +22,7 @@ memory-flash ${tc}
     ...    --snmp-community=network/cisco/standard/snmp/cisco
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                          expected_result    --
             ...      1     ${EMPTY}                                                                                               OK: All memory flash partitions are ok | 'Anonymized 175#memory.flash.usage.bytes'=68809216B;;;0;122185728 'Anonymized 175#memory.flash.free.bytes'=53376512B;;;0;122185728 'Anonymized 175#memory.flash.usage.percentage'=56.32%;;;0;100 'Anonymized 163#memory.flash.usage.bytes'=68844544B;;;0;122185728 'Anonymized 163#memory.flash.free.bytes'=53341184B;;;0;122185728 'Anonymized 163#memory.flash.usage.percentage'=56.34%;;;0;100 'Anonymized 131#memory.flash.usage.bytes'=65309184B;;;0;122185728 'Anonymized 131#memory.flash.free.bytes'=56876544B;;;0;122185728 'Anonymized 131#memory.flash.usage.percentage'=53.45%;;;0;100

@@ -29,7 +29,7 @@ Pod status ${tc}
     ...    --pod-name=blog
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                         expected_result    --
             ...       1     ${EMPTY}                             OK: CPU: 1.46%, Memory: 459.41MB, Running containers: 5, Stopped containers: 2, Paused containers: 1, State: Running | 'podman.pod.cpu.usage.percent'=1.46%;;;0;100 'podman.pod.memory.usage.bytes'=481727346.688B;;;0; 'podman.pod.containers.running.count'=5;;;0; 'podman.pod.containers.stopped.count'=2;;;0; 'podman.pod.containers.paused.count'=1;;;0;
@@ -53,7 +53,7 @@ Pod status ${tc}
     ...    --pod-name=degreded
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                                                                              expected_result    --
             ...       12    --warning-state='\\\%{state} =~ /Degraded/' --critical-state='\\\%{state} =~ /Exited/'    WARNING: State: Degraded | 'podman.pod.cpu.usage.percent'=1.46%;;;0;100 'podman.pod.memory.usage.bytes'=481727346.688B;;;0; 'podman.pod.containers.running.count'=5;;;0; 'podman.pod.containers.stopped.count'=2;;;0; 'podman.pod.containers.paused.count'=1;;;0;

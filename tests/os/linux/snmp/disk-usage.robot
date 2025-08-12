@@ -25,7 +25,7 @@ disk-usage ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                       expected_result    --
             ...      1     --filter-counters                   OK: All partitions are ok | 'count'=5;;;0; 'used_/'=7394013184B;;;0;105088212992 'free_/'=97694199808B;;;0;105088212992 'used_prct_/'=7.04%;;;0;100 'inodes_/'=6%;;;0;100 'used_/dev/shm'=0B;;;0;1031299072 'free_/dev/shm'=1031299072B;;;0;1031299072 'used_prct_/dev/shm'=0.00%;;;0;100 'inodes_/dev/shm'=0%;;;0;100 'used_/run'=532480B;;;0;206262272 'free_/run'=205729792B;;;0;206262272 'used_prct_/run'=0.26%;;;0;100 'inodes_/run'=0%;;;0;100 'used_/run/lock'=0B;;;0;5242880 'free_/run/lock'=5242880B;;;0;5242880 'used_prct_/run/lock'=0.00%;;;0;100 'inodes_/run/lock'=0%;;;0;100 'used_/run/user/0'=0B;;;0;206258176 'free_/run/user/0'=206258176B;;;0;206258176 'used_prct_/run/user/0'=0.00%;;;0;100 'inodes_/run/user/0'=0%;;;0;100 

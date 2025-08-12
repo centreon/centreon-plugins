@@ -21,7 +21,7 @@ stack ${tc}
     ...    --snmp-community=network/cisco/standard/snmp/cisco
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                               expected_result    --
             ...      1     ${EMPTY}                                                                                    OK: Stack status is 'redundant' - Number of members waiting: 0, progressing: 0, added: 0, ready: 3, SDM mismatch: 0, version mismatch: 0, feature mismatch: 0, new master init: 0, provisioned: 0, invalid: 0, removed: 0 - All stack members status are ok | 'waiting'=0;;;0; 'progressing'=0;;;0; 'added'=0;;;0; 'ready'=3;;;0; 'sdm_mismatch'=0;;;0; 'version_mismatch'=0;;;0; 'feature_mismatch'=0;;;0; 'new_master_init'=0;;;0; 'provisioned'=0;;;0; 'invalid'=0;;;0; 'removed'=0;;;0;

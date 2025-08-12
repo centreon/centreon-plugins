@@ -24,7 +24,7 @@ cpu ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                            expected_result    --
             ...      1     ${EMPTY}                                                 OK: All CPU usages are ok | 'cpu_1'=14.00%;;;0;100 'cpu_2'=16.00%;;;0;100 'cpu_3'=14.00%;;;0;100 'cpu_4'=12.00%;;;0;100 'cpu_5'=13.00%;;;0;100 'cpu_6'=13.00%;;;0;100 'cpu_7'=21.00%;;;0;100 'cpu_8'=10.00%;;;0;100

@@ -23,7 +23,7 @@ Interface ${tc}
     ...    --sshcli-option="-f=${CURDIR}${/}data${/}interfaces.netconf"
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:      tc    extraoptions    expected_result    --
             ...    1     ${EMPTY}
@@ -50,7 +50,7 @@ Interface regex ${tc}
     ...    --sshcli-option="-f=${CURDIR}${/}data${/}interfaces.netconf"
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:      tc    extraoptions    expected_result    --
             ...    1     ${EMPTY} --verbose
@@ -71,7 +71,7 @@ Optical Interface ${tc}
     ...    --sshcli-option="-f=${CURDIR}${/}data${/}interfaces_optical.netconf"
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:      tc    extraoptions    expected_result    --
             ...    1     --add-optical

@@ -22,7 +22,7 @@ cpu-usage ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/cpu
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                    expected_result    --
             ...      1     ${EMPTY} --filter-counters='^usage-5s' --filter-name='10'                        OK: CPU '10' CPU Usage 5sec : 35 % | 'usage_5s'=35%;;;0;100

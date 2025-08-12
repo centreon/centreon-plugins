@@ -29,7 +29,7 @@ Memory ${tc}
     ...    --warning-usage-prct=${warningusageprct}
     ...    --critical-usage-prct=${criticalusageprct}
     
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
 
     Examples:         tc  warningusage  criticalusage  warningusagefree  criticalusagefree  warningusageprct  criticalusageprct    expected_result    --

@@ -25,7 +25,7 @@ processcount ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                   expected_result    --
             ...      1     --critical-cpu-total            OK: Number of current processes running: 317 | 'nbproc'=317;;;0;

@@ -24,7 +24,7 @@ AWS CloudTrail count events ${tc}
     ...    --mode=countevents
     ...    --endpoint=http://localhost:3000/cloudtrail/events/AwsApiCall/${AwsApiCall}/AwsServiceEvent/${AwsServiceEvent}/AwsConsoleAction/${AwsConsoleAction}/AwsConsoleSignIn/${AwsConsoleSignIn}/NextToken/${NextToken}
     ...    ${extraoptions}
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    AwsApiCall    AwsServiceEvent    AwsConsoleAction    AwsConsoleSignIn    NextToken    extraoptions                     expected_result    --
     ...               1     4             2                 1                    3                   false        ${EMPTY}                         OK: Number of events: 10.00 | 'events_count'=10.00;;;0;

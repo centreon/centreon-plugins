@@ -22,7 +22,7 @@ connections ${tc}
     ...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                           expected_result    --
             ...      1     ${EMPTY}                                                OK: Current client connections : 5395, Current client SSL connections : 0, client-ssl-tps : Buffer creation, Current server connections: 5242, Current server SSL connections : 4574 | 'connections.client.current.count'=5395;;;0; 'connections.client.ssl.current.count'=0;;;0; 'connections.server.current.count'=5242;;;0; 'connections.server.ssl.current.count'=4574;;;0;

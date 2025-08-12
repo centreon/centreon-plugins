@@ -24,7 +24,7 @@ outlets ${tc}
     ...    --snmp-community=hardware/pdu/cyberpower/snmp/CyberPower
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extraoptions                                      expected_result    --
             ...      1     --unknown-status='\\\%{state} =~ /on/'            UNKNOWN: Device 'ATS011' outlet 'Outlet1 bank 1' state: 'on' [phase: -] - outlet 'Outlet10 bank 1' state: 'on' [phase: -] - outlet 'Outlet2 bank 1' state: 'on' [phase: -] - outlet 'Outlet3 bank 1' state: 'on' [phase: -] - outlet 'Outlet4 bank 1' state: 'on' [phase: -] - outlet 'Outlet5 bank 1' state: 'on' [phase: -] - outlet 'Outlet6 bank 1' state: 'on' [phase: -] - outlet 'Outlet7 bank 1' state: 'on' [phase: -] - outlet 'Outlet8 bank 1' state: 'on' [phase: -] - outlet 'Outlet9 bank 1' state: 'on' [phase: -]

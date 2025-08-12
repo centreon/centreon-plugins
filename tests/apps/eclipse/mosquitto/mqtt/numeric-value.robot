@@ -52,7 +52,7 @@ Mosquitto MQTT numeric-value ${tc}
     ...    --perfdata-min=${perfdata_min}
     ...    --perfdata-max=${perfdata_max}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:    tc    topic                         warning     critical    extracted_pattern     format                         format_custom    perfdata_unit    perfdata_name     perfdata_min    perfdata_max    expected_result    --
         ...      1     $SYS/broker/messages/sent     ${EMPTY}    ${EMPTY}    ${EMPTY}              current value is %s            ${EMPTY}         ${EMPTY}         value             ${EMPTY}        ${EMPTY}        ^OK: current value is \\\\d* \\\\| 'value'=\\\\d*;;;;$

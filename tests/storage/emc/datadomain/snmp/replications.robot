@@ -25,7 +25,7 @@ replications ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                       expected_result    --
             ...      1     --filter-counters='^status$'                                                        OK: All replications are ok

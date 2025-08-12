@@ -24,7 +24,7 @@ Swap ${tc}
     [Tags]    apps    api    vmware   vsphere8    esx
     ${command}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                                        expected_result   --
         ...      1     ${EMPTY}                                            OK: usage-bytes : skipped (no value(s)), usage-prct : skipped (no value(s)) - no data for host host-22 counter mem.swap.current.HOST at the moment.

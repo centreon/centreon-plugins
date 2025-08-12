@@ -29,7 +29,7 @@ backups ${tc}
     ...    --mode=backup
     ...    ${extraoptions}
     Log    ${cmd}
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}    ${tc}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc    extraoptions                expected_result    --
             ...       1     ${EMPTY}                    OK: All backups are ok | 'All#backups.total.count'=5;;;0; 'All#backups.success.count'=0;;;0;5 'All#backups.suspect.count'=1;;;0;5 'All#backups.failure.count'=4;;;0;5 'Backup1#backups.total.count'=6;;;0; 'Backup1#backups.success.count'=1;;;0;6 'Backup1#backups.suspect.count'=2;;;0;6 'Backup1#backups.failure.count'=3;;;0;6
