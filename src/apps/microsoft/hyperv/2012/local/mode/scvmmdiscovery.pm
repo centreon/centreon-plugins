@@ -228,7 +228,7 @@ Prettify JSON output.
 =item B<--resource-type>
 
 Choose the type of resources
-to discover (can be: 'host', 'vm') (mandatory).
+to discover (can be: C<host>, C<vm>) (mandatory).
 
 =item B<--scvmm-hostname>
 
@@ -252,12 +252,12 @@ Set timeout time for command execution (default: 90 sec)
 
 =item B<--no-ps>
 
-Don't encode powershell. To be used with --command and 'type' command.
+Don't encode powershell. To be used with C<--command> and 'type' command.
 
 =item B<--command>
 
 Command to get information (default: 'powershell.exe').
-Can be changed if you have output in a file. To be used with --no-ps option!!!
+Can be changed if you have output in a file. To be used with C<--no-ps> option!!!
 
 =item B<--command-path>
 
@@ -265,7 +265,7 @@ Command path (default: none).
 
 =item B<--command-options>
 
-Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
+Command options (default: C<-InputFormat none -NoLogo -EncodedCommand>).
 
 =item B<--ps-display>
 
