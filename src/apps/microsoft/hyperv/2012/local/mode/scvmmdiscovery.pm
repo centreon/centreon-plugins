@@ -146,6 +146,10 @@ sub powershell_exec {
 sub run {
     my ($self, %options) = @_;
 
+    my $disco_data;
+    my $disco_stats;
+    $disco_stats->{start_time} = time();
+    
     my $decoded = $self->powershell_exec();
 
     my $hosts = {};
@@ -154,8 +158,6 @@ sub run {
         $hosts->{ $entry->{id} } = { cluster_name => $entry->{clusterName}, name => $entry->{name} };
     }
 
-    my $disco_data;
-    my $disco_stats;
     foreach my $entry (@$decoded) {
         my $item = {};
 
