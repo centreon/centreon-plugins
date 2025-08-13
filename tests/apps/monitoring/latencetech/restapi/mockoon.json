@@ -386,6 +386,35 @@
         }
       ],
       "responseMode": null
+    },
+    {
+      "uuid": "b7c86f2c-4e28-4834-bd84-3d5bfef56e19",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/twamp",
+      "responses": [
+        {
+          "uuid": "33177ab5-ec9a-4b4a-b519-c4e25fbc96c7",
+          "body": "{\n  \"CustomerID\": \"0\",\n  \"agentID\": \"2\",\n  \"time\": \"2025-07-25T14:13:08.975Z\",\n  \"TWAMPfwdDelta\": 12.92,\n  \"TWAMPRevDelta\": -4.19,\n  \"TWAMPProcDelta\": 0.11\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
     }
   ],
   "rootChildren": [
@@ -412,6 +441,10 @@
     {
       "type": "route",
       "uuid": "232fe410-d4af-42c9-8efa-919b0c576625"
+    },
+    {
+      "type": "route",
+      "uuid": "b7c86f2c-4e28-4834-bd84-3d5bfef56e19"
     }
   ],
   "proxyMode": false,
