@@ -329,6 +329,7 @@ vCPU
 vdom
 vdomain
 VDSL2
+VTOM
 Veeam
 VeloCloud
 VE
