@@ -23,7 +23,6 @@ package apps::monitoring::latencetech::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
