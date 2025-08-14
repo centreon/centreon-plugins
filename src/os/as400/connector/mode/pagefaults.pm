@@ -95,10 +95,21 @@ Check page faults.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-pagefaults-database>
 
-Thresholds.
-Can be: 'pagefaults-database', 'pagefaults-nondatabase'.
+Threshold in percentage.
+
+=item B<--critical-pagefaults-database>
+
+Threshold in percentage.
+
+=item B<--warning-pagefaults-nondatabase>
+
+Threshold in percentage.
+
+=item B<--critical-pagefaults-nondatabase>
+
+Threshold in percentage.
 
 =back
 
