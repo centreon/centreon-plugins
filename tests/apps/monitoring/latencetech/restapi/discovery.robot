@@ -27,7 +27,6 @@ Discovery ${tc}
     ${command}    Catenate
     ...    ${cmd}
     ...    --customer-id=0
-    ...    --agent-id=0
     ...    ${extraoptions}
     Log    ${cmd}
     Ctn Run Command And Check Result As Json    ${command}    ${expected_result}

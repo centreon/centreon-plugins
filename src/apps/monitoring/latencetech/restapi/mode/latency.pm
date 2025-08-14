@@ -138,6 +138,7 @@ Set the ID of the agent (mandatory option).
 
 Filter protocol if needed (can be a regexp)
 Accepted values are C<tcp>, C<udp>, C<http>, C<https>, C<icmp>, C<twamp>.
+
 =item B<--timerange>
 
 Choose a timerange of values on wich datas shoud be aggregated (in seconds).
