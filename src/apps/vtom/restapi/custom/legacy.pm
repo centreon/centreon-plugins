@@ -272,27 +272,27 @@ VTOM Rest API
 
 =item B<--hostname>
 
-Set hostname.
+Set the hostname.
 
 =item B<--port>
 
-Port used (default: 30002)
+Set the port used (default: 30002).
 
 =item B<--proto>
 
-Specify https if needed (default: 'http')
+Specify the protocol (default: 'http').
 
 =item B<--api-username>
 
-API username.
+Set the API username.
 
 =item B<--api-password>
 
-API password.
+Set the API password.
 
 =item B<--timeout>
 
-Set timeout in seconds (default: 30).
+Set the timeout in seconds (default: 30).
 
 =back
 
