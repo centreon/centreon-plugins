@@ -276,6 +276,7 @@ snmp
 snmpd.conf
 space-usage-prct
 --sql-errors-exit
+SCVMM
 SRX
 SSDCapacity
 SSG
