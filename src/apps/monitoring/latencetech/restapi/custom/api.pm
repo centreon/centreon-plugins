@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -75,13 +74,13 @@ sub check_options {
     $self->{customer_id} = $self->{option_results}->{customer_id};
     $self->{agent_id} = $self->{option_results}->{agent_id};
     $self->{api_key} = $self->{option_results}->{api_key};
-    $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api/v1';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : '12099';
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{api_path} = $self->{option_results}->{api_path} // '/api/v1';
+    $self->{port} = $self->{option_results}->{port} // '12099';
+    $self->{proto} = $self->{option_results}->{proto} // 'https';
+    $self->{timeout} = $self->{option_results}->{timeout} // 10;
+    $self->{unknown_http_status} = $self->{option_results}->{unknown_http_status} // '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = $self->{option_results}->{warning_http_status} // '';
+    $self->{critical_http_status} = $self->{option_results}->{critical_http_status} // '';
 
     if (centreon::plugins::misc::is_empty($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
