@@ -275,7 +275,7 @@ sub manage_selection {
             $self->{containers}->{$container_id}->{cpu_number} = scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}});
         }
 
-        $self->{containers}->{$container_id}->{memory_usage} = $result->{$container_id}->{Stats}->{memory_stats}->{usage};
+        $self->{containers}->{$container_id}->{memory_usage} = $result->{$container_id}->{Stats}->{memory_stats}->{usage} - $result->{$container_id}->{Stats}->{memory_stats}->{stats}->{inactive_file} // 0;
         $self->{containers}->{$container_id}->{memory_total} = $result->{$container_id}->{Stats}->{memory_stats}->{limit};
 
         foreach my $interface (keys %{$result->{$container_id}->{Stats}->{networks}}) {
@@ -316,19 +316,20 @@ Check container usage.
 
 =item B<--container-id>
 
-Exact container ID.
+Set the container ID.
 
 =item B<--container-name>
 
-Exact container name (if multiple names: names separated by ':').
+Set the container name(s). Multiple container names should be separed by ':'.
+Example: C<--container-name='container1:container2'>.
 
 =item B<--use-name>
 
-Use docker name for perfdata and display.
+Use the docker name for perfdata and display.
 
 =item B<--add-health>
 
-Get container health status (call inspector endpoint).
+Get the container health status by calling the  /inspector endpoint.
 
 =item B<--no-stats>
 
@@ -341,17 +342,17 @@ Filter by container name (can be a regexp).
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^container-status$'
+Example: C<--filter-counters='^container-status$'>
 
 =item B<--warning-container-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{name}, %{state}, %{health}.
+You can use the following variables: C<%{name}>, C<%{state}>, C<%{health}>.
 
 =item B<--critical-container-status>
 
 Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{name}, %{state}, %{health}.
+You can use the following variables: C<%{name}>, C<%{state}>, C<%{health}>.
 
 =item B<--warning-*> B<--critical-*>
 
