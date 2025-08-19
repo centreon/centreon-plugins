@@ -320,7 +320,7 @@ Set the container ID.
 
 =item B<--container-name>
 
-Set the container name(s). Multiple container names should be separed by ':'.
+Set the container name(s). Multiple container names should be separated by ':'.
 Example: C<--container-name='container1:container2'>.
 
 =item B<--use-name>
