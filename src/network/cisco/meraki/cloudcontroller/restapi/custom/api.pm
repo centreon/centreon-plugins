@@ -296,8 +296,11 @@ sub call_datas {
 
         if (defined($options{addDeviceConnection}) && $options{addDeviceConnection} == 1) {
             $self->{datas}->{devices_connection_stats} = {};
-            foreach my $network_id (keys %{$self->{datas}->{networks}}) {
-                $self->get_network_device_connection_stats(network_id => $network_id);
+            foreach my $serial (keys %{$self->{datas}->{devices}}) {
+                $self->get_network_device_connection_stats(
+                    serial     => $serial,
+                    network_id => $self->{datas}->{devices}->{$serial}->{network_id}
+                );
                 $self->{datas}->{devices_connection_stats}->{$network_id} = $self->{devices_connection_stats}->{$network_id};
             }
         }
