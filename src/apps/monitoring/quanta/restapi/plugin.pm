@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,11 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'web-scenarios-availability'    => 'apps::monitoring::quanta::restapi::mode::webscenariosavailability',
-    );
+    $self->{modes} = {
+        'incidents'          => 'apps::monitoring::quanta::restapi::mode::incidents',
+        'list-user-journeys' => 'apps::monitoring::quanta::restapi::mode::listuserjourneys',
+        'rum'                => 'apps::monitoring::quanta::restapi::mode::rum',
+        'site-overview'      => 'apps::monitoring::quanta::restapi::mode::siteoverview',
+        'user-journey'       => 'apps::monitoring::quanta::restapi::mode::userjourney'
+    };
 
-    $self->{custom_modes}{api} = 'apps::monitoring::quanta::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::monitoring::quanta::restapi::custom::api';
     return $self;
 }
 
