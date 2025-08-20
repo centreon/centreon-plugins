@@ -114,7 +114,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "perspective:s" => { name => 'perspective' },
         "site-id:s"     => { name => 'site_id' },
-        "timeframe:s"   => { name => 'timeframe', default => 1800 }
+        "timeframe:s"   => { name => 'timeframe' }
     });
    
     return $self;
@@ -126,7 +126,7 @@ sub check_options {
 
     $self->{perspective} = (defined($self->{option_results}->{perspective})) ? $self->{option_results}->{perspective} : 'all';
     $self->{site_id} = (defined($self->{option_results}->{site_id})) ? $self->{option_results}->{site_id} : '';
-    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : '';
+    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : '1800';
 
     if (!defined($self->{site_id}) || $self->{site_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --site-id option.");
