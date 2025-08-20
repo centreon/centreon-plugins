@@ -190,7 +190,7 @@ __END__
 
 =head1 MODE
 
-Check Quanta by Centreon RUM metrics.
+Check Quanta by Centreon RUM metrics for a given site.
 
 =over 8
 
