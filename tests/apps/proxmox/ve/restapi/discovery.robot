@@ -32,5 +32,5 @@ Discovery ${tc}
 
     Examples:        tc       extraoptions                                          expected_regexp    --
             ...      1        ${EMPTY}                                              "discovered_items":3
-            ...      2        --resource-type=vm                                    (?=.*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\],)(?=.*"os_info_name":"XxXxXx GNU/Linux")
+            ...      2        --resource-type=vm                                    (?=.*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\])(?=.*"os_info_name":"XxXxXx GNU/Linux")
             ...      3        --resource-type=node                                  ^(?!.*(ip_addresses|os_info_name)).*$
