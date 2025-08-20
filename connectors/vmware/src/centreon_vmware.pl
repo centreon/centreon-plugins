@@ -20,6 +20,14 @@
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin";
+
+BEGIN {
+    # This package centreon_vmware_requirements is used to check if the VMware Perl SDK is installed.
+    # I use a script based module in order to log the error message in the Centreon configured log file.
+    use centreon::script::centreon_vmware_requirements;
+    centreon::script::centreon_vmware_requirements->new()->run();
+}
+
 use centreon::script::centreon_vmware;
 
 centreon::script::centreon_vmware->new()->run();

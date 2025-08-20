@@ -167,11 +167,53 @@ Check system usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='processing-units'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-batch-jobs-running>
 
-Thresholds.
-Can be: 'processing-units-usage' (%), 'storage-pool-space-usage' (%),
+Threshold.
 
+=item B<--critical-batch-jobs-running>
+
+Threshold.
+
+=item B<--warning-batch-jobs-waiting-message>
+
+Threshold.
+
+=item B<--critical-batch-jobs-waiting-message>
+
+Threshold.
+
+=item B<--warning-jobs-active>
+
+Threshold.
+
+=item B<--critical-jobs-active>
+
+Threshold.
+
+=item B<--warning-jobs-total>
+
+Threshold.
+
+=item B<--critical-jobs-total>
+
+Threshold.
+
+=item B<--warning-processing-units-usage>
+
+Threshold in percentage.
+
+=item B<--critical-processing-units-usage>
+
+Threshold in percentage.
+
+=item B<--warning-storage-pool-space-usage>
+
+Threshold in percentage.
+
+=item B<--critical-storage-pool-space-usage>
+
+Threshold in percentage.
 
 =back
 
