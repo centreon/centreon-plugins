@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::quanta::restapi::mode::incidents;
+package apps::monitoring::quanta::restapi::mode::userjourneyincidents;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -97,7 +97,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'incident-duration', nlabel => 'quanta.incident.duration.seconds', set => {
+        { label => 'incident-duration', set => {
                 key_values => [ { name => 'duration' }, { name => 'start_time' }, { name => 'end_time' }, { name => 'status'} ],
                 closure_custom_output => $self->can('custom_duration_output'),
 		        closure_custom_perfdata => sub { return 0; }
@@ -115,7 +115,7 @@ sub new {
         "ignore-closed" => { name => 'ignore_closed' },
         "journey-id:s"  => { name => 'journey_id' },
         "site-id:s"     => { name => 'site_id' },
-        "timeframe:s"   => { name => 'timeframe', default => 3600 }
+        "timeframe:s"   => { name => 'timeframe', default => 1800 }
     });
    
     return $self;
@@ -143,7 +143,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->get_configuration_api(
-        endpoint    => '/sites/' . $self->{site_id} . '/user_journeys/' . $self->{journey_id} . '/incidents',
+        endpoint  => '/sites/' . $self->{site_id} . '/user_journeys/' . $self->{journey_id} . '/incidents',
         get_param => 'range=' . $self->{timeframe}
     );
     $self->{global}->{total} = 0;
@@ -168,7 +168,6 @@ sub manage_selection {
 
     $self->{global}->{total}++;
     }
-    #use Data::Dumper; print Dumper($self->{incidents}); exit 0;
 }
 
 1;
@@ -177,7 +176,7 @@ __END__
 
 =head1 MODE
 
-Check Quanta by Centreon overview performance metrics.
+Check Quanta by Centreon incidents for a given user journey.
 
 =over 8
 
@@ -185,14 +184,65 @@ Check Quanta by Centreon overview performance metrics.
 
 Set ID of the site (mandatory option).
 
+=item B<--site-id>
+
+Set ID of the user journey (mandatory option).
+
 =item B<--timeframe>
 
-Set timeframe in seconds (default: 86400).
+Set timeframe in seconds (default: 1800).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--ignore-closed>
 
-Can be: 'total-response-time', 'availability',
-'step-response-time'.
+Ignore closed incidents.
+
+=item B<--warning-incidents-total>
+
+Warning threshold for incidents total.
+
+=item B<--critical-incidents-total>
+
+Critical threshold for incidents total.
+
+=item B<--warning-incident-status>
+
+Define the conditions to match for the status to be B<WARNING>.
+
+You can use the following variables: C<%{status}>.
+
+Example: C<--warning-incident-status='%{status} =~ /open/i'>
+
+=item B<--critical-incident-status>
+
+Define the conditions to match for the status to be B<CRITICAL>.
+
+You can use the following variables: C<%{status}>.
+
+Default: C<--critical-incident-status='%{status} =~ /open/i'>
+
+=item B<--warning-incident-type>
+
+Define the conditions to match for the incident type to be B<WARNING>.
+
+You can use the following variables: C<%{type}>.
+
+Example: C<--warning-incident-type='%{type} =~ /error/i'>
+
+=item B<--critical-incident-type>
+
+Define the conditions to match for the incident type to be B<CRITICAL>.
+
+You can use the following variables: C<%{type}>.
+
+Example: C<--critical-incident-type='%{type} =~ /error/i'>
+
+=item B<--warning-incident-duration>
+
+Warning threshold for incident duration (in seconds).
+
+=item B<--critical-incident-duration>
+
+Critical threshold for incident duration (in seconds).
 
 =back
 

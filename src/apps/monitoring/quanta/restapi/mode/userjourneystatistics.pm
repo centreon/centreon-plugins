@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::quanta::restapi::mode::userjourney;
+package apps::monitoring::quanta::restapi::mode::userjourneystatistics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -79,7 +79,7 @@ sub set_counters {
                 ],
             }
         },
-         { label => 'hero-time', nlabel => 'herotime.milliseconds', set => {
+         { label => 'interaction-hero-time', nlabel => 'herotime.milliseconds', set => {
                 key_values => [ { name => 'hero_time' }, { name => 'display' } ],
                 output_template => 'hero time: %.2fms',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'speed-index', nlabel => 'speedindex.time.milliseconds', set => {
+        { label => 'interaction-speed-index', nlabel => 'speedindex.time.milliseconds', set => {
                 key_values => [ { name => 'speed_index' }, { name => 'display' } ],
                 output_template => 'speed index: %.2fms',
                 perfdatas => [
@@ -97,7 +97,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'ttfb', nlabel => 'ttfb.milliseconds', set => {
+        { label => 'interaction-ttfb', nlabel => 'ttfb.milliseconds', set => {
                 key_values => [ { name => 'net_request_ttfb' }, { name => 'display' } ],
                 output_template => 'ttfb: %.2fms',
                 perfdatas => [
@@ -209,7 +209,7 @@ __END__
 
 =head1 MODE
 
-Check Quanta by Centreon overview performance metrics.
+Check Quanta by Centreon statistics for a user journey.
 
 =over 8
 
@@ -227,11 +227,73 @@ Also monitor interactions (scenario's steps) of a user journey.
 
 =item B<--timeframe>
 
-Set timeframe in seconds (default: 86400).
+Set timeframe in seconds (default: 300).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-journey-performance-score>
 
-Thresholds.
+Warning threshold for journey performance score.
+
+=item B<--critical-journey-performance-score>
+
+Critical threshold for journey performance score.
+
+=item B<--warning-journey-hero-time>
+
+Warning threshold for journey hero time (in ms).
+
+=item B<--critical-journey-hero-time>
+
+Critical threshold for journey hero time (in ms).
+
+=item B<--warning-journey-speed-index>
+
+Warning threshold for journey speed index (in ms).
+
+=item B<--critical-journey-speed-index>
+
+Critical threshold for journey speed index (in ms).
+
+=item B<--warning-journey-ttfb>
+
+Warning threshold for journey time to first byte (in ms).
+
+=item B<--critical-journey-ttfb>
+
+Critical threshold for journey time to first byte (in ms).
+
+=item B<--warning-interaction-performance-score>
+
+Warning threshold for interaction performance score.
+
+=item B<--critical-interaction-performance-score>
+
+Critical threshold for interaction performance score.
+
+=item B<--warning-interaction-hero-time>
+
+Warning threshold for interaction hero time (in ms).
+
+=item B<--critical-interaction-hero-time>
+
+Critical threshold for interaction hero time (in ms).
+
+=item B<--warning-interaction-speed-index>
+
+Warning threshold for interaction speed index (in ms).
+
+=item B<--critical-interaction-speed-index>
+
+Critical threshold for interaction speed index (in ms).
+
+=item B<--warning-interaction-ttfb>
+
+Warning threshold for interaction time to first byte (in ms).
+
+=item B<--critical-interaction-ttfb>
+
+Critical threshold for time to first byte (in ms).
+
+=back
 
 =back
 

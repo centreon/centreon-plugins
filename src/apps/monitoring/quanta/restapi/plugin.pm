@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'incidents'          => 'apps::monitoring::quanta::restapi::mode::incidents',
-        'list-user-journeys' => 'apps::monitoring::quanta::restapi::mode::listuserjourneys',
-        'rum'                => 'apps::monitoring::quanta::restapi::mode::rum',
-        'site-overview'      => 'apps::monitoring::quanta::restapi::mode::siteoverview',
-        'user-journey'       => 'apps::monitoring::quanta::restapi::mode::userjourney'
+        'list-user-journeys'      => 'apps::monitoring::quanta::restapi::mode::listuserjourneys',
+        'rum'                     => 'apps::monitoring::quanta::restapi::mode::rum',
+        'site-overview'           => 'apps::monitoring::quanta::restapi::mode::siteoverview',
+        'user-journey-incidents'  => 'apps::monitoring::quanta::restapi::mode::userjourneyincidents',
+        'user-journey-statistics' => 'apps::monitoring::quanta::restapi::mode::userjourneystatistics'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::quanta::restapi::custom::api';

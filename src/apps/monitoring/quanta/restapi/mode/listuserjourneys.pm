@@ -103,7 +103,7 @@ __END__
 
 =head1 MODE
 
-List Quanta user journeys for a given site.
+List Quanta by Centreon user journeys for a given site.
 
 =over 8
 

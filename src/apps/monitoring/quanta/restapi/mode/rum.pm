@@ -134,7 +134,7 @@ sub check_options {
     }
 
     if (defined($self->{perspective}) && lc($self->{perspective}) !~ m/all|url|browser|country|city|os_family/) {
-        $self->{output}->add_option_msg(short_msg => 'Incorrect perspective set in "--perspective" option.');
+        $self->{output}->add_option_msg(short_msg => 'Unknown perspective set in "--perspective" option.');
         $self->{output}->option_exit();
     }
 }
@@ -200,16 +200,68 @@ Set ID of the site (mandatory option).
 
 =item B<--timeframe>
 
-Set timeframe in seconds (default: 86400).
+Set timeframe in seconds (default: 1800).
 
 =item B<--perspective>
 
 Set the perspective on which the datas should be applied.
 Can be: 'all', 'url', 'browser', 'country', 'city' (Default: 'all').
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-sessions>
 
-Thresholds.
+Warning threshold for sessions.
+
+=item B<--critical-sessions>
+
+Critical threshold for sessions.
+
+=item B<--warning-page-views>
+
+Warning threshold for page views.
+
+=item B<--critical-page-views>
+
+Critical threshold for page views.
+
+=item B<--warning-bounce-rate>
+
+Warning threshold for bounce rate.
+
+=item B<--critical-bounce-rate>
+
+Critical threshold for bounce rate.
+
+=item B<--warning-ttfb>
+
+Warning threshold for time to first byte (in ms).
+
+=item B<--critical-ttfb>
+
+Critical threshold for time to first byte (in ms).
+
+=item B<--warning-onload>
+
+Warning threshold for onload time (in ms).
+
+=item B<--critical-onload>
+
+Critical threshold for onload time (in ms).
+
+=item B<--warning-interaction-next-paint>
+
+Warning threshold for time to interaction next paint (in ms).
+
+=item B<--critical-interaction-next-paint>
+
+Critical threshold for time to interaction next paint (in ms).
+
+=item B<--warning-speed-index>
+
+Warning threshold for speed index.
+
+=item B<--critical-speed-index>
+
+Critical threshold for speed index.
 
 =back
 

@@ -220,15 +220,15 @@ __END__
 
 =head1 NAME
 
-Quanta Rest API
+Quanta by Centreon Rest API
 
 =head1 SYNOPSIS
 
-Quanta Rest API custom mode
+Quanta by Centreon Rest API custom mode
 
 =head1 REST API OPTIONS
 
-Quanta Rest API
+Quanta by Centreon Rest API
 
 =over 8
 
@@ -244,9 +244,9 @@ API port (default: 443)
 
 Specify https if needed (default: 'https')
 
-=item B<--url-path>
+=item B<--api-path>
 
-API URL path (default: '/api')
+API URL path (default: '/api/v1')
 
 =item B<--api-token>
 

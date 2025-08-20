@@ -85,7 +85,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "site-id:s"   => { name => 'site_id' },
-        "timeframe:s" => { name => 'timeframe', default => 86400 }
+        "timeframe:s" => { name => 'timeframe', default => 1800 }
     });
    
     return $self;
@@ -147,11 +147,39 @@ Set ID of the site (mandatory option).
 
 =item B<--timeframe>
 
-Set timeframe in seconds (default: 86400).
+Set timeframe in seconds (default: 1800).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-performance-score>
 
-Thresholds.
+Warning threshold for performance score.
+
+=item B<--critical-performance-score>
+
+Critical threshold for performance score.
+
+=item B<--warning-digital-sobriety-score>
+
+Warning threshold for digital sobriety score.
+
+=item B<--critical-digital-sobriety-score>
+
+Critical threshold for digital sobriety score.
+
+=item B<--warning-eco-design-score>
+
+Warning threshold for eco design score.
+
+=item B<--critical-eco-design-score>
+
+Critical threshold for eco design score.
+
+=item B<--warning-carbon-footprint>
+
+Warning threshold for carbon footprint.
+
+=item B<--critical-carbon-footprint>
+
+Critical threshold for carbon footprint.
 
 =back
 
