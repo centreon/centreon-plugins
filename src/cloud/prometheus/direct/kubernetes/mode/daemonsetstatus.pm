@@ -154,7 +154,7 @@ sub check_options {
         'current' => '^kube_daemonset_status_current_number_scheduled$',
         'available' => '^kube_daemonset_status_number_available$',
         'unavailable' => '^kube_daemonset_status_number_unavailable$',
-        'up_to_date' => '^kube_daemonset_updated_number_scheduled$',
+        'up_to_date' => '^kube_daemonset_status_updated_number_scheduled$',
         'ready' => '^kube_daemonset_status_number_ready$',
         'misscheduled' => '^kube_daemonset_status_number_misscheduled$',
     };
