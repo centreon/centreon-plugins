@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ sub set_counters {
              label => 'status',
              type => 2,
              unknown_default => '%{status} =~ /unknown/i',
-             critical_default => '%{status} !~ /onLine|rebooting/i',
+             critical_default => '%{status} !~ /online|rebooting/i',
              set => {
                 key_values => [ { name => 'status' } ],
                 closure_custom_output => $self->can('custom_status_output'),
@@ -165,13 +165,40 @@ You can use the following variables: %{status}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /onLine|rebooting/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /online|rebooting/i').
 You can use the following variables: %{status}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current>
 
-Thresholds.
-Can be: 'load', 'voltage', 'current', 'frequence'.
+Threshold in Amperes.
+
+=item B<--critical-current>
+
+Threshold in Amperes.
+
+=item B<--warning-frequence>
+
+Threshold in Hertz.
+
+=item B<--critical-frequence>
+
+Threshold in Hertz.
+
+=item B<--warning-load>
+
+Threshold in percentage.
+
+=item B<--critical-load>
+
+Threshold in percentage.
+
+=item B<--warning-voltage>
+
+Threshold in Volts.
+
+=item B<--critical-voltage>
+
+Threshold in Volts.
 
 =back
 
