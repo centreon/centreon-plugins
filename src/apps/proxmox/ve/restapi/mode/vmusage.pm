@@ -234,11 +234,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vm-id:s'             => { name => 'vm_id' },
-        'vm-name:s'           => { name => 'vm_name' },
-        'filter-name:s'       => { name => 'filter_name' },
-        'exclude-name:s'      => { name => 'exclude_name' },
-        'include-node-name:s' => { name => 'include_node_name' },
+        'vm-id:s'             => { name => 'vm_id',             default => '' },
+        'vm-name:s'           => { name => 'vm_name',           default => '' },
+        'filter-name:s'       => { name => 'filter_name',       default => '' },
+        'exclude-name:s'      => { name => 'exclude_name',      default => '' },
+        'include-node-name:s' => { name => 'include_node_name', default => '' },
+        'exclude-node-name:s' => { name => 'exclude_node_name', default => '' },
         'use-name'            => { name => 'use_name' }
     });
 
@@ -259,6 +260,10 @@ sub manage_selection {
     my $result = $options{custom}->api_get_vms(
         vm_id => $self->{option_results}->{vm_id},
         vm_name => $self->{option_results}->{vm_name},
+        filter_name => $self->{option_results}->{filter_name},
+        exclude_name => $self->{option_results}->{exclude_name},
+        include_node_name => $self->{option_results}->{include_node_name},
+        exclude_node_name => $self->{option_results}->{exclude_node_name},
         statefile => $self->{statefile_cache_vms}
     );
 
@@ -269,21 +274,6 @@ sub manage_selection {
 
         my $vm_name = $result->{$vm_id}->{Name};
         my $node_name = $result->{$vm_id}->{Node};
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $vm_name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $vm_name . "': no matching with include filter:" . $self->{option_results}->{filter_name}, debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
-            $vm_name =~ /$self->{option_results}->{exclude_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $vm_name . "': no matching with exclude filter: " . $self->{option_results}->{exclude_name}, debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{include_node_name}) && $self->{option_results}->{include_node_name} ne '' &&
-            $node_name !~ /$self->{option_results}->{include_node_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node_name . "': not running on include node:" . $self->{option_results}->{include_node_name}, debug => 1);
-            next;
-        }
 
         $self->{vms}->{$vm_id} = {
             display => defined($self->{option_results}->{use_name}) ? $vm_name : $vm_id,
@@ -341,10 +331,6 @@ Exact virtual machine name (if multiple names: names separated by ':').
 
 Use virtual machine name for perfdata and display.
 
-=item B<--include-node-name>
-
-Filter only virtual machine running on specified node name (can be a regexp).
-
 =item B<--filter-name>
 
 Filter by virtual machine name (can be a regexp).
@@ -352,6 +338,14 @@ Filter by virtual machine name (can be a regexp).
 =item B<--exclude-name>
 
 Exclude by virtual machine name (can be a regexp).
+
+=item B<--include-node-name>
+
+Filter only virtual machine running on specified node name (can be a regexp).
+
+=item B<--exclude-node-name>
+
+Exclude virtual machine running on specified node name (can be a regexp).
 
 =item B<--filter-counters>
 
