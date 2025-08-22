@@ -133,7 +133,7 @@ sub get_data_export_api {
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->output_add(long_msg => $response);
+        $self->{output}->output_add(long_msg => $response, debug => 1);
         $self->{output}->option_exit();
     }    
     eval {
@@ -166,7 +166,7 @@ sub get_configuration_api {
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->output_add(long_msg => $response);
+        $self->{output}->output_add(long_msg => $response, debug => 1);
         $self->{output}->option_exit();
     }    
     eval {

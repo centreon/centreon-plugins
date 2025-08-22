@@ -112,9 +112,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "perspective:s" => { name => 'perspective' },
-        "site-id:s"     => { name => 'site_id' },
-        "timeframe:s"   => { name => 'timeframe' }
+        "limit-results:s" => { name => 'limit_results' },
+        "perspective:s"   => { name => 'perspective' },
+        "site-id:s"       => { name => 'site_id' },
+        "timeframe:s"     => { name => 'timeframe' }
     });
    
     return $self;
@@ -124,6 +125,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    $self->{limit_results} = (defined($self->{option_results}->{limit_results})) ? $self->{option_results}->{limit_results} : '10';
     $self->{perspective} = (defined($self->{option_results}->{perspective})) ? $self->{option_results}->{perspective} : 'all';
     $self->{site_id} = (defined($self->{option_results}->{site_id})) ? $self->{option_results}->{site_id} : '';
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : '1800';
@@ -133,7 +135,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (defined($self->{perspective}) && lc($self->{perspective}) !~ m/all|url|browser|country|city|os_family/) {
+    if (defined($self->{perspective}) && lc($self->{perspective}) !~ m/all|url|browser|country|city|os/) {
         $self->{output}->add_option_msg(short_msg => 'Unknown perspective set in "--perspective" option.');
         $self->{output}->option_exit();
     }
@@ -153,9 +155,9 @@ sub manage_selection {
     my $rum_payload;
     my $rum_aggregations = [ 'mean' ];
     $rum_payload->{namespace} = 'rum';
-    $rum_payload->{tenant_id} += $self->{site_id}; #numifying is required with rum API
-    $rum_payload->{limit} = 10;
     $rum_payload->{index} = $self->{perspective};
+    $rum_payload->{tenant_id} += $self->{site_id}; #numifying is required with rum API for INT types
+    $rum_payload->{limit} +=  $self->{limit_results};
     $rum_payload->{point_period} += $self->{timeframe};
     $rum_payload->{range} += $self->{timeframe};
     foreach my $metric (@$rum_metrics) {
@@ -205,7 +207,12 @@ Set timeframe in seconds (default: 1800).
 =item B<--perspective>
 
 Set the perspective on which the datas should be applied.
-Can be: 'all', 'url', 'browser', 'country', 'city' (Default: 'all').
+Can be: 'all', 'url', 'browser', 'country', 'city', 'os' (default: 'all').
+
+=item B<--limit-results>
+
+To be used with --perspective. Limit the number of results to be fetched (number of different URLs, browsers, etc...).
+(default: 10).
 
 =item B<--warning-sessions>
 

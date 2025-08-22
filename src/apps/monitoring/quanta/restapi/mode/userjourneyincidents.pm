@@ -184,7 +184,7 @@ Check Quanta by Centreon incidents for a given user journey.
 
 Set ID of the site (mandatory option).
 
-=item B<--site-id>
+=item B<--journey-id>
 
 Set ID of the user journey (mandatory option).
 
