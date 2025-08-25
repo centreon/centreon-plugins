@@ -109,7 +109,7 @@ Ctn Connector Log Contains Result
     ${result}=    Grep File	/tmp/connector.log    reporting check result*check:${tc}
 
 
-    IF    "${result}" == ''
+    IF    '$result' == ''
         ${toto}=    Grep File	/tmp/connector.log    .
         Fail    Result not available yet
     ELSE
