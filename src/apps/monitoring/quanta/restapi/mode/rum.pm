@@ -207,7 +207,7 @@ Set timeframe in seconds (default: 1800).
 
 =item B<--perspective>
 
-Set the perspective on which the datas should be applied.
+Set the perspective in which the data will be applied.
 Can be: 'all', 'url', 'browser', 'country', 'city', 'os' (default: 'all').
 
 =item B<--limit-results>
@@ -249,11 +249,11 @@ Critical threshold for time to first byte (in ms).
 
 =item B<--warning-onload>
 
-Warning threshold for onload time (in ms).
+Warning threshold for C<onload> time (in ms).
 
 =item B<--critical-onload>
 
-Critical threshold for onload time (in ms).
+Critical threshold for C<onload> time (in ms).
 
 =item B<--warning-interaction-next-paint>
 

@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Quanta.io application probes results.
+Check Quanta application probes results.
 
 =cut

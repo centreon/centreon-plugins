@@ -167,11 +167,11 @@ Critical threshold for digital sobriety score.
 
 =item B<--warning-eco-design-score>
 
-Warning threshold for eco design score.
+Warning threshold for C<eco design> score.
 
 =item B<--critical-eco-design-score>
 
-Critical threshold for eco design score.
+Critical threshold for C<eco design> score.
 
 =item B<--warning-carbon-footprint>
 
