@@ -156,10 +156,11 @@ sub manage_selection {
     my $rum_aggregations = [ 'mean' ];
     $rum_payload->{namespace} = 'rum';
     $rum_payload->{index} = $self->{perspective};
-    $rum_payload->{tenant_id} += $self->{site_id}; #numifying is required with rum API for INT types
-    $rum_payload->{limit} +=  $self->{limit_results};
-    $rum_payload->{point_period} += $self->{timeframe};
-    $rum_payload->{range} += $self->{timeframe};
+    # numifying is required with rum API for INT types
+    $rum_payload->{tenant_id} = int $self->{site_id};
+    $rum_payload->{limit} = int $self->{limit_results};
+    $rum_payload->{point_period} = int $self->{timeframe};
+    $rum_payload->{range} = int $self->{timeframe};
     foreach my $metric (@$rum_metrics) {
         foreach (@$rum_aggregations) {
             push @{$rum_payload->{metrics_filter}->{$metric->{name}}->{aggregations}}, $_;
@@ -172,8 +173,8 @@ sub manage_selection {
         my $dimension = $self->{perspective};
         foreach my $result (@{$results->{results}}) {
             if (scalar(keys %{$result->{dimensions}}) > 0) {
-                foreach (keys %{$result->{dimensions}}) {
-                    $dimension = $result->{dimensions}->{$_} if (defined($result->{dimensions}->{$_}));
+                foreach (sort keys %{$result->{dimensions}}) {
+                    $dimension = $result->{dimensions}->{$_} if $result->{dimensions}->{$_};
                 }
             } 
             $self->{rum}->{$dimension}->{display} = $dimension ne 'all' ? $dimension : 'pages';

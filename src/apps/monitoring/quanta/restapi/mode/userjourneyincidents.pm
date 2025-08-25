@@ -91,7 +91,7 @@ sub set_counters {
             warning_default => '',
             critical_default => '',
             set => {
-                key_values => [ { name => 'kind' }, { name => 'display' }, { name => 'interaction_name' } ],
+                key_values => [ { name => 'type' }, { name => 'display' }, { name => 'interaction_name' } ],
                 output_template => 'type: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -100,7 +100,7 @@ sub set_counters {
         { label => 'incident-duration', set => {
                 key_values => [ { name => 'duration' }, { name => 'start_time' }, { name => 'end_time' }, { name => 'status'} ],
                 closure_custom_output => $self->can('custom_duration_output'),
-		        closure_custom_perfdata => sub { return 0; }
+		closure_custom_perfdata => sub { return 0; }
             }
         }
     ];
@@ -148,25 +148,21 @@ sub manage_selection {
     );
     $self->{global}->{total} = 0;
     foreach my $incident (@{$results->{incidents}}) {
-        my $kind = ($incident->{kind} =~ s/_/ /gr);
-        my $end_time = defined($incident->{end_clock}) ? $incident->{end_clock} : time();
-        next if (defined($self->{option_results}->{ignore_closed}) && defined($incident->{end_clock}));
+        my $kind = $incident->{kind} =~ s/_/ /gr;
+        my $end_time = $incident->{end_clock} ? $incident->{end_clock} : time();
+        next if defined($self->{option_results}->{ignore_closed}) && $incident->{end_clock};
         my $interaction = $options{custom}->list_objects(type => 'interaction', site_id => $self->{site_id}, journey_id => $self->{journey_id}, interaction_id => $incident->{interaction_id});
         $self->{incidents}->{$incident->{id}} = {
             display => $incident->{id},
-            kind => $kind,
+            type => $kind,
             interaction_name => $interaction->{interaction}->{name},
             start_time => POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($incident->{start_clock})),
             end_time => POSIX::strftime('%d-%m-%Y %H:%M:%S %Z', localtime($end_time)),
             duration => $end_time - $incident->{start_clock}
         };
-        if (defined($incident->{end_clock})) {
-            $self->{incidents}->{$incident->{id}}->{status} = 'closed';
-        } else {
-            $self->{incidents}->{$incident->{id}}->{status} = 'open';
-        }
+        $self->{incidents}->{$incident->{id}}->{status} = $incident->{end_clock} ? 'closed' : 'open';
 
-    $self->{global}->{total}++;
+        $self->{global}->{total}++;
     }
 }
 

@@ -261,6 +261,14 @@ Warning threshold for journey time to first byte (in ms).
 
 Critical threshold for journey time to first byte (in ms).
 
+=back
+
+=head2 Interaction related metrics
+
+The following parameters take effect only if --show-interactions is set
+
+=over 8
+
 =item B<--warning-interaction-performance-score>
 
 Warning threshold for interaction performance score.
@@ -292,8 +300,6 @@ Warning threshold for interaction time to first byte (in ms).
 =item B<--critical-interaction-ttfb>
 
 Critical threshold for time to first byte (in ms).
-
-=back
 
 =back
 
