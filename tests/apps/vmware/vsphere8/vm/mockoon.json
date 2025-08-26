@@ -1,0 +1,187 @@
+{
+  "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
+  "lastMigration": 33,
+  "name": "Vmware8 restapi.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/session",
+      "responses": [
+        {
+          "uuid": "d037b485-9952-467c-985c-415b9033e4d9",
+          "body": "\"32c9819179813376a9bbda43e9c84165\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "66791cdd-b1c2-4d32-bf25-825092666db3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm",
+      "responses": [
+        {
+          "uuid": "38dfcab5-68e9-4512-b07a-4b0aee644fa6",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-7657\",\n    \"name\": \"web-server-01\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 4\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-7722\",\n    \"name\": \"db-server-01\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 2\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c"
+    },
+    {
+      "type": "route",
+      "uuid": "66791cdd-b1c2-4d32-bf25-825092666db3"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "a438d9f3-8360-49c3-9d1f-d2f6d202513d",
+      "id": "7kak",
+      "name": "/api/vcenter/host",
+      "documentation": "Complete response",
+      "value": "[{\"host\":\"host-22\",\"name\":\"esx1.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_ON\"},{\"host\":\"host-28\",\"name\":\"esx2.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_OFF\"},{\"host\":\"host-35\",\"name\":\"esx3.acme.com\",\"connection_state\":\"DISCONNECTED\",\"power_state\":\"POWERED_ON\"}]\n"
+    }
+  ],
+  "callbacks": []
+}
