@@ -82,9 +82,9 @@ sub set_counters {
         { name => 'global', type => 0 },
         { name => 'sbi_registration', type => 0, cb_prefix_output => 'prefix_sbi_registration_output', skipped_code => { -10 => 1 } },
         {
-            name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
+            name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok', 
             group => [
-                { name => 'cluster_metrics', type => 0, cb_prefix_output => 'prefix_cluster_metrics_output' },
+                { name => 'cluster_metrics', type => 0, cb_prefix_output => 'prefix_cluster_metrics_output', skipped_code => { -10 => 1 } },
                 { name => 'nodes', type => 1, display_long => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'nodes are ok', skipped_code => { -10 => 1 } }
             ]
         },

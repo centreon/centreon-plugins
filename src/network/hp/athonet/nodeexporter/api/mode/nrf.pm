@@ -192,7 +192,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-cluster-repository:s' => { name => 'filter_cluster_repository' }
+        'filter-cluster-repository:s'  => { name => 'filter_cluster_repository' },
+        'filter-registration-nftype:s' => { name => 'filter_registration_nftype' }
     });
 
     return $self;
@@ -245,6 +246,9 @@ sub manage_selection {
     $self->{global_registration} = { detected => 0, registered => 0, suspended => 0 };
     $self->{registrations} = {};
     foreach my $info (@$registration_infos) {
+        next if (defined($self->{option_results}->{filter_registration_nftype}) && $self->{option_results}->{filter_registration_nftype} ne '' &&
+            $info->{metric}->{nfType} !~ /$self->{option_results}->{filter_registration_nftype}/);
+
         $self->{registrations}->{ $info->{metric}->{nfType} } = {
             nfType => $info->{metric}->{nfType},
             status => $map_registration_status->{ $info->{value}->[1] }
@@ -276,6 +280,10 @@ Check network repository function.
 =item B<--filter-cluster-repository>
 
 Filter clusters by repository name.
+
+=item B<--filter-registration-nftype>
+
+Filter registrations by nfType.
 
 =item B<--unknown-node-status>
 

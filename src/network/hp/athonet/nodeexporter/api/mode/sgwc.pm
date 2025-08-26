@@ -153,7 +153,7 @@ sub manage_selection {
     $response = $options{custom}->query(queries => ['sgw_dfb_fsm']);
     $self->{global}->{sgw_dfb_fsm} = $response->[0]->{value}->[1];
 
-    my $map_node_status = { 1 => 'up', 2 => 'down' };
+    my $map_node_status = { 1 => 'up', 0 => 'down' };
 
     $response = $options{custom}->query(queries => ['pfcp_node_status{target_type="sgwc"}']);
     $self->{pfcp_nodes} = {};

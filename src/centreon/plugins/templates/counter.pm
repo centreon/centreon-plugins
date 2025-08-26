@@ -687,6 +687,9 @@ sub run_multiple_prefix_output {
 sub run_multiple {
     my ($self, %options) = @_;
 
+    return undef if (defined($self->{option_results}->{filter_counters_block}) && $self->{option_results}->{filter_counters_block} ne '' 
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
+
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;

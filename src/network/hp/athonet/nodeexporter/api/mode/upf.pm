@@ -166,9 +166,6 @@ sub manage_selection {
         };
     }
 
-    #TODO (need an example)
-    #$response = $options{custom}->query(queries => ['upf_gtpu_path_status']);
-
     my $map_pfcp_peer_state_info = { 0 => 'no', 1 => 'yes' };
     $response = $options{custom}->query(queries => ['pfcp_peer_state_info{type="blacklist", target_type="upf"}']);
     $self->{blacklist_nodes} = {};

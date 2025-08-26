@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub prefix_sbi_registration_output {
     my ($self, %options) = @_;
 
-    return "SBI registration network function";
+    return "SBI registration network function ";
 }
 
 sub prefix_global_output {
@@ -110,10 +110,6 @@ sub manage_selection {
 
     my $response = $options{custom}->query(queries => ['chf_active_charging_sessions']);
     $self->{global}->{chf_active_charging_sessions} = $response->[0]->{value}->[1];
-
-    # TODO (need an example)
-    #$response = $options{custom}->query(queries => ['chf_free_disk_space_percentage']);
-    #$response = $options{custom}->query(queries => ['chf_storage_size']);
 
     my $map_registration_status = { 1 => 'registered', 0 => 'suspended' };
 

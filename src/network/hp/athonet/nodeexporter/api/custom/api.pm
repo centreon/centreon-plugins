@@ -51,6 +51,7 @@ sub new {
             'proto:s'         => { name => 'proto' },
             'api-username:s'  => { name => 'api_username' },
             'api-password:s'  => { name => 'api_password' },
+            'api-backend:s'   => { name => 'api_backend' },
             'timeout:s'   => { name => 'timeout' },
             'timeframe:s' => { name => 'timeframe' },
             'step:s'      => { name => 'step' }
@@ -83,6 +84,7 @@ sub check_options {
     $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{api_backend} = (defined($self->{option_results}->{api_backend})) ? $self->{option_results}->{api_backend} : 'local';
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_stat
@@ -181,6 +183,7 @@ sub get_access_token {
         (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
         ) {
         my $json_request = {
+            backend  => $self->{api_backend},
             username => $self->{api_username},
             password => $self->{api_password}
         };
@@ -324,6 +327,10 @@ API port (default: 443)
 =item B<--proto>
 
 Define https if needed (default: 'https')
+
+=item B<--api-backend>
+
+Define the backend for authentication (default: 'local')
 
 =item B<--api-username>
 
