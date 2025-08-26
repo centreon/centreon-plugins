@@ -34,12 +34,14 @@ AWSCLI
 --aws-role-arn
 Backbox
 BackupJobSession
+BAM
 base64
 BGP
 blocked-by-uf
 BPL
 --cacert-file
 cardtemperature
+CDN
 centreon
 Centreon
 centreonvault
@@ -57,6 +59,7 @@ cpu-utilization-5s
 CX
 Cyberoam
 Datacore
+Datastore
 datasource
 datastore
 datastores
@@ -95,10 +98,12 @@ fibre
 --force-counters32
 --force-counters64
 --force-oid
+Forcepoint
 Fortigate
 Fortinet
 FQDN
 FreeBSD
+FrontDoor
 frsevent
 GCP
 --get-param
@@ -108,6 +113,7 @@ hashicorpvault
 HPE
 HTTPR
 Huawei
+ICMP
 ifAlias
 ifDesc
 ifName
@@ -125,6 +131,7 @@ in-ucast
 io-cards
 iops
 IpAddr
+IPs
 ip-label
 ipsec
 ipv4
@@ -144,6 +151,7 @@ kccevent
 keepass
 Keysight
 Kubernetes
+LatenceTech
 ldap
 LDP
 --legacy-api-beta
@@ -235,6 +243,7 @@ PPID
 prct
 Primera
 Procurve
+Proxmox
 proto
 --proxyurl
 psu
@@ -247,6 +256,7 @@ ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
+redis-cli
 rsrp
 rsrq
 rssi
@@ -258,6 +268,7 @@ scenarii
 --scope-datacenter
 SFOS
 sfp.temperature
+SignalR
 sinr
 --skip-ssl-check
 SkyHigh
@@ -267,6 +278,7 @@ snmp
 snmpd.conf
 space-usage-prct
 --sql-errors-exit
+SCVMM
 SRX
 SSDCapacity
 SSG
@@ -286,6 +298,7 @@ Teldat
 temperatureambient
 timeframe
 TiMOS
+TLS
 TMM
 tmnxSasAlarmInputDescription
 topic-messages-inflighted
@@ -294,8 +307,10 @@ total-online-prct
 total-oper-down
 total-oper-up
 tower-cli
+TLSv1
 TrendMicro
 tsdb-version
+TWAMP
 UCD
 UDP
 unicast
@@ -319,6 +334,7 @@ vdomain
 VDSL2
 Veeam
 VeloCloud
+VE
 vhost
 VM
 VMs

@@ -50,10 +50,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-active-status:s' => { name => 'filter_active_status' },
-        'filter-name:s'          => { name => 'filter_name' },
-        'filter-subsystem:s'     => { name => 'filter_subsystem' },
-        'display-jobs'           => { name => 'display_jobs' }
+        'include-active-status:s' => { name => 'include_active_status' },
+        'filter-active-status:s'  => { redirect => 'include_active_status' },
+        'include-name:s'          => { name => 'include_name' },
+        'filter-name:s'           => { redirect => 'include_name' },
+        'include-subsystem:s'     => { name => 'include_subsystem' },
+        'filter-subsystem:s'      => { redirect => 'include_subsystem' },
+        'display-jobs'            => { name => 'display_jobs' }
     });
     
     return $self;
@@ -64,7 +67,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{uuid} = '';
-    foreach ('filter_counters', 'filter_name', 'filter_active_status', 'filter_subsystem') {
+    foreach ('filter_counters', 'include_name', 'include_active_status', 'include_subsystem') {
         if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
             $self->{uuid} .= $self->{option_results}->{$_};
         }
@@ -82,18 +85,18 @@ sub manage_selection {
 
     $self->{global} = { total => 0 };
     foreach my $entry (@{$jobs->{result}}) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $entry->{name} !~ /$self->{option_results}->{filter_name}/) {
+        if (defined($self->{option_results}->{include_name}) && $self->{option_results}->{include_name} ne '' &&
+            $entry->{name} !~ /$self->{option_results}->{include_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter (name).", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_subsystem}) && $self->{option_results}->{filter_subsystem} ne '' &&
-            $entry->{subSystem} !~ /$self->{option_results}->{filter_subsystem}/) {
+        if (defined($self->{option_results}->{include_subsystem}) && $self->{option_results}->{include_subsystem} ne '' &&
+            $entry->{subSystem} !~ /$self->{option_results}->{include_subsystem}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter (subsystem).", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_active_status}) && $self->{option_results}->{filter_active_status} ne '' &&
-            $entry->{activeStatus} !~ /$self->{option_results}->{filter_active_status}/) {
+        if (defined($self->{option_results}->{include_active_status}) && $self->{option_results}->{include_active_status} ne '' &&
+            $entry->{activeStatus} !~ /$self->{option_results}->{include_active_status}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $entry->{name} . "': no matching filter (activeStatus).", debug => 1);
             next;
         }
@@ -123,16 +126,16 @@ Check active jobs.
 
 =over 8
 
-=item B<--filter-active-status>
+=item B<--include-active-status>
 
 Filter jobs by ACTIVE_JOB_STATUS (can be a regexp).
-Example: --filter-active-status='MSGW' to count jobs with MSGW.
+Example: --include-active-status='MSGW' to count jobs with MSGW.
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter jobs by name (can be a regexp).
 
-=item B<--filter-subsystem>
+=item B<--include-subsystem>
 
 Filter jobs by subsystem (can be a regexp).
 
@@ -140,10 +143,13 @@ Filter jobs by subsystem (can be a regexp).
 
 Display jobs in verbose output.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-total>
 
-Thresholds.
-Can be: 'jobs-total'.
+Threshold.
+
+=item B<--critical-jobs-total>
+
+Threshold.
 
 =back
 
