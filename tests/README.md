@@ -15,7 +15,12 @@ mkdir -p /var/lib/snmp/cert_indexes/
 chown snmp:snmp -R /var/lib/snmp/cert_indexes/
 ````
 
-to launch snmpsim use this from the root of the project (one level above this file) :
+### Run all tests
+
+Mockoon is used to mock http services. It is started by robot automatically if needed.
+
+Snmpsim have to be started by hand, you can use this command from the root of the project (one level above this file) :
+
 ```bash
 sudo snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &
 # to test it :  snmpwalk -v2c -c hardware/server/lenovo/xcc/snmp/system-health-ok 127.0.0.1:2024
@@ -28,7 +33,13 @@ robot consider every file with .robot extension and try to execute every test ca
 robot tests/
 ```
 
-you can filter the tests run by specifying -e to exclude and -i to include a specific tag before the file path.
+you can filter the tests run by specifying -e to exclude and -i to include a specific tag before the file path, or change the path to sub directories or specific files.
+
+### perl connector
+
+By default, plugins are run as a perl script with the centreon_plugins.pl script. If you have fatpacked the plugins
+you can use the option `CENTREON_PLUGINS:/path/to/your/fatpacked.pl` to run the fatpacked version of the plugins.
+The fatpacked version will be run with the perl connector instead of being run as a perl script.
 
 ## Get new data
 
@@ -44,7 +55,6 @@ To get snmp data, you can use the snmpwalk command on the host you want to monit
 ```bash
 snmpwalk -ObentU -v2c -c 'public' localhost .1
 ```
-
 
 ## Anonymize tests
 
