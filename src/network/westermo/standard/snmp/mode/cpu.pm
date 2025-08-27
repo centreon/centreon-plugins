@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'cpu-load-1min', set => {
+        { label => 'cpu-load-1min', nlabel => 'cpu.load.1m.percentage', set => {
             key_values      => [ { name => 'cpu_load1' } ],
             output_template => '1min load average: %s%%',
             perfdatas       => [
@@ -41,7 +41,7 @@ sub set_counters {
             ],
         }
         },
-        { label => 'cpu-load-5min', set => {
+        { label => 'cpu-load-5min', nlabel => 'cpu.load.5m.percentage', set => {
             key_values      => [ { name => 'cpu_load5' } ],
             output_template => '5min load average: %s%%',
             perfdatas       => [
@@ -49,7 +49,7 @@ sub set_counters {
             ],
         }
         },
-        { label => 'cpu-load-15min', set => {
+        { label => 'cpu-load-15min', nlabel => 'cpu.load.15m.percentage', set => {
             key_values      => [ { name => 'cpu_load15' } ],
             output_template => '15min load average: %s%%',
             perfdatas       => [
@@ -62,11 +62,8 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-
-    $options{options}->add_options(arguments => {
-    });
 
     return $self;
 }
