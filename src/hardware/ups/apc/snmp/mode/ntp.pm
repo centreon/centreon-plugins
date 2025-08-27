@@ -46,9 +46,6 @@ sub get_target_time {
         $timezone = $self->{option_results}->{timezone};
     }
 
-    # change temp the timezone
-    local $ENV{TZ} = $timezone;
-
     my $epoch = Date::Parse::str2time($snmp_result->{$oid_mconfigClockDate} . ' ' . $snmp_result->{$oid_mconfigClockTime}, $timezone);
     return $self->get_from_epoch(date => $epoch);
 }
