@@ -48,8 +48,9 @@ sub new {
             'port:s'         => { name => 'port' },
             'proto:s'        => { name => 'proto' },
             'url-path:s'     => { name => 'url_path' },
-            'api-username:s' => { name => 'api_username' },
-            'api-password:s' => { name => 'api_password' },
+            'api-username:s' => { name => 'api_username', default => '' },
+            'api-password:s' => { name => 'api_password', default => '' },
+            'api-token:s'    => { name => 'api_token',    default => '' },
             'user-domain:s'  => { name => 'user_domain' },
             'timeout:s'      => { name => 'timeout' },
             'cache-create'   => { name => 'cache_create' },
@@ -59,7 +60,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -80,8 +81,9 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/webconsole/api';
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{api_username} = $self->{option_results}->{api_username};
+    $self->{api_password} = $self->{option_results}->{api_password};
+    $self->{api_token} = $self->{option_results}->{api_token};
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{user_domain} = (defined($self->{option_results}->{user_domain})) ? $self->{option_results}->{user_domain} : '';
     $self->{cache_create} = $self->{option_results}->{cache_create};
@@ -91,13 +93,18 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
-    if ($self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
-        $self->{output}->option_exit();
+    if ($self->{api_token} eq '') {
+	if ($self->{api_username} eq '') {
+	    $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+            $self->{output}->option_exit();
+        }
+        if ($self->{api_password} eq '') {
+	    $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
+	    $self->{output}->option_exit();
+        }
+    } elsif ($self->{api_username} . $self->{api_password} ne '') {
+	$self->{output}->add_option_msg(short_msg => "Cannot use both --api-username/--api-password and --api-token options.");
+	$self->{output}->option_exit();
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -229,7 +236,10 @@ sub request_internal {
     my ($self, %options) = @_;
 
     $self->settings();
-    if (!defined($self->{access_token})) {
+
+    if ($self->{api_token} ne '') {
+	$self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{api_token});
+    } elsif (!defined($self->{access_token})) {
         $self->get_auth_token(statefile => $self->{cache});
     }
 
@@ -243,7 +253,7 @@ sub request_internal {
     );
 
     # Maybe there is an issue with the token. So we retry.
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if ($self->{api_token} eq '' && ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300)) {
         $self->clean_token(statefile => $self->{cache});
         $self->get_auth_token(statefile => $self->{cache});
         $content = $self->{http}->request(
@@ -424,6 +434,10 @@ Set API username
 =item B<--api-password>
 
 Set API password
+
+=item B<--api-token>
+
+Set API token
 
 =item B<--timeout>
 
