@@ -24,7 +24,7 @@ licenses ${tc}
     ...    ${CMD}
     ...    --mode=licenses
     ...    ${extra_options}
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:         tc      extra_options                                                                                                     expected_result    --
             ...       1       --warning-status='\\\%{name} eq /web_filtering/i'                                                                 CRITICAL: License 'ai_malware_detection' status: expired - License 'antispam' status: expired - License 'antivirus' status: expired - License 'blacklisted_certificates' status: expired - License 'botnet_domain' status: expired - License 'ips' status: expired - License 'malicious_urls' status: expired - License 'mobile_malware' status: expired - License 'web_filtering' status: expired | 'ai_malware_detection#license.expires.seconds'=0s;;;0; 'antispam#license.expires.seconds'=0s;;;0; 'antivirus#license.expires.seconds'=0s;;;0; 'appctrl#license.expires.seconds'=0s;;;0; 'blacklisted_certificates#license.expires.seconds'=0s;;;0; 'botnet_domain#license.expires.seconds'=0s;;;0; 'device_os_id#license.expires.seconds'=0s;;;0; 'forticare:support:enhanced#license.expires.seconds'=0s;;;0; 'forticare:support:hardware#license.expires.seconds'=0s;;;0; 'forticloud_sandbox#license.expires.seconds'=0s;;;0; 'fortiems_cloud#license.expires.seconds'=0s;;;0; 'ips#license.expires.seconds'=0s;;;0;

@@ -29,7 +29,7 @@ List Pods ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                                                    expected_result   --
         ...      1     ${EMPTY}                                                        ^List pods: \\\\n\\\\[.*ip = 192\\\\.168\\\\.1\\\\.210\\\\]\\\\n\\\\[.*ip = \\\\]\\\\Z
