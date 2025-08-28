@@ -243,6 +243,28 @@ sub request_api {
     return $api_response;
 }
 
+sub get_folder_ids_by_names {
+    my ($self, %options) = @_;
+
+    my $api_response = $self->request_api(
+        %options,
+        'endpoint' => '/vcenter/folder?names=' . $options{names},
+        'method' => 'GET');
+    my @folders = map { $_->{folder} } @{$api_response};
+    return join(',', @folders);
+}
+
+sub get_vm_guest_identity {
+    my ($self, %options) = @_;
+
+    my $api_response = $self->request_api(
+        'endpoint' => '/vcenter/vm/' . $options{vm_id} . '/guest/identity',
+        'method'   => 'GET',
+        no_fail    => 1);
+
+    return $api_response;
+}
+
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
@@ -568,6 +590,50 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 =back
 
 =back
+
+=head2 get_folder_ids_by_names
+
+    my $folder_ids = $self->get_folder_ids_by_names(names => $folder_names);
+
+Retrieves the IDs of folders based on their names.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<names> - A comma-separated string of folder names to search for. This option is required.
+
+=back
+
+=back
+
+Returns a comma-separated string of folder IDs corresponding to the provided folder names.
+
+=cut
+
+=head2 get_vm_guest_identity
+
+    my $identity = $self->get_vm_guest_identity(vm_id => $vm_id);
+
+Retrieves the guest identity information for a specific virtual machine (VM) using its ID.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<vm_id> - The ID of the virtual machine for which to retrieve the guest identity. This option is required.
+
+=back
+
+=back
+
+Returns the guest identity information as a hash reference if successful, or undef if the request fails.
+
+=cut
 
 =head2 get_acq_spec
 
