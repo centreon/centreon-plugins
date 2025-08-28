@@ -447,7 +447,7 @@ sub request {
     my $headers = [];
     my $content_type_forced = 0;
     foreach my $key (keys %{$options{request}->{headers}}) {
-        my $header = $key . ':' . (defined($options{request}->{headers}->{$key}) ? $options{request}->{headers}->{$key} : '');
+        my $header = $key . ':' . (defined($options{request}->{headers}->{$key}) ? ' '.$options{request}->{headers}->{$key} : '');
         push @$headers, $header;
         if ($key =~ /content-type/i) {
             $content_type_forced = 1;
