@@ -4,7 +4,8 @@ Documentation       Check interfaces.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
@@ -26,7 +27,7 @@ interfaces ${tc}
     # first run to build cache
     Run    ${command}
     # second run to control the output
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                                                                                                            expected_result    --
             ...      1     ${EMPTY}                                                                                                                                                                                                                 CRITICAL: Interface 'Anonymized 232' Status : down (admin: up) - Interface 'Anonymized 191' Status : down (admin: up) - Interface 'Anonymized 141' Status : down (admin: up)

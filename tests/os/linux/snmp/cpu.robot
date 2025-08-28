@@ -4,12 +4,12 @@ Documentation       Check cpu table
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-
 
 *** Test Cases ***
 cpu ${tc}
@@ -22,7 +22,7 @@ cpu ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=os/linux/snmp/network-interfaces
     ...    --snmp-timeout=1
-    ...    ${extra_options}
+    ...    ${extra_options}       
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
@@ -32,7 +32,7 @@ cpu ${tc}
             ...      3     --critical-average              OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
             ...      4     --warning-core                  OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
             ...      5     --critical-core                 OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-            ...      6     --verbose                       OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100 CPU '0' usage : 2.00 %
+            ...      6     ${EMPTY}                        OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
             ...      7     --warning-average='0'           WARNING: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;0:0;;0;100 'cpu'=2.00%;;;0;100
             ...      8     --critical-average='0'          CRITICAL: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;;0:0;0;100 'cpu'=2.00%;;;0;100
             ...      9     --warning-core='0'              WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
