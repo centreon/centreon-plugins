@@ -1,0 +1,51 @@
+#!/bin/sh
+
+
+case "$1" in
+    status|"")
+        cat<<EOF
+               Local time: jeu. 2025-08-28 10:48:59 CEST
+           Universal time: jeu. 2025-08-28 08:48:59 UTC
+                 RTC time: jeu. 2025-08-28 08:48:59
+                Time zone: Europe/Paris (CEST, +0200)
+System clock synchronized: yes
+              NTP service: active
+          RTC in local TZ: no
+EOF
+        ;;
+    timesync-status)
+        cat<<EOF
+       Server: 52.17.231.73 (0.pool.ntp.org)
+Poll interval: 34min 8s (min: 32s; max 34min 8s)
+         Leap: normal
+      Version: 4
+      Stratum: 1
+    Reference: PHC0
+    Precision: 1us (-25)
+Root distance: 22us (max: 5s)
+       Offset: +2.957ms
+        Delay: 38.947ms
+       Jitter: 512.304ms
+ Packet count: 20
+    Frequency: +12,565ppm
+EOF
+	;;
+    show-timesync)
+        cat<<EOF
+SystemNTPServers=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org
+FallbackNTPServers=3.pool.ntp.org 4.pool.ntp.org
+ServerName=0.pool.ntp.org
+ServerAddress=2.3.4.5
+RootDistanceMaxUSec=5s
+PollIntervalMinUSec=32s
+PollIntervalMaxUSec=34min 8s
+PollIntervalUSec=34min 8s
+NTPMessage={ Leap=0, Version=4, Mode=4, Stratum=1, Precision=-25, RootDelay=15us, RootDispersion=15us, Reference=PHC0, OriginateTimestamp=Thu 2025-08-28 10:41:54 CEST, ReceiveTimestamp=Thu 2025-08-28 10:41:54 CEST, TransmitTimestamp=Thu 2025-08-28 10:41:54 CEST, DestinationTimestamp=Thu 2025-08-28 10:41:54 CEST, Ignored=no PacketCount=20, Jitter=512.304ms }
+Frequency=823454
+EOF
+	;;
+    *)
+        echo "Timedatectl: unrecognized option '$1'"
+        exit 1
+        ;;
+esac

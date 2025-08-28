@@ -82,7 +82,7 @@ my %state_map_timedatectl = (
     'syncing' => 'currently active and synchronizing',
     'available' => 'configured and available for use',
     'unused' => 'configured as fallback but not used',
-    'inactive' => 'not used besauve NTP service is inactive'
+    'inactive' => 'not used because NTP service is inactive'
 );
 
 my %type_map_timedatectl = (
@@ -104,7 +104,7 @@ sub custom_status_output {
 sub custom_offset_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rawstate} !~ /(\*|yes)/) {
+    if ($self->{result_values}->{rawstate} !~ /(\*|synchronized)/) {
         $self->{output}->perfdata_add(
             nlabel => $self->{nlabel},
             unit => 'ms',
@@ -128,7 +128,7 @@ sub custom_offset_perfdata {
 sub custom_offset_threshold {
     my ($self, %options) = @_;
 
-    return 'ok' if $self->{result_values}->{rawstate} !~ /^(\*|yes)$/;
+    return 'ok' if $self->{result_values}->{rawstate} !~ /^(\*|synchronized)$/;
 
     return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
 }
@@ -244,7 +244,7 @@ sub get_ntp_modes {
     # Returns the selected mode or all modes
     return [ $modes->{$self->{option_results}->{ntp_mode}} ?
                 $modes->{$self->{option_results}->{ntp_mode}} :
-                ( $modes->{timedatectl}, $modes->{ntpq}, $modes->{chronyc} ) ];
+                ( $modes->{timedatectl}, $modes->{chronyc}, $modes->{ntpq} ) ];
 }
 
 sub skip_record {
@@ -281,9 +281,29 @@ sub manage_timedatectl {
     my ($self, %options) = @_;
 
     # With timedatectl three calls are required to retrieve all information
+    #
     # timedatectl status to retrieve 'NTP service' and 'System clock synchronized'
+    # Output snippet:
+    #    System clock synchronized: yes
+    #                  NTP service: active
+    #
     # timedatectl timesync-status to retrieve 'Offset', 'Stratum' and 'Packet count'
+    # Output snippet:
+    #       Version: 4
+    #       Stratum: 2
+    #        Offset: -398us
+    #        Jitter: 150us
+    #  Packet count: 2
+    #
     # timedatectl show-timesync to retrieve 'SystemNTPServers', 'FallbackNTPServers', 'ServerAddress' and 'ServerName'
+    # Output snippet:
+    # SystemNTPServers=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org
+    # FallbackNTPServers=3.pool.ntp.org 4.pool.ntp.org
+    # ServerName=0.pool.ntp.org
+    # ServerAddress=188.125.64.7
+    # PollIntervalUSec=4min 16s
+    # NTPMessage={ Leap=0, Version=4, Mode=4, Stratum=2, Precision=-25, RootDelay=79.940ms, RootDispersion=1.358ms, Reference=628B853E, OriginateTimestamp=Thu 2025-08-28 14:31:58 CEST, ReceiveTimestamp=Thu 2025-08-28 14:31:58 CEST, TransmitTimestamp=Thu 2025-08-28 14:31:58 CEST, DestinationTimestamp=Thu 2025-08-28 14:31:58 CEST, Ignored=no PacketCount=3, Jitter=573us }
+
     my ($stdout_status) = $options{custom}->execute_command(    command => 'timedatectl',
                                                                 command_options => 'status 2>&1',
                                                                 no_quit => 1, );
@@ -308,18 +328,18 @@ sub manage_timedatectl {
     # A server has either the type 'primary' or 'fallback'
     # A 'primary' server can have the states 'available', 'synchronized', 'syncing' or 'inactive'
     # A 'fallback' server can have the states 'unused', synchronized', 'syncing' or 'inactive'
-    foreach (split /\s/, $values{SystemNTPServers}) {
-        next if $values{ServerAddress} && ($_ eq $values{ServerAddress} || $_ eq $values{ServerName});
+    foreach my $srv (split /\s/, $values{SystemNTPServers}) {
+        next if $values{ServerAddress} && ($srv eq $values{ServerAddress} || $srv eq $values{ServerName});
 
-        $self->{peers}->{$_} = { display => $_, rawstate => 'available', stratum => '', rawtype => 'primary', reach => '', offset => '' };
+        $self->{peers}->{$srv} = { display => $srv, rawstate => 'available', stratum => 0, rawtype => 'primary', reach => 0, offset => 0 };
         $self->{global}->{peers}++
     }
-    foreach (split /\s/, $values{FallbackNTPServers}) {
-        if ($values{ServerAddress} && ($_ eq $values{ServerAddress} || $_ eq $values{ServerName})) {
+    foreach my $srv (split /\s/, $values{FallbackNTPServers}) {
+        if ($values{ServerAddress} && ($srv eq $values{ServerAddress} || $srv eq $values{ServerName})) {
             $active_is_fallback = 1;
             next
         }
-        $self->{peers}->{$_} = { display => $_, rawstate => 'unused', stratum => '', rawtype => 'fallback', reach => '', offset => '' };
+        $self->{peers}->{$srv} = { display => $srv, rawstate => 'unused', stratum => 0, rawtype => 'fallback', reach => 0, offset => 0 };
         $self->{global}->{peers}++
     }
 
@@ -338,14 +358,14 @@ sub manage_timedatectl {
         $self->{global}->{peers}++;
     }
 
-    foreach (keys %{$self->{peers}}) {
-        $self->{peers}->{$_}->{rawstate} = 'inactive' if $values{'NTP service'} eq 'inactive';
-        $self->{peers}->{$_}->{state} = $state_map_timedatectl{$self->{peers}->{$_}->{rawstate}};
-        $self->{peers}->{$_}->{type} = $type_map_timedatectl{$self->{peers}->{$_}->{rawtype}};
+    foreach my $peer (keys %{$self->{peers}}) {
+        $self->{peers}->{$peer}->{rawstate} = 'inactive' if $values{'NTP service'} ne 'active';
+        $self->{peers}->{$peer}->{state} = $state_map_timedatectl{$self->{peers}->{$peer}->{rawstate}};
+        $self->{peers}->{$peer}->{type} = $type_map_timedatectl{$self->{peers}->{$peer}->{rawtype}};
 
         # Data is only filtered here becase all states must be initialized first
-        if ($self->skip_record(%{$self->{peers}->{$_}})) {
-            delete $self->{peers}->{$_};
+        if ($self->skip_record(%{$self->{peers}->{$peer}})) {
+            delete $self->{peers}->{$peer};
             $self->{global}->{peers}--;
             next
         }
