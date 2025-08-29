@@ -113,9 +113,9 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "ignore-closed" => { name => 'ignore_closed' },
-        "journey-id:s"  => { name => 'journey_id' },
-        "site-id:s"     => { name => 'site_id' },
-        "timeframe:s"   => { name => 'timeframe' }
+        "journey-id:s"  => { name => 'journey_id',    default => '' },
+        "site-id:s"     => { name => 'site_id',       default => '' },
+        "timeframe:s"   => { name => 'timeframe',     default => '300' }
     });
    
     return $self;
@@ -125,15 +125,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{journey_id} = (defined($self->{option_results}->{journey_id})) ? $self->{option_results}->{journey_id} : '';
-    $self->{site_id} = (defined($self->{option_results}->{site_id})) ? $self->{option_results}->{site_id} : '';
-    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : '300';
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/journey_id site_id timeframe/;
 
-    if (!defined($self->{site_id}) || $self->{site_id} eq '') {
+    if ($self->{site_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --site-id option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{journey_id}) || $self->{journey_id} eq '') {
+    if ($self->{journey_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --journey-id option.");
         $self->{output}->option_exit();
     }

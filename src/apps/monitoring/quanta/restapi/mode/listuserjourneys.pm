@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'site-id:s' => { name => 'site_id' }
+        'site-id:s' => { name => 'site_id', default => '' },
     });
 
     return $self;
@@ -41,12 +41,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    $self->{site_id} = (defined($self->{option_results}->{site_id})) ? $self->{option_results}->{site_id} : '';
-
-    if (!defined($self->{option_results}->{site_id}) || $self->{option_results}->{site_id} eq '') {
+    if ($self->{option_results}->{site_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --site-id option.");
         $self->{output}->option_exit();
     }
+
+    $self->{site_id} = $self->{option_results}->{site_id};
 }
 
 sub manage_selection {

@@ -46,6 +46,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'api-token:s'         => { name => 'api_token' },
             'api-path:s'          => { name => 'api_path' },
+            'url-path:s'          => { redirect => 'api_path' },
             'hostname:s'          => { name => 'hostname' },
             'port:s'              => { name => 'port' },
             'proto:s'             => { name => 'proto' },
@@ -102,7 +103,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{url_path} = $self->{url_path};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 500';
+    $self->{option_results}->{unknown_status} = '';
 }
 
 sub settings {
@@ -180,16 +181,21 @@ sub get_configuration_api {
     return $json;
 }
 
+# Available calls depending on type:
+# journeys: /sites/{site_id}/user_journeys   to list all journeys for a site
+# journey: /sites/{site_id}/user_journeys/{journey_id}    unused
+# interactions: /sites/{site_id}/user_journeys/{journey_id}/interactions    to list all interactions for a journey
+# interaction: /sites/{site_id}/user_journeys/{journey_id}/interactions/{interaction_id}    to get details of a specific interaction
 sub list_objects {
     my ($self, %options) = @_;
 
     my $endpoint = '/sites/' . $options{site_id};
-    if ($options{type} =~ 'journey|interaction') {
+    if ($options{type} =~ /journey|interaction/) {
         $endpoint .= '/user_journeys/';
         if ($options{type} eq 'journey') {
             $endpoint .= $options{journey_id};
         }
-        if ($options{type} =~ 'interaction') {
+        if ($options{type} =~ /interaction/) {
             $endpoint .= $options{journey_id} . '/interactions';
             if ($options{type} eq 'interaction') {
                 $endpoint .= '/' . $options{interaction_id};

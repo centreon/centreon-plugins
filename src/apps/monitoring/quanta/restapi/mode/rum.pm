@@ -112,10 +112,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "limit-results:s" => { name => 'limit_results' },
-        "perspective:s"   => { name => 'perspective' },
-        "site-id:s"       => { name => 'site_id' },
-        "timeframe:s"     => { name => 'timeframe' }
+        "limit-results:s" => { name => 'limit_results', default => '10' },
+        "perspective:s"   => { name => 'perspective',   default => 'all' },
+        "timeframe:s"     => { name => 'timeframe',     default => '1800' },
+        "site-id:s"       => { name => 'site_id',       default => '' }
     });
    
     return $self;
@@ -125,17 +125,15 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{limit_results} = (defined($self->{option_results}->{limit_results})) ? $self->{option_results}->{limit_results} : '10';
-    $self->{perspective} = (defined($self->{option_results}->{perspective})) ? $self->{option_results}->{perspective} : 'all';
-    $self->{site_id} = (defined($self->{option_results}->{site_id})) ? $self->{option_results}->{site_id} : '';
-    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : '1800';
 
-    if (!defined($self->{site_id}) || $self->{site_id} eq '') {
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/limit_results perspective site_id timeframe/;
+
+    if ($self->{site_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --site-id option.");
         $self->{output}->option_exit();
     }
 
-    if (defined($self->{perspective}) && lc($self->{perspective}) !~ m/all|url|browser|country|city|os/) {
+    if ($self->{perspective} !~ m/all|url|browser|country|city|os/) {
         $self->{output}->add_option_msg(short_msg => 'Unknown perspective set in "--perspective" option.');
         $self->{output}->option_exit();
     }
