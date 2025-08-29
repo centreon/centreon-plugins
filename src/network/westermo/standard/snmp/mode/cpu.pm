@@ -33,27 +33,30 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'cpu-load-1min', nlabel => 'cpu.load.1m.percentage', set => {
-            key_values      => [ { name => 'cpu_load1' } ],
-            output_template => '1min load average: %s%%',
+        { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
+            key_values      => [ { name => 'average_1m' } ],
+            output_template => '%.2f %% (1m)',
             perfdatas       => [
-                { label => 'cpu_load1', value => 'cpu_load1', template => '%s', min => 0 },
+                { label => 'cpu_1m_avg', value => 'average_1m', template => '%.2f',
+                    min => 0, max => 100, unit => '%' },
             ],
         }
         },
-        { label => 'cpu-load-5min', nlabel => 'cpu.load.5m.percentage', set => {
-            key_values      => [ { name => 'cpu_load5' } ],
-            output_template => '5min load average: %s%%',
+        { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
+            key_values      => [ { name => 'average_5m' } ],
+            output_template => '%.2f %% (5m)',
             perfdatas       => [
-                { label => 'cpu_load5', value => 'cpu_load5', template => '%s', min => 0 },
+                { label => 'cpu_5m_avg', value => 'average_5m', template => '%.2f',
+                    min => 0, max => 100, unit => '%' },
             ],
         }
         },
-        { label => 'cpu-load-15min', nlabel => 'cpu.load.15m.percentage', set => {
-            key_values      => [ { name => 'cpu_load15' } ],
-            output_template => '15min load average: %s%%',
+        { label => 'average-15m', nlabel => 'cpu.utilization.15m.percentage', set => {
+            key_values      => [ { name => 'average_15m' } ],
+            output_template => '%.2f %% (15m)',
             perfdatas       => [
-                { label => 'cpu_load15', value => 'cpu_load15', template => '%s', min => 0 },
+                { label => 'cpu_15m_avg', value => 'average_15m', template => '%.2f',
+                    min => 0, max => 100, unit => '%' },
             ],
         }
         },
@@ -81,9 +84,9 @@ sub manage_selection {
     );
 
     $self->{global} = {
-        cpu_load1  => $snmp_result->{$oid_cpuLoadAvg1Min},
-        cpu_load5  => $snmp_result->{$oid_cpuLoadAvg5Min},
-        cpu_load15 => $snmp_result->{$oid_cpuLoadAvg15Min},
+        average_1m => $snmp_result->{$oid_cpuLoadAvg1Min},
+        average_5m => $snmp_result->{$oid_cpuLoadAvg5Min},
+        average_1m => $snmp_result->{$oid_cpuLoadAvg15Min},
     };
 }
 
@@ -100,31 +103,19 @@ Check average cpu load.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: C<--filter-counters='cpu-load-15min'>
+Example: C<--filter-counters='average-15m'>
 
-=item B<--warning-cpu-load-1min>
+=item B<--warning-*>
 
-Warning thresholds for CPU load for C<1min> (in %).
+Warning threshold.
 
-=item B<--critical-cpu-load-1min>
+Can be: 'average-1m', 'average-5m', 'average-15m'
 
-Critical thresholds for CPU load for C<1min> (in %).
+=item B<--critical-*>
 
-=item B<--warning-cpu-load-5min>
+Critical threshold.
 
-Warning thresholds for CPU load for C<5min> (in %).
-
-=item B<--critical-cpu-load-5min>
-
-Critical thresholds for CPU load for C<5min> (in %).
-
-=item B<--warning-cpu-load-15min>
-
-Warning thresholds for CPU load for C<15min> (in %).
-
-=item B<--critical-cpu-load-15min>
-
-Critical thresholds for CPU load for C<15min> (in %).
+Can be: 'average-1m', 'average-5m', 'average-15m'
 
 =back
 
