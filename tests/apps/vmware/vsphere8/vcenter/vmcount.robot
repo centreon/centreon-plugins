@@ -6,7 +6,6 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resour
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
-Test Setup          Ctn Cleanup Cache
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json

@@ -57,16 +57,21 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, ); #force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'message-queue-path:s' => { name => 'message_queue_path' },
-        'memory'               => { name => 'memory' },
-        'filter-message-id:s'  => { name => 'filter_message_id' },
-        'min-severity:s'       => { name => 'min_severity' },
-        'max-severity:s'       => { name => 'max_severity' },
-        'display-messages'     => { name => 'display_messages' }
+        'message-queue-path:s'   => { name => 'message_queue_path' },
+        'memory'                 => { name => 'memory' },
+        'include-message-id:s'   => { name => 'include_message_id',   default => '' },
+        'filter-message-id:s'    => { redirect => 'include_message_id' },       # for compatibility
+        'include-reply-status:s' => { name => 'include_reply_status', default => '' },
+        'exclude-reply-status:s' => { name => 'exclude_reply_status', default => 'A' },
+        'include-text:s'         => { name => 'include_text',         default => '' },
+        'exclude-text:s'         => { name => 'exclude_text',         default => '' },
+        'min-severity:s'         => { name => 'min_severity',         default => '' },
+        'max-severity:s'         => { name => 'max_severity',         default => '' },
+        'display-messages'       => { name => 'display_messages' }
     });
     
     return $self;
@@ -86,14 +91,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %cmd = (command => 'getErrorMessageQueue', args => { messageQueuePath => $self->{option_results}->{message_queue_path} });
-    $cmd{args}->{messageIdfilterPattern} = $self->{option_results}->{filter_message_id}
-        if (defined($self->{option_results}->{filter_message_id}) && $self->{option_results}->{filter_message_id} ne '');
+    $cmd{args}->{messageIdfilterPattern} = $self->{option_results}->{include_message_id}
+        if $self->{option_results}->{include_message_id} ne '';
     $cmd{args}->{minSeverityLevel} = $self->{option_results}->{min_severity}
-        if (defined($self->{option_results}->{min_severity}) && $self->{option_results}->{min_severity} ne '');
+        if $self->{option_results}->{min_severity} ne '';
     $cmd{args}->{maxSeverityLevel} = $self->{option_results}->{max_severity}
-        if (defined($self->{option_results}->{max_severity}) && $self->{option_results}->{max_severity} ne '');
+        if $self->{option_results}->{max_severity} ne '';
     $cmd{command} = 'getNewMessageInMessageQueue'
-        if (defined($self->{option_results}->{memory}));
+        if defined($self->{option_results}->{memory});
 
     $self->{global} = { total => 0, mq_path => $self->{option_results}->{message_queue_path} };
     my $messages = $options{custom}->request_api(%cmd);
@@ -104,15 +109,24 @@ sub manage_selection {
     }
 
     foreach my $entry (@{$messages->{result}}) {
-         if (defined($self->{option_results}->{display_messages})) {
+        # compatibility with old as400 daemon version who does not return 'replyStatus'
+        $entry->{replyStatus} //= '';
+
+        next if $self->{option_results}->{include_reply_status} ne '' && $entry->{replyStatus} !~ /$self->{option_results}->{include_reply_status}/;
+        next if $self->{option_results}->{exclude_reply_status} ne '' && $entry->{replyStatus} =~ /$self->{option_results}->{exclude_reply_status}/;
+        next if $self->{option_results}->{include_text} ne '' && $entry->{text} !~ /$self->{option_results}->{include_text}/;
+        next if $self->{option_results}->{exclude_text} ne '' && $entry->{text} =~ /$self->{option_results}->{exclude_text}/;
+
+        if (defined($self->{option_results}->{display_messages})) {
             $entry->{text} =~ s/\|/ /g;
             $self->{output}->output_add(
                 long_msg => sprintf(
-                    'message [id: %s] [severity: %s] [date: %s] [user: %s]: %s',
+                    'message [id: %s] [severity: %s] [date: %s] [user: %s]%s: %s',
                     $entry->{id},
                     $entry->{severity},
                     scalar(localtime($entry->{date} / 1000)),
                     defined($entry->{user}) ? $entry->{user} : '-',
+                    $entry->{replyStatus} ne '' ? ' [replyStatus: ' . $entry->{replyStatus} . ']': '',
                     $entry->{text}
                 )
             );
@@ -140,9 +154,25 @@ Specify the message queue (required. Example: --message-queue-path='/QSYS.LIB/QS
 
 Check only new messages.
 
-=item B<--filter-message-id>
+=item B<--include-message-id>
 
 Filter messages by ID (can be a regexp).
+
+=item B<--include-reply-status>
+
+Filter messages by reply status (can be a regexp).
+
+=item B<--exclude-reply-status>
+
+Exclude messages by reply status (can be a regexp) (default: 'A').
+
+=item B<--include-text>
+
+Filter messages by text (can be a regexp).
+
+=item B<--exclude-text>
+
+Exclude messages by text (can be a regexp).
 
 =item B<--min-severity>
 
@@ -156,7 +186,11 @@ Filter messages with severity less than to X.
 
 Display messages in verbose output.
 
-=item B<--warning-messages> B<--critical-messages>
+=item B<--warning-messages>
+
+Thresholds.
+
+=item B<--critical-messages>
 
 Thresholds.
 
