@@ -110,11 +110,11 @@ __END__
 
 =item B<--vm-id>
 
-Define which physical server to monitor based on its resource ID (example: C<vm-16>).
+Define which vm to monitor based on its resource ID (example: C<vm-16>).
 
 =item B<--vm-name>
 
-Define which physical server to monitor based on its name (example: C<WEBSERVER01>).
+Define which vm to monitor based on its name (example: C<WEBSERVER01>).
 When possible, it is recommended to use C<--vm-id> instead.
 
 =back
