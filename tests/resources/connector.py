@@ -3,6 +3,7 @@ import time
 import os
 from robot.api.deco import keyword
 import re
+import sys
 
 connector = None
 
@@ -12,13 +13,16 @@ class ConnectorLibrary:
 
     def ctn_start_connector(self, command=["/usr/lib64/centreon-connector/centreon_connector_perl", "--log-file=/tmp/connector.log", "--debug"]):
         if self.process is None or self.process.poll() is not None:
-            self.process = subprocess.Popen(
-                command,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,   # Capture stdout!
-                text=True
-            )
-            print("Connector started")
+            try:
+                self.process = subprocess.Popen(
+                    command,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,   # Capture stdout!
+                    text=True
+                )
+                print("Connector started")
+            except FileNotFoundError:
+                print("Perl connector binary not found. Falling back to local test.", file=sys.stderr)
 
     def ctn_send_to_connector(self, idf: int, command: str, timeout: int, command_log="/tmp/connector.commands.log"):
         now = int(time.time())
