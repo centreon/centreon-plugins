@@ -65,6 +65,11 @@ jobs:
             package_extension: deb
             runner: centreon-collect-arm64
             arch: arm64
+          - image: packaging-plugins-bookworm-arm64
+            distrib: bookworm
+            package_extension: deb
+            runner: centreon-collect-arm64
+            arch: arm64
 
     runs-on: ${{ matrix.runner }}
 
@@ -246,6 +251,9 @@ jobs:
           - distrib: bookworm
             package_extension: deb
             arch: amd64
+          - distrib: bookworm
+            package_extension: deb
+            arch: arm64
           - distrib: jammy
             package_extension: deb
             arch: amd64

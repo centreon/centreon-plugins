@@ -126,7 +126,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-bookworm-arm64, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -144,6 +144,10 @@ jobs:
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
+            distrib: bookworm
+          - package_extension: deb
+            image: unit-tests-bookworm-arm64
+            runner_name: centreon-collect-arm64
             distrib: bookworm
           - package_extension: deb
             image: unit-tests-jammy
@@ -345,7 +349,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64, testing-plugins-bookworm-arm64]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -369,6 +373,11 @@ jobs:
           - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
+            arch: arm64
+            runner_name: centreon-collect-arm64
+          - package_extension: deb
+            image: testing-plugins-bookworm-arm64
+            distrib: bookworm
             arch: arm64
             runner_name: centreon-collect-arm64
 
