@@ -229,13 +229,13 @@ __END__
 
 =head1 MODE
 
-Check daemonset status.
+Check DaemonSet status.
 
 =over 8
 
 =item B<--daemonset>
 
-Filter on a specific daemonset (must be a PromQL filter, Default: 'daemonset=~".*"')
+Filter on a specific DaemonSet (must be a PromQL filter, Default: 'daemonset=~".*"')
 
 =item B<--warning-status>
 

@@ -58,6 +58,7 @@ cpu-utilization-5m
 cpu-utilization-5s
 CX
 Cyberoam
+DaemonSet
 Datacore
 Datastore
 datasource
@@ -244,6 +245,7 @@ prct
 Primera
 Procurve
 Proxmox
+PromQL
 proto
 --proxyurl
 psu
