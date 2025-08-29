@@ -279,8 +279,7 @@ sub request {
         $self->{output}->test_eval(test => $request_options->{unknown_status}, values => { code => $self->{response_code} })) {
         $status = 'unknown';
     }
-
-    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+    if (!$request_options->{silently_fail} && !$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         my $short_msg = $self->{response}->status_line;
         if ($short_msg =~ /^401/) {
             $short_msg .= ' (' . $1 . ' authentication expected)' if (defined($self->{response}->www_authenticate) &&
