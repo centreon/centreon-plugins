@@ -3,7 +3,8 @@
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::mikrotik::snmp::plugin
@@ -22,7 +23,7 @@ listlteinterfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                expected_result    --
             ...      1     ${EMPTY}                                                     List interfaces: 'lte1' [speed = ][status = up][id = 9]

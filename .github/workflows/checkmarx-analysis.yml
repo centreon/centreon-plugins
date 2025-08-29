@@ -57,7 +57,7 @@ jobs:
 
       - name: Checkmarx One CLI Action
         if: env.enable_analysis  == 'true'
-        uses: checkmarx/ast-github-action@88c60148b7b9689d67eb05bf66a65bbb871f2f2c # v2.3.20
+        uses: checkmarx/ast-github-action@44adb082541fa1f47bcfca6de1517ff28990d813 # v2.3.22
         with:
           project_name: ${{ inputs.module_name }}
           base_uri: ${{ secrets.base_uri }}

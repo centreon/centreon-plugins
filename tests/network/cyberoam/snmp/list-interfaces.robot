@@ -4,7 +4,8 @@ Documentation       Check Cyberoam equipments in SNMP.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
@@ -23,7 +24,7 @@ list-interfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                       expected_result    --
             ...      1     ${EMPTY}                                                                                                           List interfaces: 'Anonymized 250' [speed = 10][status = up][id = 1][type = softwareLoopback] 'Anonymized 012' [speed = 1000][status = up][id = 10][type = ethernetCsmacd] 'Anonymized 118' [speed = 1000][status = up][id = 11][type = ethernetCsmacd] 'Anonymized 073' [speed = 1000][status = up][id = 12][type = ethernetCsmacd] 'Anonymized 071' [speed = ][status = down][id = 13][type = ethernetCsmacd] 'Anonymized 073' [speed = 1000][status = up][id = 14][type = ethernetCsmacd] 'Anonymized 232' [speed = ][status = down][id = 15][type = ethernetCsmacd] 'Anonymized 191' [speed = ][status = down][id = 16][type = ethernetCsmacd] 'Anonymized 242' [speed = 1000][status = up][id = 17][type = ethernetCsmacd] 'Anonymized 175' [speed = ][status = down][id = 18][type = ethernetCsmacd] 'Anonymized 128' [speed = ][status = down][id = 19][type = ethernetCsmacd] 'Anonymized 037' [speed = ][status = up][id = 2][type = ethernetCsmacd]

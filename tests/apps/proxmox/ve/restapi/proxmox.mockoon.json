@@ -125,7 +125,7 @@
       "responses": [
         {
           "uuid": "3b682249-4d8b-4c5e-91cc-272832002e77",
-          "body": "{\"data\":{\"result\":{\"machine\":\"x86_64\",\"version\":\"111 (XxXxXx)\",\"version-id\":\"111\",\"pretty-name\":\"XXXXX GNU/Linux 111 (XxXxXx)\",\"id\":\"xXxXx\",\"name\":\"XxXxXx GNU/Linux\",\"kernel-version\":\"#1 SMP PREEMPT_DYNAMIC XXXXX 6.0.0-1 (2025-01-01)\",\"kernel-release\":\"6.0.0-32-amd64\"}}}",
+          "body": "{\"data\":{\"result\":{\"machine\":\"x86_64\",\"version\":\"111 (XXXXX)\",\"version-id\":\"111\",\"pretty-name\":\"XXXXX GNU/Linux 111 (XXXXX)\",\"id\":\"XXXXX\",\"name\":\"XXXXX GNU/Linux\",\"kernel-version\":\"#1 SMP PREEMPT_DYNAMIC XXXXX 6.0.0-1 (2025-01-01)\",\"kernel-release\":\"6.0.0-32-amd64\"}}}",
           "latency": 0,
           "statusCode": 500,
           "label": "",
