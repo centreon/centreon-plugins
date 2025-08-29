@@ -43,7 +43,7 @@ ListUserJourneys ${tc}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
     Examples:        tc       extraoptions                                          expected_regexp    --
-            ...      1        ${EMPTY}                                              User journeys:.+
+            ...      1        ${EMPTY}                                              ^User journeys:
 
 
 UserJourneyIncidents ${tc}
