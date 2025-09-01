@@ -14,6 +14,7 @@ ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
 ${CMD}              ${CENTREON_PLUGINS} 
 ...                 --plugin=apps::proxmox::ve::restapi::plugin
+...                 --mode vm-usage
 ...                 --hostname=${HOSTNAME}
 ...                 --api-username=xx
 ...                 --api-password=xx
@@ -21,26 +22,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 
 *** Test Cases ***
-Discovery ${tc}
-    [Tags]    storage     api    hpe    hp
-    ${command}    Catenate
-    ...    ${CMD}
-    ...    --mode discovery
-    ...    ${extra_options}
-
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
-
-    Examples:        tc       extraoptions                                          expected_regexp    --
-            ...      1        ${EMPTY}                                              "discovered_items":3
-            ...      2        --resource-type=vm                                    (?=.*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\])(?=.*"os_info_name":"XXXXX GNU/Linux")
-            ...      3        --resource-type=node                                  ^(?!.*(ip_addresses|os_info_name)).*$
-
-
 VmUsage ${tc}
     [Tags]    storage     api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
-    ...    --mode vm-usage
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
