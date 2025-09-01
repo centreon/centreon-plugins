@@ -381,9 +381,9 @@ You can use the following variables: C<%{name}>, C<%{status}>, C<%{elapsed}>, C<
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'running', 'errors', 'waiting',
-'finished', 'notscheduled', 'descheduled',
-'success-prct'.
+Can be: C<running>, C<errors>, C<waiting>,
+C<finished>, C<notscheduled>, C<descheduled>,
+C<success-prct>.
 
 =back
 
