@@ -4,7 +4,8 @@ Documentation       Check global WLAN access point count and user associated and
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin

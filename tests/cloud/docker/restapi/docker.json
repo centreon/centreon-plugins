@@ -1,0 +1,125 @@
+{
+  "uuid": "123def66-79b3-46a6-a645-ba1aa0fab6c2",
+  "lastMigration": 32,
+  "name": "Docker",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3009,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "a182c722-1a15-4968-8f9e-032c48ebb585",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "containers/containerId/stats",
+      "responses": [
+        {
+          "uuid": "9024006f-68a7-4ae0-ac0a-b3595ddc7927",
+          "body": "{\r\n  \"name\": \"containerName\",\r\n  \"id\": \"containerId\",\r\n  \"blkio_stats\": {\r\n    \"io_service_bytes_recursive\": [\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"read\",\r\n        \"value\": 7593984\r\n      },\r\n      {\r\n        \"major\": 254,\r\n        \"minor\": 0,\r\n        \"op\": \"write\",\r\n        \"value\": 100\r\n      }\r\n    ],\r\n    \"io_serviced_recursive\": null,\r\n    \"io_queue_recursive\": null,\r\n    \"io_service_time_recursive\": null,\r\n    \"io_wait_time_recursive\": null,\r\n    \"io_merged_recursive\": null,\r\n    \"io_time_recursive\": null,\r\n    \"sectors_recursive\": null\r\n  },\r\n  \"cpu_stats\": {\r\n    \"cpu_usage\": {\r\n      \"total_usage\": 29912000,\r\n      \"percpu_usage\": [\r\n        29912000\r\n      ],\r\n      \"usage_in_kernelmode\": 21994000,\r\n      \"usage_in_usermode\": 7918000\r\n    },\r\n    \"system_cpu_usage\": 5,\r\n    \"online_cpus\": 5,\r\n    \"throttling_data\": {\r\n      \"periods\": 0,\r\n      \"throttled_periods\": 0,\r\n      \"throttled_time\": 0\r\n    }\r\n  },\r\n  \"memory_stats\": {\r\n    \"usage\": 82175795,\r\n    \"max_usage\": 0,\r\n    \"stats\": {\r\n      \"inactive_file\": 2510848\r\n    },\r\n    \"limit\": 8217579520\r\n  },\r\n  \"networks\": {\r\n    \"eth0\": {\r\n      \"rx_bytes\": 5338,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 36,\r\n      \"tx_bytes\": 648,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 8\r\n    },\r\n    \"eth5\": {\r\n      \"rx_bytes\": 4641,\r\n      \"rx_dropped\": 0,\r\n      \"rx_errors\": 0,\r\n      \"rx_packets\": 26,\r\n      \"tx_bytes\": 690,\r\n      \"tx_dropped\": 0,\r\n      \"tx_errors\": 0,\r\n      \"tx_packets\": 9\r\n    }\r\n  }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "e7e4e95d-f5d8-4e40-ba95-ffd76264b8ca",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "containers/json",
+      "responses": [
+        {
+          "uuid": "6eabce15-4f21-4502-9503-588d4f022c71",
+          "body": "[\r\n  {\r\n    \"Id\": \"containerId\",\r\n    \"Names\": [\r\n      \"/containerName\"\r\n    ],\r\n    \"State\": \"running\"\r\n      }\r\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "a182c722-1a15-4968-8f9e-032c48ebb585"
+    },
+    {
+      "type": "route",
+      "uuid": "e7e4e95d-f5d8-4e40-ba95-ffd76264b8ca"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

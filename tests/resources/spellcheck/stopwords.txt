@@ -58,6 +58,7 @@ cpu-utilization-5m
 cpu-utilization-5s
 CX
 Cyberoam
+DaemonSet
 Datacore
 Datastore
 datasource
@@ -113,6 +114,7 @@ hashicorpvault
 HPE
 HTTPR
 Huawei
+ICMP
 ifAlias
 ifDesc
 ifName
@@ -150,6 +152,7 @@ kccevent
 keepass
 Keysight
 Kubernetes
+LatenceTech
 ldap
 LDP
 --legacy-api-beta
@@ -242,7 +245,9 @@ prct
 Primera
 Procurve
 Proxmox
+PromQL
 proto
+Proxmox
 --proxyurl
 psu
 QoS
@@ -308,6 +313,7 @@ tower-cli
 TLSv1
 TrendMicro
 tsdb-version
+TWAMP
 UCD
 UDP
 unicast
@@ -329,6 +335,7 @@ vCPU
 vdom
 vdomain
 VDSL2
+VE
 VTOM
 Veeam
 VeloCloud
