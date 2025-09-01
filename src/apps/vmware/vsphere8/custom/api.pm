@@ -204,6 +204,13 @@ sub try_request_api {
 
 
     my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content, booleans_as_strings => 1) : {};
+    if (!defined($decoded)) {
+        $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
+                . $self->{http}->get_code() . "'] [message: '"
+                . $self->{http}->get_message() . "'] [content: '"
+                . $content . "']");
+        $self->{output}->option_exit();
+    }
 
     return $decoded;
 }
@@ -224,8 +231,8 @@ sub request_api {
         $api_response = $self->try_request_api('force_authentication' => 1, %options);
     }
 
-    # if we could not authenticate, we exit
-    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type})) {
+    # if we could not authenticate, we exit (unless no_fail option is true)
+    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type}) && ! $options{no_fail}) {
         my $full_message = '';
         for my $error_item (@{$api_response->{messages}}) {
             $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
