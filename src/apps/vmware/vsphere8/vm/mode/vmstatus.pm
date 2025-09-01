@@ -67,27 +67,14 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $self->request_api(
-        %options,
-        'endpoint' => '/vcenter/vm',
-        'method' => 'GET'
-    );
+    my $vm = $self->get_vm(%options);
 
-    $self->{vm} = {};
-    foreach my $vm (@{$response}) {
-        next if (!defined($vm->{name}) || defined($self->{option_results}->{vm_name}) && $vm->{name} ne $self->{option_results}->{vm_name});
-        next if (!defined($vm->{vm})   || defined($self->{option_results}->{vm_id}) && $vm->{vm} ne $self->{option_results}->{vm_id});
+    $self->{vm}->{$vm->{vm}} = {
+        display          => $vm->{name},
+        power_state      => $vm->{power_state},
+        id               => $vm->{vm}
+    };
 
-        $self->{vm}->{$vm->{vm}} = {
-            display          => $vm->{name},
-            power_state      => $vm->{power_state},
-            id               => $vm->{vm},
-        };
-    }
-    if (scalar(keys %{$self->{vm}}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "No VM found.");
-        $self->{output}->option_exit();
-    }
     return 1;
 }
 

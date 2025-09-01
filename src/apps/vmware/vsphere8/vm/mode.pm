@@ -64,6 +64,40 @@ sub get_vm_id_from_name {
 
 }
 
+sub get_vm {
+    my ($self, %options) = @_;
+
+    my $vm;
+    # if the VM's ID was given in the parameters, use it to get all the data of the VM
+    if (!centreon::plugins::misc::is_empty($self->{vm_id})) {
+        my $response = $self->request_api(
+            %options,
+            'endpoint' => '/vcenter/vm/' . $self->{vm_id},
+            'method'   => 'GET',
+            'no_fail'  => 1
+        );
+        $vm = $response;
+    }
+    # if the VM's ID was not provided or if the first query did not succeed, we look for the vm by its name
+    if (centreon::plugins::misc::is_empty($vm->{name}) && !centreon::plugins::misc::is_empty($self->{vm_name})) {
+        my $response = $self->request_api(
+            %options,
+            'endpoint' => '/vcenter/vm?names=' . $self->{vm_name},
+            'method'   => 'GET'
+        );
+
+        $vm = $response->[0] // undef;
+    }
+    if (centreon::plugins::misc::is_empty($vm->{name})) {
+        $self->{output}->add_option_msg(short_msg => "No VM found.");
+        $self->{output}->option_exit();
+    }
+    # the VM's ID (vm-xxxx) is not returned if the vm was obtained by it's vm_id, so in that case we have to get it from the parameter
+    $vm->{vm} = $self->{vm_id} unless $vm->{vm};
+
+    return $vm;
+}
+
 sub get_vm_stats {
     my ($self, %options) = @_;
 
