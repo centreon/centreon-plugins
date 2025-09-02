@@ -49,6 +49,7 @@ sub get_vm_id_from_name {
 
     my $response = $options{custom}->request_api(
         'endpoint' => '/vcenter/vm',
+        'get_param' => [ 'names='. $self->{vm_name} ],
         'method' => 'GET'
     );
 
