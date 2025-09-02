@@ -32,7 +32,7 @@ UserJourneyStatistics ${tc}
     Ctn Run Command And Check Result As Regexp     ${command}    ${expected_regexp}
 
     Examples:        tc       extraoptions                                                          expected_regexp    --
-            ...      1        ${EMPTY}                                                              OK: journey "Basic user journey" journey hero time: 35933.10ms, journey speed index: 13754.20ms, journey ttfb: 33.56ms | 'journey_Basic user journey#journey.herotime.milliseconds'=35933.10ms;;;0; 'journey_Basic user journey#journey.speedindex.time.milliseconds'=13754.20ms;;;0; 'journey_Basic user journey#journey.ttfb.milliseconds'=33.56ms;;;0;
+            ...      1        ${EMPTY}                                                              OK: journey "Basic user journey" journey performance score: 76, journey hero time: 35933.10ms, journey speed index: 13754.20ms, journey ttfb: 33.56ms | 'journey_Basic user journey#journey.performance.score'=76;;;0;100 'journey_Basic user journey#journey.herotime.milliseconds'=35933.10ms;;;0; 'journey_Basic user journey#journey.speedindex.time.milliseconds'=13754.20ms;;;0; 'journey_Basic user journey#journey.ttfb.milliseconds'=33.56ms;;;0;
             ...      2        --warning-journey-hero-time=:10                                       ^WARNING: journey "Basic user journey" journey hero time.+$
             ...      3        --warning-journey-speed-index=:10                                     ^WARNING: journey "Basic user journey" journey speed index.+$
             ...      4        --critical-journey-ttfb=:10                                           ^CRITICAL: journey "Basic user journey" journey ttfb.+$
