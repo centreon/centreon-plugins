@@ -82,7 +82,8 @@ sub get_vm {
     if (centreon::plugins::misc::is_empty($vm->{name}) && !centreon::plugins::misc::is_empty($self->{vm_name})) {
         my $response = $self->request_api(
             %options,
-            'endpoint' => '/vcenter/vm?names=' . $self->{vm_name},
+            'endpoint' => '/vcenter/vm',
+            'get_param' => [ 'names='. $self->{vm_name} ],
             'method'   => 'GET'
         );
 
