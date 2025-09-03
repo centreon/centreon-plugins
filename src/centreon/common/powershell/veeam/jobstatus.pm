@@ -173,6 +173,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get veeam job status informations.
+Method to get Veeam job status information.
 
 =cut
