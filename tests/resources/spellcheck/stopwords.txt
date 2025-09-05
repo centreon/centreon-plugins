@@ -1,3 +1,6 @@
+1m
+5m
+15m
 2c
 3COM
 3CX
@@ -360,6 +363,7 @@ vSphere
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
 WLAN
 WLC
 WSMAN
