@@ -26,7 +26,7 @@ use warnings;
 use JSON::XS;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use centreon::plugins::misc qw/value_of json_encode/;
+use centreon::plugins::misc qw/value_of json_encode graphql_escape/;
 
 sub new {
     my ($class, %options) = @_;
@@ -103,7 +103,7 @@ sub request_api {
     my $tried = 0;
     my $decoded;
 
-    my $full_query = json_encode({ query => $options{query} });
+    my $full_query = json_encode({ query => "{ $options{query} }" } );
 
     unless ($full_query) {
         $self->{output}->add_option_msg(short_msg => "Cannot encode json request !");
@@ -141,7 +141,7 @@ sub request_api {
                 sleep($delay);
                 next
             }
-            $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error '" . $decoded->{error}->[0]->{message}  . "' (add --debug option for detailed message)");
+            $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error '" . ($decoded->{errors}->[0]->{message} // '-')  . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
         last
@@ -150,6 +150,52 @@ sub request_api {
     return $decoded;
 }
 
+
+sub sites_accountSnapshot {
+    my ($self, %options) = @_;
+
+    my $siteIDs = @{$options{filter_site_id}} ?
+                        " ( siteIDs: [". ( join ", ", map { '"' . graphql_escape($_) . '"' } @{$options{filter_site_id}} ) ."] )" :
+                        '';
+
+    my $query = qq~accountSnapshot(
+                     accountID: "$self->{account_id}"
+                   ) {
+                     sites$siteIDs {
+                       id
+                       info {
+                         name
+                         description
+                       }
+                       connectivityStatus
+                       operationalStatus
+                       lastConnected
+                       connectedSince
+                       popName
+                     }
+                   }~;
+
+    my $response = $self->request_api(query => $query);
+
+    my %sites;
+
+    if (ref $response->{data}->{accountSnapshot}->{sites} eq 'ARRAY') {
+        foreach my $site (@{$response->{data}->{accountSnapshot}->{sites}}) {
+            $sites{ $site->{id} } = {
+                id => $site->{id},
+                name => $site->{info}->{name},
+                description => $site->{info}->{description},
+                connectivity_status => $site->{connectivityStatus},
+                operational_status => $site->{operationalStatus},
+                last_connected => $site->{lastConnected},
+                connected_since => $site->{connectedSince},
+                pop_name => $site->{popName}
+            };
+        }
+    }
+
+    return \%sites;
+}
 
 sub list_sites {
     my ($self, %options) = @_;
@@ -160,12 +206,32 @@ sub list_sites {
     # Use native search filter if filter_site_name is provided
     my $search = $options{filter_site_name} ne '' ?
                     # Ensure any double quotes in filter_site_name are properly escaped
-                    ', search: "'.$options{filter_site_name} =~ s/"/\\"/gr.'"' :
+                    ', search: "'.graphql_escape($options{filter_site_name}). '"' :
                     '';
+
+    my $entityIDs = @{$options{filter_site_id}} ?
+                        ", entityIDs: [". ( join ", ", map { '"' . graphql_escape($_) . '"' } @{$options{filter_site_id}} ) ."]" :
+                        '';
 
     while (1) {
         # Building an entityLoop query using pagination. The "limit" parameter is not specified as the default value 50 is used
-        my $query = qq/entityLookup(accountID: "$self->{account_id}", type: site, from: $from, sort: { field: name, order: asc}$search ) { total items { entity { id name } }/;
+        my $query = qq~entityLookup(
+                         accountID: $self->{account_id},
+                         type: site,
+                         from: $from
+                         $search
+                         $entityIDs
+                       ) {
+                         total
+                         items {
+                           entity {
+                             id
+                             name
+                           }
+                           description
+                         }
+                       }
+                       ~;
 
         my $part = $self->request_api(query => $query);
 
@@ -176,6 +242,27 @@ sub list_sites {
         push @response, map { $_->{entity} } @{$part->{data}->{entityLookup}->{items}};
 
         last if $from == $part->{data}->{entityLookup}->{total};
+    }
+
+    my @entityIDs = map { $_->{id} } @response;
+
+    if (@entityIDs) {
+        if ($options{connectivity_details}) {
+            # Queries connectivity details if requested
+            my $sites_snap = $self->sites_accountSnapshot (filter_site_id => \@entityIDs );
+
+            foreach my $site (@response) {
+                next unless exists $sites_snap->{ $site->{id} };
+                my $ref = $sites_snap->{ $site->{id} };
+
+                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status last_connected connected_since pop_name/;
+            }
+        } else {
+            # Otherwise set empty values
+            foreach my $site (@response) {
+                $site->{$_} = '' foreach qw/connectivity_status operational_status last_connected connected_since pop_name/;
+            }
+        }
     }
 
     return \@response;

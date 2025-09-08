@@ -26,7 +26,7 @@ use utf8;
 use JSON::XS;
 use Exporter 'import';
 
-our @EXPORT_OK = qw/value_of json_encode json_decode/;
+our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape/;
 
 sub execute {
     my (%options) = @_;
@@ -380,6 +380,12 @@ sub powershell_escape {
     $value =~ s/#/`#/g;
     $value =~ s/'/`'/g;
     $value =~ s/"/`"/g;
+    return $value;
+}
+
+sub graphql_escape {
+    my ($value) = $_[0];
+    $value =~ s/"/\\"/g;
     return $value;
 }
 
@@ -1058,6 +1064,18 @@ Encodes a string for use in PowerShell.
     my $escaped = centreon::plugins::misc::powershell_escape($value);
 
 Escapes special characters in a string for use in PowerShell.
+
+=over 4
+
+=item * C<$value> - The string to escape.
+
+=back
+
+=head2 graphql_escape
+
+    my $escaped = centreon::plugins::misc::graphql_escape($value);
+
+Escapes special characters in a string for use in graphql query.
 
 =over 4
 

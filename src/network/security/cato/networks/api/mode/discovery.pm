@@ -25,13 +25,17 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+use Data::Dumper;
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-            "filter-site-name:s" => { name => 'filter_site_name', default => '' }
+            "filter-site-name:s"  => { name => 'filter_site_name', default => '' },
+            "filter-site-id:s@"   => { name => 'filter_site_id' },
+            "connectivity-details:s" => { name => 'connectivity_details', default => '1' },
     });
 
     return $self;
@@ -41,19 +45,21 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{filter_site_name} = $self->{option_results}->{filter_site_name};
+    $self->{$_} = $self->{option_results}->{$_} for qw/filter_site_name connectivity_details/;
+
+    $self->{filter_site_id} = [ map { split /,/ } @{$self->{option_results}->{filter_site_id}} ];
+
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     #my $results = undef;
-    my $results = $options{custom}->list_sites(filter_site_name => $self->{filter_site_name});
+    my $results = $options{custom}->list_sites(filter_site_name => $self->{filter_site_name},
+                                               filter_site_id => $self->{filter_site_id},
+                                               connectivity_details => $self->{connectivity_details});
     foreach my $site (@$results) {
-        $self->{sites}->{ $site->{'id'} } = {
-            id => $site->{'id'},
-            name => $site->{'name'}
-        }
+        $self->{sites}->{ $site->{'id'} } = { map { $_ => $site->{$_} } qw/id name description connectivity_status operational_status last_connected connected_since pop_name/ };
     }
 }
 
@@ -61,13 +67,9 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $site (sort keys %{$self->{sites}}) {
+    foreach my $site (sort values %{$self->{sites}}) {
         $self->{output}->output_add(
-            long_msg => sprintf(
-                "[id: %s] [url: %s]",
-                $self->{sites}->{$site}->{id},
-                $self->{sites}->{$site}->{name}
-            )
+            long_msg => join ' ', map { "[$_: ".$site->{$_}.']' } qw/id name description connectivity_status operational_status last_connected connected_since pop_name/
         );
     }
 
@@ -110,5 +112,15 @@ List sites.
 =item B<--filter-site-name>
 
 Filter by site name.
+
+=item B<--filter-site-id>
+
+Filter by site id. This parameter can be used multiple times and values can by separate by a comma.
+
+=item V<--connectivity-datails>
+
+Include connectivity details in discovery data. Use 1 to enable, 0 to disable. (default: 1).
+
+=back
 
 =cut
