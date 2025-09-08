@@ -33,6 +33,7 @@ sub new {
     $self->{modes}   = {
         'cpu'       => 'apps::vmware::vsphere8::vm::mode::cpu',
         'discovery' => 'apps::vmware::vsphere8::vm::mode::discovery',
+        'memory'    => 'apps::vmware::vsphere8::vm::mode::memory',
         'vm-status' => 'apps::vmware::vsphere8::vm::mode::vmstatus',
         'vm-tools'  => 'apps::vmware::vsphere8::vm::mode::vmtools',
     };

@@ -438,6 +438,22 @@ sub get_stats {
             endpoint   => $endpoint
     );
 
+    if (defined($result->{messages})) {
+        # Example of what can happen when a VM has no stats
+        # {
+        #   "messages": [
+        #     {
+        #       "args": [],
+        #       "default_message": "Invalid data points filter: found empty set of Resource Addresses for provided set of (types,resources)",
+        #       "localized": "Invalid data points filter: found empty set of Resource Addresses for provided set of (types,resources)",
+        #       "id": "com.vmware.vstats.data_points_invalid_resource_filter"
+        #     }
+        #   ]
+        # }
+        $self->{output}->add_option_msg(short_msg => "No stats found. Error: " . $result->{messages}->[0]->{default_message});
+        $self->{output}->option_exit();
+    }
+
     # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
     # FIXME: the existence of the resource id must be checked at one moment
     # return only the last value (if there are several)
