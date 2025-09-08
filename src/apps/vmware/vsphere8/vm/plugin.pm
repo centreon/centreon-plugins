@@ -30,9 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    $self->{modes} = {
+    $self->{modes}   = {
         'discovery' => 'apps::vmware::vsphere8::vm::mode::discovery',
         'vm-status' => 'apps::vmware::vsphere8::vm::mode::vmstatus',
+        'vm-tools'  => 'apps::vmware::vsphere8::vm::mode::vmtools',
     };
 
     $self->{custom_modes}->{api} = 'apps::vmware::vsphere8::custom::api';

@@ -194,7 +194,7 @@
           "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-7657\",\n    \"name\": \"web-server-01\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 4\n  }\n]",
           "latency": 0,
           "statusCode": 200,
-          "label": "filtered by name 2",
+          "label": "filtered by name web-server-01",
           "headers": [
             {
               "key": "access-control-allow-headers",
@@ -230,6 +230,58 @@
               "target": "query",
               "modifier": "names",
               "value": "web-server-01",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ed9b5a1d-d674-45b0-99d8-ee0ce97e1de0",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"web-server-02\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by name web-server-02",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "web-server-02",
               "invert": false,
               "operator": "equals"
             }
@@ -979,6 +1031,230 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "d3f1794b-5e42-4431-9100-592d880733a1",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-1234/tools",
+      "responses": [
+        {
+          "uuid": "4aa768e7-afac-43b7-84c7-2f86487f07c3",
+          "body": "{\n  \"auto_update_supported\": false,\n  \"upgrade_policy\": \"MANUAL\",\n  \"install_attempt_count\": 4,\n  \"version_status\": \"CURRENT\",\n  \"version_number\": 12384,\n  \"run_state\": \"NOT_RUNNING\",\n  \"error\": {\"error_type\":\"ERROR\",\"messages\":[{\"args\":[],\"default_message\":\"An error has occurred while invoking the operation.\",\"id\":\"com.vmware.api.vcenter.error\"},{\"args\":[],\"default_message\":\"Error upgrading VMware Tools.\",\"id\":\"vmsg.VmToolsUpgradeFault.summary\"}]},\n  \"version\": \"12384\",\n  \"install_type\": \"MSI\"\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5dab7556-22e0-44b0-a0c0-8a62e8599a39",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7722/tools",
+      "responses": [
+        {
+          "uuid": "a1f361ec-882e-47f9-b042-e78493f0b9fb",
+          "body": "{\n  \"auto_update_supported\": false,\n  \"upgrade_policy\": \"MANUAL\",\n  \"install_attempt_count\": 1,\n  \"version_status\": \"UNMANAGED\",\n  \"version_number\": 12352,\n  \"run_state\": \"RUNNING\",\n  \"version\": \"12352\",\n  \"install_type\": \"OPEN_VM_TOOLS\"\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2b1cc950-2116-448e-a0f7-db3afb4a876a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7657/tools",
+      "responses": [
+        {
+          "uuid": "2d5c8be9-e053-431e-aa72-cdc61b0e32d5",
+          "body": "{\n  \"auto_update_supported\": true,\n  \"upgrade_policy\": \"MANUAL\",\n  \"install_attempt_count\": 4,\n  \"version_status\": \"CURRENT\",\n  \"version_number\": 12384,\n  \"run_state\": \"RUNNING\",\n  \"version\": \"12384\",\n  \"install_type\": \"MSI\"\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "27d28289-89ef-48b1-9ce0-1b763f288263",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-3000000/tools",
+      "responses": [
+        {
+          "uuid": "f243c622-c1ab-45d9-acec-bda8c2333574",
+          "body": "{\n  \"error_type\": \"NOT_FOUND\",\n  \"messages\": [\n    {\n      \"args\": [\n        \"vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e\"\n      ],\n      \"default_message\": \"Virtual machine with identifier 'vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e' does not exist.\",\n      \"id\": \"com.vmware.api.vcenter.vm.not_found\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -1025,6 +1301,22 @@
     {
       "type": "route",
       "uuid": "d66d86ed-1aa7-48e8-8950-be8bd70bf5ba"
+    },
+    {
+      "type": "route",
+      "uuid": "d3f1794b-5e42-4431-9100-592d880733a1"
+    },
+    {
+      "type": "route",
+      "uuid": "5dab7556-22e0-44b0-a0c0-8a62e8599a39"
+    },
+    {
+      "type": "route",
+      "uuid": "2b1cc950-2116-448e-a0f7-db3afb4a876a"
+    },
+    {
+      "type": "route",
+      "uuid": "27d28289-89ef-48b1-9ce0-1b763f288263"
     }
   ],
   "proxyMode": false,
