@@ -441,7 +441,7 @@ sub get_stats {
     # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
     # FIXME: the existence of the resource id must be checked at one moment
     # return only the last value (if there are several)
-    if ( scalar(@{ $result->{data_points} }) == 0 ) {
+    if ( !defined($result->{data_points}) || scalar(@{ $result->{data_points} }) == 0 ) {
         $self->{output}->add_option_msg(short_msg => "no data for host " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
         return undef;
     }

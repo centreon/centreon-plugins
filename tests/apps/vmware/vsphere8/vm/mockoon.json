@@ -1255,6 +1255,360 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "d47d46e3-1ac2-42c1-b7e9-ec187bbd798e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/stats/acq-specs",
+      "responses": [
+        {
+          "uuid": "fb821585-e966-4799-bd77-f516d30ba6bc",
+          "body": "{\n  \"acq_specs\": []\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "First response (empty)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2f2fb518-6bd4-47b3-a127-55b26faa8500",
+          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"542\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Scond response",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "24ce8978-4f6d-4c5d-8be6-56a3e576a77b",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/stats/acq-specs/",
+      "responses": [
+        {
+          "uuid": "036c53ea-47e7-4c66-ac19-49ed89b96419",
+          "body": "\"101\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "315979dc-3c39-4f3d-9606-f963e3c80c4c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/stats/data/dp",
+      "responses": [
+        {
+          "uuid": "1c706b7f-680f-42b9-a861-d6fe0b39047c",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0b3d9add-be9f-430b-9c50-7f281e23d494",
+          "body": "{\"data_points\":[{\"val\":79.29,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343447},{\"val\":71.12,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343474},{\"val\":73.46,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343507},{\"val\":81.56,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343534}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.usage.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.usage.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "64594f4d-0cad-4dc4-b5b0-b14dcda4b73f",
+          "body": "{\"data_points\":[{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343447},{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343474},{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343507},{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343534}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.entitlement.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.entitlement.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -1317,6 +1671,18 @@
     {
       "type": "route",
       "uuid": "27d28289-89ef-48b1-9ce0-1b763f288263"
+    },
+    {
+      "type": "route",
+      "uuid": "d47d46e3-1ac2-42c1-b7e9-ec187bbd798e"
+    },
+    {
+      "type": "route",
+      "uuid": "24ce8978-4f6d-4c5d-8be6-56a3e576a77b"
+    },
+    {
+      "type": "route",
+      "uuid": "315979dc-3c39-4f3d-9606-f963e3c80c4c"
     }
   ],
   "proxyMode": false,
