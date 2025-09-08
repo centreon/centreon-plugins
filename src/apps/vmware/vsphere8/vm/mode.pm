@@ -100,6 +100,34 @@ sub get_vm {
     return $vm;
 }
 
+sub get_vm_tools {
+    my ($self, %options) = @_;
+
+    if ( centreon::plugins::misc::is_empty($self->{vm_id}) && !$self->get_vm_id_from_name(%options) ) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get VM ID from VM name '" . $self->{vm_name} . "'");
+        $self->{output}->option_exit();
+    }
+
+    my $tools = $self->request_api(
+        %options,
+        'endpoint' => '/vcenter/vm/' . $self->{vm_id} . '/tools',
+        'method'   => 'GET'
+    );
+    # Example:
+    # {
+    #   "auto_update_supported": false,
+    #   "upgrade_policy": "MANUAL",
+    #   "install_attempt_count": 1,
+    #   "version_status": "UNMANAGED",
+    #   "version_number": 12352,
+    #   "run_state": "RUNNING",
+    #   "version": "12352",
+    #   "install_type": "OPEN_VM_TOOLS"
+    # }
+
+    return $tools;
+}
+
 sub get_vm_stats {
     my ($self, %options) = @_;
 
@@ -146,11 +174,11 @@ __END__
 
 =item B<--vm-id>
 
-Define which vm to monitor based on its resource ID (example: C<vm-16>).
+Define which VM to monitor based on its resource ID (example: C<vm-16>).
 
 =item B<--vm-name>
 
-Define which vm to monitor based on its name (example: C<WEBSERVER01>).
+Define which VM to monitor based on its name (example: C<WEBSERVER01>).
 When possible, it is recommended to use C<--vm-id> instead.
 
 =back
