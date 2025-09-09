@@ -202,8 +202,9 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
+    return {} if ($method ne 'GET');
 
-    my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content, booleans_as_strings => 1) : {};
+    my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
                 . $self->{http}->get_code() . "'] [message: '"
