@@ -539,7 +539,8 @@ sub get_network_device_connection_stats {
         my $datas = $self->request_api(
             endpoint => '/networks/' . $options{network_id} . '/wireless/devices/connectionStats',
             get_param => [ 'timespan=' . $self->{timespan} ],
-            hostname => $self->get_shard_hostname(network_id => $options{network_id})
+            hostname => $self->get_shard_hostname(network_id => $options{network_id}),
+            ignore_codes => { 400 => 1 }
         );
         foreach (@$datas) {
             $self->{devices_connection_stats}->{ $options{network_id} }->{ $_->{serial} } = $_->{connectionStats};
