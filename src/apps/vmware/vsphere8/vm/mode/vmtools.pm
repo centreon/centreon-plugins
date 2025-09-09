@@ -195,7 +195,7 @@ sub manage_selection {
     };
 
     $self->{vm}->{version} = parse_tools_version($tools->{version_number})
-        if ( !centreon::plugins::misc::is_empty($tools->{version_number}) && $tools->{version_number} != 0);
+        if ($tools->{version_number});
 
     $self->{output}->output_add(long_msg => 'Version status: ' . $tools->{version_status} . ' - Explanation: ' . $version_status_explanation{$tools->{version_status}})
         if ( !centreon::plugins::misc::is_empty($tools->{version_status}));
@@ -280,7 +280,7 @@ C<%{upgrade_policy}> (can be "MANUAL" or "UPGRADE_AT_POWER_CYCLE").
 
 =item B<--warning-version-status>
 
-Define the conditions to match for the status to be CRITICAL.
+Define the conditions to match for the status to be WARNING.
 You can use the following variables: C<%{version_status}> (can be "NOT_INSTALLED", "CURRENT", "UNMANAGED",
 "TOO_OLD_UNSUPPORTED", "SUPPORTED_OLD", "SUPPORTED_NEW", "TOO_NEW" or "BLACKLISTED") and
 C<%{version}> (example: "v12.3.0").
