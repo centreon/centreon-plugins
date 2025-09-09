@@ -6,11 +6,11 @@ In this project robot Framework is used to order the integration tests.
 
 ### Docker
 
-you can use the docker image in ./github/docker/testing/ to run the tests in a container depending on you OS of choice.
-to build an image : 
+You can use the docker image in ./github/docker/testing/ to run the tests in a container depending on you OS of choice.
+To build an image : 
 
 ```bash
- docker  build -t plugin-bookworm -f Dockerfile.testing-plugins-bookworm .
+docker  build -t plugin-bookworm -f Dockerfile.testing-plugins-bookworm .
 ```
 
 To run it and run all tests in the tests/ folder, mounting the current folder to /centreon-plugins in the container : 
@@ -22,7 +22,7 @@ cd /centreon-plugins
 
 ### Snmpsim
 
-this tool allow to simulate an snmp agent with predefined data.
+This tool allows to simulate an snmp agent with predefined data.
 It must be run manually before launching the tests.
 
 to launch snmpsim use this from the root of the project (one level above this file) :
@@ -37,7 +37,7 @@ robot consider every file with .robot extension and try to execute every test ca
 ```bash
 robot tests/ # add -v CENTREON_PLUGINS:/path/To/Plugin before the folder to use a specific plugin (for exemple a fatpacked one) instead of the one in the repo.
 ```
-available option to put before the path to tests/ :
+Available options to put before the path to tests/ :
 - `-v CENTREON_PLUGINS`:/path/To/Plugin : to use a specific plugin (for exemple a fatpacked one) instead of the code from this repo.
 - `-e notauto` : to exclude tests based on tag (for exemple if they need a specific hardware)
 - `-i auto` : to include some test based on tag (please not that -i will exclude all tests without the specified tag)
