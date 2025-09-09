@@ -25,6 +25,7 @@ use warnings;
 use utf8;
 use JSON::XS;
 use Exporter 'import';
+use feature 'state';
 
 our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape/;
 
@@ -352,7 +353,12 @@ sub value_of($$;$) {
     my ($variable, $expression, $default) = @_;
     $default //= '';
 
-    my $value = eval "\$variable$expression";
+    state $safe = do { my $s = Safe->new();
+                       $s->share('$v');
+                       $s;
+                     };
+    our $v = $variable;
+    my $value = $safe->reval("\$v$expression", 1);
 
     return defined $value ? $value : $default;
 }

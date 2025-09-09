@@ -54,12 +54,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    #my $results = undef;
     my $results = $options{custom}->list_sites(filter_site_name => $self->{filter_site_name},
                                                filter_site_id => $self->{filter_site_id},
                                                connectivity_details => $self->{connectivity_details});
     foreach my $site (@$results) {
-        $self->{sites}->{ $site->{'id'} } = { map { $_ => $site->{$_} } qw/id name description connectivity_status operational_status last_connected connected_since pop_name/ };
+        $self->{sites}->{ $site->{'id'} } = { map { $_ => $site->{$_} // '' } qw/id name description connectivity_status operational_status last_connected connected_since pop_name/ };
     }
 }
 
