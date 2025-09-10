@@ -116,7 +116,7 @@ Filter by site name.
 
 Filter by site id. This parameter can be used multiple times and values can by separate by a comma.
 
-=item V<--connectivity-datails>
+=item V<--connectivity-details>
 
 Include connectivity details in discovery data. Use 1 to enable, 0 to disable. (default: 1).
 
