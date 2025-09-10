@@ -25,9 +25,9 @@ apc galaxy ${tc}
     ...    --snmp-community=hardware/ups/apc/snmp/ups-apc-galaxy
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
+    Ctn Run Command And Check Result As Strings   ${command}    ${expected_result}
 
-    Examples:    tc    extra_options                                                         expected_regexp    --
+    Examples:    tc    extra_options                                                         expected_result    --
     ...          1     ${EMPTY}                                                              OK: All 1 components are ok [1/1 sensors]. | 'ambient#sensor.ambient.temperature.celsius'=21C;;;; 'hardware.sensor.count'=1;;;;
     ...          2     --critical=temperature,.*,:10                                         CRITICAL: temperature 'ambient' is 21 C | 'ambient#sensor.ambient.temperature.celsius'=21C;;0:10;; 'hardware.sensor.count'=1;;;;
     ...          3     --filter=sensor --no-component=WARNING                                WARNING: No components are checked.
@@ -40,9 +40,9 @@ apc others ${tc}
     ...    --snmp-community=hardware/ups/apc/snmp/ups-apc-sensors
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
+    Ctn Run Command And Check Result As Strings   ${command}    ${expected_result}
 
-    Examples:    tc    extra_options                                                         expected_regexp    --
+    Examples:    tc    extra_options                                                         expected_result    --
     ...          1     ${EMPTY}                                                              CRITICAL: integrated sensor 'YYYYY Rack 1' status is 'disconnected' WARNING: universal sensor 'Humi XXX' status is 'uioWarning' | 'Temp XXX#sensor.universal.temperature.celsius'=24C;;;; 'Temp XXX#sensor.universal.humidity.percentage'=45%;;;0;100 'Humi XXX#sensor.universal.temperature.celsius'=25C;;;; 'Humi XXX#sensor.universal.humidity.percentage'=44%;;;0;100 'YYYYY Rack 2#sensor.integrated.temperature.celsius'=29C;;;; 'YYYYY Rack 2#sensor.integrated.humidity.percentage'=52%;;;0;100 'hardware.sensor.count'=4;;;; 
     ...	         2     --threshold-overload='sensor,WARNING,disconnected'                    WARNING: universal sensor 'Humi XXX' status is 'uioWarning' - integrated sensor 'YYYYY Rack 1' status is 'disconnected' | 'Temp XXX#sensor.universal.temperature.celsius'=24C;;;; 'Temp XXX#sensor.universal.humidity.percentage'=45%;;;0;100 'Humi XXX#sensor.universal.temperature.celsius'=25C;;;; 'Humi XXX#sensor.universal.humidity.percentage'=44%;;;0;100 'YYYYY Rack 2#sensor.integrated.temperature.celsius'=29C;;;; 'YYYYY Rack 2#sensor.integrated.humidity.percentage'=52%;;;0;100 'hardware.sensor.count'=4;;;;
     ...          3     --filter=sensor,1                                                     WARNING: universal sensor 'Humi XXX' status is 'uioWarning' | 'Humi XXX#sensor.universal.temperature.celsius'=25C;;;; 'Humi XXX#sensor.universal.humidity.percentage'=44%;;;0;100 'YYYYY Rack 2#sensor.integrated.temperature.celsius'=29C;;;; 'YYYYY Rack 2#sensor.integrated.humidity.percentage'=52%;;;0;100 'hardware.sensor.count'=2;;;;
