@@ -1,0 +1,68 @@
+{
+  "snmp": {
+    "tables": [
+      {
+        "name": "memory",
+        "oid": ".1.3.6.1.2.1.25.2.3.1",
+        "used_instance": ".*\\.(\\d+)$",
+        "entries": [
+          {
+            "name": "descr",
+            "oid": ".1.3.6.1.2.1.25.2.3.1.3"
+          },
+          {
+            "name": "size",
+            "oid": ".1.3.6.1.2.1.25.2.3.1.5"
+          },
+          {
+            "name": "used",
+            "oid": ".1.3.6.1.2.1.25.2.3.1.6"
+          }
+        ]
+      }
+    ]
+  },
+  "selection_loop": [
+    {
+      "name": "memory",
+      "source": "%(snmp.tables.memory)",
+      "perfdatas": [
+        {
+          "nlabel": "memory.usage.bytes",
+          "instances": ["%(memory.instance)"],
+          "value": "%(memory.used)"
+        },
+        {
+          "nlabel": "memory.size.bytes",
+          "instances": ["%(memory.instance)"],
+          "value": "%(memory.size)"
+        }
+      ],
+      "formatting": {
+        "printf_msg": "Memory '%s' usage : %s / %s",
+        "printf_var": [
+          "%(memory.descr)",
+          "%(memory.used)",
+          "%(memory.size)"
+        ],
+        "display_ok": true
+      }
+    }
+  ],
+  "global": {
+    "perfdatas": [
+      {
+        "nlabel": "total.memory.usage.bytes",
+        "value": "SUM(%(memory.used))"
+      },
+      {
+        "nlabel": "total.memory.size.bytes",
+        "value": "SUM(%(memory.size))"
+      }
+    ],
+    "formatting": {
+      "printf_msg": "Total memory usage is %(SUM(memory.used)) / %(SUM(memory.size))",
+      "display_ok": true
+    }
+  }
+}
