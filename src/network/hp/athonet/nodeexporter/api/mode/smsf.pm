@@ -97,7 +97,7 @@ sub manage_selection {
 
     my $map_interface_status = { 1 => 'up', 0 => 'down' };
 
-    $response = $options{custom}->query(queries => ['diameter_peer_status{target_type="mme"}']);
+    $response = $options{custom}->query(queries => ['diameter_peer_status{target_type="smsf"}']);
     $self->{diameters} = {};
     my $id = 0;
     foreach (@$response) {

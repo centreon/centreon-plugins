@@ -51,7 +51,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'pdn-p7-connected', nlabel => 'pcf.pdn.n7.connected.count', set => {
+        { label => 'pdn-n7-connected', nlabel => 'pcf.pdn.n7.connected.count', set => {
                 key_values => [ { name => 'pcf_n7_sessions' } ],
                 output_template => 'N7 PDN connected: %s',
                 perfdatas => [
@@ -146,7 +146,7 @@ You can use the following variables: %{status}, %{originHost}, %{stack}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'pdn-p7-connected', 'sessions-n5'.
+Can be: 'pdn-n7-connected', 'sessions-n5'.
 
 =back
 

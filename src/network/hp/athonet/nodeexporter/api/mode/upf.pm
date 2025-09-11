@@ -26,16 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub prefix_blacklist_node_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "Peer remote IP '%s' target type '%s' ",
-        $options{instance_value}->{remoteIP},
-        $options{instance_value}->{targetType}
-    );
-}
-
 sub prefix_pfcp_node_output {
     my ($self, %options) = @_;
 
@@ -57,12 +47,11 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'pfcp_nodes', type => 1, cb_prefix_output => 'prefix_pfcp_node_output', message_multiple => 'All PFCP nodes are ok', skipped_code => { -10 => 1 } },
-        { name => 'blacklist_nodes', type => 1, cb_prefix_output => 'prefix_blacklist_node_output', message_multiple => 'All blacklisted nodes are ok', skipped_code => { -10 => 1 } }
+        { name => 'pfcp_nodes', type => 1, cb_prefix_output => 'prefix_pfcp_node_output', message_multiple => 'All PFCP nodes are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'sessions', nlabel => 'upf.sessions.count', set => {
+        { label => 'upf-sessions', nlabel => 'upf.sessions.count', set => {
                 key_values => [ { name => 'upf_sessions' } ],
                 output_template => 'sessions: %s',
                 perfdatas => [
@@ -70,7 +59,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'gtpu-interfaces', nlabel => 'upf.gtpu.interfaces.count', set => {
+        { label => 'upf-gtpu-interfaces', nlabel => 'upf.gtpu.interfaces.count', set => {
                 key_values => [ { name => 'upf_gtpu_ifaces' } ],
                 output_template => 'GTP-U interfaces: %s',
                 perfdatas => [
@@ -78,7 +67,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'ip-interfaces', nlabel => 'upf.ip.interfaces.count', set => {
+        { label => 'upf-ip-interfaces', nlabel => 'upf.ip.interfaces.count', set => {
                 key_values => [ { name => 'upf_ip_ifaces' } ],
                 output_template => 'IP interfaces: %s',
                 perfdatas => [
@@ -86,7 +75,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'dnn', nlabel => 'upf.dnn.count', set => {
+        { label => 'upf-dnn', nlabel => 'upf.dnn.count', set => {
                 key_values => [ { name => 'upf_apn_dnn_total' } ],
                 output_template => 'DNN: %s',
                 perfdatas => [
@@ -97,29 +86,10 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pfcp_nodes} = [
-        { label => 'pfcp-node-status', type => 2, critical_default => '%{status} =~ /down/i', set => {
+        { label => 'upf-pfcp-node-status', type => 2, critical_default => '%{status} =~ /down/i', set => {
                 key_values => [ { name => 'status' }, { name => 'localIP' }, { name => 'remoteIP' } ],
                 output_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{blacklist_nodes} = [
-        { label => 'blacklist-node-status', type => 2, critical_default => '%{isBlacklisted} =~ /yes/i', set => {
-                key_values => [ { name => 'isBlacklisted' }, { name => 'blacklisted' }, { name => 'remoteIP' }, { name => 'targetType' } ],
-                output_template => 'is blacklisted: %s',
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-
-                    $self->{output}->perfdata_add(
-                        nlabel => 'peer.blacklisted.count',
-                        instances => [$self->{result_values}->{targetType}, $self->{result_values}->{remoteIP}],
-                        value => $self->{result_values}->{blacklisted},
-                        min => 0
-                    );
-                },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -165,18 +135,6 @@ sub manage_selection {
             status => $map_node_status->{ $_->{value}->[1] }
         };
     }
-
-    my $map_pfcp_peer_state_info = { 0 => 'no', 1 => 'yes' };
-    $response = $options{custom}->query(queries => ['pfcp_peer_state_info{type="blacklist", target_type="upf"}']);
-    $self->{blacklist_nodes} = {};
-    foreach (@$response) {
-        $self->{blacklist_nodes}->{ $_->{metric}->{target_type} . ':' . $_->{metric}->{remote} } = {
-            targetType => $_->{metric}->{target_type},
-            remoteIP => $_->{metric}->{remote},
-            isBlacklisted => $map_pfcp_peer_state_info->{ $_->{value}->[1] },
-            blacklisted => $_->{value}->[1]
-        };
-    }
 }
 
 1;
@@ -189,40 +147,25 @@ Check user plane function.
 
 =over 8
 
-=item B<--unknown-pfcp-node-status>
+=item B<--unknown-upf-pfcp-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{status}, %{localIP}, %{remoteIP}
 
-=item B<--warning-pfcp-node-status>
+=item B<--warning-upf-pfcp-node-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: %{status}, %{localIP}, %{remoteIP}
 
-=item B<--critical-pfcp-node-status>
+=item B<--critical-upf-pfcp-node-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{localIP}, %{remoteIP}
 
-=item B<--unknown-blacklist-node-status>
-
-Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
-
-=item B<--warning-blacklist-node-status>
-
-Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
-
-=item B<--critical-blacklist-node-status>
-
-Define the conditions to match for the status to be CRITICAL (default: '%{isBlacklisted} =~ /yes/i').
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'sessions', 'gtpu-interfaces', 'ip-interfaces', 'dnn'.
+Can be: 'upf-sessions', 'upf-gtpu-interfaces', 'upf-ip-interfaces', 'upf-dnn'.
 
 =back
 
