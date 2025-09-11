@@ -309,12 +309,12 @@ sub list_sites {
                 next unless exists $sites_snap->{ $site->{id} };
                 my $ref = $sites_snap->{ $site->{id} };
 
-                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status last_connected connected_since pop_name/;
+                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status last_connected connected_since pop_name description/;
             }
         } else {
             # Otherwise set empty values
             foreach my $site (@response) {
-                $site->{$_} = '' foreach qw/connectivity_status operational_status last_connected connected_since pop_name/;
+                $site->{$_} = '' foreach qw/connectivity_status operational_status last_connected connected_since pop_name description/;
             }
         }
     }
