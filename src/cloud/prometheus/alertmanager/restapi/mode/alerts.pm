@@ -116,10 +116,40 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-name:s'     => { name => 'filter_name' },
         'filter-severity:s' => { name => 'filter_severity' },
-        'display-alerts'    => { name => 'display_alerts' }
+        'display-alerts:s'  => { name => 'display_alerts' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (defined($self->{option_results}->{display_alerts})) {
+        my $mapping = {
+            startsAt => 1,
+            endsAt => 1,
+            updatedAt => 1,
+            state => 1,
+            severity => 1,
+            alertname => 1,
+            targetType => 1,
+            host => 1,
+            summary => 1,
+            description => 1
+        };
+        if ($self->{option_results}->{display_alerts} eq '') {
+            $self->{option_results}->{display_alerts} = 'alert [start: %(startsAt)] [state: %(state)] [severity: %(severity)]: %(alertname)';
+        }
+
+        while ($self->{option_results}->{display_alerts} =~ /\%\((.*?)\)/g) {
+            if (!defined($mapping->{$1})) {
+                $self->{output}->add_option_msg(short_msg => "option --display-alerts unsupported label: %($1)");
+                $self->{output}->option_exit();
+            }
+        }
+    }
 }
 
 sub manage_selection {
@@ -128,6 +158,9 @@ sub manage_selection {
     my $results = $options{custom}->get_endpoint(
         endpoint => '/alerts'
     );
+    if (ref($results) eq 'HASH') {
+        $results = [$results];
+    }
 
     $self->{active} = { total => 0, active => 0, warning => 0, critical => 0, info => 0 };
     $self->{other} = { total => 0, unprocessed => 0, suppressed => 0 };
@@ -149,15 +182,22 @@ sub manage_selection {
         $self->{other}->{other}++;
         $self->{active}->{total}++;
         if (defined($self->{option_results}->{display_alerts})) {
-            $self->{output}->output_add(
-                long_msg => sprintf(
-                    'alert [start: %s] [state: %s] [severity: %s]: %s',
-                    $alert->{startsAt},
-                    $alert->{status}->{state},
-                    $alert->{labels}->{severity},
-                    $alert->{labels}->{alertname}
-                )
-            );
+            my $values = {
+                startsAt => $alert->{startsAt},
+                endsAt => defined($alert->{endsAt}) ? $alert->{endsAt} : '',
+                updatedAt => defined($alert->{updatedAt}) ? $alert->{updatedAt} : '',
+                state => $alert->{status}->{state},
+                severity => $alert->{labels}->{severity},
+                alertname => $alert->{labels}->{alertname},
+                targetType => defined($alert->{labels}->{target_type}) ? $alert->{labels}->{target_type} : '',
+                host => defined($alert->{labels}->{host}) ? $alert->{labels}->{host} : '',
+                summary => defined($alert->{annotations}->{summary}) ? $alert->{annotations}->{summary} : '',
+                description => defined($alert->{annotations}->{description}) ? $alert->{annotations}->{description} : ''
+            };
+            my $message = $self->{option_results}->{display_alerts};
+            $message =~ s/%\((.*?)\)/$values->{$1}/g;
+
+            $self->{output}->output_add(long_msg => $message);
         }
     }
 }
@@ -182,7 +222,7 @@ Filter alerts by severity (can use regexp).
 
 =item B<--display-alerts>
 
-Display alerts in verbose output.
+Display alerts in verbose output (default: 'alert [start: %(startsAt)] [state: %(state)] [severity: %(severity)]: %(alertname)').
 
 =item B<--warning-*> B<--critical-*> 
 
