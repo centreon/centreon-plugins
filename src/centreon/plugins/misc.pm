@@ -27,7 +27,7 @@ use JSON::XS;
 use Exporter 'import';
 use feature 'state';
 
-our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape/;
+our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape change_seconds is_empty/;
 
 sub execute {
     my (%options) = @_;
