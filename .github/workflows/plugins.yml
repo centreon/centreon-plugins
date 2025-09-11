@@ -89,23 +89,39 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: transform to directories
+      - name: Transform to directories
         run: |
-          folders=()
-          for f in ${{ needs.changes.outputs.packages_files }}; do
-            echo "Adding $(dirname $f) to folders"
-            folders+=($(dirname $f))
+          packages_folders=()
+          for package_file in ${{ needs.changes.outputs.packages_files }}; do
+            echo "Adding $(dirname $package_file) to packages_folders"
+            packages_folders+=($(dirname $package_file))
           done
-          unique_folders=($(printf "%s\n" "${folders[@]}" | sort -u | tr '\n' ' '))
-          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]} > package_directories.txt
+          unique_packages_folders=($(printf "%s\n" "${packages_folders[@]}" | sort -u | tr '\n' ' '))
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_packages_folders[@]} > packages_directories.txt
 
-          files=()
-          for f in ${{ needs.changes.outputs.plugins_files }}; do
-              echo "Adding $f to files"
-              files+=($f)
+          plugins_folders=()
+          for plugin_file in ${{ needs.changes.outputs.plugins_files }}; do
+              plugin_folder=($(dirname $plugin_file))
+              if [[ $plugin_folder =~ /(components|conf|custom|lib|mode|templates)$ ]]; then
+                  plugin_folder=$(dirname $plugin_folder)
+              fi
+              echo "Adding $plugin_folder to plugins_folders"
+              plugins_folders+=($plugin_folder)
           done
-          unique_files=($(printf "%s\n" "${files[@]}" | sort -u | tr '\n' ' '))
-          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_files[@]} > plugins.txt
+          unique_plugins_folders=($(printf "%s\n" "${plugins_folders[@]}" | sort -u | tr '\n' ' '))
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_plugins_folders[@]} > plugins_directories.txt
+
+          tests_folders=()
+          for test_file in ${{ needs.changes.outputs.tests_files }}; do
+              test_folder=($(dirname $test_file))
+              if [[ $test_folder =~ /(components|conf|custom|lib|mode|templates)$ ]]; then
+                  test_folder=$(dirname $test_folder)
+              fi
+              echo "Adding $test_folder to tests_folders"
+              tests_folders+=($plugin_folder)
+          done
+          unique_tests_folders=($(printf "%s\n" "${tests_folders[@]}" | sort -u | tr '\n' ' '))
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_tests_folders[@]} > tests_directories.txt
         shell: bash
 
       - name: Get plugins for build
