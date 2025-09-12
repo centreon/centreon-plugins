@@ -112,15 +112,17 @@ sub manage_selection {
     #           'cpu.capacity.entitlement.VM' => '733'
     #         };
 
-    # Fill the basic stats
-    if (defined($results{'cpu.capacity.usage.VM'}) && defined($results{'cpu.capacity.entitlement.VM'})) {
-        $self->{cpu_usage} = {
-            'prct_used'               => 100 * $results{'cpu.capacity.usage.VM'} / $results{'cpu.capacity.entitlement.VM'},
-            'cpu_usage_hertz'         => $results{'cpu.capacity.usage.VM'} * 1000_000,
-            'cpu_provisioned_hertz'   => $results{'cpu.capacity.entitlement.VM'} * 1000_000,
-            'cpu.capacity.usage.VM'   => $results{'cpu.capacity.usage.VM'}
-        };
+    if (!defined($results{'cpu.capacity.usage.VM'}) || !defined($results{'cpu.capacity.entitlement.VM'})) {
+        $self->{output}->add_option_msg(short_msg => "get_vm_stats function failed to retrieve stats");
+        $self->{output}->option_exit();
     }
+
+    $self->{cpu_usage} = {
+        'prct_used'               => 100 * $results{'cpu.capacity.usage.VM'} / $results{'cpu.capacity.entitlement.VM'},
+        'cpu_usage_hertz'         => $results{'cpu.capacity.usage.VM'} * 1000_000,
+        'cpu_provisioned_hertz'   => $results{'cpu.capacity.entitlement.VM'} * 1000_000,
+        'cpu.capacity.usage.VM'   => $results{'cpu.capacity.usage.VM'}
+    };
 
     return 1;
 }
