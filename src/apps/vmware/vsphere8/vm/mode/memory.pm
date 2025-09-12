@@ -49,10 +49,10 @@ sub set_counters {
         {
             label  => 'usage-prct',
             type   => 1,
-            nlabel => 'vms.memory.usage.percentage',
+            nlabel => 'memory.usage.percentage',
             set    => {
                 key_values      => [ { name => 'used_prct' } ],
-                output_template => '%2.f%% of usable memory is used by VMs',
+                output_template => '%2.f%% of usable memory is used',
                 output_use      => 'used_prct',
                 threshold_use   => 'used_prct',
                 perfdatas       => [
@@ -69,7 +69,7 @@ sub set_counters {
         {
             label  => 'usage-bytes',
             type   => 1,
-            nlabel => 'vms.memory.usage.bytes',
+            nlabel => 'memory.usage.bytes',
             set    => {
                 key_values            => [ { name => 'used_bytes' }, { name => 'max_bytes' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
