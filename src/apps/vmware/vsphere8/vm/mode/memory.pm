@@ -90,20 +90,22 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_vm_stats(%options, cid => $_, vm_id => $self->{vm_id}, vm_name => $self->{vm_name} )
     } @counters;
 
-    if (defined($structure{'mem.capacity.entitlement.VM'}) && defined($structure{'mem.capacity.usage.VM'})) {
-        $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.entitlement.VM: ' . $structure{'mem.capacity.entitlement.VM'});
-        $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usage.VM: ' . $structure{'mem.capacity.usage.VM'});
-        $self->{memory} = {
-            used_prct  => (100 * $structure{'mem.capacity.usage.VM'} / $structure{'mem.capacity.entitlement.VM'}),
-            used_bytes => int(1024 * 1024 * $structure{'mem.capacity.usage.VM'}),
-            max_bytes  => int(1024 * 1024 * $structure{'mem.capacity.entitlement.VM'})
-        };
+    if (!defined($results{'mem.capacity.entitlement.VM'}) || !defined($results{'mem.capacity.usage.VM'})) {
+        $self->{output}->add_option_msg(short_msg => "get_vm_stats function failed to retrieve stats");
+        $self->{output}->option_exit();
     }
 
+    $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.entitlement.VM: ' . $results{'mem.capacity.entitlement.VM'});
+    $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usage.VM: ' . $results{'mem.capacity.usage.VM'});
+    $self->{memory} = {
+        used_prct  => (100 * $results{'mem.capacity.usage.VM'} / $results{'mem.capacity.entitlement.VM'}),
+        used_bytes => int(1024 * 1024 * $results{'mem.capacity.usage.VM'}),
+        max_bytes  => int(1024 * 1024 * $results{'mem.capacity.entitlement.VM'})
+    };
     return 1;
 }
 
