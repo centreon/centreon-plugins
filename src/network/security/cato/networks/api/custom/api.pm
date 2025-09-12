@@ -118,7 +118,8 @@ sub request_api {
         my $content = $self->{http}->request(
             method => 'POST',
             url_path => $self->{endpoint},
-            query_form_post => $full_query
+            query_form_post => $full_query,
+            silently_fail => 1 # silently_fail is set to correctly handle errors returned by the API
         );
 
         eval {
@@ -197,6 +198,59 @@ sub sites_accountSnapshot {
     return \%sites;
 }
 
+our @performance_metrics = qw/bytesUpstreamMax bytesDownstreamMax lostUpstreamPcnt lostDownstreamPcnt packetsDiscardedDownstream packetsDiscardedUpstream jitterUpstream jitterDownstream lastMilePacketLoss lastMileLatency/;
+
+sub sites_accountMetrics {
+    my ($self, %options) = @_;
+
+    return {} unless ref $options{performance_metrics} eq 'HASH' && scalar keys %{$options{performance_metrics}};
+
+    my $siteIDs = @{$options{filter_site_id}} ?
+                        "( siteIDs: [". ( join ", ", map { '"' . graphql_escape($_) . '"' } @{$options{filter_site_id}} ) ."] )" :
+                        '';
+
+    my $metrics = join ', ', keys %{$options{performance_metrics}};
+
+    my $timeframe = $options{timeframe} || 'last.PT5M';
+    my $buckets = $options{buckets} || 10;
+
+    my $query = qq~accountMetrics(
+                     accountID: "$self->{account_id}",
+                     timeFrame: "$timeframe",
+                     groupInterfaces: true
+                   ) {
+                     from
+                     to
+                     sites$siteIDs {
+                       id
+                       interfaces {
+                         name
+                         timeseries (labels:[ $metrics ] buckets: $buckets) {
+                           label
+                           units
+                           data
+                         }
+                       }
+                     }
+                   }~;
+
+    my $response = $self->request_api(query => $query);
+
+    my %sites_metrics;
+
+    if (ref $response->{data}->{accountMetrics}->{sites} eq 'ARRAY') {
+        foreach my $site (@{$response->{data}->{accountMetrics}->{sites}}) {
+            $sites_metrics{ $site->{id} } = {};
+
+            foreach my $timeseries (@{$site->{interfaces}->[0]->{timeseries}}) {
+                $sites_metrics{ $site->{id} }->{$timeseries->{label}} = [ map { { timestamp => $_->[0], value => $_->[1] } } @{$timeseries->{data}} ];
+            }
+        }
+    }
+
+    return \%sites_metrics;
+}
+
 sub list_sites {
     my ($self, %options) = @_;
 
@@ -255,17 +309,43 @@ sub list_sites {
                 next unless exists $sites_snap->{ $site->{id} };
                 my $ref = $sites_snap->{ $site->{id} };
 
-                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status last_connected connected_since pop_name/;
+                $site->{$_} = $ref->{$_} foreach qw/connectivity_status operational_status last_connected connected_since pop_name description/;
             }
         } else {
             # Otherwise set empty values
             foreach my $site (@response) {
-                $site->{$_} = '' foreach qw/connectivity_status operational_status last_connected connected_since pop_name/;
+                $site->{$_} = '' foreach qw/connectivity_status operational_status last_connected connected_since pop_name description/;
             }
         }
     }
 
     return \@response;
+}
+
+sub check_connectivity {
+    my ($self, %options) = @_;
+
+    my $site_id = $options{site_id};
+
+    my $enable_performance_metrics = $options{performance_metrics} && ref($options{performance_metrics}) eq 'HASH' && keys %{$options{performance_metrics}} ? 1 : 0;
+
+    my $site_snap_list = $self->sites_accountSnapshot ( filter_site_id => [ $site_id ] );
+
+    my $site_snap = value_of($site_snap_list, "->{$site_id}", {});
+
+    my $sites_metrics;
+    if ($enable_performance_metrics) {
+        $sites_metrics = $self->sites_accountMetrics ( filter_site_id => [ $site_id ],
+                                                       timeframe => graphql_escape($options{timeframe}),
+                                                       buckets => $options{buckets},
+                                                       performance_metrics => $options{performance_metrics} );
+        return { %{$site_snap},
+                 performance => ($sites_metrics->{$site_id} // '')
+               };
+
+    }
+
+    return { %{$site_snap} };
 }
 
 1;
