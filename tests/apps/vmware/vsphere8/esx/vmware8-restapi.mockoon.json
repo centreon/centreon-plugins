@@ -1,7 +1,7 @@
 {
-  "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
+  "uuid": "6299ad1f-675c-4366-96b3-38199ca88ee8",
   "lastMigration": 33,
-  "name": "Vmware8 restapi.mockoon",
+  "name": "Vmware8 ESXs",
   "endpointPrefix": "",
   "latency": 0,
   "port": 3000,
@@ -9,14 +9,14 @@
   "folders": [],
   "routes": [
     {
-      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c",
+      "uuid": "088897c5-8033-4ebc-b902-4512109a32ff",
       "type": "http",
       "documentation": "",
       "method": "post",
       "endpoint": "api/session",
       "responses": [
         {
-          "uuid": "d037b485-9952-467c-985c-415b9033e4d9",
+          "uuid": "c964a744-cd53-4029-9792-332d1163a6b0",
           "body": "\"32c9819179813376a9bbda43e9c84165\"",
           "latency": 0,
           "statusCode": 201,
@@ -940,7 +940,7 @@
   "rootChildren": [
     {
       "type": "route",
-      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c"
+      "uuid": "088897c5-8033-4ebc-b902-4512109a32ff"
     },
     {
       "type": "route",

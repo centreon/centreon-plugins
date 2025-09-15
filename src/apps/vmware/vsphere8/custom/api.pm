@@ -202,7 +202,7 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
-    return {} if ($method ne 'GET');
+    return {} if ($method eq 'PATCH' && $self->{http}->get_code() == 204);
 
     my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
     if (!defined($decoded)) {
@@ -210,6 +210,11 @@ sub try_request_api {
                 . $self->{http}->get_code() . "'] [message: '"
                 . $self->{http}->get_message() . "'] [content: '"
                 . $content . "']");
+        $self->{output}->option_exit();
+    }
+
+    if (ref($decoded) eq "HASH" && defined($decoded->{error_type})) {
+        $self->{output}->add_option_msg(short_msg => "API returned an error: " . $decoded->{error_type} . " - " . $decoded->{messages}->[0]->{default_message});
         $self->{output}->option_exit();
     }
 
@@ -241,6 +246,8 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "API returns error of type " . $api_response->{error_type} . ": " . $full_message);
         $self->{output}->option_exit();
     }
+
+
     return $api_response;
 }
 
@@ -269,11 +276,22 @@ sub get_vm_guest_identity {
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
+    # If we have already requested it, we return what we have
+    return $self->{all_acq_specs} if (defined($self->{all_acq_specs}));
+
     # Get all acq specs and store them in cache
     # FIXME: cache management
-    # FIXME: any pagination issue ?
-    $self->{all_acq_specs} = $self->request_api(endpoint => '/stats/acq-specs')->{acq_specs} if ( !defined($self->{all_acq_specs}));
+    my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
+    $self->{all_acq_specs} = $response->{acq_specs};
 
+    # If the whole acq-specs takes more than one page, the API will return a "next" value
+    while ($response->{next}) {
+        $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
+        $self->{all_acq_specs} = [
+            @{$self->{all_acq_specs}},
+            @{$response->{acq_specs}}
+        ];
+    }
     return $self->{all_acq_specs};
 }
 
@@ -373,7 +391,6 @@ sub get_acq_spec {
 
     # If it is not available in cache call get_all_acq_specs()
     my $acq_specs = $self->get_all_acq_specs();
-    # FIXME: opt exit if centreon::plugins::misc::is_empty($options{cid})
     for my $spec (@$acq_specs) {
         # Ignore acq_specs not related to the counter_id
         next if ($options{cid} ne $spec->{counters}->{cid_mid}->{cid});
