@@ -317,22 +317,22 @@ __END__
 
 =head1 NAME
 
-Kubernetes CLI (kubectl)
+Kubernetes CLI (kubectl).
 
 =head1 SYNOPSIS
 
-Kubernetes CLI (kubectl) custom mode
+Kubernetes CLI (kubectl) custom mode.
 
 =head1 CLI OPTIONS
 
-Kubernetes CLI (kubectl)
+Kubernetes CLI (kubectl).
 
 =over 8
 
 =item B<--config-file>
 
-Kubernetes configuration file path (default: '~/.kube/config').
-(example: --config-file='/root/.kube/config').
+Kubernetes configuration file path (default: C<~/.kube/config>).
+(example: C<--config-file='/root/.kube/config'>).
 
 =item B<--context>
 
@@ -340,7 +340,7 @@ Context to use in configuration file.
 
 =item B<--namespace>
 
-Set namespace to get informations.
+Set namespace to get information.
 
 =item B<--timeout>
 
@@ -352,7 +352,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (default: 'kubectl').
+Command to get information (default: C<kubectl>).
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -365,7 +365,7 @@ Command options (default: none).
 
 =item B<--proxyurl>
 
-Proxy URL if any
+Proxy URL if any.
 
 =back
 
