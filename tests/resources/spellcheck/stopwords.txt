@@ -58,6 +58,7 @@ cpu-utilization-5m
 cpu-utilization-5s
 CX
 Cyberoam
+DaemonSet
 Datacore
 Datastore
 datasource
@@ -244,7 +245,9 @@ prct
 Primera
 Procurve
 Proxmox
+PromQL
 proto
+Proxmox
 --proxyurl
 psu
 QoS
@@ -332,6 +335,8 @@ vCPU
 vdom
 vdomain
 VDSL2
+VE
+VTOM
 Veeam
 VeloCloud
 VE

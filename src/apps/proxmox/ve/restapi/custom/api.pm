@@ -441,7 +441,7 @@ sub api_get_network_interfaces {
 
 sub internal_api_get_vm_stats {
     my ($self, %options) = @_;
-    
+
     my $vm_stats = $self->request_api(method => 'GET', url_path => '/api2/json/nodes/' . $options{node_id} . '/' . $options{vm_id} . '/status/current');
     return $vm_stats;
 }
@@ -502,7 +502,26 @@ sub api_get_vms {
             $content_total->{$vm_id}->{Stats} = $self->internal_api_get_vm_stats(node_id => $content_total->{$vm_id}->{Node}, vm_id => $vm_id);
         }
     } else {
-        foreach my $vm_id (keys %$content_total) {
+        while (my ($vm_id, $vm_data) = each %$content_total) {
+
+            # Apply inclusion/exclusion filters here to avoid unnecessary api_get_vm_stats calls
+            if ($options{filter_name} ne '' && $vm_data->{Name} !~ /$options{filter_name}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Name} . "': no including filter match.", debug => 1);
+                next;
+            }
+            if ($options{include_node_name} ne '' && $vm_data->{Node} !~ /$options{include_node_name}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Node} . "': no including filter match.", debug => 1);
+                next;
+            }
+            if ($options{exclude_name} ne '' && $vm_data->{Name} =~ /$options{exclude_name}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Name} . "': excluding filter match.", debug => 1);
+                next;
+            }
+            if ($options{exclude_node_name} ne '' && $vm_data->{Node} =~ /$options{exclude_node_name}/) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Node} . "': excluding filter match.", debug => 1);
+                next;
+            }
+
             $content_total->{$vm_id}->{Stats} = $self->internal_api_get_vm_stats(node_id => $content_total->{$vm_id}->{Node}, vm_id => $vm_id);
         }
     }

@@ -140,7 +140,7 @@ jobs:
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bullseye-arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
@@ -170,7 +170,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: plugin-installation-${{ matrix.distrib }}
+          name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: ./lastlog.jsonl
           retention-days: 1
 
@@ -370,7 +370,7 @@ jobs:
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner_name }}
     container:
@@ -392,7 +392,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: plugin-installation-${{ matrix.distrib }}
+          name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: /var/log/robot-plugins-installation-tests.log
           retention-days: 1
 
