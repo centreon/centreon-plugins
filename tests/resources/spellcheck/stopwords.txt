@@ -151,6 +151,7 @@ journalctl
 kccevent
 keepass
 Keysight
+kubectl
 Kubernetes
 LatenceTech
 ldap
