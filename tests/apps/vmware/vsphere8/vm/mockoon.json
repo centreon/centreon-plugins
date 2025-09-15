@@ -1,7 +1,7 @@
 {
   "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
   "lastMigration": 33,
-  "name": "Vmware8 restapi.mockoon",
+  "name": "Vmware8 VMs",
   "endpointPrefix": "",
   "latency": 0,
   "port": 3000,
