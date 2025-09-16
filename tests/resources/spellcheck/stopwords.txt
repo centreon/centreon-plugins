@@ -177,6 +177,7 @@ machineaccount
 MBean
 Mbps
 McAfee
+Mellanox
 memAvailReal
 memBuffer
 --memexpiration
