@@ -202,7 +202,8 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
-    return {} if ($method eq 'PATCH' && $self->{http}->get_code() == 204);
+    return {} if ($method eq 'PATCH' && $self->{http}->get_code() == 204
+        || $method eq 'POST' && $self->{http}->get_code() == 201);
 
     my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
     if (!defined($decoded)) {
