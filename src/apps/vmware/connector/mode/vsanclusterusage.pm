@@ -125,16 +125,19 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cluster} = {};
+
+    # Required for --cluster-name to be treated as a regular expression ( refer to build_filter in centreon/vmware/cmdbase.pm )
+    # Applied this change here in order to avoid modifying the VMware daemon
+    $self->{option_results}->{filter} = '';
+
     my $response = $options{custom}->execute(
         params => $self->{option_results},
         command => 'vsanclusterusage'
     );
-
     foreach my $cluster_id (keys %{$response->{data}}) {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};
-        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{cluster_name})
-                and $cluster_name !~ /$self->{option_results}->{cluster_name}/ );
 
+        # No need to filter here because the filter on cluster_name is already done by find_entity_views in VMware/VICommon.pm
         $self->{cluster}->{$cluster_name} = {
             display => $cluster_name,
             %{$response->{data}->{$cluster_id}->{cluster_domcompmgr}},
