@@ -32,6 +32,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
+        'filter-path:s' => { name => 'filter_path' },
         'add-stats'     => { name => 'add_stats' },
     });
 
@@ -105,6 +106,12 @@ sub manage_selection {
             next;
         }
 
+        if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&
+            $result->{path} !~ /$self->{option_results}->{filter_path}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{path} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $results->{$instance} = { %$result, pid => $instance };
     }
 
@@ -160,6 +167,10 @@ List processes.
 =item B<--filter-name>
 
 Filter by service name (can be a regexp).
+
+=item B<--filter-path>
+
+Filter by service path (can be a regexp).
 
 =item B<--add-stats>
 
