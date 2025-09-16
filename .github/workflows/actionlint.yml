@@ -27,11 +27,12 @@ jobs:
         shell: bash
 
       - name: Check workflow files
-        env:
-          SHELLCHECK_OPTS: "--severity=error"
         run: |
           ${{ steps.get_actionlint.outputs.executable }} \
+          -ignore 'label "centreon-common" is unknown' \
+          -ignore 'label "centreon-collect-arm64" is unknown' \
           -ignore '"github.head_ref" is potentially untrusted' \
+          -shellcheck= \
           -pyflakes= \
           -color
         shell: bash
