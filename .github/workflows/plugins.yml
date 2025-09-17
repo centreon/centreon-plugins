@@ -373,6 +373,7 @@ jobs:
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.test_plugins == 'True' &&
       needs.get-environment.outputs.stability != 'stable' &&
+      (needs.package.result == 'success' || needs.package.result == 'skipped') &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
