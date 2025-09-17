@@ -381,6 +381,33 @@
           "default": false,
           "crudKey": "id",
           "callbacks": []
+        },
+        {
+          "uuid": "f327c795-d00b-4520-9577-705d7ac67842",
+          "body": "{\n  \"data\": {\n    \"eventsFeed\": {\n      \"marker\": \"eyJwYWdlIjoyfQ==\",\n      \"fetchedCount\": 3,\n      \"records\": [\n        {\n          \"fieldsMap\": {\n            \"title\": \"User Login\",\n            \"event_type\": \"Syst.*em\",\n            \"event_message\": \"User alice authenticated successfully\",\n            \"src_site_name\": \"Paris-DC1\",\n            \"dest_site_name\": \"Paris-HQ\",\n            \"status\": \"OK\",\n            \"event_id\": 100,\n            \"time_str\": \"2025-09-15T10:42:31Z\"\n          }\n        },\n        {\n          \"fieldsMap\": {\n            \"title\": \"Threat Detected\",\n            \"event_type\": \"Security\",\n            \"event_message\": \"Malware blocked on endpoint\",\n            \"src_site_name\": \"Toulouse-HQ\",\n            \"dest_site_name\": \"Internet\",\n            \"status\": \"OK\",\n            \"event_id\": 101,\n            \"time_str\": \"2025-09-15T10:45:02Z\"\n          }\n        },\n        {\n          \"fieldsMap\": {\n            \"title\": \"WAN Latency Alert\",\n            \"event_type\": \"System\",\n            \"event_message\": \"High latency detected on WAN link\",\n            \"src_site_name\": \"Ariege-Branch\",\n            \"dest_site_name\": \"Paris-HQ\",\n            \"status\": \"OK\",\n            \"event_id\": 102,\n            \"time_str\": \"2025-09-15T10:47:18Z\"\n          }\n        },\n        {\n          \"time\": \"2025-09-15T10:45:02Z\",\n          \"fieldsMap\": {\n            \"title\": \"Threat Detected\",\n            \"event_type\": \"Security\",\n            \"event_message\": \"Malware blocked on endpoint\",\n            \"src_site_name\": \"Saint Girons-HQ\",\n            \"dest_site_name\": \"Internet\",\n            \"status\": \"OK2\",\n            \"event_id\": 103\n          }\n        }\n      ]\n    }\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "eventsFeed",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "eventsFeed",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,

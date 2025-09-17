@@ -35,6 +35,7 @@ sub new {
         'discovery'        => 'network::security::cato::networks::api::mode::discovery',
         'connectivity'     => 'network::security::cato::networks::api::mode::connectivity',
         'query'            => 'network::security::cato::networks::api::mode::query',
+        'events'           => 'network::security::cato::networks::api::mode::events'
     };
 
     $self->{custom_modes}->{api} = 'network::security::cato::networks::api::custom::api';
