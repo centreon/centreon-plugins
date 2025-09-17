@@ -199,7 +199,7 @@ __END__
 
 =head1 MODE
 
-Azure custom class for monitor based modes.
+Azure custom class for based modes monitoring.
 
 =head1 CUSTOM MODE OPTIONS
 
@@ -209,7 +209,7 @@ Azure custom class for monitor based modes.
 
 Specify the metric dimension (required for some specific metrics)
 Syntax example:
---filter-dimension="$metricname eq '$metricvalue'"
+C<--filter-dimension="$metricname eq '$metricvalue'">
 
 =item B<--per-sec>
 
