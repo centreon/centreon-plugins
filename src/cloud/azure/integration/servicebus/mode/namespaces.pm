@@ -44,6 +44,20 @@ sub get_metrics_mapping {
             'unit'   => '%',
             'min'    => '0',
             'max'    => '100'
+        },
+        'incomingbytes' => {
+            'output' => 'Incoming Bytes',
+            'label'  => 'incoming-bytes',
+            'nlabel' => 'servicebus.namespace.incoming.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
+        },
+        'outgoingbytes' => {
+            'output' => 'Outgoing Bytes',
+            'label'  => 'outgoing-bytes',
+            'nlabel' => 'servicebus.namespace.outgoing.bytes',
+            'unit'   => 'B',
+            'min'    => '0'
         }
     };
 
@@ -56,9 +70,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-metric:s'  => { name => 'filter_metric' },
-        'resource:s'       => { name => 'resource' },
-        'resource-group:s' => { name => 'resource_group' }
+        'filter-metric:s'       => { name => 'filter_metric' },
+        'resource:s'            => { name => 'resource' },
+        'resource-group:s'      => { name => 'resource_group' },
+        'skip-premium-metrics'  => { name => 'skip_premium_metrics' }
     });
 
     return $self;
@@ -98,6 +113,8 @@ sub check_options {
     foreach my $metric (keys %{$self->{metrics_mapping}}) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
+        next if (defined($self->{option_results}->{skip_premium_metrics}) && $self->{option_results}->{skip_premium_metrics} eq 1)
+            && $metric =~ /namespacecpuusage|namespacememoryusage/;
         push @{$self->{az_metrics}}, $metric;
     }
 }
@@ -130,21 +147,25 @@ Default aggregation: 'maximum' / 'total', 'minimum' and 'average' are valid.
 
 =item B<--resource>
 
-Set resource name or ID (required).
+Set the resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (required if resource's name is used).
+Set the resource group (required if the resource name is used).
+
+=item B<--skip-premium-metrics>
+
+Skip Azure Service Bus premium tier metrics.
 
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'cpu-usage-percentage', 'memory-usage-percentage'.
+'cpu-usage-percentage', 'memory-usage-percentage', 'incoming-bytes', 'outgoing-bytes'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'cpu-usage-percentage', 'memory-usage-percentage'.
+'cpu-usage-percentage', 'memory-usage-percentage', 'incoming-bytes', 'outgoing-bytes'.
 
 =back
 
