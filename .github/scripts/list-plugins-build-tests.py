@@ -7,8 +7,10 @@ import subprocess
 common = argv[1] == 'true'
 
 list_plugins = {}
+pack_plugins = False
+test_plugins = False
 
-def add_package_info(packaging_file, build=True):
+def add_package_info(packaging_file, build=True, test=True):
     with open(packaging_file) as package_file:
         packaging = json.load(package_file)
         plugin_paths = []
@@ -20,7 +22,7 @@ def add_package_info(packaging_file, build=True):
                 "command": packaging['plugin_name'],
                 "paths": plugin_paths,
                 "build": build,
-                "test": True
+                "test": test
             }
 
 def get_pack_from_path(path):
@@ -56,3 +58,5 @@ if __name__ == '__main__':
 
     with open('plugins.json', 'w') as outfile:
         json.dump(list_plugins, outfile, indent=4)
+
+print(pack_plugins, test_plugins)

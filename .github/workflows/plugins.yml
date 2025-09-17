@@ -78,6 +78,9 @@ jobs:
   get-plugins:
     runs-on: ubuntu-24.04
     needs: [get-environment, changes]
+    outputs:
+      pack_plugins: ${{ steps.get_plugins.outputs.pack_plugins || 'false' }}
+      test_plugins: ${{ steps.get_plugins.outputs.test_plugins || 'false' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -122,7 +125,9 @@ jobs:
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
         run: |
-          python3 .github/scripts/list-plugins-build-tests.py '${{ needs.changes.outputs.changes_common == 'true' }}'
+          list_plugins=($(python3 .github/scripts/list-plugins-build-tests.py '${{ needs.changes.outputs.changes_common == 'true' }}'))
+          echo "pack_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
+          echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
           if [ ! -s plugins.json ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
@@ -196,7 +201,7 @@ jobs:
     needs: [get-environment, get-plugins, unit-tests]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.plugins != '' &&
+      needs.get-plugins.outputs.pack_plugins == 'True' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
@@ -233,7 +238,7 @@ jobs:
     needs: [get-environment, get-plugins, fatpacker]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.plugins != '' &&
+      needs.get-plugins.outputs.pack_plugins == 'True' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -366,7 +371,7 @@ jobs:
     needs: [get-environment, get-plugins, package]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.plugins != '' &&
+      needs.get-plugins.outputs.test_plugins == 'True' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
@@ -422,7 +427,6 @@ jobs:
           packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
           package-extension: ${{ matrix.package_extension }}
-          plugin-list: ${{ needs.get-plugins.outputs.plugins }}
 
       - name: Upload apt/dnf logs as artifacts if tests failed
         if: failure()
@@ -436,7 +440,7 @@ jobs:
     needs: [get-environment, get-plugins, test-plugins]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.plugins != '' &&
+      needs.get-plugins.outputs.pack_plugins == 'True' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&

@@ -7,9 +7,6 @@ inputs:
   plugins-json-cache-key:
     description: "The cache key for plugin's json"
     required: true
-  plugin-list:
-    description: "List of plugins to install from the cache"
-    required: true
   package-extension:
     description: "Either 'rpm' or 'deb'. Needed to determine the package manager command (dnf or apt-get)."
     required: true
