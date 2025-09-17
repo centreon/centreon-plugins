@@ -134,7 +134,7 @@ sub check_options {
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
         foreach (@{$options{request}->{header}}) {
-            if (/^(:.+?|.+?):(.*)/) {
+            if (/^(:.+?|.+?):\s*(.*)/) {
                 $options{request}->{headers}->{$1} = $2;
             }
         }
