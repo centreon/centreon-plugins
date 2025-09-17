@@ -370,6 +370,7 @@ jobs:
   test-plugins:
     needs: [get-environment, get-plugins, package]
     if: |
+      always() &&
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.test_plugins == 'True' &&
       needs.get-environment.outputs.stability != 'stable' &&
