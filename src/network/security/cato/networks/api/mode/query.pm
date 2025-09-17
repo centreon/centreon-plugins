@@ -87,7 +87,7 @@ sub check_options {
             unless $self->{$opt};
     }
 
-    # argumment and lookup are comma separated list which can be provided multiple times
+    # argument and lookup are comma separated list which can be provided multiple times
     $self->{arguments} = [ map { split ',' } @{$self->{option_results}->{argument}} ];
     $self->{lookups} = [ map { split ',' } @{$self->{option_results}->{lookup}} ];
 
