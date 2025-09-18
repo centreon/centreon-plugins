@@ -202,8 +202,16 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
+    return {} if ($method ne 'GET');
 
-    my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content, booleans_as_strings => 1) : {};
+    my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
+    if (!defined($decoded)) {
+        $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
+                . $self->{http}->get_code() . "'] [message: '"
+                . $self->{http}->get_message() . "'] [content: '"
+                . $content . "']");
+        $self->{output}->option_exit();
+    }
 
     return $decoded;
 }
@@ -224,8 +232,8 @@ sub request_api {
         $api_response = $self->try_request_api('force_authentication' => 1, %options);
     }
 
-    # if we could not authenticate, we exit
-    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type})) {
+    # if we could not authenticate, we exit (unless no_fail option is true)
+    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type}) && ! $options{no_fail}) {
         my $full_message = '';
         for my $error_item (@{$api_response->{messages}}) {
             $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
@@ -233,6 +241,28 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "API returns error of type " . $api_response->{error_type} . ": " . $full_message);
         $self->{output}->option_exit();
     }
+    return $api_response;
+}
+
+sub get_folder_ids_by_names {
+    my ($self, %options) = @_;
+
+    my $api_response = $self->request_api(
+        %options,
+        'endpoint' => '/vcenter/folder?names=' . $options{names},
+        'method' => 'GET');
+    my @folders = map { $_->{folder} } @{$api_response};
+    return join(',', @folders);
+}
+
+sub get_vm_guest_identity {
+    my ($self, %options) = @_;
+
+    my $api_response = $self->request_api(
+        'endpoint' => '/vcenter/vm/' . $options{vm_id} . '/guest/identity',
+        'method'   => 'GET',
+        no_fail    => 1);
+
     return $api_response;
 }
 
@@ -408,10 +438,26 @@ sub get_stats {
             endpoint   => $endpoint
     );
 
+    if (defined($result->{messages})) {
+        # Example of what can happen when a VM has no stats
+        # {
+        #   "messages": [
+        #     {
+        #       "args": [],
+        #       "default_message": "Invalid data points filter: found empty set of Resource Addresses for provided set of (types,resources)",
+        #       "localized": "Invalid data points filter: found empty set of Resource Addresses for provided set of (types,resources)",
+        #       "id": "com.vmware.vstats.data_points_invalid_resource_filter"
+        #     }
+        #   ]
+        # }
+        $self->{output}->add_option_msg(short_msg => "No stats found. Error: " . $result->{messages}->[0]->{default_message});
+        $self->{output}->option_exit();
+    }
+
     # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
     # FIXME: the existence of the resource id must be checked at one moment
     # return only the last value (if there are several)
-    if ( scalar(@{ $result->{data_points} }) == 0 ) {
+    if ( !defined($result->{data_points}) || scalar(@{ $result->{data_points} }) == 0 ) {
         $self->{output}->add_option_msg(short_msg => "no data for host " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
         return undef;
     }
@@ -561,6 +607,50 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 =back
 
 =back
+
+=head2 get_folder_ids_by_names
+
+    my $folder_ids = $self->get_folder_ids_by_names(names => $folder_names);
+
+Retrieves the IDs of folders based on their names.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<names> - A comma-separated string of folder names to search for. This option is required.
+
+=back
+
+=back
+
+Returns a comma-separated string of folder IDs corresponding to the provided folder names.
+
+=cut
+
+=head2 get_vm_guest_identity
+
+    my $identity = $self->get_vm_guest_identity(vm_id => $vm_id);
+
+Retrieves the guest identity information for a specific virtual machine (VM) using its ID.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<vm_id> - The ID of the virtual machine for which to retrieve the guest identity. This option is required.
+
+=back
+
+=back
+
+Returns the guest identity information as a hash reference if successful, or undef if the request fails.
+
+=cut
 
 =head2 get_acq_spec
 

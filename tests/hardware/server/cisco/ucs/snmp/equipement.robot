@@ -4,6 +4,7 @@ Documentation       Check Hardware (Fans, Power supplies, chassis, io cards, bla
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -23,7 +24,7 @@ equipment ${tc}
     ...    --snmp-community=hardware/server/cisco/ucs/snmp/slim-ucs-equipment
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                expected_result    --
             ...      1     ${EMPTY}                                                                                                     WARNING: memory 'Anonymized-001/mem-12' presence is: 'missing' - memory 'Anonymized-001/mem-15' presence is: 'missing'

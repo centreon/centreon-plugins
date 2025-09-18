@@ -8,7 +8,6 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}vault-authentication-hashicorp.json
-
 ${CMD}              ${CENTREON_PLUGINS} --plugin apps::protocols::snmp::plugin --hostname=${HOSTNAME}
 
 
@@ -37,7 +36,7 @@ check hashicorp vault manager${Name}
     
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:    Name    path-param    expected_result   --
-    ...    default path    --auth-path='' --auth-settings="password=secrethashicorpPassword"    OK: current value is: Linux centreon-devbox 5.10.0-28-amd64 #1 SMP Debian 5.10.209-2 (2024-01-31) x86_64
-    ...    wrong path    --auth-path='specific-url' --auth-settings="password=secrethashicorpPassword"    OK: current value is: Linux centreon-devbox 5.10.0-28-amd64 #1 SMP Debian 5.10.209-2 (2024-01-31) x86_64
-    ...    wrong password    --auth-path='' --auth-settings="password=WrongPassword"    UNKNOWN: 401 Unauthorized
+    Examples:    Name               path-param                                                                       expected_result   --
+    ...          default path       --auth-path='' --auth-settings="password=secrethashicorpPassword"                OK: current value is: Linux centreon-devbox 5.10.0-28-amd64 #1 SMP Debian 5.10.209-2 (2024-01-31) x86_64
+    ...          wrong path         --auth-path='specific-url' --auth-settings="password=secrethashicorpPassword"    OK: current value is: Linux centreon-devbox 5.10.0-28-amd64 #1 SMP Debian 5.10.209-2 (2024-01-31) x86_64
+    ...          wrong password     --auth-path='' --auth-settings="password=WrongPassword"                          UNKNOWN: 401 Unauthorized

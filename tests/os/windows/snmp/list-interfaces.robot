@@ -4,6 +4,7 @@ Documentation       Check Windows operating systems in SNMP.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -22,7 +23,7 @@ list-interfaces ${tc}
     ...    --snmp-community=os/windows/snmp/list-interfaces
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                               expected_result    --
             ...      1     --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'                            List interfaces:${SPACE}'loopback_0' [speed = 1073][status = up][id = 1][alias = Loopback Pseudo-Interface 1][type = softwareLoopback]

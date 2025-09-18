@@ -24,7 +24,7 @@ alerts ${tc}
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:         tc      extra_options                                                                                                                                                     expected_result    --
             ...       1       ${EMPTY}                                                                                                                                                          CRITICAL: 1 problem(s) detected | 'alerts.detected.count'=1;;;0;

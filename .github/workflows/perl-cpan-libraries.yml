@@ -415,7 +415,7 @@ jobs:
             package_extension: deb
             image: packaging-plugins-bullseye-arm64
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
           - name: "Crypt::Argon2"
             build_names: "bullseye-amd64,jammy,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
@@ -702,7 +702,7 @@ jobs:
             image: debian:bullseye
             distrib: bullseye
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner_name }}
     container:

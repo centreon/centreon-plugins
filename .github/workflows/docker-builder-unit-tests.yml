@@ -30,25 +30,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: alma8
             image: alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: alma9
             image: alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: bullseye
             image: bullseye
-          - runner: centreon-collect-arm64
+          - runner: ubuntu-24.04-arm
             dockerfile: bullseye
             image: bullseye-arm64
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: bookworm
             image: bookworm
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: jammy
             image: jammy
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: noble
             image: noble
 

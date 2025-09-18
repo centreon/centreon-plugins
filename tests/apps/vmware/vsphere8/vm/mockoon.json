@@ -1,0 +1,1851 @@
+{
+  "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
+  "lastMigration": 33,
+  "name": "Vmware8 restapi.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/session",
+      "responses": [
+        {
+          "uuid": "d037b485-9952-467c-985c-415b9033e4d9",
+          "body": "\"32c9819179813376a9bbda43e9c84165\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "66791cdd-b1c2-4d32-bf25-825092666db3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm",
+      "responses": [
+        {
+          "uuid": "38dfcab5-68e9-4512-b07a-4b0aee644fa6",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-7657\",\n    \"name\": \"web-server-01\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 4\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-7722\",\n    \"name\": \"db-server-01\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 2\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"web-server-02\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "listing",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "query",
+              "modifier": "power_states",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "query",
+              "modifier": "folders",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "687d0cf4-139b-4d2b-a9e7-db672837c01e",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-7722\",\n    \"name\": \"db-server-01\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 2\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by name",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "db-server-01",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0c840d62-23af-49bf-bf63-83c9b5b6f08a",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-7657\",\n    \"name\": \"web-server-01\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by name web-server-01",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "web-server-01",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ed9b5a1d-d674-45b0-99d8-ee0ce97e1de0",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"web-server-02\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by name web-server-02",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "web-server-02",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8ca27e70-054c-4b72-80fb-0c8c996f2ac6",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-7722\",\n    \"name\": \"db-server-01\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 2\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"web-server-02\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by power state POWERED_ON",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "power_states",
+              "value": "POWERED_ON",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4876b9b9-6a79-44c9-a488-2c6b25faeee7",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-7657\",\n    \"name\": \"web-server-01\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by power state POWERED_OFF",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "power_states",
+              "value": "POWERED_OFF",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "db9946fd-994c-42fd-8621-497b475d9054",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-7722\",\n    \"name\": \"db-server-01\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 2\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by folder",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "folders",
+              "value": "group-v2041",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4849830c-a613-4d66-99da-5684c4e0b730",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filtered by bad name",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "web-server-01",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "db-server-01",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "59096e34-e05c-43ba-985d-62a6408d1fb6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-3",
+      "responses": [
+        {
+          "uuid": "d8e5b1d6-1f15-488e-962c-142700992d9e",
+          "body": "{\n  \"error_type\": \"UNAUTHORIZED\",\n  \"messages\": [\n    {\n      \"args\": [\n        \"object: vm-3:c186dc36-76b6-4435-b5f3-cb1e9678a67e privileges: System.Read\"\n      ],\n      \"default_message\": \"The following (object: vm-3:c186dc36-76b6-4435-b5f3-cb1e9678a67e privileges: System.Read) privileges are insufficient to user\",\n      \"id\": \"vapi.authz.error.no.privs\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 403,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d2223789-07cf-4ba9-8909-cfb59276283f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7722",
+      "responses": [
+        {
+          "uuid": "57081aea-bf06-498e-b063-2ee36351d98f",
+          "body": "{\n  \"instant_clone_frozen\": false,\n  \"cdroms\": {\n    \"3000\": {\n      \"start_connected\": true,\n      \"backing\": {\n        \"iso_file\": \"[Datastore - Developpement 15000] ISO/debian-12.5.0-amd64-netinst.iso\",\n        \"type\": \"ISO_FILE\"\n      },\n      \"allow_guest_control\": true,\n      \"ide\": {\n        \"master\": true,\n        \"primary\": true\n      },\n      \"label\": \"CD/DVD drive 1\",\n      \"state\": \"CONNECTED\",\n      \"type\": \"IDE\"\n    }\n  },\n  \"memory\": {\n    \"hot_add_increment_size_MiB\": 0,\n    \"size_MiB\": 2048,\n    \"hot_add_enabled\": false,\n    \"hot_add_limit_MiB\": 2048\n  },\n  \"disks\": {\n    \"2000\": {\n      \"scsi\": {\n        \"bus\": 0,\n        \"unit\": 0\n      },\n      \"backing\": {\n        \"vmdk_file\": \"[Datastore - Developpement] db-server-01/db-server-01.vmdk\",\n        \"type\": \"VMDK_FILE\"\n      },\n      \"label\": \"Hard disk 1\",\n      \"type\": \"SCSI\",\n      \"capacity\": 32212254720\n    }\n  },\n  \"parallel_ports\": {},\n  \"sata_adapters\": {},\n  \"cpu\": {\n    \"hot_remove_enabled\": false,\n    \"count\": 2,\n    \"hot_add_enabled\": false,\n    \"cores_per_socket\": 2\n  },\n  \"scsi_adapters\": {\n    \"1000\": {\n      \"pci_slot_number\": 160,\n      \"scsi\": {\n        \"bus\": 0,\n        \"unit\": 7\n      },\n      \"label\": \"SCSI controller 0\",\n      \"sharing\": \"NONE\",\n      \"type\": \"PVSCSI\"\n    }\n  },\n  \"power_state\": \"POWERED_ON\",\n  \"floppies\": {},\n  \"identity\": {\n    \"name\": \"db-server-01\",\n    \"instance_uuid\": \"502bdb61-ebd8-066d-da28-4f2c9c12d716\",\n    \"bios_uuid\": \"422b160a-e673-5368-29ca-2ea2fab898ab\"\n  },\n  \"nvme_adapters\": {},\n  \"name\": \"db-server-01\",\n  \"nics\": {\n    \"4000\": {\n      \"start_connected\": true,\n      \"pci_slot_number\": 192,\n      \"upt_v2_compatibility_enabled\": false,\n      \"backing\": {\n        \"network_name\": \"Developpement\",\n        \"type\": \"STANDARD_PORTGROUP\",\n        \"network\": \"network-44\"\n      },\n      \"mac_address\": \"00:50:56:ab:33:e7\",\n      \"mac_type\": \"ASSIGNED\",\n      \"allow_guest_control\": true,\n      \"wake_on_lan_enabled\": true,\n      \"label\": \"Network adapter 1\",\n      \"state\": \"CONNECTED\",\n      \"type\": \"VMXNET3\",\n      \"upt_compatibility_enabled\": true\n    }\n  },\n  \"boot\": {\n    \"delay\": 0,\n    \"retry_delay\": 10000,\n    \"enter_setup_mode\": false,\n    \"type\": \"BIOS\",\n    \"retry\": false\n  },\n  \"serial_ports\": {},\n  \"boot_devices\": [],\n  \"guest_OS\": \"DEBIAN_10_64\",\n  \"hardware\": {\n    \"upgrade_policy\": \"NEVER\",\n    \"upgrade_status\": \"NONE\",\n    \"version\": \"VMX_21\"\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "4826c1d9-66b4-48b4-8166-0f92eb4f4f52",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7657",
+      "responses": [
+        {
+          "uuid": "5102b636-ebaa-47dd-92b6-850a699ef077",
+          "body": "{\n  \"instant_clone_frozen\": false,\n  \"cdroms\": {\n    \"16000\": {\n      \"start_connected\": true,\n      \"backing\": {\n        \"iso_file\": \"[Datastore - Developpement 15000] ISO/fr-fr_windows_server_2022_x64_dvd_9f7d1adb.iso\",\n        \"type\": \"ISO_FILE\"\n      },\n      \"allow_guest_control\": true,\n      \"label\": \"CD/DVD drive 1\",\n      \"state\": \"NOT_CONNECTED\",\n      \"type\": \"SATA\",\n      \"sata\": {\n        \"bus\": 0,\n        \"unit\": 0\n      }\n    }\n  },\n  \"memory\": {\n    \"size_MiB\": 4096,\n    \"hot_add_enabled\": false\n  },\n  \"disks\": {\n    \"2000\": {\n      \"scsi\": {\n        \"bus\": 0,\n        \"unit\": 0\n      },\n      \"backing\": {\n        \"vmdk_file\": \"[Datastore - Developpement] web-server-01/web-server-01.vmdk\",\n        \"type\": \"VMDK_FILE\"\n      },\n      \"label\": \"Hard disk 1\",\n      \"type\": \"SCSI\",\n      \"capacity\": 64424509440\n    }\n  },\n  \"parallel_ports\": {},\n  \"sata_adapters\": {\n    \"15000\": {\n      \"bus\": 0,\n      \"pci_slot_number\": 33,\n      \"label\": \"SATA controller 0\",\n      \"type\": \"AHCI\"\n    }\n  },\n  \"cpu\": {\n    \"hot_remove_enabled\": false,\n    \"count\": 2,\n    \"hot_add_enabled\": false,\n    \"cores_per_socket\": 2\n  },\n  \"scsi_adapters\": {\n    \"1000\": {\n      \"pci_slot_number\": 160,\n      \"scsi\": {\n        \"bus\": 0,\n        \"unit\": 7\n      },\n      \"label\": \"SCSI controller 0\",\n      \"sharing\": \"NONE\",\n      \"type\": \"LSILOGICSAS\"\n    }\n  },\n  \"power_state\": \"POWERED_OFF\",\n  \"floppies\": {},\n  \"identity\": {\n    \"name\": \"web-server-01\",\n    \"instance_uuid\": \"502b13c0-77aa-df6b-fde7-3e351bff9dcb\",\n    \"bios_uuid\": \"422b1f26-a404-0ea4-5704-4e9fbb7bad24\"\n  },\n  \"nvme_adapters\": {},\n  \"name\": \"web-server-01\",\n  \"nics\": {\n    \"4000\": {\n      \"start_connected\": true,\n      \"pci_slot_number\": 192,\n      \"backing\": {\n        \"network_name\": \"Developpement\",\n        \"type\": \"STANDARD_PORTGROUP\",\n        \"network\": \"network-44\"\n      },\n      \"mac_address\": \"00:50:56:ab:a2:f7\",\n      \"mac_type\": \"ASSIGNED\",\n      \"allow_guest_control\": true,\n      \"wake_on_lan_enabled\": true,\n      \"label\": \"Network adapter 1\",\n      \"state\": \"NOT_CONNECTED\",\n      \"type\": \"E1000E\"\n    }\n  },\n  \"boot\": {\n    \"delay\": 0,\n    \"retry_delay\": 10000,\n    \"enter_setup_mode\": false,\n    \"type\": \"BIOS\",\n    \"retry\": false\n  },\n  \"serial_ports\": {},\n  \"boot_devices\": [],\n  \"guest_OS\": \"WINDOWS_8_SERVER_64\",\n  \"hardware\": {\n    \"upgrade_policy\": \"NEVER\",\n    \"upgrade_status\": \"NONE\",\n    \"version\": \"VMX_21\"\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a25712f3-e1c3-463d-ac94-ba45a8f2eb56",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-3000000",
+      "responses": [
+        {
+          "uuid": "8e1452b0-0ec9-472b-b424-aa70a452aec9",
+          "body": "{\n  \"error_type\": \"UNAUTHORIZED\",\n  \"messages\": [\n    {\n      \"args\": [\n        \"object: vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e privileges: System.Read\"\n      ],\n      \"default_message\": \"The following (object: vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e privileges: System.Read) privileges are insufficient to user\",\n      \"id\": \"vapi.authz.error.no.privs\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 403,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c48d0dd9-051e-45bc-b9c2-21db39ac4ea2",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7657/guest/identity",
+      "responses": [
+        {
+          "uuid": "2e3c597c-e01b-46a6-9a71-cb2d744fc47c",
+          "body": "{\n  \"error_type\": \"SERVICE_UNAVAILABLE\",\n  \"messages\": [\n    {\n      \"args\": [\n        \"vm-5174:c186dc36-76b6-4435-b5f3-cb1e9678a67e\"\n      ],\n      \"default_message\": \"VMware Tools are not running in the virtual machine with identifier 'vm-5174:c186dc36-76b6-4435-b5f3-cb1e9678a67e'.\",\n      \"id\": \"com.vmware.api.vcenter.vm.guest.tools_not_running\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a1f05af4-66d4-41ac-b48f-6c77d9c0666a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7722/guest/identity",
+      "responses": [
+        {
+          "uuid": "35fdf0e6-d56c-429c-a8d6-75fe992af9bc",
+          "body": "{\n  \"full_name\": {\n    \"args\": [],\n    \"default_message\": \"Debian GNU/Linux 12 (64-bit)\",\n    \"id\": \"vmsg.guestos.debian12_64Guest.label\"\n  },\n  \"name\": \"DEBIAN_12_64\",\n  \"ip_address\": \"172.16.2.1\",\n  \"family\": \"LINUX\",\n  \"host_name\": \"web-server-01\"\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "dc6d93c5-077c-45b2-8cf9-e47c17768320",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-1234",
+      "responses": [
+        {
+          "uuid": "c0355361-13e5-4cc6-97aa-d46b6797a9b7",
+          "body": "{\n  \"instant_clone_frozen\": false,\n  \"cdroms\": {\n    \"16000\": {\n      \"start_connected\": true,\n      \"backing\": {\n        \"iso_file\": \"[Datastore - Developpement 15000] ISO/fr-fr_windows_server_2022_x64_dvd_9f7d1adb.iso\",\n        \"type\": \"ISO_FILE\"\n      },\n      \"allow_guest_control\": true,\n      \"label\": \"CD/DVD drive 1\",\n      \"state\": \"NOT_CONNECTED\",\n      \"type\": \"SATA\",\n      \"sata\": {\n        \"bus\": 0,\n        \"unit\": 0\n      }\n    }\n  },\n  \"memory\": {\n    \"size_MiB\": 4096,\n    \"hot_add_enabled\": false\n  },\n  \"disks\": {\n    \"2000\": {\n      \"scsi\": {\n        \"bus\": 0,\n        \"unit\": 0\n      },\n      \"backing\": {\n        \"vmdk_file\": \"[Datastore - Developpement] web-server-01/web-server-01.vmdk\",\n        \"type\": \"VMDK_FILE\"\n      },\n      \"label\": \"Hard disk 1\",\n      \"type\": \"SCSI\",\n      \"capacity\": 64424509440\n    }\n  },\n  \"parallel_ports\": {},\n  \"sata_adapters\": {\n    \"15000\": {\n      \"bus\": 0,\n      \"pci_slot_number\": 33,\n      \"label\": \"SATA controller 0\",\n      \"type\": \"AHCI\"\n    }\n  },\n  \"cpu\": {\n    \"hot_remove_enabled\": false,\n    \"count\": 2,\n    \"hot_add_enabled\": false,\n    \"cores_per_socket\": 2\n  },\n  \"scsi_adapters\": {\n    \"1000\": {\n      \"pci_slot_number\": 160,\n      \"scsi\": {\n        \"bus\": 0,\n        \"unit\": 7\n      },\n      \"label\": \"SCSI controller 0\",\n      \"sharing\": \"NONE\",\n      \"type\": \"LSILOGICSAS\"\n    }\n  },\n  \"power_state\": \"POWERED_OFF\",\n  \"floppies\": {},\n  \"identity\": {\n    \"name\": \"web-server-01\",\n    \"instance_uuid\": \"502b13c0-77aa-df6b-fde7-3e351bff9dcb\",\n    \"bios_uuid\": \"422b1f26-a404-0ea4-5704-4e9fbb7bad24\"\n  },\n  \"nvme_adapters\": {},\n  \"name\": \"web-server-02\",\n  \"nics\": {\n    \"4000\": {\n      \"start_connected\": true,\n      \"pci_slot_number\": 192,\n      \"backing\": {\n        \"network_name\": \"Developpement\",\n        \"type\": \"STANDARD_PORTGROUP\",\n        \"network\": \"network-44\"\n      },\n      \"mac_address\": \"00:50:56:ab:a2:f7\",\n      \"mac_type\": \"ASSIGNED\",\n      \"allow_guest_control\": true,\n      \"wake_on_lan_enabled\": true,\n      \"label\": \"Network adapter 1\",\n      \"state\": \"NOT_CONNECTED\",\n      \"type\": \"E1000E\"\n    }\n  },\n  \"boot\": {\n    \"delay\": 0,\n    \"retry_delay\": 10000,\n    \"enter_setup_mode\": false,\n    \"type\": \"BIOS\",\n    \"retry\": false\n  },\n  \"serial_ports\": {},\n  \"boot_devices\": [],\n  \"guest_OS\": \"WINDOWS_8_SERVER_64\",\n  \"hardware\": {\n    \"upgrade_policy\": \"NEVER\",\n    \"upgrade_status\": \"NONE\",\n    \"version\": \"VMX_21\"\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "e34dee90-ccce-496e-8ccb-68eb9ad1a3e7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-1234/guest/identity",
+      "responses": [
+        {
+          "uuid": "106a8311-b089-4ed7-a149-7370bd08362b",
+          "body": "{\n  \"full_name\": {\n    \"args\": [],\n    \"default_message\": \"Microsoft Windows Server 2022 (64-bit)\",\n    \"id\": \"vmsg.guestos.windows2019srvNext_64Guest.label\"\n  },\n  \"name\": \"WINDOWS_SERVER_2021\",\n  \"ip_address\": \"172.16.2.12\",\n  \"family\": \"WINDOWS\",\n  \"host_name\": \"web-server-02\"\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d66d86ed-1aa7-48e8-8950-be8bd70bf5ba",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/folder",
+      "responses": [
+        {
+          "uuid": "747e2115-0085-4428-bb02-a0db6890ff95",
+          "body": "[\n  {\n    \"folder\": \"group-v2041\",\n    \"name\": \"My_Dir\",\n    \"type\": \"VIRTUAL_MACHINE\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "names",
+              "value": "My_Dir",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d3f1794b-5e42-4431-9100-592d880733a1",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-1234/tools",
+      "responses": [
+        {
+          "uuid": "4aa768e7-afac-43b7-84c7-2f86487f07c3",
+          "body": "{\n  \"auto_update_supported\": false,\n  \"upgrade_policy\": \"MANUAL\",\n  \"install_attempt_count\": 4,\n  \"version_status\": \"CURRENT\",\n  \"version_number\": 12384,\n  \"run_state\": \"NOT_RUNNING\",\n  \"error\": {\"error_type\":\"ERROR\",\"messages\":[{\"args\":[],\"default_message\":\"An error has occurred while invoking the operation.\",\"id\":\"com.vmware.api.vcenter.error\"},{\"args\":[],\"default_message\":\"Error upgrading VMware Tools.\",\"id\":\"vmsg.VmToolsUpgradeFault.summary\"}]},\n  \"version\": \"12384\",\n  \"install_type\": \"MSI\"\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5dab7556-22e0-44b0-a0c0-8a62e8599a39",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7722/tools",
+      "responses": [
+        {
+          "uuid": "a1f361ec-882e-47f9-b042-e78493f0b9fb",
+          "body": "{\n  \"auto_update_supported\": false,\n  \"upgrade_policy\": \"MANUAL\",\n  \"install_attempt_count\": 1,\n  \"version_status\": \"UNMANAGED\",\n  \"version_number\": 12352,\n  \"run_state\": \"RUNNING\",\n  \"version\": \"12352\",\n  \"install_type\": \"OPEN_VM_TOOLS\"\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2b1cc950-2116-448e-a0f7-db3afb4a876a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-7657/tools",
+      "responses": [
+        {
+          "uuid": "2d5c8be9-e053-431e-aa72-cdc61b0e32d5",
+          "body": "{\n  \"auto_update_supported\": true,\n  \"upgrade_policy\": \"MANUAL\",\n  \"install_attempt_count\": 4,\n  \"version_status\": \"CURRENT\",\n  \"version_number\": 12384,\n  \"run_state\": \"RUNNING\",\n  \"version\": \"12384\",\n  \"install_type\": \"MSI\"\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "27d28289-89ef-48b1-9ce0-1b763f288263",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm/vm-3000000/tools",
+      "responses": [
+        {
+          "uuid": "f243c622-c1ab-45d9-acec-bda8c2333574",
+          "body": "{\n  \"error_type\": \"NOT_FOUND\",\n  \"messages\": [\n    {\n      \"args\": [\n        \"vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e\"\n      ],\n      \"default_message\": \"Virtual machine with identifier 'vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e' does not exist.\",\n      \"id\": \"com.vmware.api.vcenter.vm.not_found\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d47d46e3-1ac2-42c1-b7e9-ec187bbd798e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/stats/acq-specs",
+      "responses": [
+        {
+          "uuid": "fb821585-e966-4799-bd77-f516d30ba6bc",
+          "body": "{\n  \"acq_specs\": []\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "First response (empty)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2f2fb518-6bd4-47b3-a127-55b26faa8500",
+          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"542\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"788\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Scond response",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "24ce8978-4f6d-4c5d-8be6-56a3e576a77b",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/stats/acq-specs/",
+      "responses": [
+        {
+          "uuid": "036c53ea-47e7-4c66-ac19-49ed89b96419",
+          "body": "\"101\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "315979dc-3c39-4f3d-9606-f963e3c80c4c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/stats/data/dp",
+      "responses": [
+        {
+          "uuid": "1c706b7f-680f-42b9-a861-d6fe0b39047c",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0b3d9add-be9f-430b-9c50-7f281e23d494",
+          "body": "{\"data_points\":[{\"val\":79.29,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343447},{\"val\":71.12,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343474},{\"val\":73.46,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343507},{\"val\":81.56,\"mid\":\"-7711723135295468962\",\"rid\":\"131\",\"cid\":\"cpu.capacity.usage.VM\",\"ts\":1757343534}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.usage.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.usage.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "64594f4d-0cad-4dc4-b5b0-b14dcda4b73f",
+          "body": "{\"data_points\":[{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343447},{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343474},{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343507},{\"val\":733.0,\"mid\":\"-1728318312657044720\",\"rid\":\"131\",\"cid\":\"cpu.capacity.entitlement.VM\",\"ts\":1757343534}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.entitlement.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.entitlement.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "db0acc13-4486-46e2-bbd9-8fb85c1a673a",
+          "body": "{\"data_points\":[{\"val\":285.55,\"mid\":\"-6666431365540150058\",\"rid\":\"131\",\"cid\":\"mem.capacity.usage.VM\",\"ts\":1757344836}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.capacity.usage.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.capacity.usage.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8f5dbd7e-0b84-4911-93fc-7179f564ac80",
+          "body": "{\"data_points\":[{\"val\":1640.44,\"mid\":\"-3541670442324433707\",\"rid\":\"131\",\"cid\":\"mem.capacity.entitlement.VM\",\"ts\":1757344836}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.capacity.entitlement.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.capacity.entitlement.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c"
+    },
+    {
+      "type": "route",
+      "uuid": "66791cdd-b1c2-4d32-bf25-825092666db3"
+    },
+    {
+      "type": "route",
+      "uuid": "59096e34-e05c-43ba-985d-62a6408d1fb6"
+    },
+    {
+      "type": "route",
+      "uuid": "dc6d93c5-077c-45b2-8cf9-e47c17768320"
+    },
+    {
+      "type": "route",
+      "uuid": "d2223789-07cf-4ba9-8909-cfb59276283f"
+    },
+    {
+      "type": "route",
+      "uuid": "4826c1d9-66b4-48b4-8166-0f92eb4f4f52"
+    },
+    {
+      "type": "route",
+      "uuid": "a25712f3-e1c3-463d-ac94-ba45a8f2eb56"
+    },
+    {
+      "type": "route",
+      "uuid": "c48d0dd9-051e-45bc-b9c2-21db39ac4ea2"
+    },
+    {
+      "type": "route",
+      "uuid": "a1f05af4-66d4-41ac-b48f-6c77d9c0666a"
+    },
+    {
+      "type": "route",
+      "uuid": "e34dee90-ccce-496e-8ccb-68eb9ad1a3e7"
+    },
+    {
+      "type": "route",
+      "uuid": "d66d86ed-1aa7-48e8-8950-be8bd70bf5ba"
+    },
+    {
+      "type": "route",
+      "uuid": "d3f1794b-5e42-4431-9100-592d880733a1"
+    },
+    {
+      "type": "route",
+      "uuid": "5dab7556-22e0-44b0-a0c0-8a62e8599a39"
+    },
+    {
+      "type": "route",
+      "uuid": "2b1cc950-2116-448e-a0f7-db3afb4a876a"
+    },
+    {
+      "type": "route",
+      "uuid": "27d28289-89ef-48b1-9ce0-1b763f288263"
+    },
+    {
+      "type": "route",
+      "uuid": "d47d46e3-1ac2-42c1-b7e9-ec187bbd798e"
+    },
+    {
+      "type": "route",
+      "uuid": "24ce8978-4f6d-4c5d-8be6-56a3e576a77b"
+    },
+    {
+      "type": "route",
+      "uuid": "315979dc-3c39-4f3d-9606-f963e3c80c4c"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

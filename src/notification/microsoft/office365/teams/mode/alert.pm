@@ -363,7 +363,8 @@ sub build_workflow_message {
         "size"   => "Large",
         "weight" => "Bolder",
         "style"  => "heading",
-        "color"  => $themecolor
+        "color"  => $themecolor,
+        "wrap"     => "true"
     };
     push @{$self->{body}}, {
         type     => "TextBlock",
@@ -371,7 +372,8 @@ sub build_workflow_message {
         "size"   => "Medium",
         "weight" => "Bolder",
         "style"  => "heading",
-        "color"  => $themecolor
+        "color"  => $themecolor,
+        "wrap"     => "true"
     };
 
     if (defined($self->{option_results}->{$resource_type . '_output'}) && $self->{option_results}->{$resource_type . '_output'} ne '') {
@@ -392,9 +394,9 @@ sub build_workflow_message {
     if (defined($self->{option_results}->{extra_info}) && $self->{option_results}->{extra_info} !~ m/^\/\/$/) {
         if ($self->{option_results}->{extra_info} =~ m/^(.*)\/\/(.*)$/) {
             push @{$self->{body}}, {
-                type   => "TextBlock",
-                text   => "Additional Information:  \n" . sprintf($self->{option_results}->{extra_info_format}, $1, $2),
-                wrap => "true"
+                type  => "TextBlock",
+                text  => "Additional Information:  \n" . sprintf($self->{option_results}->{extra_info_format}, $1, $2),
+                wrap  => "true"
             };
         }
     }

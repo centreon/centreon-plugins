@@ -58,6 +58,7 @@ cpu-utilization-5m
 cpu-utilization-5s
 CX
 Cyberoam
+DaemonSet
 Datacore
 Datastore
 datasource
@@ -150,6 +151,7 @@ journalctl
 kccevent
 keepass
 Keysight
+kubectl
 Kubernetes
 LatenceTech
 ldap
@@ -244,7 +246,9 @@ prct
 Primera
 Procurve
 Proxmox
+PromQL
 proto
+Proxmox
 --proxyurl
 psu
 QoS
@@ -332,6 +336,8 @@ vCPU
 vdom
 vdomain
 VDSL2
+VE
+VTOM
 Veeam
 VeloCloud
 VE
