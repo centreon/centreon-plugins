@@ -72,7 +72,14 @@ def test_plugin(plugin_command, plugin_paths):
         if os.path.exists(f"tests/{path}"):
             tests_path.append("tests/" + path)
     if len(tests_path) == 0:
-        return 0  # no tests present at the moment, but we still have tested the plugin can be installed.
+        with open('/var/log/test-plugins-help.log', "a") as outfile:
+            command = "/usr/lib/centreon/plugins/" + plugin_command + " --help"
+            output_status = (subprocess.run(command, shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            print(f"No tests for {plugin_command}, checking it can be executed with --help")
+        if output_status == 3:
+            return 0
+        else:
+            return output_status
     else:
         robot_results = subprocess.run( "robot --exclude notauto -v ''CENTREON_PLUGINS:/usr/lib/centreon/plugins/" + plugin_command + " " + " ".join(tests_path),
                                     shell=True, check=False)
@@ -145,9 +152,6 @@ if __name__ == '__main__':
             if tmp > 0:
                 error_purge += 1
                 list_plugin_error.add(plugin)
-
-    # to clear up the snmpsim daemon manually, use
-    subprocess.run("ps -ax | grep snmpsim-command-respond | cut -dp -f1 | xargs kill", shell=True, check=False)
 
     print(f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
           f"errors, and {error_purge} removal error list of error : {list_plugin_error}", )
