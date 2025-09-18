@@ -24,7 +24,6 @@ use strict;
 use warnings;
 
 use base qw(centreon::plugins::templates::counter);
-use network::security::cato::networks::api::misc qw/filter_json/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_threshold);
 
 sub new {
@@ -38,6 +37,9 @@ sub new {
             "argument:s@"  => { name => 'argument', default => [] },
             "lookup:s@"    => { name => 'lookup', default => [] },
     });
+
+    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'JSON::Path::Evaluator',
+                                               error_msg => "Cannot load module 'JSON::Path::Evaluator'.");
 
     return $self;
 }
@@ -93,7 +95,6 @@ sub check_options {
 
     $self->{output}->option_exit(short_msg => "Need to specify lookups in --lookup option.")
         unless @{$self->{lookups}};
-
 }
 
 sub manage_selection {
@@ -104,7 +105,14 @@ sub manage_selection {
                                                        query => $self->{query},
                                                        arguments => $self->{arguments});
 
-    my @result = map { filter_json($response, $_) } @{$self->{lookups}};
+    my @result;
+    foreach my $lookup (@{$self->{lookups}}) {
+        eval {
+            push @result, JSON::Path::Evaluator::evaluate_jsonpath($response, $lookup);
+        };
+        $self->{output}->option_exit(short_msg => "'$lookup' parameter is invalid".($@=~/(.*)/ && ": $1"))
+            if $@;
+    }
 
     $self->{global} = { count => scalar(@result) };
 
@@ -163,12 +171,8 @@ will produce the following query (in its unexpanded form):
 
 =item B<--lookup>
 
-Define the arguments to be retrieved from the query.
+What to lookup in JSON response (JSON XPath string).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
-
-In the returned data arrays are represented by a counter that increments according to the record's position.
-Element are separated by dots.
-Array can be replaced with a filter in the form (key=value) or (key:value) to retrieve a specific entry.
 
 Considering the following returned data:
 
@@ -193,9 +197,11 @@ Considering the following returned data:
 
 Using those lookups will return:
 
---lookup='site.1.info.name'  will return 'Toulouse'
---lookup='site.(id=1001).info.name'  will return 'Paris'
---lookup='site.(connectivityStatus:Degraded).id' will return '1002'
+--lookup='$.sites[1].info.name'  will return 'Toulouse'
+--lookup='$.sites[?(@.id=1001)].info.name'  will return 'Paris'
+--lookup='$.sites[?(@connectivityStatus=Degraded)].id' will return '1002'
+
+Refer to http://goessner.net/articles/JsonPath/ for more information.
 
 =item B<--warning-count>
 
