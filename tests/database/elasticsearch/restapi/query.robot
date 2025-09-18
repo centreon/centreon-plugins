@@ -11,7 +11,7 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}elastic-query.mockoon.json
 ${HOSTNAME}         127.0.0.1
-${APIPORT}          3011
+${APIPORT}          3000
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=database::elasticsearch::restapi::plugin
 ...                 --mode=query
