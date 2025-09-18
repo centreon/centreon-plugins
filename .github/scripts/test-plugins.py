@@ -27,7 +27,7 @@ def launch_snmp_sim():
 
 
 def refresh_packet_manager(archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get update\n")
             output_status = (subprocess.run(
@@ -43,7 +43,7 @@ def refresh_packet_manager(archi):
 
 # Install plugin, from local file if build is true, from repository if false.
 def install_plugin(plugin, archi, build):
-    with open('/var/log/robot-plugins-installation.log', "a") as outfile:
+    with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             if build:
                 install_name = "./" + plugin.lower() + "*.deb"
@@ -87,7 +87,7 @@ def test_plugin(plugin_command, plugin_paths):
 
 
 def remove_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-uninstallation.log', "a") as outfile:
+    with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             command = "export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower()
             outfile.write(command + "\n")
