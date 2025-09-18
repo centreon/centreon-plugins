@@ -11,6 +11,11 @@ pack_plugins = False
 test_plugins = False
 
 def add_package_info(packaging_file, build=True, test=True):
+    global pack_plugins, test_plugins
+    if build:
+        pack_plugins = True
+    if test:
+        test_plugins = True
     with open(packaging_file) as package_file:
         packaging = json.load(package_file)
         plugin_paths = []

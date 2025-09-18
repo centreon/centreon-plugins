@@ -125,7 +125,7 @@ jobs:
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
         run: |
-          list_plugins=($(python3 .github/scripts/list-plugins-build-tests.py '${{ needs.changes.outputs.changes_common == 'true' }}'))
+          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py '${{ needs.changes.outputs.changes_common == 'true' }}'))
           echo "pack_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
           echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
           if [ ! -s plugins.json ]; then
