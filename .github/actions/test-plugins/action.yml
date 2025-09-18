@@ -4,6 +4,9 @@ inputs:
   packages-cache-key:
     description: "The packaged plugin's cache key"
     required: true
+  get-packages:
+    description: "Whether to get the packages from cache or not"
+    default: "true"
   plugins-json-cache-key:
     description: "The cache key for plugin's json"
     required: true
@@ -16,6 +19,7 @@ runs:
   steps:
 
     - name: Get the cached plugin
+      if: ${{ inputs.get-packages == 'true' }}
       uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       with:
         path: ./*.${{ inputs.package-extension }}
