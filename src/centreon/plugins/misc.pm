@@ -25,6 +25,11 @@ use warnings;
 use utf8;
 use JSON::XS;
 
+use Exporter 'import';
+use feature 'state';
+
+our @EXPORT_OK = qw/value_of json_encode json_decode change_seconds is_empty slurp_file/;
+
 sub execute {
     my (%options) = @_;
     
@@ -338,6 +343,25 @@ sub is_empty {
         return 1;
     }
     return 0;
+}
+
+# Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+# The returned value will never be undef.
+# I.g:  value_of($hash, '->{key}->{subkey}', 'default')
+#       value_of($array, '->[0]', 'default')
+#       value_of($complex, '->{key}->[0]->{subkey}', 'default')
+sub value_of($$;$) {
+    my ($variable, $expression, $default) = @_;
+    $default //= '';
+
+    state $safe = do { my $s = Safe->new();
+                       $s->share('$v');
+                       $s;
+                     };
+    our $v = $variable;
+    my $value = $safe->reval("\$v$expression", 1);
+
+    return defined $value ? $value : $default;
 }
 
 sub trim {
