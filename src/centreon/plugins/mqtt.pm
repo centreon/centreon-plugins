@@ -28,7 +28,7 @@ use Net::MQTT::Simple::SSL;
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
@@ -47,7 +47,7 @@ sub new {
         $options{options}->add_help(package => __PACKAGE__, sections => 'MQTT GLOBAL OPTIONS');
     }
 
-    $self->{output}         = $options{output};
+    $self->{output} = $options{output};
     $self->{connection_set} = 0;
     return $self;
 }
@@ -59,16 +59,16 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Missing parameter --hostname.');
         $self->{output}->option_exit();
     }
-    $self->{mqtt_host}            = $options{option_results}->{host};
-    $self->{mqtt_port}            = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 8883;
-    $self->{mqtt_ssl}             = $options{option_results}->{mqtt_ssl};
-    $self->{mqtt_ca_certificate}  = $options{option_results}->{mqtt_ca_certificate};
+    $self->{mqtt_host} = $options{option_results}->{host};
+    $self->{mqtt_port} = defined($options{option_results}->{mqtt_port}) && $options{option_results}->{mqtt_port} =~ /(\d+)/ ? $1 : 8883;
+    $self->{mqtt_ssl} = $options{option_results}->{mqtt_ssl};
+    $self->{mqtt_ca_certificate} = $options{option_results}->{mqtt_ca_certificate};
     $self->{mqtt_ssl_certificate} = $options{option_results}->{mqtt_ssl_certificate};
-    $self->{mqtt_ssl_key}         = $options{option_results}->{mqtt_ssl_key};
-    $self->{mqtt_username}        = $options{option_results}->{mqtt_username};
-    $self->{mqtt_password}        = $options{option_results}->{mqtt_password};
-    $self->{mqtt_allow_insecure}  = $options{option_results}->{mqtt_allow_insecure};
-    $self->{mqtt_timeout}         = $options{option_results}->{mqtt_timeout};
+    $self->{mqtt_ssl_key} = $options{option_results}->{mqtt_ssl_key};
+    $self->{mqtt_username} = $options{option_results}->{mqtt_username};
+    $self->{mqtt_password} = $options{option_results}->{mqtt_password};
+    $self->{mqtt_allow_insecure} = $options{option_results}->{mqtt_allow_insecure};
+    $self->{mqtt_timeout} = $options{option_results}->{mqtt_timeout};
 }
 
 # Prepare the MQTT connection
@@ -108,9 +108,9 @@ sub query {
 
     my %mqtt_received;
     my $starttime = Time::HiRes::time();
-    my $endtime   = $starttime + $self->{mqtt_timeout};
+    my $endtime = $starttime + $self->{mqtt_timeout};
     $self->{mqtt}->subscribe($options{topic}, sub {
-        my ($topic, $message)  = @_;
+        my ($topic, $message) = @_;
         $mqtt_received{$topic} = $message;
     });
     my $messages_received = 0;
@@ -138,8 +138,8 @@ sub queries {
 
     my %mqtt_received;
     foreach my $topic (@{$options{topics}}) {
-        my $topic_for_query    = defined($options{base_topic}) ? $options{base_topic} . $topic : $topic;
-        my $result             = $self->query(topic => $topic_for_query);
+        my $topic_for_query = defined($options{base_topic}) ? $options{base_topic} . $topic : $topic;
+        my $result = $self->query(topic => $topic_for_query);
         $mqtt_received{$topic} = $result;
     }
     return %mqtt_received;
