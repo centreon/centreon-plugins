@@ -35,62 +35,7 @@ jobs:
         distrib: [el8, el9]
         name:
           [
-            "ARGV::Struct",
-            "Authen::SASL::SASLprep",
-            "Authen::SCRAM::Client",
-            "BSON",
-            "BSON::XS",
-            "Config::AWS",
-            "Convert::Binary::C",
-            "Convert::EBCDIC",
-            "Crypt::Argon2",
-            "Crypt::Blowfish_PP",
-            "Crypt::OpenSSL::AES",
-            "DataStruct::Flat",
-            "DateTime::Format::Duration::ISO8601",
-            "DBD::Sybase",
-            "Device::Modbus",
-            "Device::Modbus::RTU::Client",
-            "Device::Modbus::TCP::Client",
-            "Email::Send::SMTP::Gmail",
-            "Exporter::Tiny", # Required by JSON::Path: the version available in the official repositories doesn't work with the last version of JSON::Path
             "FFI::CheckLib",
-            "FFI::Platypus",
-            "File::SearchPath",
-            "HTTP::ProxyPAC",
-            "JMX::Jmx4Perl",
-            "JSON::Path",
-            "Libssh::Session",
-            "LV",
-            "Mojo::IOLoop::Signal",
-            "MongoDB",
-            "MooseX::ClassAttribute",
-            "Net::Amazon::Signature::V4",
-            "Net::Curl",
-            "Net::DHCP",
-            "Net::FTPSSL",
-            "Net::HTTPTunnel",
-            "Net::NTP",
-            "Net::SMTPS",
-            "Net::SMTP_auth",
-            "Net::Subnet",
-            "Net::TFTP",
-            "Paws",
-            "PBKDF2::Tiny",
-            "Statistics::Descriptive",
-            "Statistics::Regression",
-            "Term::Clui",
-            "Unicode::Stringprep",
-            "URI::Template",
-            "URL::Encode",
-            "URL::Encode::XS",
-            "UUID",
-            "UUID::URandom",
-            "WWW::Selenium",
-            "XML::LibXML::Simple",
-            "ZMQ::Constants",
-            "ZMQ::FFI",
-            "ZMQ::LibZMQ4"
           ]
         include:
           - build_distribs: "el8,el9"
@@ -107,55 +52,8 @@ jobs:
           - distrib: el9
             package_extension: rpm
             image: packaging-plugins-alma9
-          - name: "BSON"
-            rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
-          - name: "Crypt::Argon2"
-            preinstall_cpanlibs: "Dist::Build"
-            rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
-            revision: "2"
-          - name: "DateTime::Format::Duration::ISO8601"
-            rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
-          - name: "Device::Modbus::RTU::Client"
-            version: "0.022"
-          - name: "Device::Modbus::TCP::Client"
-            version: "0.026"
           - name: "FFI::CheckLib"
             rpm_dependencies: "perl(Env)"
-          - name: "FFI::Platypus"
-            rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
-            rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
-            no-auto-depends: "true"
-          - name: "Libssh::Session"
-            rpm_dependencies: "libssh"
-            rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
-            revision: "2"
-          - name: "Mojo::IOLoop::Signal"
-            rpm_dependencies: "perl-Mojolicious"
-            rpm_provides: "perl(Mojo::IOLoop::Signal)"
-            no-auto-depends: "true"
-          - name: "Net::Curl"
-            rpm_dependencies: "libcurl"
-            rpm_provides: "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)"
-            revision: "2"
-          - name: "Net::DHCP"
-            rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
-          - name: "Net::SMTPS"
-            build_distribs: el9
-          - name: "Statistics::Descriptive"
-            build_distribs: el9
-          - name: "Statistics::Regression"
-            version: "0.53"
-          - name: "URL::Encode::XS"
-            build_distribs: el9
-          - name: "UUID"
-            version: "0.31"
-          - name: "ZMQ::Constants"
-            build_distribs: "el9"
-          - name: "ZMQ::FFI"
-            rpm_dependencies: "zeromq"
-          - name: "ZMQ::LibZMQ4"
-            version: "0.01"
-            rpm_dependencies: "zeromq"
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -338,7 +236,7 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: packages-signed-rpm-${{ matrix.distrib }}
+          name: perl-ffi-checklib-rpm-${{ matrix.distrib }}
           path: ./*.rpm
           retention-days: 1
 
