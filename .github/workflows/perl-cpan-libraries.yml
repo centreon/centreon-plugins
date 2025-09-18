@@ -35,7 +35,7 @@ jobs:
         distrib: [el8, el9]
         name:
           [
-            "FFI::CheckLib",
+            "Net::NTP",
           ]
         include:
           - build_distribs: "el8,el9"
@@ -52,8 +52,6 @@ jobs:
           - distrib: el9
             package_extension: rpm
             image: packaging-plugins-alma9
-          - name: "FFI::CheckLib"
-            rpm_dependencies: "perl(Env)"
 
     name: package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -236,7 +234,7 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: perl-ffi-checklib-rpm-${{ matrix.distrib }}
+          name: perl-net-ntp-rpm-${{ matrix.distrib }}
           path: ./*.rpm
           retention-days: 1
 
