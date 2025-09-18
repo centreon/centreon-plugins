@@ -25,7 +25,7 @@ use warnings;
 
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(mk_timeframe filter_json);
+our @EXPORT_OK = qw(mk_timeframe);
 
 # Supported timeframes format (x = integer):
 # last.PTxM: last x minutes
