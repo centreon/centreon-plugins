@@ -20,7 +20,7 @@
 package storage::datacore::restapi::mode::alerts;
 use strict;
 use warnings;
-use centreon::plugins::misc qw(empty);
+use centreon::plugins::misc;
 
 use base qw(centreon::plugins::templates::counter);
 
