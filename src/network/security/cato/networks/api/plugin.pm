@@ -34,7 +34,6 @@ sub new {
     $self->{modes} = {
         'discovery'        => 'network::security::cato::networks::api::mode::discovery',
         'connectivity'     => 'network::security::cato::networks::api::mode::connectivity',
-        'query'            => 'network::security::cato::networks::api::mode::query',
         'events'           => 'network::security::cato::networks::api::mode::events'
     };
 
