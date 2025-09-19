@@ -37,10 +37,8 @@ sub new {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless $options{options};
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
@@ -71,10 +69,8 @@ sub check_options {
     foreach my $opt (qw/account_id api_key port hostname endpoint proto max_retry_count retry_delay timeout/) {
         $self->{$opt} = $self->{option_results}->{$opt};
 
-        next if $self->{$opt} ne '';
-
-        $self->{output}->add_option_msg(short_msg => "Need to specify --".($opt=~s/_/-/gr)." option.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify --".($opt=~s/_/-/gr)." option.")
+            if $self->{$opt} eq '';
     }
 }
 
@@ -105,10 +101,8 @@ sub request_api {
 
     my $full_query = json_encode({ query => "{ $options{query} }" } );
 
-    unless ($full_query) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode json request !");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Cannot encode json request !")
+        unless $full_query;
 
     # This retry system is used to handle the Cato API rate limiting, as described at https://support.catonetworks.com/hc/en-us/articles/5119033786653-Understanding-Cato-API-Rate-Limiting
     # Retry up to max_retry_count (5) times with a delay of retry_delay (5) seconds between attemps on rate limiting errors
@@ -131,19 +125,17 @@ sub request_api {
                 sleep(1);
                 next
             }
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-            $self->{output}->option_exit();
+            $self->{output}->option_exit(short_msg => "Cannot decode json response: $@");
         }
 
-        if ($decoded->{errors}) {
+        if ($decoded->{errors} || not $decoded->{data}) {
             if ($tried < $self->{max_retry_count}) {
                 my $delay = value_of($decoded, "->{errors}->[0]->{message}") =~ /rate limit for operation/i ? $self->{retry_delay} : 1;
 
                 sleep($delay);
                 next
             }
-            $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error '" . ($decoded->{errors}->[0]->{message} // '-')  . "' (add --debug option for detailed message)");
-            $self->{output}->option_exit();
+            $self->{output}->option_exit(short_msg => "Graph endpoint API return error '" . ($decoded->{errors}->[0]->{message} // 'Invalid content')  . "' (add --debug option for detailed message)");
         }
         last
     }
@@ -346,6 +338,22 @@ sub check_connectivity {
     }
 
     return { %{$site_snap} };
+}
+
+sub send_custom_query {
+    my ($self, %options) = @_;
+
+    my $arguments = $options{arguments} && @{$options{arguments}} ?
+                            ', '.join ', ',@{$options{arguments}} :
+                            '';
+
+    my $query = $options{operation}.qq~( accountID: "$self->{account_id}"$arguments
+                   ) { $options{query}
+                   }~;
+
+    my $response = $self->request_api(query => $query);
+
+    return $response->{data}->{$options{operation}};
 }
 
 1;
