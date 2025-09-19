@@ -182,8 +182,7 @@ sub check_options {
         $self->{statefile_dir} = Cwd::cwd() . '/' . $self->{statefile_dir};
     }
 
-    $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
-    $self->{memexpiration} = $options{option_results}->{memexpiration};
+    $self->{$_} = $options{option_results}->{$_} foreach qw/statefile_suffix memexpiration/;
 }
 
 sub error {

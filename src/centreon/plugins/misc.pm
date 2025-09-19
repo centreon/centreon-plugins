@@ -27,7 +27,7 @@ use JSON::XS;
 use Exporter 'import';
 use feature 'state';
 
-our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape change_seconds is_empty/;
+our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape change_seconds is_empty flatten_arrays/;
 
 sub execute {
     my (%options) = @_;
@@ -389,10 +389,20 @@ sub powershell_escape {
     return $value;
 }
 
-sub graphql_escape {
+sub graphql_escape($) {
     my ($value) = $_[0];
     $value =~ s/"/\\"/g;
     return $value;
+}
+
+# Returns an array from arrays containing values separated by $separator
+sub flatten_arrays($;$) {
+    my ($array_of_values, $separator) = @_;
+    $separator //= ',';
+
+    return [ ] unless ref $array_of_values eq 'ARRAY';
+
+    return [ map { split $separator } @{$array_of_values} ];
 }
 
 sub minimal_version {
@@ -1086,6 +1096,20 @@ Escapes special characters in a string for use in graphql query.
 =over 4
 
 =item * C<$value> - The string to escape.
+
+=back
+
+=head2 flatten_arrays
+
+    my $array = centreon::plugins::misc::flatten_arrays($arrays, $separator);
+
+Returns an array from arrays containing values separated by a separator ( default comma ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
 
 =back
 

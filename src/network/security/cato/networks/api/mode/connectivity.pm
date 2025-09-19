@@ -31,7 +31,8 @@ use Time::Piece;
 use POSIX qw(strftime);
 use network::security::cato::networks::api::misc qw/mk_timeframe/;
 
-# All available performance metrics (see Cato API doc)
+# All available performance metrics
+# Full list: https://api.catonetworks.com/documentation/#definition-TimeseriesKey
 my @performance_metrics = ( { metric => 'bytesUpstreamMax',
                               label => 'upstream-max',
                               nlabel => 'connectivity.upstream.max.bytes',
@@ -360,7 +361,8 @@ C<lostUpstreamPcnt>, C<lostDownstreamPcnt>, C<packetsDiscardedDownstream>,
 C<packetsDiscardedUpstream>, C<jitterUpstream>, C<jitterDownstream>, C<lastMilePacketLoss>,
 C<lastMileLatency>.
 C<all> means that all metrics are collected whereas C<none> means none are collected.
-Refer to Cato API documentation for more information about supported metrics.
+Refer to Cato API documentation https://api.catonetworks.com/documentation/#definition-TimeseriesKey
+for more information about supported metrics.
 
 =item B<--warning-discarded-downstream>
 
