@@ -278,7 +278,7 @@ sub get_all_acq_specs {
     my ($self, %options) = @_;
 
     # If we have already requested it, we return what we have
-    return $self->{all_acq_specs} if (defined($self->{all_acq_specs}));
+    return $self->{all_acq_specs} if ($self->{all_acq_specs} && @{$self->{all_acq_specs}});
 
     # Get all acq specs and store them in cache
     # FIXME: cache management
@@ -288,10 +288,7 @@ sub get_all_acq_specs {
     # If the whole acq-specs takes more than one page, the API will return a "next" value
     while ($response->{next}) {
         $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
-        $self->{all_acq_specs} = [
-            @{$self->{all_acq_specs}},
-            @{$response->{acq_specs}}
-        ];
+        push @{$self->{all_acq_specs}}, @{$response->{acq_specs}};
     }
     return $self->{all_acq_specs};
 }
