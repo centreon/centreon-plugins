@@ -148,6 +148,7 @@ JOBQ
 jobqueue
 jobqueues
 journalctl
+JSONPath
 kccevent
 keepass
 Keysight

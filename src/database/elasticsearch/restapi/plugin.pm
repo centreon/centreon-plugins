@@ -36,7 +36,8 @@ sub new {
         'license'               => 'database::elasticsearch::restapi::mode::license',
         'list-indices'          => 'database::elasticsearch::restapi::mode::listindices',
         'list-nodes'            => 'database::elasticsearch::restapi::mode::listnodes',
-        'node-statistics'       => 'database::elasticsearch::restapi::mode::nodestatistics'
+        'node-statistics'       => 'database::elasticsearch::restapi::mode::nodestatistics',
+        'query'                 => 'database::elasticsearch::restapi::mode::query'
     };
 
     $self->{custom_modes}->{api} = 'database::elasticsearch::restapi::custom::api';

@@ -688,6 +688,9 @@ sub die_exit {
 
 sub option_exit {
     my ($self, %options) = @_;
+
+    $self->add_option_msg(short_msg => $options{short_msg}) if defined $options{short_msg};
+
     # $options{exit_litteral} = string litteral exit
     # $options{nolabel} = interger label display
     my $exit_litteral = defined($options{exit_litteral}) ? $options{exit_litteral} : $self->{option_results}->{opt_exit};
