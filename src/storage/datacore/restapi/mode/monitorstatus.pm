@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw(empty);
+use centreon::plugins::misc;
 
 my %monitor_state = (1 => "Undefined", 2 => "Healthy", 4 => "Attention", 8 => "Warning", 16 => "Critical");
 
