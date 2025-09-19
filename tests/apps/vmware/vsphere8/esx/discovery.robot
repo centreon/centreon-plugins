@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}vmware8-restapi.mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::plugin
 ...                 --password=C3POR2P2

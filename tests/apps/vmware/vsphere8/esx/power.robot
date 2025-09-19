@@ -8,7 +8,7 @@ Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}vmware8-restapi.mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::plugin
 ...                 --mode=power
