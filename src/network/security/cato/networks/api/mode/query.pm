@@ -54,9 +54,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'results', type => 3, message_multiple => 'All results are ok',
-            group => [ { name => 'result', type => 0 } ]
-        }
+        { name => 'results', type => 1, message_multiple => 'All results are ok', }
     ];
     $self->{maps_counters}->{global} = [
         { label => 'count', nlabel => 'results.count',
@@ -66,7 +64,7 @@ sub set_counters {
             },
         },
     ];
-    $self->{maps_counters}->{result} = [
+    $self->{maps_counters}->{results} = [
         {   label => 'result', type => 2,
             set => {
                 closure_custom_output => $self->can('custom_result_output'),
@@ -117,8 +115,8 @@ sub manage_selection {
     $self->{global} = { count => scalar(@result) };
 
     for (0..$#result) {
-        $self->{results}->{"Result$_"}->{result} = { result => $result[$_],
-                                                     index => $_ };
+        $self->{results}->{$_} = { result => $result[$_],
+                                   index => $_ };
     }
 }
 
