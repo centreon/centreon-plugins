@@ -80,6 +80,10 @@ sub manage_selection {
     );
 
     $self->{vdoms} = {};
+
+    # Handle both array and hash response
+    $resources = [ $resources ] if ref $resources eq 'HASH';
+
     foreach my $resource (@$resources) {
         next if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
             $resource->{vdom} !~ /$self->{option_results}->{filter_vdom}/);
