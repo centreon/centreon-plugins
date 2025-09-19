@@ -125,7 +125,7 @@ __END__
 
 =head1 MODE
 
-Check Datacore monitor status exposed through the rest api.
+Check Datacore monitor status exposed through the REST API.
 
 =over 8
 
@@ -136,7 +136,7 @@ By default all elements will be checked.
 
 =item B<--warning-state> B<--critical-state>
 
-define which output from the api should be considered warning or critical.
+define which output from the API should be considered warning or critical.
 
 warning_default  = '%{state} =~ /Warning/i',
 
