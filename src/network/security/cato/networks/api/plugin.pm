@@ -33,7 +33,8 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         'discovery'        => 'network::security::cato::networks::api::mode::discovery',
-        'connectivity'     => 'network::security::cato::networks::api::mode::connectivity'
+        'connectivity'     => 'network::security::cato::networks::api::mode::connectivity',
+        'events'           => 'network::security::cato::networks::api::mode::events'
     };
 
     $self->{custom_modes}->{api} = 'network::security::cato::networks::api::custom::api';
