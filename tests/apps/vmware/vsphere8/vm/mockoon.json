@@ -1,7 +1,7 @@
 {
   "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
   "lastMigration": 33,
-  "name": "Vmware8 restapi.mockoon",
+  "name": "Vmware8 VMs",
   "endpointPrefix": "",
   "latency": 0,
   "port": 3000,
@@ -1317,10 +1317,10 @@
         },
         {
           "uuid": "2f2fb518-6bd4-47b3-a127-55b26faa8500",
-          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"542\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"788\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+          "body": "{\n  \"next\": 36,\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"542\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.entitlement.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"788\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
-          "label": "Scond response",
+          "label": "Scond response page 1",
           "headers": [
             {
               "key": "access-control-allow-headers",
@@ -1358,9 +1358,75 @@
               "value": "1",
               "invert": true,
               "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "page",
+              "value": "",
+              "invert": false,
+              "operator": "null"
             }
           ],
-          "rulesOperator": "OR",
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "b4c155f2-02d3-4c28-82e5-4530f359e781",
+          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Scond response page 2",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "page",
+              "value": "36",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": false,
