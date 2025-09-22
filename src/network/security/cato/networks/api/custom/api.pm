@@ -319,14 +319,15 @@ sub get_eventsfeed {
     my ($self, %options) = @_;
 
     my @filters;
-    push @filters, qq~{ "fieldName": "event_type",
-                       "operator": "in",
-                       "values": [ "~.(join ', ', @{$options{types}}).qq~" ]
+
+    push @filters, qq~{ fieldName: event_type,
+                        operator: in,
+                        values: [ ~.(join ', ',  map { '"'.graphql_escape($_).'"' } @{$options{types}}).qq~ ]
                      }~ if ref $options{types} eq 'ARRAY' && @{$options{types}};
 
-    push @filters, qq~{ "fieldName": "event_sub_type",
-                       "operator": "in",
-                       "values": [ "~.(join ', ', @{$options{sub_types}}).qq~" ]
+    push @filters, qq~{ fieldName: event_sub_type,
+                        operator: in,
+                        values: [ ~.(join ', ',  map { '"'.graphql_escape($_).'"' } @{$options{sub_types}}).qq~ ]
                      }~ if ref $options{sub_types} eq 'ARRAY' && @{$options{sub_types}};
 
 

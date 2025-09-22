@@ -75,7 +75,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-            "marker:s"               => { name => 'marker', default => 'auto' },
             "type:s@"                => { name => 'type' },
             "sub-type:s@"            => { name => 'sub_type' },
             "include-status:s@"      => { name => 'include_status' },
@@ -93,7 +92,6 @@ sub check_options {
 
     $self->SUPER::check_options(%options);
 
-    $self->{marker} = $self->{option_results}->{marker};
     $self->{types} = flatten_arrays($self->{option_results}->{type});
     $self->{sub_types} = flatten_arrays($self->{option_results}->{sub_type});
 
@@ -112,42 +110,12 @@ sub check_options {
         $self->{output}->option_exit(short_msg => "Option --$option need to contains expression with variable (eg: %{status} =~ /Closed/)")
             if @{$self->{include}} && not grep { /%\{/ } @{$self->{include}};
     }
-
-    # Build a cache name based on the options used to retrieve data
-    $self->{cache_name} = 'cato_marker_'.$self->{option_results}->{hostname}.':'.$self->{option_results}->{port}.$self->{option_results}->{account_id}.'_'.
-                           md5_hex(
-                               join '_', map { ($_ => @{$self->{$_}} ) } # key + values
-                                             qw/types sub_types include_status exclude_status include exclude display/
-                           );
-}
-
-sub retrieve_marker {
-    my ($self, %options) = @_;
-
-    my $marker = $options{marker};
-    if ($marker =~ /^(reset|none)$/i) {
-        $options{custom}->cache_remove();
-        return '';
-    }
-
-    if ($marker =~ /^auto$/i) {
-        my $has_cache_file = $options{custom}->cache_read(statefile => $self->{cache_name});
-        if ($has_cache_file) {
-            my $expires_on = $options{custom}->cache_get(name => 'expires_on');
-
-            $marker = $expires_on && $expires_on > time() ?
-			$options{custom}->cache_get(name => 'marker') :
-			'';
-        }
-    }
-
-    return $marker;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $marker = $self->retrieve_marker(%options, marker => $self->{marker});
+    my $marker = '';
 
     my $first_request = 1;
     my $gen_id=0;
@@ -155,11 +123,11 @@ sub manage_selection {
     $self->{records} = {};
 
     while (1) {
-        # All eventsFeeds requests cat return a maximum of 3000 records. If there are more results we have to use the
+        # All eventsFeeds requests can return a maximum of 3000 records. If there are more results we have to use the
         # marker value to loop until all data is retrieved.
         my $results = $options{custom}->get_eventsfeed( marker => $marker,
-                                                        type => $self->{types},
-                                                        sub_type => $self->{sub_types} );
+                                                        types => $self->{types},
+                                                        sub_types => $self->{sub_types} );
 
         last unless $results->{marker};
 
@@ -176,7 +144,7 @@ sub manage_selection {
                 foreach my $option (@{$self->{include}}) {
                     while ($option =~ /%\{([a-z_]+)\}/g) {
                         my $value = $1;
-                        $self->{output}->option_exit(exit_literal => 'critical', short_msg => "Value '$value' not present in data.")
+                        $self->{output}->option_exit(exit_literal => 'unknown', short_msg => "Value '$value' not present in data.")
                             unless exists $account->{records}->[0]->{fieldsMap}->{$value};
                     }
                 }
@@ -189,7 +157,7 @@ sub manage_selection {
                 }
             }
 
-            foreach my $record ( @{$account->{records}} )  {
+            RECORD: foreach my $record ( @{$account->{records}} )  {
                 $record->{fieldsMap}->{status} //= '';
                 # Handle the absence of event_id (should not happen)
                 my $event_id = $record->{fieldsMap}->{event_id} = $record->{fieldsMap}->{event_id} // "UNK".$gen_id++;
@@ -213,24 +181,19 @@ sub manage_selection {
                     }
                     unless ($whitelist) {
                         $self->{output}->output_add(long_msg => "skipping record '$event_id': no including filter match.", debug => 1);
-                        next
+                        next RECORD
                     }
                 }
                 if (@{$self->{exclude}}) {
-                    my $blacklist = 0;
                     foreach my $option (@{$self->{exclude}}) {
                         my $used_option = $option;
                         # We substitute %{var} by 'value' to be able to eval the expression
                         $used_option =~ s/%\{([a-z_]+)\}/"'".$record->{fieldsMap}->{$1}."'"/e while $used_option =~ /%\{([a-z_]+)\}/g;
 
                         if ($self->{output}->test_eval(test => $used_option, values => $record->{fieldsMap})) {
-                            $blacklist = 1;
-                            last
+                            $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding filter match.", debug => 1);
+                            next RECORD
                         }
-                    }
-                    if ($blacklist) {
-                        $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding filter match.", debug => 1);
-                        next
                     }
                 }
 
@@ -244,20 +207,15 @@ sub manage_selection {
                     }
                     unless ($whitelist_status) {
                         $self->{output}->output_add(long_msg => "skipping record '$event_id': no including status filter match.", debug => 1);
-                        next
+                        next RECORD
                     }
                 }
                 if (@{$self->{exclude_status}}) {
-                    my $blacklist_status = 0;
                     foreach my $option (@{$self->{exclude_status}}) {
                         if ($record->{fieldsMap}->{status} =~ /$option/) {
-                            $blacklist_status = 1;
-                            last
+                            $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding status filter match.", debug => 1);
+                            next RECORD
                         }
-                    }
-                    if ($blacklist_status) {
-                        $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding status filter match.", debug => 1);
-                        next
                     }
                 }
 
@@ -273,14 +231,6 @@ sub manage_selection {
     }
 
     $self->{global} = { count => scalar keys %{$self->{records}} };
-
-
-    $options{custom}->cache_update(  statefile => $self->{cache_name},
-                                     data => {
-                                         marker => $marker,
-                                         expires_on => time() + 3600 * 24 * 3, # 3 days
-                                     }
-                                  ) if $self->{marker} !~ /^none$/i;
 }
 
 1;
@@ -297,16 +247,6 @@ Check events generated by activities.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='count'
-
-=item B<--marker>
-
-Set the optional marker value to start retrieving data from.
-Supported values are: C<auto>, C<none>, C<reset> or a marker value returned by previous API call (default: C<auto>)
-C<auto> means that the marker value will be retrieved from the cache and used if it is less than three days old. Cache will be updated with the newly returned marker.
-C<none> means that the cache won't be used ( neither reading nor writing ) and that the previous marker won't be used.
-C<reset> means that the cache won't be read but will by updated with the newly returned marker.
-
-The cached used is identified by the provided command line options. To reuse the same cache the options must match exactly for every call.
 
 =item B<--type>
 
@@ -342,12 +282,12 @@ Refer to the Cato API documentation for more information on the possible values 
 =item B<--include-status>
 
 Filter events by status (comma separated list, can be multiple, regexp can be used).
-Possible values are C<Open>, C<Pending Analysis>, C<Pending more info>, C<Closed>, <Reopened>, C<Monitoring>.
+Possible values are C<Open>, C<Pending Analysis>, C<Pending more info>, C<Closed>, C<Reopened>, C<Monitoring>.
 
 =item B<--exclude-status>
 
 Exclude events by status (comma separated list, can be multiple, regexp can be used).
-Possible values are C<Open>, C<Pending Analysis>, C<Pending more info>, C<Closed>, <Reopened>, C<Monitoring>.
+Possible values are C<Open>, C<Pending Analysis>, C<Pending more info>, C<Closed>, C<Reopened>, C<Monitoring>.
 Default value: C<Closed>
 
 =item B<--include>
@@ -358,6 +298,7 @@ Exemple: --include='%{event_type} =~ /Security/ && %{severity} =~ /High/'
 =item B<--exclude>
 
 Exclude events using a complex expression based on returned fields values.
+Exemple: --exclude='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
 
 =back
 
@@ -383,7 +324,7 @@ Exemple: --warning-event='%{event_type} =~ /Security/ && %{status} =~ /Closed/'
 
 Threshold.
 A expression using field values to define the critical threshold.
-Exemple: --warning-event='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
+Exemple: --critical-event='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
 
 =back
 
