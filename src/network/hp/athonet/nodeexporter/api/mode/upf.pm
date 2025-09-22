@@ -51,6 +51,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
+        { label => 'upf-fpcf-nodes-detected', display_ok => 0, nlabel => 'upf.pfcp.nodes.detected.count', set => {
+                key_values => [ { name => 'fpcp_nodes_detected' } ],
+                output_template => 'fpcf nodes detected: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
         { label => 'upf-sessions', nlabel => 'upf.sessions.count', set => {
                 key_values => [ { name => 'upf_sessions' } ],
                 output_template => 'sessions: %s',
@@ -110,7 +118,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
+    $self->{global} = { fpcp_nodes_detected => 0 };
 
     my $response = $options{custom}->query(queries => ['upf_sessions']);
     $self->{global}->{upf_sessions} = $response->[0]->{value}->[1];
@@ -134,6 +142,7 @@ sub manage_selection {
             remoteIP => $_->{metric}->{remote_ip},
             status => $map_node_status->{ $_->{value}->[1] }
         };
+        $self->{global}->{fpcp_nodes_detected}++;
     }
 }
 
@@ -165,7 +174,7 @@ You can use the following variables: %{status}, %{localIP}, %{remoteIP}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'upf-sessions', 'upf-gtpu-interfaces', 'upf-ip-interfaces', 'upf-dnn'.
+Can be: 'upf-fpcf-nodes-detected', 'upf-sessions', 'upf-gtpu-interfaces', 'upf-ip-interfaces', 'upf-dnn'.
 
 =back
 
