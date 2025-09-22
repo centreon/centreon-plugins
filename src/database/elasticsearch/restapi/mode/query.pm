@@ -93,7 +93,7 @@ sub check_options {
         $self->{output}->option_exit(short_msg => "Invalid query parameter: '$file' is not a valid file.")
             unless -f $file;
         $self->{output}->output_add(long_msg => "Reading query from file '$file'.", debug => 1);
-        $self->{query} = slurp_file(file => $file);
+        $self->{query} = slurp_file(output => $self->{output}, file => $file);
     }
 }
 
