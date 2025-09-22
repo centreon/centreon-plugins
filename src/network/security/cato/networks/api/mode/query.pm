@@ -25,6 +25,7 @@ use warnings;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_threshold);
+use JSON::Path::Evaluator;
 
 sub new {
     my ($class, %options) = @_;
@@ -37,9 +38,6 @@ sub new {
             "argument:s@"  => { name => 'argument', default => [] },
             "lookup:s@"    => { name => 'lookup', default => [] },
     });
-
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'JSON::Path::Evaluator',
-                                               error_msg => "Cannot load module 'JSON::Path::Evaluator'.");
 
     return $self;
 }
@@ -54,7 +52,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'results', type => 1, message_multiple => 'All results are ok', }
+        { name => 'results', type => 1, message_multiple => 'All queries are ok', }
     ];
     $self->{maps_counters}->{global} = [
         { label => 'count', nlabel => 'results.count',
@@ -213,12 +211,15 @@ Returned results count.
 
 =item B<--warning-result>
 
-Threshold.
+Define the conditions to match for the status to be WARNING.
 %{index} represents the result position and %{result} is the result value.
+
+String value example: --warning-result='%{result} =~ /fail/i'
+Numeric value example: --warning-result='%{result} > 100'
 
 =item B<--critical-result>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL.
 %{index} represents the result position and %{result} is the result value.
 
 String value example: --critical-result='%{result} =~ /fail/i'
