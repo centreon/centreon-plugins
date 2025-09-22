@@ -7,8 +7,8 @@ concurrency:
 on:
   workflow_dispatch:
   pull_request:
-    paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
+    # paths:
+    #   - ".github/workflows/perl-cpan-libraries.yml"
   push:
     branches:
       - develop
@@ -729,9 +729,13 @@ jobs:
 
   deliver-packages:
     needs: [get-environment, sign-rpm, download-and-cache-deb, test-packages]
+    # if: |
+    #   needs.get-environment.outputs.skip_workflow == 'false' &&
+    #   (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+    #   ! cancelled() &&
+    #   ! contains(needs.*.result, 'failure') &&
+    #   ! contains(needs.*.result, 'cancelled')
     if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
@@ -764,15 +768,16 @@ jobs:
           module_name: perl-cpan-libraries
           distrib: ${{ matrix.distrib }}
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+          # stability: ${{ needs.get-environment.outputs.stability }}
+          stability: unstable
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
-  set-skip-label:
-    needs: [get-environment, deliver-packages]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
-    uses: ./.github/workflows/set-pull-request-skip-label.yml
+  # set-skip-label:
+  #   needs: [get-environment, deliver-packages]
+  #   if: |
+  #     needs.get-environment.outputs.skip_workflow == 'false' &&
+  #     ! cancelled() &&
+  #     ! contains(needs.*.result, 'failure') &&
+  #     ! contains(needs.*.result, 'cancelled')
+  #   uses: ./.github/workflows/set-pull-request-skip-label.yml
