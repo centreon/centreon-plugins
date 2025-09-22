@@ -316,13 +316,13 @@ Number of matching events.
 
 =item B<--warning-event>
 
-Threshold.
+Define the conditions to match for the status to be WARNING.
 A expression using field values to define the warning threshold.
 Exemple: --warning-event='%{event_type} =~ /Security/ && %{status} =~ /Closed/'
 
 =item B<--critical-event>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL.
 A expression using field values to define the critical threshold.
 Exemple: --critical-event='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
 
