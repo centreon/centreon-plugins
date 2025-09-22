@@ -42,7 +42,7 @@ sub set_counters {
     my ($self, %options) = @_;
     $self->{maps_counters_type} = [
             { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-            { name => 'records', type => 1, message_multiple => 'All critical are ok', skipped_code => { -10 => 1 } },
+            { name => 'records', type => 1, message_multiple => 'All records are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{global} = [
@@ -78,9 +78,9 @@ sub new {
             "marker:s"               => { name => 'marker', default => 'auto' },
             "type:s@"                => { name => 'type' },
             "sub-type:s@"            => { name => 'sub_type' },
-            "include-status:s@"      => { name => 'include_status', default => [] },
-            "exclude-status:s@"      => { name => 'exclude_status', default => [] },
-            "include:s@"             => { name => 'include', default => [] },
+            "include-status:s@"      => { name => 'include_status' },
+            "exclude-status:s@"      => { name => 'exclude_status' },
+            "include:s@"             => { name => 'include' },
             "exclude:s@"             => { name => 'exclude' },
             "display:s@"             => { name => 'display' },
     });
@@ -161,106 +161,108 @@ sub manage_selection {
                                                         type => $self->{types},
                                                         sub_type => $self->{sub_types} );
 
-        last unless $results->{marker} && ref $results->{records} eq 'ARRAY';
+        last unless $results->{marker};
 
-        if ($first_request) {
-            $first_request = 0;
 
-            $self->{output}->option_exit(exit_literal => 'critical', short_msg => "No data found.")
-                unless @{$results->{records}};
+        foreach my $account (@{$results->{accounts}}) {
+            next unless ref $account->{records} eq 'ARRAY' && @{$account->{records}};
 
-            # On the first request w we make sure that include options contain ony variable that are present in
-            # the data returned by the Cato API.
-            # Full list of variables: https://api.catonetworks.com/documentation/#definition-EventFieldName
-            foreach my $option (@{$self->{include}}) {
-                while ($option =~ /%\{([a-z_]+)\}/g) {
-                    my $value = $1;
-                    $self->{output}->option_exit(exit_literal => 'critical', short_msg => "Value '$value' not present in data.")
-                        unless exists $results->{records}->[0]->{fieldsMap}->{$value};
-                }
-            }
+            if ($first_request) {
+                $first_request = 0;
 
-            # Add the list of returned variables to the counter definition
-            foreach my $value ( keys %{$results->{records}->[0]->{fieldsMap}} ) {
-                next if $value =~ /^(status|event_id)$/;
-
-                push @{$self->{records_values}}, { name => $value };
-            }
-        }
-
-        foreach my $record ( @{$results->{records}} )  {
-            $record->{fieldsMap}->{status} //= '';
-            # Handle the absence of event_id (should not happen)
-            my $event_id = $record->{fieldsMap}->{event_id} = $record->{fieldsMap}->{event_id} // "UNK".$gen_id++;
-
-            # There are four filters that can be used multiple times to filter the data:
-            # --include and --exclude can containt complex expressions, for exemple: %{event_type} =~ /Security/
-            # --include-status and --exclude-status filter on the value of the 'status' variable
-            # When an include filter is defined the returned data must match at least one of them
-            # When an exclude filter is defined the returned data must not match any of them
-            if (@{$self->{include}}) {
-                my $whitelist = 0;
+                # On the first request w we make sure that include options contain ony variable that are present in
+                # the data returned by the Cato API.
+                # Full list of variables: https://api.catonetworks.com/documentation/#definition-EventFieldName
                 foreach my $option (@{$self->{include}}) {
-                    my $used_option = $option;
-                    # We substitute %{var} by 'value' to be able to eval the expression
-                    $used_option =~ s/%\{([a-z_]+)\}/"'".$record->{fieldsMap}->{$1}."'"/e while $used_option =~ /%\{([a-z_]+)\}/g;
-
-                    if ($self->{output}->test_eval(test => $used_option, values => $record->{fieldsMap})) {
-                        $whitelist = 1;
-                        last
+                    while ($option =~ /%\{([a-z_]+)\}/g) {
+                        my $value = $1;
+                        $self->{output}->option_exit(exit_literal => 'critical', short_msg => "Value '$value' not present in data.")
+                            unless exists $account->{records}->[0]->{fieldsMap}->{$value};
                     }
                 }
-                unless ($whitelist) {
-                    $self->{output}->output_add(long_msg => "skipping record '$event_id': no including filter match.", debug => 1);
-                    next
-                }
-            }
-            if (@{$self->{exclude}}) {
-                my $blacklist = 0;
-                foreach my $option (@{$self->{exclude}}) {
-                    my $used_option = $option;
-                    # We substitute %{var} by 'value' to be able to eval the expression
-                    $used_option =~ s/%\{([a-z_]+)\}/"'".$record->{fieldsMap}->{$1}."'"/e while $used_option =~ /%\{([a-z_]+)\}/g;
 
-                    if ($self->{output}->test_eval(test => $used_option, values => $record->{fieldsMap})) {
-                        $blacklist = 1;
-                        last
-                    }
-                }
-                if ($blacklist) {
-                    $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding filter match.", debug => 1);
-                    next
+                # Add the list of returned variables to the counter definition
+                foreach my $value ( keys %{$account->{records}->[0]->{fieldsMap}} ) {
+                    next if $value =~ /^(status|event_id)$/;
+
+                    push @{$self->{records_values}}, { name => $value };
                 }
             }
 
-            if (@{$self->{include_status}}) {
-                my $whitelist_status = 0;
-                foreach my $option (@{$self->{include_status}}) {
-                    if ($record->{fieldsMap}->{status} =~ /$option/) {
-                        $whitelist_status = 1;
-                        last
-                    }
-                }
-                unless ($whitelist_status) {
-                    $self->{output}->output_add(long_msg => "skipping record '$event_id': no including status filter match.", debug => 1);
-                    next
-                }
-            }
-            if (@{$self->{exclude_status}}) {
-                my $blacklist_status = 0;
-                foreach my $option (@{$self->{exclude_status}}) {
-                    if ($record->{fieldsMap}->{status} =~ /$option/) {
-                        $blacklist_status = 1;
-                        last
-                    }
-                }
-                if ($blacklist_status) {
-                    $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding status filter match.", debug => 1);
-                    next
-                }
-            }
+            foreach my $record ( @{$account->{records}} )  {
+                $record->{fieldsMap}->{status} //= '';
+                # Handle the absence of event_id (should not happen)
+                my $event_id = $record->{fieldsMap}->{event_id} = $record->{fieldsMap}->{event_id} // "UNK".$gen_id++;
 
-            $self->{records}->{$event_id} = $record->{fieldsMap};
+                # There are four filters that can be used multiple times to filter the data:
+                # --include and --exclude can containt complex expressions, for exemple: %{event_type} =~ /Security/
+                # --include-status and --exclude-status filter on the value of the 'status' variable
+                # When an include filter is defined the returned data must match at least one of them
+                # When an exclude filter is defined the returned data must not match any of them
+                if (@{$self->{include}}) {
+                    my $whitelist = 0;
+                    foreach my $option (@{$self->{include}}) {
+                        my $used_option = $option;
+                        # We substitute %{var} by 'value' to be able to eval the expression
+                        $used_option =~ s/%\{([a-z_]+)\}/"'".$record->{fieldsMap}->{$1}."'"/e while $used_option =~ /%\{([a-z_]+)\}/g;
+
+                        if ($self->{output}->test_eval(test => $used_option, values => $record->{fieldsMap})) {
+                            $whitelist = 1;
+                            last
+                        }
+                    }
+                    unless ($whitelist) {
+                        $self->{output}->output_add(long_msg => "skipping record '$event_id': no including filter match.", debug => 1);
+                        next
+                    }
+                }
+                if (@{$self->{exclude}}) {
+                    my $blacklist = 0;
+                    foreach my $option (@{$self->{exclude}}) {
+                        my $used_option = $option;
+                        # We substitute %{var} by 'value' to be able to eval the expression
+                        $used_option =~ s/%\{([a-z_]+)\}/"'".$record->{fieldsMap}->{$1}."'"/e while $used_option =~ /%\{([a-z_]+)\}/g;
+
+                        if ($self->{output}->test_eval(test => $used_option, values => $record->{fieldsMap})) {
+                            $blacklist = 1;
+                            last
+                        }
+                    }
+                    if ($blacklist) {
+                        $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding filter match.", debug => 1);
+                        next
+                    }
+                }
+
+                if (@{$self->{include_status}}) {
+                    my $whitelist_status = 0;
+                    foreach my $option (@{$self->{include_status}}) {
+                        if ($record->{fieldsMap}->{status} =~ /$option/) {
+                            $whitelist_status = 1;
+                            last
+                        }
+                    }
+                    unless ($whitelist_status) {
+                        $self->{output}->output_add(long_msg => "skipping record '$event_id': no including status filter match.", debug => 1);
+                        next
+                    }
+                }
+                if (@{$self->{exclude_status}}) {
+                    my $blacklist_status = 0;
+                    foreach my $option (@{$self->{exclude_status}}) {
+                        if ($record->{fieldsMap}->{status} =~ /$option/) {
+                            $blacklist_status = 1;
+                            last
+                        }
+                    }
+                    if ($blacklist_status) {
+                        $self->{output}->output_add(long_msg => "skipping record '$event_id': excluding status filter match.", debug => 1);
+                        next
+                    }
+                }
+
+                $self->{records}->{$event_id} = $record->{fieldsMap};
+            }
         }
 
         # Update the marker for the next request
