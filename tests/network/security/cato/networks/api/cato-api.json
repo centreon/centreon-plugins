@@ -381,6 +381,54 @@
           "default": false,
           "crudKey": "id",
           "callbacks": []
+        },
+        {
+          "uuid": "a1a22271-d5c4-4e6d-8cbc-90ed181325a6",
+          "body": "{\n  \"data\": {\n    \"eventsFeed\": {\n      \"marker\": \"eyJmZXRjaGVkQ291bnQiOjIwfQ==\",\n      \"fetchedCount\": 2,\n      \"accounts\": [\n        {\n          \"id\": 111,\n          \"errorString\": null,\n          \"records\": [\n            {\n              \"time\": \"2025-09-17T09:10:12Z\",\n              \"fieldsMap\": {\n                \"event_id\": \"123456\",\n                \"time_str\": \"2025-09-17 09:10:12\",\n                \"event_type\": \"Sockets Management\",\n                \"event_sub_type\": \"Socket Firmware Upgrade\",\n                \"severity\": \"INFO\",\n                \"title\": \"Socket upgraded successfully\",\n                \"event_message\": \"Socket upgraded from version 4.0.3 to 4.0.4\",\n                \"pop_name\": \"Paris POP\",\n                \"src_site_name\": \"Headquarters\",\n                \"dest_site_name\": \"Branch-1\",\n                \"status\": \"Open\"\n              }\n            },\n            {\n              \"time\": \"2025-09-17T09:25:44Z\",\n              \"fieldsMap\": {\n                \"event_id\": \"987654\",\n                \"time_str\": \"2025-09-17 09:25:44\",\n                \"event_type\": \"Security\",\n                \"event_sub_type\": \"Threat Prevention\",\n                \"severity\": \"HIGH\",\n                \"title\": \"Malware blocked\",\n                \"event_message\": \"Suspicious file transfer blocked by IPS\",\n                \"pop_name\": \"Frankfurt POP\",\n                \"src_site_name\": \"Branch-2\",\n                \"dest_site_name\": \"Internet\",\n                \"status\": \"Closed\"\n              }\n            },\n            {\n              \"time\": \"2025-09-18T09:25:44Z\",\n              \"fieldsMap\": {\n                \"event_id\": \"987659\",\n                \"time_str\": \"2025-09-18 09:25:44\",\n                \"event_type\": \"Security\",\n                \"event_sub_type\": \"Threat Prevention\",\n                \"severity\": \"HIGH\",\n                \"title\": \"Malware blocked\",\n                \"event_message\": \"Suspicious file transfer blocked by IPS\",\n                \"pop_name\": \"Frankfurt POP\",\n                \"src_site_name\": \"Branch-2\",\n                \"dest_site_name\": \"Internet\",\n                \"status\": \"Reopened\"\n              }\n            }            \n          ]\n        }\n      ]\n    }\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "eventsFeed",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "entityLookup",
+              "invert": true,
+              "operator": "regex"
+            },
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "accountSnapshot",
+              "invert": true,
+              "operator": "regex"
+            },
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "accountMetrics",
+              "invert": true,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,

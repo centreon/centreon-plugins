@@ -56,9 +56,11 @@ sub new {
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'GRAPHQL API OPTIONS', once => 1);
 
-    $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{
+    
+    } = centreon::plugins::statefile->new(%options);
+    $self->{output} = $options{output};
 
     return $self;
 }
@@ -71,7 +73,7 @@ sub check_options {
 
         $self->{output}->option_exit(short_msg => "Need to specify --".($opt=~s/_/-/gr)." option.")
             if $self->{$opt} eq '';
-    }
+    }    
 }
 
 sub set_options {
@@ -276,8 +278,7 @@ sub list_sites {
                            }
                            description
                          }
-                       }
-                       ~;
+                       }~;
 
         my $part = $self->request_api(query => $query);
 
@@ -312,6 +313,50 @@ sub list_sites {
     }
 
     return \@response;
+}
+
+sub get_eventsfeed {
+    my ($self, %options) = @_;
+
+    my @filters;
+
+    push @filters, qq~{ fieldName: event_type,
+                        operator: in,
+                        values: [ ~.(join ', ',  map { '"'.graphql_escape($_).'"' } @{$options{types}}).qq~ ]
+                     }~ if ref $options{types} eq 'ARRAY' && @{$options{types}};
+
+    push @filters, qq~{ fieldName: event_sub_type,
+                        operator: in,
+                        values: [ ~.(join ', ',  map { '"'.graphql_escape($_).'"' } @{$options{sub_types}}).qq~ ]
+                     }~ if ref $options{sub_types} eq 'ARRAY' && @{$options{sub_types}};
+
+
+    my $request = 'eventsFeed';
+    my $marker = $options{marker} || '';
+
+    my $query = qq~$request(
+                     accountIDs: [ $self->{account_id} ],
+                     filters: [ ~.(join ', ', @filters).qq~ ],
+                     marker: "~.graphql_escape($marker).qq~"
+                   ) {
+                     marker
+                     fetchedCount
+                     accounts {
+                       id
+                       errorString
+                       records(fieldNames: [event_id]) {
+                         time
+                         fieldsMap
+                       }
+                     }
+                   }~;
+
+    my $response = $self->request_api(query => $query);
+
+    return $response->{data}->{$request}
+        if ref $response->{data}->{$request} eq 'HASH';
+
+    return { };
 }
 
 sub check_connectivity {
