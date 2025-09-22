@@ -729,13 +729,9 @@ jobs:
 
   deliver-packages:
     needs: [get-environment, sign-rpm, download-and-cache-deb, test-packages]
-    # if: |
-    #   needs.get-environment.outputs.skip_workflow == 'false' &&
-    #   (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-    #   ! cancelled() &&
-    #   ! contains(needs.*.result, 'failure') &&
-    #   ! contains(needs.*.result, 'cancelled')
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
