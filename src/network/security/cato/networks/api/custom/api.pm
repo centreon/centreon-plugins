@@ -57,9 +57,6 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'GRAPHQL API OPTIONS', once => 1);
 
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{
-    
-    } = centreon::plugins::statefile->new(%options);
     $self->{output} = $options{output};
 
     return $self;

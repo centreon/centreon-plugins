@@ -25,6 +25,7 @@ use warnings;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_threshold);
+use centreon::plugins::misc qw(flatten_arrays slurp_file);
 use JSON::Path::Evaluator;
 
 sub new {
@@ -85,9 +86,18 @@ sub check_options {
             unless $self->{$opt};
     }
 
+    # query parameter points to a file when starting with '@'
+    if ($self->{query} =~ /[\t\s]*@(.+)/) {
+        my $file = $1;
+        $self->{output}->option_exit(short_msg => "Invalid query parameter: '$file' is not a valid file.")
+            unless -f $file;
+        $self->{output}->output_add(long_msg => "Reading query from file '$file'.", debug => 1);
+        $self->{query} = slurp_file(output => $self->{output}, file => $file);
+    }
+
     # argument and lookup are comma separated list which can be provided multiple times
-    $self->{arguments} = [ map { split ',' } @{$self->{option_results}->{argument}} ];
-    $self->{lookups} = [ map { split ',' } @{$self->{option_results}->{lookup}} ];
+    $self->{arguments} = flatten_arrays($self->{option_results}->{argument});
+    $self->{lookups} = flatten_arrays($self->{option_results}->{lookup});
 
     $self->{output}->option_exit(short_msg => "Need to specify lookups in --lookup option.")
         unless @{$self->{lookups}};
@@ -150,7 +160,9 @@ Refer to Cato API documentation for more information about supported arguments.
 
 Define the data structure to retrieve from the API.
 
-For example using these perameters C<--accoundID=XX --operation=accountMetrics
+If the query starts with '@', it is considered as a file name to read the query from.
+
+For example using these perameters C<--account-id=XX --operation=accountMetrics
 --argument='timeFrame: "last.PT5M"' --argument="groupInterfaces: true" --query='from to'>
 will produce the following query (in its unexpanded form):
 
