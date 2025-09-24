@@ -57,7 +57,6 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'GRAPHQL API OPTIONS', once => 1);
 
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache} = centreon::plugins::statefile->new(%options);
     $self->{output} = $options{output};
 
     return $self;
@@ -71,9 +70,7 @@ sub check_options {
 
         $self->{output}->option_exit(short_msg => "Need to specify --".($opt=~s/_/-/gr)." option.")
             if $self->{$opt} eq '';
-    }
-
-    $self->{cache}->check_options(option_results => $self->{option_results});
+    }    
 }
 
 sub set_options {
@@ -399,36 +396,6 @@ sub send_custom_query {
     my $response = $self->request_api(query => $query);
 
     return $response->{data}->{$options{operation}};
-}
-
-sub cache_remove {
-    my ($self, %options) = @_;
-
-    my $filename = $options{statefile};
-
-    return unless -f $filename;
-
-    $options{output}->option_exit(short_msg => "Cannot remove statefile '$filename': $!")
-	unless unlink $filename;
-}
-
-sub cache_read {
-    my ($self, %options) = @_;
-    return $self->{cache}->read( statefile => $options{statefile} );
-}
-
-sub cache_get {
-    my ($self, %options) = @_;
-    return $self->{cache}->get( name => $options{name} );
-}
-
-
-sub cache_update {
-    my ($self, %options) = @_;
-
-    $self->{cache}->write( statefile => $options{statefile},
-                           data => $options{data}
-                         );
 }
 
 1;

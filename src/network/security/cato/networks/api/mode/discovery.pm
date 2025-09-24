@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw/flatten_arrays/;
 
 sub new {
     my ($class, %options) = @_;
@@ -45,8 +46,7 @@ sub check_options {
 
     $self->{$_} = $self->{option_results}->{$_} for qw/filter_site_name connectivity_details/;
 
-    $self->{filter_site_id} = [ map { split /,/ } @{$self->{option_results}->{filter_site_id}} ];
-
+    $self->{filter_site_id} = flatten_arrays($self->{option_results}->{filter_site_id});
 }
 
 sub manage_selection {

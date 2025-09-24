@@ -174,7 +174,7 @@ sub new {
     $options{options}->add_options(arguments => {
             "site-id:s"              => { name => 'site_id' },
             "performance-metrics:s@" => { name => 'performance_metrics' },
-            "buckets:s"              => { name => 'buckets', default => '10' },
+            "buckets:s"              => { name => 'buckets', default => '5' },
             "timeframe:s"            => { name => 'timeframe', default => '5' },
             "timeframe-unit:s"       => { name => 'timeframe_unit', default => 'm' },
             "timeframe-query:s"      => { name => 'timeframe_query', default => '' },
@@ -193,23 +193,19 @@ sub check_options {
         $self->{$opt} = $self->{option_results}->{$opt} // '';
         next if $self->{$opt} =~ /^\d+$/;
 
-        $self->{output}->add_option_msg(short_msg => "Need to specify a numeric --".($opt=~s/_/-/gr)." option.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify a numeric --".($opt=~s/_/-/gr)." option.");
     }
 
     # Define timeframe to query performance metrics
     $self->{timeframe} = $self->{option_results}->{timeframe_query};
     if ($self->{timeframe} eq '') {
         $self->{timeframe} = $self->{option_results}->{timeframe};
-        if ($self->{timeframe} !~ /^\d+$/) {
-            $self->{output}->add_option_msg(short_msg => "Need to specify a numeric --timeframe option.");
-            $self->{output}->option_exit();
-        }
+        $self->{output}->option_exit(short_msg => "Need to specify a numeric --timeframe option.")
+            unless $self->{timeframe} =~ /^\d+$/;
         $self->{timeframe_unit} = $self->{option_results}->{timeframe_unit};
-        unless ($self->{timeframe_unit} =~ /^[mhDMY]$/) {
-            $self->{output}->add_option_msg(short_msg => "Invalid timeframe-unit unit value (m, h, D, M, Y).");
-            $self->{output}->option_exit();
-        }
+        $self->{output}->option_exit(short_msg => "Invalid timeframe-unit unit value (m, h, D, M, Y).")
+            unless $self->{timeframe_unit} =~ /^[mhDMY]$/;
+
         $self->{timeframe} = mk_timeframe($self->{timeframe}, $self->{timeframe_unit});
     }
 
@@ -237,12 +233,9 @@ sub check_options {
                                     ''
                                } @performance_metrics;
 
-            if ($found) {
-                $self->{performance_metrics_enabled}->{$metric} = 1;
-            } else {
-                $self->{output}->add_option_msg(short_msg => "Wrong performance metric '" . $metric . "'.");
-                $self->{output}->option_exit();
-            }
+            $self->{output}->option_exit(short_msg => "Wrong performance metric '" . $metric . "'.")
+                unless $found;
+            $self->{performance_metrics_enabled}->{$metric} = 1;
         }
     }
 }
@@ -254,10 +247,8 @@ sub manage_selection {
                                                        buckets => $self->{buckets},
                                                        timeframe => $self->{timeframe},
                                                        performance_metrics => $self->{performance_metrics_enabled});
-    unless (exists $results->{name}) {
-        $self->{output}->add_option_msg(short_msg => "Cannot retrieve connectivity status for site '" . $self->{site_id} . "'.");
-        $self->{output}->option_exit(exit_literal => 'critical');
-    }
+    $self->{output}->option_exit(short_msg => "Cannot retrieve connectivity status for site '" . $self->{site_id} . "'.")
+        unless exists $results->{name};
 
     my ($last_connected_seconds, $connected_since_seconds) = (0,0);
     # Convert date fields to timestamp to manage them as thresholds
@@ -344,7 +335,7 @@ Refer to Cato API documentation for more information about supported formats.
 =item B<--buckets>
 
 Defines the number of buckets for the query's time interval.
-For example: a 10 minutes interval with 10 buckets results in 1 minute per bucket (default: 10).
+For example: a 10 minutes interval with 5 buckets results in 2 minute per bucket (default: 5).
 
 =back
 
@@ -452,27 +443,33 @@ Threshold in bytes.
 
 =item B<--warning-connectivity-status>
 
-Threshold.
+Define the connectivity status conditions to match for the status to be WARNING.
+Example: --warning-connectivity-status='%{connectivity} =~ /Degraded/'
 
 =item B<--critical-connectivity-status>
 
-Threshold.
+Define the connectivity status conditions to match for the status to be CRITICAL.
+Default: --critical-connectivity-status='%{connectivity} !~ /Connected/'
 
 =item B<--warning-operational-status>
 
-Threshold.
+Define the operational status conditions to match for the status to be WARNING.
+Example: --warning-operational-status='%{operational} !~ /active/'
 
 =item B<--critical-operational-status>
 
-Threshold.
+Define the operational status conditions to match for the status to be CRITICAL.
+Default: --critical-operational-status='%{operational} !~ /active|new/'
 
 =item B<--warning-pop-name>
 
-Threshold.
+Define the pop name conditions to match for the status to be WARNING.
+Example: --warning-pop-name='%{pop_name} !~ /Toulouse/'
 
 =item B<--critical-pop-name>
 
-Threshold.
+Define the pop name conditions to match for the status to be CRITICAL.
+Example: --critical-pop-name='%{pop_name} !~ /Toulouse/'
 
 =item B<--warning-last-connected>
 

@@ -32,7 +32,12 @@ Connecivity ${tc}
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
 
 
-    Examples:      tc    extraoptions                                        expected_regexp    --
-          ...      1     ${EMPTY}                                            ^OK: connectivity-status : Connected
-          ...      2     --filter-counters='connected'                       ^OK:
-# More tests after first mode review
+    Examples:      tc    extraoptions                                                          expected_regexp    --
+          ...      1     ${EMPTY}                                                              ^OK: connectivity-status : Connected
+          ...      2     --filter-counters='connected'                                         ^OK:
+          ...      3     --warning-pop-name='\\\%{pop_name} =~ /POP-Paris/'                    ^WARNING: pop-name : POP-Paris
+          ...      4     --warning-connected-since=':10'                                       ^WARNING: connected since: \\\\d+s
+          ...      5     --warning-last-connected=':10'                                        ^WARNING: last connected: \\\\d+s
+          ...      6     --warning-connectivity-status='\\\%{connectivity} =~ /Connected/'     ^WARNING: connectivity-status : Connected
+          ...      7     --critical-operational-status='\\\%{operational} =~ /active/'         ^CRITICAL: operational-status : active
+          ...      8     --warning-upstream-max=':1'                                           ^WARNING: Bucket
