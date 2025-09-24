@@ -318,10 +318,8 @@ __END__
 
 =head1 MODE
 
-Check SOAP content. Send the soap request with option '--data'. Example:
-centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=soap-content --service-soap='http://www.mysite.com/mysoapaction'
---header='Content-Type: text/xml;charset=UTF-8' --data='/home/user/soap_request.xml' --hostname='myws.site.com'
---urlpath='/get/payment' --lookup='//numeric/text()'
+Check SOAP content. Send the soap request with option C<--data>. Example:
+C<centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=soap-content --service-soap='http://www.mysite.com/mysoapaction' --header='Content-Type: text/xml;charset=UTF-8' --data='/home/user/soap_request.xml' --hostname='myws.site.com' --urlpath='/get/payment' --lookup='//numeric/text()'>
 
 SOAP OPTIONS:
 
@@ -347,21 +345,21 @@ FORMAT OPTIONS:
 
 =item B<--format-ok>
 
-Customize the format of the output when the status is OK (default: '%{count} element(s) found').
+Customize the format of the output when the status is OK (default: C<'%{count} element(s) found'>).
 You can use the following variables:
-'%{values}' = display all values (also text string)
-'%{values_ok}' = values from attributes and text node only (separated by option values-separator)
-'%{values_warning}' and '%{values_critical}'
+C<%{values}> = display all values (also text string).
+C<%{values_ok}> = values from attributes and text node only (separated by option values-separator).
+C<%{values_warning}> and C<%{values_critical}>.
 
 =item B<--format-warning>
 
-Customize the format of the output when the status is WARNING (default: '%{count} element(s) found').
-You can use the variables described in --format-ok
+Customize the format of the output when the status is WARNING (default: C<'%{count} element(s) found'>).
+You can use the variables described in C<--format-ok>.
 
 =item B<--format-critical>
 
-Customize the format of the output when the status is CRITICAL (default: '%{count} element(s) found').
-You can use the variables described in --format-ok
+Customize the format of the output when the status is CRITICAL (default: C<'%{count} element(s) found'>).
+You can use the variables described in C<--format-ok>.
 
 =item B<--values-separator>
 
@@ -430,21 +428,21 @@ Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify the username for authentication (mandatory if --credentials is specified).
+Specify the username for authentication (mandatory if C<--credentials> is specified).
 
 =item B<--password>
 
-Specify the password for authentication (mandatory if --credentials is specified).
+Specify the password for authentication (mandatory if C<--credentials> is specified).
 
 =item B<--basic>
 
 Specify this option if you are accessing a web page using basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
 
-Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error (use with --credentials).
+Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error (use with C<--credentials>).
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using NTLMv2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLMv2 authentication (use with C<--credentials> and C<--port> options).
 
 =item B<--timeout>
 
@@ -472,11 +470,11 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--header>
 
-Set HTTP headers(multiple option). Example: --header='Content-Type: '.
+Set HTTP headers(multiple option). Example: C<--header='Content-Type: '>.
 
 =item B<--unknown-status>
 
-Unknown conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
+Unknown conditions for http response code (default: C<< '%{http_code} < 200 or %{http_code} >= 300' >>).
 
 =item B<--warning-status>
 
