@@ -4,7 +4,8 @@ Documentation       Check Cyberoam equipments in SNMP.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
@@ -23,7 +24,7 @@ ha-status ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                           SNMPCOMMUNITY                                                            expected_result    --
             ...      1     ${EMPTY}                                                network/cyberoam/snmp/slim_sophos                                        OK: HA is 'enabled' - Current HA State: 'primary' - Peer HA State: 'auxiliary' - HA Port: 'Anonymized 007' - HA IP: '192.168.42.167' - Peer IP: '192.168.42.23'
