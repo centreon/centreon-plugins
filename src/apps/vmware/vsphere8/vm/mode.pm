@@ -19,6 +19,8 @@
 #
 
 package apps::vmware::vsphere8::vm::mode;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
 use strict;
 use warnings;
 
@@ -35,18 +37,31 @@ sub new {
         }
     );
     $options{options}->add_help(package => __PACKAGE__, sections => 'VMWARE 8 VM OPTIONS', once => 1);
-
+    $self->{cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
-sub get_vm_id_from_name {
+sub get_vm_id {
     my ($self, %options) = @_;
 
+
+    # return the id if we already have it in memory
+    return $self->{vm_id} if (!centreon::plugins::misc::is_empty($self->{vm_id}));
+
     if ( centreon::plugins::misc::is_empty($self->{vm_name}) ) {
-        $self->{output}->add_option_msg(short_msg => "get_vm_id_from_name method called without vm_name option. Please check configuration.");
+        $self->{output}->add_option_msg(short_msg => "get_vm_id method called without vm_name option. Please check configuration.");
         $self->{output}->option_exit();
     }
 
+    # return it from the cache if it is available
+    if ($self->{cache}->read(statefile => 'vsphere8_api_vm_info_' . md5_hex($self->{vm_name}))) {
+        my $vm_id = $self->{cache}->get(name => 'vm_id');
+        # store it to avoid re-reading the cache the next time it is asked
+        $self->{vm_id} = $vm_id;
+        return $self->{vm_id};
+    }
+
+    # get it from the API
     my $response = $options{custom}->request_api(
         'endpoint' => '/vcenter/vm',
         'get_param' => [ 'names='. $self->{vm_name} ],
@@ -55,14 +70,16 @@ sub get_vm_id_from_name {
 
     for my $rsrc (@$response) {
         next if ($rsrc->{name} ne $self->{vm_name});
+        # store it to avoid re-processing everything the next time it is asked
         $self->{vm_id} = $rsrc->{vm};
-        $self->{output}->add_option_msg(long_msg => "get_vm_id_from_name method called to get " . $self->{vm_name}
+        $self->{output}->add_option_msg(long_msg => "get_vm_id method called to get " . $self->{vm_name}
             . "'s id: " . $self->{vm_id} . ". Prefer using --vm-id to spare a query to the API.");
-        return $rsrc->{vm};
+        # store it in the cache for future runs
+        $self->{cache}->write(data => {updated => time(), vm_id => $self->{vm_id}});
+        return $self->{vm_id};
     }
 
     return undef;
-
 }
 
 sub get_vm {
@@ -103,7 +120,7 @@ sub get_vm {
 sub get_vm_tools {
     my ($self, %options) = @_;
 
-    if ( centreon::plugins::misc::is_empty($self->{vm_id}) && !$self->get_vm_id_from_name(%options) ) {
+    if ( !$self->get_vm_id(%options) ) {
         $self->{output}->add_option_msg(short_msg => "Cannot get VM ID from VM name '" . $self->{vm_name} . "'");
         $self->{output}->option_exit();
     }
@@ -131,7 +148,7 @@ sub get_vm_tools {
 sub get_vm_stats {
     my ($self, %options) = @_;
 
-    if ( centreon::plugins::misc::is_empty($options{vm_id}) && !$self->get_vm_id_from_name(%options) ) {
+    if ( centreon::plugins::misc::is_empty($options{vm_id}) && !$self->get_vm_id(%options) ) {
         $self->{output}->add_option_msg(short_msg => "get_vm_stats method cannot get vm ID from vm name");
         $self->{output}->option_exit();
     }
@@ -152,6 +169,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::check_options(%options);
+    $self->{cache}->check_options(option_results => $self->{option_results});
 
     if (centreon::plugins::misc::is_empty($self->{option_results}->{vm_id})
         && centreon::plugins::misc::is_empty($self->{option_results}->{vm_name})) {
@@ -161,7 +179,6 @@ sub check_options {
 
     $self->{vm_id}   = $self->{option_results}->{vm_id};
     $self->{vm_name} = $self->{option_results}->{vm_name};
-
 }
 
 1;

@@ -27,7 +27,7 @@ Memory ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                                        expected_result   --
-        ...      1     ${EMPTY}                                            OK: usage-prct : skipped (no value(s)) - usage-bytes : skipped (no value(s)) - no data for host host-22 counter mem.capacity.usable.HOST at the moment.
+        ...      1     ${EMPTY}                                            OK: usage-prct : skipped (no value(s)) - usage-bytes : skipped (no value(s)) - no data for resource host-22 counter mem.capacity.usable.HOST at the moment.
         ...      2     ${EMPTY}                                            OK: 39% of usable memory is used by VMs - Memory used: 100.02 GB used - Usable: 253.97 GB | 'vms.memory.usage.percentage'=39.38%;;;0;100 'vms.memory.usage.bytes'=107400208056B;;;;272694090137
         ...      3     --warning-usage-prct=0:0                  WARNING: 39% of usable memory is used by VMs | 'vms.memory.usage.percentage'=39.38%;0:0;;0;100 'vms.memory.usage.bytes'=107400208056B;;;;272694090137
         ...      4     --critical-usage-prct=0:0                 CRITICAL: 39% of usable memory is used by VMs | 'vms.memory.usage.percentage'=39.38%;;0:0;0;100 'vms.memory.usage.bytes'=107400208056B;;;;272694090137
