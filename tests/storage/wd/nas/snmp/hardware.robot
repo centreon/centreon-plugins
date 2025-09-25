@@ -4,6 +4,8 @@ Documentation       Check WD (Western Digital) NAS in SNMP
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 
 *** Variables ***

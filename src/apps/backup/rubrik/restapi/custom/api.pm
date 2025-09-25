@@ -317,6 +317,11 @@ sub request_api_paginate {
             $self->{output}->option_exit();
         }
 
+        if ($self->{http}->get_code() == 401) {
+            $self->{output}->add_option_msg(short_msg => "Request needs authentication!");
+            return
+        }
+
         my $decoded;
         eval {
             $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
@@ -373,6 +378,11 @@ sub request_api {
             get_param => $options{get_param},
             creds => $creds
         );
+    }
+
+    if ($self->{http}->get_code() == 401) {
+        $self->{output}->add_option_msg(short_msg => "Authentication failed");
+        $self->{output}->option_exit();
     }
 
     return $result;

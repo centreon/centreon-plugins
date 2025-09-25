@@ -61,7 +61,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{sites}->{$site->{'Site URL'}} = {
+        $self->{sites}->{$site->{'Site Id'}} = {
             owner => $site->{'Owner Display Name'},
             url => $site->{'Site URL'},
         }

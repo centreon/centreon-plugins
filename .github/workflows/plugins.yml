@@ -1,4 +1,5 @@
 name: plugins
+run-name: ${{ (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.nightly_manual_trigger == 'true')) && format('plugins nightly {0}', github.ref_name) || '' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -6,6 +7,14 @@ concurrency:
 
 on:
   workflow_dispatch:
+    inputs:
+      nightly_manual_trigger:
+        description: 'Set to true to trigger a nightly run'
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    - cron: "30 1 * * 1"
   pull_request:
     paths:
       - '.github/workflows/plugins.yml'
@@ -27,24 +36,29 @@ on:
 jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
+    with:
+      nightly_manual_trigger: ${{ inputs.nightly_manual_trigger || false }}
 
-  get-plugins:
+  changes:
+    needs: [get-environment]
     runs-on: ubuntu-24.04
     outputs:
-      plugins: ${{ steps.get_plugins.outputs.plugins }}
+      changes_common: ${{ steps.filter.outputs.common || 'true' }}
+      changes_packages: ${{ steps.filter.outputs.packages || 'false' }}
+      changes_plugins: ${{ steps.filter.outputs.plugins || 'false' }}
+      packages_files: ${{ steps.filter.outputs.packages_files }}
+      plugins_files: ${{ steps.filter.outputs.plugins_files }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
 
-      - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5.5.0
-        with:
-          python-version: '3.9'
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
+        if: |
+          github.event_name == 'pull_request' &&
+          contains(fromJson('["testing", "unstable", "canary"]'), needs.get-environment.outputs.stability)
         with:
-          base: ${{ github.ref }}
+          base: ${{ github.head_ref || github.ref_name }}
           list-files: shell
           filters: |
             common:
@@ -55,10 +69,24 @@ jobs:
             plugins:
               - added|modified: src/**
 
+  get-plugins:
+    runs-on: ubuntu-24.04
+    needs: [get-environment, changes]
+    outputs:
+      plugins: ${{ steps.get_plugins.outputs.plugins }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.9'
+
       - name: transform to directories
         run: |
           folders=()
-          for f in ${{ steps.filter.outputs.packages_files }}; do
+          for f in ${{ needs.changes.outputs.packages_files }}; do
             echo "Adding $(dirname $f) to folders"
             folders+=($(dirname $f))
           done
@@ -66,7 +94,7 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_folders[@]} > package_directories.txt
 
           files=()
-          for f in ${{ steps.filter.outputs.plugins_files }}; do
+          for f in ${{ needs.changes.outputs.plugins_files }}; do
               echo "Adding $f to files"
               files+=($f)
           done
@@ -76,9 +104,9 @@ jobs:
 
       - name: Get plugins for build
         id: get_plugins
-        if: ${{ steps.filter.outputs.common == 'true' || steps.filter.outputs.packages == 'true' || steps.filter.outputs.plugins == 'true' }}
+        if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' }}
         run: |
-          PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ steps.filter.outputs.common == 'true' }}')"
+          PLUGINS="$(python3 .github/scripts/process-plugins.py '${{ needs.changes.outputs.changes_common == 'true' }}')"
 
           echo "plugins=$(echo $PLUGINS)" >> $GITHUB_OUTPUT
           if [ "$PLUGINS" == '' ]; then
@@ -112,7 +140,7 @@ jobs:
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bullseye-arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
             distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
@@ -140,9 +168,9 @@ jobs:
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: plugin-installation-${{ matrix.distrib }}
+          name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: ./lastlog.jsonl
           retention-days: 1
 
@@ -160,7 +188,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@49c14f24551d2de3bf56fb107a869c3760b1875e # v1.33.0
+        uses: shogo82148/actions-setup-perl@22423f01bde48fb88785c007e3166fbbbd8e892a # v1.34.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
@@ -342,7 +370,7 @@ jobs:
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner_name }}
     container:
@@ -362,9 +390,9 @@ jobs:
 
       - name: Upload apt/dnf logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: plugin-installation-${{ matrix.distrib }}
+          name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: /var/log/robot-plugins-installation-tests.log
           retention-days: 1
 
@@ -473,3 +501,25 @@ jobs:
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/set-pull-request-skip-label.yml
+
+  create-jira-nightly-ticket:
+    runs-on: ubuntu-24.04
+    needs: [
+      get-environment,
+      deliver-packages
+    ]
+    if: |
+      needs.get-environment.outputs.is_nightly == 'true' && github.run_attempt == 1 &&
+      (failure() || cancelled() || contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Create Jira ticket based on nightly build failure
+        uses: ./.github/actions/create-jira-ticket
+        with:
+          jira_base_url: ${{ secrets.JIRA_BASE_URL }}
+          jira_user_email: ${{ secrets.XRAY_JIRA_USER_EMAIL }}
+          jira_api_token: ${{ secrets.XRAY_JIRA_TOKEN }}
+          module_name: "centreon-plugins"
+          ticket_reason_for_creation: "Nightly"

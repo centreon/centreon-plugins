@@ -1,0 +1,7 @@
+{
+    "dependencies": [
+        "plink",
+        "libssh-session-perl",
+        "libxml-libxml-simple-perl"
+    ]
+}

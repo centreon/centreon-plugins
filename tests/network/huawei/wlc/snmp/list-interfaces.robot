@@ -4,7 +4,8 @@ Documentation       Check Huawei equipments in SNMP.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
-Test Setup          Ctn Generic Suite Setup
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::huawei::wlc::snmp::plugin
@@ -23,7 +24,7 @@ list-interfaces ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options} | grep -v 'skipping interface' | wc -l
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc   extra_options                                               expected_result    --
             ...      1    ${EMPTY}                                                    185

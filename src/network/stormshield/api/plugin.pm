@@ -30,14 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'             => 'network::stormshield::api::mode::cpu',
-        'ha'              => 'network::stormshield::api::mode::ha',
-        'hardware'        => 'network::stormshield::api::mode::hardware',
-        'health'          => 'network::stormshield::api::mode::health',
-        'interfaces'      => 'network::stormshield::api::mode::interfaces',
-        'list-interfaces' => 'network::stormshield::api::mode::listinterfaces',
-        'memory'          => 'network::stormshield::api::mode::memory',
-        'uptime'          => 'network::stormshield::api::mode::uptime'
+        'cpu'              => 'network::stormshield::api::mode::cpu',
+        'ha'               => 'network::stormshield::api::mode::ha',
+        'hardware'         => 'network::stormshield::api::mode::hardware',
+        'health'           => 'network::stormshield::api::mode::health',
+        'interfaces'       => 'network::stormshield::api::mode::interfaces',
+        'list-interfaces'  => 'network::stormshield::api::mode::listinterfaces',
+        'list-vpn-tunnels' => 'network::stormshield::api::mode::listvpntunnels',
+        'memory'           => 'network::stormshield::api::mode::memory',
+        'uptime'           => 'network::stormshield::api::mode::uptime',
+        'vpn-tunnels'      => 'network::stormshield::api::mode::vpntunnels'
     };
 
     $self->{custom_modes}->{api} = 'network::stormshield::api::custom::api';

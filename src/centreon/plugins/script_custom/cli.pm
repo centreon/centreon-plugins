@@ -129,7 +129,8 @@ sub execute_command {
             command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
             command_path => defined($self->{option_results}->{command_path}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
             command_options => $command_options,
-            no_quit => $options{no_quit}
+            no_quit => $options{no_quit},
+            no_shell_interpretation => $options{no_shell_interpretation}
         );
     }
 

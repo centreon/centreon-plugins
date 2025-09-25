@@ -20,7 +20,7 @@
 
 package apps::apache::serverstatus::mode::requests;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
@@ -30,7 +30,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -43,22 +43,23 @@ sub new {
         'username:s'        => { name => 'username' },
         'password:s'        => { name => 'password' },
         'header:s@'         => { name => 'header' },
-        'warning:s'         => { name => 'warning' },
-        'critical:s'        => { name => 'critical' },
-        'warning-bytes:s'   => { name => 'warning_bytes' },
-        'critical-bytes:s'  => { name => 'critical_bytes' },
-        'warning-access:s'  => { name => 'warning_access' },
-        'critical-access:s' => { name => 'critical_access' },
+        'warning:s'         => { name => 'warning', redirect => 'warning-apache-request-average-persecond' },
+        'critical:s'        => { name => 'critical', redirect => 'critical-apache-request-average-persecond' },
+        'warning-bytes:s'   => { name => 'warning_bytes', redirect => 'warning-apache-bytes-persecond' },
+        'critical-bytes:s'  => { name => 'critical_bytes', redirect => 'critical-apache-bytes-persecond' },
+        'warning-access:s'  => { name => 'warning_access', redirect => 'warning-apache-access-persecond' },
+        'critical-access:s' => { name => 'critical_access', redirect => 'critical-apache-access-persecond' },
         'timeout:s'         => { name => 'timeout' },
     });
     $self->{http} = centreon::plugins::http->new(%options);
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+
+    $self->SUPER::check_options(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
@@ -86,13 +87,97 @@ sub check_options {
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
-    $self->{statefile_value}->check_options(%options);
 }
 
-sub run {
+sub custom_bytes_persecond_calc {
     my ($self, %options) = @_;
 
-    my $webcontent = $self->{http}->request();
+    unless (defined $options{old_datas}->{global_total_bytes}) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
+
+    my $delta_time = $options{delta_time} || 1;
+
+    my $old_total_bytes = $options{old_datas}->{global_total_bytes} || 0;
+    $old_total_bytes = 0 if $old_total_bytes > $options{new_datas}->{global_total_bytes};
+
+    $self->{result_values}->{bPerSec} = ($options{new_datas}->{global_total_bytes} - $old_total_bytes) / $delta_time;
+
+    return 0;
+}
+
+sub custom_access_persecond_calc {
+    my ($self, %options) = @_;
+
+    unless (defined $options{old_datas}->{global_total_access}) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
+    my $delta_time = $options{delta_time} || 1;
+
+    my $old_total_access = $options{old_datas}->{global_total_access} || 0;
+    $old_total_access = 0 if $old_total_access > $options{new_datas}->{global_total_access};
+
+    $self->{result_values}->{aPerSec} = ($options{new_datas}->{global_total_access} - $old_total_access) / $delta_time;
+
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', askipped_code => { -2 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} =  [
+        {   label => 'bytesPerSec', nlabel => 'apache.bytes.persecond',
+            set => {
+                key_values => [ { name => 'bPerSec' }, { name => 'total_bytes' } ],
+                output_template => 'BytesPerSec: %.2f %s',
+                output_change_bytes => 1,
+                closure_custom_calc => $self->can('custom_bytes_persecond_calc'),
+                perfdatas => [ { template => '%.2f', min => 0, unit => 'B' } ]
+           }
+        },
+        {   label => 'accessPerSec', nlabel => 'apache.access.persecond',
+            set => {
+                key_values => [ { name => 'aPerSec' }, { name => 'total_access' } ],
+                closure_custom_calc => $self->can('custom_access_persecond_calc'),
+                output_template => 'AccessPerSec: %.2f',
+                perfdatas => [ { template => '%.2f', min => 0, } ]
+            }
+        },
+        { label => 'avg_RequestPerSec', nlabel => 'apache.request.average.persecond',
+            set => {
+                key_values => [ { name => 'rPerSec' } ],
+                output_template => 'RequestPerSec: %.2f',
+                perfdatas => [ { template => '%.2f', min => 0, } ]
+            }
+        },
+        { label => 'avg_bytesPerRequest', nlabel => 'apache.bytes.average.perrequest',
+            set => {
+                key_values => [ { name => 'bPerReq' } ],
+                output_change_bytes => 1,
+                output_template => 'BytesPerRequest: %.2f %s',
+                perfdatas => [ { template => '%.2f', min => 0, unit => 'B', } ]
+            }
+        },
+        { label => 'avg_bytesPerSec', nlabel => 'apache.bytes.average.persecond',
+           display_ok => 0,
+           set => {
+               key_values => [ { name => 'avg_bPerSec' } ],
+               perfdatas => [ { min => 0, unit => 'B' } ]
+           }
+        },
+    ];
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my ($webcontent) = $self->{http}->request();
 
     #Total accesses: 7323 - Total Traffic: 243.7 MB - Total Duration: 7175675
     #CPU Usage: u1489.98 s1118.39 cu0 cs0 - .568% CPU load
@@ -105,7 +190,6 @@ sub run {
     if ($webcontent =~ /Total\s+Traffic:\s+(\S+)\s+(.|)B\s+/mi) {
         $total_bytes = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
     }
-
     $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
     if ($webcontent =~ /^(\S+)\s+requests\/sec/mi) {
         $rPerSec = $1;
@@ -127,79 +211,23 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
         $self->{output}->option_exit();
     }
+
     $rPerSec = '0' . $rPerSec if ($rPerSec =~ /^\./);
     $avg_bPerSec = '0' . $avg_bPerSec if ($avg_bPerSec =~ /^\./);
     $bPerReq = '0' . $bPerReq if ($bPerReq =~ /^\./);
-    
-    $self->{statefile_value}->read(statefile => 'apache_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode});
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    my $old_total_access = $self->{statefile_value}->get(name => 'total_access');
-    my $old_total_bytes = $self->{statefile_value}->get(name => 'total_bytes');
 
-    my $new_datas = {};
-    $new_datas->{last_timestamp} = time();
-    $new_datas->{total_bytes} = $total_bytes;
-    $new_datas->{total_access} = $total_access;
-    
-    $self->{statefile_value}->write(data => $new_datas); 
-    if (!defined($old_timestamp) || !defined($old_total_access)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    $old_total_access = 0 if ($old_total_access > $new_datas->{total_access}); 
-    $old_total_bytes = 0 if ($old_total_bytes > $new_datas->{total_bytes});
-    my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
-    $delta_time = 1 if ($delta_time == 0); # One seconds ;)
-    
-    my $bPerSec = ($new_datas->{total_bytes} - $old_total_bytes) / $delta_time;
-    my $aPerSec = ($new_datas->{total_access} - $old_total_access) / $delta_time;
-    
-    my $exit1 = $self->{perfdata}->threshold_check(value => $rPerSec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my $exit2 = $self->{perfdata}->threshold_check(value => $bPerSec, threshold => [ { label => 'critical-bytes', 'exit_litteral' => 'critical' }, { label => 'warning-bytes', exit_litteral => 'warning' } ]);
-    my $exit3 = $self->{perfdata}->threshold_check(value => $aPerSec, threshold => [ { label => 'critical-access', 'exit_litteral' => 'critical' }, { label => 'warning-access', exit_litteral => 'warning' } ]);
-    
-    my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
-    
-    my ($bPerSec_value, $bPerSec_unit) = $self->{perfdata}->change_bytes(value => $bPerSec);
-    my ($bPerReq_value, $bPerReq_unit) = $self->{perfdata}->change_bytes(value => $bPerReq);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("BytesPerSec: %s AccessPerSec: %.2f RequestPerSec: %.2f BytesPerRequest: %s ", 
-                                                     $bPerSec_value . ' ' . $bPerSec_unit,
-                                                     $aPerSec,
-                                                     $rPerSec,
-                                                     $bPerReq_value . ' ' . $bPerReq_unit
-                                                     ));
-    $self->{output}->perfdata_add(label => "avg_RequestPerSec",
-                                  value => sprintf("%.2f", $rPerSec),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "bytesPerSec", unit => 'B',
-                                  value => sprintf("%.2f", $bPerSec),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "avg_bytesPerRequest", unit => 'B',
-                                  value => $bPerReq,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "avg_bytesPerSec", unit => 'B',
-                                  value => $avg_bPerSec,
-                                  min => 0
-                                  );
-    $self->{output}->perfdata_add(label => "accessPerSec",
-                                  value => sprintf("%.2f", $aPerSec),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-access'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-access'),
-                                  min => 0);
+    $self->{global} = {
+        rPerSec => $rPerSec,
+        bPerReq => $bPerReq,
+        avg_bPerSec => $avg_bPerSec,
+        total_bytes => $total_bytes,
+        total_access => $total_access,
+        bPerSec => 0, # Will be calculated in custom_bytes_persecond_calc
+        aPerSec => 0, # Will be calculated in custom_access_persecond_calc
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    };
 
+    $self->{cache_name} = 'apache_' . $self->{option_results}->{hostname}  . '_' . $self->{http}->get_port() . '_' . $self->{mode};
 }
 
 1;
@@ -255,6 +283,12 @@ Threshold for HTTP timeout
 =item B<--header>
 
 Set HTTP headers (multiple option)
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Can be : C<bytesPerSec>, C<accessPerSec>, C<avg_RequestPerSec>, C<avg_bytesPerRequest>, C<avg_bytesPerSec>
+Example : --filter-counters='^accessPerSec$'
 
 =item B<--warning>
 

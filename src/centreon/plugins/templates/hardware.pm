@@ -77,7 +77,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'component:s'            => { name => 'component', default => '.*' },
-        'no-component:s'         => { name => 'no_component' },
+        'no-component:s'         => { name => 'no_component', default => 'critical' },
         'threshold-overload:s@'  => { name => 'threshold_overload' },
         'add-name-instance'      => { name => 'add_name_instance' },
         'no-component-count'     => { name => 'no_component_count' }
@@ -137,13 +137,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
+    # For compatibility both $self->{option_results}->{no_component} and $self->{no_components} are initialized.
+    # If unset or empty the default value 'critical' is used.
+    $self->{option_results}->{no_component} = $self->{no_components} = $self->{option_results}->{no_component} || 'critical';
 
     if ($self->{filter_exclude} == 1) {
         $self->{filter} = [];
@@ -349,6 +345,38 @@ sub run {
 
     $self->{output}->display();
     $self->{output}->exit();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['component', 'instance', 'description']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->{loaded} = 0;  
+    $self->call_object_callback(method_name => $self->{cb_hook1}, %options);
+
+    $self->load_components(%options);
+    if ($self->{loaded} == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
+        $self->{output}->option_exit();
+    }
+    
+    $self->call_object_callback(method_name => $self->{cb_hook2}, %options);
+    
+    foreach (@{$self->{components_module}}) {
+        if (/$self->{option_results}->{component}/) {
+            my $mod_name = $self->{components_path} . "::$_";
+            if (my $func = $mod_name->can('disco_show')) {
+                $func->($self);
+            }
+        }
+    }
+
+    $self->call_object_callback(method_name => $self->{cb_hook3}, %options);
 }
 
 sub check_filter {

@@ -100,7 +100,7 @@ jobs:
           - spec_file: ""
           - no-auto-depends: "false"
           - preinstall_cpanlibs: ""
-          - revision: "1"
+          - revision: "2"
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -112,7 +112,7 @@ jobs:
           - name: "Crypt::Argon2"
             preinstall_cpanlibs: "Dist::Build"
             rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
-            revision: "2"
+            revision: "3"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "Device::Modbus::RTU::Client"
@@ -128,7 +128,7 @@ jobs:
           - name: "Libssh::Session"
             rpm_dependencies: "libssh"
             rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
-            revision: "2"
+            revision: "3"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
@@ -136,7 +136,7 @@ jobs:
           - name: "Net::Curl"
             rpm_dependencies: "libcurl"
             rpm_provides: "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)"
-            revision: "2"
+            revision: "3"
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -240,7 +240,7 @@ jobs:
 
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --rpm-digest sha256 --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
@@ -270,7 +270,7 @@ jobs:
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -288,7 +288,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact/merge@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: packages-rpm-${{ matrix.distrib }}
           pattern: packages-rpm-${{ matrix.distrib }}-*
@@ -325,7 +325,7 @@ jobs:
 
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
-      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: packages-rpm-${{ matrix.distrib }}
           path: ./
@@ -415,9 +415,9 @@ jobs:
             package_extension: deb
             image: packaging-plugins-bullseye-arm64
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
           - name: "Crypt::Argon2"
-            build_names: "bullseye-amd64,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,jammy,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
             use_dh_make_perl: "false"
             no-auto-depends: "true"
@@ -430,11 +430,13 @@ jobs:
             no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
           - name: "Device::Modbus::RTU::Client"
-            build_names: "bookworm"
+            build_names: "bookworm,noble"
           - name: "Device::Modbus::TCP::Client"
-            build_names: "bookworm"
+            build_names: "bookworm,noble"
           - name: "Digest::SHA1"
             build_names: "jammy,noble"
+          - name: "Hash::Ordered"
+            build_names: "bullseye-amd64,bookworm,jammy"
           - name: "Libssh::Session"
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
@@ -443,7 +445,7 @@ jobs:
             deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
             revision: "2"
           - name: "Net::Amazon::Signature::V4"
-            build_names: ["bullseye-amd64", "jammy", "noble"]
+            build_names: "bullseye-amd64,jammy"
           - name: "Net::Curl"
             use_dh_make_perl: "false"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
@@ -453,6 +455,7 @@ jobs:
             revision: "2"
           - name: "Net::MQTT::Simple"
             version: "1.29"
+            build_names: "bullseye-amd64,bookworm,jammy"
           - name: "Paws"
             use_dh_make_perl: "false"
             deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
@@ -608,7 +611,7 @@ jobs:
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
@@ -626,7 +629,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact/merge@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: packages-deb-${{ matrix.distrib }}
           pattern: packages-deb-${{ matrix.distrib }}-*
@@ -649,7 +652,7 @@ jobs:
       matrix:
         distrib: [bullseye, bookworm, jammy, noble]
     steps:
-      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: packages-deb-${{ matrix.distrib }}
           path: ./
@@ -692,13 +695,14 @@ jobs:
             runner_name: ubuntu-24.04
           - package_extension: deb
             image: ubuntu:noble
+            distrib: noble
             arch: amd64
             runner_name: ubuntu-24.04
           - package_extension: deb
             image: debian:bullseye
             distrib: bullseye
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner_name }}
     container:
@@ -718,7 +722,7 @@ jobs:
 
       - name: Upload error log
         if: failure()
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: install_error_log_${{ matrix.distrib }}-${{ matrix.arch }}
           path: install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log
