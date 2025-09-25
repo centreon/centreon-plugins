@@ -113,7 +113,7 @@ sub manage_selection {
         if $@;
 
     $self->{global} = {
-        count => @data
+        count => scalar(@data)
     };
 
     for (0..$#data) {
