@@ -1035,7 +1035,7 @@ Return the value of a complex perl variable (hash, array...) or a default value 
 
 =item * C<$expression> - The expression to test.
 
-=item * C<$default> - The default value to return if expression is not defined.
+=item * C<$default> - The default value to return if expression is not defined (optional).
 
 =back
 
