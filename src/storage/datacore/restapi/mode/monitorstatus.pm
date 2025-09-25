@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw(empty);
+use centreon::plugins::misc;
 
 my %monitor_state = (1 => "Undefined", 2 => "Healthy", 4 => "Attention", 8 => "Warning", 16 => "Critical");
 
@@ -125,7 +125,7 @@ __END__
 
 =head1 MODE
 
-Check Datacore monitor status exposed through the rest api.
+Check Datacore monitor status exposed through the REST API.
 
 =over 8
 
@@ -136,7 +136,7 @@ By default all elements will be checked.
 
 =item B<--warning-state> B<--critical-state>
 
-define which output from the api should be considered warning or critical.
+define which output from the API should be considered warning or critical.
 
 warning_default  = '%{state} =~ /Warning/i',
 

@@ -113,6 +113,7 @@ sub new {
 	    "lookup-days:s"     => { name => 'lookup_days', default => 30 },
 	    "units:s"           => { name => 'units', default => '%' },
 	    "timeout:s"         => { name => 'timeout', default => '60' },
+	    "cost-metric:s"     => { name => "cost_metric", default => 'actualcost' }
     });   
 
     return $self;
@@ -125,6 +126,12 @@ sub check_options {
     if (!defined($self->{option_results}->{budget_name}) || $self->{option_results}->{budget_name} eq '') {
 	    $self->{output}->add_option_msg(short_msg => "Need to specify --budget-name option");
 	    $self->{output}->option_exit();
+    }
+
+    $self->{option_results}->{cost_metric} = lc($self->{option_results}->{cost_metric});
+    if ($self->{option_results}->{cost_metric} !~ /^(actualcost|amortized)$/) {
+        $self->{output}->add_option_msg(short_msg => "Invalid cost metric '" . $self->{option_results}->{cost_metric} . "'. Valid values are 'actualcost' or 'amortized'.");
+        $self->{output}->option_exit();
     }
 
     $self->{lookup_days} = $self->{option_results}->{lookup_days};
@@ -143,7 +150,8 @@ sub manage_selection {
     my $costs = $options{custom}->azure_get_usagedetails(
 	    resource_group => $self->{option_results}->{resource_group},
 	    usage_start    => $usage_start,
-	    usage_end      => $usage_end
+	    usage_end      => $usage_end,
+	    cost_metric    => $self->{option_results}->{cost_metric},
     );
     
     my $cost = 0;
@@ -183,7 +191,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::costs::plugin --cust
 You should NOT execute the plugin for a given subscription/resource group more than once a day otherwise,
 you might reach the Azure API calls limit if you have many.
 
-For subscription with large ressource with usagedetail consumption that might requite many API calls,
+For subscription with large resources and detailed usage consumption that might require many API calls,
 you may have to increase timeout.
 
 =over 8
@@ -209,7 +217,12 @@ Set warning threshold for cost).
 Define the conditions to match for the status to be CRITICAL.
 
 =item B<--units>
+
 Unit of thresholds (default: '%') ('%', 'count').
+
+=item B<--cost-metric>
+
+Choose the cost metric to use (default: C<actualcost>) (C<actualcost>, C<amortized>).
 
 =back
 

@@ -39,6 +39,8 @@ sub new {
 
     $self->{output} = $options{output};
 
+    $self->{curl_log} = $options{curl_logger};
+
     return $self;
 }
 
@@ -158,23 +160,39 @@ sub set_method {
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => undef);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPGET'), parameter => 1);
 
+    my $skip_log_post = 0;
+    # POST inferred by CURLOPT_POSTFIELDS
     if ($options{content_type_forced} == 1) {
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $options{request}->{query_form_post})
-            if (defined($options{request}->{query_form_post}));
+        if (defined($options{request}->{query_form_post})) {
+            $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $options{request}->{query_form_post});
+            $self->{curl_log}->log("--data-raw", $options{request}->{query_form_post});
+            $skip_log_post = 1;
+        }
     } elsif (defined($options{request}->{post_params})) {
         my $uri_post = URI->new();
         $uri_post->query_form($options{request}->{post_params});
-        push @{$options{headers}}, 'Content-Type: application/x-www-form-urlencoded';
+        my $urlencodedheader = 'Content-Type: application/x-www-form-urlencoded';
+        push @{$options{headers}}, $urlencodedheader;
+
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $uri_post->query);
+        $self->{curl_log}->log("-H", $urlencodedheader);
+
+        $self->{curl_log}->log("--data-raw", $uri_post->query);
+        $skip_log_post = 1;
     }
 
     if ($options{request}->{method} eq 'GET') {
-        return ;
+        # no curl_log call because GET is the default value
+        return;
     }
 
     if ($options{request}->{method} eq 'POST') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POST'), parameter => 1);
+        $self->{curl_log}->log('-X', $options{request}->{method}) unless $skip_log_post;
+        return;
     }
+
+    $self->{curl_log}->log('-X', $options{request}->{method});
     if ($options{request}->{method} eq 'PUT') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => $options{request}->{method});
     }
@@ -192,25 +210,38 @@ sub set_auth {
     if (defined($options{request}->{credentials})) {
         if (defined($options{request}->{basic})) {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_BASIC'));
+            $self->{curl_log}->log('--basic');
         } elsif (defined($options{request}->{ntlmv2})) {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_NTLM'));
+            $self->{curl_log}->log('--ntlm');
         } elsif (defined($options{request}->{digest})) {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_DIGEST'));
+            $self->{curl_log}->log('--digest');
         }else {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPAUTH'), parameter => $self->{constant_cb}->(name => 'CURLAUTH_ANY'));
+            $self->{curl_log}->log('--anyauth');
         }
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_USERPWD'), parameter => $options{request}->{username}  . ':' . $options{request}->{password});
+        my $userpassword = $options{request}->{username}  . ':' . $options{request}->{password};
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_USERPWD'), parameter => $userpassword);
+        $self->{curl_log}->log('--user', $userpassword);
     }
 
     if (defined($options{request}->{cert_file}) &&  $options{request}->{cert_file} ne '') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERT'), parameter => $options{request}->{cert_file});
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLKEY'), parameter => $options{request}->{key_file});
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_KEYPASSWD'), parameter => $options{request}->{cert_pwd});
+
+        $self->{curl_log}->log('--cert', $options{request}->{cert_file});
+        $self->{curl_log}->log('--key', $options{request}->{key_file});
+        $self->{curl_log}->log('--pass', $options{request}->{cert_pwd}) if defined $options{request}->{cert_pwd} && $options{request}->{cert_pwd} ne '';
     }
 
-    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERTTYPE'), parameter => "PEM");
     if (defined($options{request}->{cert_pkcs12})) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERTTYPE'), parameter => "P12");
+        $self->{curl_log}->log('--cert-type', 'p12');
+    } else {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSLCERTTYPE'), parameter => "PEM");
+        # no curl_log call because PEM is the default value
     }
 }
 
@@ -234,6 +265,9 @@ sub set_form {
         $args{ $self->{constant_cb}->(name => 'CURLFORM_COPYCONTENTS()') } = $_->{copycontents}
             if (defined($_->{copycontents}));
         $form->add(%args);
+
+        $self->{curl_log}->log("--form-string", $_->{copyname}."=".$_->{copycontents})
+            if defined($_->{copyname}) && defined($_->{copycontents});
     }
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HTTPPOST()'), parameter => $form);
@@ -244,6 +278,7 @@ sub set_proxy {
 
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_PROXY'), parameter => $options{request}->{proxyurl});
+        $self->{curl_log}->log("--proxy", $options{request}->{proxyurl});
     }
 
     if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
@@ -261,14 +296,35 @@ sub set_extra_curl_opt {
         $key = centreon::plugins::misc::trim($key);
 
         if (!defined($entries->{$key})) {
-            $entries->{$key} = { val => [], force_array => 0 };
+            $entries->{$key} = { val => [], constants => [], force_array => 0 };
         }
 
         $value = centreon::plugins::misc::trim($value);
+
+        # Here we want to convert a string containing curl options into a single value or into
+        # an array of values depending on whether it begins with '[' and ends with ']'.
+        # We also remove the quotes.
+        # for example:
+        #
+        # $opt = ["CURLOPT_SSL_VERIFYPEER =>[opt1,'opt2','opt3']"];
+        # is converted to a Perl array like this:
+        # $VAR1 = [
+        #  'opt1',
+        #  'opt2',
+        #  'opt3'
+        # ];
+        #
+        # $opt = [ "CURLOPT_SSL_VERIFYPEER => 'opt1'" ];
+        # is converted to:
+        # $VAR1 = 'opt1';
         if ($value =~ /^\[(.*)\]$/) {
             $entries->{$key}->{force_array} = 1;
             $value = centreon::plugins::misc::trim($1);
+            push @{$entries->{$key}->{constants}}, map { $_ = centreon::plugins::misc::trim($_); s/^'(.*)'$/$1/; $_  } split ',', $value;
+        } else {
+            push @{$entries->{$key}->{constants}}, $value =~ /^'(.*)'$/ ? $1 : $value;
         }
+
         if ($value  =~ /^CURLOPT|CURL/) {
             $value = $self->{constant_cb}->(name => $value);
         }
@@ -278,15 +334,26 @@ sub set_extra_curl_opt {
 
     foreach (keys %$entries) {
         my $key = $_;
+
+        if ($self->{curl_log}->is_enabled()) {
+            $self->{curl_log}->convert_curlopt_to_cups_parameter(
+                key => $key,
+                parameter => $entries->{$key}->{constants},
+            );
+        }
+
         if (/^CURLOPT|CURL/) {
             $key = $self->{constant_cb}->(name => $_);
         }
 
+        my $parameter;
         if ($entries->{$_}->{force_array} == 1 || scalar(@{$entries->{$_}->{val}}) > 1) {
-            $self->curl_setopt(option => $key, parameter => $entries->{$_}->{val});
+            $parameter = $entries->{$_}->{val};
         } else {
-            $self->curl_setopt(option => $key, parameter => pop @{$entries->{$_}->{val}});
+            $parameter = pop @{$entries->{$_}->{val}};
         }
+        $self->curl_setopt(option => $key, parameter => $parameter);
+
     }
 }
 
@@ -315,27 +382,11 @@ sub cb_get_header {
 sub request {
     my ($self, %options) = @_;
 
+    # Enable curl logger when debug mode is on
+    $self->{curl_log}->init( enabled => $self->{output}->is_debug() );
+
     if (!defined($self->{curl_easy})) {
         $self->{curl_easy} = Net::Curl::Easy->new();
-    }
-
-    if ($self->{output}->is_debug()) {
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGFUNCTION'), parameter => \&cb_debug);
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGDATA'), parameter => $self);
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_VERBOSE'), parameter => 1);
-    }
-
-    if (defined($options{request}->{timeout}) && $options{request}->{timeout} =~ /\d/) {
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_TIMEOUT'), parameter => $options{request}->{timeout});
-    }
-    if (defined($options{request}->{cookies_file})) {
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEFILE'), parameter => $options{request}->{cookies_file});
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEJAR'), parameter => $options{request}->{cookies_file});
-    }
-
-    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 1);
-    if (defined($options{request}->{no_follow})) {
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 0);
     }
 
     my $url;
@@ -347,14 +398,6 @@ sub request {
         $url = $options{request}->{proto}. "://" . $options{request}->{hostname} . $options{request}->{url_path};
     }
 
-    if (defined($options{request}->{http_peer_addr}) && $options{request}->{http_peer_addr} ne '') {
-        $url =~ /^(?:http|https):\/\/(.*?)(\/|\:|$)/;
-        $self->{curl_easy}->setopt(
-            $self->{constant_cb}->(name => 'CURLOPT_RESOLVE'),
-            [$1 . ':' . $options{request}->{port_force} . ':' . $options{request}->{http_peer_addr}]
-        );
-    }    
-
     my $uri = URI->new($url);
     if (defined($options{request}->{get_params})) {
         $uri->query_form($options{request}->{get_params});
@@ -362,13 +405,54 @@ sub request {
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_URL'), parameter => $uri);
 
+    $self->{curl_log}->log($uri);
+
+    if ($self->{output}->is_debug()) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGFUNCTION'), parameter => \&cb_debug);
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGDATA'), parameter => $self);
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_VERBOSE'), parameter => 1);
+
+        $self->{curl_log}->log('--verbose');
+    }
+
+    if (defined($options{request}->{timeout}) && $options{request}->{timeout} =~ /\d/) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_TIMEOUT'), parameter => $options{request}->{timeout});
+        $self->{curl_log}->log("--max-time", $options{request}->{timeout});
+    }
+
+    if (defined($options{request}->{cookies_file})) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEFILE'), parameter => $options{request}->{cookies_file});
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEJAR'), parameter => $options{request}->{cookies_file});
+        $self->{curl_log}->log('--cookie', $options{request}->{cookies_file});
+        $self->{curl_log}->log('--cookie-jar', $options{request}->{cookies_file});
+    }
+
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 1);
+    if (defined($options{request}->{no_follow})) {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 0);
+    } else {
+        $self->{curl_log}->log('-L');
+    }
+
+    if (defined($options{request}->{http_peer_addr}) && $options{request}->{http_peer_addr} ne '') {
+        $url =~ /^(?:http|https):\/\/(.*?)(\/|\:|$)/;
+        my $resolve = $1 . ':' . $options{request}->{port_force} . ':' . $options{request}->{http_peer_addr};
+        $self->{curl_easy}->setopt(
+            $self->{constant_cb}->(name => 'CURLOPT_RESOLVE'),
+            [$resolve]
+        );
+        $self->{curl_log}->log('--resolve', $resolve);
+    }    
+
     my $headers = [];
     my $content_type_forced = 0;
     foreach my $key (keys %{$options{request}->{headers}}) {
-        push @$headers, $key . ':' . (defined($options{request}->{headers}->{$key}) ? $options{request}->{headers}->{$key} : '');
+        my $header = $key . ':' . (defined($options{request}->{headers}->{$key}) ? $options{request}->{headers}->{$key} : '');
+        push @$headers, $header;
         if ($key =~ /content-type/i) {
             $content_type_forced = 1;
         }
+        $self->{curl_log}->log("-H", $header);
     }
 
     $self->set_method(%options, content_type_forced => $content_type_forced, headers => $headers);
@@ -383,16 +467,17 @@ sub request {
 
     if (defined($options{request}->{cacert_file}) && $options{request}->{cacert_file} ne '') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CAINFO'), parameter => $options{request}->{cacert_file});
+        $self->{curl_log}->log('--cacert', $options{request}->{cacert_file});
     }
     if (defined($options{request}->{insecure})) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSL_VERIFYPEER'), parameter => 0);
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_SSL_VERIFYHOST'), parameter => 0);
+        $self->{curl_log}->log('--insecure');
     }
 
     $self->set_auth(%options);
     $self->set_proxy(%options);
     $self->set_extra_curl_opt(%options);
-
     $self->{response_body} = '';
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FILE'), parameter => \$self->{response_body});
     $self->{nheaders} = 0;
@@ -402,9 +487,15 @@ sub request {
 
     if (defined($options{request}->{certinfo}) && $options{request}->{certinfo} == 1) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CERTINFO'), parameter => 1);
+        # no curl_log call because there is no equivalent in command line
     }
 
     $self->{response_code} = undef;
+
+    if ($self->{curl_log}->is_enabled()) {
+        $self->{output}->output_add(long_msg => 'curl request [curl backend]: ' . $self->{curl_log}->get_log());
+    }
+
     eval {
         $self->{curl_easy}->perform();
     };
@@ -439,7 +530,7 @@ sub request {
         $status = 'unknown';
     }
 
-    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+    if (!$options{request}->{silently_fail} && !$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         my $short_msg = $self->{response_code} . ' ' . 
             (defined($http_code_explained->{$self->{response_code}}) ? $http_code_explained->{$self->{response_code}} : 'unknown');
 

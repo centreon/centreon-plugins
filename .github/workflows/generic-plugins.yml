@@ -1,0 +1,23 @@
+name: Generic Plugins
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'experimental/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - 'experimental/**'
+
+jobs:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: experimental/Cargo.toml

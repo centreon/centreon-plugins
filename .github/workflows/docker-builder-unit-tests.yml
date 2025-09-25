@@ -30,25 +30,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: alma8
             image: alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: alma9
             image: alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: bullseye
             image: bullseye
-          - runner: centreon-collect-arm64
+          - runner: ubuntu-24.04-arm
             dockerfile: bullseye
             image: bullseye-arm64
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: bookworm
             image: bookworm
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: jammy
             image: jammy
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: noble
             image: noble
 
@@ -72,9 +72,9 @@ jobs:
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
-      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
-      - uses: docker/build-push-action@14487ce63c7a62a4a324b0bfb37086795e31c6c1 # v6.16.0
+      - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           file: .github/docker/unit-tests/Dockerfile.unit-tests-${{ matrix.dockerfile }}
           context: .
