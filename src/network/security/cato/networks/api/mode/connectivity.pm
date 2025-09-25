@@ -27,7 +27,7 @@ use warnings;
 
 use centreon::plugins::misc qw(change_seconds);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use Time::Piece;
+use DateTime::Format::Strptime;
 use POSIX qw(strftime);
 use network::security::cato::networks::api::misc qw/mk_timeframe/;
 
@@ -251,17 +251,15 @@ sub manage_selection {
         unless exists $results->{name};
 
     my ($last_connected_seconds, $connected_since_seconds) = (0,0);
+    my $strp = DateTime::Format::Strptime->new( pattern => "%Y-%m-%dT%H:%M:%SZ" );
+
     # Convert date fields to timestamp to manage them as thresholds
-    eval {
-        $last_connected_seconds = Time::Piece->strptime($results->{last_connected}, "%Y-%m-%dT%H:%M:%SZ");
-        $last_connected_seconds = time - $last_connected_seconds->epoch;
-    };
+    $last_connected_seconds = $strp->parse_datetime($results->{last_connected}) // 0;
+    $last_connected_seconds = time - $last_connected_seconds->epoch if $last_connected_seconds;
     $last_connected_seconds = 0 if $last_connected_seconds < 0;
 
-    eval {
-        $connected_since_seconds = Time::Piece->strptime($results->{connected_since_seconds}, "%Y-%m-%dT%H:%M:%SZ");
-        $connected_since_seconds = time - $connected_since_seconds->epoch if $connected_since_seconds;
-    };
+    $connected_since_seconds = $strp->parse_datetime($results->{connected_since}) // 0;
+    $connected_since_seconds = time - $connected_since_seconds->epoch if $connected_since_seconds;
     $connected_since_seconds = 0 if $connected_since_seconds < 0;
 
     $self->{global} = { display => $results->{name},
