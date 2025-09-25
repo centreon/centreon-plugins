@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use utf8;
 use JSON::XS;
+use Safe;
 
 use Exporter 'import';
 use feature 'state';
@@ -353,6 +354,8 @@ sub is_empty {
 sub value_of($$;$) {
     my ($variable, $expression, $default) = @_;
     $default //= '';
+
+    return $default unless defined $variable;
 
     state $safe = do { my $s = Safe->new();
                        $s->share('$v');
@@ -1017,6 +1020,22 @@ Checks if a value is empty.
 =over 4
 
 =item * C<$value> - The value to check.
+
+=back
+
+=head2 value_of
+
+    my $value = centreon::plugins::misc::value_of($variable, $expression, $default);
+
+Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+
+=over 4
+
+=item * C<$value> - The return value.
+
+=item * C<$expression> - The expression to test.
+
+=item * C<$default> - The default value to return if expression is not defined.
 
 =back
 

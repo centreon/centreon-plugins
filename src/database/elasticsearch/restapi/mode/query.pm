@@ -109,11 +109,11 @@ sub manage_selection {
     };
 
     # display only first line of error message
-    $self->{output}->option_exit(exit_litteral => 'critical', short_msg => "Invalud lookup parameter '$self->{lookup}': ".($@ =~ /^(.*)$/ && $1))
+    $self->{output}->option_exit(exit_litteral => 'critical', short_msg => "Invalid lookup parameter '$self->{lookup}': ".($@ =~ /^(.*)$/ && $1))
         if $@;
 
     $self->{global} = {
-        count => @data || 0
+        count => @data
     };
 
     for (0..$#data) {
