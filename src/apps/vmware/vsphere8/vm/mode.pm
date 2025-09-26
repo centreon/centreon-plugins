@@ -191,12 +191,14 @@ __END__
 
 =item B<--vm-id>
 
-Define which VM to monitor based on its resource ID (example: C<vm-16>).
+Define which VM to monitor based on its resource ID (example: C<vm-1234>).
+B<Using this option is mandatory if you have several VMs with the same name.>
 
 =item B<--vm-name>
 
 Define which VM to monitor based on its name (example: C<WEBSERVER01>).
 When possible, it is recommended to use C<--vm-id> instead.
+B<Do not use this option if you have several VMs with the same name.>
 
 =back
 
