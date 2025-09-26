@@ -1376,7 +1376,7 @@
         },
         {
           "uuid": "b4c155f2-02d3-4c28-82e5-4530f359e781",
-          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
+          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.contention.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-1234\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-1234\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Scond response page 2",
@@ -1778,6 +1778,124 @@
               "target": "query",
               "modifier": "cid",
               "value": "mem.capacity.entitlement.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "3fd7ee87-1135-4af6-98ff-1a11be3a1032",
+          "body": "{\"data_points\":[{\"val\":10.61,\"mid\":\"-9110273875124585251\",\"rid\":\"131\",\"cid\":\"disk.throughput.usage.VM\",\"ts\":1758876492},{\"val\":20.29,\"mid\":\"-9110273875124585251\",\"rid\":\"131\",\"cid\":\"disk.throughput.usage.VM\",\"ts\":1758876552}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "disk.throughput.usage.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "disk.throughput.usage.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "21474d6d-1b26-4550-b119-aebdc50de294",
+          "body": "{\"data_points\":[{\"val\":0.13,\"mid\":\"-1677800232533818921\",\"rid\":\"131\",\"cid\":\"disk.throughput.contention.VM\",\"ts\":1758876492},{\"val\":0.14,\"mid\":\"-1677800232533818921\",\"rid\":\"131\",\"cid\":\"disk.throughput.contention.VM\",\"ts\":1758876552}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "disk.throughput.contention.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "disk.throughput.contention.VM",
               "invert": false,
               "operator": "equals"
             }
