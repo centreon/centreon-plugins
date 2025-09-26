@@ -62,8 +62,6 @@ sub set_counters {
             set             => {
                 key_values      => [ { name => 'disk.throughput.contention.VM' }],
                 output_template => 'Disk throughput contention is %s ms',
-                output_use      => 'disk.throughput.contention.VM',
-                threshold_use   => 'disk.throughput.contention.VM',
                 perfdatas       => [ { value => 'disk.throughput.contention.VM', template => '%s', unit => 'ms' } ]
             }
         }
@@ -83,9 +81,7 @@ sub manage_selection {
 
     $self->{diskio} = \%results;
 
-    if ( defined($results{'disk.throughput.usage.VM'}) ) {
-        $self->{diskio}->{throughput_bps} = $results{'disk.throughput.usage.VM'} * 1024;
-    }
+    $self->{diskio}->{throughput_bps} = $results{'disk.throughput.usage.VM'} * 1024;
 }
 
 1;
