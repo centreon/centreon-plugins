@@ -24,10 +24,19 @@ use strict;
 use warnings;
 use utf8;
 use JSON::XS;
+use Safe;
+
 use Exporter 'import';
 use feature 'state';
 
-our @EXPORT_OK = qw/value_of json_encode json_decode graphql_escape change_seconds is_empty flatten_arrays slurp_file/;
+our @EXPORT_OK = qw/change_seconds
+                    flatten_arrays
+                    graphql_escape
+                    is_empty
+                    json_encode
+                    json_decode                    
+                    slurp_file
+                    value_of/;
 
 sub execute {
     my (%options) = @_;
@@ -352,6 +361,8 @@ sub is_empty {
 sub value_of($$;$) {
     my ($variable, $expression, $default) = @_;
     $default //= '';
+
+    return $default unless defined $variable;
 
     state $safe = do { my $s = Safe->new();
                        $s->share('$v');
@@ -1047,7 +1058,7 @@ Return the value of a complex perl variable (hash, array...) or a default value 
 
 =item * C<$expression> - The expression to test.
 
-=item * C<$default> - The default value to return if expression is not defined.
+=item * C<$default> - The default value to return if expression is not defined (optional).
 
 =back
 
