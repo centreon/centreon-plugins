@@ -58,9 +58,10 @@ sub new {
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
-    $self->{output} = $options{output};
-    $self->{http}   = centreon::plugins::http->new(%options, 'default_backend' => 'curl');
-    $self->{cache}  = centreon::plugins::statefile->new(%options);
+    $self->{output}          = $options{output};
+    $self->{http}            = centreon::plugins::http->new(%options, 'default_backend' => 'curl');
+    $self->{token_cache}     = centreon::plugins::statefile->new(%options);
+    $self->{acq_specs_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -98,7 +99,8 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{cache}->check_options(option_results => $self->{option_results});
+    $self->{token_cache}->check_options(option_results => $self->{option_results});
+    $self->{acq_specs_cache}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
@@ -133,13 +135,13 @@ sub settings {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(
-            statefile => 'vsphere8_api_' . md5_hex(
+    my $has_cache_file = $self->{token_cache}->read(
+            statefile => 'vsphere8_api_token_' . md5_hex(
                     $self->{hostname}
                     . ':' . $self->{port}
                     . '_' . $self->{username})
     );
-    my $token = $self->{cache}->get(name => 'token');
+    my $token = $self->{token_cache}->get(name => 'token');
 
     if (
         $has_cache_file == 0
@@ -163,11 +165,7 @@ sub get_token {
         $content =~ s/^"(.*)"$/$1/;
         $token = $content;
 
-        my $data = {
-            updated => time(),
-            token => $token
-        };
-        $self->{cache}->write(data => $data);
+        $self->{token_cache}->write(data => { updated => time(), token => $token });
     }
 
     return $token;
@@ -277,11 +275,17 @@ sub get_vm_guest_identity {
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
-    # If we have already requested it, we return what we have
+    # if we already have it in memory, we return what we have
     return $self->{all_acq_specs} if ($self->{all_acq_specs} && @{$self->{all_acq_specs}});
 
-    # Get all acq specs and store them in cache
-    # FIXME: cache management
+    # if we can get it from the cache, we return it
+    if ($self->{acq_specs_cache}->read(
+        statefile => 'vsphere8_api_acq_specs_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
+    )) {
+        $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
+        return $self->{all_acq_specs};
+    }
+    # Get all acq specs (first page)
     my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
     $self->{all_acq_specs} = $response->{acq_specs};
 
@@ -290,6 +294,9 @@ sub get_all_acq_specs {
         $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
         push @{$self->{all_acq_specs}}, @{$response->{acq_specs}};
     }
+
+    # store it in the cache for future runs
+    $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} });
     return $self->{all_acq_specs};
 }
 
@@ -469,11 +476,9 @@ sub get_stats {
         $self->{output}->option_exit();
     }
 
-    # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
-    # FIXME: the existence of the resource id must be checked at one moment
     # return only the last value (if there are several)
     if ( !defined($result->{data_points}) || scalar(@{ $result->{data_points} }) == 0 ) {
-        $self->{output}->add_option_msg(short_msg => "no data for host " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
+        $self->{output}->add_option_msg(short_msg => "no data for resource " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
         return undef;
     }
 
