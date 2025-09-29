@@ -25,7 +25,7 @@ use base qw(apps::vmware::vsphere8::vm::mode);
 
 
 my @counters = (
-    'power.capacity.usage.VM',        # Current power usage.
+    'power.capacity.usage.VM'        # Current power usage.
 );
 
 sub set_counters {
@@ -42,7 +42,7 @@ sub set_counters {
             nlabel          => 'power.capacity.usage.watts',
             output_template => 'Power usage is %d Watts',
             set             => {
-                output_template => 'Power usage is %d Watts',
+                output_template => 'Power usage is %s Watts',
                 key_values      => [ { name => 'power.capacity.usage.VM' } ],
                 perfdatas       => [ { value => 'power.capacity.usage.VM', template => '%s', unit => 'W', min => 0 } ]
             }
@@ -54,11 +54,13 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_vm_stats(%options, cid => $_, vm_id => $self->{vm_id}, vm_name => $self->{vm_name} )
     } @counters;
-    $self->{power} = \%structure;
-
+    $self->{output}->option_exit(short_msg => "No available data") unless $results{'power.capacity.usage.VM'};
+    $self->{power} = {
+        'power.capacity.usage.VM' => $results{'power.capacity.usage.VM'}
+    };
     return 1;
 }
 
@@ -69,7 +71,7 @@ sub manage_selection {
 Monitor the power consumption of a VMware virtual machine through vSphere 8 REST API.
 
     Meaning of the available counters in the VMware API:
-    - power.capacity.usage.VM       Current power usage.
+    - power.capacity.usage.VM       Current power usage in Watts.
 
 =over 8
 

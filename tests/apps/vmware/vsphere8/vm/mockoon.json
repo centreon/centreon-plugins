@@ -1376,7 +1376,7 @@
         },
         {
           "uuid": "b4c155f2-02d3-4c28-82e5-4530f359e781",
-          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.contention.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-1234\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-1234\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\"counters\":{\"cid_mid\":{\"mid\":\"\",\"cid\":\"net.throughput.contention.VM\"},\"set_id\":\"\"},\"resources\":[{\"predicate\":\"EQUAL\",\"scheme\":\"moid\",\"type\":\"VM\",\"id_value\":\"vm-5175\"}],\"expiration\":1761646002,\"interval\":60,\"memo_\":\"\",\"id\":\"5590\",\"status\":\"ENABLED\"},\n    {\"counters\":{\"cid_mid\":{\"mid\":\"\",\"cid\":\"net.throughput.usage.VM\"},\"set_id\":\"\"},\"resources\":[{\"predicate\":\"EQUAL\",\"scheme\":\"moid\",\"type\":\"VM\",\"id_value\":\"vm-5175\"}],\"expiration\":1761646002,\"interval\":60,\"memo_\":\"\",\"id\":\"5591\",\"status\":\"ENABLED\"}\n  ]\n}",
+          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-7722\"\n        }\n      ],\n      \"expiration\": 1760105513,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"543\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-5175\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.contention.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-1234\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.usage.VM\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"VM\",\n          \"id_value\": \"vm-1234\"\n        }\n      ],\n      \"expiration\": 1760109594,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"789\",\n      \"status\": \"ENABLED\"\n    },\n    {\"counters\":{\"cid_mid\":{\"mid\":\"\",\"cid\":\"net.throughput.contention.VM\"},\"set_id\":\"\"},\"resources\":[{\"predicate\":\"EQUAL\",\"scheme\":\"moid\",\"type\":\"VM\",\"id_value\":\"vm-1234\"}],\"expiration\":1761646002,\"interval\":60,\"memo_\":\"\",\"id\":\"5590\",\"status\":\"ENABLED\"},\n    {\"counters\":{\"cid_mid\":{\"mid\":\"\",\"cid\":\"net.throughput.usage.VM\"},\"set_id\":\"\"},\"resources\":[{\"predicate\":\"EQUAL\",\"scheme\":\"moid\",\"type\":\"VM\",\"id_value\":\"vm-1234\"}],\"expiration\":1761646002,\"interval\":60,\"memo_\":\"\",\"id\":\"5591\",\"status\":\"ENABLED\"},\n    {\"counters\":{\"cid_mid\":{\"mid\":\"\",\"cid\":\"power.capacity.usage.VM\"},\"set_id\":\"\"},\"resources\":[{\"predicate\":\"EQUAL\",\"scheme\":\"moid\",\"type\":\"VM\",\"id_value\":\"vm-1234\"}],\"expiration\":1761896615,\"interval\":60,\"memo_\":\"\",\"id\":\"5651\",\"status\":\"ENABLED\"}\n  ]\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "Scond response page 2",
@@ -2014,6 +2014,72 @@
               "target": "query",
               "modifier": "cid",
               "value": "net.throughput.usage.VM",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "467627c2-3083-4fab-ac37-503c6dec8b41",
+          "body": "{\"data_points\":[{\"val\":13.5,\"mid\":\"8446910325652763598\",\"rid\":\"191\",\"cid\":\"power.capacity.usage.VM\",\"ts\":1759131850}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "power.capacity.usage.VM",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "power.capacity.usage.VM",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "rsrcs",
+              "value": "type.VM.moid=vm-1234",
               "invert": false,
               "operator": "equals"
             }

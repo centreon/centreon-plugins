@@ -20,7 +20,7 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vm::plu
 
 *** Test Cases ***
 Network ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware   vsphere8    vm
     ${command}    Catenate    ${CMD} ${filter_option} ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
