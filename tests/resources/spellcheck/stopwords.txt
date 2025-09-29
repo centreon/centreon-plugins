@@ -107,6 +107,8 @@ FreeBSD
 FrontDoor
 frsevent
 GCP
+GRAPHQL
+GraphQL
 --get-param
 HAProxy
 HashiCorp
