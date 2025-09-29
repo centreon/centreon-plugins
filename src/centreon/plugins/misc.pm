@@ -24,6 +24,19 @@ use strict;
 use warnings;
 use utf8;
 use JSON::XS;
+use Safe;
+
+use Exporter 'import';
+use feature 'state';
+
+our @EXPORT_OK = qw/change_seconds
+                    flatten_arrays
+                    graphql_escape
+                    is_empty
+                    json_encode
+                    json_decode                    
+                    slurp_file
+                    value_of/;
 
 sub execute {
     my (%options) = @_;
@@ -340,6 +353,27 @@ sub is_empty {
     return 0;
 }
 
+# Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+# The returned value will never be undef.
+# I.g:  value_of($hash, '->{key}->{subkey}', 'default')
+#       value_of($array, '->[0]', 'default')
+#       value_of($complex, '->{key}->[0]->{subkey}', 'default')
+sub value_of($$;$) {
+    my ($variable, $expression, $default) = @_;
+    $default //= '';
+
+    return $default unless defined $variable;
+
+    state $safe = do { my $s = Safe->new();
+                       $s->share('$v');
+                       $s;
+                     };
+    our $v = $variable;
+    my $value = $safe->reval("\$v$expression", 1);
+
+    return defined $value ? $value : $default;
+}
+
 sub trim {
     my ($value) = $_[0];
     
@@ -364,6 +398,22 @@ sub powershell_escape {
     $value =~ s/'/`'/g;
     $value =~ s/"/`"/g;
     return $value;
+}
+
+sub graphql_escape($) {
+    my ($value) = $_[0];
+    $value =~ s/"/\\"/g;
+    return $value;
+}
+
+# Returns an array from arrays containing values separated by $separator
+sub flatten_arrays($;$) {
+    my ($array_of_values, $separator) = @_;
+    $separator //= ',';
+
+    return [ ] unless ref $array_of_values eq 'ARRAY';
+
+    return [ map { split $separator } @{$array_of_values} ];
 }
 
 sub minimal_version {
@@ -996,6 +1046,22 @@ Checks if a value is empty.
 
 =back
 
+=head2 value_of
+
+    my $value = centreon::plugins::misc::value_of($variable, $expression, $default);
+
+Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+
+=over 4
+
+=item * C<$value> - The return value.
+
+=item * C<$expression> - The expression to test.
+
+=item * C<$default> - The default value to return if expression is not defined (optional).
+
+=back
+
 =head2 trim
 
     my $trimmed_value = centreon::plugins::misc::trim($value);
@@ -1029,6 +1095,32 @@ Escapes special characters in a string for use in PowerShell.
 =over 4
 
 =item * C<$value> - The string to escape.
+
+=back
+
+=head2 graphql_escape
+
+    my $escaped = centreon::plugins::misc::graphql_escape($value);
+
+Escapes special characters in a string for use in graphql query.
+
+=over 4
+
+=item * C<$value> - The string to escape.
+
+=back
+
+=head2 flatten_arrays
+
+    my $array = centreon::plugins::misc::flatten_arrays($arrays, $separator);
+
+Returns an array from arrays containing values separated by a separator ( default comma ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
 
 =back
 
