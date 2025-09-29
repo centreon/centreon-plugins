@@ -61,7 +61,7 @@ __END__
 
 =head1 MODE
 
-Check time offset of server with NTP server. Use local time if ntp-host option is not set. 
+Check time offset of server with NTP server. Use local time if C<--ntp-host> option is not set. 
 SNMP gives a date with second precision (no milliseconds). Time precision is not very accurate.
 Use threshold with (+-) 2 seconds offset (minimum).
 
