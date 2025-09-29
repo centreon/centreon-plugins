@@ -28,11 +28,13 @@ time ${tc}
 
    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_regexp}
 
-    Examples:    tc    extra_options                                                             expected_regexp    --
-    ...          1     ${EMPTY}                                                                  ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
-    ...          2     --ntp-port=8080                                                           ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$    
-    ...          3     --timezone='Europe/London'                                                ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(Europe/London\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$       
-    ...          5     --timezone='Europe/Paris'                                                 ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(Europe/Paris\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
-    ...          6     --timezone='Japan/Tokyo'                                                  ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(Japan/Tokyo\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
-    ...          7     --warning-offset='0'                                                      ^WARNING: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;0:0;;;$ 
-    ...          8     --critical-offset='0'                                                     ^CRITICAL: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : \\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2} \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;0:0;;$ 
+    Examples:    tc    extra_options                  expected_regexp    --
+    ...          1     ${EMPTY}                       ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T08:50:07 \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
+    ...          2     --ntp-port=8080                ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T08:50:07 \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
+    ...          3     --timezone='Europe/London'     ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T09:50:07 \\\\(Europe/London\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
+    ...          5     --timezone='Europe/Paris'      ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T10:50:07 \\\\(Europe/Paris\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
+    ...          6     --timezone='Japan/Tokyo'       ^UNKNOWN: Timezone 'Japan/Tokyo' does not exist.$
+    ...          7     --timezone='Asia/Tokyo'        ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T17:50:07 \\\\(Asia/Tokyo\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$
+    ...          8     --warning-offset='0'           ^WARNING: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T08:50:07 \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;0:0;;;$
+    ...          9     --critical-offset='0'          ^CRITICAL: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T08:50:07 \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;0:0;;$
+    ...         10     --timezone='doesnt/exist'      UNKNOWN: Timezone 'doesnt/exist' does not exist.
