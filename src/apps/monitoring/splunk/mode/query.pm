@@ -73,7 +73,6 @@ sub manage_selection {
         query => $self->{option_results}->{query},
         timeframe => $self->{option_results}->{timeframe}
     );
-
     $self->{global} = {
         query_matches => $query_count
     };
@@ -93,7 +92,7 @@ Check number of results for a query.
 
 Specify a query to be made and check matching number. 
 
-Query has to start with "search ".
+Query has to start with "search ". Of it does not "search " will be automatically prepended at execution time.
 Example: --query='search host="prod-server" "ERROR" earliest=-150000min'
 
 =item B<--warning-query-matches> 

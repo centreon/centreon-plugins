@@ -27,6 +27,8 @@ use centreon::plugins::statefile;
 use DateTime;
 use XML::LibXML::Simple;
 use URI::Encode;
+use JSON::XS;
+use centreon::plugins::misc qw(value_of);
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -55,8 +57,8 @@ sub new {
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' },
-            'splunk-retries:s'       => { name => 'splunk_retries' },
-            'splunk-wait:s'          => { name => 'splunk_wait' }
+            'splunk-retries:s'       => { name => 'splunk_retries', default => 5 },
+            'splunk-wait:s'          => { name => 'splunk_wait', default => 2 }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
@@ -115,6 +117,21 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
+}
+
+sub json_decode {
+    my ($self, %options) = @_;
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($options{content});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $decoded;
 }
 
 sub clean_session_token {
@@ -260,6 +277,10 @@ sub get_splunkd_health {
 sub query_count {
     my ($self, %options) = @_;
 
+    my $query = $options{query};
+    $query = "search $query" unless $query =~ /^[s\t]*search/i;
+    $query .= '| stats count';
+
     my $query_sid = $self->request_api(
         method => 'POST',
         endpoint => '/services/search/jobs',
@@ -267,7 +288,6 @@ sub query_count {
             'search=' . $options{query} . '| stats count'
         ]
     );
-
     if (!defined($query_sid->{sid}) || $query_sid->{sid} eq ''){
         $self->{output}->add_option_msg(short_msg => "Error during process. No SID where returned after query was made. Please check your query and splunkd health.");
         $self->{output}->option_exit();
@@ -301,19 +321,70 @@ sub query_count {
     }
 
     # it took too long to run query
-    if (!$is_done) {
-        $self->{output}->add_option_msg(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow");
+    $self->{output}->option_exit(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow")
+        unless $is_done;
+
+    my $query_res = $self->request_api(
+        method => 'GET',
+        endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results'
+    );
+    my $query_count = $query_res->{result}->{field}->{value}->{text};
+
+    return $query_count;
+}
+
+sub query_value {
+    my ($self, %options) = @_;
+
+    my $query = $options{query};
+
+    $query = "search $query" unless $query =~ /^[s\t]*search/i;
+
+    my $query_sid = $self->request_api(
+        method => 'POST',
+        endpoint => '/services/search/jobs',
+        post_param => [
+            "search=$query"
+        ]
+    );
+    if (!defined($query_sid->{sid}) || $query_sid->{sid} eq ''){
+        $self->{output}->add_option_msg(short_msg => "Error during process. No SID where returned after query was made. Please check your query and splunkd health.");
         $self->{output}->option_exit();
     }
+
+    my $retries = 0;
+    my $is_done = 0;
+
+    while ($retries < $self->{http}->{options}->{splunk_retries}) {
+        my $query_status = $self->request_api(
+            method => 'GET',
+            endpoint => '/services/search/jobs/' . $query_sid->{sid}
+        );
+
+        foreach (@{$query_status->{content}->{'s:dict'}->{'s:key'}}) {
+            if ($_->{name} eq 'isDone' && $_->{content} == 1){
+                $is_done = 1;
+                last;
+            } elsif ($_->{name} eq 'isFailed' && $_->{content} == 1) {
+                $self->{output}->option_exit(short_msg => "Search command failed.");
+            }
+        }
+
+        last if $is_done;
+
+        $retries++;
+        sleep($self->{http}->{options}->{splunk_wait});
+    }
+    # it took too long to run query
+    $self->{output}->option_exit(short_msg => "Search command didn't finish in time. Considere tweaking --splunk-wait and --splunk-retries if the search is just slow")
+        unless $is_done;
 
     my $query_res = $self->request_api(
         method => 'GET',
         endpoint => '/services/search/jobs/' . $query_sid->{sid} . '/results'
     );
 
-    my $query_count = $query_res->{result}->{field}->{value}->{text};
-
-    return $query_count;
+    return $query_res;
 }
 
 sub request_api {
@@ -323,7 +394,7 @@ sub request_api {
         $self->{session_token} = $self->get_access_token(statefile => $self->{cache});
     }
     $self->settings();
-    
+
     my $content = $self->{http}->request(
         method => $options{method},
         url_path => $options{endpoint},
@@ -334,6 +405,19 @@ sub request_api {
         critical_status => ''
     );
 
+    my $xml_result;
+
+    if ($self->{http}->get_code() == 400) {
+        eval {
+            $SIG{__WARN__} = sub {};
+            $xml_result = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
+        };
+        if (value_of($xml_result, "->{messages}->{msg}->{type}") eq 'FATAL') {
+            $self->{output}->add_option_msg(short_msg => "Error: ". value_of($xml_result, "->{messages}->{msg}->{content}", "-"));
+            $self->{output}->option_exit();
+        }
+    }
+
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_session_token(statefile => $self->{cache});     
         $self->get_access_token(statefile => $self->{cache});
@@ -341,6 +425,7 @@ sub request_api {
         $content = $self->{http}->request(
             method => $options{method},
             url_path => $options{endpoint},
+            get_param => $options{get_param},
             post_param => $options{post_param},
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
@@ -348,11 +433,11 @@ sub request_api {
         );
     }
 
-    my $xml_result;
     eval {
         $SIG{__WARN__} = sub {};
         $xml_result = XMLin($content, ForceArray => $options{force_array}, KeyAttr => []);
     };
+
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
         $self->{output}->option_exit();
