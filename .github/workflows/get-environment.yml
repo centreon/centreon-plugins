@@ -42,8 +42,7 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       release: ${{ steps.get_release.outputs.release }}
-      # stability: ${{ steps.get_stability.outputs.stability }}
-      stability: unstable
+      stability: ${{ steps.get_stability.outputs.stability }}
       target_stability: ${{ steps.get_stability.outputs.target_stability }}
       release_type: ${{ steps.get_release_type.outputs.release_type }}
       is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
@@ -213,7 +212,7 @@ jobs:
           script: |
             const getStability = (branchName) => {
               switch (true) {
-                case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)/.test(branchName):
+                case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)|(^develop-tun$)/.test(branchName):
                   return 'unstable';
                 case /(^release.+)|(^hotfix.+)/.test(branchName):
                   return 'testing';
