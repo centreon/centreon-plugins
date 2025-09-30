@@ -1,0 +1,214 @@
+{
+  "uuid": "989f6bb6-e556-4e0a-8964-a72dac58c0eb",
+  "lastMigration": 33,
+  "name": "Office365.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3013,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "b422c9ad-baec-4e9f-8472-555e6e1f40d3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "401c1a51-6dc9-410c-9b85-df0f2143d8ed",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9f850c38-e586-4a4c-8c67-884e09703edd",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "our-tenant/oauth2/v2.0/token",
+      "responses": [
+        {
+          "uuid": "9c4b44c0-e623-4686-869d-cf8fb2f9b088",
+          "body": "{\n  \"token_type\": \"Bearer\",\n  \"scope\": \"http://localhost/.default\",\n  \"expires_in\": 3599,\n  \"ext_expires_in\": 3599,\n  \"access_token\": \"abcdef123456789\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "bf32e266-1864-49ab-bc67-ecd0fdecc306",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1.0/admin/serviceAnnouncement/healthOverviews",
+      "responses": [
+        {
+          "uuid": "2b6815cf-cfc1-4cc9-a90c-13512aea9683",
+          "body": "{\n  \"@odata.context\": \"https://localhost/v1.0/$metadata#admin/serviceAnnouncement/healthOverviews\",\n  \"value\": [\n    {\n      \"service\": \"Exchange Online\",\n      \"status\": \"serviceRestored\",\n      \"id\": \"Exchange\"\n    },\n    {\n      \"service\": \"Microsoft Teams\",\n      \"status\": \"serviceDegradation\",\n      \"id\": \"Teams\",\n      \"issues\": [\n        {\n          \"id\": \"ABCDEF-01\",\n          \"title\": \" 😀 漢 with special fields\",\n          \"service\": \"Exchange Online\",\n          \"feature\": \"Meetings and Calling\",\n          \"featureGroup\": \"Realtime Communications\",\n          \"classification\": \"Incident\",\n          \"origin\": \"microsoft\",\n          \"isResolved\": false,\n          \"startDateTime\": \"2025-09-30T07:15:00Z\",\n          \"endDateTime\": null,\n          \"lastModifiedDateTime\": \"2025-09-30T08:05:12Z\",\n          \"status\": \"serviceDegradation\",\n          \"impactDescription\": \" 😀 漢me with special fields.\",\n          \"details\": [\n            {\n              \"key\": \"affectedRegions\",\n              \"value\": \"Europe, North America\"\n            },\n            {\n              \"key\": \"estimatedScope\",\n              \"value\": \"95% of users attempting peer-to-peer media sessions\"\n            }\n          ],\n          \"posts\": [\n            {\n              \"createdDateTime\": \"2025-09-30T07:20:00Z\",\n              \"postType\": \"Regular\",\n              \"description\": {\n                \"contentType\": \"Text\",\n                \"content\": \"We are investigating reports of intermittent meeting join failures and degraded media quality. Engineers are actively investigating; we'll provide an update within 30 minutes.\"\n              }\n            },\n            {\n              \"createdDateTime\": \"2025-09-30T08:00:00Z\",\n              \"postType\": \"Regular\",\n              \"description\": {\n                \"contentType\": \"Text\",\n                \"content\": \"Mitigation actions are in progress. Some users will see improved connectivity; investigation continues.\"\n              }\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"service\": \"SharePoint Online\",\n      \"status\": \"serviceOperational\",\n      \"id\": \"POIUYT\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "b422c9ad-baec-4e9f-8472-555e6e1f40d3"
+    },
+    {
+      "type": "route",
+      "uuid": "9f850c38-e586-4a4c-8c67-884e09703edd"
+    },
+    {
+      "type": "route",
+      "uuid": "bf32e266-1864-49ab-bc67-ecd0fdecc306"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

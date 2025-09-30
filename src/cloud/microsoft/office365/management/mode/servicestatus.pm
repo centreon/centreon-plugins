@@ -24,7 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Encode;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw/value_of/;
 
 sub custom_status_threshold {
     my ($self, %options) = @_;
@@ -40,10 +42,11 @@ sub custom_status_output {
     my $msg = "status is '" . $self->{result_values}->{status} . "'";
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{last_status}, compare => 'ok', litteral => 1)) {
         $msg .= sprintf(
-            ' [issue: %s %s %s]',
+            ' [issue: %s, %s, %s, %s]',
+            $self->{result_values}->{classification},
+            $self->{result_values}->{issue_id},
             $self->{result_values}->{issue_startDateTime},
-            $self->{result_values}->{issue_title},
-            $self->{result_values}->{classification}
+            $self->{result_values}->{issue_title}
         );
     }
     return $msg;
@@ -66,7 +69,7 @@ sub set_counters {
         { label => 'status', type => 2, critical_default => '%{status} !~ /serviceOperational|serviceRestored/i', set => {
                 key_values => [
                     { name => 'status' }, { name => 'service_name' }, { name => 'classification' },
-                    { name => 'issue_startDateTime' }, { name => 'issue_title' }
+                    { name => 'issue_startDateTime' }, { name => 'issue_title' }, { name => 'issue_id' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -82,7 +85,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-service-name:s' => { name => 'filter_service_name' }
+        'filter-service-name:s' => { redirect => 'include_service_name' },
+        'include-service-name:s' => { name => 'include_service_name', default => '' },
+        'exclude-service-name:s' => { name => 'exclude_service_name', default => '' },
+        'include-classification:s' => { name => 'include_classification', default => '' },
+        'exclude-classification:s' => { name => 'exclude_classification', default => '' }
     });
     
     return $self;
@@ -95,22 +102,42 @@ sub manage_selection {
 
     $self->{services} = {};
     foreach my $service (@$results) {
-        if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
-            $service->{service} !~ /$self->{option_results}->{filter_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': no matching filter name.", debug => 1);
-            next;
+        if ($self->{option_results}->{include_service_name} ne '' &&
+            $service->{service} !~ /$self->{option_results}->{include_service_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': no including filter match.", debug => 1);
+            next
         }
-        $self->{services}->{ $service->{id} }->{service_name} = $service->{service};
-        $self->{services}->{ $service->{id} }->{status} = $service->{status};
-        $self->{services}->{ $service->{id} }->{issue_startDateTime} = '-';
-        $self->{services}->{ $service->{id} }->{issue_title} = '-';
-        $self->{services}->{ $service->{id} }->{classification} = '-';
+        if ($self->{option_results}->{exclude_service_name} ne '' &&
+            $service->{service} =~ /$self->{option_results}->{exclude_service_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': excluding filter match.", debug => 1);
+            next
+        }
+        my %item = ( service_name => $service->{service},
+                     status => $service->{status},
+                     issue_startDateTime => '-',
+                     issue_title => '-',
+                     issue_id => '-',
+                     classification => '-'
+                   );
         if (defined($service->{issues}) && scalar(@{$service->{issues}}) > 0) {
             my $issue = pop @{$service->{issues}};
-            $self->{services}->{ $service->{id} }->{issue_startDateTime} = $issue->{startDateTime};
-            $self->{services}->{ $service->{id} }->{issue_title} = $issue->{title};
-            $self->{services}->{ $service->{id} }->{classification} = $issue->{classification};
+            $item{issue_startDateTime} = $issue->{startDateTime};
+            $item{classification} = $issue->{classification};
+            $item{issue_id} = $issue->{id};
+            # Encode to utf8 to avoid 'Wide character in print' issue
+            $item{issue_title} = Encode::encode('utf-8', $issue->{title});
         }
+        if ($self->{option_results}->{include_classification} ne '' &&
+            $item{classification} !~ /$self->{option_results}->{include_classification}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $item{classification} . "': no including filter match.", debug => 1);
+            next
+        }
+        if ($self->{option_results}->{exclude_classification} ne '' &&
+            $item{classification} =~ /$self->{option_results}->{exclude_classification}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $item{classification} . "': excluding filter match.", debug => 1);
+            next
+        }
+        $self->{services}->{ $service->{id} } = \%item;
     }
 
     if (scalar(keys %{$self->{services}}) <= 0) {
@@ -129,9 +156,21 @@ Check services status.
 
 =over 8
 
-=item B<--filter-service-name>
+=item B<--include-service-name>
 
-Filter services (can be a regexp).
+Filter by service name (can be a regexp).
+
+=item B<--exclude-service-name>
+
+Exclude by service name (can be a regexp).
+
+=item B<--include-classification>
+
+Filter by classification (can be a regexp).
+
+=item B<--exclude-classification>
+
+Exclude by classification (can be a regexp).
 
 =item B<--warning-status>
 
@@ -141,7 +180,7 @@ You can use the following variables: %{service_name}, %{status}, %{classificatio
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /serviceOperational|serviceRestored/i').
-You can use the following variables: %{service_name}, %{status}, %{classification}
+You can use the following variables: %{service_name}, %{status}, %{classification}, %{issue_title}, %{issue_startDateTime}, %{issue_id}
 
 =back
 
