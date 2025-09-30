@@ -54,9 +54,10 @@ jobs:
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
-        if: |
-          github.event_name == 'pull_request' &&
-          contains(fromJson('["testing", "unstable", "canary"]'), needs.get-environment.outputs.stability)
+        # if: |
+        #   github.event_name == 'pull_request' &&
+        #   contains(fromJson('["testing", "unstable", "canary"]'), needs.get-environment.outputs.stability)
+        if: always()
         with:
           base: ${{ github.head_ref || github.ref_name }}
           list-files: shell
