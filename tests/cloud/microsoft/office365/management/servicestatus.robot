@@ -36,4 +36,4 @@ ServiceStatus ${tc}
             ...      3        --include-service-name='SharePoint'                                                         OK: Service 'SharePoint Online' status is 'serviceOperational'
             ...      4        --exclude-service-name='Teams'                                                              OK: All services are ok
             ...      5        --include-classification=Unknown                                                            UNKNOWN: No services found.
-            ...      6        --exclude-classification=Incident                                                           OK: All services are ok
+            ...      6        --exclude-classification=Incident                                                           CRITICAL: Service 'Microsoft Teams' status is 'serviceDegradation' \\\\[issue: advisory, ABCDEF-02, 2025-09-30T07:15:00Z, un deuxieme\\\\]

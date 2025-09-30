@@ -97,6 +97,26 @@ sub new {
     return $self;
 }
 
+# Apply include/exclude classification filters
+sub _filter_classification {
+    my ($self, %options) = @_;
+
+    if ($options{include} ne '' &&
+        $options{classification} !~ /$options{include}/) {
+        $self->{output}->output_add(long_msg => "skipping '" . $options{classification} . "': no including filter match.", debug => 1);
+
+        return 1;
+    }
+    if ($options{exclude} ne '' &&
+        $options{classification} =~ /$options{exclude}/) {
+        $self->{output}->output_add(long_msg => "skipping '" . $options{classification} . "': excluding filter match.", debug => 1);
+
+        return 1;
+    }
+
+    return 0;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     
@@ -133,16 +153,9 @@ sub manage_selection {
             foreach my $issue (@{$service->{issues}}) {
                 next if $issue->{isResolved} && $self->{option_results}->{exclude_resolved};
 
-                if ($self->{option_results}->{include_classification} ne '' &&
-                    $issue->{classification} !~ /$self->{option_results}->{include_classification}/) {
-                    $self->{output}->output_add(long_msg => "skipping '" . $issue->{classification} . "': no including filter match.", debug => 1);
-                    next
-                }
-                if ($self->{option_results}->{exclude_classification} ne '' &&
-                    $issue->{classification} =~ /$self->{option_results}->{exclude_classification}/) {
-                    $self->{output}->output_add(long_msg => "skipping '" . $issue->{classification} . "': excluding filter match.", debug => 1);
-                    next
-                }
+                next if $self->_filter_classification(classification => $issue->{classification},
+                                                      include => $self->{option_results}->{include_classification},
+                                                      exclude => $self->{option_results}->{exclude_classification});
 
                 $item{issue_startDateTime} = $issue->{startDateTime};
                 $item{classification} = $issue->{classification};
@@ -159,12 +172,15 @@ sub manage_selection {
             next NEXT_VALUE
         }
 
+        next if $self->_filter_classification(classification => $item{classification},
+                                              include => $self->{option_results}->{include_classification},
+                                              exclude => $self->{option_results}->{exclude_classification});
+
         $self->{services}->{ $unique_id++ } = \%item;
     }
-    if (scalar(keys %{$self->{services}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No services found.');
-        $self->{output}->option_exit();
-    }
+
+    $self->{output}->option_exit(short_msg => 'No services found.')
+        unless scalar(keys %{$self->{services}});
 }
 
 1;
