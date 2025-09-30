@@ -26,7 +26,7 @@ Power ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    filter_option                extraoptions                    expected_result   --
-        ...      1     --vm-id=vm-1234              ${EMPTY}                        UNKNOWN: no data for host vm-1234 counter power.capacity.usage.VM at the moment. - No available data The counter power.capacity.usage.VM was not recorded for resource vm-1234 before. It will now (creating acq_spec).
+        ...      1     --vm-id=vm-1234              ${EMPTY}                        UNKNOWN: no data for resource vm-1234 counter power.capacity.usage.VM at the moment. - No available data The counter power.capacity.usage.VM was not recorded for resource vm-1234 before. It will now (creating acq_spec).
         ...      2     --vm-id=vm-1234              ${EMPTY}                        OK: Power usage is 13.5 Watts | 'power.capacity.usage.watts'=13.5W;;;0;
         ...      3     --vm-id=vm-1234              --warning-usage-watts=0:0       WARNING: Power usage is 13.5 Watts | 'power.capacity.usage.watts'=13.5W;0:0;;0;
         ...      4     --vm-id=vm-1234              --critical-usage-watts=0:0      CRITICAL: Power usage is 13.5 Watts | 'power.capacity.usage.watts'=13.5W;;0:0;0;
@@ -34,5 +34,5 @@ Power ${tc}
         ...      6     --vm-name=web-server-02      --warning-usage-watts=0:0       WARNING: Power usage is 13.5 Watts | 'power.capacity.usage.watts'=13.5W;0:0;;0;
         ...      7     --vm-name=web-server-02      --critical-usage-watts=0:0      CRITICAL: Power usage is 13.5 Watts | 'power.capacity.usage.watts'=13.5W;;0:0;0;
         ...      8     --vm-name=web-server-05      --critical-usage-watts=0:0      UNKNOWN: get_vm_stats method cannot get vm ID from vm name
-        ...      9     --vm-id=vm-9876              --critical-usage-watts=0:0      UNKNOWN: no data for host vm-9876 counter power.capacity.usage.VM at the moment. - No available data The counter power.capacity.usage.VM was not recorded for resource vm-9876 before. It will now (creating acq_spec).
+        ...      9     --vm-id=vm-9876              --critical-usage-watts=0:0      UNKNOWN: no data for resource vm-9876 counter power.capacity.usage.VM at the moment. - No available data The counter power.capacity.usage.VM was not recorded for resource vm-9876 before. It will now (creating acq_spec).
 
