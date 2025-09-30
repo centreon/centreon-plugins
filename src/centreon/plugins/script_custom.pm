@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
     $self->{options} = $options{options};
     $self->{output} = $options{output};
-    
+
     $self->{options}->add_options(
         arguments => {
             'mode:s'            => { name => 'mode_name' },
