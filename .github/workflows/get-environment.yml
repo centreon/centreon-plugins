@@ -42,7 +42,8 @@ jobs:
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       release: ${{ steps.get_release.outputs.release }}
-      stability: ${{ steps.get_stability.outputs.stability }}
+      # stability: ${{ steps.get_stability.outputs.stability }}
+      stability: unstable
       target_stability: ${{ steps.get_stability.outputs.target_stability }}
       release_type: ${{ steps.get_release_type.outputs.release_type }}
       is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
