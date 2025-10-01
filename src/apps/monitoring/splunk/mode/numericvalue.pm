@@ -23,7 +23,7 @@ use strict;
 use warnings;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::misc qw/flatten_arrays/;
+use centreon::plugins::misc qw/flatten_arrays flatten_to_hash/;
 use centreon::plugins::constants qw(:values);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -31,13 +31,12 @@ sub custom_result_output {
     my ($self, %options) = @_;
 
     my @data;
+
+    my $perfdata = $self->{perfdata}->{data};
     foreach my $key (sort keys %{$self->{result_values}}) {
         next if $self->{result_values}->{$key} eq '';
 
-        next if $self->{instance_mode}->_match_filter(filter => 'hide', value => $key);
-        next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', value => $key);
-
-        push @data, "[$key: " . $self->{result_values}->{$key}."]";
+        push @data, "[".($perfdata->{name}->{$key} // $key).": " . $self->{result_values}->{$key}."]";
     }
 
     my $str = lc $self->{output}->{errors_num}->{$self->{perfdata}->{output}->{global_status}}.'_label';
@@ -52,17 +51,17 @@ sub custom_result_output {
 
 sub custom_result_perfdata {
     my ($self, %options) = @_;
+
     foreach my $key (sort keys %{$self->{result_values}}) {
         next if $self->{result_values}->{$key} eq '';
+        next if $self->{instance_mode}->_match_filter(filter => 'hide', field => $key);
+        next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', field => $key);
 
-        next if $self->{instance_mode}->_match_filter(filter => 'hide', value => $key);
-        next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', value => $key);
-
-        my $data = $self->{perfdata}->{data};
+        my $perfdata = $self->{perfdata}->{data};
 
         $self->{output}->perfdata_add(
-            label    => $data->{name}->{$key} // $data->{label}->{generic} // $key,
-            unit     => $data->{unit}->{$key} // $data->{unit}->{generic} // '',
+            label    => $perfdata->{name}->{$key} // $perfdata->{name}->{generic} // $key,
+            unit     => $perfdata->{unit}->{$key} // $perfdata->{unit}->{generic} // '',
             value    => $self->{result_values}->{$key},
             warning  => $self->{perfdata}->get_perfdata_for_output(label => 
                             defined $self->{perfdata}->{threshold_label}->{"warning-$key"} ?
@@ -72,8 +71,8 @@ sub custom_result_perfdata {
                             defined $self->{perfdata}->{threshold_label}->{"critical-$key"} ?
                                 "critical-$key" :
                                 'critical-generic'),
-            min      => $data->{min}->{$key} // $data->{min}->{generic} // '',
-            max      => $data->{max}->{$key} // $data->{max}->{generic} // '',
+            min      => $perfdata->{min}->{$key} // $perfdata->{min}->{generic} // '',
+            max      => $perfdata->{max}->{$key} // $perfdata->{max}->{generic} // '',
         );
     }
 }
@@ -156,7 +155,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'query:s'           => { name => 'query', default => '' },
+        'query:s'                   => { name => 'query', default => '' },
+        'search-mode:s'             => { name => 'search_mode', default => 'auto' },
+
+        'ok-label:s'                => { name => 'ok_label', default => 'Event' },
+        'warning-label:s'           => { name => 'warning_label', default => 'Event trigger WARNING threshold' },
+        'critical-label:s'          => { name => 'critical_label', default => 'Event trigger CRITICAL threshold' },
 
         # Values to be shown/hidden
         'display:s@'        => { name => 'display' },
@@ -165,6 +169,7 @@ sub new {
         # Values to be included/excluded from the query results
         'exclude:s@'        => { name => 'exclude' },
         'include:s@'        => { name => 'include' },
+        'include-internal-field:s@' => { name => 'include_internal_field' },
 
         # Define thresholds and perfdata for each value
         'warning-value:s@'  => { name => 'warning_value' },
@@ -185,9 +190,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{query} = $self->{option_results}->{query};
+    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label search_mode);
+
     $self->{output}->option_exit(short_msg => 'Please set --query option.')
         if $self->{query} eq '';
+    $self->{output}->option_exit(short_msg => "Invalid search mode '" . $self->{search_mode} . "'.")
+        if $self->{search_mode} !~ /^(auto|fast|smart|verbose)$/;
 
     # query parameter points to a file when starting with '@'
     if ($self->{query} =~ /[\t\s]*@(.+)/) {
@@ -226,16 +234,18 @@ sub check_options {
             $self->{perfdata}->{data}->{$type}->{$label} = $value;
         }
     }
+
+    $self->{include_internal_field} = flatten_to_hash($self->{option_results}->{include_internal_field});
 }
 
 sub _match_filter {
     my ($self, %options) = @_;
 
     my $filters = $self->{$options{filter}};
-    my $value = $options{value};
+    my $field = $options{field};
 
     foreach my $filter (@{$filters}) {
-        return 1 if $value =~ /$filter/;
+        return 1 if $field =~ /$filter/;
     }
 
     return 0;
@@ -246,7 +256,7 @@ sub manage_selection {
 
     my $query_value = $options{custom}->query_value(
         query => $self->{query},
-        timeframe => $self->{timeframe},
+        search_mode => $self->{search_mode}
     );
 
     my $index=0;
@@ -259,16 +269,32 @@ sub manage_selection {
         foreach my $results (@{$query_value->{result}}) {
             my %values = ();
             if (ref $results->{field} eq 'ARRAY') {
-                map { $record_values_hash{$_->{k}} =1;
-                      $values{$_->{k}} = $_->{value}->{text};
-                    }
-                        grep { @{$self->{include}} == 0 || $self->_match_filter(filter => 'include', value => $_->{k} ) }   # exclude fields not matching 'include filters'
-                        grep { not $self->_match_filter(filter => 'exclude', value => $_->{k} ) }   # exclude fields matching 'exclude filters'
-                        grep { $_->{k} !~ /^_/ && $_->{value}->{text} =~ /^[\d\.\-\+]+$/ }      # always filter out internal fields
-                            @{$results->{field}};
+                foreach my $record (@{$results->{field}}) {
+                    # always filter out internal fields unless they are explicitly included with include_internal_field option
+                    # filter out non numeric values
+                    next if $record->{k} =~ /^_/ && not $self->{include_internal_field}->{$record->{k}};
+
+                    # exclude fields matching 'exclude filters'
+                    next if $self->_match_filter(filter => 'exclude', field => $record->{k});
+
+                    # exclude fields not matching 'include filters'
+                    next if @{$self->{include}} && not $self->_match_filter(filter => 'include', field => $record->{k});
+
+                    my $value = $options{custom}->get_value(record => $record);
+
+                    # keep only numeric values
+                    next unless $value =~ /^[\d\.-]+$/;
+
+                    $record_values_hash{$record->{k}} = 1;
+                    $values{$record->{k}} = $value;
+                }
+
+                next unless %values;
             } else {
                 $record_values_hash{$results->{field}->{k}} = 1;
-                $values{$results->{field}->{k}} = $results->{field}->{value}->{text};
+                # get first value only (we don't handle more complex structures)
+                $values{$results->{field}->{k}} = $options{custom}->get_value(record => $results->{field});
+
             }
             $self->{query_results}->{ $index++ } = \%values;
         }
@@ -303,26 +329,33 @@ Specify a query to be sent to Splunk.
 
 If the query starts with '@', it is considered as a file name to read the query from.
 
-Query has to start with "search ". Of it does not "search " will be automatically prepended at execution time.
+Query has to start with "search" or "|".
 Example: --query=C<index=main | table skippedRatio | where skippedRatio > 0.2>
+
+=item B<--search-mode>
+
+Specify the search mode (default: 'auto').
+Can be: 'auto', 'fast', 'smart', 'verbose'.
+The 'auto' value lets Splunk use its default mode.
+Check https://help.splunk.com/en/splunk-cloud-platform/search/search-manual/10.0.2503/using-the-search-app/search-modes for more details.
 
 =item B<--include>
 
 Define the Splunk fields to be managed by the plugin (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 If this parameter is empty (default) all fields are managed by the plugin, otherwise, only matching fields are managed.
-Only managed fields can be displayed or used for checks.
+Only managed fields can be displayed and used for checks.
 
 =item B<--exclude>
 
 Define the Splunk fields to be ignored by the plugin (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 If this parameter is not empty, all matching fields are ignored by the plugin.
-Only managed fields can be displayed or used for checks.
+Only managed fields can be displayed and used for checks.
 
 =item B<--display>
 
-Define the Splunk fields to be displayed (can be a regexp).
+Define the Splunk fields to be displayed on perfdata (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 Only managed fields are considered.
 If this parameter is empty (default), all fields are displayed; otherwise, only matching fields are displayed.
@@ -330,10 +363,30 @@ Fields are always displayed in the long output in verbose mode.
 
 =item B<--hide>
 
-Define the Splunk fields to hide (can be a regexp).
+Define the Splunk fields to hide from perfdata (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 Only managed fields are considered.
 If this parameter is not empty, all matching fields are hidden.
+Fields are always displayed in the long output in verbose mode.
+
+=item B<--include-internal-field>
+
+By default fields starting with '_' are considered as internal and ignored.
+This option allows to include them.
+Example: --include-internal-field=_raw
+This option can be used multiple times and multiple values can be passed as a comma separated list.
+
+=item B<--ok-label>
+
+Define the label to use for events that trigger the OK threshold (default: 'Event').
+
+=item B<--warning-label>
+
+Define the label to use for events that trigger the WARNING threshold (default: 'Event trigger WARNING threshold').
+
+=item B<--critical-label>
+
+Define the label to use for events that trigger the CRITICAL threshold (default: 'Event trigger CRITICAL threshold').
 
 =item B<--perfdata-unit>
 

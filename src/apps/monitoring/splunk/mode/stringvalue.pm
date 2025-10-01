@@ -23,7 +23,7 @@ use strict;
 use warnings;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::misc qw/flatten_arrays/;
+use centreon::plugins::misc qw/flatten_arrays flatten_to_hash/;
 use centreon::plugins::constants qw(:values);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
@@ -33,9 +33,8 @@ sub custom_result_output {
     my @data;
     foreach my $key (sort keys %{$self->{result_values}}) {
         next if $self->{result_values}->{$key} eq '';
-
-        next if $self->{instance_mode}->_match_filter(filter => 'hide', value => $key);
-        next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', value => $key);
+        next if $self->{instance_mode}->_match_filter(filter => 'hide', field => $key);
+        next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', field => $key);
 
         push @data, "[$key: " . $self->{result_values}->{$key}."]";
     }
@@ -54,7 +53,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 , skipped_code => { NO_VALUE => 1 }},
+        { name => 'global', type => 0 },
         { name => 'query_results', type => 1, message_multiple => 'All values are OK', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -89,11 +88,21 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'query:s'          => { name => 'query', default => '' },
-        'display:s@'       => { name => 'display' },
-        'hide:s@'          => { name => 'hide' },
-        'exclude:s@'       => { name => 'exclude' },
-        'include:s@'       => { name => 'include' },
+        'query:s'                   => { name => 'query', default => '' },
+        'search-mode:s'             => { name => 'search_mode', default => 'auto' },
+
+        'ok-label:s'                => { name => 'ok_label', default => 'Event' },
+        'warning-label:s'           => { name => 'warning_label', default => 'Event trigger WARNING status' },
+        'critical-label:s'          => { name => 'critical_label', default => 'Event trigger CRITICAL status' },
+
+        # Values to be shown/hidden
+        'display:s@'                => { name => 'display' },
+        'hide:s@'                   => { name => 'hide' },
+
+        # Values to be included/excluded from the query results
+        'exclude:s@'                => { name => 'exclude' },
+        'include:s@'                => { name => 'include' },
+        'include-internal-field:s@' => { name => 'include_internal_field' },
     });
 
     return $self;
@@ -103,12 +112,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-
-    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label);
-
+    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label search_mode);
 
     $self->{output}->option_exit(short_msg => 'Please set --query option.')
         if $self->{query} eq '';
+
+    $self->{output}->option_exit(short_msg => "Invalid search mode '" . $self->{search_mode} . "'.")
+        if $self->{search_mode} !~ /^(auto|fast|smart|verbose)$/;
 
     # query parameter points to a file when starting with '@'
     if ($self->{query} =~ /[\t\s]*@(.+)/) {
@@ -120,16 +130,18 @@ sub check_options {
     }
 
     $self->{$_} = flatten_arrays($self->{option_results}->{$_}) for qw(display hide exclude include);
+
+    $self->{include_internal_field} = flatten_to_hash($self->{option_results}->{include_internal_field});
 }
 
 sub _match_filter {
     my ($self, %options) = @_;
 
     my $filters = $self->{$options{filter}};
-    my $value = $options{value};
+    my $field = $options{field};
 
     foreach my $filter (@{$filters}) {
-        return 1 if $value =~ /$filter/;
+        return 1 if $field =~ /$filter/;
     }
 
     return 0;
@@ -140,7 +152,7 @@ sub manage_selection {
 
     my $query_value = $options{custom}->query_value(
         query => $self->{query},
-        timeframe => $self->{timeframe},
+        search_mode => $self->{search_mode}
     );
 
     my $index=0;
@@ -153,19 +165,26 @@ sub manage_selection {
         foreach my $results (@{$query_value->{result}}) {
             my %values = ();
             if (ref $results->{field} eq 'ARRAY') {
-                map { $record_values_hash{$_->{k}} =1;
-                      $values{$_->{k}} = $_->{value}->{text};
-                    }
-                        grep { @{$self->{include}} == 0 || $self->_match_filter(filter => 'include', value => $_->{k} ) }   # exclude fields not matching 'include filters'
-                        grep { not $self->_match_filter(filter => 'exclude', value => $_->{k} ) }   # exclude fields matching 'exclude filters'
-                        grep { $_->{k} !~ /^_/ }      # always filter out internal fields
-                            @{$results->{field}};
-                next unless keys %values;
+                foreach my $record (@{$results->{field}}) {
+                    # always filter out internal fields unless they are explicitly included with include_internal_field option
+                    next if $record->{k} =~ /^_/ && not $self->{include_internal_field}->{$record->{k}};
+
+                    # exclude fields matching 'exclude filters'
+                    next if $self->_match_filter(filter => 'exclude', field => $record->{k});
+
+                    # exclude fields not matching 'include filters'
+                    next if @{$self->{include}} && not $self->_match_filter(filter => 'include', field => $record->{k});
+
+                    $record_values_hash{$record->{k}} = 1;
+                    $values{$record->{k}} = $options{custom}->get_value(dbg => $record->{k}, record => $record);
+                }
+
+                next unless %values;
             } else {
                 $record_values_hash{$results->{field}->{k}} = 1;
-                $values{$results->{field}->{k}} = $results->{field}->{value}->{text};
+                # get first value only (we don't handle more complex structures)
+                $values{$results->{field}->{k}} = $options{custom}->get_value(record => $results->{field})
             }
-
             $self->{query_results}->{ $index++ } = \%values;
         }
     }
@@ -199,22 +218,29 @@ Specify a query to be sent to Splunk.
 
 If the query starts with '@', it is considered as a file name to read the query from.
 
-Query has to start with "search ". Of it does not "search " will be automatically prepended at execution time.
+Query has to start with "search" or "|".
 Example: --query=C<index=_internal | head 1 | table sourcetype>
+
+=item B<--search-mode>
+
+Specify the search mode (default: 'auto').
+Can be: 'auto', 'fast', 'smart', 'verbose'.
+The 'auto' value lets Splunk use its default mode.
+Check https://help.splunk.com/en/splunk-cloud-platform/search/search-manual/10.0.2503/using-the-search-app/search-modes for more details.
 
 =item B<--include>
 
 Define the Splunk fields to be managed by the plugin (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 If this parameter is empty (default) all fields are managed by the plugin, otherwise, only matching fields are managed.
-Only managed fields can be displayed or used for checks.
+Only managed fields can be displayed and used for checks.
 
 =item B<--exclude>
 
 Define the Splunk fields to be ignored by the plugin (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 If this parameter is not empty, all matching fields are ignored by the plugin.
-Only managed fields can be displayed or used for checks.
+Only managed fields can be displayed and used for checks.
 
 =item B<--display>
 
@@ -222,7 +248,6 @@ Define the Splunk fields to be displayed (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 Only managed fields are considered.
 If this parameter is empty (default), all fields are displayed; otherwise, only matching fields are displayed.
-Fields are always displayed in the long output in verbose mode.
 
 =item B<--hide>
 
@@ -230,6 +255,25 @@ Define the Splunk fields to hide (can be a regexp).
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 Only managed fields are considered.
 If this parameter is not empty, all matching fields are hidden.
+
+=item B<--include-internal-field>
+
+By default fields starting with '_' are considered as internal and ignored.
+This option allows to include them.
+Example: --include-internal-field=_raw
+This option can be used multiple times and multiple values can be passed as a comma separated list.
+
+=item B<--ok-label>
+
+Define the label to use for events that trigger the OK status (default: 'Event').
+
+=item B<--warning-label>
+
+Define the label to use for events that trigger the WARNING status (default: 'Event trigger WARNING status').
+
+=item B<--critical-label>
+
+Define the label to use for events that trigger the CRITICAL status (default: 'Event trigger CRITICAL status').
 
 =item B<--warning-count> 
 

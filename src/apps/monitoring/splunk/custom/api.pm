@@ -274,11 +274,31 @@ sub get_splunkd_health {
     return \@splunkd_features_health;
 }
 
+# Values may be in different locations depending on the field type.
+# This function handles the supported cases.
+sub get_value {
+    my ($self, %options) = @_;
+
+    my $record = $options{record};
+
+    return '' unless ref $record eq 'HASH';
+
+    # get first value only, we don't handle more complex structures
+    return $record->{value}->[0]->{text} if ref $record->{value} eq 'ARRAY';
+
+    # common case, single value
+    return $record->{value}->{text} if $record->{value};
+
+    # _raw case
+    return $record->{v}->{content} if $record->{v};
+
+    return '';
+}
+
 sub query_count {
     my ($self, %options) = @_;
 
     my $query = $options{query};
-    $query = "search $query" unless $query =~ /^[s\t]*search/i;
     $query .= '| stats count';
 
     my $query_sid = $self->request_api(
@@ -338,14 +358,15 @@ sub query_value {
 
     my $query = $options{query};
 
-    $query = "search $query" unless $query =~ /^[s\t]*search/i;
+    my @post_param = ( "search=$query" );
+
+    push @post_param, "adhoc_search_level=$options{search_mode}"
+        if $options{search_mode} && $options{search_mode} =~ /^(fast|smart|verbose)$/;
 
     my $query_sid = $self->request_api(
         method => 'POST',
         endpoint => '/services/search/jobs',
-        post_param => [
-            "search=$query"
-        ]
+        post_param => \@post_param
     );
     if (!defined($query_sid->{sid}) || $query_sid->{sid} eq ''){
         $self->{output}->add_option_msg(short_msg => "Error during process. No SID where returned after query was made. Please check your query and splunkd health.");

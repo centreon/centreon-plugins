@@ -92,7 +92,7 @@ Check number of results for a query.
 
 Specify a query to be made and check matching number. 
 
-Query has to start with "search ". Of it does not "search " will be automatically prepended at execution time.
+Query has to start with "search ".
 Example: --query='search host="prod-server" "ERROR" earliest=-150000min'
 
 =item B<--warning-query-matches> 
