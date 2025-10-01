@@ -40,7 +40,8 @@ sub new {
         'memory'          => 'network::paloalto::snmp::mode::memory',
         'panorama'        => 'network::paloalto::snmp::mode::panorama',
         'sessions'        => 'network::paloalto::snmp::mode::sessions',
-        'signatures'      => 'network::paloalto::snmp::mode::signatures'
+        'signatures'      => 'network::paloalto::snmp::mode::signatures',
+        'logging-status'   => 'network::paloalto::snmp::mode::loggingstatus'
     };
 
     return $self;
