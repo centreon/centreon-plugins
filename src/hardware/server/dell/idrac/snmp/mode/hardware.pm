@@ -63,7 +63,7 @@ sub set_system {
             ['unknown', 'UNKNOWN'],
             ['readySpareDedicated', 'OK'],
             ['readySpareGlobal', 'OK'],
-            ['ready', 'WARNING'],
+            ['ready', 'OK'],
             ['online', 'OK'],
             ['foreign', 'OK'],
             ['offline', 'WARNING'],
