@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::ssh;
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -90,35 +91,16 @@ sub get_hasharray {
 
     $self->{output}->add_option_msg(long_msg => "Response: $options{content}", debug => 1);
 
-    my @lines = split /\n/, $options{content};
-    my $header;
-    my @clean_lines;
+    my ($header, @lines) = split /\n/, $options{content};
+    my @header_names = split /$options{delim}/, $header;
 
-    while (@lines) {
-        my $line = shift @lines;
-        my @fields = split /$options{delim}/, $line;
-
-        # Check if this line is the header
-        if (scalar(@fields) > 1 ) {
-            # Found the header — keep this line and the rest
-            $header = $line;
-            @clean_lines = @lines;
-            last;
+    for (my $i = 0; $i <= $#lines; $i++) {
+        my @content = split /$options{delim}/, $lines[$i];
+        my $data = {};
+        for (my $j = 0; $j <= $#header_names; $j++) {
+            $data->{$header_names[$j]} = $content[$j];
         }
-        # skip line and continue
-    }
-
-    if (@clean_lines) {
-        my @header_names = split /$options{delim}/, $header;
-
-        for (my $i = 0; $i <= $#clean_lines; $i++) {
-            my @content = split /$options{delim}/, $clean_lines[$i];
-            my $data = {};
-            for (my $j = 0; $j <= $#header_names; $j++) {
-                $data->{$header_names[$j]} = $content[$j];
-            }
-            push @$result, $data;
-        }
+        push @$result, $data;
     }
 
     return $result;
@@ -129,14 +111,30 @@ sub execute_command {
 
     my $content;
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
+        my ($command, $prefix, $suffix, $command_prefix, $command_suffix) = ('', '', '', '', '');
+        # When wrap_command is set we surround the command with markers to be able to remove unwanted ssh banner
+        if ($options{wrap_command}) {
+            $prefix = '=========='.md5_hex(rand().'-'.time()).'==========';
+            $suffix = '===============';
+            $command_prefix = qq(echo '$prefix';);
+            $command_suffix = qq(;echo '$suffix';);
+        }
+        $command = defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command};
         ($content) = $self->{ssh}->execute(
             hostname => $self->{option_results}->{hostname},
-            command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
+            command => $command_prefix.$command.$command_suffix,
             command_path => $self->{option_results}->{command_path},
             command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef,
             timeout => $self->{option_results}->{timeout},
             sudo => $self->{option_results}->{sudo}
         );
+
+        if ($options{wrap_command}) {
+            # Extract content between our markers
+            $self->{output}->option_exit(short_msg => "Cannot find output markers")
+                unless $content =~ /$prefix.*?\n(.*)$suffix/msi;
+            $content = $1;
+        }
     } else {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
             $self->{output}->add_option_msg(short_msg => 'please set --hostname option for ssh connection (or --command for local)');

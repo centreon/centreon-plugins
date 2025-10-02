@@ -158,7 +158,8 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($content) = $options{custom}->execute_command(command => 'lsmdiskgrp -delim : -bytes');
+    my ($content) = $options{custom}->execute_command(command => 'lsmdiskgrp -delim : -bytes',
+                                                      wrap_command => 1 );
     $self->{pool} = {};
     my $result = $options{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {

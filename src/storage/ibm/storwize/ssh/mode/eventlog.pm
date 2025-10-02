@@ -68,7 +68,8 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $content = $options{custom}->execute_command(command => $self->{ls_command});
+    my $content = $options{custom}->execute_command(command => $self->{ls_command},
+                                                    wrap_command => 1 );
     my $result = $options{custom}->get_hasharray(content => $content, delim => ':');
 
     my ($num_eventlog_checked, $num_errors) = (0, 0);

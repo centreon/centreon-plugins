@@ -74,7 +74,8 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($content) = $options{custom}->execute_command(command => 'lsrcrelationship -delim :');
+    my ($content) = $options{custom}->execute_command(command => 'lsrcrelationship -delim :',
+                                                      wrap_command => 1 );
     my $result = $options{custom}->get_hasharray(content => $content, delim => ':');
 
     $self->{replication} = {};
