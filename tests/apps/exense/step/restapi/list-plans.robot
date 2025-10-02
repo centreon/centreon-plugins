@@ -27,7 +27,7 @@ list-plans ${tc}
     ...    ${cmd}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extraoptions                                                                               expected_result    --
             ...       1   ${EMPTY}                                                                                   List plans: [id: 66d1904664e24c6ef10f74d2][name: plop2-test] [id: 669fc855498c2a0322a6a9c5][name: test-plan] [id: 66d180a764e24c6ef10e0155][name: test-plan_Copy]  

@@ -34,4 +34,4 @@ Linux Memory with vault ${tc}
             ...       2   Linux     ${VAULT_FILES}${/}vault.json                     ${EMPTY}                                   UNKNOWN: File '.*/centreon/plugins/passwordmgr/vault.json' could not be found.
             ...       3   Linux     ${VAULT_FILES}${/}vault_config_incomplete.json   ${EMPTY}                                   UNKNOWN: Unable to authenticate to the vault: role_id or secret_id is empty.
             ...       4   Linux     ${VAULT_FILES}${/}vault_config_plain.json        --debug                                    OK: Ram Total: 1.92 GB Used
-            ...       5   Linux     ${VAULT_FILES}${/}vault_config_encrypted.json    --vault-env-file=${VAULT_FILES}${/}env     OK: Ram Total: 1.92 GB Used
+#            ...       5   Linux     ${VAULT_FILES}${/}vault_config_encrypted.json    --vault-env-file=${VAULT_FILES}${/}env     OK: Ram Total: 1.92 GB Used

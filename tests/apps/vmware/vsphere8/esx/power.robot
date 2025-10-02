@@ -6,10 +6,9 @@ Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resour
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
-Test Setup          Ctn Cleanup Cache
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}vmware8-restapi.mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::plugin
 ...                 --mode=power
@@ -28,7 +27,7 @@ Power ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                    expected_result   --
-        ...      1     ${EMPTY}                        OK: usage-watts : skipped (no value(s)) - no data for host host-22 counter power.capacity.usage.HOST at the moment.
+        ...      1     ${EMPTY}                        OK: usage-watts : skipped (no value(s)) - no data for resource host-22 counter power.capacity.usage.HOST at the moment.
         ...      2     ${EMPTY}                        OK: Power usage is 200 Watts | 'power.capacity.usage.watts'=200W;;;0;
         ...      3     --warning-usage-watts=0:0       WARNING: Power usage is 200 Watts | 'power.capacity.usage.watts'=200W;0:0;;0;
         ...      4     --critical-usage-watts=0:0      CRITICAL: Power usage is 200 Watts | 'power.capacity.usage.watts'=200W;;0:0;0;

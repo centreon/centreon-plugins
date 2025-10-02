@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 
+
 package centreon::plugins::templates::counter;
 
 use base qw(centreon::plugins::mode);

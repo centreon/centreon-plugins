@@ -3,3 +3,5 @@ output.xml
 report.html
 .editorconfig
 .idea
+.venv
+tests/resources/__pycache__

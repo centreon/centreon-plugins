@@ -13,19 +13,19 @@ ${MOCKOON_JSON}    ${CURDIR}${/}monitoring-iplabel-ekara.json
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::monitoring::iplabel::ekara::restapi::plugin
 ...                 --hostname=localhost
-...                 --api-username='username'
-...                 --api-password='password'
 ...                 --port='3000'
 ...                 --proto='http'
 
 *** Test Cases ***
-scenario ${tc}
+scenario-username ${tc}
     [Documentation]    Check Iplabel scenarios
     [Tags]    monitoring   iplabel    restapi
 
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=scenarios
+    ...    --api-username='username'
+    ...    --api-password='password'
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
@@ -52,3 +52,33 @@ scenario ${tc}
         ...      16    --filter-name='unknown Status 6' --output-ignore-perfdata                                  UNKNOWN: Scenario 'unknown Status 6': status: Stopped (6)
         ...      17    --filter-name='AKILA - .Web.' --curl-opt='CURLOPT_HTTPHEADER => [test: 2]' --curl-opt='CURLOPT_HTTPHEADER => [ Authorization: Bearer VeryLongTokenToAuthenticate]'             CRITICAL: Scenario 'AKILA - (Web)': status: Failure (2) | 'AKILA - (Web)#scenario.availability.percentage'=64.48%;;;0;100 'AKILA - (Web)#scenario.time.allsteps.total.milliseconds'=4031ms;;;0; 'AKILA - (Web)~Home#scenario.step.time.milliseconds'=3862ms;;;0; 'AKILA - (Web)~Dashboard v2#scenario.step.time.milliseconds'=215ms;;;0; 'AKILA - (Web)~Dashboard v3#scenario.step.time.milliseconds'=68ms;;;0;
 
+scenario-apikey ${tc}
+    [Documentation]    Check Iplabel scenarios
+    [Tags]    monitoring   iplabel    restapi
+
+    ${command}    Catenate
+    ...    ${cmd}
+    ...    --mode=scenarios
+    ...    --api-key='PaSsWoRdZ'
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:    tc    extra_options                                                             expected_result    --
+        ...      1     --filter-name='X-AKILA - Business App'                                    OK: Scenario 'X-AKILA - Business App': status: Success (1), availability: 100%, time total all steps: 4280ms - All steps are ok | 'X-AKILA - Business App#scenario.availability.percentage'=100%;;;0;100 'X-AKILA - Business App#scenario.time.allsteps.total.milliseconds'=4280ms;;;0; 'X-AKILA - Business App~Run Chrome#scenario.step.time.milliseconds'=2534ms;;;0; 'X-AKILA - Business App~Dashboard 2#scenario.step.time.milliseconds'=898ms;;;0; 'X-AKILA - Business App~Dashboard 3#scenario.step.time.milliseconds'=848ms;;;0;
+        ...      9     --api-key='wrongkey'                                                      UNKNOWN: API key is not valid.
+
+scenario ${tc}
+    [Documentation]    Check Iplabel scenarios
+    [Tags]    monitoring   iplabel    restapi
+
+    ${command}    Catenate
+    ...    ${cmd}
+    ...    --mode=scenarios
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:    tc    extra_options                                                             expected_result    --
+        ...      1     ${EMPTY}                                                                  UNKNOWN: Need to specify --api-key or --api-username/--api-password options.
+        ...      2     --api-username=username --api-password=password --api-key=PaSsWoRdZ       UNKNOWN: Cannot use both --api-key and --api-username/--api-password options.

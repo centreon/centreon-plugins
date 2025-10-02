@@ -172,6 +172,9 @@ runs:
         contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
         (inputs.stability == 'stable' && github.event_name == 'push')
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      env:
+        JF_URL: https://packages.centreon.com
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
       with:
         script: |
           const path = require('path');
@@ -184,6 +187,8 @@ runs:
 
           const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
 
+          let rpmReindexPaths = [];
+          let debReindexPaths = [];
           for await (const file of globber.globGenerator()) {
             const fileName = path.basename(file);
 
@@ -192,6 +197,7 @@ runs:
               if (/x86_64/.test(fileName)) {
                 arch = 'x86_64';
               }
+              rpmReindexPaths.push(`${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}`);
               await exec.exec(
                 `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${stableRpmSubdirectory}${{ inputs.module_name }}/" --flat`
               );
@@ -205,6 +211,23 @@ runs:
                 await exec.exec(
                   `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
                 );
+                debReindexPaths.push(`${{ steps.get_repository_stability_path.outputs.repository_stability_path }}`.split('/')[0]);
               }
             }
+          }
+
+          rpmReindexPaths = [...new Set(rpmReindexPaths)];
+          for (const rpmReindexPath of rpmReindexPaths) {
+            const rootRepoPath = rpmReindexPath.split('/')[0];
+            const repoPath = rpmReindexPath.split('/').slice(1).join('/');
+            await exec.exec(
+              `curl -H "Authorization: Bearer ${{ env.JF_ACCESS_TOKEN }}" -X POST "${{ env.JF_URL }}/artifactory/api/yum/${rootRepoPath}?path=/${repoPath}&async=1"`
+            );
+          }
+
+          debReindexPaths = [...new Set(debReindexPaths)];
+          for (const debReindexPath of debReindexPaths) {
+            await exec.exec(
+              `curl -H "Authorization: Bearer ${{ env.JF_ACCESS_TOKEN }}" -X POST "${{ env.JF_URL }}/artifactory/api/deb/reindex/${debReindexPath}?async=1"`
+            );
           }

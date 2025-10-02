@@ -37,7 +37,7 @@ jobs ${tc}
     ...    --cache-use
     ...    ${extraoptions}
     
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:    tc     extraoptions                                                                                                                     expected_result   --
         ...      1      ${EMPTY}                                                                                                                         OK: All jobs are ok | 'jobs.executions.detected.count'=2;;;0; 'Backup client 2 - Tous les jours#job.executions.failed.percentage'=5.26%;;;0;100 'client 6 - Backup - VM Test et Lab#job.execution.last.seconds'

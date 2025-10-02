@@ -115,6 +115,7 @@ sub new {
         'max-service-attempts:s' => { name => 'max_service_attempts'},
         'service-duration:s'     => { name => 'service_duration' },
         'centreon-url:s'         => { name => 'centreon_url' },
+        'url-path:s'             => { name => 'url_path', default => '/centreon' },
         'centreon-user:s'        => { name => 'centreon_user' },
         'centreon-token:s'       => { name => 'centreon_token' },
         'date:s'                 => { name => 'date' },
@@ -146,6 +147,11 @@ sub check_options {
     if (!defined($self->{option_results}->{smtp_address}) || $self->{option_results}->{smtp_address} eq '') {
         $self->{output}->add_option_msg(short_msg => "You need to specify --smtp-address option.");
         $self->{output}->option_exit();
+    }
+
+    # Automatically prepend / if missing in url-path
+    if (defined($self->{option_results}->{url_path}) && $self->{option_results}->{url_path} !~ /^\//) {
+        $self->{option_results}->{url_path} = '/' . $self->{option_results}->{url_path};
     }
 
     $self->{smtp_ssl} = defined($self->{option_results}->{no_ssl}) ? 0 : 'starttls';
@@ -203,13 +209,13 @@ sub host_message {
 
     my $details = {
         id => $host_id,
-        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id",
+        resourcesDetailsEndpoint => $self->{option_results}->{url_path} . "/api/latest/monitoring/resources/hosts/$host_id",
         tab => "details"
     };
 
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{url_path} . '/monitoring/resources?details=' . $encoded_data;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : Host: ' . $self->{option_results}->{host_name} . ' ' . $self->{option_results}->{host_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -329,7 +335,7 @@ sub service_message {
         && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
         my $content = $self->{http}->request(
             hostname => '',
-            full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
+            full_url => $self->{option_results}->{centreon_url} . $self->{option_results}->{url_path} . '/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&hostname=' . $self->{option_results}->{host_name} . '&service='. $self->{option_results}->{service_description},
             timeout => $self->{option_results}->{timeout},
             unknown_status => '',
             warning_status => '',
@@ -348,14 +354,14 @@ sub service_message {
 
     my $details = {
         id => $service_id,
-        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        resourcesDetailsEndpoint => $self->{option_results}->{url_path} . "/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
         tab => 'details'
     };
 
     my $line_break = '<br />';
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{url_path} . '/monitoring/resources?details=' . $encoded_data;
 
    
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' : ' . $self->{option_results}->{service_description} . ' '. $self->{option_results}->{service_state} . ' on ' . $self->{option_results}->{host_name} . ' ***';
@@ -477,7 +483,7 @@ sub bam_message {
     $self->{option_results}->{service_description} =~ /ba_(\d+)/;
     my $ba_id = $1;
    
-    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/main.php?p=20701&o=d&ba_id=' . $ba_id;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{url_path} . '/main.php?p=20701&o=d&ba_id=' . $ba_id;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' BAM: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -590,7 +596,7 @@ sub metaservice_message {
         && $self->{option_results}->{centreon_token}  && $self->{option_results}->{centreon_token} ne '') {
         my $content = $self->{http}->request(
             hostname => '',
-            full_url => $self->{option_results}->{centreon_url} . '/centreon/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&chartId=' . $host_id . '_'. $service_id,
+            full_url => $self->{option_results}->{centreon_url} . $self->{option_results}->{url_path} . '/include/views/graphs/generateGraphs/generateImage.php?akey=' . $self->{option_results}->{centreon_token} . '&username=' . $self->{option_results}->{centreon_user} . '&chartId=' . $host_id . '_'. $service_id,
             timeout => $self->{option_results}->{timeout},
             unknown_status => '',
             warning_status => '',
@@ -609,14 +615,14 @@ sub metaservice_message {
 
     my $details = {
         id => $service_id,
-        resourcesDetailsEndpoint => "/centreon/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
+        resourcesDetailsEndpoint => $self->{option_results}->{url_path} . "/api/latest/monitoring/resources/hosts/$host_id/services/$service_id",
         tab => 'details'
     };
 
     my $line_break = '<br />';
     my $json_data = encode_json($details);
     my $encoded_data = uri_escape($json_data);
-    my $dynamic_href = $self->{option_results}->{centreon_url} .'/centreon/monitoring/resources?details=' . $encoded_data;
+    my $dynamic_href = $self->{option_results}->{centreon_url} . $self->{option_results}->{url_path} . '/monitoring/resources?details=' . $encoded_data;
 
     $self->{payload_attachment}->{subject} = '*** ' . $self->{option_results}->{type} . ' Meta Service: ' . $self->{option_results}->{service_displayname} . ' ' . $self->{option_results}->{service_state} . ' ***';
     $self->{payload_attachment}->{alt_message} = '
@@ -795,15 +801,15 @@ Send Email alerts.
 
 Example for a host:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='john.doe@example.com' --host-address='192.168.1.1' --host-name='webserver' --host-alias='Web Server' --host-state='DOWN' --host-output='CRITICAL - Socket timeout after 10 seconds' --host-attempts='3' --max-host-attempts='3' --host-duration='6d 18h 33m 51s' --date='2023-04-12 10:30:00' --type='PROBLEM' --service-description='' --service-state='' --service-output='' --service-longoutput='' --service-attempts='' --max-service-attempts='' --service-duration='' --host-id='123' --service-id='' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon-engine@centreon.com' --centreon-user='admin' --centreon-token='Toi5Ve7ie' --smtp-user='john.doe@example.com' --smtp-password='mysecret'
+C<centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='john.doe@example.com' --host-address='192.168.1.1' --host-name='webserver' --host-alias='Web Server' --host-state='DOWN' --host-output='CRITICAL - Socket timeout after 10 seconds' --host-attempts='3' --max-host-attempts='3' --host-duration='6d 18h 33m 51s' --date='2023-04-12 10:30:00' --type='PROBLEM' --service-description='' --service-state='' --service-output='' --service-longoutput='' --service-attempts='' --max-service-attempts='' --service-duration='' --host-id='123' --service-id='' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon-engine@centreon.com' --centreon-user='admin' --centreon-token='Toi5Ve7ie' --smtp-user='john.doe@example.com' --smtp-password='mysecret'>
 
 Example for a service:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'
+C<centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='user@example.com' --host-address='192.168.1.100' --host-name='server1' --host-alias='Web Server' --host-state='UP' --host-output='OK - 192.168.1.1 rta 59.377ms lost 0%' --host-attempts='1' --max-host-attempts='3' --host-duration='41d 10h 5m 18s' --date='2023-04-12 14:30:00' --type='PROBLEM' --service-description='HTTP' --service-state='CRITICAL' --service-output='Connection timed out' --service-longoutput='Check HTTP failed: Connection timed out' --service-attempts='3' --max-service-attempts='3' --service-duration='0d 0h 0m 18s' --host-id='100' --service-id='200' --notif-author='' --notif-comment='' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address='smtp.example.com' --smtp-port='587' --from-address='centreon@example.com' --centreon-user='admin' --centreon-token='myauthtoken' --smtp-user='johndoe@example.com' --smtp-password='mypassword'>
 
 Example for Centreon configuration:
 
-centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-displayname='$SERVICEDISPLAYNAME$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts='$SERVICEATTEMPT$' --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password' 
+C<centreon_plugins.pl --plugin=notification::email::plugin --mode=alert --to-address='$CONTACTEMAIL$' --host-address='$HOSTADDRESS$' --host-name='$HOSTNAME$' --host-alias='$HOSTALIAS$' --host-state='$HOSTSTATE$' --host-output='$HOSTOUTPUT$' --host-attempts='$HOSTATTEMPT$' --max-host-attempts='$MAXHOSTATTEMPTS$' --host-duration='$HOSTDURATION$' --date='$SHORTDATETIME$' --type='$NOTIFICATIONTYPE$' --service-description='$SERVICEDESC$' --service-displayname='$SERVICEDISPLAYNAME$' --service-state='$SERVICESTATE$' --service-output='$SERVICEOUTPUT$' --service-longoutput='$LONGSERVICEOUTPUT$' --service-attempts='$SERVICEATTEMPT$' --max-service-attempts='$MAXSERVICEATTEMPTS$' --service-duration='$SERVICEDURATION$' --host-id='$HOSTID$' --service-id='$SERVICEID$' --notif-author='$NOTIFICATIONAUTHOR$' --notif-comment='$NOTIFICATIONCOMMENT$' --smtp-nossl --centreon-url='https://your-centreon-server' --smtp-address=your-smtp-server --smtp-port=your-smtp-port --from-address='centreon-engine@centreon.com' --centreon-user='your-centreon-username' --centreon-token='your-centreon-autologin-key' --smtp-user='your-smtp-username' --smtp-password='your-smtp-password'>
 
 =over 8
 
@@ -918,7 +924,7 @@ service's graph (leave empty to not retrieve and display graph).
 
 =item B<--centreon-token>
 
-Autologin token for the Centreon web interface (if --centreon-user is defined).
+Auto-login token for the Centreon web interface (if --centreon-user is defined).
 
 =item B<--date>
 
@@ -935,8 +941,13 @@ Comment for the notification.
 =item B<--centreon-url>
 
 URL of the Centreon web interface. Use either HTTP or HTTPS protocol depending on your setup, for example:
---centreon-url='http://your-centreon-server'
---centreon-url='https://your-centreon-server'
+C<--centreon-url='http://your-centreon-server'>
+C<--centreon-url='https://your-centreon-server'>
+
+=item B<--url-path>
+
+Pathname for Centreon (default: /centreon) 
+C<--url-path='/centreon'>
 
 =item B<--type>
 
