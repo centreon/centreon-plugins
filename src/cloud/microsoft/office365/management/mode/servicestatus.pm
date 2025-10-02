@@ -97,19 +97,19 @@ sub new {
     return $self;
 }
 
-# Apply include/exclude classification filters
-sub _filter_classification {
+# Apply include/exclude filters
+sub apply_filter {
     my ($self, %options) = @_;
 
     if ($options{include} ne '' &&
-        $options{classification} !~ /$options{include}/) {
-        $self->{output}->output_add(long_msg => "skipping '" . $options{classification} . "': no including filter match.", debug => 1);
+        $options{value} !~ /$options{include}/) {
+        $self->{output}->output_add(long_msg => "skipping '" . $options{value} . "': no including filter match.", debug => 1);
 
         return 1;
     }
     if ($options{exclude} ne '' &&
-        $options{classification} =~ /$options{exclude}/) {
-        $self->{output}->output_add(long_msg => "skipping '" . $options{classification} . "': excluding filter match.", debug => 1);
+        $options{value} =~ /$options{exclude}/) {
+        $self->{output}->output_add(long_msg => "skipping '" . $options{value} . "': excluding filter match.", debug => 1);
 
         return 1;
     }
@@ -127,16 +127,9 @@ sub manage_selection {
     my $unique_id = 1;
 
     NEXT_VALUE: foreach my $service (@$results) {
-        if ($self->{option_results}->{include_service_name} ne '' &&
-            $service->{service} !~ /$self->{option_results}->{include_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': no including filter match.", debug => 1);
-            next
-        }
-        if ($self->{option_results}->{exclude_service_name} ne '' &&
-            $service->{service} =~ /$self->{option_results}->{exclude_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': excluding filter match.", debug => 1);
-            next
-        }
+        next if $self->apply_filter(value => $service->{service},
+                                    include => $self->{option_results}->{include_service_name},
+                                    exclude => $self->{option_results}->{exclude_service_name});
         my %item = ( service_name => $service->{service},
                      status => $service->{status},
                      issue_startDateTime => '-',
@@ -147,15 +140,14 @@ sub manage_selection {
                      issue_resolved => '0'
                    );
         if ($service->{issues} && @{$service->{issues}}) {
-
             my @issues = grep { $self->{option_results}->{include_resolved} || not $_->{resolved} } @{$service->{issues}};
 
             foreach my $issue (@{$service->{issues}}) {
                 next if $issue->{isResolved} && $self->{option_results}->{exclude_resolved};
 
-                next if $self->_filter_classification(classification => $issue->{classification},
-                                                      include => $self->{option_results}->{include_classification},
-                                                      exclude => $self->{option_results}->{exclude_classification});
+                next if $self->apply_filter(value => $issue->{classification},
+                                            include => $self->{option_results}->{include_classification},
+                                            exclude => $self->{option_results}->{exclude_classification});
 
                 $item{issue_startDateTime} = $issue->{startDateTime};
                 $item{classification} = $issue->{classification};
@@ -172,15 +164,16 @@ sub manage_selection {
             next NEXT_VALUE
         }
 
-        next if $self->_filter_classification(classification => $item{classification},
-                                              include => $self->{option_results}->{include_classification},
-                                              exclude => $self->{option_results}->{exclude_classification});
+        next NEXT_VALUE
+            if $self->apply_filter(value => $item{classification},
+                                   include => $self->{option_results}->{include_classification},
+                                   exclude => $self->{option_results}->{exclude_classification});
 
         $self->{services}->{ $unique_id++ } = \%item;
     }
 
     $self->{output}->option_exit(short_msg => 'No services found.')
-        unless scalar(keys %{$self->{services}});
+        unless %{$self->{services}};
 }
 
 1;
