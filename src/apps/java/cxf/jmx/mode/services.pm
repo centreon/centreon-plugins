@@ -27,25 +27,42 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_status_output {
-    my ($self, %options) = @_;
+sub custom_service_perfdata {
+    my ($self) = @_;
 
-    return sprintf(
-        'state: %s',
-        $self->{result_values}->{state}
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => $instances,
+        value => $self->{result_values}->{ $self->{key_values}->[0]->{name} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
     );
 }
 
 sub service_long_output {
     my ($self, %options) = @_;
 
-    return "checking service '" . $options{instance} . "'";
+    return sprintf(
+        "checking service '%s' [port: %s]",
+        $options{instance_value}->{service},
+        $options{instance_value}->{port}
+    );
 }
 
 sub prefix_service_output {
     my ($self, %options) = @_;
 
-    return "Service '" . $options{instance} . "' ";
+    return sprintf(
+        "Service '%s' ",
+        $options{instance_value}->{service},
+        $options{instance_value}->{port}
+    );
 }
 
 sub prefix_fault_output {
@@ -60,81 +77,50 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'services', type => 3, cb_prefix_output => 'prefix_service_output', cb_long_output => 'service_long_output', indent_long_output => '    ', message_multiple => 'All services are ok',
             group => [
-                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'invocation', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'fault', type => 0, cb_prefix_output => 'prefix_fault_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
 
-    $self->{maps_counters}->{global} = [
-        { label => 'status', type => 2, warning_default => '%{state} =~ /suspend/i', set => {
-                key_values => [ { name => 'state' }, { name => 'name' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{faults} = [
+    $self->{maps_counters}->{invocation} = [
         { label => 'invocations', nlabel => 'service.invocations.count', set => {
-                key_values => [ { name => 'numInvocations', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'total', diff => 1 }, { name => 'service' }, { name => 'port' } ],
                 output_template => 'number of invocations: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
+                closure_custom_perfdata => $self->can('custom_service_perfdata')
             }
         },
-        { label => 'handling-time', nlabel => 'service.handling.time.milliseconds', set => {
-                key_values => [ { name => 'totalHandlingTime', diff => 1 }, { name => 'name' } ],
-                output_template => 'handling time: %s ms',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
-            }
-        },
-        { label => 'average-processing-time', nlabel => 'service.processing.time.average.milliseconds', set => {
-                key_values => [ { name => 'averageProcessingTime', diff => 1 }, { name => 'name' } ],
-                output_template => 'average processing time: %s ms',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
+        { label => 'inflight', nlabel => 'service.inflight.count', set => {
+                key_values => [ { name => 'inFlight' }, { name => 'service' }, { name => 'port' } ],
+                output_template => 'inflight: %s',
+                closure_custom_perfdata => $self->can('custom_service_perfdata')
             }
         }
     ];
 
     $self->{maps_counters}->{faults} = [
         { label => 'faults-checked-application', nlabel => 'service.faults.checked.application.count', set => {
-                key_values => [ { name => 'checkedApplication', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'checkedApplication', diff => 1 }, { name => 'service' }, { name => 'port' } ],
                 output_template => 'checked application: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
+                closure_custom_perfdata => $self->can('custom_service_perfdata')
             }
         },
         { label => 'faults-unchecked-application', nlabel => 'service.faults.unchecked.application.count', set => {
-                key_values => [ { name => 'unCheckedApplication', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'unCheckedApplication', diff => 1}, { name => 'service' }, { name => 'port' } ],
                 output_template => 'unchecked application: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
+                closure_custom_perfdata => $self->can('custom_service_perfdata')
             }
         },
         { label => 'faults-logical-runtime', nlabel => 'service.faults.logical.runtime.count', set => {
-                key_values => [ { name => 'logicalRuntime', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'logicalRuntime', diff => 1 }, { name => 'service' }, { name => 'port' } ],
                 output_template => 'logical runtime: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
+                closure_custom_perfdata => $self->can('custom_service_perfdata')
             }
         },
         { label => 'faults-runtime', nlabel => 'service.faults.runtime.count', set => {
-                key_values => [ { name => 'runtime', diff => 1 }, { name => 'name' } ],
+                key_values => [ { name => 'runtime', diff => 1 }, { name => 'service' }, { name => 'port' } ],
                 output_template => 'runtime: %s',
-                perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'name' }
-                ]
+                closure_custom_perfdata => $self->can('custom_service_perfdata')
             }
         }
     ];
@@ -146,10 +132,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-service:s'            => { name => 'filter_service' },
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
+        $self->{option_results}->{custom_perfdata_instances} = '%(service) %(port)';
+    }
+
+    $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
+        option_name => '--custom-perfdata-instances',
+        instances => $self->{option_results}->{custom_perfdata_instances},
+        labels => { service => 1, port => 1 }
+    );
 }
 
 sub manage_selection {
@@ -157,12 +159,8 @@ sub manage_selection {
 
     my $request = [
         {
-            mbean => 'org.apache.cxf:bus.id=*,type=Performance.Counter.Server,service=*,port=*',
-            attributes => [
-                { name => 'NumInvocations' }, { name => 'TotalHandlingTime' }, { name => 'AverageProcessingTime' },
-                { name => 'NumCheckedApplicationFaults' }, { name => 'NumLogicalRuntimeFaults' },
-                { name => 'NumRuntimeFaults' }, { name => 'NumUnCheckedApplicationFaults' }
-            ]
+            mbean => 'org.apache.cxf:Attribute=*,bus.id=*,service=*,port=*,type=Metrics.Server',
+            attributes => [ { name => 'Count' } ]
         }
     ];
 
@@ -172,42 +170,46 @@ sub manage_selection {
         md5_hex(
             $options{custom}->get_connection_info() . '_' .
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : ''))
+            (defined($self->{option_results}->{filter_service}) ? $self->{option_results}->{filter_service} : '')
         );
 
-    $self->{routes} = {};
+    $self->{services} = {};
     foreach my $mbean (keys %$result) {
-        my ($service, $port);
+        my ($attribute, $bus_id, $service, $port);
 
         $service = $1 if ($mbean =~ /service=(.*?)(?:,|$)/);
         $port = $1 if ($mbean =~ /port=(.*?)(?:,|$)/);
+        $attribute = $1 if ($mbean =~ /Attribute=(.*?)(?:,|$)/i);
+        $bus_id = $1 if ($mbean =~ /bus\.id=(.*?)(?:,|$)/);
         $service =~ s/^"(.*)"$/$1/;
+        $service = $1 if ($service =~ /\{(.*)\}/);
         $port =~ s/^"(.*)"$/$1/;
 
-        my $name = $service . ':' . $port;
+        next if (defined($self->{option_results}->{filter_service}) && $self->{option_results}->{filter_service} ne '' &&
+            $service !~ /$self->{option_results}->{filter_service}/);
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/);
+        if (!defined($self->{services}->{$bus_id})) {
+            $self->{services}->{$bus_id} = {
+                service => $service,
+                port => $port,
+                invocation => {
+                    service => $service,
+                    port => $port
+                },
+                faults => {
+                    service => $service,
+                    port => $port
+                }
+            };
+        }
 
-        $self->{services}->{$name} = {
-            global => {
-                name => $name,
-                state => $result->{$mbean}->{'State'}
-            },
-            invocation => {
-                name => $name,
-                numInvocations => $result->{$mbean}->{'NumInvocations'},
-                totalHandlingTime => $result->{$mbean}->{'TotalHandlingTime'},
-                averageProcessingTime => $result->{$mbean}->{'AverageProcessingTime'}
-            },
-            faults => {
-                name => $name,
-                checkedApplication => $result->{$mbean}->{'NumCheckedApplicationFaults'},
-                unCheckedApplication => $result->{$mbean}->{'NumUnCheckedApplicationFaults'},
-                logicalRuntime => $result->{$mbean}->{'NumLogicalRuntimeFaults'},
-                runtime => $result->{$mbean}->{'NumRuntimeFaults'}
-            }
-        };
+        $self->{services}->{$bus_id}->{invocation}->{total} = $result->{$mbean}->{$attribute} if ($attribute =~ /Totals/i);
+        $self->{services}->{$bus_id}->{invocation}->{inFlight} = $result->{$mbean}->{$attribute} if ($attribute =~ /In Flight/i);
+
+        $self->{services}->{$bus_id}->{faults}->{checkedApplication} = $result->{$mbean}->{$attribute} if ($attribute =~ /Checked Application Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{unCheckedApplication} = $result->{$mbean}->{$attribute} if ($attribute =~ /Unchecked Application Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{logicalRuntime} = $result->{$mbean}->{$attribute} if ($attribute =~ /Logical Runtime Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{runtime} = $result->{$mbean}->{$attribute} if ($attribute =~ /Runtime Faults/i);
     }
 
     if (scalar(keys %{$self->{services}}) <= 0) {
@@ -225,30 +227,19 @@ Check services.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-service>
 
-Filter services by name (can be a regexp).
+Filter services by address (can be a regexp).
 
-=item B<--unknown-status>
+=item B<--custom-perfdata-instances>
 
-Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{state}, %{name}
-
-=item B<--warning-status>
-
-Define the conditions to match for the status to be WARNING (default: '%{statisticsEnabled} eq "no" || %{state} =~ /suspend/i').
-You can use the following variables: %{state}, %{name}
-
-=item B<--critical-status>
-
-Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{state}, %{name}
+Define perfdatas instance (default: '%(service) %(port)')
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 
-'invocations', 'handling-time' (ms), 'average-processing-time' (ms),
+'invocations', 'inflight',
 'faults-checked-application', 'faults-unchecked-application', 'faults-logical-runtime', 'faults-runtime'.
 
 =back

@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my @mapping = ('name', 'state');
+my @mapping = ('service', 'port', 'busId');
 
 sub new {
     my ($class, %options) = @_;
@@ -48,26 +48,25 @@ sub manage_selection {
 
     my $request = [
         {
-            mbean => 'org.apache.cxf:bus.id=*,type=Performance.Counter.Server,service=*,port=*',
-            attributes => [
-                { name => 'NumInvocations' }
-            ] 
+            mbean => 'org.apache.cxf:Attribute=Totals,bus.id=*,service=*,port=*,type=Metrics.Server',
+            attributes => [ { name => 'Count' } ]
         }
     ];
     my $datas = $options{custom}->get_attributes(request => $request);
 
     my $results = {}; 
     foreach my $mbean (keys %$datas) {
-        my ($service, $port);
+        my ($attribute, $bus_id, $service, $port);
 
         $service = $1 if ($mbean =~ /service=(.*?)(?:,|$)/);
         $port = $1 if ($mbean =~ /port=(.*?)(?:,|$)/);
+        $attribute = $1 if ($mbean =~ /Attribute=(.*?)(?:,|$)/i);
+        $bus_id = $1 if ($mbean =~ /bus\.id=(.*?)(?:,|$)/);
         $service =~ s/^"(.*)"$/$1/;
+        $service = $1 if ($service =~ /\{(.*)\}/);
         $port =~ s/^"(.*)"$/$1/;
 
-        my $name = $service . ':' . $port;
-
-        $results->{$name} = { name => $name, state => $datas->{$mbean}->{State} };
+        $results->{$bus_id} = { service => $service, port => $port, busId => $bus_id };
     }
 
     return $results;
