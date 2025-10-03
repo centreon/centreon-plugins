@@ -40,7 +40,7 @@ curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
 apt-get install -y nodejs
 
 # Install mockoon (needs nodejs)
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/apt-standard-24.10-stable bookworm main" | tee /etc/apt/sources.list.d/centreon.list
