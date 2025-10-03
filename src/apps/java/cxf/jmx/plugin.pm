@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Apache Camel in JMX. Need Jolokia agent.
+Check Apache CXF in JMX. Need Jolokia agent.
 
 =cut
