@@ -75,8 +75,7 @@ sub manage_selection {
         $_ => $self->get_vm_stats(%options, cid => $_, vm_id => $self->{vm_id}, vm_name => $self->{vm_name} )
     } @counters;
     if (!defined($results{'disk.throughput.usage.VM'}) || !defined($results{'disk.throughput.contention.VM'})) {
-        $self->{output}->add_option_msg(short_msg => "get_vm_stats function failed to retrieve stats");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "get_vm_stats function failed to retrieve stats");
     }
 
     $self->{diskio} = \%results;
