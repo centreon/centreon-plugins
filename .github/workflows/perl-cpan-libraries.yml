@@ -166,7 +166,7 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Get package infos
@@ -323,7 +323,7 @@ jobs:
       - run: apt-get install -y zstd
         shell: bash
 
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
@@ -477,7 +477,7 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         name: Parse distrib name
@@ -711,7 +711,7 @@ jobs:
     name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
 
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Test packaged libs
         uses: ./.github/actions/test-cpan-libs
@@ -756,7 +756,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Delivery
         uses: ./.github/actions/package-delivery
