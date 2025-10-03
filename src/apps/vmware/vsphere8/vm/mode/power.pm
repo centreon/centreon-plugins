@@ -37,9 +37,9 @@ sub set_counters {
 
     $self->{maps_counters}->{power} = [
         {
-            label           => 'usage-watts',
+            label           => 'usage-watt',
             type            => 1,
-            nlabel          => 'power.capacity.usage.watts',
+            nlabel          => 'power.capacity.usage.watt',
             output_template => 'Power usage is %d Watts',
             set             => {
                 output_template => 'Power usage is %s Watts',
@@ -75,11 +75,11 @@ Monitor the power consumption of a VMware virtual machine through vSphere 8 REST
 
 =over 8
 
-=item B<--warning-usage-watts>
+=item B<--warning-usage-watt>
 
 Threshold in Watts.
 
-=item B<--critical-usage-watts>
+=item B<--critical-usage-watt>
 
 Threshold in Watts.
 
