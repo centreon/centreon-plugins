@@ -140,8 +140,6 @@ sub manage_selection {
                      issue_resolved => '0'
                    );
         if ($service->{issues} && @{$service->{issues}}) {
-            my @issues = grep { $self->{option_results}->{include_resolved} || not $_->{resolved} } @{$service->{issues}};
-
             foreach my $issue (@{$service->{issues}}) {
                 next if $issue->{isResolved} && $self->{option_results}->{exclude_resolved};
 
