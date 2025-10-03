@@ -33,5 +33,4 @@ hardware-x435-8p-4s ${tc}
             ...      5.1   temperature       --warning='temperature,.*,25'      WARNING: Temperature is 82 degree centigrade | 'temp'=82C;0:25;;; 'count_temperature'=1;;;;
             ...      5.2   temperature       --critical='temperature,.*,25'     CRITICAL: Temperature is 82 degree centigrade | 'temp'=82C;;0:25;; 'count_temperature'=1;;;;
             ...      6     poe              ${EMPTY}                            OK: All 1 components are ok [1/1 poes]. | 'poe_power_1'=0.000W;;;0; 'count_poe'=1;;;;
-
             
