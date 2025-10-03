@@ -40,3 +40,4 @@ cpu-x435-8p-4s ${tc}
             ...      6.0     --filter-counters='^5min$'                             OK: CPU '1' 5 minutes : 2.10 % | 'cpu_5min'=2.10%;;;0;100
             ...      6.1     --filter-counters='^5min$' --warning-5min=0:0          WARNING: CPU '1' 5 minutes : 2.10 % | 'cpu_5min'=2.10%;0:0;;0;100
             ...      6.2     --filter-counters='^5min$' --critical-5min=0:0         CRITICAL: CPU '1' 5 minutes : 2.10 % | 'cpu_5min'=2.10%;;0:0;0;100
+
