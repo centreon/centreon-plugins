@@ -1,0 +1,56 @@
+{
+  "snmp": {
+    "tables": [
+      {
+        "name": "cpu",
+        "oid": ".1.3.6.1.2.1.25.3.3.1.2",
+        "used_instance": ".*\\.(\\d+)$",
+        "entries": [
+          {
+            "name": "usage",
+            "oid": ".1.3.6.1.2.1.25.3.3.1.2"
+          }
+        ]
+      }
+    ]
+  },
+  "selection_loop": [
+    {
+      "name": "cpu",
+      "source": "%(snmp.tables.cpu)",
+      "perfdatas": [
+        {
+          "nlabel": "cpu.usage.percent",
+          "instances": ["%(cpu.instance)"],
+          "value": "%(cpu.usage)",
+          "unit": "%",
+          "min": 0,
+          "max": 100
+        }
+      ],
+      "formatting": {
+        "printf_msg": "CPU '%s' usage : %s %%",
+        "printf_var": [
+          "%(cpu.instance)",
+          "%(cpu.usage)"
+        ],
+        "display_ok": true
+      }
+    }
+  ],
+  "global": {
+    "perfdatas": [
+      {
+        "nlabel": "total.cpu.avg.usage.percent",
+        "value": "AVG(%(cpu.usage))",
+        "unit": "%",
+        "min": 0,
+        "max": 100
+      }
+    ],
+    "formatting": {
+      "printf_msg": "%(COUNT(cpu)) CPU(s) average usage is %(AVG(cpu.usage)) %%",
+      "display_ok": true
+    }
+  }
+}
