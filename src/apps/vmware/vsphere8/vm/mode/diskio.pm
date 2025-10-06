@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::vmware::vsphere8::esx::mode::diskio;
+package apps::vmware::vsphere8::vm::mode::diskio;
 use strict;
 use warnings;
-use base qw(apps::vmware::vsphere8::esx::mode);
+use base qw(apps::vmware::vsphere8::vm::mode);
 
 my @counters = (
-    "disk.throughput.usage.HOST",
-    "disk.throughput.contention.HOST"
+    "disk.throughput.usage.VM",
+    "disk.throughput.contention.VM"
 );
 
 sub custom_diskio_output {
@@ -50,7 +50,7 @@ sub set_counters {
             type            => 1,
             nlabel          => 'disk.throughput.usage.bytespersecond',
             set             => {
-                key_values      => [ { name => 'disk.throughput.usage.HOST' }, { name => 'throughput_bps' } ],
+                key_values      => [ { name => 'disk.throughput.usage.VM' }, { name => 'throughput_bps' } ],
                 closure_custom_output => $self->can('custom_diskio_output'),
                 perfdatas       => [ { value => 'throughput_bps', template => '%s', unit => 'Bps' } ]
             }
@@ -60,11 +60,9 @@ sub set_counters {
             type            => 1,
             nlabel          => 'disk.throughput.contention.milliseconds',
             set             => {
-                key_values      => [ { name => 'disk.throughput.contention.HOST' }],
+                key_values      => [ { name => 'disk.throughput.contention.VM' }],
                 output_template => 'Disk throughput contention is %s ms',
-                output_use      => 'disk.throughput.contention.HOST',
-                threshold_use   => 'disk.throughput.contention.HOST',
-                perfdatas       => [ { value => 'disk.throughput.contention.HOST', template => '%s', unit => 'ms' } ]
+                perfdatas       => [ { value => 'disk.throughput.contention.VM', template => '%s', unit => 'ms' } ]
             }
         }
     ];
@@ -74,28 +72,26 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %results = map {
-        $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
+        $_ => $self->get_vm_stats(%options, cid => $_, vm_id => $self->{vm_id}, vm_name => $self->{vm_name} )
     } @counters;
-
-    if (!defined($results{'disk.throughput.usage.HOST'}) || !defined($results{'disk.throughput.contention.HOST'})) {
-        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
+    if (!defined($results{'disk.throughput.usage.VM'}) || !defined($results{'disk.throughput.contention.VM'})) {
+        $self->{output}->option_exit(short_msg => "get_vm_stats function failed to retrieve stats");
     }
 
     $self->{diskio} = \%results;
-    $self->{diskio}->{throughput_bps} = $results{'disk.throughput.usage.HOST'} * 1024;
 
-    return 1;
+    $self->{diskio}->{throughput_bps} = $results{'disk.throughput.usage.VM'} * 1024;
 }
 
 1;
 
 =head1 MODE
 
-Monitor the disk throughput and contention of VMware ESX hosts through vSphere 8 REST API.
+Monitor the disk throughput and contention of VMware virtual machines through vSphere 8 REST API.
 
     Meaning of the available counters in the VMware API:
-    - disk.throughput.usage.HOST         Aggregated disk I/O rate (in kB/s), including the rates for all virtual machines running on the host during the collection interval
-    - disk.throughput.contention.HOST    Average amount of time (in milliseconds) for an I/O operation to complete successfully
+    - disk.throughput.usage.VM         Virtual disk I/O rate.
+    - disk.throughput.contention.VM    Average amount of time for an I/O operation to complete successfully.
 
 =over 8
 
@@ -114,7 +110,6 @@ Threshold in bytes per second.
 =item B<--critical-usage-bps>
 
 Threshold in bytes per second.
-
 
 =back
 
