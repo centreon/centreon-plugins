@@ -146,6 +146,10 @@ sub powershell_exec {
 sub run {
     my ($self, %options) = @_;
 
+    my $disco_data;
+    my $disco_stats;
+    $disco_stats->{start_time} = time();
+    
     my $decoded = $self->powershell_exec();
 
     my $hosts = {};
@@ -154,8 +158,6 @@ sub run {
         $hosts->{ $entry->{id} } = { cluster_name => $entry->{clusterName}, name => $entry->{name} };
     }
 
-    my $disco_data;
-    my $disco_stats;
     foreach my $entry (@$decoded) {
         my $item = {};
 
@@ -215,63 +217,63 @@ __END__
 
 =head1 MODE
 
-Resources discovery.
+SCVMM resources discovery.
 
 =over 8
 
 =item B<--prettify>
 
-Prettify JSON output.
+Prettify the JSON output.
 
 =item B<--resource-type>
 
-Choose the type of resources
-to discover (can be: 'host', 'vm') (mandatory).
+Choose the type of resources to discover (can be: C<host>, C<vm>) (required).
 
 =item B<--scvmm-hostname>
 
-SCVMM hostname.
+Set the SCVMM hostname.
 
 =item B<--scvmm-username>
 
-SCVMM username (required).
+Set the SCVMM username (required).
 
 =item B<--scvmm-password>
 
-SCVMM password (required).
+Set the SCVMM password (required).
 
 =item B<--scvmm-port>
 
-SCVMM port (default: 8100).
+Set the SCVMM port (default: 8100).
 
 =item B<--timeout>
 
-Set timeout time for command execution (default: 90 sec)
+Set timeout time for command execution (default: 90 sec).
 
 =item B<--no-ps>
 
-Don't encode powershell. To be used with --command and 'type' command.
+Don't encode powershell. To be used with C<--command> and 'type' command.
 
 =item B<--command>
 
-Command to get information (default: 'powershell.exe').
-Can be changed if you have output in a file. To be used with --no-ps option!!!
+Set the command to get information (default: 'powershell.exe').
+It can be used if you have the information in a file. 
+This option should be used with C<--no-ps> option!!!
 
 =item B<--command-path>
 
-Command path (default: none).
+Set the command path (default: none).
 
 =item B<--command-options>
 
-Command options (default: '-InputFormat none -NoLogo -EncodedCommand').
+Set the command options (default: C<-InputFormat none -NoLogo -EncodedCommand>).
 
 =item B<--ps-display>
 
-Display powershell script.
+Display the powershell script.
 
 =item B<--ps-exec-only>
 
-Print powershell output.
+Print the powershell output.
 
 =back
 

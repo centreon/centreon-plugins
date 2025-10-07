@@ -5,6 +5,8 @@ Library             Collections
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}podman.json

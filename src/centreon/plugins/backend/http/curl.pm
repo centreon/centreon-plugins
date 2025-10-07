@@ -530,7 +530,7 @@ sub request {
         $status = 'unknown';
     }
 
-    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+    if (!$options{request}->{silently_fail} && !$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         my $short_msg = $self->{response_code} . ' ' . 
             (defined($http_code_explained->{$self->{response_code}}) ? $http_code_explained->{$self->{response_code}} : 'unknown');
 

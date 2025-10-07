@@ -1,0 +1,259 @@
+#
+# Copyright 2025 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package apps::vmware::vsphere8::vm::mode;
+use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
+use strict;
+use warnings;
+
+use base qw(centreon::plugins::templates::counter);
+
+sub new {
+    my ($class, %options) = @_;
+    my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+
+    $options{options}->add_options(
+        arguments => {
+            'vm-id:s'          => { name => 'vm_id' },
+            'vm-name:s'        => { name => 'vm_name' }
+        }
+    );
+    $options{options}->add_help(package => __PACKAGE__, sections => 'VMWARE 8 VM OPTIONS', once => 1);
+    $self->{cache} = centreon::plugins::statefile->new(%options);
+    return $self;
+}
+
+sub get_vm_id {
+    my ($self, %options) = @_;
+
+
+    # return the id if we already have it in memory
+    return $self->{vm_id} if (!centreon::plugins::misc::is_empty($self->{vm_id}));
+
+    if ( centreon::plugins::misc::is_empty($self->{vm_name}) ) {
+        $self->{output}->add_option_msg(short_msg => "get_vm_id method called without vm_name option. Please check configuration.");
+        $self->{output}->option_exit();
+    }
+
+    # return it from the cache if it is available
+    if ($self->{cache}->read(statefile => 'vsphere8_api_vm_info_' . md5_hex($self->{vm_name}))) {
+        my $vm_id = $self->{cache}->get(name => 'vm_id');
+        # store it to avoid re-reading the cache the next time it is asked
+        $self->{vm_id} = $vm_id;
+        return $self->{vm_id};
+    }
+
+    # get it from the API
+    my $response = $options{custom}->request_api(
+        'endpoint' => '/vcenter/vm',
+        'get_param' => [ 'names='. $self->{vm_name} ],
+        'method' => 'GET'
+    );
+
+    for my $rsrc (@$response) {
+        next if ($rsrc->{name} ne $self->{vm_name});
+        # store it to avoid re-processing everything the next time it is asked
+        $self->{vm_id} = $rsrc->{vm};
+        $self->{output}->add_option_msg(long_msg => "get_vm_id method called to get " . $self->{vm_name}
+            . "'s id: " . $self->{vm_id} . ". Prefer using --vm-id to spare a query to the API.");
+        # store it in the cache for future runs
+        $self->{cache}->write(data => {updated => time(), vm_id => $self->{vm_id}});
+        return $self->{vm_id};
+    }
+
+    return undef;
+}
+
+sub get_vm {
+    my ($self, %options) = @_;
+
+    my $vm;
+    # if the VM's ID was given in the parameters, use it to get all the data of the VM
+    if (!centreon::plugins::misc::is_empty($self->{vm_id})) {
+        my $response = $self->request_api(
+            %options,
+            'endpoint' => '/vcenter/vm/' . $self->{vm_id},
+            'method'   => 'GET',
+            'no_fail'  => 1
+        );
+        $vm = $response;
+    }
+    # if the VM's ID was not provided or if the first query did not succeed, we look for the vm by its name
+    if (centreon::plugins::misc::is_empty($vm->{name}) && !centreon::plugins::misc::is_empty($self->{vm_name})) {
+        my $response = $self->request_api(
+            %options,
+            'endpoint' => '/vcenter/vm',
+            'get_param' => [ 'names='. $self->{vm_name} ],
+            'method'   => 'GET'
+        );
+
+        $vm = $response->[0] // undef;
+    }
+    if (centreon::plugins::misc::is_empty($vm->{name})) {
+        $self->{output}->add_option_msg(short_msg => "No VM found.");
+        $self->{output}->option_exit();
+    }
+    # the VM's ID (vm-xxxx) is not returned if the vm was obtained by it's vm_id, so in that case we have to get it from the parameter
+    $vm->{vm} = $self->{vm_id} unless $vm->{vm};
+
+    return $vm;
+}
+
+sub get_vm_tools {
+    my ($self, %options) = @_;
+
+    if ( !$self->get_vm_id(%options) ) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get VM ID from VM name '" . $self->{vm_name} . "'");
+        $self->{output}->option_exit();
+    }
+
+    my $tools = $self->request_api(
+        %options,
+        'endpoint' => '/vcenter/vm/' . $self->{vm_id} . '/tools',
+        'method'   => 'GET'
+    );
+    # Example:
+    # {
+    #   "auto_update_supported": false,
+    #   "upgrade_policy": "MANUAL",
+    #   "install_attempt_count": 1,
+    #   "version_status": "UNMANAGED",
+    #   "version_number": 12352,
+    #   "run_state": "RUNNING",
+    #   "version": "12352",
+    #   "install_type": "OPEN_VM_TOOLS"
+    # }
+
+    return $tools;
+}
+
+sub get_vm_stats {
+    my ($self, %options) = @_;
+
+    if ( centreon::plugins::misc::is_empty($options{vm_id}) && !$self->get_vm_id(%options) ) {
+        $self->{output}->add_option_msg(short_msg => "get_vm_stats method cannot get vm ID from vm name");
+        $self->{output}->option_exit();
+    }
+
+    return $options{custom}->get_stats(
+        %options,
+        rsrc_id   => $self->{vm_id}
+    );
+}
+
+sub request_api {
+    my ($self, %options) = @_;
+
+    return $options{custom}->request_api(%options);
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+    $self->{cache}->check_options(option_results => $self->{option_results});
+
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{vm_id})
+        && centreon::plugins::misc::is_empty($self->{option_results}->{vm_name})) {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify either --vm-id or --vm-name option.');
+        $self->{output}->option_exit();
+    }
+
+    $self->{vm_id}   = $self->{option_results}->{vm_id};
+    $self->{vm_name} = $self->{option_results}->{vm_name};
+}
+
+1;
+
+__END__
+
+=head1 VMWARE 8 VM OPTIONS
+
+=over 4
+
+=item B<--vm-id>
+
+Define which VM to monitor based on its resource ID (example: C<vm-1234>).
+B<Using this option is mandatory if you have several VMs with the same name.>
+
+=item B<--vm-name>
+
+Define which VM to monitor based on its name (example: C<WEBSERVER01>).
+When possible, it is recommended to use C<--vm-id> instead.
+B<Do not use this option if you have several VMs with the same name.>
+
+=back
+
+=cut
+
+=head1 NAME
+
+apps::vmware::vsphere8::vm::mode - Template for modes monitoring VMware virtual machine
+
+=head1 SYNOPSIS
+
+    use base apps::vmware::vsphere8::vm::mode;
+
+    sub set_counters {...}
+    sub manage_selection {
+        my ($self, %options) = @_;
+
+
+
+    $api->set_options(option_results => $option_results);
+    $api->check_options();
+    my $response = $api->request_api(endpoint => '/vcenter/vm');
+    my $vm_cpu_capacity = $self->get_vm_stats(
+                                cid     => 'cpu.capacity.provisioned.VM',
+                                rsrc_id => 'vm-18');
+
+=head1 DESCRIPTION
+
+This module provides methods to interact with the VMware vSphere 8 REST API. It handles authentication, caching, and API requests.
+
+=head1 METHODS
+
+=head2 get_vm_stats
+
+    $self->get_vm_stats(%options);
+
+Retrieves the VM statistics for the given options using package apps::vmware::vsphere8::custom::api::get_stats()
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<cid> - The C<cid> (counter id) of the desired metric.
+
+=item * C<vm_id> - The VM's C<rsrc_id> (resource ID) for which to retrieve the statistics. This option is optional if C<vm_name> is provided.
+
+=item * C<vm_name> - The VM's name for which to retrieve the statistics. This option is not used if C<vm_id> is provided, which is the nominal usage of this function.
+
+=back
+
+=back
+
+Returns the statistics for the specified VM.
+
+=cut
+

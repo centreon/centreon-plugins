@@ -688,6 +688,9 @@ sub die_exit {
 
 sub option_exit {
     my ($self, %options) = @_;
+
+    $self->add_option_msg(short_msg => $options{short_msg}) if defined $options{short_msg};
+
     # $options{exit_litteral} = string litteral exit
     # $options{nolabel} = interger label display
     my $exit_litteral = defined($options{exit_litteral}) ? $options{exit_litteral} : $self->{option_results}->{opt_exit};
@@ -897,7 +900,11 @@ sub display_disco_show {
         foreach (@{$self->{disco_entries}}) {
             my $child = $self->{xml_output}->createElement('label');
             foreach my $key (keys %$_) {
-                $child->setAttribute($key, $_->{$key});
+                # Encode all non printable chars as hexadecimal entities to produce valid XML
+                # I.e. "test ^H" becomes "test &#x8;"
+                my $val = $_->{$key};
+                $val=~s{([[:cntrl:]])}{"&#x".sprintf("%X",ord($1)).";"}ge;
+                $child->setAttribute($key, $val);
             }
             $root->addChild($child);
         }

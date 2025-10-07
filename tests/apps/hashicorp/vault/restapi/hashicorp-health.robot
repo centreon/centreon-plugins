@@ -21,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 
 *** Test Cases ***
-List Edges ${tc}
+Health ${tc}
     [Tags]    apps    hashicorp    vault    restapi    mockoon   
     ${command}    Catenate
     ...    ${CMD}

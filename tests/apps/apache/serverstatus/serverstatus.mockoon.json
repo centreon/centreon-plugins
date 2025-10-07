@@ -4,7 +4,7 @@
   "name": "Apache",
   "endpointPrefix": "",
   "latency": 0,
-  "port": 3006,
+  "port": 3000,
   "hostname": "",
   "folders": [],
   "routes": [

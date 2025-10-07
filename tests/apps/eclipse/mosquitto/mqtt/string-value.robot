@@ -4,6 +4,8 @@ Documentation       Checks Eclipse Mosquitto MQTT plugin string-value mode
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Test Timeout        120s
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 
 
 *** Variables ***
@@ -32,7 +34,7 @@ Mosquitto MQTT string-value help
     ...    ${CMD}
     ...    --help
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ^Plugin Description:
+    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ^Plugin Description:
 
 Mosquitto MQTT string-value ${tc}
     [Documentation]    Check Mosquitto MQTT string-value

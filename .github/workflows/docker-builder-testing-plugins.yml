@@ -39,7 +39,7 @@ jobs:
           - runner: ubuntu-24.04
             dockerfile: bullseye
             image: bullseye
-          - runner: centreon-collect-arm64
+          - runner: ubuntu-24.04-arm
             dockerfile: bullseye
             image: bullseye-arm64
           - runner: ubuntu-24.04

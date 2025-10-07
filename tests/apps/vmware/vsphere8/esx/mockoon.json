@@ -1,0 +1,1060 @@
+{
+  "uuid": "6299ad1f-675c-4366-96b3-38199ca88ee8",
+  "lastMigration": 33,
+  "name": "Vmware8 ESXs",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "088897c5-8033-4ebc-b902-4512109a32ff",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/session",
+      "responses": [
+        {
+          "uuid": "c964a744-cd53-4029-9792-332d1163a6b0",
+          "body": "\"32c9819179813376a9bbda43e9c84165\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "68acba14-1ccf-4597-a90c-69264b07d558",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/host",
+      "responses": [
+        {
+          "uuid": "cc160130-c765-4a8a-ba09-0ad544ef956f",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "7kak",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a2915563-bcd6-463a-9641-11faeca700e5",
+      "type": "http",
+      "documentation": "When the counters we need do not exist",
+      "method": "get",
+      "endpoint": "api/stats/acq-specs",
+      "responses": [
+        {
+          "uuid": "98ddac1f-87a7-44e8-af12-f5fc58221fde",
+          "body": "{\n  \"acq_specs\": []\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Empty response (first request)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1ea5a0c5-9748-4e0a-b0e3-492897228e05",
+          "body": "{\n  \"next\": 42,\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1742628629,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"225\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.demand.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045217,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"227\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044136,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"229\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045217,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"231\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740046184,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"233\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045847,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"235\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1742643265,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"237\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.demand.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740044789,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"239\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740043589,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"241\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740044909,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"243\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"power.capacity.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045693,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"245\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"power.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045813,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"247\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"power.capacity.usagePct.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045214,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"249\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740046003,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"251\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045523,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"253\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045781,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"255\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045541,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"257\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.consumed.vms.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1742653510,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"259\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740043764,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"261\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.reservedCapacityPct.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044735,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"263\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1742655250,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"265\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044735,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"267\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.consumed.userworlds.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045335,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"269\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742310937,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"271\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.demand.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1739278153,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"273\",\n      \"status\": \"EXPIRED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742552083,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"275\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1739278154,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"277\",\n      \"status\": \"EXPIRED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.reservedCapacityPct.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569573,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"279\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569573,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"281\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569574,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"283\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.consumed.userworlds.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569574,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"285\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "First page of full response",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "page",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "ad357451-155c-49e2-89cd-642aa3f6895c",
+          "body": "{\n  \"acq_specs\": [\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1742655151,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"226\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044377,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"228\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740047017,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"230\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045225,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"232\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045225,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"234\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045727,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"236\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1742636545,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"238\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740044429,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"240\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740046469,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"242\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"power.capacity.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044681,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"244\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"power.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045640,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"246\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"power.capacity.usagePct.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044441,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"248\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044563,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"250\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045523,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"252\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.reservedCapacityPct.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045181,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"254\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usable.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1742651830,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"256\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740044461,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"258\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.consumed.userworlds.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045782,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"260\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"disk.throughput.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045564,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"262\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740045814,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"264\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1740044735,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"266\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.consumed.vms.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-35\"\n        }\n      ],\n      \"expiration\": 1742650090,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"268\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"net.throughput.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-28\"\n        }\n      ],\n      \"expiration\": 1740045345,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"270\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742310937,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"272\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.contention.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742552082,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"274\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.corecount.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742552083,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"276\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"cpu.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-11\"\n        }\n      ],\n      \"expiration\": 1742310951,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"278\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.provisioned.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569573,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"280\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.capacity.usage.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569574,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"282\",\n      \"status\": \"ENABLED\"\n    },\n    {\n      \"counters\": {\n        \"cid_mid\": {\n          \"mid\": \"\",\n          \"cid\": \"mem.consumed.vms.HOST\"\n        },\n        \"set_id\": \"\"\n      },\n      \"resources\": [\n        {\n          \"predicate\": \"EQUAL\",\n          \"scheme\": \"moid\",\n          \"type\": \"HOST\",\n          \"id_value\": \"host-22\"\n        }\n      ],\n      \"expiration\": 1742569574,\n      \"interval\": 60,\n      \"memo_\": \"\",\n      \"id\": \"284\",\n      \"status\": \"ENABLED\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Second page of full response",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "page",
+              "value": "42",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3cf897d7-eadd-4eb2-b228-b4e64a7ccc92",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/stats/acq-specs/",
+      "responses": [
+        {
+          "uuid": "acebc7ab-979a-4699-a173-98a03fafb16a",
+          "body": "\"101\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "",
+              "invert": false,
+              "operator": "valid_json_schema"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3ec99f28-5dbb-41f9-aa7b-202aeb0864ed",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/stats/data/dp",
+      "responses": [
+        {
+          "uuid": "5ce2efc1-82f3-4320-b783-c1f799729a06",
+          "body": "{\n  \"data_points\": []\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "no data",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1719fb3b-ead1-4e4b-b4b9-b4623766be4a",
+          "body": "{\"data_points\":[{\"val\":50280.0,\"mid\":\"-4283477827978228727\",\"rid\":\"102\",\"cid\":\"cpu.capacity.provisioned.HOST\",\"ts\":1739271090},{\"val\":50280.0,\"mid\":\"-4283477827978228727\",\"rid\":\"102\",\"cid\":\"cpu.capacity.provisioned.HOST\",\"ts\":1739271150},{\"val\":50280.0,\"mid\":\"-4283477827978228727\",\"rid\":\"102\",\"cid\":\"cpu.capacity.provisioned.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.provisioned.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.provisioned.HOST",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "f0969cdf-cf15-42e1-81bf-65c914720de0",
+          "body": " {\"data_points\":[{\"val\":3572.68,\"mid\":\"-5138147526746009769\",\"rid\":\"102\",\"cid\":\"cpu.capacity.usage.HOST\",\"ts\":1739271090},{\"val\":3732.93,\"mid\":\"-5138147526746009769\",\"rid\":\"102\",\"cid\":\"cpu.capacity.usage.HOST\",\"ts\":1739271150},{\"val\":4603.44,\"mid\":\"-5138147526746009769\",\"rid\":\"102\",\"cid\":\"cpu.capacity.usage.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "290f3e41-8635-4fb8-b222-7880dd66a7ad",
+          "body": "{\"data_points\":[{\"val\":3494.0,\"mid\":\"-9094858043316143888\",\"rid\":\"102\",\"cid\":\"cpu.capacity.demand.HOST\",\"ts\":1739271090},{\"val\":3258.0,\"mid\":\"-9094858043316143888\",\"rid\":\"102\",\"cid\":\"cpu.capacity.demand.HOST\",\"ts\":1739271150},{\"val\":4201.0,\"mid\":\"-9094858043316143888\",\"rid\":\"102\",\"cid\":\"cpu.capacity.demand.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.demand.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.demand.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "a90a3a02-4047-459b-b81a-68f75c6d59d0",
+          "body": "{\"data_points\":[{\"val\":0.57,\"mid\":\"-1713180257827098203\",\"rid\":\"102\",\"cid\":\"cpu.capacity.contention.HOST\",\"ts\":1739271090},{\"val\":0.59,\"mid\":\"-1713180257827098203\",\"rid\":\"102\",\"cid\":\"cpu.capacity.contention.HOST\",\"ts\":1739271150},{\"val\":0.55,\"mid\":\"-1713180257827098203\",\"rid\":\"102\",\"cid\":\"cpu.capacity.contention.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.capacity.contention.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.capacity.contention.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "04dca032-b006-4f43-82c2-bc26adb0700d",
+          "body": "{\"data_points\":[{\"val\":24.0,\"mid\":\"7871225830587267191\",\"rid\":\"102\",\"cid\":\"cpu.corecount.provisioned.HOST\",\"ts\":1739271090},{\"val\":24.0,\"mid\":\"7871225830587267191\",\"rid\":\"102\",\"cid\":\"cpu.corecount.provisioned.HOST\",\"ts\":1739271150},{\"val\":24.0,\"mid\":\"7871225830587267191\",\"rid\":\"102\",\"cid\":\"cpu.corecount.provisioned.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.corecount.provisioned.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.corecount.provisioned.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "f3055966-5a09-4b3b-a2f2-7a513bd91468",
+          "body": "{\"data_points\":[{\"val\":83.0,\"mid\":\"-8703878081681686712\",\"rid\":\"102\",\"cid\":\"cpu.corecount.usage.HOST\",\"ts\":1739271090},{\"val\":83.0,\"mid\":\"-8703878081681686712\",\"rid\":\"102\",\"cid\":\"cpu.corecount.usage.HOST\",\"ts\":1739271150},{\"val\":83.0,\"mid\":\"-8703878081681686712\",\"rid\":\"102\",\"cid\":\"cpu.corecount.usage.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.corecount.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.corecount.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "a596be26-c388-4922-b7d2-1a7089d22779",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"3949316748863634779\",\"rid\":\"102\",\"cid\":\"cpu.corecount.contention.HOST\",\"ts\":1739271090},{\"val\":0.0,\"mid\":\"3949316748863634779\",\"rid\":\"102\",\"cid\":\"cpu.corecount.contention.HOST\",\"ts\":1739271150},{\"val\":0.0,\"mid\":\"3949316748863634779\",\"rid\":\"102\",\"cid\":\"cpu.corecount.contention.HOST\",\"ts\":1739271210}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "cpu.corecount.contention.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "cpu.corecount.contention.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "9704a11d-ee77-4df6-9341-24967a78afab",
+          "body": "{\"data_points\":[{\"val\":260061.38,\"mid\":\"7912217246818631397\",\"rid\":\"102\",\"cid\":\"mem.capacity.usable.HOST\",\"ts\":1740039750},{\"val\":260061.35,\"mid\":\"7912217246818631397\",\"rid\":\"102\",\"cid\":\"mem.capacity.usable.HOST\",\"ts\":1740039810}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.capacity.usable.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.capacity.usable.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "43d6f10c-880e-4023-8dd1-494c563b859b",
+          "body": "{\"data_points\":[{\"val\":102424.82,\"mid\":\"-6907936868309351765\",\"rid\":\"102\",\"cid\":\"mem.consumed.vms.HOST\",\"ts\":1740039750},{\"val\":102424.82,\"mid\":\"-6907936868309351765\",\"rid\":\"102\",\"cid\":\"mem.consumed.vms.HOST\",\"ts\":1740039810}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.consumed.vms.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.consumed.vms.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "456efe0f-1b8b-4212-8933-6e4ef67df9ae",
+          "body": "{\"data_points\":[{\"val\":206.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152385},{\"val\":200.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152445},{\"val\":200.0,\"mid\":\"8446910325652763598\",\"rid\":\"102\",\"cid\":\"power.capacity.usage.HOST\",\"ts\":1740152505}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "power.capacity.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "power.capacity.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4e2245ea-f82b-45d5-8061-6871a48ba52e",
+          "body": "{\"data_points\":[{\"val\":6543.2,\"mid\":\"-589925797652405914\",\"rid\":\"102\",\"cid\":\"mem.swap.writerate.HOST\",\"ts\":1741942492},{\"val\":4567.8,\"mid\":\"-589925797652405914\",\"rid\":\"102\",\"cid\":\"mem.swap.writerate.HOST\",\"ts\":1741942552},{\"val\":1234.5,\"mid\":\"-589925797652405914\",\"rid\":\"102\",\"cid\":\"mem.swap.writerate.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.writerate.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.writerate.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5c337e11-a16a-4448-bd57-a60ac2065c7a",
+          "body": "{\"data_points\":[{\"val\":123,\"mid\":\"-8403556557442245906\",\"rid\":\"102\",\"cid\":\"mem.swap.readrate.HOST\",\"ts\":1741942492},{\"val\":234,\"mid\":\"-8403556557442245906\",\"rid\":\"102\",\"cid\":\"mem.swap.readrate.HOST\",\"ts\":1741942552},{\"val\":6543.2,\"mid\":\"-8403556557442245906\",\"rid\":\"102\",\"cid\":\"mem.swap.readrate.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.readrate.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.readrate.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "78891a5e-0a0e-445e-971a-4115156f9934",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"3029207848778654425\",\"rid\":\"102\",\"cid\":\"mem.swap.target.HOST\",\"ts\":1741942492},{\"val\":0.0,\"mid\":\"3029207848778654425\",\"rid\":\"102\",\"cid\":\"mem.swap.target.HOST\",\"ts\":1741942552},{\"val\":1073741824,\"mid\":\"3029207848778654425\",\"rid\":\"102\",\"cid\":\"mem.swap.target.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.target.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.target.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0fce549f-c109-48d4-87ca-2d04f771a314",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"6998864802324600231\",\"rid\":\"102\",\"cid\":\"mem.swap.current.HOST\",\"ts\":1741942492},{\"val\":0.0,\"mid\":\"6998864802324600231\",\"rid\":\"102\",\"cid\":\"mem.swap.current.HOST\",\"ts\":1741942552},{\"val\":123456.7,\"mid\":\"6998864802324600231\",\"rid\":\"102\",\"cid\":\"mem.swap.current.HOST\",\"ts\":1741942612}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mem.swap.current.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "mem.swap.current.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "512cd1e2-dfa8-492e-bdd3-9f44251fbd8b",
+          "body": "{\"data_points\":[{\"val\":0.0,\"mid\":\"8755718609385549431\",\"rid\":\"102\",\"cid\":\"net.throughput.contention.HOST\",\"ts\":1742203312},{\"val\":0.0,\"mid\":\"8755718609385549431\",\"rid\":\"102\",\"cid\":\"net.throughput.contention.HOST\",\"ts\":1742203372},{\"val\":0.0,\"mid\":\"8755718609385549431\",\"rid\":\"102\",\"cid\":\"net.throughput.contention.HOST\",\"ts\":1742203432}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "net.throughput.contention.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "net.throughput.contention.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7ebc4844-5c76-4dfb-927b-357474424de3",
+          "body": "{\"data_points\":[{\"val\":0.19,\"mid\":\"-1677800232533818921\",\"rid\":\"102\",\"cid\":\"disk.throughput.contention.HOST\",\"ts\":1742207632},{\"val\":0.18,\"mid\":\"-1677800232533818921\",\"rid\":\"102\",\"cid\":\"disk.throughput.contention.HOST\",\"ts\":1742207692},{\"val\":0.19,\"mid\":\"-1677800232533818921\",\"rid\":\"102\",\"cid\":\"disk.throughput.contention.HOST\",\"ts\":1742207752}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "disk.throughput.contention.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "disk.throughput.contention.HOST",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "1",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "request_number",
+              "modifier": "",
+              "value": "2",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "22c4ca77-fd52-4fd5-9f3e-a4c8645a21a9",
+          "body": "{\"data_points\":[{\"val\":134510.7,\"mid\":\"8548718581371976960\",\"rid\":\"102\",\"cid\":\"disk.throughput.usage.HOST\",\"ts\":1742207632},{\"val\":131375.23,\"mid\":\"8548718581371976960\",\"rid\":\"102\",\"cid\":\"disk.throughput.usage.HOST\",\"ts\":1742207692},{\"val\":128898.53,\"mid\":\"8548718581371976960\",\"rid\":\"102\",\"cid\":\"disk.throughput.usage.HOST\",\"ts\":1742207752}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "disk.throughput.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "disk.throughput.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "96281380-feb2-44ab-a6b4-9a339248c0bc",
+          "body": "{\"data_points\":[{\"val\":976562.5,\"mid\":\"190597475016015903\",\"rid\":\"102\",\"cid\":\"net.throughput.usable.HOST\",\"ts\":1742203312},{\"val\":976562.5,\"mid\":\"190597475016015903\",\"rid\":\"102\",\"cid\":\"net.throughput.usable.HOST\",\"ts\":1742203372},{\"val\":976562.5,\"mid\":\"190597475016015903\",\"rid\":\"102\",\"cid\":\"net.throughput.usable.HOST\",\"ts\":1742203432}]}\n\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "net.throughput.usable.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "net.throughput.usable.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "02f4462c-2753-4dc8-8cdf-0b639bdc2859",
+          "body": "{\"data_points\":[{\"val\":184.98,\"mid\":\"-1497422761978542845\",\"rid\":\"102\",\"cid\":\"net.throughput.usage.HOST\",\"ts\":1742203312},{\"val\":288.67,\"mid\":\"-1497422761978542845\",\"rid\":\"102\",\"cid\":\"net.throughput.usage.HOST\",\"ts\":1742203372},{\"val\":184.96,\"mid\":\"-1497422761978542845\",\"rid\":\"102\",\"cid\":\"net.throughput.usage.HOST\",\"ts\":1742203432}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "net.throughput.usage.HOST",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cid",
+              "value": "net.throughput.usage.HOST",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "1fd13443-f167-42e4-b5bd-8772fee3dc2e",
+      "type": "http",
+      "documentation": "",
+      "method": "patch",
+      "endpoint": "api/stats/acq-specs/:id",
+      "responses": [
+        {
+          "uuid": "300ef726-80e0-4769-85cd-a8a89a082abe",
+          "latency": 0,
+          "statusCode": 204,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "088897c5-8033-4ebc-b902-4512109a32ff"
+    },
+    {
+      "type": "route",
+      "uuid": "68acba14-1ccf-4597-a90c-69264b07d558"
+    },
+    {
+      "type": "route",
+      "uuid": "a2915563-bcd6-463a-9641-11faeca700e5"
+    },
+    {
+      "type": "route",
+      "uuid": "3cf897d7-eadd-4eb2-b228-b4e64a7ccc92"
+    },
+    {
+      "type": "route",
+      "uuid": "3ec99f28-5dbb-41f9-aa7b-202aeb0864ed"
+    },
+    {
+      "type": "route",
+      "uuid": "1fd13443-f167-42e4-b5bd-8772fee3dc2e"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "a438d9f3-8360-49c3-9d1f-d2f6d202513d",
+      "id": "7kak",
+      "name": "/api/vcenter/host",
+      "documentation": "Complete response",
+      "value": "[{\"host\":\"host-22\",\"name\":\"esx1.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_ON\"},{\"host\":\"host-28\",\"name\":\"esx2.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_OFF\"},{\"host\":\"host-35\",\"name\":\"esx3.acme.com\",\"connection_state\":\"DISCONNECTED\",\"power_state\":\"POWERED_ON\"}]\n"
+    }
+  ],
+  "callbacks": []
+}

@@ -4,6 +4,7 @@ Documentation       Check Vdomain statistics and VPN state and traffic.
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -23,7 +24,7 @@ vpn ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
-    Ctn Verify Command Output    ${command}    ${expected_result}
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                            expected_result    --
             ...      1     ${EMPTY}                                                                                                                                 OK: Virtual domain 'Anonymized 220' Logged users: 0, Active web sessions: 0, Active tunnels: 0, IPSec tunnels state up: 6 - All vpn are ok | 'users'=0users;;;0; 'sessions'=0sessions;;;0; 'active_tunnels'=0tunnels;;;0; 'ipsec-tunnels-count'=6tunnels;;;0;
