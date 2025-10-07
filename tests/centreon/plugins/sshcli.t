@@ -5,8 +5,6 @@ use FindBin;
 use lib "$FindBin::RealBin/../../../src";
 use storage::ibm::storwize::ssh::custom::api;
 use centreon::plugins::ssh;
-use centreon::plugins::options;
-use centreon::plugins::output;
 
 # Test the sshcli SSH backend
 
@@ -31,9 +29,7 @@ my $_fake_ssh = '/tmp/test_fake_ssh_'.$$;
 sub process_test {
     # Create mock object
     my $options = MockOptions->new();
-    my $output  = centreon::plugins::output->new(options =>  $options, exit_litteral => 1);
-
-    $output = MockOutput->new();
+    my $output = MockOutput->new();
 
     my $ssh = centreon::plugins::ssh->new(options => $options, output => $output);
     $ssh->check_options(option_results => { ssh_backend => 'sshcli', opt_exit => 'ok', sshcli_command => $_fake_ssh });
