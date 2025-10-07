@@ -27,7 +27,7 @@ Power ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                    expected_result   --
-        ...      1     ${EMPTY}                        OK: usage-watts : skipped (no value(s)) - no data for resource host-22 counter power.capacity.usage.HOST at the moment.
-        ...      2     ${EMPTY}                        OK: Power usage is 200 Watts | 'power.capacity.usage.watts'=200W;;;0;
-        ...      3     --warning-usage-watts=0:0       WARNING: Power usage is 200 Watts | 'power.capacity.usage.watts'=200W;0:0;;0;
-        ...      4     --critical-usage-watts=0:0      CRITICAL: Power usage is 200 Watts | 'power.capacity.usage.watts'=200W;;0:0;0;
+        ...      1     ${EMPTY}                        UNKNOWN: no data for resource host-22 counter power.capacity.usage.HOST at the moment. - get_esx_stats function failed to retrieve stats The counter power.capacity.usage.HOST was not recorded for resource host-22 before. It will now (creating acq_spec).
+        ...      2     ${EMPTY}                        OK: Power usage is 200 Watts | 'power.capacity.usage.watt'=200W;;;0;
+        ...      3     --warning-usage-watt=0:0        WARNING: Power usage is 200 Watts | 'power.capacity.usage.watt'=200W;0:0;;0;
+        ...      4     --critical-usage-watt=0:0       CRITICAL: Power usage is 200 Watts | 'power.capacity.usage.watt'=200W;;0:0;0;

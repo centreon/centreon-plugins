@@ -154,30 +154,24 @@ sub manage_selection {
 
     push @counters, 'mem.swap.readrate.HOST', 'mem.swap.writerate.HOST' if ($self->{option_results}->{add_rates});
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name})
     } @counters;
 
-    $self->{swap_usage} = {};
-
-    if (defined($structure{'mem.swap.current.HOST'}) && defined($structure{'mem.swap.target.HOST'})) {
-        $self->{swap_usage}->{used_bytes} = $structure{'mem.swap.current.HOST'} * 1024;
-        $self->{swap_usage}->{max_bytes}  = $structure{'mem.swap.target.HOST'} * 1024;
-        if ($structure{'mem.swap.target.HOST'} != 0) {
-            $self->{swap_usage}->{used_prct} = 100 * $structure{'mem.swap.current.HOST'} / $structure{'mem.swap.target.HOST'};
-        }
-        else {
-            $self->{swap_usage}->{used_prct} = 0;
-        }
+    if (!defined($results{'mem.swap.current.HOST'}) || !defined($results{'mem.swap.target.HOST'})) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
     }
 
-    if (defined($structure{'mem.swap.readrate.HOST'})) {
-        $self->{swap_rates}->{read_rate_bps} = $structure{'mem.swap.readrate.HOST'} * 1024;
-    }
+    $self->{swap_usage} = {
+        used_bytes => $results{'mem.swap.current.HOST'} * 1024,
+        max_bytes  => $results{'mem.swap.target.HOST'} * 1024,
+        used_prct  => $results{'mem.swap.target.HOST'} ? 100 * $results{'mem.swap.current.HOST'} / $results{'mem.swap.target.HOST'} : 0
+    };
 
-    if (defined($structure{'mem.swap.writerate.HOST'})) {
-        $self->{swap_rates}->{write_rate_bps} = $structure{'mem.swap.writerate.HOST'} * 1024;
-    }
+    $self->{swap_rates}->{read_rate_bps}  = $results{'mem.swap.readrate.HOST'} * 1024 if defined($results{'mem.swap.readrate.HOST'});
+    $self->{swap_rates}->{write_rate_bps} = $results{'mem.swap.writerate.HOST'} * 1024 if defined($results{'mem.swap.writerate.HOST'});
+
+    return 1;
 }
 
 1;
