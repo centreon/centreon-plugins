@@ -5,6 +5,12 @@
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
-        "apps/pfsense/snmp"
+        "apps/pfsense/snmp",
+        "snmp_standard/mode/loadaverage.pm",
+        "snmp_standard/mode/swap.pm",
+        "snmp_standard/mode/memory.pm",
+        "snmp_standard/mode/cpudetailed.pm",
+        "snmp_standard/mode/uptime.pm",
+        "snmp_standard/mode/cpu.pm"
     ]
 }
