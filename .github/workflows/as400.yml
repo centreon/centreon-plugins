@@ -85,7 +85,7 @@ jobs:
         run: mvn -version && mvn clean install -f as400/connector.as400/pom.xml
 
       - name: Remove me after debug
-        run: find / -name "centreon-as400*.jar"
+        run: find / -path /proc -prune -o -name "centreon-as400*.jar"
 
       - name: Package
         uses: ./.github/actions/package-nfpm

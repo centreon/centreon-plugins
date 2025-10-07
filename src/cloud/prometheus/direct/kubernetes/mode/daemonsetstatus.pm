@@ -154,7 +154,7 @@ sub check_options {
         'current' => '^kube_daemonset_status_current_number_scheduled$',
         'available' => '^kube_daemonset_status_number_available$',
         'unavailable' => '^kube_daemonset_status_number_unavailable$',
-        'up_to_date' => '^kube_daemonset_updated_number_scheduled$',
+        'up_to_date' => '^kube_daemonset_(status_)?updated_number_scheduled$',
         'ready' => '^kube_daemonset_status_number_ready$',
         'misscheduled' => '^kube_daemonset_status_number_misscheduled$',
     };
@@ -229,13 +229,13 @@ __END__
 
 =head1 MODE
 
-Check daemonset status.
+Check DaemonSet status.
 
 =over 8
 
 =item B<--daemonset>
 
-Filter on a specific daemonset (must be a PromQL filter, Default: 'daemonset=~".*"')
+Filter on a specific DaemonSet (must be a PromQL filter, Default: 'daemonset=~".*"')
 
 =item B<--warning-status>
 

@@ -249,16 +249,18 @@ sub manage_selection {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
 
+    if (!defined($results{'cpu.capacity.usage.HOST'}) || !defined($results{'cpu.capacity.provisioned.HOST'})) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
+    }
+
     # Fill the counter structure depending on their availability
     # Fill the basic stats
-    if (defined($results{'cpu.capacity.usage.HOST'}) && defined($results{'cpu.capacity.provisioned.HOST'})) {
-        $self->{cpu_usage} = {
-            'prct_used'               => 100 * $results{'cpu.capacity.usage.HOST'} / $results{'cpu.capacity.provisioned.HOST'},
-            'cpu_usage_hertz'         => $results{'cpu.capacity.usage.HOST'} * 1000,
-            'cpu_provisioned_hertz'   => $results{'cpu.capacity.provisioned.HOST'} * 1000,
-            'cpu.capacity.usage.HOST' => $results{'cpu.capacity.usage.HOST'}
-        };
-    }
+    $self->{cpu_usage} = {
+        'prct_used'               => 100 * $results{'cpu.capacity.usage.HOST'} / $results{'cpu.capacity.provisioned.HOST'},
+        'cpu_usage_hertz'         => $results{'cpu.capacity.usage.HOST'} * 1000,
+        'cpu_provisioned_hertz'   => $results{'cpu.capacity.provisioned.HOST'} * 1000,
+        'cpu.capacity.usage.HOST' => $results{'cpu.capacity.usage.HOST'}
+    };
 
     # Fill the contention stats
     if ( defined($results{'cpu.capacity.contention.HOST'}) ) {

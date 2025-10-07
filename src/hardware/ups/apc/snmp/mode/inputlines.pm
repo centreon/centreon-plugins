@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -316,11 +316,53 @@ You can use the following variables: %{last_cause}
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{last_cause}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-frequence>
 
-Thresholds.
-Can be: 'voltage', 'frequence', 'line-frequence',
-'line-phase-voltage', 'line-phase-current', 'line-phase-power'.
+Threshold in Hertz.
+
+=item B<--critical-frequence>
+
+Threshold in Hertz.
+
+=item B<--warning-line-frequence>
+
+Threshold.
+
+=item B<--critical-line-frequence>
+
+Threshold.
+
+=item B<--warning-line-phase-current>
+
+Threshold.
+
+=item B<--critical-line-phase-current>
+
+Threshold.
+
+=item B<--warning-line-phase-power>
+
+Threshold.
+
+=item B<--critical-line-phase-power>
+
+Threshold.
+
+=item B<--warning-line-phase-voltage>
+
+Threshold.
+
+=item B<--critical-line-phase-voltage>
+
+Threshold.
+
+=item B<--warning-voltage>
+
+Threshold in Volts.
+
+=item B<--critical-voltage>
+
+Threshold in Volts.
 
 =back
 

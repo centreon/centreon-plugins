@@ -30,43 +30,43 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma8
             image: packaging-plugins-alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma9
             image: packaging-plugins-alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma8
             image: packaging-plugins-java-alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma9
             image: packaging-plugins-java-alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
-          - runner: centreon-collect-arm64
+          - runner: ubuntu-24.04-arm
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye-arm64
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bookworm
             image: packaging-plugins-java-bookworm
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-jammy
             image: packaging-plugins-java-jammy
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-noble
             image: packaging-plugins-noble
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-noble
             image: packaging-plugins-java-noble
 
@@ -90,7 +90,7 @@ jobs:
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
-      - uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
       - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:

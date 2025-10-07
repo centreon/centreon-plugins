@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use Time::HiRes qw(time);
 use POSIX qw(floor);
+use Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -119,8 +120,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $topic = $self->{option_results}->{topic};
+    eval {
+        $topic = decode("utf8", $topic);
+    };
     my $value = $options{mqtt}->query(
-        topic => $self->{option_results}->{topic}
+        topic => $topic
     );
 
     if (!centreon::plugins::misc::is_empty($self->{option_results}->{extracted_pattern})) {
