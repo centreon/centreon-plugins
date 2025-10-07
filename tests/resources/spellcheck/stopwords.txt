@@ -199,6 +199,7 @@ MQTT
 --mqtt-ssl-key
 --mqtt-timeout
 --mqtt-username
+MSSQL
 multiple
 MX
 nagios
