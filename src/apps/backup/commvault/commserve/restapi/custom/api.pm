@@ -48,9 +48,10 @@ sub new {
             'port:s'         => { name => 'port' },
             'proto:s'        => { name => 'proto' },
             'url-path:s'     => { name => 'url_path' },
-            'api-username:s' => { name => 'api_username', default => '' },
-            'api-password:s' => { name => 'api_password', default => '' },
-            'api-token:s'    => { name => 'api_token',    default => '' },
+            'api-username:s' => { name => 'api_username',  default => '' },
+            'api-password:s' => { name => 'api_password',  default => '' },
+            'api-token:s'    => { name => 'api_token',     default => '' },
+            'refresh-token'  => { name => 'refresh_token', default => '' },
             'user-domain:s'  => { name => 'user_domain' },
             'timeout:s'      => { name => 'timeout' },
             'cache-create'   => { name => 'cache_create' },
@@ -84,6 +85,7 @@ sub check_options {
     $self->{api_username} = $self->{option_results}->{api_username};
     $self->{api_password} = $self->{option_results}->{api_password};
     $self->{api_token} = $self->{option_results}->{api_token};
+    $self->{refresh_token} = $self->{option_results}->{refresh_token};
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{user_domain} = (defined($self->{option_results}->{user_domain})) ? $self->{option_results}->{user_domain} : '';
     $self->{cache_create} = $self->{option_results}->{cache_create};
@@ -95,7 +97,7 @@ sub check_options {
     }
     if ($self->{api_token} eq '') {
 	if ($self->{api_username} eq '') {
-	    $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+	    $self->{output}->add_option_msg(short_msg => "Need to specify --api-username or --api-token option.");
             $self->{output}->option_exit();
         }
         if ($self->{api_password} eq '') {
@@ -105,6 +107,10 @@ sub check_options {
     } elsif ($self->{api_username} . $self->{api_password} ne '') {
 	$self->{output}->add_option_msg(short_msg => "Cannot use both --api-username/--api-password and --api-token options.");
 	$self->{output}->option_exit();
+    }
+    if ($self->{refresh_token} ne '' && $self->{api_token} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Cannot use --refresh-token without --token.");
+        $self->{output}->option_exit();
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -178,6 +184,33 @@ sub clean_token {
     $self->{http}->add_header(key => 'Authorization', value => undef);
 }
 
+sub refresh_access_token
+{
+    my ($self, %options) = @_;
+
+    my $json_request = { accessToken => $self->{api_token}, refreshToken => $self->{refresh_token} };
+
+    eval {
+        $json_request = encode_json($json_request);
+    };
+    $self->{output}->option_exit(short_msg => 'cannot encode json request')
+        if $@;
+
+    my ($content) = $self->{http}->request(
+        method => 'POST',
+        url_path => $self->{url_path} . '/V4/AccessToken/Renew',
+        query_form_post => $json_request,
+        warning_status => '',
+        unknown_status => '',
+        critical_status => ''
+    );
+
+    if ($self->{http}->get_code() != 200) {
+        my $message = $content && $content =~ /errorMessage\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+        $self->{output}->option_exit(short_msg => "Cannot review token [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
+    }
+}
+
 sub get_auth_token {
     my ($self, %options) = @_;
 
@@ -211,8 +244,8 @@ sub get_auth_token {
         );
 
         if ($self->{http}->get_code() != 200) {
-            $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-            $self->{output}->option_exit();
+            my $message = $content && $content =~ /errorMessage\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+            $self->{output}->option_exit(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
         }
 
         my $decoded = $self->json_decode(content => $content);
@@ -243,39 +276,42 @@ sub request_internal {
         $self->get_auth_token(statefile => $self->{cache});
     }
 
-    my $content = $self->{http}->request(
-        url_path => $self->{url_path} . $options{endpoint},
-        get_param => $options{get_param},
-        header => $options{header},
-        warning_status => '',
-        unknown_status => '',
-        critical_status => ''
-    );
-
-    # Maybe there is an issue with the token. So we retry.
-    if ($self->{api_token} eq '' && ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300)) {
-        $self->clean_token(statefile => $self->{cache});
-        $self->get_auth_token(statefile => $self->{cache});
+    my $content;
+    # up to 2 retries to handle token expiration
+    for my $retry (1..2) {
         $content = $self->{http}->request(
             url_path => $self->{url_path} . $options{endpoint},
             get_param => $options{get_param},
-            header => $options{header}, 
+            header => $options{header},
             warning_status => '',
             unknown_status => '',
             critical_status => ''
         );
+
+        last if $self->{http}->get_code() >= 200 && $self->{http}->get_code() < 300;
+        last if $retry > 1;
+
+        if ($self->{api_token} eq '') { # legacy mode with auth token
+            # Maybe there is an issue with the token. So we retry.
+            $self->clean_token(statefile => $self->{cache});
+            $self->get_auth_token(statefile => $self->{cache});
+        } else { # new mode with access token
+            last if $self->{refresh_token} eq '';
+
+            # If we have a refresh token, we try to refresh access token
+            $self->refresh_access_token();
+        }
     }
+
 
     my $decoded = $self->json_decode(content => $content);
 
-    if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)')
+        unless defined($decoded);
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->{output}->add_option_msg(short_msg => 'api request error');
-        $self->{output}->option_exit();
+        my $message = $content && $content =~ /errorMessage\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+        $self->{output}->option_exit(short_msg => $message);
     }
 
     return $decoded;
@@ -438,6 +474,10 @@ Set API password
 =item B<--api-token>
 
 Set API token
+
+=item B<--refresh-token>
+
+Set API refresh token
 
 =item B<--timeout>
 
