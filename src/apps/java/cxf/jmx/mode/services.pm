@@ -59,7 +59,7 @@ sub prefix_service_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Service '%s' ",
+        "Service '%s' [port: %s] ",
         $options{instance_value}->{service},
         $options{instance_value}->{port}
     );
@@ -78,7 +78,7 @@ sub set_counters {
         { name => 'services', type => 3, cb_prefix_output => 'prefix_service_output', cb_long_output => 'service_long_output', indent_long_output => '    ', message_multiple => 'All services are ok',
             group => [
                 { name => 'invocation', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'fault', type => 0, cb_prefix_output => 'prefix_fault_output', skipped_code => { -10 => 1 } }
+                { name => 'faults', type => 0, cb_prefix_output => 'prefix_fault_output', skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -203,13 +203,13 @@ sub manage_selection {
             };
         }
 
-        $self->{services}->{$bus_id}->{invocation}->{total} = $result->{$mbean}->{$attribute} if ($attribute =~ /Totals/i);
-        $self->{services}->{$bus_id}->{invocation}->{inFlight} = $result->{$mbean}->{$attribute} if ($attribute =~ /In Flight/i);
+        $self->{services}->{$bus_id}->{invocation}->{total} = $result->{$mbean}->{Count} if ($attribute =~ /Totals/i);
+        $self->{services}->{$bus_id}->{invocation}->{inFlight} = $result->{$mbean}->{Count} if ($attribute =~ /In Flight/i);
 
-        $self->{services}->{$bus_id}->{faults}->{checkedApplication} = $result->{$mbean}->{$attribute} if ($attribute =~ /Checked Application Faults/i);
-        $self->{services}->{$bus_id}->{faults}->{unCheckedApplication} = $result->{$mbean}->{$attribute} if ($attribute =~ /Unchecked Application Faults/i);
-        $self->{services}->{$bus_id}->{faults}->{logicalRuntime} = $result->{$mbean}->{$attribute} if ($attribute =~ /Logical Runtime Faults/i);
-        $self->{services}->{$bus_id}->{faults}->{runtime} = $result->{$mbean}->{$attribute} if ($attribute =~ /Runtime Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{checkedApplication} = $result->{$mbean}->{Count} if ($attribute =~ /Checked Application Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{unCheckedApplication} = $result->{$mbean}->{Count} if ($attribute =~ /Unchecked Application Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{logicalRuntime} = $result->{$mbean}->{Count} if ($attribute =~ /Logical Runtime Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{runtime} = $result->{$mbean}->{Count} if ($attribute =~ /Runtime Faults/i);
     }
 
     if (scalar(keys %{$self->{services}}) <= 0) {
