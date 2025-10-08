@@ -217,7 +217,7 @@ sub reload_authent_token {
 sub refresh_authent_token
 {
     my ($self, %options) = @_;
-    my $json_request = { authentToken => $options{authentToken}, refreshToken => $options{refreshToken} };
+    my $json_request = { accessToken => $options{authentToken}, refreshToken => $options{refreshToken} };
 
     eval {
         $json_request = encode_json($json_request);
