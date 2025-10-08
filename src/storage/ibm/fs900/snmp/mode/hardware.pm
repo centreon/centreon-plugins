@@ -111,6 +111,14 @@ Example: --warning='battery.capacity,0,10'
 Set critical threshold (syntax: type,instance,threshold)
 Example: --critical='battery.voltage,1,1000'
 
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 =back
 
 =cut

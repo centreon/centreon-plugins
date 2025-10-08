@@ -73,14 +73,18 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
-    $self->{diskio} = \%structure;
 
-    if ( defined($structure{'disk.throughput.usage.HOST'}) ) {
-        $self->{diskio}->{throughput_bps} = $structure{'disk.throughput.usage.HOST'} * 1024;
+    if (!defined($results{'disk.throughput.usage.HOST'}) || !defined($results{'disk.throughput.contention.HOST'})) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
     }
+
+    $self->{diskio} = \%results;
+    $self->{diskio}->{throughput_bps} = $results{'disk.throughput.usage.HOST'} * 1024;
+
+    return 1;
 }
 
 1;

@@ -93,6 +93,24 @@ NB: For the memory component you may need to set this option twice if presence s
 return OK state and you want to override the operability status. Example when memories are missing because of removing.
 --threshold-overload='presence,OK,missing' --threshold-overload='operability,OK,removed'
 
+=item B<--warning>
+
+Define the warning threshold for temperatures (syntax: type,instance,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Define the critical threshold for temperatures (syntax: type,instance,threshold)
+Example: --critical='temperature,.*,40'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 =back
 
 =cut
