@@ -20,7 +20,7 @@
 
 package cloud::azure::compute::aks::mode::discovery;
 
-use base qw(cloud::azure::management::monitor::mode::discovery);
+use base qw(cloud::azure::common::discovery);
 
 use strict;
 use warnings;

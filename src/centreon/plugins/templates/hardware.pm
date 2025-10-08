@@ -77,7 +77,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'component:s'            => { name => 'component', default => '.*' },
-        'no-component:s'         => { name => 'no_component' },
+        'no-component:s'         => { name => 'no_component', default => 'critical' },
         'threshold-overload:s@'  => { name => 'threshold_overload' },
         'add-name-instance'      => { name => 'add_name_instance' },
         'no-component-count'     => { name => 'no_component_count' }
@@ -130,6 +130,8 @@ sub new {
 
     $self->{request} = [];
 
+    $options{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL HARDWARE OPTIONS', once => 1) if $options{display_template_help};
+
     return $self;
 }
 
@@ -137,13 +139,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
+    # For compatibility both $self->{option_results}->{no_component} and $self->{no_components} are initialized.
+    # If unset or empty the default value 'critical' is used.
+    $self->{option_results}->{no_component} = $self->{no_components} = $self->{option_results}->{no_component} || 'critical';
 
     if ($self->{filter_exclude} == 1) {
         $self->{filter} = [];
@@ -513,54 +511,11 @@ sub get_severity {
 
 __END__
 
-=head1 MODE
+=head1 GLOBAL HARDWARE OPTIONS
 
-Default template for hardware. Should be extended.
+Global options for hardware.
 
 =over 8
-
-=item B<--component>
-
-Define which component should be monitored based on their names. 
-This option will be treated as a regular expression. 
-All components are included by default ('.*').
-
-=item B<--filter>
-
-Exclude some components. This option can be called several times (example: --filter=component1 --filter=component2). 
-You can also exclude components from a specific instance (example: --filter=component_name,instance_value).
-
-=item B<--absent-problem>
-
-Return an error if a component is not 'present' (default is skipping). 
-It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
-
-=item B<--no-component>
-
-Define the expected status if no components are found (default: critical).
-
-=item B<--threshold-overload>
-
-Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='xxxxx,CRITICAL,^(?!(normal)$)'
-
-=item B<--warning>
-
-Define the warning threshold for temperatures (syntax: type,instance,threshold)
-Example: --warning='temperature,.*,30'
-
-=item B<--critical>
-
-Define the critical threshold for temperatures (syntax: type,instance,threshold)
-Example: --critical='temperature,.*,40'
-
-=item B<--warning-count-*>
-
-Define the warning threshold for the number of components of one type (replace '*' with the component type).
-
-=item B<--critical-count-*>
-
-Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

@@ -4,6 +4,7 @@ Documentation       Juniper Mseries Netconf List Services RPM
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -22,7 +23,7 @@ List Service Rpm ${tc}
     ...    ${CMD}
     ...    ${extraoptions}
 
-    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions              expected_result   --
         ...      1     ${EMPTY}                  ^List services RPM: (\\\\n\\\\[.*\\\\]){2}\\\\Z

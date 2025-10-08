@@ -136,6 +136,13 @@
               "value": "",
               "invert": false,
               "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "X-api-key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
             }
           ],
           "rulesOperator": "AND",
@@ -157,6 +164,102 @@
           "databucketID": "",
           "sendFileAsBody": false,
           "rules": [
+            {
+              "target": "body",
+              "modifier": "$.statusFilter.[*]",
+              "value": "2",
+              "invert": false,
+              "operator": "array_includes"
+            },
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "05977710-18d1-4571-8df1-f36ada2a139f",
+          "body": "[\n  {\n    \"scenarioId\": \"09fe2561-315b-470f-a7ac-9c30fbd2e0fb\",\n    \"scenarioName\": \"X-AKILA - (Web)\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2025-12-30T10:21:03Z\"\n  },\n  {\n    \"scenarioId\": \"127a149b-0fa6-4859-820e-9c4db23b6454\",\n    \"scenarioName\": \"X-AKILA - (Browser Page Load)\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T07:20:08Z\"\n  },\n  {\n    \"scenarioId\": \"41d36b91-a4d3-4b00-a3ca-9e4fcf737d30\",\n    \"scenarioName\": \"X-Centreon Demo Parcours - Custom views\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-29T23:48:39Z\"\n  },\n  {\n    \"scenarioId\": \"425bff8b-51eb-4b68-8529-6258e7b7888c\",\n    \"scenarioName\": \"X-Centreon Demo ping Paris\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-04T06:15:00Z\"\n  },\n  {\n    \"scenarioId\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scenarioName\": \"X-Centreon Demo Navigation\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2025-12-30T10:06:04Z\"\n  },\n  {\n    \"scenarioId\": \"4fa9f25d-ae49-4848-823a-945e7f865f4b\",\n    \"scenarioName\": \"X-Centreon Demo ping NA\",\n    \"currentStatus\": 8,\n    \"startTime\": \"2025-12-30T10:30:21Z\"\n  },\n  {\n    \"scenarioId\": \"7622678e-ffec-49f5-8a67-7d1b4452bff6\",\n    \"scenarioName\": \"X-wrong currentstatus, no perfdata\",\n    \"currentStatus\": 14,\n    \"startTime\": \"2025-12-30T02:00:45Z\"\n  },\n  {\n    \"scenarioId\": \"8d0a798c-1b47-4142-869d-9bdabc9c126c\",\n    \"scenarioName\": \"X-Centreon Demo Parcours - Login\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-29T23:51:35Z\"\n  },\n  {\n    \"scenarioId\": \"eae701ac-4231-4fc5-94e3-08601ac591e9\",\n    \"scenarioName\": \"X-Centreon Demo ping Singapore\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T10:15:11Z\"\n  },\n  {\n    \"scenarioId\": \"fc6b739e-c18c-40ab-917c-61d20dff830c\",\n    \"scenarioName\": \"X-AKILA - Business App\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T09:30:23Z\"\n  },\n  {\n    \"scenarioId\": \"fe1ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-AKILA - (API) \",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 0\",\n    \"currentStatus\": 0,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 3\",\n    \"currentStatus\": 3,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 4\",\n    \"currentStatus\": 4,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 5\",\n    \"currentStatus\": 5,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 6\",\n    \"currentStatus\": 6,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 7\",\n    \"currentStatus\": 7,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Access with api-key authentication",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.statusFilter",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "25c6c5e3-750f-4fc5-9993-e248f81d2490",
+          "body": "[\n  {\n    \"scenarioId\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scenarioName\": \"Centreon Demo Navigation\",\n    \"currentStatus\": 3,\n    \"startTime\": \"2024-12-30T10:06:04Z\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filter by status for status 3 with API-KEY authentication",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
             {
               "target": "body",
               "modifier": "$.statusFilter.[*]",
@@ -188,6 +291,40 @@
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "fa4d5c05-0ac7-4a26-bd25-03f663b4ef73",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
           "crudKey": "id",
           "callbacks": []
         }
@@ -784,9 +921,50 @@
               "value": "Bearer VeryLongTokenToAuthenticate",
               "invert": false,
               "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": false,
+              "operator": "null"
             }
           ],
-          "rulesOperator": "OR",
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "37c2d4dc-e03d-41d8-8e43-f90e283e6361",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 100\n    },\n    {\n      \"name\": \"Total time for all steps\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 4280\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"3\",\n      \"metric\": \"time_step\",\n      \"duration\": 848,\n      \"count\": 1,\n      \"value\": 848\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 898,\n      \"count\": 1,\n      \"value\": 898\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 2534,\n      \"count\": 1,\n      \"value\": 2534\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"a182ec70-c319-40de-9af0-556877fa64a1\",\n      \"name\": \"GSA_POC_2_Win\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total\",\n      \"mtr_name\": \"Total time for a step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": null,\n      \"filterDisabledOnMultiStep\": null,\n      \"filterDisabledOnAllStep\": null,\n      \"filterDisabledOnPartialStep\": null\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Total time for all steps\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Clean\",\n      \"index\": 1,\n      \"isNeutral\": true,\n      \"isMyBlock\": false\n    },\n    {\n      \"name\": \"Run Chrome\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard 2\",\n      \"index\": 3\n    },\n    {\n      \"name\": \"Dashboard 3\",\n      \"index\": 4\n    },\n    {\n      \"name\": \"Clean\",\n      \"index\": 5,\n      \"isNeutral\": true,\n      \"isMyBlock\": false\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_multi_step\",\n          \"time_total_allsteps\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"DESKTOP\",\n    \"plugin_name\": \"Desktop\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": false,\n      \"hasWaterfall\": false,\n      \"showThirdPartyContent\": false\n    },\n    \"scenarioName\": \"AKILA - (Business App) \",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T10:23:11Z\",\n      \"endTime\": \"2024-12-30T10:38:11Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"a182ec70-c319-40de-9af0-556877fa64a1\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T09:30:23Z\",\n          \"siteName\": \"GSA_POC_2_Win\",\n          \"executionId\": \"22dd8614-400c-40e5-9689-57c48c328055.27\",\n          \"planningTime\": \"2024-12-30T09:30:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Access with X-API-KEY",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": false,
@@ -893,11 +1071,60 @@
           "filePath": "",
           "databucketID": "",
           "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "92f7fab0-db29-48b4-9aeb-df2079337cbd",
+          "body": "[\n  {\n    \"ssr_id\": \"25423513\",\n    \"startTime\": \"2024-12-30T23:07:08Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T23:07:08Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"1e75b3fb-56b1-4d33-9da9-a4c46e29dfd2.0\",\n        \"planningTime\": \"2024-12-30T23:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"X-Centreon Demo Navigation\",\n    \"application\": \"X-Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT1H57M7S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25422458\",\n    \"startTime\": \"2024-12-30T20:09:21Z\",\n    \"endTime\": \"2024-12-30T21:06:49Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T20:09:21Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"bbab21cf-031e-46a9-bb3d-03e5a9bd3cce.21\",\n        \"planningTime\": \"2024-12-30T20:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"X-Centreon Demo Navigation\",\n    \"application\": \"X-Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT57M28S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25421962\",\n    \"startTime\": \"2024-12-30T18:52:43Z\",\n    \"endTime\": \"2024-12-30T19:07:26Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT15M\",\n        \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T18:52:43Z\",\n        \"siteName\": \"Paris (Iliad)\",\n        \"executionId\": \"37ca8215-f72b-4982-b088-58e68b701b5d.31\",\n        \"planningTime\": \"2024-12-30T18:45:00Z\",\n        \"thresholdExceeded\": null\n      },\n      {\n        \"period\": \"PT15M\",\n        \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T19:01:39Z\",\n        \"siteName\": \"Paris (SFR)\",\n        \"executionId\": \"e34837a6-f807-4347-a454-e505f65be258.32\",\n        \"planningTime\": \"2024-12-30T19:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"09fe2561-315b-470f-a7ac-9c30fbd2e0fb\",\n    \"scnName\": \"X-AKILA - (Web)\",\n    \"application\": \"X-AKILA\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT14M43S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25421291\",\n    \"startTime\": \"2024-12-30T17:09:44Z\",\n    \"endTime\": \"2024-12-30T18:01:19Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T17:09:44Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"2ea22968-f89d-4638-838a-47774b0c91f5.18\",\n        \"planningTime\": \"2024-12-30T17:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"X-Centreon Demo Navigation\",\n    \"application\": \"X-Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT51M35S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Access with API KEY",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-api-key",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
           "crudKey": "id",
           "callbacks": []
         },

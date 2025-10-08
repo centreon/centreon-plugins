@@ -100,7 +100,7 @@ jobs:
           - spec_file: ""
           - no-auto-depends: "false"
           - preinstall_cpanlibs: ""
-          - revision: "1"
+          - revision: "2"
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -112,7 +112,7 @@ jobs:
           - name: "Crypt::Argon2"
             preinstall_cpanlibs: "Dist::Build"
             rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
-            revision: "2"
+            revision: "3"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "Device::Modbus::RTU::Client"
@@ -128,7 +128,7 @@ jobs:
           - name: "Libssh::Session"
             rpm_dependencies: "libssh"
             rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
-            revision: "2"
+            revision: "3"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
@@ -136,7 +136,7 @@ jobs:
           - name: "Net::Curl"
             rpm_dependencies: "libcurl"
             rpm_provides: "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)"
-            revision: "2"
+            revision: "3"
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
@@ -240,7 +240,7 @@ jobs:
 
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --rpm-digest sha256 --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
@@ -415,7 +415,7 @@ jobs:
             package_extension: deb
             image: packaging-plugins-bullseye-arm64
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
           - name: "Crypt::Argon2"
             build_names: "bullseye-amd64,jammy,bullseye-arm64"
             preinstall_cpanlibs: "Dist::Build"
@@ -429,10 +429,6 @@ jobs:
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
-          - name: "Device::Modbus::RTU::Client"
-            build_names: "bookworm,noble"
-          - name: "Device::Modbus::TCP::Client"
-            build_names: "bookworm,noble"
           - name: "Digest::SHA1"
             build_names: "jammy,noble"
           - name: "Hash::Ordered"
@@ -702,7 +698,7 @@ jobs:
             image: debian:bullseye
             distrib: bullseye
             arch: arm64
-            runner_name: centreon-collect-arm64
+            runner_name: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner_name }}
     container:

@@ -85,10 +85,14 @@ Add literal description for instance value (used in filter and threshold options
 Exclude the items given as a comma-separated list (example: --filter=fan).
 You can also exclude items from specific instances: --filter=fan,1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
-
 
 =item B<--threshold-overload>
 
@@ -104,6 +108,14 @@ Example: --warning='temperature,.*,30' --warning='fan,.*,9500'
 
 Set critical threshold (syntax: section,[instance,]status,regexp)
 Example: --critical='temperature,.*,40'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

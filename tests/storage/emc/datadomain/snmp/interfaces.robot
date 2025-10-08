@@ -4,6 +4,7 @@ Documentation       Check EMC DataDomain in SNMP
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -26,8 +27,8 @@ interfaces ${tc}
  
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                                                               expected_result    --
-            ...      1     --verbose                                                                   OK: All interfaces are ok Interface 'lo' Status : up (admin: up) Interface 'Anonymized 012' Status : up (admin: up) Interface 'Anonymized 118' Status : down (admin: down) Interface 'Anonymized 073' Status : down (admin: down) Interface 'Anonymized 071' Status : up (admin: up) Interface 'Anonymized 073' Status : up (admin: up) Interface 'Anonymized 232' Status : up (admin: up) Interface 'Anonymized 191' Status : up (admin: up) Interface 'Anonymized 242' Status : up (admin: up) Interface 'Anonymized 175' Status : up (admin: up) Interface 'Anonymized 128' Status : up (admin: up) Interface 'Anonymized 037' Status : down (admin: down) Interface 'Anonymized 184' Status : down (admin: down) Interface 'Anonymized 252' Status : down (admin: down) Interface 'Anonymized 012' Status : down (admin: down) Interface 'Anonymized 232' Status : up (admin: up) Interface 'Anonymized 072' Status : up (admin: up) Interface 'Anonymized 037' Status : up (admin: up) 
-            ...      2     --oid-display='ifName'                                                      OK: All interfaces are ok
-            ...      3     --oid-extra-display='ifDesc'                                                OK: All interfaces are ok
-            ...      4     --display-transform-src='eth' --display-transform-dst='ens'                 OK: All interfaces are ok
+    Examples:        tc    extra_options                                                              expected_result    --
+            ...      1     ${EMPTY}                                                                   OK: All interfaces are ok
+            ...      2     --interface='Anonymized 012' --name --add-traffic                          OK: All interfaces are ok
+            ...      3     --interface='Anonymized 012' --name --add-traffic                          OK: All interfaces are ok | 'Anonymized 012#interface.traffic.in.bitspersecond'=0.00b/s;;;0;10000000000 'Anonymized 012#interface.traffic.out.bitspersecond'=0.00b/s;;;0;10000000000 'Anonymized 012#interface.traffic.in.bitspersecond'=0.00b/s;;;0; 'Anonymized 012#interface.traffic.out.bitspersecond'=0.00b/s;;;0;
+
