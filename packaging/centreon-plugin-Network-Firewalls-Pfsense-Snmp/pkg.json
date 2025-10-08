@@ -11,6 +11,7 @@
         "snmp_standard/mode/memory.pm",
         "snmp_standard/mode/cpudetailed.pm",
         "snmp_standard/mode/uptime.pm",
-        "snmp_standard/mode/cpu.pm"
+        "snmp_standard/mode/cpu.pm",
+        "os/freebsd/snmp/mode/memory.pm"
     ]
 }
