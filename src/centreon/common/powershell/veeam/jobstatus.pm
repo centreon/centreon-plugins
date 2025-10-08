@@ -48,9 +48,9 @@ Try {
     $items = New-Object System.Collections.Generic.List[Hashtable]; 
 
     $isVeeamAgent=$false 
-    $vbrjob=Get-VBRJob 
+    $vbrJob=Get-VBRJob 
 
-    if (($vbrjob | Select-Object -first 1).JobType -like "*Agent*") { 
+    if (($vbrJob | Select-Object -first 1).JobType -like "*Agent*") { 
         $isVeeamAgent=$true 
     } else { 
         $isVeeamAgent=$false 
@@ -59,48 +59,25 @@ Try {
     $sessions = @{} 
 
     if ($isVeeamAgent) { 
-        Get-VBRComputerBackupJobSession | Sort-Object CreationTime -Descending | ForEach-Object { 
-            $jobId = $_.JobId.toString() 
-            if (-not $sessions.ContainsKey($jobId)) { 
-                $sessions[$jobId] = New-Object System.Collections.Generic.List[Hashtable]; 
-                $session = @{}
-                $session.result = $_.Result.value__
-                $session.creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $session.endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $sessions[$jobId].Add($session) 
-            } elseif ($sessions[$jobId].Length -lt 2) { 
-                $session = @{} 
-                $session.result = $_.Result.value__
-                $session.creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $session.endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $sessions[$jobId].Add($session) 
-            } 
-        } 
-
         Get-VBRComputerBackupJob | ForEach-Object { 
             $item = @{} 
             $item.name = $_.Name 
-            $item.type = $_.Type.value__
-            $item.isRunning = $false
-            $item.scheduled = $_.ScheduleEnabled
-            $item.isContinuous = 0
+            $item.type = $_.Type.value__ 
+            $item.isRunning = $false 
+            $item.scheduled = $_.ScheduleEnabled 
+            $item.isContinuous = 0 
 
             if ($_.isContinuous -eq $true) { 
                 $item.isContinuous = 1 
             } 
 
-            $Id = $_.Id.toString()
-            if ($sessions.ContainsKey($Id)) {
-                $item.sessions = $sessions[$Id] 
-                if ($sessions[$_.Id].State -eq "Running") { 
-                    $item.isRunning = $true 
-                }  
-            } else { 
-                $item.sessions = New-Object System.Collections.Generic.List[Hashtable]; 
+            $item.sessions = New-Object System.Collections.Generic.List[Hashtable]; 
+            $id = $_.Id.toString() 
+            Get-VBRComputerBackupJobSession -name $item.name | Sort-Object CreationTime -Descending | Select-Object -First 2 | ForEach-Object { 
                 $session = @{} 
-                $session.result = -10 
-                $session.creationTimeUTC = "" 
-                $session.endTimeUTC = "" 
+                $session.result = $_.Result.value__ 
+                $session.creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
+                $session.endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
                 $item.sessions.Add($session) 
             } 
 
@@ -108,25 +85,7 @@ Try {
         } 
 
     } else { 
-        Get-VBRBackupSession | Sort-Object CreationTimeUTC -Descending | ForEach-Object { 
-            $jobId = $_.jobId.toString() 
-            if (-not $sessions.ContainsKey($jobId)) { 
-                $sessions[$jobId] = New-Object System.Collections.Generic.List[Hashtable]; 
-                $session = @{} 
-                $session.result = $_.Result.value__ 
-                $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
-                $sessions[$jobId].Add($session) 
-            } elseif ($sessions[$jobId].Length -lt 2) { 
-                $session = @{} 
-                $session.result = $_.Result.value__ 
-                $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $sessions[$jobId].Add($session) 
-            } 
-        } 
-
-        $vbrjob | ForEach-Object { 
+        $vbrJob | ForEach-Object { 
             $item = @{} 
             $item.name = $_.Name 
             $item.type = $_.JobType.value__ 
@@ -138,15 +97,13 @@ Try {
                 $item.isContinuous = 1 
             } 
 
+            $item.sessions = New-Object System.Collections.Generic.List[Hashtable]; 
             $guid = $_.Id.Guid.toString() 
-            if ($sessions.ContainsKey($guid)) { 
-                $item.sessions = $sessions[$guid] 
-            } else { 
-                $item.sessions = New-Object System.Collections.Generic.List[Hashtable]; 
+            [Veeam.Backup.Core.CBackupSession]::GetByJob($guid) | Sort-Object CreationTimeUTC -Descending | Select-Object -First 2 | ForEach-Object { 
                 $session = @{} 
-                $session.result = -10 
-                $session.creationTimeUTC = "" 
-                $session.endTimeUTC = "" 
+                $session.result = $_.Result.value__ 
+                $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
+                $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
                 $item.sessions.Add($session) 
             } 
 
@@ -156,12 +113,12 @@ Try {
 
     $jsonString = $items | ConvertTo-JSON-20 -forceArray $true 
     Write-Host $jsonString 
-} Catch {
-    Write-Host $Error[0].Exception
-    exit 1
-}
+} Catch { 
+    Write-Host $Error[0].Exception 
+    exit 1 
+} 
 
-exit 0
+exit 0 
 ';
 
     return $ps;
