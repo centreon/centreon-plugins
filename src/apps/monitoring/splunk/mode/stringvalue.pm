@@ -32,6 +32,7 @@ sub custom_result_output {
 
     my @data;
     foreach my $key (sort keys %{$self->{result_values}}) {
+        next if $key eq '__title';
         next if $self->{result_values}->{$key} eq '';
         next if $self->{instance_mode}->_match_filter(filter => 'hide', field => $key);
         next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', field => $key);
@@ -39,14 +40,25 @@ sub custom_result_output {
         push @data, "[$key: " . $self->{result_values}->{$key}."]";
     }
 
-    my $str = lc $self->{output}->{errors_num}->{$self->{perfdata}->{output}->{global_status}}.'_label';
+    my $str = lc $self->{severity}.'_label';
     my $prefix = exists $self->{instance_mode}->{$str} ?
                     $self->{instance_mode}->{$str} :
                     '';
 
     $prefix = "$prefix " if $prefix ne '';
 
-    return $prefix.join ' ', @data;
+    my $title = $self->{result_values}->{__title} // '';
+    $title = "$title " if $title ne '';
+
+    return $title.$prefix.join ' ', @data;
+}
+
+sub custom_result_threshold {
+    my ($self, %options) = @_;
+
+    $self->{severity} = catalog_status_threshold_ng($self, %options);
+
+    return $self->{severity};
 }
 
 sub set_counters {
@@ -68,14 +80,14 @@ sub set_counters {
         }
     ];
 
-    $self->{record_values} = [ ];
+    $self->{record_values} = [ { name => '__title' } ];
     $self->{record_values_hash} = {};
 
      $self->{maps_counters}->{query_results} = [ 
         {   label => 'value', type => 2,
             set => {
                 key_values => $self->{record_values},
-                closure_custom_threshold_check => \&catalog_status_threshold_ng,
+                closure_custom_threshold_check => $self->can('custom_result_threshold'), #\&catalog_status_threshold_ng,
                 closure_custom_output => $self->can('custom_result_output'),
             }
         }
@@ -91,9 +103,11 @@ sub new {
         'query:s'                   => { name => 'query', default => '' },
         'search-mode:s'             => { name => 'search_mode', default => 'auto' },
 
-        'ok-label:s'                => { name => 'ok_label', default => 'Event' },
-        'warning-label:s'           => { name => 'warning_label', default => 'Event trigger WARNING status' },
-        'critical-label:s'          => { name => 'critical_label', default => 'Event trigger CRITICAL status' },
+        'ok-label:s'                => { name => 'ok_label', default => '' },
+        'warning-label:s'           => { name => 'warning_label', default => 'trigger WARNING status' },
+        'critical-label:s'          => { name => 'critical_label', default => 'trigger CRITICAL status' },
+        'event-field:s'             => { name => 'event_field', default => '' },
+        'event-label:s'             => { name => 'event_label', default => 'event' },
 
         # Values to be shown/hidden
         'display:s@'                => { name => 'display' },
@@ -112,7 +126,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label search_mode);
+    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label search_mode event_field event_label);
 
     $self->{output}->option_exit(short_msg => 'Please set --query option.')
         if $self->{query} eq '';
@@ -163,9 +177,14 @@ sub manage_selection {
         $query_value->{result} = [ $query_value->{result} ] if ref $query_value->{result} eq 'HASH';
 
         foreach my $results (@{$query_value->{result}}) {
-            my %values = ();
+            my $title = $self->{event_label} ne '' ? $self->{event_label}.'-'.$index : '';
+
+            my %values;
             if (ref $results->{field} eq 'ARRAY') {
                 foreach my $record (@{$results->{field}}) {
+                    $title = $options{custom}->get_value(record => $record)
+                        if $self->{event_field} ne '' && $record->{k} eq $self->{event_field};
+
                     # always filter out internal fields unless they are explicitly included with include_internal_field option
                     next if $record->{k} =~ /^_/ && not $self->{include_internal_field}->{$record->{k}};
 
@@ -183,8 +202,12 @@ sub manage_selection {
             } else {
                 $record_values_hash{$results->{field}->{k}} = 1;
                 # get first value only (we don't handle more complex structures)
-                $values{$results->{field}->{k}} = $options{custom}->get_value(record => $results->{field})
+                $values{$results->{field}->{k}} = $options{custom}->get_value(record => $results->{field});
+
+                $title = $values{$results->{field}->{k}}
+                    if $self->{event_field} ne '' && $results->{field}->{k} eq $self->{event_field};
             }
+            $values{__title} = $title;
             $self->{query_results}->{ $index++ } = \%values;
         }
     }
@@ -265,15 +288,15 @@ This option can be used multiple times and multiple values can be passed as a co
 
 =item B<--ok-label>
 
-Define the label to use for events that trigger the OK status (default: 'Event').
+Define the label to use for events that trigger the OK status (default: '').
 
 =item B<--warning-label>
 
-Define the label to use for events that trigger the WARNING status (default: 'Event trigger WARNING status').
+Define the label to use for events that trigger the WARNING status (default: 'trigger WARNING status').
 
 =item B<--critical-label>
 
-Define the label to use for events that trigger the CRITICAL status (default: 'Event trigger CRITICAL status').
+Define the label to use for events that trigger the CRITICAL status (default: 'trigger CRITICAL status').
 
 =item B<--warning-count> 
 
@@ -290,7 +313,6 @@ Example: --critical-count=15
 =item B<--warning-value>
 
 Define the conditions to match for the status to be WARNING.
-This option can be used multiple times and multiple values can be passed as a comma separated list.
 Field names can be used as variables, and complex expressions are supported.
 
 Example: --warning-value='%{sourcetype} =~ /orchestrator/'
@@ -298,7 +320,6 @@ Example: --warning-value='%{sourcetype} =~ /orchestrator/'
 =item B<--critical-value>
 
 Define the conditions to match for the status to be CRITICAL.
-This option can be used multiple times and multiple values can be passed as a comma separated list.
 Field names can be used as variables, and complex expressions are supported.
 
 Example: --critical-value='%{sourcetype} =~ /orchestrator/'

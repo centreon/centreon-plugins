@@ -34,25 +34,30 @@ sub custom_result_output {
 
     my $perfdata = $self->{perfdata}->{data};
     foreach my $key (sort keys %{$self->{result_values}}) {
+        next if $key eq '__title';
         next if $self->{result_values}->{$key} eq '';
 
         push @data, "[".($perfdata->{name}->{$key} // $key).": " . $self->{result_values}->{$key}."]";
     }
 
-    my $str = lc $self->{output}->{errors_num}->{$self->{perfdata}->{output}->{global_status}}.'_label';
+    my $str = lc $self->{severity}.'_label';
     my $prefix = exists $self->{instance_mode}->{$str} ?
                     $self->{instance_mode}->{$str} :
                     '';
 
     $prefix = "$prefix " if $prefix ne '';
 
-    return $prefix.join ' ', @data;
+    my $title = $self->{result_values}->{__title} // '';
+    $title = "$title " if $title ne '';
+
+    return $title.$prefix.join ' ', @data;
 }
 
 sub custom_result_perfdata {
     my ($self, %options) = @_;
 
     foreach my $key (sort keys %{$self->{result_values}}) {
+        next if $key eq '__title';
         next if $self->{result_values}->{$key} eq '';
         next if $self->{instance_mode}->_match_filter(filter => 'hide', field => $key);
         next if @{$self->{instance_mode}->{display}} && not $self->{instance_mode}->_match_filter(filter => 'display', field => $key);
@@ -60,6 +65,8 @@ sub custom_result_perfdata {
         my $perfdata = $self->{perfdata}->{data};
 
         $self->{output}->perfdata_add(
+            ($self->{result_values}->{__title} ne '' ? ( instances => $self->{result_values}->{__title} ) : ( ) ),
+
             label    => $perfdata->{name}->{$key} // $perfdata->{name}->{generic} // $key,
             unit     => $perfdata->{unit}->{$key} // $perfdata->{unit}->{generic} // '',
             value    => $self->{result_values}->{$key},
@@ -82,10 +89,10 @@ sub custom_result_threshold {
 
     my @exits = ( 'ok' );
     foreach my $key (sort keys %{$self->{result_values}}) {
+        next if $key eq '__title';
         next if $self->{result_values}->{$key} eq '';
 
         my $ret = 'ok';
-
         # For each threshold we try to use the specific threshold, if it does not exist we
         # fall back to the generic one
         my $used_critical_key = "critical-$key";
@@ -97,7 +104,6 @@ sub custom_result_threshold {
             unless defined $self->{perfdata}->{threshold_label}->{$used_warning_key};
         $used_unknown_key = 'unknown-generic'
             unless defined $self->{perfdata}->{threshold_label}->{$used_unknown_key};
-
         $ret = $self->{perfdata}->threshold_check(
             value     => $self->{result_values}->{$key},
             threshold => [
@@ -111,14 +117,15 @@ sub custom_result_threshold {
     }
 
     # Return the worst status
-    return $self->{output}->get_most_critical(status => [ @exits ] );
+    $self->{severity} = $self->{output}->get_most_critical(status => [ @exits ] );
+    return $self->{severity};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 , skipped_code => { NO_VALUE => 1 }},
+        { name => 'global', type => 0 },
         { name => 'query_results', type => 1, message_multiple => 'All values are OK', skipped_code => { NO_VALUE() => 1 } }
     ];
 
@@ -134,9 +141,8 @@ sub set_counters {
     ];
 
     $self->{record_values} = [ ];
-    $self->{record_values_hash} = {};
 
-     $self->{maps_counters}->{query_results} = [ 
+    $self->{maps_counters}->{query_results} = [
         {   label => 'numeric.value', type => 0,
             set => {
                 key_values => $self->{record_values},
@@ -158,9 +164,11 @@ sub new {
         'query:s'                   => { name => 'query', default => '' },
         'search-mode:s'             => { name => 'search_mode', default => 'auto' },
 
-        'ok-label:s'                => { name => 'ok_label', default => 'Event' },
-        'warning-label:s'           => { name => 'warning_label', default => 'Event trigger WARNING threshold' },
-        'critical-label:s'          => { name => 'critical_label', default => 'Event trigger CRITICAL threshold' },
+        'ok-label:s'                => { name => 'ok_label', default => '' },
+        'warning-label:s'           => { name => 'warning_label', default => 'trigger WARNING threshold' },
+        'critical-label:s'          => { name => 'critical_label', default => 'trigger CRITICAL threshold' },
+        'event-field:s'             => { name => 'event_field', default => '' },
+        'event-label:s'             => { name => 'event_label', default => 'event' },
 
         # Values to be shown/hidden
         'display:s@'        => { name => 'display' },
@@ -170,6 +178,7 @@ sub new {
         'exclude:s@'        => { name => 'exclude' },
         'include:s@'        => { name => 'include' },
         'include-internal-field:s@' => { name => 'include_internal_field' },
+        'include-nonnumeric-field:s' => { name => 'include_nonnumeric_field', default => '0' },
 
         # Define thresholds and perfdata for each value
         'warning-value:s@'  => { name => 'warning_value' },
@@ -190,7 +199,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label search_mode);
+    $self->{$_} = $self->{option_results}->{$_} for qw(query ok_label warning_label critical_label search_mode include_nonnumeric_field event_field event_label);
 
     $self->{output}->option_exit(short_msg => 'Please set --query option.')
         if $self->{query} eq '';
@@ -261,15 +270,20 @@ sub manage_selection {
 
     my $index=0;
     $self->{query_results} = {};
-    my %record_values_hash = ();
+    my %record_values_hash = ( __title => 1);
 
     if ($query_value->{result}) {
         $query_value->{result} = [ $query_value->{result} ] if ref $query_value->{result} eq 'HASH';
 
         foreach my $results (@{$query_value->{result}}) {
-            my %values = ();
+            my $title = $self->{event_label} ne '' ? $self->{event_label}.'-'.$index : '';
+
+            my %values;
             if (ref $results->{field} eq 'ARRAY') {
                 foreach my $record (@{$results->{field}}) {
+                    $title = $options{custom}->get_value(record => $record)
+                        if $self->{event_field} ne '' && $record->{k} eq $self->{event_field};
+
                     # always filter out internal fields unless they are explicitly included with include_internal_field option
                     # filter out non numeric values
                     next if $record->{k} =~ /^_/ && not $self->{include_internal_field}->{$record->{k}};
@@ -282,8 +296,8 @@ sub manage_selection {
 
                     my $value = $options{custom}->get_value(record => $record);
 
-                    # keep only numeric values
-                    next unless $value =~ /^[\d\.-]+$/;
+                    # keep only numeric values if include_nonnumeric_field is not set
+                    next unless $self->{include_nonumeric_field} || $value =~ /^[\d\.-]+$/;
 
                     $record_values_hash{$record->{k}} = 1;
                     $values{$record->{k}} = $value;
@@ -295,7 +309,11 @@ sub manage_selection {
                 # get first value only (we don't handle more complex structures)
                 $values{$results->{field}->{k}} = $options{custom}->get_value(record => $results->{field});
 
+                $title = $values{$results->{field}->{k}}
+                    if $self->{event_field} ne '' && $results->{field}->{k} eq $self->{event_field};
             }
+
+            $values{__title} = $title;
             $self->{query_results}->{ $index++ } = \%values;
         }
     }
@@ -376,17 +394,22 @@ This option allows to include them.
 Example: --include-internal-field=_raw
 This option can be used multiple times and multiple values can be passed as a comma separated list.
 
+=item B<--include-nonnumeric-field>
+
+By default all non numeric value are ignored.
+This option allows to include them.
+
 =item B<--ok-label>
 
-Define the label to use for events that trigger the OK threshold (default: 'Event').
+Define the label to use for events that trigger the OK threshold (default: '').
 
 =item B<--warning-label>
 
-Define the label to use for events that trigger the WARNING threshold (default: 'Event trigger WARNING threshold').
+Define the label to use for events that trigger the WARNING threshold (default: 'trigger WARNING threshold').
 
 =item B<--critical-label>
 
-Define the label to use for events that trigger the CRITICAL threshold (default: 'Event trigger CRITICAL threshold').
+Define the label to use for events that trigger the CRITICAL threshold (default: 'trigger CRITICAL threshold').
 
 =item B<--perfdata-unit>
 
@@ -460,6 +483,7 @@ Syntax: C<--warning-value=[field]=[threshold]>
 
 For example to set a threshold of C<:1> for the field C<skippedRatio>: C<--warning-value=skippedRatio=:1>
 Or to set a threshold for all fields without a specific threshold: C<--warning-value=:1>
+You cannot define multiple thresholds for the same field.
 
 =item B<--critical-value>
 
@@ -472,6 +496,7 @@ Syntax: C<--critical-value=[field]=[threshold]>
 
 For example to set a threshold of C<:1> for the field C<skippedRatio>: C<--critical-value=skippedRatio=:1>
 Or to set a threshold for all fields without a specific threshold: C<--critical-value=:1>
+You cannot define multiple thresholds for the same field.
 
 =back
 
