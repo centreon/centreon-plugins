@@ -554,11 +554,15 @@ Set instance name to differentiate cache files when --api-token is used (default
 
 =item B<--api-token>
 
-Set API token
+Set API access token.
+An access token has a validity period of 30 minutes and is automatically refreshed by the plugin using the refresh token.
+After it is refreshed, the new login information is stored locally by the connector, so it is important to create a separate authentication token for each connector instance.
+Each token should be used by only one connector, it must not have any other use and must not be shared with other applications.
 
 =item B<--refresh-token>
 
-Set API refresh token
+Set API refresh token associated to the access token.
+Refresh token is mandatory when --api-token is used.
 
 =item B<--timeout>
 
