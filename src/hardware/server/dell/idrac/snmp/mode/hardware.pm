@@ -167,6 +167,11 @@ Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure',
 Exclude the items given as a comma-separated list (example: --filter=temperature --filter=psu).
 You can also exclude items from specific instances: --filter=temperature,1.1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--add-name-instance>
 
 Add literal description for instance value (used in filter and threshold options).
@@ -189,6 +194,14 @@ Example: --warning='temperature,.*,30'
 
 Set critical threshold (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,40'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

@@ -29,7 +29,7 @@ runs:
         node-version: 20
 
     - name: Install DayJS
-      run: npm install dayjs
+      run: npm install dayjs@1.11.18
       shell: bash
 
     - name: Get ticket elements from context
