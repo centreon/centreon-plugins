@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}         ${CURDIR}${/}vpngatewaystatus.json
+${MOCKOON_JSON}         ${CURDIR}${/}azure-servicebus.json
 
 ${BASE_URL}             http://${HOSTNAME}:${APIPORT}
 ${LOGIN_ENDPOINT}       ${BASE_URL}/login
