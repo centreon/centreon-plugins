@@ -1,0 +1,230 @@
+{
+  "uuid": "3db9326c-6fa8-4993-8372-54e73c859b7f",
+  "lastMigration": 33,
+  "name": "Elastic query.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3011,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "db99d8f3-9d16-4b04-bc5d-a22fb81f959c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "464ae9ed-c831-4ddd-ae50-4181a1165d79",
+          "body": "{\n  \"took\" : 1,\n  \"timed_out\" : false,\n  \"_shards\" : {\n    \"total\" : 2,\n    \"successful\" : 2,\n    \"skipped\" : 0,\n    \"failed\" : 0\n  },\n  \"hits\" : {\n    \"total\" : {\n      \"value\" : 2,\n      \"relation\" : \"eq\"\n    },\n    \"max_score\" : 0.4700036,\n    \"hits\" : [\n      {\n        \"_index\" : \"ma_base_2\",\n        \"_id\" : \"1VHGV5kBLjKQBdDbh548\",\n        \"_score\" : 0.4700036,\n        \"_source\" : {\n          \"nom\" : \"CRESTO\",\n          \"age\" : 30,\n          \"ville\" : \"Toulouse\"\n        }\n      },\n      {\n        \"_index\" : \"ma_base_2\",\n        \"_id\" : \"11HIV5kBLjKQBdDbYp6p\",\n        \"_score\" : 0.4700036,\n        \"_source\" : {\n          \"nom\" : \"CRESTO\",\n          \"age\" : 39,\n          \"ville\" : \"Saint-Girons\"\n        }\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "e1390347-65c1-4c27-8b0b-95a42ca15492",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "_search",
+      "responses": [
+        {
+          "uuid": "8142e922-9a51-4087-aba7-5b8161a80006",
+          "body": "{\n  \"took\" : 1,\n  \"timed_out\" : false,\n  \"_shards\" : {\n    \"total\" : 1,\n    \"successful\" : 1,\n    \"skipped\" : 0,\n    \"failed\" : 0\n  },\n  \"hits\" : {\n    \"total\" : {\n      \"value\" : 2,\n      \"relation\" : \"eq\"\n    },\n    \"max_score\" : 0.4700036,\n    \"hits\" : [\n      {\n        \"_index\" : \"ma_base_2\",\n        \"_id\" : \"1VHGV5kBLjKQBdDbh548\",\n        \"_score\" : 0.4700036,\n        \"_source\" : {\n          \"nom\" : \"TOCRES\",\n          \"age\" : 30,\n          \"ville\" : \"Toulouse\"\n        }\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "{",
+              "invert": true,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "33c0bd6e-c310-40f3-871b-6fc83c5c73ff",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "_search",
+      "responses": [
+        {
+          "uuid": "69f1d06e-8d65-4a4c-bcc3-43aa143a1019",
+          "body": "{\n  \"took\" : 1,\n  \"timed_out\" : false,\n  \"_shards\" : {\n    \"total\" : 1,\n    \"successful\" : 1,\n    \"skipped\" : 0,\n    \"failed\" : 0\n  },\n  \"hits\" : {\n    \"total\" : {\n      \"value\" : 2,\n      \"relation\" : \"eq\"\n    },\n    \"max_score\" : 0.4700036,\n    \"hits\" : [\n      {\n        \"_index\" : \"ma_base_2\",\n        \"_id\" : \"aaHGV5kBLjKQBdDbh548\",\n        \"_score\" : 0.4700036,\n        \"_source\" : {\n          \"nom\" : \"MOUSTIQUE\",\n          \"age\" : 30,\n          \"ville\" : \"Saint-Girons\"\n        }\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "{",
+              "invert": true,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "db99d8f3-9d16-4b04-bc5d-a22fb81f959c"
+    },
+    {
+      "type": "route",
+      "uuid": "e1390347-65c1-4c27-8b0b-95a42ca15492"
+    },
+    {
+      "type": "route",
+      "uuid": "33c0bd6e-c310-40f3-871b-6fc83c5c73ff"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

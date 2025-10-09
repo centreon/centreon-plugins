@@ -157,6 +157,14 @@ Example: --warning='temperature,.*,20'
 Set critical threshold for temperatures and battery charge (syntax: type,regexp,threshold)
 Example: --critical='temperature,1.1,25' --critical='battery,.*,20:'
 
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 =back
 
 =cut
