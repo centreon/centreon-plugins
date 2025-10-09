@@ -100,8 +100,8 @@ Can be: C<bay>, C<disk>, C<fru>, C<shelf>.
 
 =item B<--filter>
 
-Exclude some parts (comma separated list)
-You can also exclude items from specific instances: --filter='fru,-'
+Exclude some parts (comma separated list).
+You can also exclude items from specific instances: C<--filter='fru,-'>
 
 =item B<--absent-problem>
 Return an error if a component is not 'present' (default is skipping).

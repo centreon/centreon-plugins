@@ -381,9 +381,8 @@ __END__
 
 =head1 MODE
 
-Check JSON web service. Can send the json request with option '--data'. Example:
-centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=json-content --data='/home/user/request.json' --hostname='myws.site.com' --urlpath='/get/payment'
---lookup='$..expiration' --header='Content-Type: application/json'
+Check JSON web service. Can send the json request with option C<--data>. Example:
+C<centreon_plugins.pl --plugin=apps::protocols::http::plugin --mode=json-content --data='/home/user/request.json' --hostname='myws.site.com' --urlpath='/get/payment' --lookup='$..expiration' --header='Content-Type: application/json'>
 
 JSON OPTIONS:
 
@@ -395,14 +394,14 @@ Set the JSON request or specify a file with the request inside.
 
 =item B<--lookup>
 
-What to lookup in JSON response (JSON XPath string) (can be multiple)
+What to lookup in JSON response (JSON XPath string) (can be multiple).
 See: http://goessner.net/articles/JsonPath/
 
 =item B<--lookup-perfdatas-nagios>
 
-Take perfdata from the JSON response (JSON XPath string)
+Take perfdata from the JSON response (JSON XPath string).
 Chain must be formatted in Nagios format.
-Ex : "rta=10.752ms;50.000;100.000;0; pl=0%;20;40;; rtmax=10.802ms;;;;"
+Ex : C<rta=10.752ms;50.000;100.000;0; pl=0%;20;40;; rtmax=10.802ms;;;;>
 
 =back
 
@@ -412,35 +411,35 @@ FORMAT OPTIONS:
 
 =item B<--format-lookup>
 
-Take the output message from the JSON response (JSON XPath string)
+Take the output message from the JSON response (JSON XPath string).
 Override all the format options but substitute are still applied.
 
 =item B<--format-ok>
 
-Customize the format of the output when the status is OK (default: '%{count} element(s) found')
+Customize the format of the output when the status is OK (default: C<'%{count} element(s) found'>).
 You can use the following variables:
-'%{values}' = display all values (also text string)
-'%{values_ok}' = values from attributes and text node only (separated by option values-separator)
-'%{values_warning}' and '%{values_critical}'
+C<%{values}> = display all values (also text string).
+C<%{values_ok}> = values from attributes and text node only (separated by option values-separator).
+C<%{values_warning}> and C<%{values_critical}>.
 
 =item B<--format-warning>
 
-Customize the format of the output when the status is WARNING (default: '%{count} element(s) found')
-You can use the variables described in --format-ok
+Customize the format of the output when the status is WARNING (default: C<'%{count} element(s) found'>).
+You can use the variables described in C<--format-ok>.
 
 =item B<--format-critical>
 
-Customize the format of the output when the status is CRITICAL (default: '%{count} element(s) found')
-You can use the variables described in --format-ok
+Customize the format of the output when the status is CRITICAL (default: C<'%{count} element(s) found'>).
+You can use the variables described in C<--format-ok>.
 
 =item B<--format-unknown>
 
-Customize the format of the output when the status is UNKNOWN (default: '%{count} element(s) found')
-You can use the variables described in --format-ok
+Customize the format of the output when the status is UNKNOWN (default: C<'%{count} element(s) found'>).
+You can use the variables described in C<--format-ok>.
 
 =item B<--values-separator>
 
-Separator used for values in format option (default: ', ')
+Separator used for values in format option (default: C<', '>).
 
 =back
 
@@ -450,16 +449,16 @@ THRESHOLD OPTIONS:
 
 =item B<--warning-numeric>
 
-Warning threshold (default: on total matching elements)
+Warning threshold (default: on total matching elements).
 
 =item B<--critical-numeric>
 
-Critical threshold (default: on total matching elements)
+Critical threshold (default: on total matching elements).
 
 =item B<--threshold-value>
 
 Define the scope to which the numeric thresholds apply.
-Possible values for this option: 'values' to check numeric values, 'count' to check the number of values (default: count).
+Possible values for this option: C<values> to check numeric values, C<count> to check the number of values (default: count).
 
 =item B<--warning-string>
 
@@ -509,11 +508,11 @@ Specify this option if you are accessing a web page using authentication.
 
 =item B<--username>
 
-Specify the username for authentication (mandatory if --credentials is specified).
+Specify the username for authentication (mandatory if C<--credentials> is specified).
 
 =item B<--password>
 
-Specify the password for authentication (mandatory if --credentials is specified).
+Specify the password for authentication (mandatory if C<--credentials> is specified).
 
 =item B<--basic>
 
@@ -521,11 +520,11 @@ Specify this option if you are accessing a web page using basic authentication a
 
 Specify this option if you are accessing a web page using hidden basic authentication or you'll get a '404 NOT FOUND' error.
 
-(use with --credentials)
+(use with C<--credentials>)
 
 =item B<--ntlmv2>
 
-Specify this option if you are accessing a web page using NTLMv2 authentication (use with --credentials and --port options).
+Specify this option if you are accessing a web page using NTLMv2 authentication (use with C<--credentials> and C<--port> options).
 
 =item B<--timeout>
 
@@ -553,15 +552,15 @@ Specify that the type of certificate is PKCS1.
 
 =item B<--get-param>
 
-Set a parameter for GET requests (multiple option. Example: --get-param='key=value').
+Set a parameter for GET requests (multiple option. Example: C<--get-param='key=value'>).
 
 =item B<--header>
 
-Set HTTP headers(multiple option). Example: --header='Content-Type: application/json'.
+Set HTTP headers(multiple option). Example: C<--header='Content-Type: application/json'>.
 
 =item B<--unknown-status>
 
-Unknown conditions for http response code (default: '%{http_code} < 200 or %{http_code} >= 300').
+Unknown conditions for http response code (default: C<'%{http_code} < 200 or %{http_code}  >= 300' >).
 
 =item B<--warning-status>
 
