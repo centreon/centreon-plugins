@@ -474,7 +474,7 @@ Set HTTP headers(multiple option). Example: C<--header='Content-Type: '>.
 
 =item B<--unknown-status>
 
-Unknown conditions for http response code (default: C<< '%{http_code} < 200 or %{http_code} >= 300' >>).
+Unknown conditions for http response code (default: C<'%{http_code} < 200 or %{http_code} >= 300'>).
 
 =item B<--warning-status>
 
