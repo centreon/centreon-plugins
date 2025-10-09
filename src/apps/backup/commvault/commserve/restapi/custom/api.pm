@@ -342,6 +342,21 @@ sub request_internal {
     }
 
     my $content;
+    # Information about the new access token authentication mode:
+    # The user creates a pair of tokens "access token" "refresh token" associated with the plugin
+    # "access token" is used to authenticate to the Commvault API. It is valid for 30 minutes, after this
+    # period it is automatically renewed by the plugin using "refresh token".
+    # When the renewal occurs, a completely new pair of "access token" "refresh token" is generated and
+    # the previous pair is revoked and can no longer be used.
+    # The plugin uses statfile to store the latest token pair to be used for authentication.
+    # Each token should be used by only one pluhin, it must not have any other use and must not be shared
+    # with other applications.
+    # The --instance parameter is used to handle cases where multiple plugins are executed on the same poller
+    # in order to identify the correct statefile to use.
+    # To authenticate using the access token, the plugin first tries the token saved in the statefile, then
+    # attempts to refresh it, next tries the token provided via the command line, and finally attempts to
+    # refresh it.
+
     # retries to handle token expiration
     for my $retry (1..3) {
         if ($self->{use_authent_token}) {
@@ -384,7 +399,7 @@ sub request_internal {
     my $decoded = $self->json_decode(content => $content);
 
     $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)')
-        unless defined($decoded);
+        unless defined $decoded;
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
@@ -400,10 +415,10 @@ sub get_cache_file_response {
     $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $response = $self->{cache}->get(name => 'response');
     my $update_time = $self->{cache}->get(name => 'update_time');
-    if (!defined($response)) {
-        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
-        $self->{output}->option_exit();
-    }
+
+    $self->{output}->option_exit(short_msg => 'Cache file missing')
+        unless defined $response;
+
     return $response;
 }
 
