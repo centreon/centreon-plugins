@@ -204,7 +204,7 @@ sub try_request_api {
         || $method eq 'POST' && $self->{http}->get_code() == 201);
 
     my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
-    if (!defined($decoded)) {
+    if (!defined($decoded) && !$options{no_fail}) {
         $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
                 . $self->{http}->get_code() . "'] [message: '"
                 . $self->{http}->get_message() . "'] [content: '"
@@ -212,7 +212,7 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
-    if (ref($decoded) eq "HASH" && defined($decoded->{error_type})) {
+    if (ref($decoded) eq "HASH" && defined($decoded->{error_type})  && !$options{no_fail}) {
         $self->{output}->add_option_msg(short_msg => "API returned an error: " . $decoded->{error_type} . " - " . $decoded->{messages}->[0]->{default_message});
         $self->{output}->option_exit();
     }
@@ -226,7 +226,7 @@ sub request_api {
     $self->settings();
 
     # first call using the available token with unknown_status = 0 in order to avoid exiting at first attempt in case it has expired
-    my $api_response = $self->try_request_api(%options, unknown_status => '0');
+    my $api_response = $self->try_request_api(%options, unknown_status => '0', no_fail => 1);
 
     # if the token is invalid, we try to authenticate again
     if (ref($api_response) eq 'HASH'
@@ -242,7 +242,7 @@ sub request_api {
         for my $error_item (@{$api_response->{messages}}) {
             $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
         }
-        $self->{output}->add_option_msg(short_msg => "API returns error of type " . $api_response->{error_type} . ": " . $full_message);
+        $self->{output}->add_option_msg(short_msg => "API returned an error of type " . $api_response->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message);
         $self->{output}->option_exit();
     }
 

@@ -22,7 +22,7 @@ package apps::vmware::vsphere8::vm::mode::power;
 use strict;
 use warnings;
 use base qw(apps::vmware::vsphere8::vm::mode);
-
+use centreon::plugins::misc qw/is_empty/;
 
 my @counters = (
     'power.capacity.usage.VM'        # Current power usage.
@@ -57,7 +57,7 @@ sub manage_selection {
     my %results = map {
         $_ => $self->get_vm_stats(%options, cid => $_, vm_id => $self->{vm_id}, vm_name => $self->{vm_name} )
     } @counters;
-    $self->{output}->option_exit(short_msg => "No available data") unless $results{'power.capacity.usage.VM'};
+    $self->{output}->option_exit(short_msg => "No available data") if is_empty($results{'power.capacity.usage.VM'});
     $self->{power} = {
         'power.capacity.usage.VM' => $results{'power.capacity.usage.VM'}
     };
