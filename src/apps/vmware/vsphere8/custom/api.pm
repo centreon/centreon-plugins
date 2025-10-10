@@ -280,19 +280,21 @@ sub get_all_acq_specs {
 
     # if we can get it from the cache, we return it
     if ($self->{acq_specs_cache}->read(
-        statefile => 'vsphere8_api_acq_specs_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
+        statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
     )) {
         $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
         return $self->{all_acq_specs};
     }
     # Get all acq specs (first page)
     my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
-    $self->{all_acq_specs} = $response->{acq_specs};
 
+    # store only acq_specs related to the considered resource
+    push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     # If the whole acq-specs takes more than one page, the API will return a "next" value
     while ($response->{next}) {
         $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
-        push @{$self->{all_acq_specs}}, @{$response->{acq_specs}};
+        # store only acq_specs related to the considered resource
+        push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     }
 
     # store it in the cache for future runs
@@ -395,7 +397,7 @@ sub get_acq_spec {
     my ($self, %options) = @_;
 
     # If it is not available in cache call get_all_acq_specs()
-    my $acq_specs = $self->get_all_acq_specs();
+    my $acq_specs = $self->get_all_acq_specs(%options);
     for my $spec (@$acq_specs) {
         # Ignore acq_specs not related to the counter_id
         next if ($options{cid} ne $spec->{counters}->{cid_mid}->{cid});
