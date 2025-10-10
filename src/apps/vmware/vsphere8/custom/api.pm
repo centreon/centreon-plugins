@@ -204,7 +204,7 @@ sub try_request_api {
         || $method eq 'POST' && $self->{http}->get_code() == 201);
 
     my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
-    if (!defined($decoded)) {
+    if (!defined($decoded) && !$options{no_fail}) {
         $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
                 . $self->{http}->get_code() . "'] [message: '"
                 . $self->{http}->get_message() . "'] [content: '"
@@ -212,7 +212,7 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
-    if (ref($decoded) eq "HASH" && defined($decoded->{error_type})) {
+    if (ref($decoded) eq "HASH" && defined($decoded->{error_type})  && !$options{no_fail}) {
         $self->{output}->add_option_msg(short_msg => "API returned an error: " . $decoded->{error_type} . " - " . $decoded->{messages}->[0]->{default_message});
         $self->{output}->option_exit();
     }
@@ -226,7 +226,7 @@ sub request_api {
     $self->settings();
 
     # first call using the available token with unknown_status = 0 in order to avoid exiting at first attempt in case it has expired
-    my $api_response = $self->try_request_api(%options, unknown_status => '0');
+    my $api_response = $self->try_request_api(%options, unknown_status => '0', no_fail => 1);
 
     # if the token is invalid, we try to authenticate again
     if (ref($api_response) eq 'HASH'
@@ -242,7 +242,7 @@ sub request_api {
         for my $error_item (@{$api_response->{messages}}) {
             $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
         }
-        $self->{output}->add_option_msg(short_msg => "API returns error of type " . $api_response->{error_type} . ": " . $full_message);
+        $self->{output}->add_option_msg(short_msg => "API returned an error of type " . $api_response->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message);
         $self->{output}->option_exit();
     }
 
@@ -280,19 +280,21 @@ sub get_all_acq_specs {
 
     # if we can get it from the cache, we return it
     if ($self->{acq_specs_cache}->read(
-        statefile => 'vsphere8_api_acq_specs_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
+        statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
     )) {
         $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
         return $self->{all_acq_specs};
     }
     # Get all acq specs (first page)
     my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
-    $self->{all_acq_specs} = $response->{acq_specs};
 
+    # store only acq_specs related to the considered resource
+    push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     # If the whole acq-specs takes more than one page, the API will return a "next" value
     while ($response->{next}) {
         $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
-        push @{$self->{all_acq_specs}}, @{$response->{acq_specs}};
+        # store only acq_specs related to the considered resource
+        push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     }
 
     # store it in the cache for future runs
@@ -395,7 +397,7 @@ sub get_acq_spec {
     my ($self, %options) = @_;
 
     # If it is not available in cache call get_all_acq_specs()
-    my $acq_specs = $self->get_all_acq_specs();
+    my $acq_specs = $self->get_all_acq_specs(%options);
     for my $spec (@$acq_specs) {
         # Ignore acq_specs not related to the counter_id
         next if ($options{cid} ne $spec->{counters}->{cid_mid}->{cid});
