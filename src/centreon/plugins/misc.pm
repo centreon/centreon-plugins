@@ -31,6 +31,7 @@ use feature 'state';
 
 our @EXPORT_OK = qw/change_seconds
                     flatten_arrays
+                    flatten_to_hash
                     graphql_escape
                     is_empty
                     json_encode
@@ -414,6 +415,18 @@ sub flatten_arrays($;$) {
     return [ ] unless ref $array_of_values eq 'ARRAY';
 
     return [ map { split $separator } @{$array_of_values} ];
+}
+
+# Returns an hash from arrays containing values separated by $separator
+# Values are set to $default (1 if not defined)
+sub flatten_to_hash($;$;$) {
+    my ($array_of_values, $separator, $default) = @_;
+    $separator //= ',';
+    $default //= 1;
+
+    return { } unless ref $array_of_values eq 'ARRAY';
+
+    return { map { $_ => $default } map { split $separator } @{$array_of_values} };
 }
 
 sub minimal_version {
@@ -1121,6 +1134,22 @@ Returns an array from arrays containing values separated by a separator ( defaul
 =item * C<$arrays> - Arrays to expand.
 
 =item * C<$separator> - Separator ( comma if undef ).
+
+=back
+
+=head2 flatten_to_hash
+
+    my $hash = centreon::plugins::misc::flatten_to_hash($arrays, $separator, $default);
+
+Returns a hash from arrays containing values separated by a separator ( default comma ). Values are set to optional parameter $default ( 1 if undef ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
+
+=item * C<$default> - Default value ( 1 if undef ).
 
 =back
 
