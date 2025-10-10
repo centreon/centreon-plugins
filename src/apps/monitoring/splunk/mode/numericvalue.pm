@@ -387,6 +387,14 @@ Only managed fields are considered.
 If this parameter is not empty, all matching fields are hidden.
 Fields are always displayed in the long output in verbose mode.
 
+=item B<--event-field>
+
+Define the field value used to prefix the perfdata output.
+
+=item B<--event-label>
+
+Label to use to prefix perfdata output (default: 'event')
+
 =item B<--include-internal-field>
 
 By default fields starting with '_' are considered as internal and ignored.
