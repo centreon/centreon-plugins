@@ -1131,7 +1131,7 @@ Escapes special characters in a string for use in PowerShell.
 
     my $escaped = centreon::plugins::misc::graphql_escape($value);
 
-Escapes special characters in a string for use in graphql query.
+Escapes special characters in a string for use in GraphQL query.
 
 =over 4
 
