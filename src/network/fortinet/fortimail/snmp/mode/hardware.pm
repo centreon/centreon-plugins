@@ -106,6 +106,11 @@ Add literal description for instance value (used in filter, and threshold option
 Exclude some parts (comma separated list)
 Can also exclude specific instance: --filter=sensors,1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Return an error if no compenents are checked.
@@ -127,6 +132,13 @@ Example: --warning='sensors,.*,30'
 Set critical threshold for 'sensors' (syntax: type,regexp,threshold)
 Example: --critical='sensors,.*,50'
 
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

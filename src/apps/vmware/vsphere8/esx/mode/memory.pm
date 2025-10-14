@@ -95,19 +95,21 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
 
-    if (defined($structure{'mem.capacity.usable.HOST'}) && defined($structure{'mem.consumed.vms.HOST'})) {
-        $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usable.HOST: ' . $structure{'mem.capacity.usable.HOST'});
-        $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.consumed.vms.HOST: ' . $structure{'mem.consumed.vms.HOST'});
-        $self->{memory} = {
-            used_prct  => (100 * $structure{'mem.consumed.vms.HOST'} / $structure{'mem.capacity.usable.HOST'}),
-            used_bytes => int(1024 * 1024 * $structure{'mem.consumed.vms.HOST'}),
-            max_bytes  => int(1024 * 1024 * $structure{'mem.capacity.usable.HOST'})
-        };
+    if (!defined($results{'mem.capacity.usable.HOST'}) || !defined($results{'mem.consumed.vms.HOST'})) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
     }
+
+    $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usable.HOST: ' . $results{'mem.capacity.usable.HOST'});
+    $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.consumed.vms.HOST: ' . $results{'mem.consumed.vms.HOST'});
+    $self->{memory} = {
+        used_prct  => (100 * $results{'mem.consumed.vms.HOST'} / $results{'mem.capacity.usable.HOST'}),
+        used_bytes => int(1024 * 1024 * $results{'mem.consumed.vms.HOST'}),
+        max_bytes  => int(1024 * 1024 * $results{'mem.capacity.usable.HOST'})
+    };
 
     return 1;
 }
