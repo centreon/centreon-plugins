@@ -3,9 +3,9 @@ Documentation       Hardware UPS Socomec Netvision SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -24,7 +24,6 @@ Battery ${tc}
     ...    --snmp-community=hardware/ups/socomec/netvision/snmp/netvision6
     ...    ${extra_options}
 
-   
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --

@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
@@ -8,7 +7,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+
 
 *** Test Cases ***
 list-trunks ${tc}
@@ -26,4 +26,4 @@ list-trunks ${tc}
 
     Examples:        tc    extra_options                     expected_result    --
             ...      1     ${EMPTY}                          List trunks: 'Anonymized 234' [status: up] [speed: 20000]
-            ...      2     --filter-name='toto'              List trunks: 'Anonymized 234' [status: up] [speed: 20000]    #filter not working 
+            ...      2     --filter-name='toto'              List trunks: 'Anonymized 234' [status: up] [speed: 20000]    # filter not working

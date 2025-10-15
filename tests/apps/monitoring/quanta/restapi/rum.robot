@@ -20,6 +20,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Rum ${tc}
     [Tags]    quanta    api
@@ -28,7 +29,7 @@ Rum ${tc}
     ...    --mode=rum
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp     ${command}    ${expected_regexp}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:        tc       extraoptions                                                expected_regexp    --
             ...      1        ${EMPTY}                                                    OK: all pages: sessions: 34, page views: 62, bounce rate: 43%, ttfb: 1617.714ms, onload time: 5494.82ms, interaction to next paint: 46.70ms, speed index: 2536.67ms \\\\| 'pages#sessions.count'=34;;;0; 'pages#pageviews.count'=62;;;0; 'pages#bounce.rate.percentage'=43%;;;0;100 'pages#ttfb.milliseconds'=1617.71ms;;;0; 'pages#onload.time.milliseconds'=5494.82ms;;;0; 'pages#nextpaint.interaction.time.milliseconds'=46.70ms;;;0; 'pages#speedindex.time.milliseconds'=2536.67ms;;;0;

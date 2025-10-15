@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hashicorp-health.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::hashicorp::vault::restapi::plugin
 ...                 --mode health
 ...                 --hostname=${HOSTNAME}
@@ -20,9 +20,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Health ${tc}
-    [Tags]    apps    hashicorp    vault    restapi    mockoon   
+    [Tags]    apps    hashicorp    vault    restapi    mockoon
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

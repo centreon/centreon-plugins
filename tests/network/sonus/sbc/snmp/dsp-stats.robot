@@ -1,10 +1,9 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -23,7 +22,7 @@ dsp-stats ${tc}
     ...    --snmp-community=network/sonus/sbc/snmp/slim_sonus-sbc
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc     extra_options                                                                               expected_result    --

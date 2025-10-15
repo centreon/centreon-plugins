@@ -9,13 +9,13 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}     ${CENTREON_PLUGINS}
-    ...    --plugin=hardware::ups::apc::snmp::plugin
-    ...    --mode=battery-status
-    ...    --hostname=${HOSTNAME}
-    ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-timeout=1
+${CMD}      ${CENTREON_PLUGINS}
+...         --plugin=hardware::ups::apc::snmp::plugin
+...         --mode=battery-status
+...         --hostname=${HOSTNAME}
+...         --snmp-version=${SNMPVERSION}
+...         --snmp-port=${SNMPPORT}
+...         --snmp-timeout=1
 
 
 *** Test Cases ***
@@ -34,7 +34,6 @@ battery status ${tc}
     ...          3     --replace-lasttime-format='%d-%m-%Y' --warning-replace-lasttime=2     ^WARNING: replace last time: (\\\\d+y )?(\\\\d+M )?(\\\\d+w )?(\\\\d+d )?(\\\\d+h )?(\\\\d+m )?(\\\\d+s )?\\\\| 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=665.00m;;;0; 'battery.timeon.minutes'=205761.00m;;;0; 'battery.voltage.volt'=110V;;;; 'battery.temperature.celsius'=23C;;;; 'battery.replace.lasttime.seconds'=\\\\d*s;0:2;;;$
     ...          4     --replace-lasttime-format='%d-%m-%Y' --critical-replace-lasttime=2    ^CRITICAL: replace last time: (\\\\d+y )?(\\\\d+M )?(\\\\d+w )?(\\\\d+d )?(\\\\d+h )?(\\\\d+m )?(\\\\d+s )?\\\\| 'battery.charge.remaining.percent'=100%;;;0;100 'battery.charge.remaining.minutes'=665.00m;;;0; 'battery.timeon.minutes'=205761.00m;;;0; 'battery.voltage.volt'=110V;;;; 'battery.temperature.celsius'=23C;;;; 'battery.replace.lasttime.seconds'=\\\\d*s;;0:2;;$
 
-*** Test Cases ***
 battery low status ${tc}
     [Tags]    hardware    ups    apc
     ${command}    Catenate

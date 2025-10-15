@@ -93,17 +93,17 @@ jobs:
       - name: Get new or updated directories
         run: |
           packages_folders=()
-          for f in ${{ needs.changes.outputs.packages_files }}; do
-            echo "Adding $(dirname $f) to packages_folders"
-            packages_folders+=($(dirname $f))
+          for package_file in ${{ needs.changes.outputs.packages_files }}; do
+            echo "Adding $(dirname $package_file) to packages_folders"
+            packages_folders+=($(dirname $package_file))
           done
           unique_packages_folders=($(printf "%s\n" "${packages_folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_packages_folders[@]} > packages_directories.json
 
           plugins_folders=()
-          for f in ${{ needs.changes.outputs.plugins_files }}; do
-              echo "Adding $f to plugins_folders"
-              plugin_folder=$(dirname $f)
+          for plugin_file in ${{ needs.changes.outputs.plugins_files }}; do
+              echo "Adding $plugin_file to plugins_folders"
+              plugin_folder=$(dirname $plugin_file)
               while [[ $plugin_folder =~ /(components|conf|custom|lib|mode|templates)$ ]]; do
                   plugin_folder=$(dirname $plugin_folder)
               done
@@ -113,9 +113,9 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_plugins_folders[@]} > plugins_directories.json
 
           tests_folders=()
-          for f in ${{ needs.changes.outputs.tests_files }}; do
-              echo "Adding $f to tests_folders"
-              tests_folders+=($(dirname $f))
+          for test_file in ${{ needs.changes.outputs.tests_files }}; do
+              echo "Adding $test_file to tests_folders"
+              tests_folders+=($(dirname $test_file))
           done
           unique_tests_folders=($(printf "%s\n" "${tests_folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_tests_folders[@]} > tests_directories.json

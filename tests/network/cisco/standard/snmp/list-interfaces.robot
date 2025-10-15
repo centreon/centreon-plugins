@@ -1,6 +1,6 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
@@ -23,8 +23,8 @@ list-interfaces ${tc}
 
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
-    Should Contain    
-    ...    ${output}    
+    Should Contain
+    ...    ${output}
     ...    ${expected_result}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False

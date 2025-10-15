@@ -14,7 +14,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::datadomain::snmp::plugin
 
 *** Test Cases ***
 process ${tc}
-    [Tags]    snmp  storage
+    [Tags]    snmp    storage
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=process
@@ -24,11 +24,11 @@ process ${tc}
     ...    --snmp-community=storage/emc/datadomain/snmp/slim-datadomain
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                     expected_result    --
-            ...      1     --verbose                                                         OK: NFS status: enabled - CIFS status: enabledRunning - DDBoost status: enabled - VTL process state: stopped [admin state: disabled] 
+            ...      1     --verbose                                                         OK: NFS status: enabled - CIFS status: enabledRunning - DDBoost status: enabled - VTL process state: stopped [admin state: disabled]
             ...      2     --unknown-cifs-status=\\\%{cifsStatus}                            UNKNOWN: CIFS status: enabledRunning
             ...      3     --warning-cifs-status=\\\%{cifsStatus}                            WARNING: CIFS status: enabledRunning
             ...      4     --critical-cifs-status=\\\%{cifsStatus}                           CRITICAL: CIFS status: enabledRunning

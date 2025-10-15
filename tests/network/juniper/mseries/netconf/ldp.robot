@@ -10,11 +10,12 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::juniper::mseries::netconf::plugin
-    ...    --mode=ldp
-    ...    --hostname=${HOSTNAME}
-    ...    --sshcli-command=get_data
-    ...    --sshcli-path=${CURDIR}
-    ...    --sshcli-option="-f=${CURDIR}${/}data${/}ldp.netconf"
+...         --mode=ldp
+...         --hostname=${HOSTNAME}
+...         --sshcli-command=get_data
+...         --sshcli-path=${CURDIR}
+...         --sshcli-option="-f=${CURDIR}${/}data${/}ldp.netconf"
+
 
 *** Test Cases ***
 Ldp ${tc}

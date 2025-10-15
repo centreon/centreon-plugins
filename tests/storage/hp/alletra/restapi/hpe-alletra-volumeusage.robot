@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       HPE Alletra Storage REST API Mode Volume Usage 
+Documentation       HPE Alletra Storage REST API Mode Volume Usage
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-alletra.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::alletra::restapi::plugin
 ...                 --mode volume-usage
 ...                 --hostname=${HOSTNAME}
@@ -21,15 +21,15 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 VolumeUsage ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings   ${command}    ${expected_string}
-
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_string}
 
     Examples:        tc       extraoptions                                                                  expected_string    --
             ...      1        ${EMPTY}                                                                      OK: All volumes are ok | 'mtest#volume.space.usage.bytes'=549755813888B;;;0;549755813888 'mtest#volume.space.free.bytes'=0B;;;0;549755813888 'mtest#volume.space.usage.percentage'=100.00%;;;0;100 'stest#volume.space.usage.bytes'=23991418880B;;;0;128849018880 'stest#volume.space.free.bytes'=104857600000B;;;0;128849018880 'stest#volume.space.usage.percentage'=18.62%;;;0;100 'test#volume.space.usage.bytes'=10737418240B;;;0;10737418240 'test#volume.space.free.bytes'=0B;;;0;10737418240 'test#volume.space.usage.percentage'=100.00%;;;0;100
