@@ -6,34 +6,6 @@ import os
 import json
 
 
-def get_tests_folders(plugin_name):
-    folder_list = []
-    pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
-    packaging = json.load(pkg_file)
-    for file in packaging["files"]:  # loop on "files" array in pkg.json file.
-        if os.path.isdir("tests/" + file):  # check if the path is a directory in the "tests" folder
-            folder_list.append("tests/" + file)
-    return folder_list
-
-
-def get_plugin_full_path(plugin_name):
-    pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
-    packaging = json.load(pkg_file)
-    return "/usr/lib/centreon/plugins/" + packaging["plugin_name"]
-
-
-def test_plugin(plugin_name):
-    folders_list = get_tests_folders(plugin_name)
-    print(f"{plugin_name} folders_list : {folders_list}")
-    if len(folders_list) == 0:
-        return 0  # no tests present at the moment, but we still have tested the plugin can be installed.
-    robot_results = subprocess.run(
-        "robot --exclude notauto -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(
-            folders_list),
-        shell=True, check=False)
-    return robot_results.returncode
-
-
 def try_command(cmd, error):
     return_obj = subprocess.run(cmd, shell=True, check=False)
     print(return_obj)
@@ -44,19 +16,20 @@ def try_command(cmd, error):
 
 def launch_snmp_sim():
     subprocess.run("useradd snmp", shell=True, check=False)
-    # we don't want to quit if this fail because it often means the user already exist.
+    # We don't want to quit if this fail because it often means the user already exist.
 
-    # this folder seem needed to launch snmp plugins. I didn't reproduce in my env, but without it,
-    # the first snmp plugin launched by robot prepend the message "Created directory: /var/lib/snmp/cert_indexes".
-    try_command(cmd="mkdir -p /var/lib/snmp/cert_indexes/", error="can't create /var/lib/snmp/cert_indexes/ dir")
-    try_command(cmd="chown snmp:snmp -R /var/lib/snmp/cert_indexes/", error="can't set cert_indexes folder permissions")
+    # This folder is needed to launch snmp plugins".
+    try_command(cmd="mkdir -p /var/lib/snmp/cert_indexes/",
+                error="can't create /var/lib/snmp/cert_indexes/ dir")
+    try_command(cmd="chown snmp:snmp -R /var/lib/snmp/cert_indexes/",
+                error="can't set cert_indexes folder permissions")
 
     snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &"
-    try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
+    try_command(cmd=snmpsim_cmd, error="Can't launch snmpsim daemon.")
 
 
 def refresh_packet_manager(archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get update\n")
             output_status = (subprocess.run(
@@ -65,49 +38,93 @@ def refresh_packet_manager(archi):
         elif archi == "rpm":
             return 0
         else:
-            print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
+            print(
+                f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
     return output_status
 
 
-def install_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+# Install plugin, from local file if build is true, from repository if false.
+def install_plugin(plugin, archi, build):
+    with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
-            outfile.write(
-                "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
-            output_status = (subprocess.run(
-                "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
-                shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            if build:
+                install_name = f"./{plugin.lower()}*.deb"
+            else:
+                install_name = plugin.lower()
+            command = f"apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y {install_name}"
+            outfile.write(command + "\n")
+            output_status = (subprocess.run(command, shell=True, check=False,
+                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
-            outfile.write("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm\n")
-            output_status = (
-                subprocess.run("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm", shell=True, check=False,
-                               stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            if build:
+                install_name = f"./{plugin}*.rpm"
+            else:
+                install_name = plugin
+            command = f"dnf install --setopt=keepcache=True -y {install_name}"
+            outfile.write(command + "\n")
+            output_status = (subprocess.run(command, shell=True, check=False,
+                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
-            print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
+            print(
+                f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
     return output_status
+
+
+def test_plugin(plugin_name, plugin_command, plugin_paths):
+    tests_path = []
+    for path in plugin_paths:
+        if os.path.exists(f"tests/{path}"):
+            tests_path.append(f"tests/{path}")
+    if len(tests_path) == 0:
+        with open('/var/log/test-plugins-help.log', "a") as outfile:
+            print(
+                f"No tests for {plugin_name}, checking it can be executed with --help")
+            command = f"/usr/lib/centreon/plugins/{plugin_command} --help"
+            output_status = (subprocess.run(command, shell=True, check=False,
+                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
+        if output_status == 3:
+            return 0
+        else:
+            print(
+                f"Failed to get --help for {plugin_name}, output status : {output_status}")
+            return output_status
+    else:
+        command = f"robot --exclude notauto --variable CENTREON_PLUGINS:/usr/lib/centreon/plugins/{plugin_command} --outputdir /tmp/{plugin_name} {' '.join(tests_path)}"
+        print(
+            f"Running robot tests for {plugin_name} with command : {command}")
+        robot_results = subprocess.run(
+            command, shell=True, check=False).returncode
+        if robot_results > 0:
+            # if tests have failed, copy the log file to the reports folder that will be uploaded as artifact in CI.
+            try:
+                subprocess.run(
+                    f"cp -r /tmp/{plugin_name} reports/", shell=True, check=False)
+            except Exception as e:
+                print(f"Error while copying robot results : {str(e)}")
+        return robot_results
 
 
 def remove_plugin(plugin, archi):
-    with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
+    with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
-            outfile.write(
-                "export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y "
-                + plugin.lower() + "\n")
-            output_status = (subprocess.run(
-                "export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower(),
-                shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            command = f"export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y {plugin.lower()}"
+            outfile.write(command + "\n")
+            output_status = (subprocess.run(command, shell=True, check=False,
+                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
             # -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' is an option to force apt to keep the package in
             # /var/cache/apt/archives, so it do not re download them for every installation.
             # 'autoremove', contrary to 'remove' all dependancy while removing the original package.
 
         elif archi == "rpm":
-            outfile.write("dnf remove --setopt=protected_packages= --setopt=keepcache=True -y " + plugin + "\n")
-            output_status = (subprocess.run("dnf remove --setopt=protected_packages= --setopt=keepcache=True -y " + plugin, shell=True, check=False,
-                                            stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            command = f"dnf remove --setopt=protected_packages= --setopt=keepcache=True -y {plugin}"
+            outfile.write(command + "\n")
+            output_status = (subprocess.run(command, shell=True, check=False,
+                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
-            print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
+            print(
+                f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
     # Remove cache files
     tmp_files = glob.glob('/dev/shm/*')
@@ -120,52 +137,55 @@ def remove_plugin(plugin, archi):
 
 
 if __name__ == '__main__':
-    print("starting program")
-    if len(sys.argv) < 2:
-        print("please provide architecture (deb or rpm) and list of plugin to test as arguments (one plugin name per "
-              "argument, separated by space)")
+    print("Starting program")
+    if len(sys.argv) < 1:
+        print("Please provide architecture (deb or rpm)")
         sys.exit(1)
 
     launch_snmp_sim()
     archi = sys.argv.pop(1)  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
 
+    nb_plugins = 0
     error_install = 0
     error_tests = 0
     error_purge = 0
-    nb_plugins = 0
-    list_plugin_error = []
+    list_plugin_error = set()
 
     # call apt update (or maybe dnf clean all if needed)
     refresh_packet_manager(archi)
 
-    for plugin in sys.argv:
-        print("plugin : ", plugin)
-        folders_list = get_tests_folders(plugin)
-        if len(folders_list) == 0:
-            print(f"we don't test {plugin} as it doesn't have any robot tests.")
-            continue
+    # create the directory to store logs if it does not exist.
+    os.makedirs("reports", exist_ok=True)
 
-        nb_plugins += 1
-        tmp = install_plugin(plugin, archi)
-        if tmp > 0:
-            list_plugin_error.append(plugin)
-        error_install += tmp
-        tmp = test_plugin(plugin)
-        if tmp > 0:
-            list_plugin_error.append(plugin)
-        error_tests += tmp
-        tmp = remove_plugin(plugin, archi)
-        if tmp > 0:
-            list_plugin_error.append(plugin)
-        error_purge += tmp
+    with open("plugins.json") as plugins_file:
+        plugins = json.load(plugins_file)
+        for plugin in plugins:
+            print("Testing plugin : ", plugin)
+
+            nb_plugins += 1
+            tmp = install_plugin(plugin, archi, plugins[plugin]["build"])
+            if tmp > 0:
+                error_install += 1
+                list_plugin_error.add(plugin)
+            else:
+                if plugins[plugin]["test"]:
+                    tmp = test_plugin(
+                        plugin, plugins[plugin]["command"], plugins[plugin]["paths"])
+                    if tmp > 0:
+                        error_tests += 1
+                        list_plugin_error.add(plugin)
+            tmp = remove_plugin(plugin, archi)
+            if tmp > 0:
+                error_purge += 1
+                list_plugin_error.add(plugin)
 
     print(f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
           f"errors, and {error_purge} removal error list of error : {list_plugin_error}", )
 
+    command = "ps -ax | grep snmpsim-command-respond | cut -dp -f1 | xargs kill"
+    subprocess.run(command, shell=True, check=False)
+
     if error_install != 0 or error_tests != 0 or error_purge != 0:
         exit(1)
     exit(0)
-    # the snmpsim daemon is still runing when we exit, as this script is mainly run in a docker on CI, it will be
-    # cleared up eventually.
-    # to clear it up manually, use ps -ax | grep snmpsim-command-respond | cut -dp -f1 | sudo xargs kill
