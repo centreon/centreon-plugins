@@ -149,9 +149,10 @@ sub manage_selection {
                 foreach my $key (keys %{$set}) {
                     my $val = defined($set->{$key}) ? $set->{$key} : '';
                     if (defined($filter_key)) {
-                        if ($key =~ /$filter_key/ && $val =~ /$filter_value/) { $found = 1; last; }
+                        # Use m{} to avoid issues with '/' in label keys (e.g. 'app.kubernetes.io/name')
+                        if ($key =~ m{$filter_key} && $val =~ m{$filter_value}) { $found = 1; last; }
                     } else {
-                        if ($key =~ /$filter/ || $val =~ /$filter/) { $found = 1; last; }
+                        if ($key =~ m{$filter} || $val =~ m{$filter}) { $found = 1; last; }
                     }
                 }
                 last if ($found);
@@ -161,7 +162,6 @@ sub manage_selection {
                 next;
             }
         }
-
         $self->{deployments}->{ $deployment->{metadata}->{uid} } = {
             name => $deployment->{metadata}->{name},
             namespace => $deployment->{metadata}->{namespace},
