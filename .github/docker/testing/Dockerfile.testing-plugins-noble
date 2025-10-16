@@ -42,7 +42,7 @@ pip3 install snmpsim
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
 apt-get install -y nodejs
 # Install mockoon (needs nodejs)
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/ubuntu-standard-24.10-stable/ noble main" | tee -a /etc/apt/sources.list.d/centreon-stable.list

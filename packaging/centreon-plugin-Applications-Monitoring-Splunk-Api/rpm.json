@@ -1,6 +1,6 @@
 {
     "dependencies": [
         "perl(DateTime)",
-	"perl(XML::Simple)"
+        "perl(XML::LibXML::Simple)"
     ]
 }

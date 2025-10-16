@@ -27,7 +27,7 @@ Cpu ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                                        expected_result   --
-        ...      1     ${EMPTY}                                            UNKNOWN: no data for host vm-7722 counter cpu.capacity.entitlement.VM at the moment. - get_vm_stats function failed to retrieve stats The counter cpu.capacity.entitlement.VM was not recorded for resource vm-7722 before. It will now (creating acq_spec).
+        ...      1     ${EMPTY}                                            UNKNOWN: no data for resource vm-7722 counter cpu.capacity.entitlement.VM at the moment. - get_vm_stats function failed to retrieve stats The counter cpu.capacity.entitlement.VM was not recorded for resource vm-7722 before. It will now (creating acq_spec). The counter cpu.capacity.usage.VM was not recorded for resource vm-7722 before. It will now (creating acq_spec).
         ...      2     ${EMPTY}                                            OK: CPU average usage is 11.13 %, used frequency is 81.56 kHz | 'cpu.capacity.usage.percentage'=11.13%;;;0;100 'cpu.capacity.usage.hertz'=81560000Hz;;;0;733000000
         ...      3     --warning-usage-prct=5                              WARNING: CPU average usage is 11.13 % | 'cpu.capacity.usage.percentage'=11.13%;0:5;;0;100 'cpu.capacity.usage.hertz'=81560000Hz;;;0;733000000
         ...      4     --critical-usage-prct=5                             CRITICAL: CPU average usage is 11.13 % | 'cpu.capacity.usage.percentage'=11.13%;;0:5;0;100 'cpu.capacity.usage.hertz'=81560000Hz;;;0;733000000
