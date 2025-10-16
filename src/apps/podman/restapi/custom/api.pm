@@ -266,11 +266,13 @@ sub get_container_infos {
             network_in   => $stat->{NetInput},
             network_out  => $stat->{NetOutput}
         };
+        last;
     }
     my $containers = $self->list_containers();
     foreach my $container_id (sort keys %{$containers}) {
         next if ($containers->{$container_id}->{Name} ne $options{container_name});
         $container_info->{state} = $containers->{$container_id}->{State};
+        last;
     }
     return $container_info;
 }
