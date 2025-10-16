@@ -107,7 +107,8 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s'      => { name => 'filter_name' },
-        'filter-namespace:s' => { name => 'filter_namespace' }
+        'filter-namespace:s' => { name => 'filter_namespace' },
+        'filter-label:s'     => { name => 'filter_label' }
     });
    
     return $self;
@@ -129,6 +130,36 @@ sub manage_selection {
             $deployment->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
+        }
+        if (defined($self->{option_results}->{filter_label}) && $self->{option_results}->{filter_label} ne '') {
+            my $filter = $self->{option_results}->{filter_label};
+            my ($filter_key, $filter_value);
+            if ($filter =~ /(.*?)=(.*)/) {
+                $filter_key = $1;
+                $filter_value = $2;
+            }
+            my @label_sets = (
+                $deployment->{metadata}->{labels} // {},
+                $deployment->{metadata}->{annotations} // {},
+                ($deployment->{spec}->{template}->{metadata}->{labels} // {}),
+                ($deployment->{spec}->{template}->{metadata}->{annotations} // {})
+            );
+            my $found = 0;
+            foreach my $set (@label_sets) {
+                foreach my $key (keys %{$set}) {
+                    my $val = defined($set->{$key}) ? $set->{$key} : '';
+                    if (defined($filter_key)) {
+                        if ($key =~ /$filter_key/ && $val =~ /$filter_value/) { $found = 1; last; }
+                    } else {
+                        if ($key =~ /$filter/ || $val =~ /$filter/) { $found = 1; last; }
+                    }
+                }
+                last if ($found);
+            }
+            if (!$found) {
+                $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter label/annotation.", debug => 1);
+                next;
+            }
         }
 
         $self->{deployments}->{ $deployment->{metadata}->{uid} } = {
@@ -169,6 +200,10 @@ Filter deployment name (can be a regexp).
 =item B<--filter-namespace>
 
 Filter deployment namespace (can be a regexp).
+
+=item B<--filter-label>
+
+Filter deployment by labels or annotations (can be a regexp). You can also use KEY=VALUE form (both can be regex) to match label/annotation key and value. Search is done on deployment metadata and pod template metadata.
 
 =item B<--warning-status>
 
