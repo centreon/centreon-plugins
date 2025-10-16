@@ -32,27 +32,27 @@ sub custom_status_perfdata {
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.desired.count',
         value => $self->{result_values}->{desired},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.current.count',
         value => $self->{result_values}->{current},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.available.count',
         value => $self->{result_values}->{available},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.ready.count',
         value => $self->{result_values}->{ready},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.uptodate.count',
         value => $self->{result_values}->{up_to_date},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
 }
 
@@ -72,7 +72,7 @@ sub custom_status_output {
 sub prefix_deployment_output {
     my ($self, %options) = @_;
 
-    return "Deployment '" . $options{instance_value}->{name} . "' ";
+    return "Deployment '" . $options{instance_value}->{namespace} . "/" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
