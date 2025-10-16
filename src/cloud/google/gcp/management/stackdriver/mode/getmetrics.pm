@@ -212,7 +212,7 @@ Set GCP API (required).
 
 =item B<--metric>
 
-Set stackdriver metric (required).
+Set Stackdriver metric (required).
 
 =item B<--dimension-name>
 
@@ -258,7 +258,7 @@ Critical threshold.
 
 Set extra filters (can be defined multiple times).
 
-Example: --extra-filter='metric.labels.mylabel = "LABELBLEUE"'
+Example: --extra-filter='metric.labels.mylabel = "LABEL"'
 
 =back
 
