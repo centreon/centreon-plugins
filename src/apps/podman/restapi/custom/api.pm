@@ -36,8 +36,7 @@ sub new {
         exit 3;
     }
     if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
+        $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.");
     }
 
     if (!defined($options{noptions})) {
@@ -77,8 +76,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
 
     if ($self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify hostname option.');
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
@@ -95,8 +93,7 @@ sub json_decode {
         $decoded = JSON::XS->new->utf8->decode($options{content});
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Cannot decode json response: $@");
     }
 
     return $decoded;
@@ -143,8 +140,7 @@ sub request {
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
     }
     return $decoded;
 }
