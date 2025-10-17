@@ -899,7 +899,7 @@ sub display_disco_show {
 
         foreach (@{$self->{disco_entries}}) {
             my $child = $self->{xml_output}->createElement('label');
-            foreach my $key (keys %$_) {
+            foreach my $key (sort keys %$_) {
                 # Encode all non printable chars as hexadecimal entities to produce valid XML
                 # I.e. "test ^H" becomes "test &#x8;"
                 my $val = $_->{$key};
@@ -915,7 +915,7 @@ sub display_disco_show {
         my $json_content = {data => [] };
         foreach (@{$self->{disco_entries}}) {
             my %values = ();
-            foreach my $key (keys %$_) {
+            foreach my $key (sort keys %$_) {
                 $values{$key} = $_->{$key};
             }
             push @{$json_content->{data}}, {%values};
