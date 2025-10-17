@@ -152,27 +152,27 @@ List OpenStack Services
 
 =item B<--include-type>
 
-Filter by service type (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service type (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-type>
 
-Exclude by service type (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service type (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-name>
 
-Filter by service name (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service name (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-name>
 
-Exclude by service name (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service name (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-region>
 
-Filter by service region (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service region (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-region>
 
-Exclude by service region (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service region (can be a regexp and can be used multiple times or for comma separated values).
 
 =back
 

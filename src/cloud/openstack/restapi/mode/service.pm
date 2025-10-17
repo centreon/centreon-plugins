@@ -213,52 +213,52 @@ filtered by C<--include-*> and C<--exclude-*> options below.
 
 =item B<--include-type>
 
-Filter by service type (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service type (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-type>
 
-Exclude by service type (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service type (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-name>
 
-Filter by service name (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service name (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-name>
 
-Exclude by service name (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service name (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-id>
 
-Filter by service id (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service id (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-id>
 
-Exclude by service id (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service id (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-region>
 
-Filter by service region (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service region (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-region>
 
-Exclude by service region (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service region (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-region-id>
 
-Filter by service region ID (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service region ID (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--exclude-region-id>
 
-Exclude by service region ID (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service region ID (can be a regexp and can be used multiple times or for comma separated values).
 
 =item B<--include-interface>
 
-Filter by service interface ID (can be a regexp and can be used multuple times or for comma separated values).
+Filter by service interface ID (can be a regexp and can be used multiple times or for comma separated values).
 OpenStack interfaces are 'public', 'internal', 'admin'.
 
 =item B<--exclude-interface>
 
-Exclude by service interface (can be a regexp and can be used multuple times or for comma separated values).
+Exclude by service interface (can be a regexp and can be used multiple times or for comma separated values).
 OpenStack interfaces are 'public', 'internal', 'admin'.
 
 =item B<--expected-data>
