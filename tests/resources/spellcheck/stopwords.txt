@@ -102,6 +102,7 @@ fibre
 Forcepoint
 Fortigate
 Fortinet
+FortiOS
 FQDN
 FreeBSD
 FrontDoor

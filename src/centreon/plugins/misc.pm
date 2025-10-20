@@ -25,6 +25,7 @@ use warnings;
 use utf8;
 use JSON::XS;
 use Safe;
+use Encode;
 
 use Exporter 'import';
 use feature 'state';
@@ -35,7 +36,7 @@ our @EXPORT_OK = qw/change_seconds
                     graphql_escape
                     is_empty
                     json_encode
-                    json_decode                    
+                    json_decode
                     slurp_file
                     value_of/;
 
@@ -833,9 +834,11 @@ sub json_decode {
     my ($content, %options) = @_;
 
     $content =~ s/\r//mg;
-    my $object;
 
-    my $decoder = JSON::XS->new->utf8;
+    $content = decode('UTF-8', $content, Encode::FB_DEFAULT);
+
+    my $decoder = JSON::XS->new;
+
     # this option
     if ($options{booleans_as_strings}) {
         # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
@@ -847,13 +850,26 @@ sub json_decode {
         }
     }
 
-    eval {
-        $object = $decoder->decode($content);
-    };
+    my $object = eval { $decoder->decode($content) };
+
     if ($@) {
-        print STDERR "Cannot decode JSON string: $@" . "\n";
+        # To keep compatibilty with old json_decode:
+        # If 'output' not set, print error on STDERR unless 'silence' is set
+        # Otherwise print error on 'output' and exit unless 'no_exit' is set
+        my $msg = $options{errstr} // "Cannot decode JSON string: $@";
+
+        if ($options{output}) {
+            $options{output}->option_exit(short_msg => $msg)
+                unless $options{no_exit};
+
+            $options{output}->output_add(long_msg => $msg, debug => 1);
+        } else {
+            warn "$msg\n" unless $options{silence};
+        }
+
         return undef;
     }
+
     return $object;
 }
 
@@ -1115,7 +1131,7 @@ Escapes special characters in a string for use in PowerShell.
 
     my $escaped = centreon::plugins::misc::graphql_escape($value);
 
-Escapes special characters in a string for use in graphql query.
+Escapes special characters in a string for use in GraphQL query.
 
 =over 4
 
@@ -1467,6 +1483,14 @@ Decodes a JSON string.
 
 =item * C<booleans_as_strings> - Defines whether booleans must be converted to C<true>/C<false> strings instead of
 JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
+
+=item * C<errstr> - Custom error message to display if JSON string cannot be decoded.
+
+=item * C<output> - Output object to use for displaying errors.
+
+=item * C<no_exit> - Do not exit if there is an error and C<output> is defined.
+
+=item * C<silence> - Do not print error on STDERR if C<output> is not defined.
 
 =back
 
