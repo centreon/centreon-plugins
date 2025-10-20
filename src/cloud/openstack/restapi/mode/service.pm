@@ -202,6 +202,11 @@ OpenStack Services mode
 
 =over 8
 
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='^count$'
+
 =item B<--service-url>
 
 Define the endpoint URL to check (can be multiple).
