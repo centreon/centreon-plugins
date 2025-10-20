@@ -134,6 +134,7 @@ ssh command path (default: C<none>)
 Specify SSH CLI options (example: C<--sshcli-option='-o=StrictHostKeyChecking=no'>).
 The default option is C<--sshcli-options='-o=LogLevel=ERROR'> which hides SSH banner.
 If you override this option, make sure to include it again.
+This option could be set multiple times.
 
 =back
 
