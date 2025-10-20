@@ -62,15 +62,15 @@ sub new {
 
         _services_options(name=>'keystone', port => 5000, endpoint => '/v3/auth/tokens'),
 
-        'username:s'        => { name => 'username', default => '' },
-        'password:s'        => { name => 'password', default => '' },
-        'user-domain:s'     => { name => 'user_domain', default => 'default' },
-        'project-name:s'    => { name => 'project_name', default => 'admin' },
-        'project_domain:s'  => { name => 'project_domain', default => 'default' },
-        'authent-by-env:s'  => { name => 'authent_by_env', default => '0' },
-        'authent-by-file:s' => { name => 'authent_by_file', default => '' },
+        'username:s'          => { name => 'username', default => '' },
+        'password:s'          => { name => 'password', default => '' },
+        'user-domain-id:s'    => { name => 'user_domain_id', default => 'default' },
+        'project-name:s'      => { name => 'project_name', default => 'admin' },
+        'project-domain-id:s' => { name => 'project_domain_id', default => 'default' },
+        'authent-by-env:s'    => { name => 'authent_by_env', default => '0' },
+        'authent-by-file:s'   => { name => 'authent_by_file', default => '' },
 
-        'timeout:s'         => { name => 'timeout', default => 10 } } )
+        'timeout:s'           => { name => 'timeout', default => 10 } } )
             unless $options{noptions};
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -86,8 +86,8 @@ sub new {
 # Mapping between some OptnStack environment variables and our options
 my %_external_conf_equiv = ( OS_USERNAME => 'username',
                              OS_PASSWORD => 'password',
-                             OS_PROJECT_DOMAIN => 'project_domain',
-                             OS_USER_DOMAIN => 'user_domain',
+                             OS_PROJECT_DOMAIN_ID => 'project_domain_id',
+                             OS_USER_DOMAIN_ID => 'user_domain_id',
                              OS_PROJECT_NAME => 'project_name',
                              OS_AUTH_URL => 'keystone_url',
                            );
@@ -96,6 +96,8 @@ sub apply_external_conf {
 
     # Some options can be taken from OpenStack environement variables already defined or
     # taken from a file that has been generated for OpenStack CLI tools
+    # Please refer to https://docs.openstack.org/liberty/install-guide-ubuntu/keystone-openrc.html
+    # for more details about those variables
 
     if ($options{apply_conf_from_env}) {
         foreach (keys %_external_conf_equiv) {
@@ -132,7 +134,7 @@ sub check_options {
     $self->{cache_authent}->check_options(option_results => $self->{option_results});
 
     $self->{$_} = $self->{option_results}->{$_}
-        foreach qw/authent_by_env authent_by_file user_domain project_name project_domain username password insecure proto hostname timeout/;
+        foreach qw/authent_by_env authent_by_file user_domain_id project_name project_domain_id username password insecure proto hostname timeout/;
 
     # Defines connection parameters for each services
     foreach my $service ('keystone_') {
@@ -203,14 +205,14 @@ sub keystone_authent {
                 password => {
                     user => {
                         name => $self->{username},
-                        domain => { id => $self->{user_domain} },
+                        domain => { id => $self->{user_domain_id} },
                         password => $self->{password}
                     }
                 }
             },
             scope => {
                 project => {
-                    domain => { id => $self->{project_domain} },
+                    domain => { id => $self->{project_domain_id} },
                     name => $self->{project_name},
                 }
             }
