@@ -921,12 +921,12 @@ sub is_excluded($;$;$) {
 
     if (defined $exclude_regexp) {
         $exclude_regexp = [ $exclude_regexp ] unless ref $exclude_regexp eq 'ARRAY';
-        return 1 if grep { $_ ne '' && $string =~ /$_/ } @$exclude_regexp;
+        return 1 if grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp;
     }
     return 0 unless defined $include_regexp;
     $include_regexp = [ $include_regexp ] unless ref $include_regexp eq 'ARRAY';
     return 0 unless @{$include_regexp};
-    return 0 if grep { $_ eq '' || $string =~ /$_/ } @$include_regexp;
+    return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
 
     return 1;
 }
