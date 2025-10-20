@@ -157,10 +157,10 @@ Check hardware components.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'amperage', 'coolingdevice', 'coolingunit', 'enclosure', 
+Can be: C<'amperage', 'coolingdevice', 'coolingunit', 'enclosure',
 'health', 'fru', 'memory', 'network', 'pci', 'pdisk', 
 'processor', 'psu', 'punit', 'slot', 'storagebattery', 
-'storagectrl', 'systembattery', 'temperature', 'voltage', 'vdisk'.
+'storagectrl', 'systembattery', 'temperature', 'voltage', 'vdisk'>.
 
 =item B<--filter>
 
