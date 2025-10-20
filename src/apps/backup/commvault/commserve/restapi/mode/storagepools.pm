@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -181,10 +181,29 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /online/i').
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-usage>
 
-Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 

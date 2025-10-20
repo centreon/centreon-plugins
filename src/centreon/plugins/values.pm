@@ -23,6 +23,8 @@ package centreon::plugins::values;
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use centreon::plugins::constants qw(:values);
+
 # Warning message with sprintf and too much arguments.
 # Really annoying. Need to disable that warning
 no if ($^V gt v5.22.0), 'warnings' => 'redundant';
@@ -110,7 +112,6 @@ sub calc {
 
 sub threshold_check {
     my ($self, %options) = @_;
-    
     if (defined($self->{closure_custom_threshold_check})) {
         return &{$self->{closure_custom_threshold_check}}($self, %options);
     }
@@ -318,7 +319,7 @@ sub execute {
 
     if ($quit == 2) {
         $self->{error_msg} = 'skipped (no value(s))';
-        return -10;
+        return NO_VALUE;
     }
 
     if (defined($self->{statefile})) {
@@ -327,7 +328,7 @@ sub execute {
 
     if ($quit == 1) {
         $self->{error_msg} = 'Buffer creation';
-        return -1;
+        return BUFFER_CREATION;
     }
 
     my $delta_time;

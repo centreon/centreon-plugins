@@ -25,16 +25,18 @@ use warnings;
 use utf8;
 use JSON::XS;
 use Safe;
+use Encode;
 
 use Exporter 'import';
 use feature 'state';
 
 our @EXPORT_OK = qw/change_seconds
                     flatten_arrays
+                    flatten_to_hash
                     graphql_escape
                     is_empty
                     json_encode
-                    json_decode                    
+                    json_decode
                     slurp_file
                     value_of/;
 
@@ -414,6 +416,18 @@ sub flatten_arrays($;$) {
     return [ ] unless ref $array_of_values eq 'ARRAY';
 
     return [ map { split $separator } @{$array_of_values} ];
+}
+
+# Returns an hash from arrays containing values separated by $separator
+# Values are set to $default (1 if not defined)
+sub flatten_to_hash($;$;$) {
+    my ($array_of_values, $separator, $default) = @_;
+    $separator //= ',';
+    $default //= 1;
+
+    return { } unless ref $array_of_values eq 'ARRAY';
+
+    return { map { $_ => $default } map { split $separator } @{$array_of_values} };
 }
 
 sub minimal_version {
@@ -820,9 +834,11 @@ sub json_decode {
     my ($content, %options) = @_;
 
     $content =~ s/\r//mg;
-    my $object;
 
-    my $decoder = JSON::XS->new->utf8;
+    $content = decode('UTF-8', $content, Encode::FB_DEFAULT);
+
+    my $decoder = JSON::XS->new;
+
     # this option
     if ($options{booleans_as_strings}) {
         # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
@@ -834,13 +850,26 @@ sub json_decode {
         }
     }
 
-    eval {
-        $object = $decoder->decode($content);
-    };
+    my $object = eval { $decoder->decode($content) };
+
     if ($@) {
-        print STDERR "Cannot decode JSON string: $@" . "\n";
+        # To keep compatibilty with old json_decode:
+        # If 'output' not set, print error on STDERR unless 'silence' is set
+        # Otherwise print error on 'output' and exit unless 'no_exit' is set
+        my $msg = $options{errstr} // "Cannot decode JSON string: $@";
+
+        if ($options{output}) {
+            $options{output}->option_exit(short_msg => $msg)
+                unless $options{no_exit};
+
+            $options{output}->output_add(long_msg => $msg, debug => 1);
+        } else {
+            warn "$msg\n" unless $options{silence};
+        }
+
         return undef;
     }
+
     return $object;
 }
 
@@ -1102,7 +1131,7 @@ Escapes special characters in a string for use in PowerShell.
 
     my $escaped = centreon::plugins::misc::graphql_escape($value);
 
-Escapes special characters in a string for use in graphql query.
+Escapes special characters in a string for use in GraphQL query.
 
 =over 4
 
@@ -1121,6 +1150,22 @@ Returns an array from arrays containing values separated by a separator ( defaul
 =item * C<$arrays> - Arrays to expand.
 
 =item * C<$separator> - Separator ( comma if undef ).
+
+=back
+
+=head2 flatten_to_hash
+
+    my $hash = centreon::plugins::misc::flatten_to_hash($arrays, $separator, $default);
+
+Returns a hash from arrays containing values separated by a separator ( default comma ). Values are set to optional parameter $default ( 1 if undef ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
+
+=item * C<$default> - Default value ( 1 if undef ).
 
 =back
 
@@ -1438,6 +1483,14 @@ Decodes a JSON string.
 
 =item * C<booleans_as_strings> - Defines whether booleans must be converted to C<true>/C<false> strings instead of
 JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
+
+=item * C<errstr> - Custom error message to display if JSON string cannot be decoded.
+
+=item * C<output> - Output object to use for displaying errors.
+
+=item * C<no_exit> - Do not exit if there is an error and C<output> is defined.
+
+=item * C<silence> - Do not print error on STDERR if C<output> is not defined.
 
 =back
 

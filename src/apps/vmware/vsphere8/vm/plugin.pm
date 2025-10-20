@@ -33,7 +33,10 @@ sub new {
     $self->{modes}   = {
         'cpu'       => 'apps::vmware::vsphere8::vm::mode::cpu',
         'discovery' => 'apps::vmware::vsphere8::vm::mode::discovery',
+        'disk-io'   => 'apps::vmware::vsphere8::vm::mode::diskio',
         'memory'    => 'apps::vmware::vsphere8::vm::mode::memory',
+        'network'   => 'apps::vmware::vsphere8::vm::mode::network',
+        'power'     => 'apps::vmware::vsphere8::vm::mode::power',
         'vm-status' => 'apps::vmware::vsphere8::vm::mode::vmstatus',
         'vm-tools'  => 'apps::vmware::vsphere8::vm::mode::vmtools',
     };

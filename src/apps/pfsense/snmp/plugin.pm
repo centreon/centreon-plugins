@@ -34,7 +34,15 @@ sub new {
         'packet-stats'      => 'apps::pfsense::snmp::mode::packetstats',
         'pfinterfaces'      => 'apps::pfsense::snmp::mode::pfinterfaces',
         'runtime'           => 'apps::pfsense::snmp::mode::runtime',
-        'state-table'       => 'apps::pfsense::snmp::mode::statetable'
+        'state-table'       => 'apps::pfsense::snmp::mode::statetable',
+        'load'              => 'snmp_standard::mode::loadaverage',
+        'cpu'               => 'snmp_standard::mode::cpu',
+        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
+        'uptime'            => 'snmp_standard::mode::uptime',
+        'swap'              => 'snmp_standard::mode::swap',
+        'memory'            => 'os::freebsd::snmp::mode::memory',
+
+
     };
 
     return $self;
