@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -128,14 +128,16 @@ sub manage_selection {
         }
 
         my ($total, $free) = ($_->{totalCapacity} * 1024 * 1024, $_->{totalFreeSpace} * 1024 * 1024);
+        my $fixed_total = ($total == 0) ? 1 : $total;
+
         $self->{sp}->{ $_->{storagePoolEntity}->{storagePoolName} } = {
-            display => $_->{storagePoolEntity}->{storagePoolName},
-            status => defined($map_status_code->{ $_->{statusCode} }) ? $map_status_code->{ $_->{statusCode} } : lc($_->{status}),
-            total_space => $total,
-            used_space => $total - $free,
-            free_space => $free,
-            prct_used_space => 100 - ($free * 100 / $total),
-            prct_free_space => $free * 100 / $total
+            display         => $_->{storagePoolEntity}->{storagePoolName},
+            status          => defined($map_status_code->{ $_->{statusCode} }) ? $map_status_code->{ $_->{statusCode} } : lc($_->{status}),
+            total_space     => $total,
+            used_space      => $total - $free,
+            free_space      => $free,
+            prct_used_space => 100 - ($free * 100 / $fixed_total),
+            prct_free_space => $free * 100 / $fixed_total
         };
     }
     
@@ -179,10 +181,29 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /online/i').
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-usage>
 
-Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 

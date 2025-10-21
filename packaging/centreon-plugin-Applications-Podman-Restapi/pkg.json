@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Podman-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_podman_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/podman/restapi/"
+    ]
+}

@@ -2,7 +2,7 @@ name: "centreon-plugin-Operatingsystems-AS400-daemon"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
-version: "2.0.5"
+version: "2.0.6"
 release: "${RELEASE}${DIST}"
 section: "default"
 priority: "optional"
@@ -14,8 +14,8 @@ homepage: "https://www.centreon.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "../connector.as400/target/centreon-as400-${VERSION}-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
-    dst: "/usr/share/centreon-as400/bin/centreon-as400-${VERSION}-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
+  - src: "../connector.as400/target/centreon-as400-@CONNECTOR_VERSION@-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
+    dst: "/usr/share/centreon-as400/bin/centreon-as400-@CONNECTOR_VERSION@-jar-with-dependencies.jar" # VARIABLE VERSION REQUIRED HERE
     expand: true
     file_info:
       mode: 0755
@@ -60,10 +60,10 @@ scripts:
 overrides:
   rpm:
     depends:
-      - java-1.8.0-openjdk
+      - "java-17-openjdk"
   deb:
     depends:
-      - default-jre
+      - "openjdk-17-jre"
 
 rpm:
   summary: Centreon AS 400 Plugin daemon

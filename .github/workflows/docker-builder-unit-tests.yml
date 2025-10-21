@@ -18,22 +18,39 @@ on:
       - ".github/docker/unit-tests/*"
 
 jobs:
-  create-and-push-docker:
+  get-environment:
+    uses: ./.github/workflows/get-environment.yml
+
+  dockerize:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: alma8
             image: alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: alma9
             image: alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: bullseye
             image: bullseye
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04-arm
+            dockerfile: bullseye
+            image: bullseye-arm64
+          - runner: ubuntu-24.04
             dockerfile: bookworm
             image: bookworm
+          - runner: ubuntu-24.04
+            dockerfile: jammy
+            image: jammy
+          - runner: ubuntu-24.04
+            dockerfile: noble
+            image: noble
 
     runs-on: ${{ matrix.runner }}
 
@@ -42,22 +59,22 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
-          username: ${{ secrets.DOCKER_REGISTRY_ID }}
-          password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+          username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
+          password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
       - name: Login to proxy registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
-          username: ${{ secrets.DOCKER_REGISTRY_ID }}
-          password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+          username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
+          password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
-      - uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3.6.1
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
-      - uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
+      - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           file: .github/docker/unit-tests/Dockerfile.unit-tests-${{ matrix.dockerfile }}
           context: .
@@ -65,3 +82,12 @@ jobs:
           pull: true
           push: true
           tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/unit-tests-${{ matrix.image }}:latest
+
+  set-skip-label:
+    needs: [get-environment, dockerize]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

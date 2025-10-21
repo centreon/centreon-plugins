@@ -1,0 +1,907 @@
+{
+  "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
+  "lastMigration": 33,
+  "name": "Vmware8 restapi.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/session",
+      "responses": [
+        {
+          "uuid": "d037b485-9952-467c-985c-415b9033e4d9",
+          "body": "\"32c9819179813376a9bbda43e9c84165\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "68acba14-1ccf-4597-a90c-69264b07d558",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/host",
+      "responses": [
+        {
+          "uuid": "cc160130-c765-4a8a-ba09-0ad544ef956f",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "7kak",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "31f2da05-1f2f-41fb-ae1e-b4f2ee277055",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/vm",
+      "responses": [
+        {
+          "uuid": "96a6828b-5fa1-496d-bd7f-84df9a152f78",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-5678\",\n    \"name\": \"my_other_vm\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 2\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"my_favourite_vm\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-12345\",\n    \"name\": \"my_suspended_vm\",\n    \"power_state\": \"SUSPENDED\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "84be4ae5-fc86-4ed1-8066-e9c46cef691d",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore",
+      "responses": [
+        {
+          "uuid": "e8adb942-d389-4265-85ad-b20c728095bd",
+          "body": "[\n  {\n    \"datastore\": \"datastore-14\",\n    \"name\": \"Datastore - Systeme\",\n    \"type\": \"VMFS\",\n    \"free_space\": 610635087872,\n    \"capacity\": 799937658880\n  },\n  {\n    \"datastore\": \"datastore-25\",\n    \"name\": \"Datastore - ESX02\",\n    \"type\": \"VMFS\",\n    \"free_space\": 340472627200,\n    \"capacity\": 341986770944\n  },\n  {\n    \"datastore\": \"datastore-31\",\n    \"name\": \"Datastore - ESX03\",\n    \"type\": \"VMFS\",\n    \"free_space\": 340472627200,\n    \"capacity\": 341986770944\n  },\n  {\n    \"datastore\": \"datastore-38\",\n    \"name\": \"Datastore - Developpement 15000\",\n    \"type\": \"VMFS\",\n    \"free_space\": 5586639912960,\n    \"capacity\": 7794560335872\n  },\n  {\n    \"datastore\": \"datastore-39\",\n    \"name\": \"Datastore - Developpement 7200\",\n    \"type\": \"VMFS\",\n    \"free_space\": 5422671986688,\n    \"capacity\": 5516885491712\n  },\n  {\n    \"datastore\": \"datastore-40\",\n    \"name\": \"Datastore - ESX01\",\n    \"type\": \"VMFS\",\n    \"free_space\": 340472627200,\n    \"capacity\": 341986770944\n  },\n  {\n    \"datastore\": \"datastore-45\",\n    \"name\": \"Datastore - Developpement\",\n    \"type\": \"VMFS\",\n    \"free_space\": 4376304287744,\n    \"capacity\": 7499818205184\n  },\n  {\n    \"datastore\": \"datastore-46\",\n    \"name\": \"Datastore - Production\",\n    \"type\": \"VMFS\",\n    \"free_space\": 615292862464,\n    \"capacity\": 1299764477952\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "7b842f35-687c-45e7-8ffc-192a71cb1210",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-45",
+      "responses": [
+        {
+          "uuid": "495c38c5-1618-4ecf-b4b4-c31960cc96fd",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": true,\n  \"name\": \"Datastore - Developpement\",\n  \"type\": \"VMFS\",\n  \"free_space\": 4376304287744,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8254cc34-56f6-45b7-b941-df16dc6ef757",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-14",
+      "responses": [
+        {
+          "uuid": "b7d8fde6-32e1-45eb-b0b5-6ca3640dcb44",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": true,\n  \"name\": \"Datastore - Systeme\",\n  \"type\": \"VMFS\",\n  \"free_space\": 610635087872,\n  \"thin_provisioning_supported\": true\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9a4bba96-1d68-4930-ad3e-d1f581df5b54",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-25",
+      "responses": [
+        {
+          "uuid": "71a226a2-b39e-48fa-b135-67ffd533fb2e",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": false,\n  \"name\": \"Datastore - ESX02\",\n  \"type\": \"VMFS\",\n  \"free_space\": 340472627200,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "78ced1c5-7ba2-414b-954f-115dd614c163",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-39",
+      "responses": [
+        {
+          "uuid": "973dd70a-aa17-4ae7-b2d0-0dc0c792a2a7",
+          "body": "{\n  \"accessible\": false,\n  \"multiple_host_access\": true,\n  \"name\": \"Datastore - Developpement 7200\",\n  \"type\": \"VMFS\",\n  \"free_space\": 5422671986688,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "dbafe65e-fe59-43c8-b072-a9a363c1d375",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-46",
+      "responses": [
+        {
+          "uuid": "4d33cd7a-3919-43cb-9b7e-0ee4c797b8d6",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": true,\n  \"name\": \"Datastore - Production\",\n  \"type\": \"VMFS\",\n  \"free_space\": 615292862464,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "689a3103-dca3-416c-a720-0a71a2011ca0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-40",
+      "responses": [
+        {
+          "uuid": "95cc3c0e-58ef-4a51-9d8f-e34e5c2ca3b7",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": false,\n  \"name\": \"Datastore - ESX01\",\n  \"type\": \"VMFS\",\n  \"free_space\": 340472627200,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "f15307ab-2c42-4b06-bd36-a6562051ebe3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-38",
+      "responses": [
+        {
+          "uuid": "140e5e4a-b54a-4adb-a83a-7d456fcdb672",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": true,\n  \"name\": \"Datastore - Developpement 15000\",\n  \"type\": \"VMFS\",\n  \"free_space\": 5586639912960,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "f7b2be2f-8055-4619-bee3-c81c12d4ca71",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/datastore/datastore-31",
+      "responses": [
+        {
+          "uuid": "23576cfa-8eb7-4862-b6f5-2125c058da55",
+          "body": "{\n  \"accessible\": true,\n  \"multiple_host_access\": false,\n  \"name\": \"Datastore - ESX03\",\n  \"type\": \"VMFS\",\n  \"free_space\": 340472627200,\n  \"thin_provisioning_supported\": true\n} \n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "621ad4eb-05f8-4976-a236-a1e70c7714eb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/cluster",
+      "responses": [
+        {
+          "uuid": "ea14a01e-c806-4110-b444-a80d6267914f",
+          "body": "[\n  {\n    \"drs_enabled\": false,\n    \"cluster\": \"domain-c18\",\n    \"name\": \"EXT-CLU01\",\n    \"ha_enabled\": true\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "f6e866b7-ede9-4bec-8f69-0513a88b730e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/cluster/domain-c18",
+      "responses": [
+        {
+          "uuid": "d015157a-edef-4496-ab71-ca2a930daede",
+          "body": "{\n  \"name\": \"EXT-CLU01\",\n  \"resource_pool\": \"resgroup-19\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c"
+    },
+    {
+      "type": "route",
+      "uuid": "68acba14-1ccf-4597-a90c-69264b07d558"
+    },
+    {
+      "type": "route",
+      "uuid": "31f2da05-1f2f-41fb-ae1e-b4f2ee277055"
+    },
+    {
+      "type": "route",
+      "uuid": "84be4ae5-fc86-4ed1-8066-e9c46cef691d"
+    },
+    {
+      "type": "route",
+      "uuid": "7b842f35-687c-45e7-8ffc-192a71cb1210"
+    },
+    {
+      "type": "route",
+      "uuid": "8254cc34-56f6-45b7-b941-df16dc6ef757"
+    },
+    {
+      "type": "route",
+      "uuid": "9a4bba96-1d68-4930-ad3e-d1f581df5b54"
+    },
+    {
+      "type": "route",
+      "uuid": "78ced1c5-7ba2-414b-954f-115dd614c163"
+    },
+    {
+      "type": "route",
+      "uuid": "dbafe65e-fe59-43c8-b072-a9a363c1d375"
+    },
+    {
+      "type": "route",
+      "uuid": "689a3103-dca3-416c-a720-0a71a2011ca0"
+    },
+    {
+      "type": "route",
+      "uuid": "f15307ab-2c42-4b06-bd36-a6562051ebe3"
+    },
+    {
+      "type": "route",
+      "uuid": "f7b2be2f-8055-4619-bee3-c81c12d4ca71"
+    },
+    {
+      "type": "route",
+      "uuid": "621ad4eb-05f8-4976-a236-a1e70c7714eb"
+    },
+    {
+      "type": "route",
+      "uuid": "f6e866b7-ede9-4bec-8f69-0513a88b730e"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "a438d9f3-8360-49c3-9d1f-d2f6d202513d",
+      "id": "7kak",
+      "name": "/api/vcenter/host",
+      "documentation": "Complete response",
+      "value": "[{\"host\":\"host-22\",\"name\":\"esx1.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_ON\"},{\"host\":\"host-28\",\"name\":\"esx2.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_OFF\"},{\"host\":\"host-35\",\"name\":\"esx3.acme.com\",\"connection_state\":\"DISCONNECTED\",\"power_state\":\"POWERED_ON\"}]\n"
+    }
+  ],
+  "callbacks": []
+}

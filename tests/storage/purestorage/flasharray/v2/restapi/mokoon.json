@@ -1,0 +1,130 @@
+{
+  "uuid": "cf22c628-8819-46d3-b1b7-fc46f3aee39b",
+  "lastMigration": 32,
+  "name": "Mokoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "98036266-a85e-484f-9af8-26690151180c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/2.4/login",
+      "responses": [
+        {
+          "uuid": "ad6920b9-8a22-4ffc-b066-936819921ba0",
+          "body": "{\r\n  \"continuation_token\": null,\r\n  \"items\": [\r\n    {\r\n      \"created\": 1737462338078,\r\n      \"state\": \"closed\",\r\n      \"description\": \"(drive:ch0.nvb1): failure Expected: healthy, Actual: failed\",\r\n      \"component_type\": \"drive\",\r\n      \"name\": \"81204734\",\r\n      \"id\": \"5576557655765576557655765576\",\r\n      \"code\": 60,\r\n      \"category\": \"array\",\r\n      \"severity\": \"warning\",\r\n      \"flagged\": false,\r\n      \"updated\": null,\r\n      \"closed\": null,\r\n      \"notified\": null,\r\n      \"component_name\": \"ch0.nvb1\",\r\n      \"expected\": \"healthy\",\r\n      \"actual\": \"failed\",\r\n      \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0060\",\r\n      \"summary\": \"(drive:ch0.nvb1): failure\",\r\n      \"issue\": \"failure\"\r\n    },\r\n    {\r\n      \"created\": 1737464651017,\r\n      \"state\": \"open\",\r\n      \"description\": \"(shelf:ch0): shelf drive failures(s) Expected: 0, Actual: 1\",\r\n      \"component_type\": \"shelf\",\r\n      \"name\": \"81204806\",\r\n      \"id\": \"f823f823f823f823f823f823f823\",\r\n      \"code\": 60,\r\n      \"category\": \"array\",\r\n      \"severity\": \"critical\",\r\n      \"flagged\": true,\r\n      \"updated\": null,\r\n      \"closed\": null,\r\n      \"notified\": null,\r\n      \"component_name\": \"ch0\",\r\n      \"expected\": \"0\",\r\n      \"actual\": \"1\",\r\n      \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0060\",\r\n      \"summary\": \"(shelf:ch0): shelf drive failures(s)\",\r\n      \"issue\": \"shelf drive failures(s)\"\r\n    },\r\n    {\r\n      \"created\": 1536744300846,\r\n      \"description\": \"(hardware:ct1.eth0): failure Expected: , Actual: \",\r\n      \"state\": \"closed\",\r\n      \"component_type\": \"hardware\",\r\n      \"name\": \"10088780\",\r\n      \"id\": \"18525aa28bee4eb3a68eb901c1483fea\",\r\n      \"category\": \"array\",\r\n      \"severity\": \"warning\",\r\n      \"code\": 42,\r\n      \"flagged\": false,\r\n      \"updated\": null,\r\n      \"closed\": null,\r\n      \"notified\": null,\r\n      \"component_name\": \"ct1.eth0\",\r\n      \"expected\": \"\",\r\n      \"actual\": \"\",\r\n      \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0042\",\r\n      \"issue\": \"failure\",\r\n      \"summary\": \"(hardware:ct1.eth0): failure\"\r\n    }\r\n  ],\r\n  \"more_items_remaining\": false,\r\n  \"total_item_count\": null\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "x-auth-token",
+              "value": "token"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "5c108f96-531d-43e3-b7cc-38cf5aa5dca9",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/2.4/alerts",
+      "responses": [
+        {
+          "uuid": "31a6a6d7-7c12-4269-9783-14c6e42be22e",
+          "body": "{\r\n  \"continuation_token\": null,\r\n  \"items\": [\r\n    {\r\n      \"created\": 1737462338078,\r\n      \"state\": \"closed\",\r\n      \"description\": \"(drive:ch0.nvb1): failure Expected: healthy, Actual: failed\",\r\n      \"component_type\": \"drive\",\r\n      \"name\": \"81204734\",\r\n      \"id\": \"5576557655765576557655765576\",\r\n      \"code\": 60,\r\n      \"category\": \"array\",\r\n      \"severity\": \"warning\",\r\n      \"flagged\": false,\r\n      \"updated\": null,\r\n      \"closed\": null,\r\n      \"notified\": null,\r\n      \"component_name\": \"ch0.nvb1\",\r\n      \"expected\": \"healthy\",\r\n      \"actual\": \"failed\",\r\n      \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0060\",\r\n      \"summary\": \"(drive:ch0.nvb1): failure\",\r\n      \"issue\": \"failure\"\r\n    },\r\n    {\r\n      \"created\": 1737464651017,\r\n      \"state\": \"open\",\r\n      \"description\": \"(shelf:ch0): shelf drive failures(s) Expected: 0, Actual: 1\",\r\n      \"component_type\": \"shelf\",\r\n      \"name\": \"81204806\",\r\n      \"id\": \"f823f823f823f823f823f823f823\",\r\n      \"code\": 60,\r\n      \"category\": \"array\",\r\n      \"severity\": \"critical\",\r\n      \"flagged\": true,\r\n      \"updated\": null,\r\n      \"closed\": null,\r\n      \"notified\": null,\r\n      \"component_name\": \"ch0\",\r\n      \"expected\": \"0\",\r\n      \"actual\": \"1\",\r\n      \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0060\",\r\n      \"summary\": \"(shelf:ch0): shelf drive failures(s)\",\r\n      \"issue\": \"shelf drive failures(s)\"\r\n    },\r\n    {\r\n      \"created\": 1536744300846,\r\n      \"description\": \"(hardware:ct1.eth0): failure Expected: , Actual: \",\r\n      \"state\": \"closed\",\r\n      \"component_type\": \"hardware\",\r\n      \"name\": \"10088780\",\r\n      \"id\": \"18525aa28bee4eb3a68eb901c1483fea\",\r\n      \"category\": \"toto\",\r\n      \"severity\": \"warning\",\r\n      \"code\": 42,\r\n      \"flagged\": false,\r\n      \"updated\": null,\r\n      \"closed\": null,\r\n      \"notified\": null,\r\n      \"component_name\": \"ct1.eth0\",\r\n      \"expected\": \"\",\r\n      \"actual\": \"\",\r\n      \"knowledge_base_url\": \"https://support.purestorage.com/?cid=Alert_0042\",\r\n      \"issue\": \"failure\",\r\n      \"summary\": \"(hardware:ct1.eth0): failure\"\r\n    }\r\n  ],\r\n  \"more_items_remaining\": false,\r\n  \"total_item_count\": null\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "98036266-a85e-484f-9af8-26690151180c"
+    },
+    {
+      "type": "route",
+      "uuid": "5c108f96-531d-43e3-b7cc-38cf5aa5dca9"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

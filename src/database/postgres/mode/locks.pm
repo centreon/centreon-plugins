@@ -87,9 +87,7 @@ sub run {
     my $dblocks = {};
     foreach my $row (@{$result}) {        
         my ($granted, $mode, $dbname) = ($$row[0], $$row[1], $$row[2]);
-        if (defined($self->{option_results}->{exclude}) && $dbname !~ /$self->{option_results}->{exclude}/) {
-            next;
-        }
+        next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $dbname =~ /$self->{option_results}->{exclude}/);
 
         if (!defined($dblocks->{$dbname})) {
             $dblocks->{$dbname} = {total => 0, waiting => 0};
@@ -155,12 +153,12 @@ Check locks for one or more databases
 =item B<--warning>
 
 Warning threshold. (example: "total=250,waiting=5,exclusive=20")
-'total', 'waiting', or the name of a lock type used by Postgres.
+'total', 'waiting', or the name of a lock type used by PostgreSQL.
 
 =item B<--critical>
 
 Critical threshold. (example: "total=250,waiting=5,exclusive=20")
-'total', 'waiting', or the name of a lock type used by Postgres.
+'total', 'waiting', or the name of a lock type used by PostgreSQL.
 
 =item B<--exclude>
 

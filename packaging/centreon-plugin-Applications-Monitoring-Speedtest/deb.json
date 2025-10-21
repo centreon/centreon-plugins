@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "libssh-session-perl",
-        "speedtest-cli"
+        "libssh-session-perl"
     ]
 }

@@ -87,6 +87,7 @@ public class CheckDispatcher {
     private String host = null;
     private String login = null;
     private String password = null;
+    private Integer ssl = 0;
 
     private volatile ConcurrentHashMap<String, Long> filter = new ConcurrentHashMap<String, Long>();
 
@@ -135,10 +136,11 @@ public class CheckDispatcher {
         }
     }
 
-    public CheckDispatcher(final String host, final String login, final String password) {
+    public CheckDispatcher(final String host, final String login, final String password, final Integer ssl) {
         this.host = host;
         this.login = login;
         this.password = password;
+        this.ssl = ssl;
 
         this.executorGlobal = new ThreadPoolExecutorPostFilter(5, 10, Conf.workerQueueTimeout, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>());
@@ -163,6 +165,10 @@ public class CheckDispatcher {
 
     public String getPassword() {
         return this.password;
+    }
+
+    public Integer getSsl() {
+        return this.ssl;
     }
 
     public synchronized void dispatch(final NetworkClient client) {
@@ -190,52 +196,52 @@ public class CheckDispatcher {
 
     public ICommandHandler getCommandHandler() throws AS400SecurityException, IOException {
         if (this.commandHandler == null) {
-            this.commandHandler = new CommandHandler(this.host, this.login, this.password);
+            this.commandHandler = new CommandHandler(this.host, this.login, this.password, this.ssl);
         }
         return this.commandHandler;
     }
 
     public IDiskHandler getDiskHandler() throws AS400SecurityException, IOException {
         if (this.diskHandler == null) {
-            this.diskHandler = new DiskHandler(this.host, this.login, this.password);
+            this.diskHandler = new DiskHandler(this.host, this.login, this.password, this.ssl);
         }
         return this.diskHandler;
     }
 
     public IJobHandler getJobHandler() throws AS400SecurityException, IOException {
         if (this.jobHandler == null) {
-            this.jobHandler = new JobHandler(this.host, this.login, this.password);
+            this.jobHandler = new JobHandler(this.host, this.login, this.password, this.ssl);
         }
         return this.jobHandler;
     }
 
     public ISubSystemHandler getSubSystemHandler() throws AS400SecurityException, IOException {
         if (this.subSystemHandler == null) {
-            this.subSystemHandler = new SubSystemHandler(this.host, this.login, this.password);
+            this.subSystemHandler = new SubSystemHandler(this.host, this.login, this.password, this.ssl);
         }
         return this.subSystemHandler;
     }
 
     public ISystemHandler getSystemHandler() throws AS400SecurityException, IOException {
         if (this.systemHandler == null) {
-            this.systemHandler = new SystemHandler(this.host, this.login, this.password);
+            this.systemHandler = new SystemHandler(this.host, this.login, this.password, this.ssl);
         }
         return this.systemHandler;
     }
 
     public ICachedMessageQueueHandler getCachedMessageQueueHandler() throws AS400SecurityException, IOException {
-        return new CachedMessageQueueHandler(this.host, this.login, this.password);
+        return new CachedMessageQueueHandler(this.host, this.login, this.password, this.ssl);
     }
 
     public IMessageQueueHandler getMessageQueueHandler() throws AS400SecurityException, IOException {
-        return new MessageQueueHandler(this.host, this.login, this.password);
+        return new MessageQueueHandler(this.host, this.login, this.password, this.ssl);
     }
 
     public IJobQueueHandler getJobQueueHandler() throws AS400SecurityException, IOException {
-        return new JobQueueHandler(this.host, this.login, this.password);
+        return new JobQueueHandler(this.host, this.login, this.password, this.ssl);
     }
 
     public WorkWithProblemHandler getWrkPrbHandler() throws AS400SecurityException, IOException {
-        return new WorkWithProblemHandler(this.host, this.login, this.password);
+        return new WorkWithProblemHandler(this.host, this.login, this.password, this.ssl);
     }
 }

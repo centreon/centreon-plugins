@@ -154,7 +154,16 @@ Example: --warning='41239F00647-vimm46,20' --warning='41239F00647-vimm5.*,30'
 =item B<--critical>
 
 Set critical threshold for temperature, fan, voltage (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,25' --warning='temperature,.*,35'
+Example: --critical='temperature,.*,25' --critical='temperature,.*,35'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 
 =back
 

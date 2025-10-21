@@ -39,6 +39,7 @@ sub new {
         'memory'               => 'centreon::common::h3c::snmp::mode::memory',
         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
         'uptime'               => 'snmp_standard::mode::uptime',
+        'vrrp-status'          => 'snmp_standard::mode::vrrp'
     );
 
     return $self;

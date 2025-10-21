@@ -42,9 +42,9 @@ import com.centreon.connector.as400.dispatcher.check.ResponseData;
  */
 public class SubSystemHandler extends AbstractHandler implements ISubSystemHandler {
 
-    public SubSystemHandler(final String host, final String login, final String password)
+    public SubSystemHandler(final String host, final String login, final String password, final Integer ssl)
             throws AS400SecurityException, IOException {
-        super(host, login, password);
+        super(host, login, password, ssl);
     }
 
     @Override

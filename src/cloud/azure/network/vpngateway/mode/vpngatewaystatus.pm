@@ -98,7 +98,7 @@ sub manage_selection {
             && $vpn->{name} !~ /$self->{option_results}->{filter_name}/);
         
         $self->{vpns}->{$vpn->{id}} = {
-            display => $vpn->{name},
+            name => $vpn->{name},
             provisioning_state => ($vpn->{provisioningState}) ? $vpn->{provisioningState} : $vpn->{properties}->{provisioningState},
             gateway_type => ($vpn->{gatewayType}) ? $vpn->{gatewayType} : $vpn->{properties}->{gatewayType},
             vpn_type => ($vpn->{vpnType}) ? $vpn->{vpnType} : $vpn->{properties}->{vpnType},
@@ -120,8 +120,7 @@ __END__
 Check VPN gateways status.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=vpn-gateways-status
---resource-group='MYRESOURCEGROUP' --verbose
+C<perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=vpn-gateways-status --resource-group='MYRESOURCEGROUP' --verbose>
 
 =over 8
 
@@ -131,16 +130,16 @@ Set resource group (required).
 
 =item B<--filter-name>
 
-Filter vpn name (can be a regexp).
+Filter VPN Gateways by name (can be a regexp).
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '').
-You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
+You can use the following variables: %{provisioning_state}, %{gateway_type}>, %{vpn_type}, %{display}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{provisioning_state} ne "Succeeded"').
+Define the conditions to match for the status to be CRITICAL (default: C<'%{provisioning_state} ne "Succeeded"'>).
 You can use the following variables: %{provisioning_state}, %{gateway_type}, %{vpn_type}, %{display}
 
 =back

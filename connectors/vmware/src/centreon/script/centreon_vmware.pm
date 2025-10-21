@@ -54,7 +54,7 @@ BEGIN {
 
 use base qw(centreon::vmware::script);
 
-my $VERSION = '3.3.2';
+my $VERSION = '20250501';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (

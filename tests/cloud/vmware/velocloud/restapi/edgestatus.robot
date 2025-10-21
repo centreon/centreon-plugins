@@ -21,7 +21,6 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 ...                 --custommode=api
-...                 --statefile-dir=/dev/shm/
 
 *** Test Cases ***
 Edge Status ${tc}

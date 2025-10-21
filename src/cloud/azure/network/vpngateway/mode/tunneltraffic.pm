@@ -1,3 +1,4 @@
+
 #
 # Copyright 2024 Centreon (http://www.centreon.com/)
 #
@@ -175,15 +176,55 @@ Filter metrics (can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngres
 'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch')
 (can be a regexp).
 
-=item B<--warning-$label$>
+=item B<--warning-traffic-in>
 
-Warning thresholds.
-($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
+Thresholds.
 
-=item B<--critical-$label$>
+=item B<--critical-traffic-in>
 
-Critical thresholds
-($label$ can be traffic-in, traffic-out,  packets-in, packets-out, dropped-packets-in, dropped-packets-out)
+Thresholds.
+
+=item B<--warning-traffic-out>
+
+Thresholds.
+
+=item B<--critical-traffic-out>
+
+Thresholds.
+
+=item B<--warning-packets-in>
+
+Thresholds.
+
+=item B<--critical-packets-in>
+
+Thresholds.
+
+=item B<--warning-packets-out>
+
+Thresholds.
+
+=item B<--critical-packets-out>
+
+Thresholds.
+
+=item B<--warning-dropped-packets-in>
+
+Thresholds.
+
+=item B<--critical-dropped-packets-in>
+
+Thresholds.
+
+=item B<--warning-dropped-packets-out>
+
+Thresholds.
+
+=item B<--critical-dropped-packets-out>
+
+Thresholds.
+
+
 
 =item B<--per-sec>
 

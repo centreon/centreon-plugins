@@ -1,0 +1,5 @@
+S ELAPSED         PID         PPID COMMAND        COMMAND
+S 285-02:41:18         1710          1            apstartsrv                                        /usr/sap/C4P/C00/exe/sapstartsrv pf=/usr/sap/C4P/SYS/profile/C4P_C00_lunisapcsprd2 -D -u c4padm
+S 111-05:18:34        3241853        1            sapstart                                          sapstart pf=/usr/sap/C4P/SYS/profile/C4P_C00_lunisapcsprd2
+S 111-05:18:34        3241862        3241853      cs.sapC4P_C00                                     cs.sapC4P_C00 pf=/usr/sap/C4P/SYS/profile/C4P_C00_lunisapcsprd2
+S 00:01               1022450        1022449      centreon_linux_                                   usr/bin/perl /usr/lib/centreon/plugins/centreon_linux_local.pl --plugin=os::linux::local::plugin --mode=process --warning-total= --critical-total=1:1 --warning-time= --critical-time= --filter-command=cs.sapC4P_C00 --filter-arg= --filter-state= --debug

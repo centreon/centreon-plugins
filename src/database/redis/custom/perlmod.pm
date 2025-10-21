@@ -48,7 +48,11 @@ sub new {
             'password:s'      => { name => 'password' },
             'sentinel:s@'     => { name => 'sentinel' },
             'sentinel-port:s' => { name => 'sentinel_port' },
-            'service:s'       => { name => 'service' }
+            'service:s'       => { name => 'service' },
+            'tls'             => { name => 'tls' },
+            'cacert:s'        => { name => 'cacert' },
+            'cert:s'          => { name => 'cert' },
+            'key:s'           => { name => 'key' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REDIS OPTIONS', once => 1);
@@ -69,11 +73,14 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
+    $self->{server} = $self->{option_results}->{server} // '';
     $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /(\d+)/ ? $1 : 6379;
     $self->{sentinel_port} = defined($self->{option_results}->{sentinel_port}) && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
-    $self->{username} = defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
-    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{username} = $self->{option_results}->{username} // '';
+    $self->{password} = $self->{option_results}->{password} // '';
+    $self->{cacert} = $self->{option_results}->{cacert} // '';
+    $self->{cert} = $self->{option_results}->{cert} // '';
+    $self->{key} = $self->{option_results}->{key} // '';
     $self->{sentinel} = [];
     if (defined($self->{option_results}->{sentinel})) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
@@ -91,6 +98,13 @@ sub check_options {
     if (scalar(@{$self->{sentinel}}) > 0 && $self->{service} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
         $self->{output}->option_exit();
+    }
+
+    foreach (qw/cert key/) {
+	      if ($self->{$_} ne '') {
+            $self->{output}->add_option_msg(short_msg => "Unsupported --$_ option.");
+	          $self->{output}->option_exit();
+        }
     }
 
     return 0;
@@ -143,11 +157,11 @@ __END__
 
 =head1 NAME
 
-REDIS perlmod
+REDIS Perl mode
 
 =head1 SYNOPSIS
 
-Redis perlmod
+Redis Perl mode
 
 =head1 REDIS OPTIONS
 

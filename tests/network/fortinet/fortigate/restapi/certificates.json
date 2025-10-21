@@ -1,0 +1,92 @@
+{
+  "uuid": "61d0b4e2-a95f-445e-aa64-1dd52294dbcb",
+  "lastMigration": 32,
+  "name": "Certificates",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "471baca7-c9b0-491e-899c-5a2f3f2d9e30",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/monitor/system/available-certificates",
+      "responses": [
+        {
+          "uuid": "ba67a507-8afd-4a7f-8e3e-19503ae5e0d4",
+          "body": "{\r\n    \"action\": \"\",\r\n    \"build\": 1577,\r\n    \"http_method\": \"GET\",\r\n    \"name\": \"available-certificates\",\r\n    \"path\": \"system\",\r\n    \"results\": [\r\n        {\r\n            \"cert_protocol\": \"none\",\r\n            \"comments\": \"This is the default CA certificate the SSL Inspection will use when generating new server certificates.\",\r\n            \"exists\": true,\r\n            \"ext\": [\r\n                {\r\n                    \"critical\": false,\r\n                    \"data\": \"CA:TRUE\",\r\n                    \"name\": \"X509v3 Basic Constraints\"\r\n                }\r\n            ],\r\n            \"fingerprint\": \"F2:79:B7:F6:F2:79:B7:F6\",\r\n            \"has_valid_cert_key\": true,\r\n            \"is_built_in\": true,\r\n            \"is_ca\": true,\r\n            \"is_deep_inspection_cert\": true,\r\n            \"is_default_local\": false,\r\n            \"is_general_allowable_cert\": true,\r\n            \"is_local_ca_cert\": true,\r\n            \"is_proxy_ssl_cert\": true,\r\n            \"is_ssl_client_cert\": true,\r\n            \"is_ssl_server_cert\": true,\r\n            \"is_wifi_cert\": false,\r\n            \"issuer\": {\r\n                \"C\": \"US\",\r\n                \"CN\": \"FGSNXXXXXXXXXXXX\",\r\n                \"emailAddress\": \"support@fortinet.com\",\r\n                \"L\": \"Sunnyvale\",\r\n                \"O\": \"Fortinet\",\r\n                \"OU\": \"Certificate Authority\",\r\n                \"ST\": \"California\"\r\n            },\r\n            \"issuer_raw\": \"C = US, ST = California, L = Sunnyvale, O = Fortinet, OU = Certificate Authority, CN = FGSNXXXXXXXXXXXX, emailAddress = support@fortinet.com\",\r\n            \"key_size\": 2048,\r\n            \"key_type\": \"RSA\",\r\n            \"name\": \"Fortinet_CA_SSL1\",\r\n            \"q_name\": \"local\",\r\n            \"q_path\": \"vpn.certificate\",\r\n            \"q_ref\": 6,\r\n            \"q_static\": true,\r\n            \"q_type\": 168,\r\n            \"range\": \"global\",\r\n            \"serial_number\": \"04:66:A8:A8:04:66:A8:A8\",\r\n            \"signature_algorithm\": \"SHA256\",\r\n            \"source\": \"factory\",\r\n            \"status\": \"valid\",\r\n            \"subject\": {\r\n                \"C\": \"US\",\r\n                \"CN\": \"FGSNXXXXXXXXXXXX\",\r\n                \"emailAddress\": \"support@fortinet.com\",\r\n                \"L\": \"Sunnyvale\",\r\n                \"O\": \"Fortinet\",\r\n                \"OU\": \"Certificate Authority\",\r\n                \"ST\": \"California\"\r\n            },\r\n            \"subject_raw\": \"C = US, ST = California, L = Sunnyvale, O = Fortinet, OU = Certificate Authority, CN = FGSNXXXXXXXXXXXX, emailAddress = support@fortinet.com\",\r\n            \"type\": \"local-ca\",\r\n            \"valid_from\": 1636382833,\r\n            \"valid_from_raw\": \"2021-11-08 14:47:13  GMT\",\r\n            \"valid_to\": 1952002033,\r\n            \"valid_to_raw\": \"2031-11-09 14:47:13  GMT\",\r\n            \"version\": 3\r\n        },\r\n        {\r\n            \"cert_protocol\": \"none\",\r\n            \"comments\": \"This is the default CA certificate the SSL Inspection will use when generating new server certificates.\",\r\n            \"exists\": true,\r\n            \"ext\": [\r\n                {\r\n                    \"critical\": false,\r\n                    \"data\": \"CA:TRUE\",\r\n                    \"name\": \"X509v3 Basic Constraints\"\r\n                }\r\n            ],\r\n            \"fingerprint\": \"F2:79:B7:F6:F2:79:B7:F6\",\r\n            \"has_valid_cert_key\": true,\r\n            \"is_built_in\": true,\r\n            \"is_ca\": true,\r\n            \"is_deep_inspection_cert\": true,\r\n            \"is_default_local\": false,\r\n            \"is_general_allowable_cert\": true,\r\n            \"is_local_ca_cert\": true,\r\n            \"is_proxy_ssl_cert\": true,\r\n            \"is_ssl_client_cert\": true,\r\n            \"is_ssl_server_cert\": true,\r\n            \"is_wifi_cert\": false,\r\n            \"issuer\": {\r\n                \"C\": \"US\",\r\n                \"CN\": \"FGSNXXXXXXXXXXXX\",\r\n                \"emailAddress\": \"support@fortinet.com\",\r\n                \"L\": \"Sunnyvale\",\r\n                \"O\": \"Fortinet\",\r\n                \"OU\": \"Certificate Authority\",\r\n                \"ST\": \"California\"\r\n            },\r\n            \"issuer_raw\": \"C = US, ST = California, L = Sunnyvale, O = Fortinet, OU = Certificate Authority, CN = FGSNXXXXXXXXXXXX, emailAddress = support@fortinet.com\",\r\n            \"key_size\": 2048,\r\n            \"key_type\": \"RSA\",\r\n            \"name\": \"Fortinet_CA_SSL\",\r\n            \"q_name\": \"local\",\r\n            \"q_path\": \"vpn.certificate\",\r\n            \"q_ref\": 6,\r\n            \"q_static\": true,\r\n            \"q_type\": 168,\r\n            \"range\": \"global\",\r\n            \"serial_number\": \"04:66:A8:A8:04:66:A8:A8\",\r\n            \"signature_algorithm\": \"SHA256\",\r\n            \"source\": \"factory\",\r\n            \"status\": \"valid\",\r\n            \"subject\": {\r\n                \"C\": \"US\",\r\n                \"CN\": \"FGSNXXXXXXXXXXXX\",\r\n                \"emailAddress\": \"support@fortinet.com\",\r\n                \"L\": \"Sunnyvale\",\r\n                \"O\": \"Fortinet\",\r\n                \"OU\": \"Certificate Authority\",\r\n                \"ST\": \"California\"\r\n            },\r\n            \"subject_raw\": \"C = US, ST = California, L = Sunnyvale, O = Fortinet, OU = Certificate Authority, CN = FGSNXXXXXXXXXXXX, emailAddress = support@fortinet.com\",\r\n            \"type\": \"local-ca\",\r\n            \"valid_from\": 1732824780,\r\n            \"valid_from_raw\": \"2024-11-28 20:13:00  GMT\",\r\n            \"valid_to\": 1804104780,\r\n            \"valid_to_raw\": \"2027-03-03 20:13:00  GMT\",\r\n            \"version\": 3\r\n        },\r\n        {\r\n            \"cert_protocol\": \"none\",\r\n            \"comments\": \"This is the default CA certificate the SSL Inspection will use when generating new server certificates.\",\r\n            \"exists\": true,\r\n            \"ext\": [\r\n                {\r\n                    \"critical\": false,\r\n                    \"data\": \"CA:TRUE\",\r\n                    \"name\": \"X509v3 Basic Constraints\"\r\n                }\r\n            ],\r\n            \"fingerprint\": \"F2:79:B7:F6:F2:79:B7:F6\",\r\n            \"has_valid_cert_key\": true,\r\n            \"is_built_in\": true,\r\n            \"is_ca\": true,\r\n            \"is_deep_inspection_cert\": true,\r\n            \"is_default_local\": false,\r\n            \"is_general_allowable_cert\": true,\r\n            \"is_local_ca_cert\": true,\r\n            \"is_proxy_ssl_cert\": true,\r\n            \"is_ssl_client_cert\": true,\r\n            \"is_ssl_server_cert\": true,\r\n            \"is_wifi_cert\": false,\r\n            \"issuer\": {\r\n                \"C\": \"US\",\r\n                \"CN\": \"FGSNXXXXXXXXXXXX\",\r\n                \"emailAddress\": \"support@fortinet.com\",\r\n                \"L\": \"Sunnyvale\",\r\n                \"O\": \"Fortinet\",\r\n                \"OU\": \"Certificate Authority\",\r\n                \"ST\": \"California\"\r\n            },\r\n            \"issuer_raw\": \"C = US, ST = California, L = Sunnyvale, O = Fortinet, OU = Certificate Authority, CN = FGSNXXXXXXXXXXXX, emailAddress = support@fortinet.com\",\r\n            \"key_size\": 2048,\r\n            \"key_type\": \"RSA\",\r\n            \"name\": \"Fortinet_CA_SSL2\",\r\n            \"q_name\": \"local\",\r\n            \"q_path\": \"vpn.certificate\",\r\n            \"q_ref\": 6,\r\n            \"q_static\": true,\r\n            \"q_type\": 168,\r\n            \"range\": \"global\",\r\n            \"serial_number\": \"04:66:A8:A8:04:66:A8:A8\",\r\n            \"signature_algorithm\": \"SHA256\",\r\n            \"source\": \"factory\",\r\n            \"status\": \"valid\",\r\n            \"subject\": {\r\n                \"C\": \"US\",\r\n                \"CN\": \"FGSNXXXXXXXXXXXX\",\r\n                \"emailAddress\": \"support@fortinet.com\",\r\n                \"L\": \"Sunnyvale\",\r\n                \"O\": \"Fortinet\",\r\n                \"OU\": \"Certificate Authority\",\r\n                \"ST\": \"California\"\r\n            },\r\n            \"subject_raw\": \"C = US, ST = California, L = Sunnyvale, O = Fortinet, OU = Certificate Authority, CN = FGSNXXXXXXXXXXXX, emailAddress = support@fortinet.com\",\r\n            \"type\": \"local-ca\",\r\n            \"valid_from\": 1732824775,\r\n            \"valid_from_raw\": \"2024-11-28 20:12:55  GMT\",\r\n            \"valid_to\": 1804104775,\r\n            \"valid_to_raw\": \"2027-03-03 20:12:55  GMT\",\r\n            \"version\": 3\r\n        }\r\n    ],\r\n    \"serial\": \"FGSNXXXXXXXXXXXX\",\r\n    \"status\": \"success\",\r\n    \"vdom\": \"root\",\r\n    \"version\": \"v7.2.0\"\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "471baca7-c9b0-491e-899c-5a2f3f2d9e30"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

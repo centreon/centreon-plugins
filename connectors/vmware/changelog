@@ -1,3 +1,14 @@
+2025-05-16 Olivier Mercier <omercier@centreon.com> - 20250501
+ * Fix: changed permissions for centreon_vmware.json config file.
+
+2024-12-05 Olivier Mercier <omercier@centreon.com> - 3.4.0
+ * Enhancement: systemd service now takes its options from
+ /etc/(default|sysconfig)/centreon_vmware.
+ * Enhancement: the existing .pm config file is converted into a .json file
+ during upgrade.
+ * Breaking: the default config file is now the JSON one.
+ * Fix: added the 'perl(Text::Template)' missing dependency for AlmaLinux.
+
 2024-10-18 Olivier Mercier <omercier@centreon.com> - 3.3.2
  * Fix: regression of case sensitiveness for container names fixed
  * Enhancement: log messages related to the vault have been downgraded from error to info level or explained as safe to ignore if not using the vault

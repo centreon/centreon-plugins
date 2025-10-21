@@ -31,9 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'backup'       => 'network::backbox::restapi::mode::backup',
-        'configstatus' => 'network::backbox::restapi::mode::configstatus',
-        'intellicheck' => 'network::backbox::restapi::mode::intellicheck'
+        'backup'        => 'network::backbox::restapi::mode::backup',
+        'device-backup' => 'network::backbox::restapi::mode::devicebackup',
+        'configstatus'  => 'network::backbox::restapi::mode::configstatus',
+        'intellicheck'  => 'network::backbox::restapi::mode::intellicheck',
+        'list-devices'   => 'network::backbox::restapi::mode::listdevices'
     };
 
     $self->{custom_modes}->{api} = 'network::backbox::restapi::custom::api';

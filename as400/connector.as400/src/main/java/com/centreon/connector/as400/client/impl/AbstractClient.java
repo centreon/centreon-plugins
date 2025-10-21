@@ -42,6 +42,7 @@ abstract class AbstractClient implements IClient {
     private String as400Password = null;
     private String as400CheckType = null;
     private String as400Args = null;
+    private Integer as400Ssl = 0;
     private List<Map<String, String>> argList = new ArrayList<Map<String, String>>();
 
     @Override
@@ -75,6 +76,11 @@ abstract class AbstractClient implements IClient {
     @Override
     public Object getAs400Arg(String key) {
         return this.input.getArg(key);
+    }
+
+    @Override
+    public Integer getAs400Ssl() {
+        return this.input.getSsl();
     }
 
     public List<Map<String , String>> getAs400ArgList(String key) {

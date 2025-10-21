@@ -66,6 +66,8 @@ foreach my $plugin (@plugins) {
         File::Path::remove_tree('lib');
         File::Path::make_path('lib');
         my @common_files = (
+            'centreon/plugins/curllogger.pm',
+            'centreon/plugins/constants.pm',
             'centreon/plugins/http.pm',
             'centreon/plugins/misc.pm',
             'centreon/plugins/mode.pm',

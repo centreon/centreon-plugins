@@ -15,7 +15,7 @@ ${CMD}                          ${CENTREON_PLUGINS} --plugin=cloud::aws::cloudtr
 
 
 *** Test Cases ***
-AWS CloudTrail check trail status
+AWS CloudTrail check trail status ${tc}
     [Documentation]    Check AWS CloudTrail trail status
     [Tags]    cloud    aws    cloudtrail
     

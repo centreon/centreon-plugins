@@ -44,7 +44,7 @@ sub check {
             my $name = $storage_name . ':' . $entry->{physicalLocation}->{locationPosition} . ':' . $entry->{physicalLocation}->{slot};
 
             next if ($self->check_filter(section => 'cmd', instance => $instance));
-            $self->{components}->{cbd}->{total}++;
+            $self->{components}->{cmd}->{total}++;
 
             $self->{output}->output_add(
                 long_msg => sprintf(

@@ -2,43 +2,59 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/debian:bookworm
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # fix locale
 RUN bash -e <<EOF
 
+useradd snmp
+mkdir -p /var/lib/snmp/cert_indexes/
+chown snmp:snmp -R /var/lib/snmp/cert_indexes/
+mkdir -p /tmp/cache/
+
 apt-get update
-apt-get install -y locales libcurl4-openssl-dev curl wget zstd jq
+apt-get install -y locales libcurl4-openssl-dev curl wget zstd jq lsb-release ca-certificates software-properties-common gnupg2
 rm -rf /var/lib/apt/lists/*
 localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 apt-get clean
 
 EOF
 
-ENV LANG en_US.utf8
+ENV LANG=en_US.utf8
 
 RUN bash -e <<EOF
+
+# Avoid apt to clean packages cache directory
+rm -f /etc/apt/apt.conf.d/docker-clean
+
 apt-get update
 # Install Robotframework
 apt-get install -y python3-dev python3-pip
 rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED
 pip3 install robotframework robotframework-examples
 # Install snmpsim
-pip3 install snmpsim-lextudio
+pip3 install snmpsim
 
 # Install nodejs
 curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
 apt-get install -y nodejs
 
 # Install mockoon (needs nodejs)
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
+echo "deb https://packages.centreon.com/apt-standard-24.10-stable bookworm main" | tee /etc/apt/sources.list.d/centreon.list
 echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list
 echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
 echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+
+# Update
 apt-get update
+
+apt-get install -y centreon-clib centreon-connector-perl centreon-plugins
+
+rm -f /etc/apt/sources.list.d/centreon.list
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/

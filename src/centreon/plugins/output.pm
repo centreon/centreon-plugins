@@ -45,6 +45,7 @@ sub new {
         'change-exit:s@'          => { name => 'change_exit' },
         'change-short-output:s@'  => { name => 'change_short_output' },
         'change-long-output:s@'   => { name => 'change_long_output' },
+        'change-output-adv:s@'    => { name => 'change_output_adv' },
         'use-new-perfdata'        => { name => 'use_new_perfdata' },
         'filter-uom:s'            => { name => 'filter_uom' },
         'verbose'                 => { name => 'verbose' },
@@ -121,6 +122,29 @@ sub check_options {
         if ($self->{range_perfdata} !~ /^[012]$/) {
             $self->add_option_msg(short_msg => "Wrong range-perfdata option '" . $self->{range_perfdata} . "'");
             $self->option_exit();
+        }
+    }
+
+    if (defined($self->{option_results}->{change_output_adv})) {
+        foreach (@{$self->{option_results}->{change_output_adv}}) {
+            my ($expr, $short_output, $exit_code) = split /,/;
+            next if (!defined($expr) || $expr eq '');
+
+            $expr =~ s/%\{(.*?)\}/\$values->{$1}/g;
+            $expr =~ s/%\((.*?)\)/\$values->{$1}/g;
+
+            if ( defined($exit_code) && $exit_code ne '' && defined( $self->{errors}->{uc($exit_code)} ) ) {
+                $exit_code = uc($exit_code);
+            } else {
+                $exit_code = undef;
+            }
+
+            $self->{change_output_adv} = [] if (!defined($self->{change_output_adv}));
+            push @{$self->{change_output_adv}}, {
+                expr => $expr,
+                short_output => $short_output,
+                exit_code => $exit_code
+            };
         }
     }
 
@@ -211,6 +235,7 @@ sub output_add {
         push @{$self->{global_short_outputs}->{uc($options->{severity})}}, $options->{short_msg};
         $self->set_status(exit_litteral => $options->{severity});
     }
+
     if (defined($options->{long_msg})) {
         chomp $options->{long_msg};
 
@@ -483,7 +508,8 @@ sub output_txt_short_display {
 sub output_txt_short {
     my ($self, %options) = @_;
 
-    if (!defined($self->{option_results}->{change_short_output})) {
+    if (!defined($self->{option_results}->{change_short_output}) && 
+        !defined($self->{change_output_adv})) {
         $self->output_txt_short_display(%options);
         return ;
     }
@@ -503,6 +529,18 @@ sub output_txt_short {
          eval "\$stdout =~ s{$pattern}{$replace}$modifier";
     }
 
+    my $exit = defined($options{exit_litteral}) ? uc($options{exit_litteral}) : uc($self->{myerrors}->{ $self->{global_status} });
+    foreach (@{$self->{change_output_adv}}) {
+        if ($self->test_eval(test => $_->{expr}, values => { short_output => $stdout, exit_code => $self->{errors}->{$exit} })) {
+            if (defined($_->{short_output}) && $_->{short_output} ne '') {
+                $stdout = $_->{short_output};
+            }
+            if (defined($_->{exit_code}) && $_->{exit_code} ne '') {
+                $self->{coa_save_exit_code} = $_->{exit_code};
+            }
+        }
+    }
+
     print $stdout;
 }
 
@@ -512,6 +550,7 @@ sub output_txt {
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
 
     return if ($self->{nodisplay} == 1);
+
     if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
         $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
     }
@@ -649,6 +688,9 @@ sub die_exit {
 
 sub option_exit {
     my ($self, %options) = @_;
+
+    $self->add_option_msg(short_msg => $options{short_msg}) if defined $options{short_msg};
+
     # $options{exit_litteral} = string litteral exit
     # $options{nolabel} = interger label display
     my $exit_litteral = defined($options{exit_litteral}) ? $options{exit_litteral} : $self->{option_results}->{opt_exit};
@@ -688,6 +730,10 @@ sub exit {
         $exit = uc($options{exit_litteral});
     } else {
         $exit = $self->{myerrors}->{ $self->{global_status} };
+    }
+ 
+    if (defined($self->{coa_save_exit_code})) {
+        $exit = $self->{coa_save_exit_code};
     }
     if (defined($self->{change_exit}) && defined($self->{change_exit}->{$exit})) {
         $exit = $self->{change_exit}->{$exit};
@@ -854,7 +900,11 @@ sub display_disco_show {
         foreach (@{$self->{disco_entries}}) {
             my $child = $self->{xml_output}->createElement('label');
             foreach my $key (keys %$_) {
-                $child->setAttribute($key, $_->{$key});
+                # Encode all non printable chars as hexadecimal entities to produce valid XML
+                # I.e. "test ^H" becomes "test &#x8;"
+                my $val = $_->{$key};
+                $val=~s{([[:cntrl:]])}{"&#x".sprintf("%X",ord($1)).";"}ge;
+                $child->setAttribute($key, $val);
             }
             $root->addChild($child);
         }
@@ -1538,15 +1588,14 @@ remove all metrics whose value equals 0 and that don't have a maximum value.
 =item B<--explode-perfdata-max>
 
 Create a new metric for each metric that comes with a maximum limit. The new
-metric will be named identically with a '_max' suffix).
+metric will be named identically with a '_max' suffix.
 Example: it will split 'used_prct'=26.93%;0:80;0:90;0;100
 into 'used_prct'=26.93%;0:80;0:90;0;100 'used_prct_max'=100%;;;;
-
 
 =item B<--change-perfdata> B<--extend-perfdata>
 
 Change or extend perfdata.
-Syntax: --extend-perfdata=searchlabel,newlabel,target[,[newuom],[min],[max]]
+Syntax: --extend-perfdata=searchlabel,newlabel,target[,[<new-unit-of-mesure>],[min],[max]]
 
 Common examples:
 
@@ -1567,11 +1616,11 @@ Change traffic values in percent: --change-perfdata='traffic_in,,percent()'
 =item B<--extend-perfdata-group>
 
 Add new aggregated metrics (min, max, average or sum) for groups of metrics defined by a regex match on the metrics' names.
-Syntax: --extend-perfdata-group=regex,namesofnewmetrics,calculation[,[newuom],[min],[max]]
+Syntax: --extend-perfdata-group=regex,<names-of-new-metrics>,calculation[,[<new-unit-of-mesure>],[min],[max]]
 regex: regular expression
-namesofnewmetrics: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
+<names-of-new-metrics>: how the new metrics' names are composed (can use $1, $2... for groups defined by () in regex).
 calculation: how the values of the new metrics should be calculated
-newuom (optional): unit of measure for the new metrics
+<new-unit-of-mesure> (optional): unit of measure for the new metrics
 min (optional): lowest value the metrics can reach
 max (optional): highest value the metrics can reach
 
@@ -1597,6 +1646,14 @@ Example: adding --change-short-output='OK~Up~gi' will replace all occurrences of
 Replace an exit code with one of your choice.
 Example: adding --change-exit=unknown=critical will result in a CRITICAL state
 instead of an UNKNOWN state.
+
+=item B<--change-output-adv>
+
+Replace short output and exit code based on a "if" condition using the following variables:
+short_output, exit_code.
+Variables must be written either %{variable} or %(variable).
+Example: adding --change-output-adv='%(short_ouput) =~ /UNKNOWN: No daemon/,OK: No daemon,OK' will 
+change the following specific UNKNOWN result to an OK result.
 
 =item B<--range-perfdata>
 
@@ -1640,8 +1697,8 @@ format).
 
 =item B<--output-file>
 
-Write output in file (can be combined with json, xml and openmetrics options).
-E.g.: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
+Write output in file (can be combined with JSON, XML and OpenMetrics options).
+Example: --output-file=/tmp/output.txt will write the output in /tmp/output.txt.
 
 =item B<--disco-format>
 

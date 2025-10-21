@@ -28,7 +28,7 @@ my %type_anonymization = (
 # - device names
 # - loop
 # - floating values (eg sysLoad)
-my $ignore_anon_regex = qr{^"?(lo|eth[\d]*|.* memory|.*Swap.*|.*Memory.*|tmpfs|systemStats|systemd-udevd|kdevtmpfs|.*centreontrapd.*|gorgone-.*|[C-Z]:\\.*|(/[\d\w_-]*){1,}|sd[a-z]\d*|loop\d+|\d*\.\d*)"?$};
+my $ignore_anon_regex = qr{^"?(lo|eth[\d]*|.* memory|.*Swap.*|.*Memory.*|tmpfs|systemStats|systemd-udevd|kdevtmpfs|.*centreontrapd.*|gorgone-.*|[C-Z]:\\.*|(/[\d\w_-]*){1,}|sd[a-z]\d*|loop\d+|\d*\.?\d*)"?$};
 
 sub oid_matches {
     my ($given_oid, $list) = @_;
@@ -66,7 +66,7 @@ sub extract_oids {
     my $fd;
     open($fd, '<', $file_to_parse) or die "Could not open $file_to_parse to get OIDs from.";
     for my $line (<$fd>) {
-#   Find all strings looking like OIDs
+        # Find all strings looking like OIDs
         if ($line =~ /.*['"](\.1\.[\.0-9]+)['"].*/) {
             print STDERR "Line $line contains an OID: '$1'\n" if (defined($debug));
             push @oids, $1;
@@ -192,6 +192,8 @@ my $last_line = '';
 my $is_last_line_to_keep = 0;
 for my $line (<$walk_fd>) {
     chomp $line;
+    # remove all CR in the line
+    $line =~ s/\r//g;
 #   If the line does not begin with an OID
 #       If the last processed line has been retained,
 #           Then append it to the last accepted line

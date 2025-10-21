@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Jasminsms-Httpapi",
+    "pkg_summary": "Centreon Plugin to send notifications by Jasmin SMS HTTP-API",
+    "plugin_name": "centreon_notification_jasminsms-httpapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "notification/jasminsms/httpapi"
+    ]
+}

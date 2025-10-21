@@ -51,7 +51,18 @@ sub manage_selection {
 
     my $results = {};
     my $jobs_exec = $options{custom}->cache_backup_job_session(timeframe => $self->{option_results}->{timeframe});
+    my $jobs_replica = $options{custom}->get_replica_job_session(timeframe => $self->{option_results}->{timeframe});
+
     foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
+        next if (defined($results->{ $job->{JobUid} }));
+
+        $results->{ $job->{JobUid} } = {
+            jobName => $job->{JobName},
+            jobType => $job->{JobType}
+        }
+    }
+
+    foreach my $job (@{$jobs_replica->{Entities}->{ReplicaJobSessions}->{ReplicaJobSessions}}) {
         next if (defined($results->{ $job->{JobUid} }));
 
         $results->{ $job->{JobUid} } = {
@@ -67,7 +78,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach my $uid (keys %$results) {
+    foreach my $uid (sort keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[uid: %s][jobName: %s][jobType: %s]',
@@ -117,7 +128,7 @@ List jobs.
 
 =item B<--timeframe>
 
-Timeframe to get BackupJobSession (in seconds. Default: 86400). 
+Timeframe to get BackupJobSession and ReplicaJobSession (in seconds. Default: 86400).
 
 =back
 

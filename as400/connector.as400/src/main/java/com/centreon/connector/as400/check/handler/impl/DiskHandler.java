@@ -38,10 +38,10 @@ public class DiskHandler extends AbstractHandler implements IDiskHandler {
 
     private QyaspolYasp0300PcmlHandler qyaspolPcmlHandler = null;
 
-    public DiskHandler(final String host, final String login, final String password)
+    public DiskHandler(final String host, final String login, final String password, final Integer ssl)
             throws AS400SecurityException, IOException {
-        super(host, login, password);
-        this.qyaspolPcmlHandler = new QyaspolYasp0300PcmlHandler(host, login, password);
+        super(host, login, password, ssl);
+        this.qyaspolPcmlHandler = new QyaspolYasp0300PcmlHandler(host, login, password, ssl);
     }
 
     @Override

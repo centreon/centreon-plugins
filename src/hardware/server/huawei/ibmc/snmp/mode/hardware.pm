@@ -103,6 +103,11 @@ Can be: 'component', 'cpu', 'harddisk', 'fan', 'logicaldrive',
 Exclude the items given as a comma-separated list (example: --filter=psu).
 You can also exclude items from specific instances: --filter=psu,1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Return an error if no components are checked.
@@ -121,6 +126,14 @@ Example: --warning='psu,.*,300'
 
 Set critical threshold (syntax: type,regexp,threshold)
 Example: --critical='psu,.*,400'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

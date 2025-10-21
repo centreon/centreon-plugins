@@ -1,0 +1,12 @@
+/var/log/centreon/centreon_vmware.log {
+    copytruncate
+    weekly
+    maxsize 50M
+    rotate 12
+    compress
+    delaycompress
+    notifempty
+    missingok
+    su root root
+}
+

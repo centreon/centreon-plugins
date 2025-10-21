@@ -197,6 +197,7 @@ $mapping = {
 $thresholds = {
     numeric => [
         ['unavailable', 'UNKNOWN'],
+        ['absent', 'OK'],
         ['normal', 'OK'],
         ['belowLowerCritical', 'CRITICAL'],
         ['belowLowerWarning', 'WARNING'],

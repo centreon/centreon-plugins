@@ -20,10 +20,13 @@ jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: as400/packaging/centreon-as400-daemon.yaml
+      version_file: as400/connector.as400/pom.xml
 
   package:
     needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -44,13 +47,15 @@ jobs:
           - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
-
+          - package_extension: deb
+            image: packaging-plugins-java-noble
+            distrib: noble
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     name: package ${{ matrix.distrib }}
 
@@ -64,8 +69,8 @@ jobs:
           -type f \
           -exec grep -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
           -exec sed -i \
-          -e 's|@CONNECTOR_VERSION@|'"%{version}"'|g' \
-          -e 's|@CONNECTOR_HOME@|'"%{_datadir}/centreon-as400"'|g' \
+          -e 's|@CONNECTOR_VERSION@|'"${{ needs.get-environment.outputs.version }}"'|g' \
+          -e 's|@CONNECTOR_HOME@|'"/usr/share/centreon-as400"'|g' \
           -e 's|@CONNECTOR_ETC@|'"/etc/centreon-as400/"'|g' \
           -e 's|@CONNECTOR_LOG@|'"/var/log/centreon-as400/"'|g' \
           -e 's|@CONNECTOR_USER@|'"centreon-as400"'|g' \
@@ -80,7 +85,7 @@ jobs:
         run: mvn -version && mvn clean install -f as400/connector.as400/pom.xml
 
       - name: Remove me after debug
-        run: find / -name "centreon-as400*.jar"
+        run: find / -path /proc -prune -o -name "centreon-as400*.jar"
 
       - name: Package
         uses: ./.github/actions/package-nfpm
@@ -99,51 +104,57 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Save to cache
-        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
 
-  deliver-rpm:
+  deliver-packages:
     needs: [get-environment, package]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        distrib: [el8, el9]
+        include:
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
+          - distrib: noble
+            package_extension: deb
 
+    name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - name: Delivery
-        uses: ./.github/actions/rpm-delivery
+        uses: ./.github/actions/package-delivery
         with:
           module_name: as400
           distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
+          release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
-  deliver-deb:
-    needs: [get-environment, package]
-    if: ${{ contains(fromJson('["stable", "testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
-    strategy:
-      matrix:
-        distrib: [bullseye, bookworm, jammy]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Delivery
-        uses: ./.github/actions/deb-delivery
-        with:
-          module_name: as400
-          distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml
