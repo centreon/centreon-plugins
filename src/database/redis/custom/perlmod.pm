@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -101,11 +101,12 @@ sub check_options {
     }
 
     foreach (qw/cert key/) {
-	if ($self->{$_} ne '') {
-            $self->{output}->add_option_msg(short_msg => "Unsupported --$_ option.");
-	    $self->{output}->option_exit();
-        }
+        $self->{output}->option_exit(short_msg => "Unsupported --$_ option.")
+            if $self->{$_} ne '';
     }
+
+    #    $self->{output}->option_exit(short_msg => "Use of --username requires Perl Redis module v2.0 or higher but $Redis::VERSION was found")
+    #   if $Redis::VERSION < 2 && $self->{username} ne '';
 
     return 0;
 }
@@ -178,6 +179,7 @@ Redis port (default: 6379).
 =item B<--username>
 
 Redis username.
+Use of this option requires Perl Redis module v2.0 or higher.
 
 =item B<--password>
 
