@@ -36,7 +36,7 @@ sub custom_metric_perfdata {
         value => $self->{result_values}->{value},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
-        unit => defined($self->{result_values}->{unit})? $self->{result_values}->{unit} : ''
+        unit => $self->{result_values}->{unit} // ''
     );
 }
 

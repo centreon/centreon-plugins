@@ -365,7 +365,7 @@ sub gcp_get_metrics {
         if (defined($metric_calc->{average})) {
             $metric_calc->{average} /= $metric_calc->{points};
         }
-        $metric_calc->{unit} = defined($timeserie->{unit}) ? $timeserie->{unit} : undef;
+        $metric_calc->{unit} = $timeserie->{unit} // undef;
         $results->{$instance}->{$metric_name} = $metric_calc;
         $results->{$instance}->{resource} = $timeserie->{resource};
         $results->{$instance}->{labels} = $timeserie->{metric}->{labels};
