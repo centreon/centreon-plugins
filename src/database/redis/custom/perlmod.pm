@@ -105,8 +105,8 @@ sub check_options {
             if $self->{$_} ne '';
     }
 
-    #    $self->{output}->option_exit(short_msg => "Use of --username requires Perl Redis module v2.0 or higher but $Redis::VERSION was found")
-    #   if $Redis::VERSION < 2 && $self->{username} ne '';
+    $self->{output}->option_exit(short_msg => "Use of --username requires Perl Redis module v2.0 or higher but $Redis::VERSION was found")
+        if $Redis::VERSION < 2 && $self->{username} ne '';
 
     return 0;
 }
