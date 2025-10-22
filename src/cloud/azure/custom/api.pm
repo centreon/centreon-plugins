@@ -930,7 +930,7 @@ sub azure_get_usagedetails_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Consumption/usageDetails?\$filter=properties%2FusageStart ge %27" . $options{usage_start} . "%27 and properties%2FusageEnd le %27" . $options{usage_end} . "%27";
-    $url .= "&metric=actualcost";
+    $url .= "&metric=". ($options{cost_metric} || 'actualcost');
     $url .= "&api-version=" . $self->{api_version};
     return $url;
 }
@@ -1261,7 +1261,7 @@ The application needs the 'Monitoring Reader' role (see https://docs.microsoft.c
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 
-For further informations, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
+For further information, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
 
 =over 8
 
@@ -1295,7 +1295,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--interval>
 
-Set interval of the metric query (can be : PT1M, PT5M, PT15M, PT30M, PT1H, PT6H, PT12H, PT24H).
+Set interval of the metric query (can be : C<PT1M>, C<PT5M>, C<PT15M>, C<PT30M>, C<PT1H>, C<PT6H>, C<PT12H>, C<PT24H>).
 
 =item B<--aggregation>
 

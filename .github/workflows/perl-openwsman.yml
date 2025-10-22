@@ -33,37 +33,37 @@ jobs:
           - image: packaging-plugins-alma8
             distrib: el8
             package_extension: rpm
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-jammy
             distrib: jammy
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-noble
             distrib: noble
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
-            runner: centreon-collect-arm64
+            runner: ubuntu-24.04-arm
             arch: arm64
 
     runs-on: ${{ matrix.runner }}
@@ -213,7 +213,7 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.${{ matrix.package_extension }}
           key: cache-${{ github.sha }}-${{ matrix.package_extension }}-wsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}

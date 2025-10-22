@@ -52,7 +52,7 @@ sub set_counters {
 
     $self->{maps_counters}->{memory} = [
         {
-            label  => 'vms-usage-percentage',
+            label  => 'usage-prct',
             type   => 1,
             nlabel => 'vms.memory.usage.percentage',
             set    => {
@@ -72,7 +72,7 @@ sub set_counters {
             }
         },
         {
-            label  => 'vms-usage-bytes',
+            label  => 'usage-bytes',
             type   => 1,
             nlabel => 'vms.memory.usage.bytes',
             set    => {
@@ -95,19 +95,21 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
 
-    if (defined($structure{'mem.capacity.usable.HOST'}) && defined($structure{'mem.consumed.vms.HOST'})) {
-        $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usable.HOST: ' . $structure{'mem.capacity.usable.HOST'});
-        $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.consumed.vms.HOST: ' . $structure{'mem.consumed.vms.HOST'});
-        $self->{memory} = {
-            used_prct  => (100 * $structure{'mem.consumed.vms.HOST'} / $structure{'mem.capacity.usable.HOST'}),
-            used_bytes => int(1024 * 1024 * $structure{'mem.consumed.vms.HOST'}),
-            max_bytes  => int(1024 * 1024 * $structure{'mem.capacity.usable.HOST'})
-        };
+    if (!defined($results{'mem.capacity.usable.HOST'}) || !defined($results{'mem.consumed.vms.HOST'})) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
     }
+
+    $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.capacity.usable.HOST: ' . $results{'mem.capacity.usable.HOST'});
+    $self->{output}->add_option_msg(long_msg => 'Retrieved value for mem.consumed.vms.HOST: ' . $results{'mem.consumed.vms.HOST'});
+    $self->{memory} = {
+        used_prct  => (100 * $results{'mem.consumed.vms.HOST'} / $results{'mem.capacity.usable.HOST'}),
+        used_bytes => int(1024 * 1024 * $results{'mem.consumed.vms.HOST'}),
+        max_bytes  => int(1024 * 1024 * $results{'mem.capacity.usable.HOST'})
+    };
 
     return 1;
 }
@@ -119,29 +121,32 @@ sub manage_selection {
 Monitor the memory of VMware ESX hosts consumed by the virtual machines through vSphere 8 REST API.
 
     Meaning of the available counters in the VMware API:
-    mem.reservedCapacityPct.HOST     Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.
-    mem.capacity.provisioned.HOST    Total amount of memory available to the host.
-    mem.capacity.usable.HOST         Amount of physical memory available for use by virtual machines on this host
-    mem.capacity.usage.HOST          Amount of physical memory actively used
-    mem.capacity.contention.HOST     Percentage of time VMs are waiting to access swapped, compressed or ballooned memory.
-    mem.consumed.vms.HOST            Amount of physical memory consumed by VMs on this host.
-    mem.consumed.userworlds.HOST     Amount of physical memory consumed by userworlds on this host
-
+    - mem.reservedCapacityPct.HOST     Percent of memory that has been reserved either through VMkernel use, by userworlds or due to virtual machine memory reservations.
+    - mem.capacity.provisioned.HOST    Total amount of memory available to the host.
+    - mem.capacity.usable.HOST         Amount of physical memory available for use by virtual machines on this host
+    - mem.capacity.usage.HOST          Amount of physical memory actively used
+    - mem.capacity.contention.HOST     Percentage of time VMs are waiting to access swapped, compressed or ballooned memory.
+    - mem.consumed.vms.HOST            Amount of physical memory consumed by VMs on this host.
+    - mem.consumed.userworlds.HOST     Amount of physical memory consumed by userworlds on this host
 
 =over 8
 
-=item B<--warning-vms-usage-percentage>
+=item B<--warning-usage-bytes>
 
-Thresholds in percentage.
+Threshold in bytes.
 
-=item B<--critical-vms-usage-percentage>
+=item B<--critical-usage-bytes>
 
-Thresholds in percentage.
+Threshold in bytes.
 
-=item B<--warning-vms-usage-bytes>
+=item B<--warning-usage-prct>
 
-Thresholds in bytes.
+Threshold in percentage.
 
-=item B<--critical-vms-usage-bytes>
+=item B<--critical-usage-prct>
 
-Thresholds in bytes.
+Threshold in percentage.
+
+=back
+
+=cut

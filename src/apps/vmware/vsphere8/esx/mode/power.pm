@@ -37,16 +37,16 @@ sub set_counters {
 
     $self->{maps_counters}->{power} = [
         {
-            label           => 'power-usage-watts',
+            label           => 'usage-watt',
             type            => 1,
-            nlabel          => 'power.capacity.usage.watts',
+            nlabel          => 'power.capacity.usage.watt',
             output_template => 'Power usage is %d Watts',
             set             => {
                 output_template => 'Power usage is %d Watts',
                 key_values      => [ { name => 'power.capacity.usage.HOST' } ],
                 output_use      => 'power.capacity.usage.HOST',
                 threshold_use   => 'power.capacity.usage.HOST',
-                perfdatas       => [ { value => 'power.capacity.usage.HOST', template => '%sW' } ]
+                perfdatas       => [ { value => 'power.capacity.usage.HOST', template => '%s', unit => 'W', min => 0 } ]
             }
         }
     ];
@@ -56,10 +56,15 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %structure = map {
+    my %results = map {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
-    $self->{power} = \%structure;
+
+    if ( !defined($results{'power.capacity.usage.HOST'}) ) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
+    }
+
+    $self->{power} = \%results;
 
     return 1;
 }
@@ -79,11 +84,11 @@ Since our tests showed that only C<power.capacity.usage.HOST> was different from
 
 =over 8
 
-=item B<--warning-power-usage-watts>
+=item B<--warning-usage-watt>
 
 Threshold in Watts.
 
-=item B<--critical-power-usage-watts>
+=item B<--critical-usage-watt>
 
 Threshold in Watts.
 

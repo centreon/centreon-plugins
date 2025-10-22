@@ -24,6 +24,21 @@ use strict;
 use warnings;
 use utf8;
 use JSON::XS;
+use Safe;
+use Encode;
+
+use Exporter 'import';
+use feature 'state';
+
+our @EXPORT_OK = qw/change_seconds
+                    flatten_arrays
+                    flatten_to_hash
+                    graphql_escape
+                    is_empty
+                    json_encode
+                    json_decode
+                    slurp_file
+                    value_of/;
 
 sub execute {
     my (%options) = @_;
@@ -152,6 +167,15 @@ sub unix_execute {
             push @$args, $options{options}->{hostname};
         }
 
+        if (defined($options{options}->{ssh_option_eol})) {
+            foreach (@{$options{options}->{ssh_option_eol}}) {
+                if (/^(.*?)(?:=(.*))?$/) {
+                    push @$args, $1 if (defined($1));
+                    push @$args, $2 if (defined($2));
+                }
+            }
+        }
+
         $sub_cmd = 'sudo ' if (defined($options{sudo}));
         $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $sub_cmd .= $options{command} . ' ' if (defined($options{command}));
@@ -177,15 +201,27 @@ sub unix_execute {
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
-        $cmd .= $options{command} . ' ' if (defined($options{command}));
-        $cmd .= $options{command_options} if (defined($options{command_options}));
+        $cmd .= $options{command} if (defined($options{command}));
+        $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
 
-        ($lerror, $stdout, $exit_code) = backtick(
-            command => $cmd,
-            timeout => $options{options}->{timeout},
-            wait_exit => $wait_exit,
-            redirect_stderr => $redirect_stderr
-        );
+        if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
+            my @args = split(' ',$cmd);
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $args[0],
+                arguments       => [@args[1.. $#args]],
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
+        else {
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $cmd,
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
     }
 
     if (defined($options{options}->{show_output}) && 
@@ -319,6 +355,27 @@ sub is_empty {
     return 0;
 }
 
+# Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+# The returned value will never be undef.
+# I.g:  value_of($hash, '->{key}->{subkey}', 'default')
+#       value_of($array, '->[0]', 'default')
+#       value_of($complex, '->{key}->[0]->{subkey}', 'default')
+sub value_of($$;$) {
+    my ($variable, $expression, $default) = @_;
+    $default //= '';
+
+    return $default unless defined $variable;
+
+    state $safe = do { my $s = Safe->new();
+                       $s->share('$v');
+                       $s;
+                     };
+    our $v = $variable;
+    my $value = $safe->reval("\$v$expression", 1);
+
+    return defined $value ? $value : $default;
+}
+
 sub trim {
     my ($value) = $_[0];
     
@@ -343,6 +400,34 @@ sub powershell_escape {
     $value =~ s/'/`'/g;
     $value =~ s/"/`"/g;
     return $value;
+}
+
+sub graphql_escape($) {
+    my ($value) = $_[0];
+    $value =~ s/"/\\"/g;
+    return $value;
+}
+
+# Returns an array from arrays containing values separated by $separator
+sub flatten_arrays($;$) {
+    my ($array_of_values, $separator) = @_;
+    $separator //= ',';
+
+    return [ ] unless ref $array_of_values eq 'ARRAY';
+
+    return [ map { split $separator } @{$array_of_values} ];
+}
+
+# Returns an hash from arrays containing values separated by $separator
+# Values are set to $default (1 if not defined)
+sub flatten_to_hash($;$;$) {
+    my ($array_of_values, $separator, $default) = @_;
+    $separator //= ',';
+    $default //= 1;
+
+    return { } unless ref $array_of_values eq 'ARRAY';
+
+    return { map { $_ => $default } map { split $separator } @{$array_of_values} };
 }
 
 sub minimal_version {
@@ -746,15 +831,42 @@ sub check_security_whitelist {
 }
 
 sub json_decode {
-    my ($content) = @_;
+    my ($content, %options) = @_;
 
     $content =~ s/\r//mg;
-    my $object;
-    eval {
-        $object = JSON::XS->new->utf8->decode($content);
-    };
+
+    $content = decode('UTF-8', $content, Encode::FB_DEFAULT);
+
+    my $decoder = JSON::XS->new;
+
+    # this option
+    if ($options{booleans_as_strings}) {
+        # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
+        if (JSON::XS->can('boolean_values')) {
+            $decoder = $decoder->boolean_values("false", "true");
+        } else {
+            # if boolean_values is not available, perform a dirty substitution of booleans
+            $content =~ s/"(\w+)"\s*:\s*(true|false)(\s*,?)/"$1": "$2"$3/gm;
+        }
+    }
+
+    my $object = eval { $decoder->decode($content) };
+
     if ($@) {
-        print STDERR "Cannot decode JSON string: $@" . "\n";
+        # To keep compatibilty with old json_decode:
+        # If 'output' not set, print error on STDERR unless 'silence' is set
+        # Otherwise print error on 'output' and exit unless 'no_exit' is set
+        my $msg = $options{errstr} // "Cannot decode JSON string: $@";
+
+        if ($options{output}) {
+            $options{output}->option_exit(short_msg => $msg)
+                unless $options{no_exit};
+
+            $options{output}->output_add(long_msg => $msg, debug => 1);
+        } else {
+            warn "$msg\n" unless $options{silence};
+        }
+
         return undef;
     }
 
@@ -777,6 +889,39 @@ sub json_encode {
     return $encoded;
 }
 
+sub is_local_ip($) {
+    my ($ip) = @_;
+
+    return 0 unless $ip;
+
+    return 1 if $ip =~ /^127\./;
+    return 1 if $ip =~ /^10\./;
+    return 1 if $ip =~ /^192\.168\./;
+    return 1 if $ip =~ /^172\.(1[6-9]|2[0-9]|3[0-1])\./;
+    return 1 if $ip =~ /^169\.254\./;
+    return 1 if $ip eq '0.0.0.0';
+
+    return 0;
+}
+
+# This function is used with "sort", it sorts an array of IP addresses.
+# $_[0] and $_[1] correspond to Perl's special variables $a and $b used by sort.
+# I can't use $a and $b directly here, otherwise Perl generates a warning: "uninitialized value".
+sub sort_ips($$) {
+    my @a = split /\./, $_[0];
+    my @b = split /\./, $_[1];
+    return $a[0] <=> $b[0] || $a[1] <=> $b[1] || $a[2] <=> $b[2] || $a[3] <=> $b[3]
+}
+
+# function to assess if a string has to be excluded given an include regexp and an exclude regexp
+sub is_excluded {
+    my ($string, $include_regexp, $exclude_regexp) = @_;
+    return 1 unless defined($string);
+    return 1 if (defined($exclude_regexp) && $exclude_regexp ne '' && $string =~ /$exclude_regexp/);
+    return 0 if (!defined($include_regexp) || $include_regexp eq '' || $string =~ /$include_regexp/);
+
+    return 1;
+}
 
 1;
 
@@ -863,6 +1008,15 @@ Executes a command on Unix and returns the output.
 
 =item * C<timeout> - Timeout for the command execution.
 
+=item * C<wait_exit> - bool.
+
+=item * C<redirect_stderr> - bool.
+
+=item * C<sudo> - bool prepend sudo to the command executed.
+
+=item * C<no_shell_interpretation> - bool don't use sh interpolation on command executed
+
+
 =back
 
 =back
@@ -921,6 +1075,22 @@ Checks if a value is empty.
 
 =back
 
+=head2 value_of
+
+    my $value = centreon::plugins::misc::value_of($variable, $expression, $default);
+
+Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+
+=over 4
+
+=item * C<$value> - The return value.
+
+=item * C<$expression> - The expression to test.
+
+=item * C<$default> - The default value to return if expression is not defined (optional).
+
+=back
+
 =head2 trim
 
     my $trimmed_value = centreon::plugins::misc::trim($value);
@@ -954,6 +1124,48 @@ Escapes special characters in a string for use in PowerShell.
 =over 4
 
 =item * C<$value> - The string to escape.
+
+=back
+
+=head2 graphql_escape
+
+    my $escaped = centreon::plugins::misc::graphql_escape($value);
+
+Escapes special characters in a string for use in GraphQL query.
+
+=over 4
+
+=item * C<$value> - The string to escape.
+
+=back
+
+=head2 flatten_arrays
+
+    my $array = centreon::plugins::misc::flatten_arrays($arrays, $separator);
+
+Returns an array from arrays containing values separated by a separator ( default comma ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
+
+=back
+
+=head2 flatten_to_hash
+
+    my $hash = centreon::plugins::misc::flatten_to_hash($arrays, $separator, $default);
+
+Returns a hash from arrays containing values separated by a separator ( default comma ). Values are set to optional parameter $default ( 1 if undef ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
+
+=item * C<$default> - Default value ( 1 if undef ).
 
 =back
 
@@ -1257,13 +1469,30 @@ Checks if a command is in the security whitelist.
 
 =head2 json_decode
 
-    my $decoded = centreon::plugins::misc::json_decode($content);
+    my $decoded = centreon::plugins::misc::json_decode($content, %options);
 
 Decodes a JSON string.
 
 =over 4
 
 =item * C<$content> - The JSON string to decode and transform into an object.
+
+=item * C<%options> - Options passed to the function.
+
+=over 4
+
+=item * C<booleans_as_strings> - Defines whether booleans must be converted to C<true>/C<false> strings instead of
+JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
+
+=item * C<errstr> - Custom error message to display if JSON string cannot be decoded.
+
+=item * C<output> - Output object to use for displaying errors.
+
+=item * C<no_exit> - Do not exit if there is an error and C<output> is defined.
+
+=item * C<silence> - Do not print error on STDERR if C<output> is not defined.
+
+=back
 
 =back
 
@@ -1278,6 +1507,51 @@ Encodes an object to a JSON string.
 =item * C<$object> - The object to encode.
 
 =back
+
+=head2 is_local_ip
+
+    my $is_local = centreon::plugins::misc::is_local_ip($ip);
+
+Returns 1 if an IPv4 IP is within a local address range.
+
+=over 4
+
+=item * C<$ip> - IP to test.
+
+=back
+
+=head2 sort_ips
+
+    my @array = ( '192.168.0.3', '127.0.0.1' );
+    @array = sort centreon::plugins::misc::sort_ips @array;
+
+Returns a sorted array.
+
+=over 4
+
+=item * C<@array> - An array containing IPs to be sorted.
+
+=back
+
+=head2 is_excluded
+
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+
+Determines whether a string should be excluded based on include and exclude regular expressions.
+
+=over 4
+
+=item * C<$string> - The string to evaluate. If undefined, the function returns 1 (excluded).
+
+=item * C<$include_regexp> - A regular expression to include the string.
+
+=item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
+
+=back
+
+Returns 1 if the string is excluded, 0 if it is included.
+The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
+not match the string. The string will also be excluded if it is undefined.
 
 =head1 AUTHOR
 

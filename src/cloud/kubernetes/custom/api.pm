@@ -362,19 +362,19 @@ Kubernetes API hostname.
 
 =item B<--port>
 
-API port (default: 443)
+API port (default: 443).
 
 =item B<--proto>
 
-Specify https if needed (default: 'https')
+Specify https if needed (default: 'https').
 
 =item B<--timeout>
 
-Set HTTP timeout
+Set HTTP timeout (default: 10).
 
 =item B<--limit>
 
-Number of responses to return for each list calls.
+Number of responses to return for each list calls (default: 100).
 
 See https://kubernetes.io/docs/reference/kubernetes-api/common-parameters/common-parameters/#limit
 

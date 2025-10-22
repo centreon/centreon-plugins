@@ -57,7 +57,7 @@ jobs:
           cp -r ~/rpmbuild/RPMS/x86_64/*.rpm .
         shell: bash
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -91,7 +91,7 @@ jobs:
 
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - uses: actions/cache/restore@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.rpm
           key: unsigned-${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -102,12 +102,12 @@ jobs:
       - run: rpmsign --addsign ./*.rpm
         shell: bash
 
-      - uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+      - uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
-      - uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: packages-${{ matrix.distrib }}
           path: ./*.rpm

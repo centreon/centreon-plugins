@@ -5,7 +5,7 @@ on:
 
 jobs:
   set-pull-request-skip-label:
-    if: ${{ success() && contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }}
+    if: ${{ success() && contains(fromJSON('["pull_request"]') , github.event_name) }}
     runs-on: ubuntu-24.04
 
     steps:

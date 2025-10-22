@@ -37,6 +37,7 @@ sub new {
         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
         'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
+        'stack'                => 'centreon::common::cisco::smallbusiness::snmp::mode::stack',
         'uptime'               => 'snmp_standard::mode::uptime',
     );
 

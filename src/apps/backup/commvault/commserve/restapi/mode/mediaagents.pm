@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -175,10 +175,10 @@ Filter media agents by ID (can be a regexp).
 
 Filter media agents by name (can be a regexp).
 
-=item B<--unknown-device-status>
+=item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{name}
+You can use the following variables: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
 
 =item B<--warning-status>
 
@@ -190,10 +190,29 @@ You can use the following variables: %{status}, %{is_maintenance}, %{offline_rea
 Define the conditions to match for the status to be CRITICAL (default: '%{is_maintenance} eq "no" and %{status} eq "offline"').
 You can use the following variables: %{status}, %{is_maintenance}, %{offline_reason}, %{name}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-media-agents-total>
 
 Thresholds.
-Can be: 'media-agents-total', 'media-agents-online', 'media-agents-offline'.
+
+=item B<--critical-media-agents-total>
+
+Thresholds.
+
+=item B<--warning-media-agents-online>
+
+Thresholds.
+
+=item B<--critical-media-agents-online>
+
+Thresholds.
+
+=item B<--warning-media-agents-offline>
+
+Thresholds.
+
+=item B<--critical-media-agents-offline>
+
+Thresholds.
 
 =back
 

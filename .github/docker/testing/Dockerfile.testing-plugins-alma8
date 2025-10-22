@@ -19,7 +19,7 @@ curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
 yum install -y nodejs
 
 # Install mockoon
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\
@@ -59,6 +59,11 @@ enabled=1\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
+
+dnf config-manager --add-repo https://packages.centreon.com/rpm-standard/24.10/el8/centreon-24.10.repo
+dnf install -y centreon-connector-perl centreon-clib
+
+rm -f /etc/yum.repos.d/centreon-24.10.repo
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/

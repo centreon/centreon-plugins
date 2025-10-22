@@ -8,10 +8,10 @@
         "snmp_standard/mode/cpudetailed.pm",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	"snmp_standard/mode/resources/",
+        "snmp_standard/mode/resources/",
         "snmp_standard/mode/memory.pm",
         "snmp_standard/mode/swap.pm",
-        "network/juniper/common/ive",
-        "network/juniper/sa"
+        "network/juniper/common/ive/snmp",
+        "network/juniper/sa/snmp"
     ]
 }

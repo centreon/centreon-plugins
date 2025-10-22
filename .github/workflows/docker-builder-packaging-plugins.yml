@@ -30,43 +30,43 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma8
             image: packaging-plugins-alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma9
             image: packaging-plugins-alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma8
             image: packaging-plugins-java-alma8
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma9
             image: packaging-plugins-java-alma9
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
-          - runner: centreon-collect-arm64
+          - runner: ubuntu-24.04-arm
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye-arm64
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bookworm
             image: packaging-plugins-java-bookworm
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-jammy
             image: packaging-plugins-java-jammy
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-noble
             image: packaging-plugins-noble
-          - runner: ubuntu-22.04
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-noble
             image: packaging-plugins-java-noble
 
@@ -77,22 +77,22 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Login to Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
       - name: Login to proxy registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
         with:
           registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
-      - uses: docker/setup-buildx-action@6524bf65af31da8d45b59e8c27de4bd072b392f5 # v3.8.0
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
-      - uses: docker/build-push-action@ca877d9245402d1537745e0e356eab47c3520991 # v6.13.0
+      - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           file: .github/docker/packaging/Dockerfile.${{ matrix.dockerfile }}
           context: .

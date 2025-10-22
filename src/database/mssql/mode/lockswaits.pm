@@ -68,7 +68,7 @@ sub manage_selection {
         WHERE
             object_name = 'SQLServer:Locks'
         AND
-            counter_name = 'Lock Waits/sec%'
+            counter_name LIKE 'Lock Waits/sec%'
     });
 
     my $query_result = $options{sql}->fetchall_arrayref();

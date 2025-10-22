@@ -4,6 +4,9 @@ on:
       version_file:
         required: false
         type: string
+      nightly_manual_trigger:
+        required: false
+        type: boolean
     outputs:
       version:
         description: "version"
@@ -17,6 +20,9 @@ on:
       target_stability:
         description: "Final target branch stability (stable, testing, unstable, canary or not defined if not a pull request)"
         value: ${{ jobs.get-environment.outputs.target_stability }}
+      is_nightly:
+        description: "if the current workflow run is considered a nightly"
+        value: ${{ jobs.get-environment.outputs.is_nightly }}
       release_type:
         description: "type of release (hotfix, release or not defined if not a release)"
         value: ${{ jobs.get-environment.outputs.release_type }}
@@ -40,6 +46,7 @@ jobs:
       target_stability: ${{ steps.get_stability.outputs.target_stability }}
       release_type: ${{ steps.get_release_type.outputs.release_type }}
       is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
+      is_nightly: ${{ steps.get_nightly_status.outputs.is_nightly }}
       skip_workflow: ${{ steps.skip_workflow.outputs.result }}
       labels: ${{ steps.has_skip_label.outputs.labels }}
 
@@ -52,7 +59,7 @@ jobs:
             let hasSkipLabel = false;
             let labels = [];
 
-            if (${{ contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) }} === true) {
+            if (${{ contains(fromJSON('["pull_request"]') , github.event_name) }} === true) {
               try {
                 const fetchedLabels = await github.rest.issues.listLabelsOnIssue({
                   owner: context.repo.owner,
@@ -134,7 +141,7 @@ jobs:
       - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
         name: Get push changes
         id: get_push_changes
-        uses: tj-actions/changed-files@2f7c5bfce28377bc069a65ba478de0a74aa0ca32 # v46.0.1
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
         with:
           since_last_remote_commit: true
           json: true
@@ -244,6 +251,26 @@ jobs:
 
             core.setOutput('is_targeting_feature_branch', isTargetingFeatureBranch);
 
+      - name: Detect nightly status
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        id: get_nightly_status
+        env:
+          NIGHTLY_MANUAL_TRIGGER: ${{ inputs.nightly_manual_trigger }}
+        with:
+          script: |
+            const getNightlyInput = () => {
+              const nightly_manual_trigger = process.env.NIGHTLY_MANUAL_TRIGGER;
+              console.log(nightly_manual_trigger);
+              if (typeof nightly_manual_trigger === 'undefined' || nightly_manual_trigger === '' || '${{ github.repository }}'.match(/^workflow-.*$/)) {
+                return 'false';
+              } else if (context.eventName === 'schedule' || context.eventName === 'workflow_dispatch' && nightly_manual_trigger === 'true' ) {
+                return 'true';
+              }
+              return 'false';
+            };
+
+            core.setOutput('is_nightly', getNightlyInput());
+
       - name: Get version
         id: get_version
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
@@ -342,6 +369,7 @@ jobs:
               ['release_type', '${{ steps.get_release_type.outputs.release_type || '<em>not defined because this is not a release</em>' }}'],
               ['is_targeting_feature_branch', '${{ steps.get_stability.outputs.is_targeting_feature_branch }}'],
               ['target_stability', '${{ steps.get_stability.outputs.target_stability || '<em>not defined because current run is not triggered by pull request event</em>' }}'],
+              ['is_nightly', '${{ steps.get_nightly_status.outputs.is_nightly }}'],
               ['skip_workflow', '${{ steps.skip_workflow.outputs.result }}'],
               ['labels', '${{ steps.has_skip_label.outputs.labels }}'],
             ];

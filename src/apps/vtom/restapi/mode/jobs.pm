@@ -98,7 +98,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -10 => 1, -11 => 1 } }
     ];
     
     $self->{maps_counters}->{jobs} = [
@@ -343,47 +343,47 @@ Example: --filter-counters='total-error'
 
 =item B<--filter-environment>
 
-Filter environment name (cannot be a regexp).
+Filter by environment name (cannot be a regexp).
 
 =item B<--filter-application>
 
-Filter application name (cannot be a regexp).
+Filter by application name (cannot be a regexp).
 
 =item B<--filter-name>
 
-Filter name (can be a regexp).
+Filter by name (can be a regexp).
 
 =item B<--timezone>
 
-Set date timezone.
+Set the timezone.
 Can use format: 'Europe/London' or '+0100'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: -)
-You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{exit_code}>, C<%{message}>, C<%{environment}>, C<%{application}>.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{exit_code} =~ /Error/i').
-You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
+Define the conditions to match for the status to be CRITICAL (default: C<%{exit_code} =~ /Error/i>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{exit_code}>, C<%{message}>, C<%{environment}>, C<%{application}>.
 
 =item B<--warning-long>
 
-Set warning threshold for long jobs (default: none)
-You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
+Set the warning threshold for long jobs.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{elapsed}>, C<%{application}>.
 
 =item B<--critical-long>
 
-Set critical threshold for long jobs (default: none).
-You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
+Set the critical threshold for long jobs.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{elapsed}>, C<%{application}>.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'running', 'errors', 'waiting',
-'finished', 'notscheduled', 'descheduled',
-'success-prct'.
+Can be: C<running>, C<errors>, C<waiting>,
+C<finished>, C<notscheduled>, C<descheduled>,
+C<success-prct>.
 
 =back
 

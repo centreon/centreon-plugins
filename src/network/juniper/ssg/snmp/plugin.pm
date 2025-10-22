@@ -29,8 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
         'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
         'interfaces'        => 'snmp_standard::mode::interfaces',
@@ -40,8 +39,8 @@ sub new {
         'nsrp'              => 'network::juniper::common::screenos::snmp::mode::nsrp',
         'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions',
         'vpn-status'        => 'network::juniper::common::screenos::snmp::mode::vpnstatus',
-        'vpn-usage'         => 'network::juniper::common::screenos::snmp::mode::vpnusage',
-    );
+        'vpn-usage'         => 'network::juniper::common::screenos::snmp::mode::vpnusage'
+    };
 
     return $self;
 }

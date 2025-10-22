@@ -58,9 +58,10 @@ sub new {
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
-    $self->{output} = $options{output};
-    $self->{http}   = centreon::plugins::http->new(%options, 'default_backend' => 'curl');
-    $self->{cache}  = centreon::plugins::statefile->new(%options);
+    $self->{output}          = $options{output};
+    $self->{http}            = centreon::plugins::http->new(%options, 'default_backend' => 'curl');
+    $self->{token_cache}     = centreon::plugins::statefile->new(%options);
+    $self->{acq_specs_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -98,7 +99,8 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $self->{cache}->check_options(option_results => $self->{option_results});
+    $self->{token_cache}->check_options(option_results => $self->{option_results});
+    $self->{acq_specs_cache}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
@@ -133,13 +135,13 @@ sub settings {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(
-            statefile => 'vsphere8_api_' . md5_hex(
+    my $has_cache_file = $self->{token_cache}->read(
+            statefile => 'vsphere8_api_token_' . md5_hex(
                     $self->{hostname}
                     . ':' . $self->{port}
                     . '_' . $self->{username})
     );
-    my $token = $self->{cache}->get(name => 'token');
+    my $token = $self->{token_cache}->get(name => 'token');
 
     if (
         $has_cache_file == 0
@@ -163,11 +165,7 @@ sub get_token {
         $content =~ s/^"(.*)"$/$1/;
         $token = $content;
 
-        my $data = {
-            updated => time(),
-            token => $token
-        };
-        $self->{cache}->write(data => $data);
+        $self->{token_cache}->write(data => { updated => time(), token => $token });
     }
 
     return $token;
@@ -202,8 +200,22 @@ sub try_request_api {
         $self->{output}->option_exit();
     }
 
+    return {} if ($method eq 'PATCH' && $self->{http}->get_code() == 204
+        || $method eq 'POST' && $self->{http}->get_code() == 201);
 
-    my $decoded = ($method eq 'GET') ? centreon::plugins::misc::json_decode($content) : {};
+    my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
+    if (!defined($decoded) && !$options{no_fail}) {
+        $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
+                . $self->{http}->get_code() . "'] [message: '"
+                . $self->{http}->get_message() . "'] [content: '"
+                . $content . "']");
+        $self->{output}->option_exit();
+    }
+
+    if (ref($decoded) eq "HASH" && defined($decoded->{error_type})  && !$options{no_fail}) {
+        $self->{output}->add_option_msg(short_msg => "API returned an error: " . $decoded->{error_type} . " - " . $decoded->{messages}->[0]->{default_message});
+        $self->{output}->option_exit();
+    }
 
     return $decoded;
 }
@@ -214,7 +226,7 @@ sub request_api {
     $self->settings();
 
     # first call using the available token with unknown_status = 0 in order to avoid exiting at first attempt in case it has expired
-    my $api_response = $self->try_request_api(%options, unknown_status => '0');
+    my $api_response = $self->try_request_api(%options, unknown_status => '0', no_fail => 1);
 
     # if the token is invalid, we try to authenticate again
     if (ref($api_response) eq 'HASH'
@@ -224,26 +236,69 @@ sub request_api {
         $api_response = $self->try_request_api('force_authentication' => 1, %options);
     }
 
-    # if we could not authenticate, we exit
-    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type})) {
+    # if we could not authenticate, we exit (unless no_fail option is true)
+    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type}) && ! $options{no_fail}) {
         my $full_message = '';
         for my $error_item (@{$api_response->{messages}}) {
             $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
         }
-        $self->{output}->add_option_msg(short_msg => "API returns error of type " . $api_response->{error_type} . ": " . $full_message);
+        $self->{output}->add_option_msg(short_msg => "API returned an error of type " . $api_response->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message);
         $self->{output}->option_exit();
     }
+
+
+    return $api_response;
+}
+
+sub get_folder_ids_by_names {
+    my ($self, %options) = @_;
+
+    my $api_response = $self->request_api(
+        %options,
+        'endpoint' => '/vcenter/folder?names=' . $options{names},
+        'method' => 'GET');
+    my @folders = map { $_->{folder} } @{$api_response};
+    return join(',', @folders);
+}
+
+sub get_vm_guest_identity {
+    my ($self, %options) = @_;
+
+    my $api_response = $self->request_api(
+        'endpoint' => '/vcenter/vm/' . $options{vm_id} . '/guest/identity',
+        'method'   => 'GET',
+        no_fail    => 1);
+
     return $api_response;
 }
 
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
-    # Get all acq specs and store them in cache
-    # FIXME: cache management
-    # FIXME: any pagination issue ?
-    $self->{all_acq_specs} = $self->request_api(endpoint => '/stats/acq-specs')->{acq_specs} if ( !defined($self->{all_acq_specs}));
+    # if we already have it in memory, we return what we have
+    return $self->{all_acq_specs} if ($self->{all_acq_specs} && @{$self->{all_acq_specs}});
 
+    # if we can get it from the cache, we return it
+    if ($self->{acq_specs_cache}->read(
+        statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
+    )) {
+        $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
+        return $self->{all_acq_specs};
+    }
+    # Get all acq specs (first page)
+    my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
+
+    # store only acq_specs related to the considered resource
+    push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
+    # If the whole acq-specs takes more than one page, the API will return a "next" value
+    while ($response->{next}) {
+        $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
+        # store only acq_specs related to the considered resource
+        push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
+    }
+
+    # store it in the cache for future runs
+    $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} });
     return $self->{all_acq_specs};
 }
 
@@ -342,8 +397,7 @@ sub get_acq_spec {
     my ($self, %options) = @_;
 
     # If it is not available in cache call get_all_acq_specs()
-    my $acq_specs = $self->get_all_acq_specs();
-    # FIXME: opt exit if centreon::plugins::misc::is_empty($options{cid})
+    my $acq_specs = $self->get_all_acq_specs(%options);
     for my $spec (@$acq_specs) {
         # Ignore acq_specs not related to the counter_id
         next if ($options{cid} ne $spec->{counters}->{cid_mid}->{cid});
@@ -408,11 +462,25 @@ sub get_stats {
             endpoint   => $endpoint
     );
 
-    # FIXME: check if ( !defined($result) || ref($result) ne 'HASH' || scalar(@{ $result->{data_points} }) == 0 ) {
-    # FIXME: the existence of the resource id must be checked at one moment
+    if (defined($result->{messages})) {
+        # Example of what can happen when a VM has no stats
+        # {
+        #   "messages": [
+        #     {
+        #       "args": [],
+        #       "default_message": "Invalid data points filter: found empty set of Resource Addresses for provided set of (types,resources)",
+        #       "localized": "Invalid data points filter: found empty set of Resource Addresses for provided set of (types,resources)",
+        #       "id": "com.vmware.vstats.data_points_invalid_resource_filter"
+        #     }
+        #   ]
+        # }
+        $self->{output}->add_option_msg(short_msg => "No stats found. Error: " . $result->{messages}->[0]->{default_message});
+        $self->{output}->option_exit();
+    }
+
     # return only the last value (if there are several)
-    if ( scalar(@{ $result->{data_points} }) == 0 ) {
-        $self->{output}->add_option_msg(short_msg => "no data for host " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
+    if ( !defined($result->{data_points}) || scalar(@{ $result->{data_points} }) == 0 ) {
+        $self->{output}->add_option_msg(short_msg => "no data for resource " . $options{rsrc_id} . " counter " . $options{cid} . " at the moment.");
         return undef;
     }
 
@@ -561,6 +629,50 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 =back
 
 =back
+
+=head2 get_folder_ids_by_names
+
+    my $folder_ids = $self->get_folder_ids_by_names(names => $folder_names);
+
+Retrieves the IDs of folders based on their names.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<names> - A comma-separated string of folder names to search for. This option is required.
+
+=back
+
+=back
+
+Returns a comma-separated string of folder IDs corresponding to the provided folder names.
+
+=cut
+
+=head2 get_vm_guest_identity
+
+    my $identity = $self->get_vm_guest_identity(vm_id => $vm_id);
+
+Retrieves the guest identity information for a specific virtual machine (VM) using its ID.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<vm_id> - The ID of the virtual machine for which to retrieve the guest identity. This option is required.
+
+=back
+
+=back
+
+Returns the guest identity information as a hash reference if successful, or undef if the request fails.
+
+=cut
 
 =head2 get_acq_spec
 

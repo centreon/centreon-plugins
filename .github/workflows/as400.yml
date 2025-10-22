@@ -85,7 +85,7 @@ jobs:
         run: mvn -version && mvn clean install -f as400/connector.as400/pom.xml
 
       - name: Remove me after debug
-        run: find / -name "centreon-as400*.jar"
+        run: find / -path /proc -prune -o -name "centreon-as400*.jar"
 
       - name: Package
         uses: ./.github/actions/package-nfpm
@@ -104,7 +104,7 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Save to cache
-        uses: actions/cache/save@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}

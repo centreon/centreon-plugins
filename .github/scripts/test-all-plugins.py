@@ -10,8 +10,8 @@ def get_tests_folders(plugin_name):
     folder_list = []
     pkg_file = open("./packaging/" + plugin_name + "/pkg.json")
     packaging = json.load(pkg_file)
-    for file in packaging["files"]: # loop on "files" array in pkg.json file.
-        if os.path.isdir("tests/" + file): # check if the path is a directory in the "tests" folder
+    for file in packaging["files"]:  # loop on "files" array in pkg.json file.
+        if os.path.isdir("tests/" + file):  # check if the path is a directory in the "tests" folder
             folder_list.append("tests/" + file)
     return folder_list
 
@@ -27,8 +27,10 @@ def test_plugin(plugin_name):
     print(f"{plugin_name} folders_list : {folders_list}")
     if len(folders_list) == 0:
         return 0  # no tests present at the moment, but we still have tested the plugin can be installed.
-    robot_results = subprocess.run("robot --exclude notauto -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(folders_list),
-                   shell=True, check=False)
+    robot_results = subprocess.run(
+        "robot --exclude notauto -v ''CENTREON_PLUGINS:" + get_plugin_full_path(plugin_name) + " " + " ".join(
+            folders_list),
+        shell=True, check=False)
     return robot_results.returncode
 
 
@@ -52,12 +54,13 @@ def launch_snmp_sim():
     snmpsim_cmd = "snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &"
     try_command(cmd=snmpsim_cmd, error="can't launch snmp sim daemon.")
 
+
 def refresh_packet_manager(archi):
     with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get update\n")
             output_status = (subprocess.run(
-                    "apt-get update",
+                "apt-get update",
                 shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
             return 0
@@ -66,17 +69,20 @@ def refresh_packet_manager(archi):
             exit(1)
     return output_status
 
+
 def install_plugin(plugin, archi):
     with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
         if archi == "deb":
-            outfile.write("apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
+            outfile.write(
+                "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb\n")
             output_status = (subprocess.run(
-                    "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
+                "apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y ./" + plugin.lower() + "*.deb",
                 shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
             outfile.write("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm\n")
-            output_status = (subprocess.run("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm", shell=True, check=False,
-                                        stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            output_status = (
+                subprocess.run("dnf install --setopt=keepcache=True -y ./" + plugin + "*.rpm", shell=True, check=False,
+                               stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
             exit(1)
@@ -86,17 +92,19 @@ def install_plugin(plugin, archi):
 def remove_plugin(plugin, archi):
     with open('/var/log/robot-plugins-installation-tests.log', "a") as outfile:
         if archi == "deb":
-            outfile.write("apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower() + "\n")
+            outfile.write(
+                "export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y "
+                + plugin.lower() + "\n")
             output_status = (subprocess.run(
-                "apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower(),
+                "export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y " + plugin.lower(),
                 shell=True, check=False, stderr=subprocess.STDOUT, stdout=outfile)).returncode
             # -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' is an option to force apt to keep the package in
             # /var/cache/apt/archives, so it do not re download them for every installation.
             # 'autoremove', contrary to 'remove' all dependancy while removing the original package.
 
         elif archi == "rpm":
-            outfile.write("dnf remove --setopt=keepcache=True -y " + plugin + "\n")
-            output_status = (subprocess.run("dnf remove --setopt=keepcache=True -y " + plugin, shell=True, check=False,
+            outfile.write("dnf remove --setopt=protected_packages= --setopt=keepcache=True -y " + plugin + "\n")
+            output_status = (subprocess.run("dnf remove --setopt=protected_packages= --setopt=keepcache=True -y " + plugin, shell=True, check=False,
                                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
         else:
             print(f"Unknown architecture, expected deb or rpm, got {archi}. Exiting.")
@@ -135,7 +143,7 @@ if __name__ == '__main__':
         print("plugin : ", plugin)
         folders_list = get_tests_folders(plugin)
         if len(folders_list) == 0:
-            print(f"we don't test {plugin} as it don't have any robots tests.")
+            print(f"we don't test {plugin} as it doesn't have any robot tests.")
             continue
 
         nb_plugins += 1
@@ -153,7 +161,7 @@ if __name__ == '__main__':
         error_purge += tmp
 
     print(f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
-          f"errors, and {error_purge} removal error list of error : {list_plugin_error}",)
+          f"errors, and {error_purge} removal error list of error : {list_plugin_error}", )
 
     if error_install != 0 or error_tests != 0 or error_purge != 0:
         exit(1)

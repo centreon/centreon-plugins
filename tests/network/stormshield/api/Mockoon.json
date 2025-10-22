@@ -1,0 +1,169 @@
+{
+  "uuid": "c0a1a49e-58d9-49e8-bd8e-9eca9b7fe197",
+  "lastMigration": 32,
+  "name": "New environment",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "8cd81000-5c93-4799-97a3-e61978797b22"
+    },
+    {
+      "type": "route",
+      "uuid": "cfd8d8b8-2473-405c-a6b8-4e15dbd89b3e"
+    },
+    {
+      "type": "route",
+      "uuid": "b6f05284-391c-4a75-9525-03162ebb5856"
+    }
+  ],
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "8cd81000-5c93-4799-97a3-e61978797b22",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "auth/admin.html",
+      "responses": [
+        {
+          "uuid": "02882e1f-30f7-4edc-aa92-88b12897fa92",
+          "body": "<nws msg=\"AUTH_SUCCESS\" value=\"ok\" cn=\"\" email=\"\" />",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Set-Cookie",
+              "value": "NETASQ_sslclient=abcdefg123; Path=/api/; Secure; HttpOnly; SameSite=Strict"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "app=sslclient&pswd=azerty123&uid=qwerty123",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "cfd8d8b8-2473-405c-a6b8-4e15dbd89b3e",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/auth/login",
+      "responses": [
+        {
+          "uuid": "c7548a37-47c4-4df0-9ecc-9ba3613eb05d",
+          "body": "<?xml version=\"1.0\"?>\r\n<nws code=\"100\" msg=\"OK\" id=\"0\"><sessionid>AZEQERSFSRSTSTSTSTSTSTT</sessionid><uid>admin</uid><serial>SFAZERTY15HH18SF25754A7</serial><protocol>5</protocol><command>14</command><level>modify,mon_write,base,contentfilter,log,filter,vpn,log_read,pki,object,user,admin,network,route,maintenance,asq,pvm,vpn_read,filter_read,report,report_read,globalobject,globalfilter,guest_admin,privacy,privacy_read,tpm,console</level><sessionlevel>base,contentfilter,log,filter,vpn,log_read,pki,object,user,admin,network,route,maintenance,asq,pvm,vpn_read,filter_read,report,report_read,globalobject,globalfilter,guest_admin,privacy,privacy_read,tpm,console</sessionlevel><fwadmin>direct</fwadmin><client_address>127.0.0.1</client_address><connection_if>vlan6</connection_if><need_reboot>0</need_reboot><clientmaxtimeout>0</clientmaxtimeout><prefs><section title=\"Configuration.Grids\"><key name=\"supervisionMenuState\" value=\"bXljb29raWVmcm9tbHVjaWU\"/><key name=\"portal-left-menu-supervision\" value=\"kHsjuCQGUIcGmGgGicAT6Q\"/><key name=\"widget-alarm\" value=\"bXljb29raWVmcm9tbHVjaWU\"/><key name=\"widget-message\" value=\"bXljb29raWVmcm9tbHVjaWU\"/><key name=\"portal-left-menu\" value=\"bXljb29raWVmcm9tbHVjaWU\"/><key name=\"configurationMenuState\" value=\"bXljb29raWVmcm9tbHVjaWU\"/><key name=\"securitypolicy-filter-state\" value=\"Azertyuiopqsdfghjklmwxcvbn\"/></section><section title=\"Configuration.Miscellaneous\"><key name=\"showTelemetryPopup\" value=\"false\"/></section><section title=\"Report.Interface\"><key name=\"moduleToOpenAtStatup\" value=\"useraac\"/><key name=\"leftMenuSelectedPanel\" value=\"portal-configuration-navigation\"/></section></prefs></nws>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "*/*"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/x-www-form-urlencoded"
+            },
+            {
+              "key": "Set-Cookie",
+              "value": "azerty123"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "deny"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "frame-ancestors"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "b6f05284-391c-4a75-9525-03162ebb5856",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/command",
+      "responses": [
+        {
+          "uuid": "4cc9b593-ea33-4c15-bb5e-c388c17885e8",
+          "body": "<?xml version=\"1.0\"?>\r\n<nws code=\"100\" msg=\"OK\"><serverd ret=\"101\" code=\"00a01000\" msg=\"Begin\"><data format=\"section_line\"><section title=\"Result\"><line><key name=\"id\" value=\"7599\"/><key name=\"rulename\" value=\"572c897f8d27eab165e775d9cb588be2\"/><key name=\"ikeid\" value=\"8748\"/><key name=\"ikerulename\" value=\"Site_host_ELA_WAN-HUGIN-N-PROD_IL_DUAL\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"12\"/><key name=\"spiout\" value=\"3364066230\"/><key name=\"spiin\" value=\"3435804934\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"4458\"/><key name=\"bytesout\" value=\"13764\"/><key name=\"packetsin\" value=\"129\"/><key name=\"packetsout\" value=\"111\"/><key name=\"lifetime\" value=\"559\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7573\"/><key name=\"rulename\" value=\"e9728a8eb715bf3876226cab9acb2519\"/><key name=\"ikeid\" value=\"8900\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"27\"/><key name=\"spiout\" value=\"3223958572\"/><key name=\"spiin\" value=\"3270588156\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"20861360\"/><key name=\"bytesout\" value=\"12432224\"/><key name=\"packetsin\" value=\"31270\"/><key name=\"packetsout\" value=\"23864\"/><key name=\"lifetime\" value=\"2233\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7576\"/><key name=\"rulename\" value=\"2d936a26a2d6d0cf2a1292bfad04f1ff\"/><key name=\"ikeid\" value=\"8900\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"23\"/><key name=\"spiout\" value=\"3326707223\"/><key name=\"spiin\" value=\"3372538350\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"2072464\"/><key name=\"bytesout\" value=\"2552140\"/><key name=\"packetsin\" value=\"5537\"/><key name=\"packetsout\" value=\"5537\"/><key name=\"lifetime\" value=\"2185\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7578\"/><key name=\"rulename\" value=\"4793e3b444d2342a46df35dd0338f2cc\"/><key name=\"ikeid\" value=\"8900\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"26\"/><key name=\"spiout\" value=\"3378071173\"/><key name=\"spiin\" value=\"3261423142\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"29036\"/><key name=\"bytesout\" value=\"105896\"/><key name=\"packetsin\" value=\"854\"/><key name=\"packetsout\" value=\"854\"/><key name=\"lifetime\" value=\"2134\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7579\"/><key name=\"rulename\" value=\"824181ec4f52ec7217143bb184e86516\"/><key name=\"ikeid\" value=\"8900\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"24\"/><key name=\"spiout\" value=\"3396429970\"/><key name=\"spiin\" value=\"3387391230\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"28424\"/><key name=\"bytesout\" value=\"103664\"/><key name=\"packetsin\" value=\"836\"/><key name=\"packetsout\" value=\"836\"/><key name=\"lifetime\" value=\"2092\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7580\"/><key name=\"rulename\" value=\"6b11c213835922c1260118aff3e6b00e\"/><key name=\"ikeid\" value=\"8900\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"25\"/><key name=\"spiout\" value=\"3457389083\"/><key name=\"spiin\" value=\"3452852354\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"27948\"/><key name=\"bytesout\" value=\"101928\"/><key name=\"packetsin\" value=\"822\"/><key name=\"packetsout\" value=\"822\"/><key name=\"lifetime\" value=\"2056\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7601\"/><key name=\"rulename\" value=\"baa1461bc0103f6019208a2c9f45b87d\"/><key name=\"ikeid\" value=\"8847\"/><key name=\"ikerulename\" value=\"Site_host_ELA_WAN-HUGIN-N-IVQFPP_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"10\"/><key name=\"spiout\" value=\"3320926990\"/><key name=\"spiin\" value=\"3236214797\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"2144\"/><key name=\"bytesout\" value=\"6572\"/><key name=\"packetsin\" value=\"62\"/><key name=\"packetsout\" value=\"53\"/><key name=\"lifetime\" value=\"267\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7602\"/><key name=\"rulename\" value=\"3061933d03c01595f6a426cfb50c5e09\"/><key name=\"ikeid\" value=\"8847\"/><key name=\"ikerulename\" value=\"Site_host_ELA_WAN-HUGIN-N-IVQFPP_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"11\"/><key name=\"spiout\" value=\"3282215540\"/><key name=\"spiin\" value=\"3317066027\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"2038\"/><key name=\"bytesout\" value=\"6324\"/><key name=\"packetsin\" value=\"59\"/><key name=\"packetsout\" value=\"51\"/><key name=\"lifetime\" value=\"256\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7588\"/><key name=\"rulename\" value=\"a49c4a5f5ae7fbd03181bb998411179c\"/><key name=\"ikeid\" value=\"8871\"/><key name=\"ikerulename\" value=\"Site_host_ELA_WAN-HUGIN-N-PROD_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"13\"/><key name=\"spiout\" value=\"3264259318\"/><key name=\"spiin\" value=\"3488975466\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"10818\"/><key name=\"bytesout\" value=\"33356\"/><key name=\"packetsin\" value=\"313\"/><key name=\"packetsout\" value=\"269\"/><key name=\"lifetime\" value=\"1347\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7589\"/><key name=\"rulename\" value=\"2975a3940ace7eb1a13a006a51c66991\"/><key name=\"ikeid\" value=\"8947\"/><key name=\"ikerulename\" value=\"Site_host_ODG_WAN_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"0\"/><key name=\"reqid\" value=\"4\"/><key name=\"spiout\" value=\"3363621255\"/><key name=\"spiin\" value=\"3275698372\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"1296515\"/><key name=\"bytesout\" value=\"4723628\"/><key name=\"packetsin\" value=\"4528\"/><key name=\"packetsout\" value=\"5913\"/><key name=\"lifetime\" value=\"1238\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7590\"/><key name=\"rulename\" value=\"ac7ccab8b34dd58699e69f4443bde56f\"/><key name=\"ikeid\" value=\"8947\"/><key name=\"ikerulename\" value=\"Site_host_ODG_WAN_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"0\"/><key name=\"reqid\" value=\"2\"/><key name=\"spiout\" value=\"3410661626\"/><key name=\"spiin\" value=\"3391812707\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"45114068\"/><key name=\"bytesout\" value=\"7088972\"/><key name=\"packetsin\" value=\"51480\"/><key name=\"packetsout\" value=\"32785\"/><key name=\"lifetime\" value=\"1236\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7591\"/><key name=\"rulename\" value=\"0a649997d982742e77f47839591ff834\"/><key name=\"ikeid\" value=\"8947\"/><key name=\"ikerulename\" value=\"Site_host_ODG_WAN_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"0\"/><key name=\"reqid\" value=\"3\"/><key name=\"spiout\" value=\"3292041259\"/><key name=\"spiin\" value=\"3268437566\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"20764\"/><key name=\"bytesout\" value=\"65224\"/><key name=\"packetsin\" value=\"494\"/><key name=\"packetsout\" value=\"494\"/><key name=\"lifetime\" value=\"1234\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7596\"/><key name=\"rulename\" value=\"957b3343680f4aaac9fcaaaa15ad279a\"/><key name=\"ikeid\" value=\"8959\"/><key name=\"ikerulename\" value=\"Site_host_ODG_WAN_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"0\"/><key name=\"reqid\" value=\"7\"/><key name=\"spiout\" value=\"3402809993\"/><key name=\"spiin\" value=\"3224772673\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"6107767\"/><key name=\"bytesout\" value=\"2699064\"/><key name=\"packetsin\" value=\"7345\"/><key name=\"packetsout\" value=\"5866\"/><key name=\"lifetime\" value=\"562\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7597\"/><key name=\"rulename\" value=\"76939e698563b7f8492c1025f074cd9e\"/><key name=\"ikeid\" value=\"8959\"/><key name=\"ikerulename\" value=\"Site_host_ODG_WAN_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"0\"/><key name=\"reqid\" value=\"5\"/><key name=\"spiout\" value=\"3415936492\"/><key name=\"spiin\" value=\"3257561999\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"9532\"/><key name=\"bytesout\" value=\"30208\"/><key name=\"packetsin\" value=\"227\"/><key name=\"packetsout\" value=\"228\"/><key name=\"lifetime\" value=\"562\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7598\"/><key name=\"rulename\" value=\"f408f85d61a6028b340228fe3cebfeb5\"/><key name=\"ikeid\" value=\"8959\"/><key name=\"ikerulename\" value=\"Site_host_ODG_WAN_IL_BCK\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"0\"/><key name=\"reqid\" value=\"6\"/><key name=\"spiout\" value=\"3348805524\"/><key name=\"spiin\" value=\"3360921021\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"9458\"/><key name=\"bytesout\" value=\"29708\"/><key name=\"packetsin\" value=\"225\"/><key name=\"packetsout\" value=\"225\"/><key name=\"lifetime\" value=\"562\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7574\"/><key name=\"rulename\" value=\"5c0bb5ff8df0b1a41350882e2f42667d\"/><key name=\"ikeid\" value=\"8901\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"22\"/><key name=\"spiout\" value=\"3259519576\"/><key name=\"spiin\" value=\"3221524665\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"1125491\"/><key name=\"bytesout\" value=\"6922000\"/><key name=\"packetsin\" value=\"5298\"/><key name=\"packetsout\" value=\"8248\"/><key name=\"lifetime\" value=\"2233\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7575\"/><key name=\"rulename\" value=\"23c1c09933ba2a92e659fedccfdc1d30\"/><key name=\"ikeid\" value=\"8901\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"18\"/><key name=\"spiout\" value=\"3440669009\"/><key name=\"spiin\" value=\"3245423348\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"12481986\"/><key name=\"bytesout\" value=\"10977648\"/><key name=\"packetsin\" value=\"26618\"/><key name=\"packetsout\" value=\"27224\"/><key name=\"lifetime\" value=\"2190\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7577\"/><key name=\"rulename\" value=\"f0ac38fad37d391caba53b3f8e4078d9\"/><key name=\"ikeid\" value=\"8901\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"20\"/><key name=\"spiout\" value=\"3386629861\"/><key name=\"spiin\" value=\"3410558046\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"destroying\"/><key name=\"bytesin\" value=\"29512\"/><key name=\"bytesout\" value=\"105152\"/><key name=\"packetsin\" value=\"868\"/><key name=\"packetsout\" value=\"848\"/><key name=\"lifetime\" value=\"0\"/><key name=\"maxlifetime\" value=\"1430\"/></line><line><key name=\"id\" value=\"7581\"/><key name=\"rulename\" value=\"e0f42b4fc3e8db6e923f5d73015ce71f\"/><key name=\"ikeid\" value=\"8901\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"19\"/><key name=\"spiout\" value=\"3417672691\"/><key name=\"spiin\" value=\"3318204422\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"2133236\"/><key name=\"bytesout\" value=\"1880912\"/><key name=\"packetsin\" value=\"12768\"/><key name=\"packetsout\" value=\"10192\"/><key name=\"lifetime\" value=\"2009\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7582\"/><key name=\"rulename\" value=\"0fea42202ed5a0a1482947b0ab89c42e\"/><key name=\"ikeid\" value=\"8901\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"21\"/><key name=\"spiout\" value=\"3396789044\"/><key name=\"spiin\" value=\"3440180773\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"40659267\"/><key name=\"bytesout\" value=\"3627624\"/><key name=\"packetsin\" value=\"39656\"/><key name=\"packetsout\" value=\"24214\"/><key name=\"lifetime\" value=\"1916\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7603\"/><key name=\"rulename\" value=\"f0ac38fad37d391caba53b3f8e4078d9\"/><key name=\"ikeid\" value=\"8901\"/><key name=\"ikerulename\" value=\"Site_host_RNY_WAN-N_IL_MAIN\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"20\"/><key name=\"spiout\" value=\"3396205971\"/><key name=\"spiin\" value=\"3276835261\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"0\"/><key name=\"bytesout\" value=\"0\"/><key name=\"packetsin\" value=\"0\"/><key name=\"packetsout\" value=\"0\"/><key name=\"lifetime\" value=\"3\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7584\"/><key name=\"rulename\" value=\"7ddb9fbb1faab23401c19beb20e31b62\"/><key name=\"ikeid\" value=\"8664\"/><key name=\"ikerulename\" value=\"Site_host_ELA_WAN-HUGIN-N-IVQFPP_IL_DUAL\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"8\"/><key name=\"spiout\" value=\"3466079235\"/><key name=\"spiin\" value=\"3412385945\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"11064\"/><key name=\"bytesout\" value=\"33976\"/><key name=\"packetsin\" value=\"320\"/><key name=\"packetsout\" value=\"274\"/><key name=\"lifetime\" value=\"1388\"/><key name=\"maxlifetime\" value=\"3600\"/></line><line><key name=\"id\" value=\"7600\"/><key name=\"rulename\" value=\"a5ddf29e5958eb0b355835b7517eb02e\"/><key name=\"ikeid\" value=\"8664\"/><key name=\"ikerulename\" value=\"Site_host_ELA_WAN-HUGIN-N-IVQFPP_IL_DUAL\"/><key name=\"src\" value=\"Anonymized\"/><key name=\"srcname\" value=\"Anonymized\"/><key name=\"dst\" value=\"Anonymized\"/><key name=\"dstname\" value=\"Anonymized\"/><key name=\"type\" value=\"esp\"/><key name=\"mode\" value=\"tunnel\"/><key name=\"global\" value=\"0\"/><key name=\"encap\" value=\"0\"/><key name=\"esn\" value=\"1\"/><key name=\"reqid\" value=\"9\"/><key name=\"spiout\" value=\"3240899422\"/><key name=\"spiin\" value=\"3222488661\"/><key name=\"enc\" value=\"aes/256\"/><key name=\"auth\" value=\"hmac_sha512\"/><key name=\"prf\" value=\"\"/><key name=\"pfs\" value=\"21\"/><key name=\"state\" value=\"installed\"/><key name=\"bytesin\" value=\"4046\"/><key name=\"bytesout\" value=\"12400\"/><key name=\"packetsin\" value=\"117\"/><key name=\"packetsout\" value=\"100\"/><key name=\"lifetime\" value=\"504\"/><key name=\"maxlifetime\" value=\"3600\"/></line></section></data></serverd><serverd ret=\"100\" code=\"00a00100\" msg=\"Ok\"></serverd></nws>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [],
+  "proxyReqHeaders": [],
+  "proxyResHeaders": [],
+  "data": [],
+  "callbacks": []
+}

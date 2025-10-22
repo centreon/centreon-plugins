@@ -178,6 +178,12 @@ my $mapping = {
         free   => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.4' }, # volumeFreeSize
         status => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.5' }, # volumeStatus
         name   => { oid => '.1.3.6.1.4.1.55062.1.10.9.1.8' }  # volumeName
+    },
+    quts => {
+        total  => { oid => '.1.3.6.1.4.1.55062.2.10.9.1.3' }, # volumeCapacity
+        free   => { oid => '.1.3.6.1.4.1.55062.2.10.9.1.4' }, # volumeFreeSize
+        status => { oid => '.1.3.6.1.4.1.55062.2.10.9.1.5' }, # volumeStatus
+        name   => { oid => '.1.3.6.1.4.1.55062.2.10.9.1.2' }  # volumeName
     }
 };
 
@@ -231,6 +237,11 @@ sub manage_selection {
 
     my $snmp_result;
     if (!defined($self->{option_results}->{force_counters_legacy})) {
+        $snmp_result = $options{snmp}->get_table(
+            oid => '.1.3.6.1.4.1.55062.2.10.9' # sharedFolderTable
+        );
+        return if ($self->check_volumes(snmp => $options{snmp}, type => 'quts', snmp_result => $snmp_result));
+
         $snmp_result = $options{snmp}->get_table(
             oid => '.1.3.6.1.4.1.55062.1.10.9' # volumeTable
         );

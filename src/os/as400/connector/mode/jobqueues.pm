@@ -218,11 +218,37 @@ You can use the following variables: %{status}, %{name}, %{library}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /HELD/i').
 You can use the following variables: %{status}, %{name}, %{library}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobqueue-jobs-active>
 
-Thresholds.
-Can be: 'jobqueues-total', 'jobqueue-jobs-active', 
-'jobqueue-jobs-scheduled', 'jobqueue-jobs-held'.
+Threshold.
+
+=item B<--critical-jobqueue-jobs-active>
+
+Threshold.
+
+=item B<--warning-jobqueue-jobs-held>
+
+Threshold.
+
+=item B<--critical-jobqueue-jobs-held>
+
+Threshold.
+
+=item B<--warning-jobqueue-jobs-scheduled>
+
+Threshold.
+
+=item B<--critical-jobqueue-jobs-scheduled>
+
+Threshold.
+
+=item B<--warning-jobqueues-total>
+
+Threshold.
+
+=item B<--critical-jobqueues-total>
+
+Threshold.
 
 =back
 

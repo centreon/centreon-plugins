@@ -118,7 +118,7 @@ sub manage_selection {
         if ($snmp_result->{$oid} =~ /\s+(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):(\d+)/) {
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
             # if the equipment check is on another timezone than the system where the plugin is executed.
-            if (defined($self->{option_results}->{timezone})){
+            if (!centreon::plugins::misc::is_empty($self->{option_results}->{timezone})) {
                 eval {
                     $dt = $dt->set_time_zone($self->{option_results}->{timezone});
                 };
@@ -161,7 +161,7 @@ Select the time unit for thresholds. May be 's' for seconds, 'm' for minutes, 'h
 
 =item B<--timezone>
 
-Set equipment timezone if different from Europe/London. Valid time zones can be found in C</usr/share/zoneinfo>.
+Set equipment timezone if different from UTC. Valid time zones can be found in C</usr/share/zoneinfo>.
 Format example : Europe/Paris and America/Los_Angeles
 
 =item B<--warning-*> B<--critical-*>

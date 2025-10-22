@@ -106,7 +106,7 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         next if($oid !~ /^$mapping->{uxDSPServiceStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         next if ($result->{uxDSPIsPresent} eq '0');
 

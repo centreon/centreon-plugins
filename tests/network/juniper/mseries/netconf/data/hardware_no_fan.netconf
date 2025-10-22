@@ -1,0 +1,1221 @@
+<environment-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis">
+    <environment-item>
+        <name>PEM 0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="35">35 degrees C / 95 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>PEM 1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="30">30 degrees C / 86 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>PEM 2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="30">30 degrees C / 86 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>PEM 3</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="35">35 degrees C / 95 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>Routing Engine 0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="29">29 degrees C / 84 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>Routing Engine 0 CPU</name>
+        <status>OK</status>
+        <temperature junos:celsius="49">49 degrees C / 120 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>Routing Engine 1</name>
+        <class>Temp</class>
+        <status>Absent</status>
+    </environment-item>
+    <environment-item>
+        <name>Routing Engine 1 CPU</name>
+        <status>Absent</status>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 Intake</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="33">33 degrees C / 91 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 Exhaust A</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="37">37 degrees C / 98 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 Exhaust B</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="50">50 degrees C / 122 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 PMBus POLs (Highest)</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="57">57 degrees C / 134 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT POL (Highest)</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="55">55 degrees C / 131 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850 (Highest)</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="51">51 degrees C / 123 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 External MAX6657</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="60">60 degrees C / 140 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal (Highest)</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Main</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 3</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 4</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 5</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 ZF 0 Internal Remote 6</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850_01 Core 0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="49">49 degrees C / 120 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850_01 Core 1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="50">50 degrees C / 122 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850_15 Core 0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="46">46 degrees C / 114 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850_15 Core 1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="45">45 degrees C / 113 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850_17 Core 0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="51">51 degrees C / 123 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 RT BCM59850_17 Core 1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="49">49 degrees C / 120 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_PLL_VDD_1V25 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20730_VDD_5V0 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="33">33 degrees C / 91 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20730_VDD_3V3 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="37">37 degrees C / 98 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20730_VDD_2V5 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="40">40 degrees C / 104 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20730_VDD_1V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="39">39 degrees C / 102 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_VDD_1V2 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="50">50 degrees C / 122 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20730_VDD_1V0 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="26">26 degrees C / 78 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_ZF0_VDD_0V75 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="42">42 degrees C / 107 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_ZF0_VDD_0V75 T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="50">50 degrees C / 122 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_ZF0_VDDM_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="42">42 degrees C / 107 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_ZF0_VDDM_0V8 T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="43">43 degrees C / 109 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_ZF0_AVDD_0V9 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="41">41 degrees C / 105 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_ZF0_AVDD_0V9 T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="49">49 degrees C / 120 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_ZF0_AVDDH_1V1 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_RT00_11_AVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="41">41 degrees C / 105 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_RT00_11_AVDD_0V8 T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="57">57 degrees C / 134 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_RT12_23_AVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="42">42 degrees C / 107 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20754_RT12_23_AVDD_0V8 T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT00_02_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="54">54 degrees C / 129 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT03_05_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT06_08_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="55">55 degrees C / 131 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT09_11_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="55">55 degrees C / 131 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT12_14_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT15_17_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="47">47 degrees C / 116 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT18_20_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="48">48 degrees C / 118 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 MAX20743_RT21_23_DVDD_0V8 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="46">46 degrees C / 114 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 BMR453_A T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="44">44 degrees C / 111 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 BMR453_A T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="35">35 degrees C / 95 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 BMR453_B T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="54">54 degrees C / 129 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 BMR453_B T2</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="47">47 degrees C / 116 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>CB 0 PIM4820 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="53">53 degrees C / 127 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Intake</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="45">45 degrees C / 113 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Exhaust A</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="44">44 degrees C / 111 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Exhaust B</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="64">64 degrees C / 147 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XL TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XL Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="77">77 degrees C / 170 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XL_XR0 TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XL_XR0 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="79">79 degrees C / 174 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XL_XR1 TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XL_XR1 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="82">82 degrees C / 179 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XQ TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XQ Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="85">85 degrees C / 185 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XQ_XR0 TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XQ_XR0 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="87">87 degrees C / 188 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XM TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XM Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="99">99 degrees C / 210 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XF TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="84">84 degrees C / 183 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 XF Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="90">90 degrees C / 194 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 PLX PCIe Switch TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 PLX PCIe Switch Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="54">54 degrees C / 129 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Aloha FPGA 0 TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Aloha FPGA 0 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="66">66 degrees C / 150 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Aloha FPGA 1 TSen</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 0 Aloha FPGA 1 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="91">91 degrees C / 195 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 Intake</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="32">32 degrees C / 89 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 Exhaust A</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="35">35 degrees C / 95 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 Exhaust B</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="56">56 degrees C / 132 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="77">77 degrees C / 170 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="81">81 degrees C / 177 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 PCIE_SW Chip</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="61">61 degrees C / 141 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 TestMacro</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="66">66 degrees C / 150 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 hbmio_grp3</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="67">67 degrees C / 152 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 hbmio_grp0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="68">68 degrees C / 154 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 gumem1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="69">69 degrees C / 156 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 llm</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="70">70 degrees C / 158 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 wanio_sd</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="69">69 degrees C / 156 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 fabio_sd</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="75">75 degrees C / 167 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 flexmem</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="70">70 degrees C / 158 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 TestMacro</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="70">70 degrees C / 158 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 hbmio_grp3</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="71">71 degrees C / 159 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 hbmio_grp0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="72">72 degrees C / 161 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 gumem1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="73">73 degrees C / 163 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 llm</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="73">73 degrees C / 163 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 wanio_sd</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="72">72 degrees C / 161 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 fabio_sd</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="77">77 degrees C / 170 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 flexmem</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="73">73 degrees C / 163 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 HBM0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="63">63 degrees C / 145 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT0 HBM1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="64">64 degrees C / 147 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 HBM0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="66">66 degrees C / 150 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 ZT1 HBM1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="67">67 degrees C / 152 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT1.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="72">72 degrees C / 161 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT2.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="65">65 degrees C / 149 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT3.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="70">70 degrees C / 158 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT4.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="58">58 degrees C / 136 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT5.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="60">60 degrees C / 140 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT6.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="50">50 degrees C / 122 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT7.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="52">52 degrees C / 125 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 FAB RT8.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="38">38 degrees C / 100 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 WAN RT9.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="47">47 degrees C / 116 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 WAN RT9.1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="49">49 degrees C / 120 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 WAN RT10.0</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="44">44 degrees C / 111 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 WAN RT10.1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="42">42 degrees C / 107 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 PIM4820 T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="64">64 degrees C / 147 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 BMR456-12V-BRICK-A T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="57">57 degrees C / 134 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 BMR456-12V-BRICK-B T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="60">60 degrees C / 140 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 MAX20730-ZT0-AVDDH T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="57">57 degrees C / 134 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 MAX20730-ZT0-HBM-VDDQ T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="65">65 degrees C / 149 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 MAX20730-ZT0-HBM-VDDC T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="54">54 degrees C / 129 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 MAX20730-ZT1-AVDDH T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="65">65 degrees C / 149 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 MAX20730-ZT1-HBM-VDDQ T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="61">61 degrees C / 141 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 MAX20730-ZT1-HBM-VDDC T1</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="61">61 degrees C / 141 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 CPU0_PMB</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="54">54 degrees C / 129 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 CPU7_PMB</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="54">54 degrees C / 129 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 DDR4 A</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="38">38 degrees C / 100 degrees F</temperature>
+    </environment-item>
+    <environment-item>
+        <name>FPC 5 DDR4 B</name>
+        <class>Temp</class>
+        <status>OK</status>
+        <temperature junos:celsius="36">36 degrees C / 96 degrees F</temperature>
+    </environment-item>
+</environment-information>
+<power-usage-information>
+<power-usage-item>
+    <name>PEM 0</name>
+    <state>Online</state>
+    <dc-input-detail>
+        <dc-input>OK</dc-input>
+        <dc-expect-feed>1</dc-expect-feed>
+        <dc-actual-feed>1</dc-actual-feed>
+        <reference-voltage>48.0 V input</reference-voltage>
+        <actual-voltage>53500</actual-voltage>
+    </dc-input-detail>
+    <pem-capacity-detail>
+        <capacity-actual>2440</capacity-actual>
+        <capacity-max>2440</capacity-max>
+    </pem-capacity-detail>
+    <dc-output-detail>
+        <dc-power>318</dc-power>
+        <zone>0</zone>
+        <dc-current>6</dc-current>
+        <dc-voltage>53</dc-voltage>
+        <dc-load>13</dc-load>
+    </dc-output-detail>
+</power-usage-item>
+<power-usage-item>
+    <name>PEM 1</name>
+    <state>Online</state>
+    <dc-input-detail>
+        <dc-input>OK</dc-input>
+        <dc-expect-feed>1</dc-expect-feed>
+        <dc-actual-feed>1</dc-actual-feed>
+        <reference-voltage>48.0 V input</reference-voltage>
+        <actual-voltage>53000</actual-voltage>
+    </dc-input-detail>
+    <pem-capacity-detail>
+        <capacity-actual>2440</capacity-actual>
+        <capacity-max>2440</capacity-max>
+    </pem-capacity-detail>
+    <dc-output-detail>
+        <dc-power>106</dc-power>
+        <zone>1</zone>
+        <dc-current>2</dc-current>
+        <dc-voltage>53</dc-voltage>
+        <dc-load>4</dc-load>
+    </dc-output-detail>
+</power-usage-item>
+<power-usage-item>
+    <name>PEM 2</name>
+    <state>Online</state>
+    <dc-input-detail>
+        <dc-input>OK</dc-input>
+        <dc-expect-feed>1</dc-expect-feed>
+        <dc-actual-feed>1</dc-actual-feed>
+        <reference-voltage>48.0 V input</reference-voltage>
+        <actual-voltage>54000</actual-voltage>
+    </dc-input-detail>
+    <pem-capacity-detail>
+        <capacity-actual>2440</capacity-actual>
+        <capacity-max>2440</capacity-max>
+    </pem-capacity-detail>
+    <dc-output-detail>
+        <dc-power>270</dc-power>
+        <zone>0</zone>
+        <dc-current>5</dc-current>
+        <dc-voltage>54</dc-voltage>
+        <dc-load>11</dc-load>
+    </dc-output-detail>
+</power-usage-item>
+<power-usage-item>
+    <name>PEM 3</name>
+    <state>Online</state>
+    <dc-input-detail>
+        <dc-input>OK</dc-input>
+        <dc-expect-feed>1</dc-expect-feed>
+        <dc-actual-feed>1</dc-actual-feed>
+        <reference-voltage>48.0 V input</reference-voltage>
+        <actual-voltage>53500</actual-voltage>
+    </dc-input-detail>
+    <pem-capacity-detail>
+        <capacity-actual>2440</capacity-actual>
+        <capacity-max>2440</capacity-max>
+    </pem-capacity-detail>
+    <dc-output-detail>
+        <dc-power>54</dc-power>
+        <zone>1</zone>
+        <dc-current>1</dc-current>
+        <dc-voltage>54</dc-voltage>
+        <dc-load>2</dc-load>
+    </dc-output-detail>
+</power-usage-item>
+<power-usage-system>
+    <power-usage-zone-information>
+        <zone>0</zone>
+        <capacity-actual>2440</capacity-actual>
+        <capacity-max>2440</capacity-max>
+        <capacity-allocated>884</capacity-allocated>
+        <capacity-remaining>1556</capacity-remaining>
+        <capacity-actual-usage>588</capacity-actual-usage>
+    </power-usage-zone-information>
+    <power-usage-zone-information>
+        <zone>1</zone>
+        <capacity-actual>2440</capacity-actual>
+        <capacity-max>2440</capacity-max>
+        <capacity-allocated>546</capacity-allocated>
+        <capacity-remaining>1894</capacity-remaining>
+        <capacity-actual-usage>160</capacity-actual-usage>
+    </power-usage-zone-information>
+    <capacity-sys-actual>4880</capacity-sys-actual>
+    <capacity-sys-max>4880</capacity-sys-max>
+    <capacity-sys-remaining>3450</capacity-sys-remaining>
+</power-usage-system>
+</power-usage-information>
+<fan-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="rpm">
+</fan-information>
+<fpc-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="brief">
+<fpc>
+    <slot>0</slot>
+    <state>Online</state>
+    <temperature junos:celsius="44">44</temperature>
+    <cpu-total>16</cpu-total>
+    <cpu-interrupt>0</cpu-interrupt>
+    <cpu-1min-avg>15</cpu-1min-avg>
+    <cpu-5min-avg>15</cpu-5min-avg>
+    <cpu-15min-avg>15</cpu-15min-avg>
+    <memory-dram-size>3584</memory-dram-size>
+    <memory-heap-utilization>9</memory-heap-utilization>
+    <memory-buffer-utilization>25</memory-buffer-utilization>
+</fpc>
+<fpc>
+    <slot>1</slot>
+    <state>Empty</state>
+</fpc>
+<fpc>
+    <slot>2</slot>
+    <state>Empty</state>
+</fpc>
+<fpc>
+    <slot>3</slot>
+    <state>Empty</state>
+</fpc>
+<fpc>
+    <slot>4</slot>
+    <state>Empty</state>
+</fpc>
+<fpc>
+    <slot>5</slot>
+    <state>Online</state>
+    <temperature junos:celsius="35">35</temperature>
+    <cpu-total>1</cpu-total>
+    <cpu-interrupt>0</cpu-interrupt>
+    <cpu-1min-avg>1</cpu-1min-avg>
+    <cpu-5min-avg>1</cpu-5min-avg>
+    <cpu-15min-avg>1</cpu-15min-avg>
+    <memory-dram-size>32768</memory-dram-size>
+    <memory-heap-utilization>16</memory-heap-utilization>
+    <memory-buffer-utilization>0</memory-buffer-utilization>
+</fpc>
+</fpc-information>
+        <!-- show chassis fpc pic-status -->
+<fpc-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="pic-style">
+<fpc>
+    <slot>0</slot>
+    <state>Online</state>
+    <description></description>
+    <pic>
+        <pic-slot>2</pic-slot>
+        <pic-state>Online</pic-state>
+        <pic-type>10x 1GE(LAN) -E SFP</pic-type>
+    </pic>
+    <pic>
+        <pic-slot>3</pic-slot>
+        <pic-state>Online</pic-state>
+        <pic-type>10x 1GE(LAN) -E SFP</pic-type>
+    </pic>
+</fpc>
+<fpc>
+    <slot>1</slot>
+    <state>Online</state>
+    <description></description>
+</fpc>
+<fpc>
+    <slot>2</slot>
+    <state>Online</state>
+    <description></description>
+    <pic>
+        <pic-slot>0</pic-slot>
+        <pic-state>Online</pic-state>
+        <pic-type>4x 10GE(LAN) SFP+</pic-type>
+    </pic>
+</fpc>
+</fpc-information>
+        <!-- show chassis afeb -->
+<scb-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis" junos:style="verbose">
+<scb-type>FEB</scb-type>
+<scb>
+    <slot>0</slot>
+    <state>Online</state>
+    <temperature>56 degrees C / 132 degrees F</temperature>
+    <cpu-total>11</cpu-total>
+    <cpu-interrupt>0</cpu-interrupt>
+    <memory-heap-utilization>12</memory-heap-utilization>
+    <memory-buffer-utilization>13</memory-buffer-utilization>
+    <memory-dram-size>2048</memory-dram-size>
+    <start-time junos:seconds="1729500381">2024-10-21 10:46:21 CEST</start-time>
+    <up-time junos:seconds="3367610">38 days, 23 hours, 26 minutes, 50 seconds</up-time>
+</scb>
+</scb-information>
+        <!-- show chassis hardware -->
+<chassis-inventory xmlns="http://xml.juniper.net/junos/21.2R0/junos-chassis">
+<chassis junos:style="inventory">
+    <name>Chassis</name>
+    <serial-number>BF826</serial-number>
+    <description>MX104</description>
+    <chassis-module>
+        <name>Midplane</name>
+        <version>REV 58</version>
+        <part-number>750-062050</part-number>
+        <serial-number>CAKD6651</serial-number>
+        <description>MX104</description>
+        <clei-code>IPMVM10FRB</clei-code>
+        <model-number>CHAS-MX104-S</model-number>
+    </chassis-module>
+    <chassis-module>
+        <name>PEM 0</name>
+        <version>REV 05</version>
+        <part-number>740-045932</part-number>
+        <serial-number>1H077510178</serial-number>
+        <description>DC Power Entry Module</description>
+        <clei-code>IPUPAMJKAA</clei-code>
+        <model-number>PWR-MX104-DC-S</model-number>
+    </chassis-module>
+    <chassis-module>
+        <name>PEM 1</name>
+        <version>REV 05</version>
+        <part-number>740-045932</part-number>
+        <serial-number>1H077510150</serial-number>
+        <description>DC Power Entry Module</description>
+        <clei-code>IPUPAMJKAA</clei-code>
+        <model-number>PWR-MX104-DC-S</model-number>
+    </chassis-module>
+    <chassis-module>
+        <name>Routing Engine 0</name>
+        <version>REV 04</version>
+        <part-number>750-061985</part-number>
+        <serial-number>CAJX0567</serial-number>
+        <description>RE-MX-104</description>
+        <clei-code>IPUCBEWCAB</clei-code>
+        <model-number>RE-S-MX104-S</model-number>
+    </chassis-module>
+    <chassis-module>
+        <name>Routing Engine 1</name>
+        <version>REV 04</version>
+        <part-number>750-061985</part-number>
+        <serial-number>CAKE4189</serial-number>
+        <description>RE-MX-104</description>
+        <clei-code>IPUCBEWCAB</clei-code>
+        <model-number>RE-S-MX104-S</model-number>
+    </chassis-module>
+    <chassis-module>
+        <name>AFEB 0</name>
+        <part-number>BUILTIN</part-number>
+        <serial-number>BUILTIN</serial-number>
+        <description>Forwarding Engine Processor</description>
+    </chassis-module>
+    <chassis-module>
+        <name>FPC 0</name>
+        <part-number>BUILTIN</part-number>
+        <serial-number>BUILTIN</serial-number>
+        <description>MPC BUILTIN</description>
+        <chassis-sub-module>
+            <name>MIC 1</name>
+            <version>REV 18</version>
+            <part-number>750-049846</part-number>
+            <serial-number>CAKD8930</serial-number>
+            <description>3D 20x 1GE(LAN)-E,SFP</description>
+            <clei-code>IPUIBVXMAB</clei-code>
+            <model-number>MIC-3D-20GE-SFP-E</model-number>
+            <chassis-sub-sub-module>
+                <name>PIC 2</name>
+                <part-number>BUILTIN</part-number>
+                <serial-number>BUILTIN</serial-number>
+                <description>10x 1GE(LAN) -E SFP</description>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 0</name>
+                    <version>REV 01</version>
+                    <part-number>740-013111</part-number>
+                    <serial-number>P06AUEU</serial-number>
+                    <description>SFP-T</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 1</name>
+                    <version>REV 01</version>
+                    <part-number>740-013111</part-number>
+                    <serial-number>I272653</serial-number>
+                    <description>SFP-T</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 2</name>
+                    <version>REV 01</version>
+                    <part-number>740-011783</part-number>
+                    <serial-number>SOSB53T_WL841</serial-number>
+                    <description>SFP-LX10</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 3</name>
+                    <version>REV 01</version>
+                    <part-number>740-011783</part-number>
+                    <serial-number>SOSB53T_WL766</serial-number>
+                    <description>SFP-LX10</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 4</name>
+                    <version>REV 01</version>
+                    <part-number>740-020424</part-number>
+                    <serial-number>SOSB53T_WE291</serial-number>
+                    <description>SFP-LX10</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 5</name>
+                    <version>REV 01</version>
+                    <part-number>740-011783</part-number>
+                    <serial-number>SOSB53L13107</serial-number>
+                    <description>SFP-1000BASE-BX10-D</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 6</name>
+                    <part-number>NON-JNPR</part-number>
+                    <serial-number>SO110180904</serial-number>
+                    <description>SFP-LX10</description>
+                </chassis-sub-sub-sub-module>
+            </chassis-sub-sub-module>
+            <chassis-sub-sub-module>
+                <name>PIC 3</name>
+                <part-number>BUILTIN</part-number>
+                <serial-number>BUILTIN</serial-number>
+                <description>10x 1GE(LAN) -E SFP</description>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 0</name>
+                    <version>REV 01</version>
+                    <part-number>740-013111</part-number>
+                    <serial-number>I160709</serial-number>
+                    <description>SFP-T</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 1</name>
+                    <version>REV 01</version>
+                    <part-number>740-013111</part-number>
+                    <serial-number>I160624</serial-number>
+                    <description>SFP-T</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 3</name>
+                    <version>REV 01</version>
+                    <part-number>740-026193</part-number>
+                    <serial-number>SO0B53T_C041</serial-number>
+                    <description>SFP-1000BASE-BX10-D</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 4</name>
+                    <version>REV 01</version>
+                    <part-number>740-013111</part-number>
+                    <serial-number>I272652</serial-number>
+                    <description>SFP-T</description>
+                </chassis-sub-sub-sub-module>
+            </chassis-sub-sub-module>
+        </chassis-sub-module>
+    </chassis-module>
+    <chassis-module>
+        <name>FPC 1</name>
+        <part-number>BUILTIN</part-number>
+        <serial-number>BUILTIN</serial-number>
+        <description>MPC BUILTIN</description>
+    </chassis-module>
+    <chassis-module>
+        <name>FPC 2</name>
+        <part-number>BUILTIN</part-number>
+        <serial-number>BUILTIN</serial-number>
+        <description>MPC BUILTIN</description>
+        <chassis-sub-module>
+            <name>MIC 0</name>
+            <part-number>BUILTIN</part-number>
+            <serial-number>BUILTIN</serial-number>
+            <description>4x 10GE(LAN) SFP+</description>
+            <chassis-sub-sub-module>
+                <name>PIC 0</name>
+                <part-number>BUILTIN</part-number>
+                <serial-number>BUILTIN</serial-number>
+                <description>4x 10GE(LAN) SFP+</description>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 0</name>
+                    <version>REV 01</version>
+                    <part-number>740-021309</part-number>
+                    <serial-number>SOP131LXK789</serial-number>
+                    <description>SFP+-10G-LR</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 1</name>
+                    <version>REV 01</version>
+                    <part-number>740-021309</part-number>
+                    <serial-number>SOP131LXG307</serial-number>
+                    <description>SFP+-10G-LR</description>
+                </chassis-sub-sub-sub-module>
+                <chassis-sub-sub-sub-module>
+                    <name>Xcvr 2</name>
+                    <version>i</version>
+                    <part-number>NON-JNPR</part-number>
+                    <serial-number>SOP131LM2953</serial-number>
+                    <description>SFP+-10G-LR</description>
+                </chassis-sub-sub-sub-module>
+            </chassis-sub-sub-module>
+        </chassis-sub-module>
+    </chassis-module>
+</chassis>
+</chassis-inventory>

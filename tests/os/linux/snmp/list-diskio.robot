@@ -4,6 +4,7 @@ Documentation       Check the list-diskio mode
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -24,9 +25,11 @@ List diskio ${tc}
     ...    --disco-show
     ...    --snmp-community=${snmpcommunity}
     ${output}    Run    ${command}
+
     ${nb_results}    Get Element Count
     ...    ${output}
     ...    label
+
     Should Be Equal As Integers
     ...    ${expected_result}
     ...    ${nb_results}

@@ -26,7 +26,7 @@ use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
@@ -45,10 +45,10 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{ssh_command} = defined($options{option_results}->{sshcli_command}) && $options{option_results}->{sshcli_command} ne '' ? 
-        $options{option_results}->{sshcli_command} : 'ssh';
+    $self->{ssh_command} = defined($options{option_results}->{sshcli_command}) && $options{option_results}->{sshcli_command} ne '' ?
+                           $options{option_results}->{sshcli_command} : 'ssh';
     $self->{ssh_path} = $options{option_results}->{sshcli_path};
-    $self->{ssh_option} = defined($options{option_results}->{sshcli_option}) ? $options{option_results}->{sshcli_option} : [];
+    $self->{ssh_option} = defined($options{option_results}->{sshcli_option}) ? $options{option_results}->{sshcli_option} : [ '-o=LogLevel=ERROR' ];
     $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : 22;
     $self->{ssh_priv_key} = $options{option_results}->{ssh_priv_key};
     $self->{ssh_username} = $options{option_results}->{ssh_username};
@@ -58,10 +58,10 @@ sub check_options {
     }
 
     centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $options{option_results}->{sshcli_command},
+        output          => $self->{output},
+        command         => $options{option_results}->{sshcli_command},
         command_options => join('', @{$self->{ssh_option}}),
-        command_path => $self->{ssh_path}
+        command_path    => $self->{ssh_path}
     );
 
     push @{$self->{ssh_option}}, '-o=BatchMode=yes';
@@ -77,21 +77,23 @@ sub execute {
     $options{command} .= $options{cmd_exit} if (defined($options{cmd_exit}) && $options{cmd_exit} ne '');
 
     my ($content, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        sudo => $options{sudo},
-        command => $options{command},
-        command_path => $options{command_path},
+        output          => $self->{output},
+        sudo            => $options{sudo},
+        command         => $options{command},
+        command_path    => $options{command_path},
         command_options => $options{command_options},
-        ssh_pipe => $options{ssh_pipe},
-        options => {
-            remote => 1,
-            ssh_address => $options{hostname},
-            ssh_command => $self->{ssh_command},
-            ssh_path => $self->{ssh_path},
-            ssh_option => $self->{ssh_option},
-            timeout => $options{timeout}
+        ssh_pipe        => $options{ssh_pipe},
+        options         => {
+            remote         => 1,
+            ssh_address    => $options{hostname},
+            ssh_command    => $self->{ssh_command},
+            ssh_path       => $self->{ssh_path},
+            ssh_option     => $self->{ssh_option},
+            timeout        => $options{timeout},
+            ssh_option_eol => $options{default_sshcli_option_eol}
+
         },
-        no_quit => $options{no_quit}
+        no_quit         => $options{no_quit}
     );
 
     if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
@@ -109,32 +111,32 @@ __END__
 
 =head1 NAME
 
-ssh cli backend.
+SSH CLI backend.
 
 =head1 SYNOPSIS
 
-ssh cli backend.
+SSH CLI backend.
 
-=head1 BACKEND SSHCLI OPTIONS
+=head1 BACKEND SSH CLI OPTIONS
 
 =over 8
 
 =item B<--sshcli-command>
 
-ssh command (default: 'ssh').
+ssh command (default: C<ssh>).
 
 =item B<--sshcli-path>
 
-ssh command path (default: none)
+ssh command path (default: C<none>)
 
 =item B<--sshcli-option>
 
-Specify ssh cli options (example: --sshcli-option='-o=StrictHostKeyChecking=no').
+Specify SSH CLI options (example: --sshcli-option='-o=StrictHostKeyChecking=no -o=LogLevel=ERROR'). The default parameter is --sshcli-options='-o=LogLevel=ERROR' which hides the SSH banner. If you override this parameter, make sure to append '-o=LogLevel=ERROR' to your new value to maintain this behavior. This parameter can be used multiple times and multiple options can be specified in the same parameter.
 
 =back
 
 =head1 DESCRIPTION
 
-B<sshcli>.
+B<SSH CLI>.
 
 =cut

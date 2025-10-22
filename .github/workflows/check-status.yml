@@ -104,7 +104,7 @@ jobs:
 
   get-environment:
     if: |
-      contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) &&
+      contains(fromJSON('["pull_request"]') , github.event_name) &&
       (startsWith(github.base_ref, 'release-') || startsWith(github.base_ref, 'hotfix-'))
     uses: ./.github/workflows/get-environment.yml
 
@@ -112,7 +112,7 @@ jobs:
     needs: [get-environment, check-status]
     runs-on: ubuntu-24.04
     if: |
-      contains(fromJSON('["pull_request", "pull_request_target"]') , github.event_name) &&
+      contains(fromJSON('["pull_request"]') , github.event_name) &&
       needs.get-environment.outputs.target_stability == 'testing' &&
       ! contains(needs.get-environment.outputs.labels, 'skip-cherry-pick')
 

@@ -103,7 +103,7 @@ sub set_counters {
 
     $self->{maps_counters}->{cpu_usage} = [
         {
-            label  => 'usage-percentage',
+            label  => 'usage-prct',
             type   => 1,
             nlabel => 'cpu.capacity.usage.percentage',
             set    => {
@@ -135,6 +135,7 @@ sub set_counters {
                     {
                         value    => 'cpu_usage_hertz',
                         template => '%s',
+                        min      => 0,
                         max      => 'cpu_provisioned_hertz',
                         unit     => 'Hz'
                     }
@@ -145,7 +146,7 @@ sub set_counters {
 
     $self->{maps_counters}->{cpu_contention} = [
         {
-            label  => 'contention-percentage',
+            label  => 'contention-prct',
             type   => 1,
             nlabel => 'cpu.capacity.contention.percentage',
             set    => {
@@ -167,7 +168,7 @@ sub set_counters {
     ];
     $self->{maps_counters}->{cpu_demand} = [
         {
-            label  => 'demand-percentage',
+            label  => 'demand-prct',
             type   => 1,
             nlabel => 'cpu.capacity.demand.percentage',
             set    => {
@@ -175,7 +176,7 @@ sub set_counters {
                 key_values      => [ { name => 'prct_demand' } ],
                 output_use      => 'prct_demand',
                 threshold_use   => 'prct_demand',
-                perfdatas       => [ { value => 'prct_demand', template => '%s' } ]
+                perfdatas       => [ { value => 'prct_demand', template => '%s', unit => '%', min => 0, max => 100 } ]
             }
         },
         {
@@ -195,6 +196,7 @@ sub set_counters {
                     {
                         value    => 'cpu_demand_hertz',
                         template => '%s',
+                        min      => 0,
                         max      => 'cpu_provisioned_hertz',
                         unit     => 'Hz'
                     }
@@ -205,7 +207,7 @@ sub set_counters {
 
     $self->{maps_counters}->{cpu_corecount} = [
         {
-            label  => 'corecount-usage',
+            label  => 'corecount-usage-count',
             type   => 1,
             nlabel => 'cpu.corecount.usage.count',
             set    => {
@@ -247,16 +249,18 @@ sub manage_selection {
         $_ => $self->get_esx_stats(%options, cid => $_, esx_id => $self->{esx_id}, esx_name => $self->{esx_name} )
     } @counters;
 
+    if (!defined($results{'cpu.capacity.usage.HOST'}) || !defined($results{'cpu.capacity.provisioned.HOST'})) {
+        $self->{output}->option_exit(short_msg => "get_esx_stats function failed to retrieve stats");
+    }
+
     # Fill the counter structure depending on their availability
     # Fill the basic stats
-    if (defined($results{'cpu.capacity.usage.HOST'}) && defined($results{'cpu.capacity.provisioned.HOST'})) {
-        $self->{cpu_usage} = {
-            'prct_used'               => 100 * $results{'cpu.capacity.usage.HOST'} / $results{'cpu.capacity.provisioned.HOST'},
-            'cpu_usage_hertz'         => $results{'cpu.capacity.usage.HOST'} * 1000,
-            'cpu_provisioned_hertz'   => $results{'cpu.capacity.provisioned.HOST'} * 1000,
-            'cpu.capacity.usage.HOST' => $results{'cpu.capacity.usage.HOST'}
-        };
-    }
+    $self->{cpu_usage} = {
+        'prct_used'               => 100 * $results{'cpu.capacity.usage.HOST'} / $results{'cpu.capacity.provisioned.HOST'},
+        'cpu_usage_hertz'         => $results{'cpu.capacity.usage.HOST'} * 1000,
+        'cpu_provisioned_hertz'   => $results{'cpu.capacity.provisioned.HOST'} * 1000,
+        'cpu.capacity.usage.HOST' => $results{'cpu.capacity.usage.HOST'}
+    };
 
     # Fill the contention stats
     if ( defined($results{'cpu.capacity.contention.HOST'}) ) {
@@ -302,7 +306,7 @@ __END__
 
 =head1 MODE
 
-Monitor the status of VMware ESX hosts through vSphere 8 REST API.
+Monitor the CPU stats of VMware ESX hosts through vSphere 8 REST API.
 
     Meaning of the available counters in the VMware API:
     - cpu.capacity.provisioned.HOST     Capacity in kHz of the physical CPU cores.
@@ -337,61 +341,53 @@ Add counter related to CPU core count:
 
 C<cpu.corecount.usage.HOST>: The number of virtual processors running on the host.
 
-=item B<--warning-usage-percentage>
+=item B<--warning-contention-prct>
 
-Threshold in %.
+Threshold in percentage.
 
-=item B<--critical-usage-percentage>
+=item B<--critical-contention-prct>
 
-Threshold in %.
+Threshold in percentage.
 
-=item B<--warning-usage-frequency>
+=item B<--warning-corecount-usage-count>
 
-Threshold in Hz.
+Threshold.
 
-=item B<--critical-usage-frequency>
+=item B<--critical-corecount-usage-count>
 
-Threshold in Hz.
-
-=item B<--warning-contention-percentage>
-
-Threshold in %.
-
-=item B<--critical-contention-percentage>
-
-Threshold in %.
-
-=item B<--warning-contention-frequency>
-
-Threshold in Hz.
-
-=item B<--critical-contention-frequency>
-
-Threshold in Hz.
-
-=item B<--warning-demand-percentage>
-
-Threshold in %.
-
-=item B<--critical-demand-percentage>
-
-Threshold in %.
+Threshold.
 
 =item B<--warning-demand-frequency>
 
-Threshold in Hz.
+Threshold in Hertz.
 
 =item B<--critical-demand-frequency>
 
-Threshold in Hz.
+Threshold in Hertz.
 
-=item B<--warning-corecount-usage>
+=item B<--warning-demand-prct>
 
-Threshold in number of cores.
+Threshold in percentage.
 
-=item B<--critical-corecount-usage>
+=item B<--critical-demand-prct>
 
-Threshold in number of cores.
+Threshold in percentage.
+
+=item B<--warning-usage-frequency>
+
+Threshold in Hertz.
+
+=item B<--critical-usage-frequency>
+
+Threshold in Hertz.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 
