@@ -864,7 +864,7 @@ sub json_decode {
             $options{output}->option_exit(short_msg => $msg)
                 unless $options{no_exit};
 
-                $options{output}->output_add(long_msg => $msg, debug => 1);
+            $options{output}->output_add(long_msg => $msg, debug => 1);
         } else {
             warn "$msg\n" unless $options{silence};
         }
