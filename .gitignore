@@ -5,3 +5,4 @@ report.html
 .idea
 .venv
 tests/resources/__pycache__
+src/lib
