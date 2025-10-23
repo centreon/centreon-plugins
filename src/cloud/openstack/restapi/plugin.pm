@@ -30,9 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'discovery'     => 'cloud::openstack::restapi::mode::discovery',
-        'list-services' => 'cloud::openstack::restapi::mode::listservices',
-        'service'       => 'cloud::openstack::restapi::mode::service',
+        'discovery'      => 'cloud::openstack::restapi::mode::discovery',
+        'list-services'  => 'cloud::openstack::restapi::mode::listservices',
+        'service'        => 'cloud::openstack::restapi::mode::service',
+        'list-vms'       => 'cloud::openstack::restapi::mode::listvms',
+        'host-discovery' => 'cloud::openstack::restapi::mode::hostdiscovery',
     };
 
     $self->{custom_modes}->{cli} = 'cloud::openstack::restapi::custom::api';
