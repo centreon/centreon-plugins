@@ -54,7 +54,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interfaces} = [
-        { label => 'interfaces', type => 2, critical_default => '%{name} ne "lo" and %{admstatus} eq "up" and %{opstatus} ne "up"', set => {
+        { label => 'interface-status', type => 2, critical_default => '%{name} ne "lo" and %{admstatus} eq "up" and %{opstatus} ne "up"', set => {
                 key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_interface_status_output'),
                 closure_custom_perfdata => sub { return 0; },
