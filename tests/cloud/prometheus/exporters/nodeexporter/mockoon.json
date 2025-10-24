@@ -1,0 +1,127 @@
+{
+  "uuid": "10bdfbea-0192-45ea-880a-fe6ca5353b8a",
+  "lastMigration": 33,
+  "name": "Prometheus Node Exporter",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "9cbcd2b9-5a5e-4e25-938d-4278396bbef7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/query",
+      "responses": [
+        {
+          "uuid": "399bf607-020f-4b9b-b44e-f94ef899de53",
+          "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"resultType\": \"vector\",\r\n        \"result\": [\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"size\",\r\n                    \"device\": \"/dev/mapper/data\",\r\n                    \"fstype\": \"ext4\",\r\n                    \"host\": \"site1-ngc-sig-1\",\r\n                    \"instance\": \"127.0.0.1:9101\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"mountpoint\": \"/data\",\r\n                    \"target_type\": \"node-exporter\"\r\n                },\r\n                \"value\": [\r\n                    1749816107.094,\r\n                    \"20940668928\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"size\",\r\n                    \"device\": \"/dev/mapper/data\",\r\n                    \"fstype\": \"ext4\",\r\n                    \"host\": \"site1-ngc-sig-1\",\r\n                    \"instance\": \"127.0.0.1:9101\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"mountpoint\": \"/var/log/journal\",\r\n                    \"target_type\": \"node-exporter\"\r\n                },\r\n                \"value\": [\r\n                    1749816107.094,\r\n                    \"20940668928\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"size\",\r\n                    \"device\": \"/dev/root\",\r\n                    \"fstype\": \"ext4\",\r\n                    \"host\": \"site1-ngc-sig-1\",\r\n                    \"instance\": \"127.0.0.1:9101\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"mountpoint\": \"/\",\r\n                    \"target_type\": \"node-exporter\"\r\n                },\r\n                \"value\": [\r\n                    1749816107.094,\r\n                    \"10296250368\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"size\",\r\n                    \"device\": \"/dev/root\",\r\n                    \"fstype\": \"ext4\",\r\n                    \"host\": \"site1-ngc-sig-1\",\r\n                    \"instance\": \"127.0.0.1:9101\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"mountpoint\": \"/data/overlay-etc/primary/lower\",\r\n                    \"target_type\": \"node-exporter\"\r\n                },\r\n                \"value\": [\r\n                    1749816107.094,\r\n                    \"10296250368\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"size\",\r\n                    \"device\": \"/dev/sda1\",\r\n                    \"fstype\": \"vfat\",\r\n                    \"host\": \"site1-ngc-sig-1\",\r\n                    \"instance\": \"127.0.0.1:9101\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"mountpoint\": \"/efi\",\r\n                    \"target_type\": \"node-exporter\"\r\n                },\r\n                \"value\": [\r\n                    1749816107.094,\r\n                    \"17377280\"\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "label_replace({__name__%3D~\"^node_filesystem_free.*\"%2Cinstance%3D~\".*\"%2Cmountpoint%3D~\".*\"%2Cfstype!~\"linuxfs|rootfs|tmpfs\"}%2C \"__name__\"%2C \"free\"%2C \"\"%2C \"\")",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "9cbcd2b9-5a5e-4e25-938d-4278396bbef7"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
