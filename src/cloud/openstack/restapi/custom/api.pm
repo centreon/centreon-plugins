@@ -98,7 +98,7 @@ sub new {
         'username:s'          => { name => 'username', default => '' },
         'password:s'          => { name => 'password', default => '' },
         'user-domain-id:s'    => { name => 'user_domain_id', default => 'default' },
-        'project-name:s'      => { name => 'project_name', default => 'admin' },
+        'project-name:s'      => { name => 'project_name', default => 'demo' },
         'project-domain-id:s' => { name => 'project_domain_id', default => 'default' },
         'authent-by-env:s'    => { name => 'authent_by_env', default => '0' },
         'authent-by-file:s'   => { name => 'authent_by_file', default => '' } }
@@ -240,7 +240,7 @@ my %_external_conf_equiv = ( OS_USERNAME => 'username',
                              OS_PROJECT_DOMAIN_ID => 'project_domain_id',
                              OS_USER_DOMAIN_ID => 'user_domain_id',
                              OS_PROJECT_NAME => 'project_name',
-                             OS_AUTH_URL => 'keystone_url',
+                             OS_AUTH_URL => 'identity_url',
                            );
 
 sub apply_external_conf {
@@ -653,8 +653,8 @@ my %_endpoint_suffix = ( 'volumev2' => '/volumes?limit=1',
                          'volumev3' => '/volumes?limit=1',
                          'image'    => '/v2/images?limit=1',
                          'compute'  => '/v2.1',
-                         'placement'=> '/resource_providers?name=ping',
-                         'identity' => '/users?limit=1' );
+                         'placement'=> '',
+                         'identity' => '' );
 
 # Horizon returns a HTML web page not JSON, so we check that it contains those strings
 my %_expected_data = ( 'horizon'    => 'OpenStack Dashboard',
@@ -744,7 +744,7 @@ OpenStack user domain to use with authentication (default: 'default').
 
 =item B<--project-name>
 
-OpenStack project name to use with authentication (default: 'default').
+OpenStack project name to use with authentication (default: 'demo').
 
 =item B<--project-domain>
 
