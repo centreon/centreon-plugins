@@ -66,6 +66,52 @@
           "default": false,
           "crudKey": "id",
           "callbacks": []
+        },
+        {
+          "uuid": "1c8f3549-c610-4866-b97e-fc4fdcb2035c",
+          "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"resultType\": \"vector\",\r\n        \"result\": [\r\n            {\r\n                \"metric\": {\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:9101\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"node-exporter\"\r\n                },\r\n                \"value\": [\r\n                    1745304415.01,\r\n                    \"3518545.8408756256\"\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "(node_time_seconds-node_boot_time_seconds)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "040a649f-3bce-4237-a6a7-ceb69a35af13",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,
