@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use POSIX;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_empty/;
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
@@ -127,7 +127,7 @@ sub manage_selection {
     my $instances = {};
     $self->{uptimes} = {};
     foreach my $uptime (@$uptimes) {
-        next if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
+        next if (!is_empty($self->{option_results}->{filter_instance}) &&
             $uptime->{metric}->{instance} !~ /$self->{option_results}->{filter_instance}/);
  
         $instances->{ $uptime->{metric}->{instance} } = 1;
