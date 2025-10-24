@@ -4,7 +4,7 @@
   "name": "Openstack.mockoon",
   "endpointPrefix": "",
   "latency": 0,
-  "port": 3010,
+  "port": 3000,
   "hostname": "",
   "folders": [],
   "routes": [
@@ -178,11 +178,11 @@
       "type": "http",
       "documentation": "cinderv3",
       "method": "get",
-      "endpoint": "cinderv3/v3/acb542a340c2448884e62eed36298340/volumes",
+      "endpoint": "cinderv3/v3/[^\\/]+/volumes",
       "responses": [
         {
           "uuid": "63ba877d-b8e6-4dd2-9e4f-65f4c9243881",
-          "body": "{\"volumes\": []}",
+          "body": "{\"volumes\": [{\"id\": \"ca382d6d-53a7-45e0-97d8-fec68abbdcc0\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T10:01:35.000000\", \"updated_at\": \"2025-10-24T10:01:35.000000\", \"attachments\": [], \"name\": \"vol-a-amoi-2\", \"description\": \"un volume non admin 2\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}, {\"id\": \"b510453a-6727-4392-947c-7431aa31250e\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T08:06:17.000000\", \"updated_at\": \"2025-10-24T08:06:17.000000\", \"attachments\": [], \"name\": \"vol-a-amoi\", \"description\": \"un volume non admin\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}]}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -209,11 +209,11 @@
       "type": "http",
       "documentation": "cinderv2",
       "method": "get",
-      "endpoint": "cinderv2/v2/acb542a340c2448884e62eed36298340/volumes",
+      "endpoint": "cinderv2/v2/[^\\/]+/volumes",
       "responses": [
         {
           "uuid": "aa79c16c-cd99-46c4-8264-a464266c43c0",
-          "body": "{\"volumes\": []}",
+          "body": "{\"volumes\": [{\"id\": \"ca382d6d-53a7-45e0-97d8-fec68abbdcc0\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T10:01:35.000000\", \"updated_at\": \"2025-10-24T10:01:35.000000\", \"attachments\": [], \"name\": \"vol-a-amoi-2\", \"description\": \"un volume non admin 2\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}, {\"id\": \"b510453a-6727-4392-947c-7431aa31250e\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T08:06:17.000000\", \"updated_at\": \"2025-10-24T08:06:17.000000\", \"attachments\": [], \"name\": \"vol-a-amoi\", \"description\": \"un volume non admin\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}]}",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -352,6 +352,124 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "12fa1c80-7b6f-424e-946f-db543b9c2e95",
+      "type": "http",
+      "documentation": "cinderv3",
+      "method": "get",
+      "endpoint": "cinderv3/v3/[^\\/]+/volumes/detail",
+      "responses": [
+        {
+          "uuid": "b717779a-7c8b-44cc-81bb-e9d28a713897",
+          "body": "{\"volumes\": [{\"id\": \"ca382d6d-53a7-45e0-97d8-fec68abbdcc0\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T10:01:35.000000\", \"updated_at\": \"2025-10-24T10:01:35.000000\", \"attachments\": [], \"name\": \"vol-a-amoi-2\", \"description\": \"un volume non admin 2\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}, {\"id\": \"b510453a-6727-4392-947c-7431aa31250e\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T08:06:17.000000\", \"updated_at\": \"2025-10-24T08:06:17.000000\", \"attachments\": [], \"name\": \"vol-a-amoi\", \"description\": \"un volume non admin\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "fc70c6f2-7225-406c-ac40-acb3e2fc5cb3",
+      "type": "http",
+      "documentation": "cinderv2",
+      "method": "get",
+      "endpoint": "cinderv2/v2/[^\\/]+/volumes/detail",
+      "responses": [
+        {
+          "uuid": "50911630-1ebd-4614-a009-50e12d8de3f8",
+          "body": "{\"volumes\": [{\"id\": \"ca382d6d-53a7-45e0-97d8-fec68abbdcc0\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T10:01:35.000000\", \"updated_at\": \"2025-10-24T10:01:35.000000\", \"attachments\": [], \"name\": \"vol-a-amoi-2\", \"description\": \"un volume non admin 2\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/ca382d6d-53a7-45e0-97d8-fec68abbdcc0\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}, {\"id\": \"b510453a-6727-4392-947c-7431aa31250e\", \"status\": \"available\", \"size\": 1, \"availability_zone\": \"nova\", \"created_at\": \"2025-10-24T08:06:17.000000\", \"updated_at\": \"2025-10-24T08:06:17.000000\", \"attachments\": [], \"name\": \"vol-a-amoi\", \"description\": \"un volume non admin\", \"volume_type\": \"__DEFAULT__\", \"snapshot_id\": null, \"source_volid\": null, \"metadata\": {}, \"links\": [{\"rel\": \"self\", \"href\": \"https://192.168.1.21:8776/v2/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}, {\"rel\": \"bookmark\", \"href\": \"https://192.168.1.21:8776/dd2cef13c210457d9cdf06e24c2c37b0/volumes/b510453a-6727-4392-947c-7431aa31250e\"}], \"user_id\": \"ca1166a6e3c14107b9e417b5f8e40450\", \"bootable\": \"false\", \"encrypted\": false, \"replication_status\": null, \"consistencygroup_id\": null, \"multiattach\": false, \"os-vol-tenant-attr:tenant_id\": \"dd2cef13c210457d9cdf06e24c2c37b0\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "90f6bfdc-cb26-4435-ac64-4f1c8c64b5fe",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "nova/v2.1/servers/detail",
+      "responses": [
+        {
+          "uuid": "32b7a31d-06e6-4354-a71d-53e74cc6ef36",
+          "body": "{\"servers\": [{\"id\": \"489e5eaf-eab5-48ba-b7f6-1e4b29d4d473\", \"name\": \"da-test\", \"status\": \"ACTIVE\", \"tenant_id\": \"3903cb485951437bb6638ec42f46d8ab\", \"user_id\": \"38619647586446f58ebc9d67f71370b9\", \"metadata\": {}, \"hostId\": \"ff818b957de9626cb1788f033d413a5d6ab3ff83c29ff772ca883856\", \"image\": {\"id\": \"97061229-2e66-4486-98b8-ce8f835248d1\", \"links\": [{\"rel\": \"bookmark\", \"href\": \"http://127.0.0.1:8764/images/97061229-2e66-4486-98b8-ce8f835248d1\"}]}, \"flavor\": {\"id\": \"1\", \"links\": [{\"rel\": \"bookmark\", \"href\": \"http://127.0.0.1:8764/flavors/1\"}]}, \"created\": \"2025-10-22T08:04:32Z\", \"updated\": \"2025-10-22T08:04:51Z\", \"addresses\": {\"test\": [{\"version\": 4, \"addr\": \"192.168.222.218\", \"OS-EXT-IPS:type\": \"fixed\", \"OS-EXT-IPS-MAC:mac_addr\": \"fa:16:3e:85:96:0b\"}]}, \"accessIPv4\": \"\", \"accessIPv6\": \"\", \"links\": [{\"rel\": \"self\", \"href\": \"http://127.0.0.1:8764/v2.1/servers/489e5eaf-eab5-48ba-b7f6-1e4b29d4d473\"}, {\"rel\": \"bookmark\", \"href\": \"http://127.0.0.1:8764/servers/489e5eaf-eab5-48ba-b7f6-1e4b29d4d473\"}], \"OS-DCF:diskConfig\": \"MANUAL\", \"progress\": 0, \"OS-EXT-AZ:availability_zone\": \"nova\", \"config_drive\": \"\", \"key_name\": null, \"OS-SRV-USG:launched_at\": \"2025-10-22T08:04:50.000000\", \"OS-SRV-USG:terminated_at\": null, \"OS-EXT-SRV-ATTR:host\": \"localhost.com\", \"OS-EXT-SRV-ATTR:instance_name\": \"instance-00000001\", \"OS-EXT-SRV-ATTR:hypervisor_hostname\": \"chezwouam\", \"OS-EXT-STS:task_state\": null, \"OS-EXT-STS:vm_state\": \"active\", \"OS-EXT-STS:power_state\": 1, \"os-extended-volumes:volumes_attached\": [], \"security_groups\": [{\"name\": \"default\"}]},\n\n{\"id\": \"aaaa-eab5-48ba-b7f6-1e4b29d4d473\", \"name\": \"other_name\", \"status\": \"ACTIVE\", \"tenant_id\": \"3903cb485951437bb6638ec42f46d8ab\", \"user_id\": \"38619647586446f58ebc9d67f71370b9\", \"metadata\": {}, \"hostId\": \"aaaa7de9626cb1788f033d413a5d6ab3ff83c29ff772ca883856\", \"image\": {\"id\": \"97061229-2e66-4486-98b8-ce8f835248d1\", \"links\": [{\"rel\": \"bookmark\", \"href\": \"http://127.0.0.1:8764/images/97061229-2e66-4486-98b8-ce8f835248d1\"}]}, \"flavor\": {\"id\": \"1\", \"links\": [{\"rel\": \"bookmark\", \"href\": \"http://127.0.0.1:8764/flavors/1\"}]}, \"created\": \"2025-10-22T08:04:32Z\", \"updated\": \"2025-10-22T08:04:51Z\", \"addresses\": {\"test\": [{\"version\": 4, \"addr\": \"192.168.222.218\", \"OS-EXT-IPS:type\": \"fixed\", \"OS-EXT-IPS-MAC:mac_addr\": \"fa:16:3e:85:96:0b\"}]}, \"accessIPv4\": \"\", \"accessIPv6\": \"\", \"links\": [{\"rel\": \"self\", \"href\": \"http://127.0.0.1:8764/v2.1/servers/489e5eaf-eab5-48ba-b7f6-1e4b29d4d473\"}, {\"rel\": \"bookmark\", \"href\": \"http://127.0.0.1:8764/servers/489e5eaf-eab5-48ba-aaaa-1e4b29d4d473\"}], \"OS-DCF:diskConfig\": \"MANUAL\", \"progress\": 0, \"OS-EXT-AZ:availability_zone\": \"nova\", \"config_drive\": \"\", \"key_name\": null, \"OS-SRV-USG:launched_at\": \"2025-10-22T08:04:50.000000\", \"OS-SRV-USG:terminated_at\": null, \"OS-EXT-SRV-ATTR:host\": \"localhost.com\", \"OS-EXT-SRV-ATTR:instance_name\": \"instance-00000001\", \"OS-EXT-SRV-ATTR:hypervisor_hostname\": \"chezwouam\", \"OS-EXT-STS:task_state\": null, \"OS-EXT-STS:vm_state\": \"paused\", \"OS-EXT-STS:power_state\": 1, \"os-extended-volumes:volumes_attached\": [], \"security_groups\": [{\"name\": \"default\"}]}\n]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -394,6 +512,18 @@
     {
       "type": "route",
       "uuid": "b81b5a47-8807-4986-a3e5-52b35a72341f"
+    },
+    {
+      "type": "route",
+      "uuid": "12fa1c80-7b6f-424e-946f-db543b9c2e95"
+    },
+    {
+      "type": "route",
+      "uuid": "fc70c6f2-7225-406c-ac40-acb3e2fc5cb3"
+    },
+    {
+      "type": "route",
+      "uuid": "90f6bfdc-cb26-4435-ac64-4f1c8c64b5fe"
     }
   ],
   "proxyMode": false,
