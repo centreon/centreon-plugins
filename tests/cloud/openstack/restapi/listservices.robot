@@ -14,7 +14,7 @@ ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
 ${CMD}              ${CENTREON_PLUGINS} 
 ...                 --plugin=cloud::openstack::restapi::plugin
-...                 --keystone-url=http://${HOSTNAME}:${APIPORT}  
+...                 --identity-url=http://${HOSTNAME}:${APIPORT}/v3
 ...                 --mode=list-services
 ...                 --username=xxx
 ...                 --password=P@s$WoRdZ

@@ -20,14 +20,12 @@
 
 package cloud::openstack::restapi::mode::service;
 
-use base qw(centreon::plugins::templates::counter);
-
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
 use strict;
 use warnings;
 
-use centreon::plugins::misc qw/flatten_arrays is_excluded/;
+use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::misc qw/flatten_arrays/;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub new {
     my ($class, %options) = @_;
@@ -35,22 +33,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'include-type:s@'                 => { name => 'include_type' },
-        'exclude-type:s@'                 => { name => 'exclude_type' },
-        'include-name:s@'                 => { name => 'include_name' },
-        'exclude-name:s@'                 => { name => 'exclude_name' },
-        'include-id:s@'                   => { name => 'include_id' },
-        'exclude-id:s@'                   => { name => 'exclude_id' },
-        'include-region:s@'               => { name => 'include_region' },
-        'exclude-region:s@'               => { name => 'exclude_region' },
-        'include-region-id:s@'            => { name => 'include_region_id' },
-        'exclude-region-id:s@'            => { name => 'exclude_region_id' },
-        'include-interface:s@'            => { name => 'include_interface' },
-        'exclude-interface:s@'            => { name => 'exclude_interface' },
-
         'service-url:s@'                  => { name => 'service_url' },
         'expected-data:s'                 => { name => 'expected_data', default => 'auto' },
-        'endpoint-suffix:s'               => { name => 'endpoint_suffix', default => 'auto' }
+        'endpoint-suffix:s'               => { name => 'endpoint_suffix', default => 'auto' },
+        cloud::openstack::restapi::custom::api::_service_filters_options(type => 'service'),
     });
 
     return $self;
@@ -106,22 +92,18 @@ sub set_counters {
 
 sub check_options {
     my ($self, %options) = @_;
+
     $self->SUPER::check_options(%options);
 
+    $self->{service_url} = flatten_arrays($self->{option_results}->{service_url});
     $self->{$_} = $self->{option_results}->{$_} foreach qw/endpoint_suffix expected_data/;
-
-
-    $self->{$_} = flatten_arrays($self->{option_results}->{$_}) foreach qw/service_url
-                                                                           include_name exclude_name
-                                                                           include_id exclude_id
-                                                                           include_type exclude_type
-                                                                           include_region exclude_region
-                                                                           include_region_id exclude_region_id
-                                                                           include_interface exclude_interface/;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
+    $options{custom}->service_check_filters(type => 'service');
+
+    #    $options{custom}->filters_check_options();
 
     my ($services, $count);
 
@@ -131,20 +113,20 @@ sub manage_selection {
         $self->{services} = {};
         # Don't use the Keystone cache on the second try to force reauthentication
         $services = $options{custom}->keystone_authent( dont_read_cache => $retry > 1 );
+        $options{custom}->other_services_check_options( keystone_services => $services->{services} );
 
         if (@{$self->{service_url}}) {
             # If user sets specifics URLs we set default type/name if they are not already defined and
             # we don't use use the Keystone service list
-            my $type = $self->{include_type}->[0] // 'service';
-            my $name = $self->{include_name}->[0] // 'N/A';
+            my $type = $options{custom}->{include_service_type}->[0] // 'service';
+            my $name = $options{custom}->{include_service_name}->[0] // 'N/A';
 
             foreach my $endpoint_url (@{$self->{service_url}}) {
                 my $result = $options{custom}->ping_service(type => $type,
                                                             service_url => $endpoint_url,
-                                                            inscure => $self->{insecure},
+                                                            inscure => $options{custom}->{insecure_service},
                                                             endpoint_suffix => $self->{endpoint_suffix},
-                                                            expected_data => $self->{expected_data},
-                                                            token => $services->{token});
+                                                            expected_data => $self->{expected_data});
 
                 # Retry one time if unauthorized
                 next RETRY if $result->{http_status} == 401 && $retry == 1;
@@ -158,21 +140,16 @@ sub manage_selection {
         } else {
             # Using the cached Keystone service list
             foreach my $service (@{$services->{services}}) {
-                next if is_excluded($service->{type}, $self->{include_type}, $self->{exclude_type}) ||
-                        is_excluded($service->{name}, $self->{include_name}, $self->{exclude_name}) ||
-                        is_excluded($service->{id}, $self->{include_id}, $self->{exclude_id});
+                next if $options{custom}->is_excluded_service(type => 'service', service => $service);
 
                 foreach my $endpoint (@{$service->{endpoints}}) {
-                    next if is_excluded($endpoint->{interface}, $self->{include_interface}, $self->{exclude_interface}) ||
-                            is_excluded($endpoint->{region}, $self->{include_region}, $self->{exclude_region}) ||
-                            is_excluded($endpoint->{region_id}, $self->{include_region_id}, $self->{exclude_region_id});
+                    next if $options{custom}->is_excluded_endpoint($endpoint);
 
                     my $result = $options{custom}->ping_service(type => $service->{type},
                                                                 service_url => $endpoint->{url},
-                                                                inscure => $self->{insecure},
+                                                                inscure => $options{custom}->{insecure_service},
                                                                 endpoint_suffix => $self->{endpoint_suffix},
-                                                                expected_data => $self->{expected_data},
-                                                                token => $services->{token}
+                                                                expected_data => $self->{expected_data}
                                                             );
 
                     # Retry one time if unauthorized

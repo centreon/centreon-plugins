@@ -30,6 +30,6 @@ Discovery ${tc}
     Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:        tc       extraoptions                                                              expected_regexp    --
-            ...      1        --keystone-url=http://${HOSTNAME}:${APIPORT}                              "discovered_items":1
-            ...      2        --keystone-url=http://${HOSTNAME}:${APIPORT}/fake_keystone                "discovered_items":0
+            ...      1        --identity-url=http://${HOSTNAME}:${APIPORT}/v3                           "discovered_items":1
+            ...      2        --identity-url=http://${HOSTNAME}:${APIPORT}/fake_keystone                "discovered_items":0
 
