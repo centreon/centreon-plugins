@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}         ${CURDIR}${/}mockoon.json
 
 ${BASE_URL}             http://${HOSTNAME}:${APIPORT}
-${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::prometheus::exporters::nodeexporter::plugin --mode=storage --hostname=${HOSTNAME} --port=${APIPORT} --http-backend=curl --disco-show
+${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::prometheus::exporters::nodeexporter::plugin --mode=storage --hostname=${HOSTNAME} --port=${APIPORT} --http-backend=curl
 
 
 

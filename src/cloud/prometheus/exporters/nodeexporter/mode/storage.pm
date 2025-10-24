@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:values);
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -133,7 +134,7 @@ sub set_counters {
           message_multiple => 'All nodes storages usage are ok', indent_long_output => '    ',
             group => [
                 { name => 'storage', display_long => 1, cb_prefix_output => 'prefix_storage_output',
-                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { -10 => 1 } }
+                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { NO_VALUE => 1 } }
             ]
         }
     ];
@@ -183,10 +184,8 @@ sub check_options {
 
     $self->{labels} = {};
     foreach my $label (('instance', 'mountpoint', 'fstype')) {
-        if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
-            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
-            $self->{output}->option_exit();
-        }
+        $self->{output}->option_exit(short_msg => "Need to specify --" . $label . " option as a PromQL filter. Got: " . $self->{option_results}->{$label})
+            if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/);
         $self->{labels}->{$label} = $1;
     }
 
@@ -216,25 +215,24 @@ sub manage_selection {
 
     $self->{nodes} = {};
     foreach my $result (@$results) {
-        if (!defined($self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } })) {
-            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } } = {
-                instance => $result->{metric}->{ $self->{labels}->{instance} },
-                storage => {}
-            };
-        }
-        if (!defined($self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } }->{storage}->{ $result->{metric}->{mountpoint} })) {
-            $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } }->{storage}->{ $result->{metric}->{mountpoint} } = {
-                instance => $result->{metric}->{ $self->{labels}->{instance} },
-                mountpoint => $result->{metric}->{ $self->{labels}->{mountpoint} }
-            };
-        }
-        $self->{nodes}->{ $result->{metric}->{ $self->{labels}->{instance} } }->{storage}->{ $result->{metric}->{mountpoint} }->{ $result->{metric}->{__name__} } = $result->{value}->[1];
+        my $instance   = $result->{metric}->{ $self->{labels}->{instance} };
+        my $mountpoint = $result->{metric}->{ $self->{labels}->{mountpoint} };
+
+        $self->{nodes}->{$instance} //= {
+            instance => $instance,
+            storage  => {}
+        };
+
+        $self->{nodes}->{$instance}->{storage}->{$mountpoint} //= {
+            instance   => $instance,
+            mountpoint => $mountpoint
+        };
+
+        $self->{nodes}->{$instance}->{storage}->{$mountpoint}->{ $result->{metric}->{__name__} } = $result->{value}->[1];
     }
 
-    if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No nodes found.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'No nodes found.') if (scalar(keys %{$self->{nodes}}) <= 0);
+
 }
 
 sub disco_format {
