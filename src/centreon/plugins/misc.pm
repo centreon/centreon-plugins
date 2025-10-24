@@ -36,6 +36,7 @@ our @EXPORT_OK = qw/change_seconds
                     graphql_escape
                     is_empty
                     is_excluded
+                    is_local_ip
                     json_encode
                     json_decode
                     slurp_file
@@ -875,15 +876,25 @@ sub json_decode {
 }
 
 sub json_encode {
-    my ($object) = @_;
+    my ($object, %options) = @_;
 
     $object =~ s/\r//mg;
-    my $encoded;
-    eval {
-        $encoded = encode_json($object);
-    };
+    my $encoded = eval { JSON::XS->new->utf8->pretty($options{prettify} // 0)->encode($object) };
     if ($@) {
-        print STDERR 'Cannot encode object to JSON. Error message: ' . $@;
+        # To keep compatibilty with old json_encode:
+        # If 'output' not set, print error on STDERR unless 'silence' is set
+        # Otherwise print error on 'output' and exit unless 'no_exit' is set
+        my $msg = $options{errstr} // "Cannot encode object to JSON: $@";
+
+        if ($options{output}) {
+            $options{output}->option_exit(short_msg => $msg)
+                unless $options{no_exit};
+
+            $options{output}->output_add(long_msg => $msg, debug => 1);
+        } else {
+            warn "$msg\n" unless $options{silence};
+        }
+
         return undef;
     }
 
@@ -926,6 +937,7 @@ sub is_excluded($;$;$) {
     return 0 unless defined $include_regexp;
     $include_regexp = [ $include_regexp ] unless ref $include_regexp eq 'ARRAY';
     return 0 unless @{$include_regexp};
+
     return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
 
     return 1;
