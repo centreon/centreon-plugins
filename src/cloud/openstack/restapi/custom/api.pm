@@ -59,10 +59,9 @@ sub _service_filters_options {
 
 # All caches used by this connector
 # authent => contains authentication token and the service catalog list
-# tenant => contains tenant/project id to name mapping
 # flavor => contains flavor id to name mapping
 # image => contains image id to name mapping
-my @_caches = ('authent', 'tenant', 'flavor', 'image');
+my @_caches = ('authent', 'flavor', 'image');
 
 sub new {
     my ($class, %options) = @_;
@@ -90,6 +89,8 @@ sub new {
         _service_filters_options(type => 'compute', ),
         _service_ident_options(type => 'image',    port => 9292, endpoint => ''),
         _service_filters_options(type => 'image', ),
+        _service_ident_options(type => 'volume',   port => 9292, endpoint => ''),
+        _service_filters_options(type => 'volume', ),
 
         # Endpoint filters common to all services
         _endpoint_filters_options(),
@@ -132,7 +133,7 @@ sub service_check_filters {
     }
 
     # Mandatory services (identity, compute, image...) have a default type unless overridden by user
-    $self->{'include_'.$type.'_type'} = [ '^'.$type.'$' ]
+    $self->{'include_'.$type.'_type'} = [ '^'.$type.'v?\d?$' ]
         if $options{mandatory} && not @{$self->{'include_'.$type.'_type'}};
 }
 
@@ -144,6 +145,9 @@ sub service_check_options {
 
     $self->{$service.$_} = $self->{option_results}->{$service.$_}
         foreach qw/url insecure endpoint port interface timeout/;
+    # Add default endpoint to URL if defined and not already present
+    $self->{$service.'url'} .= $self->{$service.'endpoint'}
+        if $self->{$service.'url'} ne '' && $self->{$service.'endpoint'} ne '' && $self->{$service.'url'} !~ /$self->{$service.'endpoint'}$/;
 
     $self->service_check_filters(%options);
 
@@ -285,7 +289,7 @@ sub check_options {
 
     # Init caches
     $self->{$_}->check_options(option_results => $self->{option_results})
-        foreach qw/cache_authent cache_tenant cache_flavor cache_image/;
+        foreach qw/cache_authent cache_flavor cache_image/;
 
     $self->{$_} = $self->{option_results}->{$_}
         foreach qw/authent_by_env authent_by_file disco_mode user_domain_id project_name project_domain_id username password insecure proto hostname timeout/;
@@ -305,7 +309,7 @@ sub check_options {
     }
 
     # Define base cache filename based on Keystone URL
-    $self->{keystone_cache_filename} = 'openstack_restapi_keystone_'.md5_hex($self->{identity_base_url}).'_';
+    $self->{keystone_cache_filename} = 'openstack_restapi_keystone_'.md5_hex(lc $self->{identity_base_url}.'##'.$self->{project_name}.'##'.$self->{username}).'_';
     return 0;
 }
 
@@ -317,7 +321,7 @@ sub other_services_check_options {
     # Define connection parameters for each services
     $self->service_check_options(mandatory => 1, type => 'compute', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
-
+    $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
 }
 
 sub settings {
@@ -334,8 +338,8 @@ sub connect_info {
     ( full_url => $url.($options{resource} // ''), proto=> $url =~ s/^(https?).+/$1/r )
 }
 
-# Returns VMs list by calling Nova service
-sub nova_list_vms {
+# Returns Instances list by calling Nova service
+sub nova_list_instances {
     my ($self, %options) = @_;
 
     my $limit = 200;
@@ -380,10 +384,13 @@ sub nova_list_vms {
         $params{marker} = $response->{servers}[-1]->{id};
 
         NOVA_SERVERS: foreach my $server (@{$response->{servers}}) {
-            my $tenant_id = $server->{tenant_id} // '';
             next if is_excluded($server->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($server->{id}, $options{include_id}, $options{exclude_id});
             next if is_excluded($server->{status}, $options{include_status}, $options{exclude_status});
-            next if is_excluded($server->{image}, $options{include_image}, $options{exclude_image});
+            next if is_excluded($server->{'OS-EXT-STS:vm_state'} // '', $options{include_vm_state}, $options{exclude_vm_state});
+            next if is_excluded($server->{'OS-EXT-SRV-ATTR:instance_name'} // '', $options{include_instance_name}, $options{exclude_instance_name});
+            next if is_excluded($server->{'OS-EXT-SRV-ATTR:host'} // '', $options{include_host}, $options{exclude_host});
+            next if is_excluded($server->{'OS-EXT-AZ:availability_zone'} // '', $options{include_zone}, $options{exclude_zone});
 
             my @ips;
             foreach my $adresses (values %{$server->{addresses}}) {
@@ -403,11 +410,15 @@ sub nova_list_vms {
             my $image = value_of($server, '->{image}->{id}');
             $image = $self->glance_get_image_label(image_id => $image) || $image;
 
+            next if is_excluded($flavor, $options{include_flavor}, $options{exclude_flavor});
+            next if is_excluded($image, $options{include_image}, $options{exclude_image});
+
             my $items = { id => $server->{id},
                           host => $server->{'OS-EXT-SRV-ATTR:host'} // 'N/A',
                           name => $server->{name},
                           instance_name => $server->{'OS-EXT-SRV-ATTR:instance_name'} // 'N/A',
                           zone => $server->{'OS-EXT-AZ:availability_zone'} // 'N/A',
+                          vm_state => $server->{'OS-EXT-STS:vm_state'} // 'N/A',
                           status => $server->{status},
                           image => $image || 'N/A',
                           flavor => $flavor || 'N/A',
@@ -415,8 +426,7 @@ sub nova_list_vms {
                           ips => \@ips,
                           bookmark => '',
                           href => '',
-                          tenant_id => $tenant_id,
-                          tenant_name => $self->keystone_get_tenant_label(tenant_id => $tenant_id)
+                          project_id => $server->{tenant_id}
                         };
 
             foreach my $href (@{$server->{links}}) {
@@ -519,50 +529,6 @@ sub nova_get_flavor_label {
     $self->{cache_flavor_content} = $cache_flavor_data;
 
     return $self->{cache_flavor_content}->{$id} // '';
-}
-
-# Returns tenant label from id by calling Nova service
-# Uses a cache file to limit API calls
-sub keystone_get_tenant_label {
-    my ($self, %options) = @_;
-
-    my $id = $options{tenant_id} // '';
-    return $self->{cache_tenant_content}->{$id} if exists $self->{cache_tenant_content}->{$id};
-
-    $self->{cache_tenant}->read(statefile => $self->{keystone_cache_filename}.'tenant');
-    my $cache_tenant_data = $self->{cache_tenant}->{datas};
-
-    if (value_of($cache_tenant_data, '->{expires_at}', 0) - 60 < time() ||
-        not exists $cache_tenant_data->{$id}) {
-
-        my $token = $options{token} || $self->{token};
-
-        my $response_brut = $self->{http}->request(
-            method => 'GET',
-            header => [ 'X-Auth-Token: '. $token,
-                        'Content-Type: application/json' ],
-            $self->connect_info(url => $self->{identity_url}, resource => '/projects'),
-            insecure => $self->{identity_insecure},
-
-            silently_fail => 1,
-            critical_status => '',
-            warning_status => '',
-            unknown_status => ''
-        );
-
-        my $response = json_decode($response_brut, output => $self->{output}, no_exit => 1);
-
-        return '' if ref $response ne 'HASH' || not exists $response->{projects};
-
-        $cache_tenant_data = { expires_at => time() + 3600 };
-
-        $cache_tenant_data->{ $_->{id} } = $_->{name} foreach @{$response->{projects}};
-
-        $self->{cache_tenant}->write(data => $cache_tenant_data);
-    }
-    $self->{cache_tenant_content} = $cache_tenant_data;
-
-    return $self->{cache_tenant_content}->{$id} // '';
 }
 
 # Authenticate to Keystone service
