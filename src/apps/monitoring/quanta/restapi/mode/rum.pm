@@ -184,10 +184,9 @@ sub manage_selection {
         }
     }
 
-    if (scalar(keys %{$self->{rum}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Couldn't get RUM metrics for site id: ".$self->{site_id});
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Couldn't get RUM metrics for site id: ".$self->{site_id})
+        if (scalar(keys %{$self->{rum}}) <= 0);
+    
 }
 
 1;
