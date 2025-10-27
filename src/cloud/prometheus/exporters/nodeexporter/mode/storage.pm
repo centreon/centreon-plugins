@@ -284,7 +284,7 @@ Filter on a specific mountpoint (must be a PromQL filter, Default: 'mountpoint=~
 
 =item B<--fstype>
 
-Filter on a specific fstype (must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
+Filter on a specific file system type (must be a PromQL filter, Default: C<fstype!~'linuxfs|rootfs|tmpfs'>)
 
 =item B<--units>
 
