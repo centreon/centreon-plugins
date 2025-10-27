@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::athonet::nodeexporter::api::mode::chf;
+package network::hp::athonet::nodeexporter::api::mode::chargingfunction;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -147,12 +147,36 @@ You can use the following variables: %{status}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /suspended/i').
 You can use the following variables: %{status}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-sbi-nf-registration-detected>
 
-Thresholds.
-Can be: 'sessions-active-charging',
-'sbi-nf-registration-detected', 'sbi-nf-registration-registered', 'sbi-nf-registration-suspended'.
+Threshold.
 
-=back
+=item B<--critical-sbi-nf-registration-detected>
+
+Threshold.
+
+=item B<--warning-sbi-nf-registration-registered>
+
+Threshold.
+
+=item B<--critical-sbi-nf-registration-registered>
+
+Threshold.
+
+=item B<--warning-sbi-nf-registration-suspended>
+
+Threshold.
+
+=item B<--critical-sbi-nf-registration-suspended>
+
+Threshold.
+
+=item B<--warning-sessions-active-charging>
+
+Threshold.
+
+=item B<--critical-sessions-active-charging>
+
+Threshold.
 
 =cut

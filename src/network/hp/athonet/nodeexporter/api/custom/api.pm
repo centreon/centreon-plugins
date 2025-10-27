@@ -46,15 +46,15 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
             'hostname:s'      => { name => 'hostname' },
-            'url-path:s'      => { name => 'url_path' },
-            'port:s'          => { name => 'port' },
-            'proto:s'         => { name => 'proto' },
+            'url-path:s'      => { name => 'url_path', default => '/core/prometheus/api/v1' },
+            'port:s'          => { name => 'port', default => '443' },
+            'proto:s'         => { name => 'proto', default => 'https' },
             'api-username:s'  => { name => 'api_username' },
             'api-password:s'  => { name => 'api_password' },
-            'api-backend:s'   => { name => 'api_backend' },
-            'timeout:s'   => { name => 'timeout' },
-            'timeframe:s' => { name => 'timeframe' },
-            'step:s'      => { name => 'step' }
+            'api-backend:s'   => { name => 'api_backend', default => 'local' },
+            'timeout:s'       => { name => 'timeout', default => '10' },
+            'timeframe:s'     => { name => 'timeframe' },
+            'step:s'          => { name => 'step' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -77,20 +77,16 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/core/prometheus/api/v1';
-    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{api_backend} = (defined($self->{option_results}->{api_backend})) ? $self->{option_results}->{api_backend} : 'local';
-    $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
-    $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_stat
-us} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{hostname}             = $self->{option_results}->{hostname} // '';
+    $self->{url_path}             = $self->{option_results}->{url_path};
+    $self->{api_username}         = $self->{option_results}->{api_username} // '';
+    $self->{api_password}         = $self->{option_results}->{api_password} // '';
+    $self->{api_backend}          = $self->{option_results}->{api_backend};
+    $self->{timeframe}            = $self->{option_results}->{timeframe};
+    $self->{step}                 = $self->{option_results}->{step};
+    $self->{unknown_http_status}  = $self->{option_results}->{unknown_http_status} // '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status}  = $self->{option_results}->{warning_http_status} // '';
+    $self->{critical_http_status} = $self->{option_results}->{critical_http_status} // '';
 
     if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
