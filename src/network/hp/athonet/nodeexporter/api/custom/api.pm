@@ -310,7 +310,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--step>
 
-Set the step of the metric query (examples: '30s', '1m', '15m', '1h').
+Set the step of the metric query (examples: C<30s>, C<1m>, C<15m>, C<1hC<).
 
 =item B<--hostname>
 
@@ -318,7 +318,7 @@ Prometheus hostname.
 
 =item B<--url-path>
 
-API url path (default: '/core/prometheus/api/v1')
+API url path (default: C</core/prometheus/api/v1>)
 
 =item B<--port>
 
@@ -326,11 +326,11 @@ API port (default: 443)
 
 =item B<--proto>
 
-Define https if needed (default: 'https')
+Define https if needed (default: C<https>)
 
 =item B<--api-backend>
 
-Define the backend for authentication (default: 'local')
+Define the backend for authentication (default: C<local>)
 
 =item B<--api-username>
 
