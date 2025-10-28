@@ -374,6 +374,58 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.epc.mnc502.mcc208.3gppnetwork.org\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"eir\",\n                    \"user\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.206,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.epc.mnc502.mcc208.3gppnetwork.org\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"eir\",\n                    \"user\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.206,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}"
+        },
+        {
+          "uuid": "b60baddd-da22-4525-b523-9dd51b311fd0",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "license_status",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "license_status",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"resultType\": \"vector\",\r\n        \"result\": [\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8082\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"udm\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8086\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"eir\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8091\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"ausf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8092\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"udr\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8080\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"nrf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8095\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"smsf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}"
         }
       ],
       "responseMode": null,
