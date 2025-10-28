@@ -426,6 +426,526 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"resultType\": \"vector\",\r\n        \"result\": [\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8082\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"udm\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8086\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"eir\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8091\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"ausf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8092\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"udr\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8080\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"nrf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8095\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"smsf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}"
+        },
+        {
+          "uuid": "b7a22301-54fc-45fa-98f3-a3e949cf5dfb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_ue_imsi",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_ue_imsi",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_ue_imsi\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497054.615,\n                    \"8\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "5b1dfedc-b681-4a4d-b28f-2b7a700b8002",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_ue_registered",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_ue_registered",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_ue_registered\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497054.722,\n                    \"8\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "7dde51ad-6a4b-4051-9946-dfc9b7d97187",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_s1_enb",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_s1_enb",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_s1_enb\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497054.81,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "f350c1b6-78ff-482d-9b8f-f88c45914caf",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sum(mme_s1_enb_active_ue)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sum(mme_s1_enb_active_ue)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {},\n                \"value\": [\n                    1745497054.906,\n                    \"7\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "e0407e1c-0759-4b3a-9cdb-a32a27f0a4ec",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sum(mme_s1_enb_ecgi)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sum(mme_s1_enb_ecgi)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {},\n                \"value\": [\n                    1745497054.906,\n                    \"6\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "fa74565f-76b0-44bd-bb0c-c7bd76387728",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_s1_enb_status",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_s1_enb_status",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_s1_enb_status\",\n                    \"enb_id\": \"macroENB-208502-103003\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.111,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_s1_enb_status\",\n                    \"enb_id\": \"macroENB-208502-103002\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.111,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6bddeb01-8e68-4ec6-9506-66de525afa4b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "license_constraint",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "license_constraint",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6940e563-ce87-4f04-9237-f599cd3a2f42",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"mme\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"mme\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.epc.mnc502.mcc208.3gppnetwork.org\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"mme\",\n                    \"user\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.587,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.epc.mnc502.mcc208.3gppnetwork.org\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"mme\",\n                    \"user\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.587,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "75bb572b-1ef7-4e89-a863-ec7ed9f2a45b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "gtpc_peer_status{target_type=\"mme\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "gtpc_peer_status{target_type=\"mme\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.20.0.20\",\n                    \"remote_ip\": \"172.20.0.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.678,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.20.0.20\",\n                    \"remote_ip\": \"172.20.8.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.678,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.20.0.19\",\n                    \"remote_ip\": \"172.20.8.19\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.678,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "8879cbfc-b040-4e01-8701-0f85159c26e8",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "gtpc_peer_tun{target_type=\"mme\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "gtpc_peer_tun{target_type=\"mme\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_tun\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.20.0.20\",\n                    \"remote_ip\": \"172.20.0.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.811,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_tun\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.20.0.20\",\n                    \"remote_ip\": \"172.20.8.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.811,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_tun\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.20.0.19\",\n                    \"remote_ip\": \"172.20.8.19\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.811,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
