@@ -25,12 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_excluded);
 
 sub prefix_diameter_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
+        "diameter stack '%s' origin host '%s' ",
         $options{instance_value}->{stack},
         $options{instance_value}->{originHost}
     );
@@ -168,8 +169,7 @@ sub manage_selection {
     $self->{clusters} = {};
 
     foreach my $cluster (@$clusters) {
-        next if (defined($self->{option_results}->{filter_cluster_repository}) && $self->{option_results}->{filter_cluster_repository} ne '' &&
-            $cluster->{metric}->{repository} !~ /$self->{option_results}->{filter_cluster_repository}/);
+        next if is_excluded($cluster->{metric}->{repository}, $self->{option_results}->{filter_cluster_repository});
  
         $self->{global}->{clusters_detected}++;
 
@@ -257,11 +257,37 @@ You can use the following variables: %{status}, %{originHost}, %{stack}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{originHost}, %{stack}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-clusters-detected>
 
 Thresholds.
-Can be: 'clusters-detected',
-'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning'.
+
+=item B<--critical-clusters-detected>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-detected>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-detected>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-running>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-running>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-notrunning>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-notrunning>
+
+Thresholds.
 
 =back
 

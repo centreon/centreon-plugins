@@ -217,60 +217,94 @@ __END__
 
 =head1 MODE
 
-Check session management funtion.
+Check session management function.
 
 =over 8
 
 =item B<--unknown-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}
+You can use the following variables: C<%{status}>.
 
 =item B<--warning-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}
+You can use the following variables: C<%{status}>.
 
 =item B<--critical-sbi-nf-registration-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /suspended/i').
-You can use the following variables: %{status}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /suspended/i>).
+You can use the following variables: C<%{status}>.
 
 =item B<--unknown-pfcp-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--warning-pfcp-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--critical-pfcp-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--unknown-blacklist-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+You can use the following variables: C<%{isBlacklisted}>, C<%{remoteIP}>, C<%{targetType}>.
 
 =item B<--warning-blacklist-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+You can use the following variables: C<%{isBlacklisted}>, C<%{remoteIP}>, C<%{targetType}>.
 
 =item B<--critical-blacklist-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{isBlacklisted} =~ /yes/i').
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+Define the conditions to match for the status to be CRITICAL (default: C<%{isBlacklisted} =~ /yes/i>).
+You can use the following variables: C<%{isBlacklisted}>, C<%{remoteIP}>, C<%{targetType}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-sessions>
 
 Thresholds.
-Can be: 'sessions', 'supi',
-'sbi-nf-registration-detected', 'sbi-nf-registration-registered', 'sbi-nf-registration-suspended'.
+
+=item B<--critical-sessions>
+
+Thresholds.
+
+=item B<--warning-supi>
+
+Thresholds.
+
+=item B<--critical-supi>
+
+Thresholds.
+
+=item B<--warning-sbi-nf-registration-detected>
+
+Thresholds.
+
+=item B<--critical-sbi-nf-registration-detected>
+
+Thresholds.
+
+=item B<--warning-sbi-nf-registration-registered>
+
+Thresholds.
+
+=item B<--critical-sbi-nf-registration-registered>
+
+Thresholds.
+
+=item B<--warning-sbi-nf-registration-suspended>
+
+Thresholds.
+
+=item B<--critical-sbi-nf-registration-suspended>
+
+Thresholds.
 
 =back
 

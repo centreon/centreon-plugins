@@ -159,22 +159,57 @@ Check user plane function.
 =item B<--unknown-upf-pfcp-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--warning-upf-pfcp-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--critical-upf-pfcp-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-upf-fpcf-nodes-detected>
 
 Thresholds.
-Can be: 'upf-fpcf-nodes-detected', 'upf-sessions', 'upf-gtpu-interfaces', 'upf-ip-interfaces', 'upf-dnn'.
+
+=item B<--critical-upf-fpcf-nodes-detected>
+
+Thresholds.
+
+=item B<--warning-upf-sessions>
+
+Thresholds.
+
+=item B<--critical-upf-sessions>
+
+Thresholds.
+
+=item B<--warning-upf-gtpu-interfaces>
+
+Thresholds.
+
+=item B<--critical-upf-gtpu-interfaces>
+
+Thresholds.
+
+=item B<--warning-upf-ip-interfaces>
+
+Thresholds.
+
+=item B<--critical-upf-ip-interfaces>
+
+Thresholds.
+
+=item B<--warning-upf-dnn>
+
+Thresholds.
+
+=item B<--critical-upf-dnn>
+
+Thresholds.
 
 =back
 

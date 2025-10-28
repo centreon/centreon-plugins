@@ -35,6 +35,7 @@ our @EXPORT_OK = qw/change_seconds
                     flatten_to_hash
                     graphql_escape
                     is_empty
+                    is_excluded
                     json_encode
                     json_decode
                     slurp_file

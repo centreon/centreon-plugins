@@ -25,12 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_excluded);
 
 sub prefix_diameter_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
+        "diameter stack '%s' origin host '%s' ",
         $options{instance_value}->{stack},
         $options{instance_value}->{originHost}
     );
@@ -210,8 +211,7 @@ sub manage_selection {
     $self->{clusters} = {};
 
     foreach my $cluster (@$clusters) {
-        next if (defined($self->{option_results}->{filter_cluster_repository}) && $self->{option_results}->{filter_cluster_repository} ne '' &&
-            $cluster->{metric}->{repository} !~ /$self->{option_results}->{filter_cluster_repository}/);
+        next if is_excluded($cluster->{metric}->{repository}, $self->{option_results}->{filter_cluster_repository});
  
         $self->{global}->{clusters_detected}++;
 
@@ -277,54 +277,103 @@ Filter clusters by repository name.
 =item B<--unknown-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{repository}, %{node}
+You can use the following variables: C<%{status}>, C<%{repository}>, C<%{node}>.
 
 =item B<--warning-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{repository}, %{node}
+You can use the following variables: C<%{status}>, C<%{repository}>, C<%{node}>.
 
 =item B<--critical-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /notRunning/i').
-You can use the following variables: %{status}, %{repository}, %{node}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /notRunning/i>).
+You can use the following variables: C<%{status}>, C<%{repository}>, C<%{node}>.
 
 =item B<--unknown-diameter-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--warning-diameter-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--critical-diameter-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{originHost}, %{stack}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--unknown-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}
+You can use the following variables: C<%{status}>.
 
 =item B<--warning-sbi-nf-registration-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}
+You can use the following variables: C<%{status}>.
 
 =item B<--critical-sbi-nf-registration-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /suspended/i').
-You can use the following variables: %{status}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /suspended/i>).
+You can use the following variables: C<%{status}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-clusters-detected>
 
 Thresholds.
-Can be: 'clusters-detected',
-'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning',
-'sbi-nf-registration-detected', 'sbi-nf-registration-registered', 'sbi-nf-registration-suspended'.
+
+=item B<--critical-clusters-detected>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-detected>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-detected>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-running>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-running>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-notrunning>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-notrunning>
+
+Thresholds.
+
+=item B<--warning-sbi-nf-registration-detected>
+
+Thresholds.
+
+=item B<--critical-sbi-nf-registration-detected>
+
+Thresholds.
+
+=item B<--warning-sbi-nf-registration-registered>
+
+Thresholds.
+
+=item B<--critical-sbi-nf-registration-registered>
+
+Thresholds.
+
+=item B<--warning-sbi-nf-registration-suspended>
+
+Thresholds.
+
+=item B<--critical-sbi-nf-registration-suspended>
+
+Thresholds.
 
 =back
 

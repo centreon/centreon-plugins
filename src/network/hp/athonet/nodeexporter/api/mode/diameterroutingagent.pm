@@ -18,19 +18,20 @@
 # limitations under the License.
 #
 
-package network::hp::athonet::nodeexporter::api::mode::dra;
+package network::hp::athonet::nodeexporter::api::mode::diameterroutingagent;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_excluded);
 
 sub prefix_connection_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
+        "diameter stack '%s' origin host '%s' ",
         $options{instance_value}->{stack},
         $options{instance_value}->{originHost}
     );
@@ -112,10 +113,8 @@ sub manage_selection {
     $self->{global} = { detected => 0, up => 0, down => 0 };
     $self->{connections} = {};
     foreach my $connection (@$connections) {
-        next if (defined($self->{option_results}->{filter_origin_host}) && $self->{option_results}->{filter_origin_host} ne '' &&
-            $connection->{metric}->{orig_host} !~ /$self->{option_results}->{filter_origin_host}/);
-        next if (defined($self->{option_results}->{filter_stack}) && $self->{option_results}->{filter_stack} ne '' &&
-            $connection->{metric}->{stack} !~ /$self->{option_results}->{filter_stack}/);
+        next if is_excluded($connection->{metric}->{orig_host}, $self->{option_results}->{filter_origin_host});
+        next if is_excluded($connection->{metric}->{stack}, $self->{option_results}->{filter_stack});
  
         $self->{global}->{detected}++;
         $self->{global}->{ $map_status->{ $connection->{value}->[1] } }++;
@@ -172,23 +171,41 @@ Filter diameter peers by stack.
 =item B<--unknown-diameter-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>
 
 =item B<--warning-diameter-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>
 
 =item B<--critical-diameter-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{originHost}, %{stack}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-diameter-connections-detected>
 
 Thresholds.
-Can be: 'diameter-connections-detected',
-'diameter-connections-up', 'diameter-connections-down'.
+
+=item B<--critical-diameter-connections-detected>
+
+Thresholds.
+
+=item B<--warning-diameter-connections-up>
+
+Thresholds.
+
+=item B<--critical-diameter-connections-up>
+
+Thresholds.
+
+=item B<--warning-diameter-connections-down>
+
+Thresholds.
+
+=item B<--critical-diameter-connections-down>
+
+Thresholds.
 
 =back
 
