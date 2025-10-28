@@ -112,7 +112,8 @@
           "fallbackTo404": false,
           "default": false,
           "crudKey": "id",
-          "callbacks": []
+          "callbacks": [],
+          "body": "{}"
         },
         {
           "uuid": "a8a0d39b-5648-45ec-bf03-5c559076a2cf",
@@ -217,6 +218,162 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-ngc-cp-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745496751.502,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "68af4ebe-8895-4e21-b197-3d63d5fcb53c",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"eir\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"eir\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.004,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.004,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "5671e0ec-f06c-4e62-93f1-ae768a07b6f9",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"eir\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"eir\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:1::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:2::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:1::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:2::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "1340324b-91a8-4152-9517-7a7e79a45946",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"eir\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"eir\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.epc.mnc502.mcc208.3gppnetwork.org\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"eir\",\n                    \"user\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.206,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.epc.mnc502.mcc208.3gppnetwork.org\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"eir\",\n                    \"user\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.206,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}"
         }
       ],
       "responseMode": null,
