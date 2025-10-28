@@ -23,7 +23,7 @@ for script in "$DIR"/*.sh; do
   exit_code=$?
 
   # Update the highest exit code if necessary
-  if [[ "$exit_code" -gt "$max_exit_code" ]]; then
+  if [ "$exit_code" -gt "$max_exit_code" ]; then
     max_exit_code=$exit_code
   fi
 done
