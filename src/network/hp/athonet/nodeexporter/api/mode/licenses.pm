@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_excluded);
 
 sub prefix_license_output {
     my ($self, %options) = @_;
@@ -108,8 +109,8 @@ sub manage_selection {
     $self->{global} = { detected => 0, valid => 0, invalid => 0 };
     $self->{licenses} = {};
     foreach my $license (@$licenses) {
-        next if (defined($self->{option_results}->{filter_target_type}) && $self->{option_results}->{filter_target_type} ne '' &&
-            $license->{metric}->{target_type} !~ /$self->{option_results}->{filter_target_type}/);
+
+        next if is_excluded($license->{metric}->{target_type}, $self->{option_results}->{filter_target_type});
 
         $self->{licenses}->{ $license->{metric}->{target_type} } = {
             targetType => $license->{metric}->{target_type},
@@ -149,10 +150,29 @@ You can use the following variables: %{status}, %{targetType}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /invalid/i').
 You can use the following variables: %{status}, %{targetType}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-licenses-detected>
 
 Thresholds.
-Can be: 'licenses-detected', 'licenses-valid', 'licenses-invalid'.
+
+=item B<--critical-licenses-detected>
+
+Thresholds.
+
+=item B<--warning-licenses-valid>
+
+Thresholds.
+
+=item B<--critical-licenses-valid>
+
+Thresholds.
+
+=item B<--warning-licenses-invalid>
+
+Thresholds.
+
+=item B<--critical-licenses-invalid>
+
+Thresholds.
 
 =back
 

@@ -30,7 +30,7 @@ sub prefix_diameter_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
+        "diameter stack '%s' origin host '%s' ",
         $options{instance_value}->{stack},
         $options{instance_value}->{originHost}
     );
@@ -78,8 +78,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -124,22 +123,25 @@ Check short message service function.
 =item B<--unknown-diameter-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--warning-diameter-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--critical-diameter-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{originHost}, %{stack}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-sms-stored>
 
 Thresholds.
-Can be: 'sms-stored'.
+
+=item B<--critical-sms-stored>
+
+Thresholds.
 
 =back
 

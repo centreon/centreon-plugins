@@ -30,7 +30,7 @@ sub prefix_diameter_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
+        "diameter stack '%s' origin host '%s' ",
         $options{instance_value}->{stack},
         $options{instance_value}->{originHost}
     );
@@ -143,10 +143,21 @@ You can use the following variables: %{status}, %{originHost}, %{stack}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
 You can use the following variables: %{status}, %{originHost}, %{stack}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-pdn-n7-connected>
 
 Thresholds.
-Can be: 'pdn-n7-connected', 'sessions-n5'.
+
+=item B<--critical-pdn-n7-connected>
+
+Thresholds.
+
+=item B<--warning-sessions-n5>
+
+Thresholds.
+
+=item B<--critical-sessions-n5>
+
+Thresholds.
 
 =back
 

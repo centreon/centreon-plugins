@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_excluded);
 
 sub cluster_long_output {
     my ($self, %options) = @_;
@@ -212,8 +212,7 @@ sub manage_selection {
     $self->{clusters} = {};
 
     foreach my $cluster (@$clusters) {
-        next if (defined($self->{option_results}->{filter_cluster_repository}) && $self->{option_results}->{filter_cluster_repository} ne '' &&
-            $cluster->{metric}->{repository} !~ /$self->{option_results}->{filter_cluster_repository}/);
+        next if is_excluded($cluster->{metric}->{repository}, $self->{option_results}->{filter_cluster_repository});
  
         $self->{global}->{clusters_detected}++;
 
@@ -246,8 +245,7 @@ sub manage_selection {
     $self->{global_registration} = { detected => 0, registered => 0, suspended => 0 };
     $self->{registrations} = {};
     foreach my $info (@$registration_infos) {
-        next if (defined($self->{option_results}->{filter_registration_nftype}) && $self->{option_results}->{filter_registration_nftype} ne '' &&
-            $info->{metric}->{nfType} !~ /$self->{option_results}->{filter_registration_nftype}/);
+        next if is_excluded($info->{metric}->{nfType}, $self->{option_results}->{filter_registration_nftype});
 
         $self->{registrations}->{ $info->{metric}->{nfType} } = {
             nfType => $info->{metric}->{nfType},
@@ -283,44 +281,102 @@ Filter clusters by repository name.
 
 =item B<--filter-registration-nftype>
 
-Filter registrations by nfType.
+Filter registrations by network function type.
 
 =item B<--unknown-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{repository}, %{node}
+You can use the following variables: C<%{status}>, C<%{repository}>, C<%{node}>.
 
 =item B<--warning-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{repository}, %{node}
+You can use the following variables: C<%{status}>, C<%{repository}>, C<%{node}>.
 
 =item B<--critical-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /notRunning/i').
-You can use the following variables: %{status}, %{repository}, %{node}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /notRunning/i>).
+You can use the following variables: C<%{status}>, C<%{repository}>, C<%{node}>.
 
 =item B<--unknown-nf-registration-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{nfType}
+You can use the following variables: C<%{status}>, C<%{nfType}>.
 
 =item B<--warning-nf-registration-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{nfType}
+You can use the following variables: C<%{status}>, C<%{nfType}>.
 
 =item B<--critical-nf-registration-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /suspended/i').
-You can use the following variables: %{status}, %{nfType}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /suspended/i>).
+You can use the following variables: C<%{status}>, C<%{nfType}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-clusters-detected>
 
 Thresholds.
-Can be: 'clusters-detected',
-'cluster-nodes-detected', 'cluster-nodes-running', 'cluster-nodes-notrunning',
-'nf-registration-last', 'nf-registrations-detected', 'nf-registrations-registered', 'nf-registrations-suspended'.
+
+=item B<--critical-clusters-detected>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-detected>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-detected>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-running>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-running>
+
+Thresholds.
+
+=item B<--warning-cluster-nodes-notrunning>
+
+Thresholds.
+
+=item B<--critical-cluster-nodes-notrunning>
+
+Thresholds.
+
+=item B<--warning-nf-registration-last>
+
+Thresholds.
+
+=item B<--critical-nf-registration-last>
+
+Thresholds.
+
+=item B<--warning-nf-registrations-detected>
+
+Thresholds.
+
+=item B<--critical-nf-registrations-detected>
+
+Thresholds.
+
+=item B<--warning-nf-registrations-registered>
+
+Thresholds.
+
+=item B<--critical-nf-registrations-registered>
+
+Thresholds.
+
+=item B<--warning-nf-registrations-suspended>
+
+Thresholds.
+
+=item B<--critical-nf-registrations-suspended>
+
+Thresholds.
+
 
 =back
 

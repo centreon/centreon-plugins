@@ -54,7 +54,7 @@ sub prefix_diameter_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "diamater stack '%s' origin host '%s' ",
+        "diameter stack '%s' origin host '%s' ",
         $options{instance_value}->{stack},
         $options{instance_value}->{originHost}
     );
@@ -357,56 +357,143 @@ Check mobility management entity.
 =item B<--unknown-interface-s1enb-status-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{enbId}
+You can use the following variables: C<%{status}>, C<%{enbId}>.
 
 =item B<--warning-interface-s1enb-status-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{enbId}
+You can use the following variables: C<%{status}>, C<%{enbId}>.
 
 =item B<--critical-interface-s1enb-status-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{enbId}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{enbId}>.
 
 =item B<--unknown-diameter-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--warning-diameter-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{originHost}, %{stack}
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--critical-diameter-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{originHost}, %{stack}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{originHost}>, C<%{stack}>.
 
 =item B<--unknown-gtpc-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--warning-gtpc-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--critical-gtpc-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-imsi-tracked>
 
 Thresholds.
-Can be: 'imsi-tracked',
-'ue-registered', 'enb-connections-active', 'ue-connections-active', 'enb-cells',
-'license-ue-usage', 'license-ue-usage-free', 'license-ue-usage-prct',
-'license-enb-usage', 'license-enb-usage-free', 'license-enb-usage-prct',
-'gtpc-allocated-tunnels'.
+
+=item B<--critical-imsi-tracked>
+
+Thresholds.
+
+=item B<--warning-ue-registered>
+
+Thresholds.
+
+=item B<--critical-ue-registered>
+
+Thresholds.
+
+=item B<--warning-enb-connections-active>
+
+Thresholds.
+
+=item B<--critical-enb-connections-active>
+
+Thresholds.
+
+=item B<--warning-ue-connections-active>
+
+Thresholds.
+
+=item B<--critical-ue-connections-active>
+
+Thresholds.
+
+=item B<--warning-enb-cells>
+
+Thresholds.
+
+=item B<--critical-enb-cells>
+
+Thresholds.
+
+=item B<--warning-license-ue-usage>
+
+Thresholds.
+
+=item B<--critical-license-ue-usage>
+
+Thresholds.
+
+=item B<--warning-license-ue-usage-free>
+
+Thresholds.
+
+=item B<--critical-license-ue-usage-free>
+
+Thresholds.
+
+=item B<--warning-license-ue-usage-prct>
+
+Thresholds.
+
+=item B<--critical-license-ue-usage-prct>
+
+Thresholds.
+
+=item B<--warning-license-enb-usage>
+
+Thresholds.
+
+=item B<--critical-license-enb-usage>
+
+Thresholds.
+
+=item B<--warning-license-enb-usage-free>
+
+Thresholds.
+
+=item B<--critical-license-enb-usage-free>
+
+Thresholds.
+
+=item B<--warning-license-enb-usage-prct>
+
+Thresholds.
+
+=item B<--critical-license-enb-usage-prct>
+
+Thresholds.
+
+=item B<--warning-gtpc-allocated-tunnels>
+
+Thresholds.
+
+=item B<--critical-gtpc-allocated-tunnels>
+
+Thresholds.
 
 =back
 

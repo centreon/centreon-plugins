@@ -62,9 +62,9 @@ CX
 Cyberoam
 DaemonSet
 Datacore
-Datastore
 datasource
 datastore
+Datastore
 datastores
 dBm
 DC4
@@ -110,9 +110,9 @@ FreeBSD
 FrontDoor
 frsevent
 GCP
-GRAPHQL
-GraphQL
 --get-param
+GraphQL
+GRAPHQL
 HAProxy
 HashiCorp
 hashicorpvault
@@ -137,8 +137,8 @@ in-ucast
 io-cards
 iops
 IpAddr
-IPs
 ip-label
+IPs
 ipsec
 ipv4
 ipv6
@@ -222,8 +222,8 @@ notapplicable
 NTLMv2
 NTP
 NVOS
---oid
 OAuth
+--oid
 OID
 --oid-display
 --oid-extra-display
@@ -253,7 +253,6 @@ PPID
 prct
 Primera
 Procurve
-Proxmox
 PromQL
 proto
 Proxmox
@@ -264,11 +263,11 @@ Qtree
 queue-messages-inflighted
 quts
 raidvolume
+redis-cli
 ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
-redis-cli
 rsrp
 rsrq
 rssi
@@ -278,6 +277,7 @@ Sansymphony
 SAS
 scenarii
 --scope-datacenter
+SCVMM
 SFOS
 sfp.temperature
 SignalR
@@ -289,9 +289,8 @@ SnapMirrors
 snmp
 snmpd.conf
 space-usage-prct
---sql-errors-exit
-SCVMM
 Splunk
+--sql-errors-exit
 SRX
 SSDCapacity
 SSG
@@ -312,6 +311,7 @@ temperatureambient
 timeframe
 TiMOS
 TLS
+TLSv1
 TMM
 tmnxSasAlarmInputDescription
 topic-messages-inflighted
@@ -320,7 +320,6 @@ total-online-prct
 total-oper-down
 total-oper-up
 tower-cli
-TLSv1
 TrendMicro
 tsdb-version
 TWAMP
@@ -346,10 +345,8 @@ vdom
 vdomain
 VDSL2
 VE
-VTOM
 Veeam
 VeloCloud
-VE
 vhost
 VM
 VMs
@@ -360,6 +357,7 @@ VPN
 vSAN
 Vserver
 vSphere
+VTOM
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts
 --warning-authserver-packets-access-requests

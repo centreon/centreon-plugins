@@ -136,8 +136,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -203,52 +202,63 @@ Check serving gateway control plane function.
 =item B<--unknown-pfcp-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--warning-pfcp-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--critical-pfcp-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--unknown-gtpc-connection-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--warning-gtpc-connection-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--critical-gtpc-connection-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /down/i').
-You can use the following variables: %{status}, %{localIP}, %{remoteIP}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
+You can use the following variables: C<%{status}>, C<%{localIP}>, C<%{remoteIP}>.
 
 =item B<--unknown-blacklist-node-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+You can use the following variables: C<%{isBlacklisted}>, C<%{remoteIP}>, C<%{targetType}>.
 
 =item B<--warning-blacklist-node-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+You can use the following variables: C<%{isBlacklisted}>, C<%{remoteIP}>, C<%{targetType}>.
 
 =item B<--critical-blacklist-node-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{isBlacklisted} =~ /yes/i').
-You can use the following variables: %{isBlacklisted}, %{remoteIP}, %{targetType}
+Define the conditions to match for the status to be CRITICAL (default: C<%{isBlacklisted} =~ /yes/i>).
+You can use the following variables: C<%{isBlacklisted}>, C<%{remoteIP}>, C<%{targetType}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-ue>
 
 Thresholds.
-Can be: 'ue', 'dfb'.
+
+=item B<--critical-ue>
+
+Thresholds.
+
+=item B<--warning-dfb>
+
+Thresholds.
+
+=item B<--critical-dfb>
+
+Thresholds.
 
 =back
 
