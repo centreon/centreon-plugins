@@ -9,13 +9,13 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}     ${CENTREON_PLUGINS}
-    ...    --plugin=hardware::ups::apc::snmp::plugin
-    ...    --mode=time
-    ...    --hostname=${HOSTNAME}
-    ...    --snmp-version=${SNMPVERSION}
-    ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-timeout=5
+${CMD}      ${CENTREON_PLUGINS}
+...         --plugin=hardware::ups::apc::snmp::plugin
+...         --mode=time
+...         --hostname=${HOSTNAME}
+...         --snmp-version=${SNMPVERSION}
+...         --snmp-port=${SNMPPORT}
+...         --snmp-timeout=5
 
 
 *** Test Cases ***
@@ -26,7 +26,7 @@ time ${tc}
     ...    --snmp-community=hardware/ups/apc/snmp/time
     ...    ${extra_options}
 
-   Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_regexp}
+    Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:    tc    extra_options                  expected_regexp    --
     ...          1     ${EMPTY}                       ^OK: Time offset -?\\\\d+ second\\\\(s\\\\): Local Time : 2025-08-26T08:50:07 \\\\(UTC\\\\) \\\\| 'time\\\\.offset\\\\.seconds'=-?\\\\d+s;;;;$

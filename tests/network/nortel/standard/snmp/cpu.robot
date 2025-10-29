@@ -1,6 +1,6 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
@@ -12,8 +12,8 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::nortel::standard::snmp::plugin
 
 *** Test Cases ***
 cpu-4950gts-pwr ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=cpu
@@ -39,8 +39,8 @@ cpu-4950gts-pwr ${tc}
             ...      5.2     ^1h$     --critical-1h=0:0      CRITICAL: CPU '3.10.0' usage 23.00 % (1h) | '3.10.0#cpu.utilization.1h.percentage'=23.00%;;0:0;0;100
 
 cpu-5520-24t ${tc}
-    [Tags]    network    snmp
     [Documentation]    Extreme Networks 5520-24T
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=cpu
@@ -62,8 +62,8 @@ cpu-5520-24t ${tc}
             ...      5.0     ^1h$             ${EMPTY}                       OK: CPU 'slot_1' usage
 
 cpu-7520-48y-8c ${tc}
-    [Tags]    network    snmp
     [Documentation]    Extreme Networks 7520-48Y-8C
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=cpu
@@ -84,10 +84,9 @@ cpu-7520-48y-8c ${tc}
             ...      4.0     ^10m$            ${EMPTY}                       OK: CPU 'slot_1' usage
             ...      5.0     ^1h$             ${EMPTY}                       OK: CPU 'slot_1' usage
 
-
 cpu-7520-48ye-8ce ${tc}
-    [Tags]    network    snmp
     [Documentation]    Extreme Networks 7520-48YE-8CE
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=cpu

@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-alletra.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::alletra::restapi::plugin
 ...                 --mode disk-status
 ...                 --hostname=${HOSTNAME}
@@ -21,15 +21,15 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 DiskStatus ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
-
 
     Examples:        tc       extraoptions                                                              expected_regexp    --
             ...      1        ${EMPTY}                                                                  CRITICAL: Disk #1 (XXXX/XXXX, serial: XXXX) located 1:2 is failed WARNING: Disk #2 (XXX/XXX, serial: XXX) located 1:3 is degraded | 'disks.total.count'=3;;;0; 'disks.normal.count'=1;;;0;3 'disks.degraded.count'=1;;;0;3 'disks.new.count'=0;;;0;3 'disks.failed.count'=1;;;0;3 'disks.unknown.count'=0;;;0;3

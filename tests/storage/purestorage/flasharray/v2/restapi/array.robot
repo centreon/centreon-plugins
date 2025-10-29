@@ -1,14 +1,13 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}Mockoonarray.json
 
+*** Variables ***
+${MOCKOON_JSON}     ${CURDIR}${/}Mockoonarray.json
 
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::purestorage::flasharray::v2::restapi::plugin
@@ -18,6 +17,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --api-token='token'
 ...                 --api-version='2.5'
 ...                 --port=${APIPORT}
+
 
 *** Test Cases ***
 arrays ${tc}

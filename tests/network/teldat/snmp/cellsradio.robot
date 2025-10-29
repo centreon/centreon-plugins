@@ -3,13 +3,13 @@ Documentation       Network Teldat SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                          ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
 
 
 *** Test Cases ***
@@ -36,7 +36,6 @@ Cells radio ${tc}
     ...    --critical-module-cellradio-snr=${criticalmodulecellradiosnr}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
-
 
     Examples:    tc   customperfdatainstances     criticalstatus                                warningmodulescellradiodetected    criticalmodulescellradiodetected    warningmodulecellradiorsrp    criticalmodulecellradiorsrp    warningmodulecellradiorsrq    criticalmodulecellradiorsrq    warningmodulecellradiocsq    criticalmodulecellradiocsq    warningmodulecellradiosnr    criticalmodulecellradiosnr    expected_result    --
             ...  1    ${EMPTY}                    ${EMPTY}                                      ${EMPTY}                           ${EMPTY}                            ${EMPTY}                      ${EMPTY}                       ${EMPTY}                      ${EMPTY}                       ${EMPTY}                     ${EMPTY}                      ${EMPTY}                     ${EMPTY}                      OK: All cellular radio interfaces are ok | 'modules.cellradio.detected.count'=3;;;0; 'module1~control vocal~359072066403821#module.cellradio.rsrp.dbm'=-114;;;0; 'module1~control vocal~359072066403821#module.cellradio.rsrq.dbm'=-18;;;0; 'module1~control vocal~359072066403821#module.cellradio.snr.db'=-1;;;0; 'module1~control vocal~359072066403821#module.cellradio.csq.dbm'=-73;;;0; 'module1~data primary~359072066403821#module.cellradio.rsrp.dbm'=-114;;;0; 'module1~data primary~359072066403821#module.cellradio.rsrq.dbm'=-18;;;0; 'module1~data primary~359072066403821#module.cellradio.snr.db'=-1;;;0; 'module1~data primary~359072066403821#module.cellradio.csq.dbm'=-73;;;0;

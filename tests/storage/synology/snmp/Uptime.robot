@@ -3,13 +3,14 @@ Documentation       Storage Synology SNMP
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                          ${CENTREON_PLUGINS} --plugin=storage::synology::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::synology::snmp::plugin
+
 
 *** Test Cases ***
 Uptime ${tc}
@@ -23,7 +24,7 @@ Uptime ${tc}
     ...    --snmp-community=storage/synology/snmp/synology-disk-ok
     ...    --warning-uptime=${warning}
     ...    --critical-uptime=${critical}
-            
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc   warning                critical                   expected_result    --

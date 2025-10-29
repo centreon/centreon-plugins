@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-alletra.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::alletra::restapi::plugin
 ...                 --mode capacity
 ...                 --hostname=${HOSTNAME}
@@ -21,15 +21,15 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Capacity ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
-
 
     Examples:        tc       extraoptions                                                                                               expected_regexp    --
             ...      1        ${EMPTY}                                                                                                   OK: All storage capacities are ok | 'FCCapacity#storage.space.usage.bytes'=0B;;;0;0 'FCCapacity#storage.space.free.bytes'=0B;;;0;0 'FCCapacity#storage.space.usage.percentage'=0.00%;;;0;100 'FCCapacity#storage.space.unavailable.bytes'=0B;;;0; 'FCCapacity#storage.space.failed.bytes'=0B;;;0; 'FCCapacity#storage.provisioning.virtualsize.bytes'=0B;;;0; 'FCCapacity#storage.provisioning.used.bytes'=0B;;;0; 'FCCapacity#storage.provisioning.allocated.bytes'=0B;;;0; 'FCCapacity#storage.provisioning.free.bytes'=0B;;;0; 'FCCapacity#storage.space.compaction.ratio.count'=0;;;0; 'FCCapacity#storage.space.deduplication.ratio.count'=0;;;0; 'FCCapacity#storage.space.data_reduction.ratio.count'=0;;;0; 'FCCapacity#storage.space.overprovisioning.ratio.count'=0;;;0; 'NLCapacity#storage.space.usage.bytes'=0B;;;0;0 'NLCapacity#storage.space.free.bytes'=0B;;;0;0 'NLCapacity#storage.space.usage.percentage'=0.00%;;;0;100 'NLCapacity#storage.space.unavailable.bytes'=0B;;;0; 'NLCapacity#storage.space.failed.bytes'=0B;;;0; 'NLCapacity#storage.provisioning.virtualsize.bytes'=0B;;;0; 'NLCapacity#storage.provisioning.used.bytes'=0B;;;0; 'NLCapacity#storage.provisioning.allocated.bytes'=0B;;;0; 'NLCapacity#storage.provisioning.free.bytes'=0B;;;0; 'NLCapacity#storage.space.compaction.ratio.count'=0;;;0; 'NLCapacity#storage.space.deduplication.ratio.count'=0;;;0; 'NLCapacity#storage.space.data_reduction.ratio.count'=0;;;0; 'NLCapacity#storage.space.overprovisioning.ratio.count'=0;;;0; 'SSDCapacity#storage.space.usage.bytes'=123327838420992B;;;0;184305636605952 'SSDCapacity#storage.space.free.bytes'=60977798184960B;;;0;184305636605952 'SSDCapacity#storage.space.usage.percentage'=66.91%;;;0;100 'SSDCapacity#storage.space.unavailable.bytes'=0B;;;0; 'SSDCapacity#storage.space.failed.bytes'=0B;;;0; 'SSDCapacity#storage.provisioning.virtualsize.bytes'=145453502955520B;;;0; 'SSDCapacity#storage.provisioning.used.bytes'=98247842463744B;;;0; 'SSDCapacity#storage.provisioning.allocated.bytes'=8490068213760B;;;0; 'SSDCapacity#storage.provisioning.free.bytes'=60977798184960B;;;0; 'SSDCapacity#storage.space.compaction.ratio.count'=2.84;;;0; 'SSDCapacity#storage.space.deduplication.ratio.count'=1.17;;;0; 'SSDCapacity#storage.space.compression.ratio.count'=1;;;0; 'SSDCapacity#storage.space.data_reduction.ratio.count'=1.58;;;0; 'SSDCapacity#storage.space.overprovisioning.ratio.count'=0.87;;;0; 'allCapacity#storage.space.usage.bytes'=123327838420992B;;;0;184305636605952 'allCapacity#storage.space.free.bytes'=60977798184960B;;;0;184305636605952 'allCapacity#storage.space.usage.percentage'=66.91%;;;0;100 'allCapacity#storage.space.unavailable.bytes'=0B;;;0; 'allCapacity#storage.space.failed.bytes'=0B;;;0; 'allCapacity#storage.provisioning.virtualsize.bytes'=145453502955520B;;;0; 'allCapacity#storage.provisioning.used.bytes'=98247842463744B;;;0; 'allCapacity#storage.provisioning.allocated.bytes'=8490068213760B;;;0; 'allCapacity#storage.provisioning.free.bytes'=60977798184960B;;;0; 'allCapacity#storage.space.compaction.ratio.count'=2.84;;;0; 'allCapacity#storage.space.deduplication.ratio.count'=1.17;;;0; 'allCapacity#storage.space.compression.ratio.count'=1;;;0; 'allCapacity#storage.space.data_reduction.ratio.count'=1.58;;;0; 'allCapacity#storage.space.overprovisioning.ratio.count'=0.87;;;0;
