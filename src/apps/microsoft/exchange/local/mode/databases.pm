@@ -393,11 +393,11 @@ Open a session to the remote-host with authentication. This also needs --remote-
 
 =item B<--no-mailflow>
 
-Don't check Mailflow connectivity.
+Don't check <CMailflow> connectivity.
 
 =item B<--no-mapi>
 
-Don't check Mapi connectivity.
+Don't check <CMapi> connectivity.
 
 =item B<--no-copystatus>
 
@@ -438,7 +438,7 @@ Filter mailboxes by database server name (regexp can be used. In Powershell).
 
 =item B<--ps-database-filter>
 
-Filter database (only wil card '*' can be used. In Powershell).
+Filter database (only wild card '*' can be used. In Powershell).
 
 =item B<--ps-database-test-filter>
 
