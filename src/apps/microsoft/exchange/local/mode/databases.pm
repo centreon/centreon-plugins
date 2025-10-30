@@ -189,7 +189,7 @@ sub set_counters {
                 key_values => [ { name => 'asize' }, { name => 'database' }, { name => 'server' } ],
                 output_template => 'space available: %s %s',
                 output_change_bytes => 1,
-                closure_custom_perfdata => $self->can('custom_space_asize_perfdata')
+                closure_custom_perfdata => $self->can('custom_space_size_perfdata')
             }
         }
     ];
