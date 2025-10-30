@@ -375,7 +375,7 @@ __END__
 
 =head1 MODE
 
-Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working and CopyStatus.
+Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working and Copy Status.
 
 =over 8
 
@@ -393,11 +393,11 @@ Open a session to the remote-host with authentication. This also needs --remote-
 
 =item B<--no-mailflow>
 
-Don't check mailflow connectivity.
+Don't check Mailflow connectivity.
 
 =item B<--no-mapi>
 
-Don't check mapi connectivity.
+Don't check Mapi connectivity.
 
 =item B<--no-copystatus>
 
@@ -438,11 +438,11 @@ Filter mailboxes by database server name (regexp can be used. In Powershell).
 
 =item B<--ps-database-filter>
 
-Filter database (only wilcard '*' can be used. In Powershell).
+Filter database (only wil card '*' can be used. In Powershell).
 
 =item B<--ps-database-test-filter>
 
-Skip mapi/mailflow test (regexp can be used. In Powershell).
+Skip Mapi/Mailflow test (regexp can be used. In Powershell).
 
 =item B<--warning-status>
 
