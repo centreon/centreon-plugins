@@ -24,10 +24,12 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
+use centreon::plugins::misc qw/is_empty json_decode/;
+use centreon::plugins::constants qw(:messages);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -40,19 +42,19 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
-            'hostname:s'  => { name => 'hostname' },
-            'url-path:s'  => { name => 'url_path' },
-            'port:s'      => { name => 'port' },
-            'proto:s'     => { name => 'proto' },
-            'credentials' => { name => 'credentials' },
-            'basic'       => { name => 'basic' },
-            'username:s'  => { name => 'username' },
-            'password:s'  => { name => 'password' },
-            'timeout:s'   => { name => 'timeout' },
-            'unknown-http-status:s'  => { name => 'unknown_http_status' },
-            'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+        $options{options}->add_options(arguments => {
+            'hostname:s'             => { name => 'hostname' },
+            'url-path:s'             => { name => 'url_path', default => '/api/v2' },
+            'port:s'                 => { name => 'port', default => 9093 },
+            'proto:s'                => { name => 'proto', default => 'http' },
+            'credentials'            => { name => 'credentials' },
+            'basic'                  => { name => 'basic' },
+            'username:s'             => { name => 'username' },
+            'password:s'             => { name => 'password' },
+            'timeout:s'              => { name => 'timeout', default => 10 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+            'warning-http-status:s'  => { name => 'warning_http_status', default => '' },
+            'critical-http-status:s' => { name => 'critical_http_status', default => '' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -74,16 +76,7 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 9093;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v2';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-
-    if ($self->{hostname} eq '') {
+    if ($self->{option_results}->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
@@ -91,39 +84,28 @@ sub check_options {
     return 0;
 }
 
-sub build_options_for_httplib {
-    my ($self, %options) = @_;
-
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{url_path} = $self->{url_path};
-}
-
 sub settings {
     my ($self, %options) = @_;
 
-    $self->build_options_for_httplib();
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub get_connection_info {
     my ($self, %options) = @_;
 
-    return $self->{hostname} . ":" . $self->{port};
+    return $self->{option_results}->{hostname} . ":" . $self->{option_results}->{port};
 }
 
 sub get_hostname {
     my ($self, %options) = @_;
 
-    return $self->{hostname};
+    return $self->{option_results}->{hostname};
 }
 
 sub get_port {
     my ($self, %options) = @_;
 
-    return $self->{port};
+    return $self->{option_results}->{port};
 }
 
 sub get_endpoint {
@@ -131,20 +113,15 @@ sub get_endpoint {
 
     $self->settings();
     my $response = $self->{http}->request(
-        url_path => $self->{url_path} . $options{endpoint},
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status}
+        url_path        => $self->{option_results}->{url_path} . $options{endpoint},
+        unknown_status  => $self->{option_results}->{unknown_http_status},
+        warning_status  => $self->{option_results}->{warning_http_status},
+        critical_status => $self->{option_results}->{critical_http_status}
     );
 
-    my $content;
-    eval {
-        $content = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $content = json_decode($response,
+                              errstr => MSG_JSON_DECODE_ERROR,
+                              output => $self->{output});
 
     return $content;
 }
