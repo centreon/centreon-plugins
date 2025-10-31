@@ -69,7 +69,6 @@ Alerts ${tc}
         ...      19     --critical-suppressed=@1
         ...      CRITICAL: Alerts suppressed: 1 | 'alerts.active.count'=3;;;0;5 'alerts.active.warning.count'=1;;;0;5 'alerts.active.critical.count'=1;;;0;5 'alerts.active.info.count'=1;;;0;5 'alerts.total.count'=5;;;0; 'alerts.unprocessed.count'=1;;;0;5 'alerts.suppressed.count'=1;;@0:1;0;5
 
-
 Alerts regex ${tc}
     [Tags]    cloud    prometheus
 
