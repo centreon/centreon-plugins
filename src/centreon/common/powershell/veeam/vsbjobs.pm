@@ -129,6 +129,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get veeam SureBackup jobs informations.
+Method to get Veeam SureBackup jobs information.
 
 =cut
