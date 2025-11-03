@@ -230,10 +230,17 @@ sub manage_selection {
         my $elapsed_time = 0;
         $elapsed_time = $current_time - $job->{creationTimeUTC} if ($job->{creationTimeUTC} =~ /[0-9]/);
 
+        my $sure_backup_job_type;
+        if (version->parse($options{veeam_version}) >= 12) {
+            $sure_backup_job_type = $job->{type} # Job Type is not returned with Get-VBRSureBackupJob whereas it is with Get-VSBJob
+        } else {
+            $sure_backup_job_type = $job_type->{ $job->{type} } // 'unknown'
+        }
+        
         my $status = defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ? $job_result->{ $job->{result} } : '-';
         $self->{jobs}->{ $job->{name} } = {
             name => $job->{name},
-            type => defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown',
+            type => $sure_backup_job_type,
             duration => $elapsed_time,
             status => $status
         };
