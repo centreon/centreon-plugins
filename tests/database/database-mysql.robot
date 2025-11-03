@@ -3,13 +3,14 @@ Documentation       Database Mysql plugin
 
 Resource            ${CURDIR}${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                  ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=database::mysql::plugin
+
 
 *** Test Cases ***
 Database Mysql sql string mode ${tc}
@@ -18,7 +19,7 @@ Database Mysql sql string mode ${tc}
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=sql-string
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  expected_result    --

@@ -15,6 +15,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 
+
 *** Test Cases ***
 lenovo xcc hardware Alarms ${tc}
     [Documentation]    Hardware lenovo xcc SNMP

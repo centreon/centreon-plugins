@@ -73,7 +73,13 @@ sub set_system {
             ['amberSteady', 'WARNING'],
             ['amberBlinking', 'WARNING'],
             ['greenamberBlinking', 'WARNING'],
-            ['off', 'OK']
+            ['off', 'OK'],
+            ['blueBlinking', 'WARNING'],
+            ['blueSteady', 'OK'],
+            ['greenSteadyAmberBlinking', 'WARNING'],
+            ['greenSteadyGreenBlinking', 'OK'],
+            ['amberSteadyAmberBlinking', 'WARNING'],
+            ['amberSteadyGreenBlinking', 'WARNING']
         ]
     };
 

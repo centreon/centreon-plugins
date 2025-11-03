@@ -7,7 +7,8 @@ Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-** Variables ***
+
+*** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}health.json
 
 ${CMD}              ${CENTREON_PLUGINS}
@@ -18,6 +19,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --mode=health
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 health ${tc}
     [Tags]    network    fortinet    fortigate    restapi
@@ -25,7 +27,6 @@ health ${tc}
     ...    ${CMD}
     ...    ${extra_options}
     Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
-
 
     # Mockoon endpoint is set to sequential so we need to run the same test twice to get the same result ( one time with hash and one time with array )
 

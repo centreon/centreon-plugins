@@ -1,12 +1,11 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
-Test Timeout        120s
 Test Setup          Ctn Cleanup Cache
+Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -19,13 +18,13 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vm::plu
 ...                 --proto=http
 ...                 --port=3000
 
+
 *** Test Cases ***
 Vm-Tools ${tc}
-    [Tags]    apps    api    vmware   vsphere8    vm
+    [Tags]    apps    api    vmware    vsphere8    vm
     ${command}    Catenate    ${CMD} ${filter_vm} ${extraoptions}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
-    
-    
+
     Examples:    tc     filter_vm                   extraoptions                      expected_result   --
         ...      1     --vm-name=db-server-01       ${EMPTY}                          OK: vm-7722 had 1 install attempts - version is UNMANAGED (v12.2.0) - updates are MANUAL (auto-updates not allowed) - tools are RUNNING | 'tools.install.attempts.count'=1;;;0;
         ...      2     --vm-name=web-server-01      ${EMPTY}                          OK: vm-7657 had 4 install attempts - version is CURRENT (v12.3.0) - updates are MANUAL (auto-updates allowed) - tools are RUNNING | 'tools.install.attempts.count'=4;;;0;
@@ -34,7 +33,7 @@ Vm-Tools ${tc}
         ...      5     --vm-id=vm-7722              ${EMPTY}                          OK: vm-7722 had 1 install attempts - version is UNMANAGED (v12.2.0) - updates are MANUAL (auto-updates not allowed) - tools are RUNNING | 'tools.install.attempts.count'=1;;;0;
         ...      6     --vm-id=vm-7657              ${EMPTY}                          OK: vm-7657 had 4 install attempts - version is CURRENT (v12.3.0) - updates are MANUAL (auto-updates allowed) - tools are RUNNING | 'tools.install.attempts.count'=4;;;0;
         ...      7     --vm-id=vm-1234              ${EMPTY}                          WARNING: vm-1234 tools are NOT_RUNNING | 'tools.install.attempts.count'=4;;;0;
-        ...      8     --vm-id=vm-3000000           ${EMPTY}                          UNKNOWN: API returned an error: NOT_FOUND - Virtual machine with identifier 'vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e' does not exist.
+        ...      8     --vm-id=vm-3000000           ${EMPTY}                          UNKNOWN: API returned an error of type NOT_FOUND when requesting endpoint'/vcenter/vm/vm-3000000/tools': [Id: com.vmware.api.vcenter.vm.not_found - Msg: Virtual machine with identifier 'vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e' does not exist. (vm-3000000:c186dc36-76b6-4435-b5f3-cb1e9678a67e)]
         ...      9     --vm-id=vm-7722              --warning-install-attempts=0      WARNING: vm-7722 had 1 install attempts | 'tools.install.attempts.count'=1;0:0;;0;
         ...      10    --vm-id=vm-7657              --warning-install-attempts=0      WARNING: vm-7657 had 4 install attempts | 'tools.install.attempts.count'=4;0:0;;0;
         ...      11    --vm-id=vm-1234              --warning-install-attempts=0      WARNING: vm-1234 had 4 install attempts (error messages available in long output with --verbose option) - tools are NOT_RUNNING | 'tools.install.attempts.count'=4;0:0;;0;

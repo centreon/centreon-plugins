@@ -25,6 +25,7 @@ use base qw(apps::vmware::vsphere8::esx::mode);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw/is_empty value_of/;
 
 sub custom_power_status_output {
     my ($self, %options) = @_;
@@ -93,8 +94,8 @@ sub manage_selection {
 
     $self->{host} = {};
     foreach my $host (@{$response}) {
-        next if (!defined($host->{name}) || defined($self->{option_results}->{esx_name}) && $host->{name} ne $self->{option_results}->{esx_name});
-        next if (!defined($host->{host}) || defined($self->{option_results}->{esx_id}) && $host->{host} ne $self->{option_results}->{esx_id});
+        next if (!defined($host->{name}) || !is_empty($self->{option_results}->{esx_name}) && $host->{name} ne $self->{option_results}->{esx_name});
+        next if (!defined($host->{host}) || !is_empty($self->{option_results}->{esx_id}) && $host->{host} ne $self->{option_results}->{esx_id});
 
         $self->{host}->{$host->{host}} = {
             display          => $host->{name},
@@ -104,8 +105,7 @@ sub manage_selection {
         };
     }
     if (scalar(keys %{$self->{host}}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "No ESX Host found.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No ESX Host found with name: '" .value_of($self, '->{option_results}->{esx_name}')."' and id: '".value_of($self, '->{option_results}->{esx_id}')."'.");
     }
     return 1;
 }

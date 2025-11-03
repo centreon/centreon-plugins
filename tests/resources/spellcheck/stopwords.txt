@@ -102,6 +102,7 @@ fibre
 Forcepoint
 Fortigate
 Fortinet
+FortiOS
 FQDN
 FreeBSD
 FrontDoor
@@ -288,6 +289,7 @@ snmpd.conf
 space-usage-prct
 --sql-errors-exit
 SCVMM
+Splunk
 SRX
 SSDCapacity
 SSG

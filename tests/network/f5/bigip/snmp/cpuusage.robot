@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
@@ -8,7 +7,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+
 
 *** Test Cases ***
 cpu-usage ${tc}
@@ -21,7 +21,7 @@ cpu-usage ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/f5/bigip/snmp/cpu
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                    expected_result    --

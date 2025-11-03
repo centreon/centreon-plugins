@@ -20,6 +20,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 ListUserJourneys ${tc}
     [Tags]    quanta    api

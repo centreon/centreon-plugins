@@ -4,7 +4,7 @@ FROM ${REGISTRY_URL}/almalinux:8
 
 RUN bash -e <<EOF
 
-dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
+dnf install -y 'dnf-command(config-manager)' epel-release zstd jq procps-ng
 dnf config-manager --set-enabled powertools
 dnf clean all
 

@@ -1,11 +1,10 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -19,9 +18,10 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::pl
 ...                 --port=3000
 ...                 --esx-id=host-22
 
+
 *** Test Cases ***
 Network ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware    vsphere8    esx
     ${command}    Catenate    ${CMD} ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
@@ -35,4 +35,3 @@ Network ${tc}
         ...      6     --critical-usage-bps=1:1             CRITICAL: Network throughput usage: 184.96 KB/s of 953.67 MB/s usable | 'network.throughput.usage.bytespersecond'=189399.04Bps;;1:1;0;1000000000 'network.throughput.usage.percent'=0.018939904%;;;0;100
         ...      7     --warning-usage-prct=1:1             WARNING: 0.02% of usable network throughput used | 'network.throughput.usage.bytespersecond'=189399.04Bps;;;0;1000000000 'network.throughput.usage.percent'=0.018939904%;1:1;;0;100
         ...      8     --critical-usage-prct=1:1            CRITICAL: 0.02% of usable network throughput used | 'network.throughput.usage.bytespersecond'=189399.04Bps;;;0;1000000000 'network.throughput.usage.percent'=0.018939904%;;1:1;0;100
-
