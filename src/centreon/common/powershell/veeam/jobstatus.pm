@@ -75,7 +75,7 @@ Try {
             $id = $_.Id.toString() 
             Get-VBRComputerBackupJobSession -name $item.name | Sort-Object CreationTime -Descending | Select-Object -First 2 | ForEach-Object { 
                 $session = @{} 
-                $session.result = $_.Result.value__ 
+                $session.result = $_.Result.value__ - 1
                 $session.creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
                 $session.endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
                 $item.sessions.Add($session) 
