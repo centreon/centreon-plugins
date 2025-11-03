@@ -76,7 +76,7 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    if ($self->{option_results}->{hostname} eq '') {
+    if (is_empty($self->{option_results}->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
