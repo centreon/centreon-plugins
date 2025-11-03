@@ -167,7 +167,7 @@ __END__
 
 =head1 MODE
 
-Check <CStonesoft> Firewall memory usage <C(STONESOFT-FIREWALL-MIB)>.
+Check Stonesoft Firewall memory usage <C(STONESOFT-FIREWALL-MIB)>.
 
 =over 8
 
