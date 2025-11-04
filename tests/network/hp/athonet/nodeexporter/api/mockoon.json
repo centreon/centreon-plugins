@@ -321,7 +321,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:1::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:2::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:1::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@fd10:211:211:2::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:1::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:2::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:1::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:2::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
         },
         {
           "uuid": "1340324b-91a8-4152-9517-7a7e79a45946",
@@ -1101,7 +1101,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:1::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:2::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:1::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:2::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:1::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:2::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:1::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:2::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
         },
         {
           "uuid": "8865df1a-bda8-4267-b0c9-02501031ab25",
@@ -1986,6 +1986,214 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"default\",\n                    \"target_type\": \"smsf\",\n                    \"user\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.411,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"default\",\n                    \"target_type\": \"smsf\",\n                    \"user\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.411,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "d326e29f-b858-4084-97eb-4951c545e857",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479325.969,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udm.DataRepository.Repository\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479325.969,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6edc4039-5098-445f-a5f4-3951b1b6e561",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:1::2:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:2::2:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:1::2:1\",\n                    \"repository\": \"Udm.DataRepository.Repository\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:2::2:1\",\n                    \"repository\": \"Udm.DataRepository.Repository\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "8bcc646a-f930-4311-8665-873ba60e9f70",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"udm\",\n                    \"user\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.169,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"udm\",\n                    \"user\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.169,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "1d1889f7-0760-4040-b8f3-cb7a2d093adb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.277,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,

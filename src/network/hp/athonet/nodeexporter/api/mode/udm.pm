@@ -73,7 +73,7 @@ sub prefix_cluster_metrics_output {
 sub prefix_sbi_registration_output {
     my ($self, %options) = @_;
 
-    return "SBI registration network function";
+    return "SBI registration network function ";
 }
 
 sub set_counters {
@@ -134,7 +134,6 @@ sub set_counters {
         { label => 'node-status', type => 2, critical_default => '%{status} =~ /notRunning/i', set => {
                 key_values => [ { name => 'status' }, { name => 'repository' }, { name => 'node' } ],
                 output_template => 'status: %s',
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -144,7 +143,6 @@ sub set_counters {
         { label => 'sbi-nf-registration-status', type => 2, critical_default => '%{status} =~ /suspended/i', set => {
                 key_values => [ { name => 'status' } ],
                 output_template => 'status: %s',
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
