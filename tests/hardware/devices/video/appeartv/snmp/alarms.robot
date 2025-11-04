@@ -16,6 +16,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=hardware/devices/video/appeartv/snmp/appeartv
 
+
 *** Test Cases ***
 AppearTV Alarms ${tc}
     [Documentation]    Hardware Video AppeartTV Alarms

@@ -19,10 +19,10 @@ Datacore check status monitor ${tc}
     [Documentation]    Check Datacore pool usage
     [Tags]    storage    api
     ${command}    Catenate
-    ...    ${CMD} 
+    ...    ${CMD}
     ...    --mode=status-monitor
     ...    --statefile-dir=/dev/shm/
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc      expected_result   --

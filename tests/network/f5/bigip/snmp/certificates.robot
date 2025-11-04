@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
@@ -8,22 +7,23 @@ Test Timeout        120s
 
 
 *** Variables ***
-${INJECT_PERL}     -Mcertificates_date -I${CURDIR}
-${CMD}             ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
-...                --mode=certificates
-...                --hostname=${HOSTNAME}
-...                --snmp-version=${SNMPVERSION}
-...                --snmp-port=${SNMPPORT}
-...                --snmp-community=network/f5/bigip/snmp/certificates
+${INJECT_PERL}      -Mcertificates_date -I${CURDIR}
+${CMD}              ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+...                 --mode=certificates
+...                 --hostname=${HOSTNAME}
+...                 --snmp-version=${SNMPVERSION}
+...                 --snmp-port=${SNMPPORT}
+...                 --snmp-community=network/f5/bigip/snmp/certificates
+
 
 *** Test Cases ***
 certificates ${tc}
     [Tags]    network
 
-    ${OLD_PERL5OPT}=    Get Environment Variable     PERL5OPT   default=
+    ${OLD_PERL5OPT}=    Get Environment Variable    PERL5OPT    default=
     Set Environment Variable    PERL5OPT    ${INJECT_PERL} ${OLD_PERL5OPT}
 
-    ${command}    Catenate
+    ${command}=    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 

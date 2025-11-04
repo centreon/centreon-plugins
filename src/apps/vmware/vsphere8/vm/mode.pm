@@ -23,6 +23,7 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use strict;
 use warnings;
+use centreon::plugins::misc qw/value_of/;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -108,7 +109,7 @@ sub get_vm {
         $vm = $response->[0] // undef;
     }
     if (centreon::plugins::misc::is_empty($vm->{name})) {
-        $self->{output}->add_option_msg(short_msg => "No VM found.");
+        $self->{output}->add_option_msg(short_msg => "No VM found with name: '" . value_of($self, '->{vm_name}') . "' and/or id '" . value_of($self, '->{vm_id}') . "'.");
         $self->{output}->option_exit();
     }
     # the VM's ID (vm-xxxx) is not returned if the vm was obtained by it's vm_id, so in that case we have to get it from the parameter

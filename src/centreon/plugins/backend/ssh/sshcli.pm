@@ -48,7 +48,7 @@ sub check_options {
     $self->{ssh_command} = defined($options{option_results}->{sshcli_command}) && $options{option_results}->{sshcli_command} ne '' ?
                            $options{option_results}->{sshcli_command} : 'ssh';
     $self->{ssh_path} = $options{option_results}->{sshcli_path};
-    $self->{ssh_option} = defined($options{option_results}->{sshcli_option}) ? $options{option_results}->{sshcli_option} : [];
+    $self->{ssh_option} = defined($options{option_results}->{sshcli_option}) ? $options{option_results}->{sshcli_option} : [ '-o=LogLevel=ERROR' ];
     $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : 22;
     $self->{ssh_priv_key} = $options{option_results}->{ssh_priv_key};
     $self->{ssh_username} = $options{option_results}->{ssh_username};
@@ -131,7 +131,7 @@ ssh command path (default: C<none>)
 
 =item B<--sshcli-option>
 
-Specify SSH CLI options (example: C<--sshcli-option='-o=StrictHostKeyChecking=no'>).
+Specify SSH CLI options (example: --sshcli-option='-o=StrictHostKeyChecking=no -o=LogLevel=ERROR'). The default parameter is --sshcli-options='-o=LogLevel=ERROR' which hides the SSH banner. If you override this parameter, make sure to append '-o=LogLevel=ERROR' to your new value to maintain this behavior. This parameter can be used multiple times and multiple options can be specified in the same parameter.
 
 =back
 

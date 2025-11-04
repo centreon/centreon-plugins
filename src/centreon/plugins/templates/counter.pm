@@ -175,6 +175,7 @@ sub new {
         }
     }
 
+    $options{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL COUNTERS OPTIONS', once => 1) if $options{display_template_help};
 
     return $self;
 }
@@ -867,9 +868,9 @@ sub custom_perfdata_instances {
 
 __END__
 
-=head1 MODE
+=head1 GLOBAL COUNTERS OPTIONS
 
-Default template for counters. Should be extended.
+Global options for counters.
 
 =over 8
 

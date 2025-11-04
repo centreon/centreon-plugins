@@ -22,6 +22,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Connecivity ${tc}
     [Tags]    network    securirt    api    graphql    cato
@@ -30,7 +31,6 @@ Connecivity ${tc}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
-
 
     Examples:      tc    extraoptions                                                          expected_regexp    --
           ...      1     ${EMPTY}                                                              ^OK: connectivity-status : Connected

@@ -7,7 +7,8 @@ Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-** Variables ***
+
+*** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}License-api.json
 
 ${CMD}              ${CENTREON_PLUGINS}
@@ -16,6 +17,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto='http'
 ...                 --access-token=mokoon-token
 ...                 --port=${APIPORT}
+
 
 *** Test Cases ***
 licenses ${tc}

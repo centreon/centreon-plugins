@@ -102,6 +102,7 @@ fibre
 Forcepoint
 Fortigate
 Fortinet
+FortiOS
 FQDN
 FreeBSD
 FrontDoor
@@ -199,6 +200,7 @@ MQTT
 --mqtt-ssl-key
 --mqtt-timeout
 --mqtt-username
+MSSQL
 multiple
 MX
 nagios
@@ -238,6 +240,7 @@ packetloss
 partiallyActive
 --patch-redhat
 perfdata
+pfSense
 physicaldrive
 PKCS1
 Plink
@@ -286,6 +289,7 @@ snmpd.conf
 space-usage-prct
 --sql-errors-exit
 SCVMM
+Splunk
 SRX
 SSDCapacity
 SSG

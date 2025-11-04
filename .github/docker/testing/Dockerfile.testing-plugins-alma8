@@ -4,7 +4,7 @@ FROM ${REGISTRY_URL}/almalinux:8
 
 RUN bash -e <<EOF
 
-dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
+dnf install -y 'dnf-command(config-manager)' epel-release zstd jq procps-ng
 dnf config-manager --set-enabled powertools
 dnf clean all
 
@@ -19,7 +19,7 @@ curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
 yum install -y nodejs
 
 # Install mockoon
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\

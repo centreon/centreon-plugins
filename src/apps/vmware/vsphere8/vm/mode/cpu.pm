@@ -113,8 +113,7 @@ sub manage_selection {
     #         };
 
     if (!defined($results{'cpu.capacity.usage.VM'}) || !defined($results{'cpu.capacity.entitlement.VM'})) {
-        $self->{output}->add_option_msg(short_msg => "get_vm_stats function failed to retrieve stats");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "get_vm_stats function failed to retrieve stats");
     }
 
     $self->{cpu_usage} = {
