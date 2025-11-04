@@ -137,6 +137,14 @@ sub read_config {
 			<critical>non ha superato</critical>
 		</messages>
 	</dcdiag>
+		<dcdiag language="de">
+		<messages>
+			<global>Starting test.*?:\s+(.*?)\n.*?(bestanden|warnung|fehlgeschlagen)</global>
+			<ok>bestanden</ok>
+			<warning>warnung</warning>
+			<critical>fehlgeschlagen</critical>
+		</messages>
+	</dcdiag>
 </root>
 END_FILE
 
