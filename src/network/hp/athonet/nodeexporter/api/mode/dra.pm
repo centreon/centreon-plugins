@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::athonet::nodeexporter::api::mode::diameterroutingagent;
+package network::hp::athonet::nodeexporter::api::mode::dra;
 
 use base qw(centreon::plugins::templates::counter);
 
