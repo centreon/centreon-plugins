@@ -17,7 +17,7 @@ ${CMD}                  ${CENTREON_PLUGINS} --plugin=network::hp::athonet::nodee
 
 
 *** Test Cases ***
-EIR ${tc}
+EIR (Equipment Identity Register) ${tc}
     [Tags]    network    hp    api
     ${command}    Catenate
     ...    ${CMD}

@@ -17,7 +17,7 @@ ${CMD}                  ${CENTREON_PLUGINS} --plugin=network::hp::athonet::nodee
 
 
 *** Test Cases ***
-Chf (charging function) ${tc}
+CHF (charging function) ${tc}
     [Tags]    network    hp    api
     ${command}    Catenate
     ...    ${CMD}
