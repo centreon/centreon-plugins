@@ -1622,6 +1622,266 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_peer_state_info\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"permanent\": \"false\",\n                    \"remote\": \"172.42.2.8\",\n                    \"svc\": \"sgwc\",\n                    \"target_type\": \"sgwc\",\n                    \"type\": \"blacklist\"\n                },\n                \"value\": [\n                    1745497509.935,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "14185f5a-fe50-49c8-9c7d-694cdc836eb5",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sum(smf_sessions)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sum(smf_sessions)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {},\n                \"value\": [\n                    1745497566.904,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "a65c5dcb-443d-4628-803a-98c1f6899147",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "smf_supi",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "smf_supi",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"smf_supi\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497566.996,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "d42aa8dd-be4e-42bb-9a37-2362c361c884",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"smf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"smf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497567.293,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "f469389b-f2ee-4c8c-a1b2-7d264a7cfe9e",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_node_status{target_type=\"smf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_node_status{target_type=\"smf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.9\",\n                    \"remote_ip\": \"172.42.2.8\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497567.091,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}"
+        },
+        {
+          "uuid": "2332a15e-7f00-402c-8a9f-22cca53a7235",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"smf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"smf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_peer_state_info\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"permanent\": \"false\",\n                    \"remote\": \"172.42.2.8\",\n                    \"svc\": \"smf_up\",\n                    \"target_type\": \"smf\",\n                    \"type\": \"blacklist\"\n                },\n                \"value\": [\n                    1745497567.191,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
