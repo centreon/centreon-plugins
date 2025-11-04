@@ -143,7 +143,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{http}->add_header(key => 'X-Cisco-Meraki-API-Key', value => $self->{api_token});
-    $self->{http}->add_header(key => 'User-Agent', value => 'CentreonPlugin/1.0 Centreon');
+    $self->{http}->add_header(key => 'User-Agent', value => 'CentreonPlugiOpenSource/1.0 Centreon');
 }
 
 sub settings {
