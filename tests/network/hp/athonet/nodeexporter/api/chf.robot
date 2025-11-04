@@ -12,12 +12,12 @@ Test Timeout        120s
 ${MOCKOON_JSON}         ${CURDIR}${/}mockoon.json
 
 ${BASE_URL}             http://${HOSTNAME}:${APIPORT}
-${CMD}                  ${CENTREON_PLUGINS} --plugin=network::hp::athonet::nodeexporter::api::plugin --mode=charging-function --hostname=${HOSTNAME} --port=${APIPORT} --proto http --api-username=1 --api-password=1
+${CMD}                  ${CENTREON_PLUGINS} --plugin=network::hp::athonet::nodeexporter::api::plugin --mode=chf --hostname=${HOSTNAME} --port=${APIPORT} --proto http --api-username=1 --api-password=1
 
 
 
 *** Test Cases ***
-Charging-Function ${tc}
+Chf (charging function) ${tc}
     [Tags]    network    hp    api
     ${command}    Catenate
     ...    ${CMD}
