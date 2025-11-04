@@ -1882,6 +1882,110 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_peer_state_info\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"permanent\": \"false\",\n                    \"remote\": \"172.42.2.8\",\n                    \"svc\": \"smf_up\",\n                    \"target_type\": \"smf\",\n                    \"type\": \"blacklist\"\n                },\n                \"value\": [\n                    1745497567.191,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "eed56fdd-7749-44f8-b7a0-4c05036672ea",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "smsf_sms_stored",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "smsf_sms_stored",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"smsf_sms_stored\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.311,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4c989329-a887-43f6-900d-4fd04ff61768",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"smsf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"smsf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"default\",\n                    \"target_type\": \"smsf\",\n                    \"user\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.411,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"default\",\n                    \"target_type\": \"smsf\",\n                    \"user\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.411,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
