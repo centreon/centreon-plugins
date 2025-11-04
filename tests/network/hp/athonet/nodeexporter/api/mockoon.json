@@ -998,6 +998,214 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec11.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec11.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec21.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec21.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4fd39c16-2102-4ddb-a688-c23fb2148e8a",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"nrf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"nrf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.219,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.219,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4b03b37e-ca26-4796-b11f-61a98a87608c",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"nrf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"nrf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:1::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:2::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:1::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@fd10:211:211:2::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "8865df1a-bda8-4267-b0c9-02501031ab25",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_registration_status{nfType!~\"AUSF|AMF\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_registration_status{nfType!~\"AUSF|AMF\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"0c199a90-d121-43d5-bb58-5527a35d3a44\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"11a357fe-6008-4c68-87ba-34c721af4fad\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"3da74841-5c96-43a8-898e-0022f92e2b55\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"639a2dc6-9089-4dc5-a641-fb0285dfa2e3\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"65ca62c5-7d3a-433e-8052-7412c1d6cede\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"8b3edeed-24ac-41b2-85f8-90d6ea8e6900\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"cc33ccd9-ed1e-458a-beb0-d2eb7f03655b\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"dc180c25-23dc-421f-9498-bdc6996b6066\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"26b10ab2-e0a9-4221-81be-fa5dca02f873\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"73cbefc1-dfe5-4f33-ad72-480965c6b0f6\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"beab7f69-12f1-4036-ba26-f3588a383c96\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"5ef20d63-e963-49c4-a696-721d12db6069\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "cf6d743d-fd63-4c74-b6f5-5960c0821545",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_registration_timestamp_seconds{nfType!~\"AUSF|AMF\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_registration_timestamp_seconds{nfType!~\"AUSF|AMF\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"0c199a90-d121-43d5-bb58-5527a35d3a44\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"11a357fe-6008-4c68-87ba-34c721af4fad\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"3da74841-5c96-43a8-898e-0022f92e2b55\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"639a2dc6-9089-4dc5-a641-fb0285dfa2e3\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"65ca62c5-7d3a-433e-8052-7412c1d6cede\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"8b3edeed-24ac-41b2-85f8-90d6ea8e6900\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"cc33ccd9-ed1e-458a-beb0-d2eb7f03655b\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"dc180c25-23dc-421f-9498-bdc6996b6066\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"26b10ab2-e0a9-4221-81be-fa5dca02f873\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"73cbefc1-dfe5-4f33-ad72-480965c6b0f6\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"beab7f69-12f1-4036-ba26-f3588a383c96\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"5ef20d63-e963-49c4-a696-721d12db6069\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
