@@ -1362,6 +1362,266 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"pcf\",\n                    \"user\": \"pcf\"\n                },\n                \"value\": [\n                    1745497457.027,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"pcf\",\n                    \"user\": \"pcf\"\n                },\n                \"value\": [\n                    1745497457.027,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "3d9ebf27-5b30-41a9-9d20-cc74444e291e",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sgw_ue_fsm",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sgw_ue_fsm",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sgw_ue_fsm\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.528,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "9c648c52-2f3c-44aa-92e9-9b5fb4d4cb1b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sgw_dfb_fsm",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sgw_dfb_fsm",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sgw_dfb_fsm\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.637,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "17428dfb-a6bd-4954-9b07-d81fa3f75d9e",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_node_status{target_type=\"sgwc\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_node_status{target_type=\"sgwc\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.10\",\n                    \"remote_ip\": \"172.42.2.8\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.836,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "7c0c5598-d13c-4583-a4d2-7ea3ba2701e3",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "gtpc_peer_status{target_type=\"sgwc\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "gtpc_peer_status{target_type=\"sgwc\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.35\",\n                    \"remote_ip\": \"172.42.9.20\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.733,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.0\",\n                    \"remote_ip\": \"172.42.2.1\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.733,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.35\",\n                    \"remote_ip\": \"172.20.8.20\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.733,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4eec481e-b293-4817-a9ff-c4f0cb6f36dd",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"sgwc\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"sgwc\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_peer_state_info\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"permanent\": \"false\",\n                    \"remote\": \"172.42.2.8\",\n                    \"svc\": \"sgwc\",\n                    \"target_type\": \"sgwc\",\n                    \"type\": \"blacklist\"\n                },\n                \"value\": [\n                    1745497509.935,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
