@@ -17,7 +17,7 @@ ${CMD}                  ${CENTREON_PLUGINS} --plugin=network::hp::athonet::nodee
 
 
 *** Test Cases ***
-NRF (Network Repository Function) ${tc}
+PCF (Network Repository Function) ${tc}
     [Tags]    network    hp    api
 
 
