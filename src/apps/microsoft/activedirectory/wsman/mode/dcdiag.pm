@@ -271,7 +271,7 @@ Set the language used in config file (default: 'en').
 
 =item B<--dfsr>
 
-Specifies that SysVol replication uses DFS instead of FRS (Windows 2008 or later)
+Specifies that SysVol replication uses C<DFS> instead of FRS (Windows 2008 or later)
 
 =item B<--nomachineaccount>
 
