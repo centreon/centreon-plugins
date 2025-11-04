@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'charging-function'      => 'network::hp::athonet::nodeexporter::api::mode::chargingfunction',
+        'chf'                    => 'network::hp::athonet::nodeexporter::api::mode::chf',
         'cpu'                    => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
         'cpu-detailed'           => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
         'diameter-routing-agent' => 'network::hp::athonet::nodeexporter::api::mode::dra',

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::hp::athonet::nodeexporter::api::mode::chargingfunction;
+package network::hp::athonet::nodeexporter::api::mode::chf;
 
 use base qw(centreon::plugins::templates::counter);
 
