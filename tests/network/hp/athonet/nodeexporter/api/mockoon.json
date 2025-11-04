@@ -1206,6 +1206,162 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"0c199a90-d121-43d5-bb58-5527a35d3a44\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"11a357fe-6008-4c68-87ba-34c721af4fad\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"3da74841-5c96-43a8-898e-0022f92e2b55\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"639a2dc6-9089-4dc5-a641-fb0285dfa2e3\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"65ca62c5-7d3a-433e-8052-7412c1d6cede\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"8b3edeed-24ac-41b2-85f8-90d6ea8e6900\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"cc33ccd9-ed1e-458a-beb0-d2eb7f03655b\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"dc180c25-23dc-421f-9498-bdc6996b6066\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"26b10ab2-e0a9-4221-81be-fa5dca02f873\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"73cbefc1-dfe5-4f33-ad72-480965c6b0f6\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"beab7f69-12f1-4036-ba26-f3588a383c96\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"5ef20d63-e963-49c4-a696-721d12db6069\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "78260cce-e8ac-4d97-8006-36a0809c9aef",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pcf_n7_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pcf_n7_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pcf_n7_sessions\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497456.841,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n\n"
+        },
+        {
+          "uuid": "c0a518ea-d040-4493-bfdd-f530779e8b19",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pcf_n5_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pcf_n5_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pcf_n5_sessions\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497456.933,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6902b0ec-8d78-4b77-af3f-2071a49b28ef",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"pcf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"pcf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"pcf\",\n                    \"user\": \"pcf\"\n                },\n                \"value\": [\n                    1745497457.027,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"pcf\",\n                    \"user\": \"pcf\"\n                },\n                \"value\": [\n                    1745497457.027,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
