@@ -276,6 +276,7 @@ Sansymphony
 SAS
 scenarii
 --scope-datacenter
+securityport
 SFOS
 sfp.temperature
 SignalR

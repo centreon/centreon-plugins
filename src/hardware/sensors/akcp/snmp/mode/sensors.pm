@@ -53,7 +53,7 @@ sub set_system {
     };
 
     $self->{components_path} = 'hardware::sensors::akcp::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'humidity', 'switch', 'serial', 'water'];
+    $self->{components_module} = ['temperature', 'humidity', 'switch', 'serial', 'water', 'securityport', 'buzzer'];
 }
 
 sub snmp_execute {
@@ -86,7 +86,7 @@ Check sensors.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'temperature', 'humidity', 'switch', 'serial', 'water'.
+Can be: 'temperature', 'humidity', 'switch', 'serial', 'water', 'securityport', 'buzzer'.
 
 =item B<--filter>
 
