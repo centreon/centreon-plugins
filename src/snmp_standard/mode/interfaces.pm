@@ -28,6 +28,7 @@ use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use Safe;
 use File::Copy qw(copy);
+use centreon::plugins::misc qw(is_empty);
 
 #########################
 # Calc functions
@@ -36,16 +37,16 @@ sub custom_threshold_output {
     my ($self, %options) = @_;
     my $status = 'ok';
 
-    if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+    if (!is_empty($self->{instance_mode}->{option_results}->{critical_status}) &&
         $self->eval(value => $self->{instance_mode}->{option_results}->{critical_status})) {
         $status = 'critical';
-    } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+    } elsif (!is_empty($self->{instance_mode}->{option_results}->{warning_status}) &&
              $self->eval(value => $self->{instance_mode}->{option_results}->{warning_status})) {
         $status = 'warning';
     }
 
     $self->{instance_mode}->{last_status} = 1;
-    if (defined($self->{instance_mode}->{option_results}->{check_metrics}) && $self->{instance_mode}->{option_results}->{check_metrics} ne '' &&
+    if (!is_empty($self->{instance_mode}->{option_results}->{check_metrics}) &&
         !$self->eval(value => $self->{instance_mode}->{option_results}->{check_metrics})) {
         $self->{instance_mode}->{last_status} = 0;
     }
@@ -363,7 +364,7 @@ sub custom_traffic_calc {
 sub custom_errors_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
         my $nlabel = $self->{nlabel};
         $nlabel =~ s/count$/percentage/;
         $self->{output}->perfdata_add(
@@ -408,7 +409,7 @@ sub custom_errors_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /percent/) {
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
         $exit = $self->{perfdata}->threshold_check(value     =>
                                                    $self->{result_values}->{prct},
                                                    threshold =>
@@ -457,36 +458,35 @@ sub custom_errors_calc {
     my ($self, %options) = @_;
 
     return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
+
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
     }
 
-    my $errors = $options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} };
-    my $errors_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} } -
-                       $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2} });
-    my $total = $options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'};
-    my $total_diff = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} -
-                      $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
+    my $error_label = $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2};
+    my $errors = $options{new_datas}->{$error_label};
+    my $errors_diff = ($options{new_datas}->{$error_label} - $options{old_datas}->{$error_label});
+    my $total_label = $self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets';
+    my $total = $options{new_datas}->{$total_label};
+    my $total_diff = ($options{new_datas}->{$total_label} - $options{old_datas}->{$total_label});
 
     $self->{result_values}->{prct} = 0;
-    $self->{result_values}->{used} = $errors_diff;
-    $self->{result_values}->{total} = $total_diff;
+    $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
     if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
-        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
+        $self->{result_values}->{used} = $errors_diff;
+        $self->{result_values}->{total} = $total_diff;
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
-        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
         $self->{result_values}->{total} = $total;
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
-        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $errors_diff;
+        $self->{result_values}->{total} = $total_diff;
     } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps') {
-        $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
         $self->{result_values}->{used} = $errors_diff;
+        $self->{result_values}->{total} = $total_diff;
         $self->{result_values}->{used_ps} = $errors_diff / $options{delta_time};
     } else {
-        $self->{result_values}->{prct} = $errors * 100 / $total if ($total > 0);
         $self->{result_values}->{used} = $errors;
         $self->{result_values}->{total} = $total;
     }
@@ -511,10 +511,6 @@ sub custom_errors_calc {
         print $fh "Old datas:\n", map { "$_ => $options{old_datas}->{$_}\n" } keys %{$options{old_datas}};
         print $fh "\nNew datas:\n", map { "$_ => $options{new_datas}->{$_}\n" } keys %{$options{new_datas}};
         close($fh);
-        # delete the cache file
-        unlink $statefile or warn "Could not delete file $statefile: $!";
-        $self->{error_msg} = 'clear buffer';
-        return -2;
     }
 
     return 0;
@@ -1096,10 +1092,7 @@ sub check_options {
 
     $self->{statefile_cache}->check_options(%options);
     if (defined($self->{option_results}->{add_traffic})) {
-        $self->{option_results}->{units_traffic} = 'percent_delta'
-            if (!defined($self->{option_results}->{units_traffic}) ||
-                $self->{option_results}->{units_traffic} eq '' ||
-                $self->{option_results}->{units_traffic} eq '%');
+        $self->{option_results}->{units_traffic} = 'percent_delta' if (is_empty($self->{option_results}->{units_traffic}) || $self->{option_results}->{units_traffic} eq '%');
         $self->{option_results}->{units_traffic} = 'bps' if ($self->{option_results}->{units_traffic} eq 'absolute'); # compat
         if ($self->{option_results}->{units_traffic} !~ /^(?:percent_delta|bps|counter)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong option --units-traffic.');
@@ -1107,19 +1100,15 @@ sub check_options {
         }
     }
     if (defined($self->{option_results}->{add_errors})) {
-        $self->{option_results}->{units_errors} = 'percent_delta'
-            if (!defined($self->{option_results}->{units_errors}) ||
-                $self->{option_results}->{units_errors} eq '' ||
-                $self->{option_results}->{units_errors} eq '%');
+        $self->{option_results}->{units_errors} = 'percent_delta' if (is_empty($self->{option_results}->{units_errors})|| $self->{option_results}->{units_errors} eq '%' || $self->{option_results}->{units_errors} eq 'percent');
         $self->{option_results}->{units_errors} = 'delta' if ($self->{option_results}->{units_errors} eq 'absolute'); # compat
-        if ($self->{option_results}->{units_errors} !~ /^(?:percent|percent_delta|delta|deltaps|counter)$/) {
+        if ($self->{option_results}->{units_errors} !~ /^(?:percent_delta|delta|deltaps|counter)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
             $self->{output}->option_exit();
         }
     }
     if (defined($self->{option_results}->{add_cast})) {
-        $self->{option_results}->{units_cast} = 'percent_delta'
-            if (!defined($self->{option_results}->{units_cast}) || $self->{option_results}->{units_cast} eq '');
+        $self->{option_results}->{units_cast} = 'percent_delta' if (is_empty($self->{option_results}->{units_cast}));
         if ($self->{option_results}->{units_cast} !~ /^(?:percent|percent_delta|delta|deltaps|counter)$/) {
             $self->{output}->add_option_msg(short_msg => 'Wrong option --units-cast.');
             $self->{output}->option_exit();
@@ -1127,9 +1116,7 @@ sub check_options {
     }
 
     $self->{get_speed} = 0;
-    if ((!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') &&
-        ((!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '') ||
-         (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq ''))) {
+    if (is_empty($self->{option_results}->{speed}) && (is_empty($self->{option_results}->{speed_in}) || is_empty($self->{option_results}->{speed_out}))) {
         $self->{get_speed} = 1;
     } elsif (defined($self->{option_results}->{add_speed})) {
         $self->{output}->add_option_msg(short_msg => 'Cannot use option --add-speed with --speed, --speed-in or --speed-out options.');
@@ -1329,7 +1316,7 @@ sub get_selection {
         $self->{map_speed_dsl} = [];
         foreach (@{$self->{option_results}->{map_speed_dsl}}) {
             my ($src, $dst) = split /,/;
-            next if (!defined($dst) || $dst eq '' || !defined($src) || $src eq '');
+            next if (is_empty($dst) || is_empty($src));
             push @{$self->{map_speed_dsl}}, { src => $src, dst => $dst };
         }
         foreach (@{$all_ids}) {
@@ -1507,8 +1494,7 @@ sub add_result_global {
             admstatus => $self->{oid_adminstatus_mapping}->{ $self->{results}->{$self->{oid_adminstatus} . '.' . $_} }
         };
         foreach (('global_admin_up', 'global_admin_down', 'global_oper_up', 'global_oper_down')) {
-            if (defined($self->{option_results}->{$_ . '_rule'}) && $self->{option_results}->{$_ . '_rule'} ne '' &&
-                $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
+            if (!is_empty($self->{option_results}->{$_ . '_rule'}) && $self->{output}->test_eval(test => $self->{option_results}->{$_ . '_rule'}, values => $values)) {
                 $self->{global}->{$_}++;
             }
         }
@@ -1558,17 +1544,9 @@ sub pre_result {
 sub add_result_status {
     my ($self, %options) = @_;
 
-    $self->{int}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}})
-                                                     ? $self->{oid_opstatus_mapping}->{$self->{results}->{                                          $self
-                                                                                                                                                        ->{oid_opstatus} . '.' . $options{instance}}}
-                                                     : undef;
-    $self->{int}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}})
-                                                      ? $self->{oid_adminstatus_mapping}->{$self->{results}->{                                                $self
-                                                                                                                                                                  ->{oid_adminstatus} . '.' . $options{instance}}}
-                                                      : undef;
-    $self->{int}->{$options{instance}}->{duplexstatus} =          defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self
-        ->{results}
-        ->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
+    $self->{int}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
+    $self->{int}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
+    $self->{int}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
 }
 
 sub add_result_errors {
@@ -1587,8 +1565,7 @@ sub add_result_traffic {
     $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
-        if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
-            ($self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0 || defined($self->{option_results}->{force_counters64}))) {
+        if (!is_empty($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && ($self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0 || defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{mode_traffic} = 64;
             $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
             $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
@@ -1600,16 +1577,15 @@ sub add_result_traffic {
     $self->{int}->{$options{instance}}->{speed_in} = 0;
     $self->{int}->{$options{instance}}->{speed_out} = 0;
     if ($self->{get_speed} == 0) {
-        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
+        if (!is_empty($self->{option_results}->{speed})) {
             $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed} * 1000000;
             $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed} * 1000000;
         }
-        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
-        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out}
-                                                                                                                                                              ne '');
+        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (!is_empty($self->{option_results}->{speed_in}));
+        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (!is_empty($self->{option_results}->{speed_out}));
     } else {
         my $interface_speed = 0;
-        if (defined($self->{results}->{$self->{oid_speed64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
+        if (!is_empty($self->{results}->{$self->{oid_speed64} . '.' . $options{instance}})) {
             $interface_speed = $self->{results}->{$self->{oid_speed64} . '.' . $options{instance}} * 1000000;
             # If 0, we put the 32 bits
             if ($interface_speed == 0 && !defined($self->{option_results}->{force_counters64})) {
@@ -1630,9 +1606,8 @@ sub add_result_traffic {
             }
         }
 
-        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
-        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out}
-                                                                                                                                                              ne '');
+        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (!is_empty($self->{option_results}->{speed_in}));
+        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (!is_empty($self->{option_results}->{speed_out}));
     }
 }
 
@@ -1641,46 +1616,22 @@ sub add_result_cast {
 
     $self->{int}->{$options{instance}}->{mode_cast} = 32;
     $self->{int}->{$options{instance}}->{iucast} = $self->{results}->{$self->{oid_ifInUcastPkts} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}})
-                                                   ? $self->{results}->{                                                            $self
-                                                                                                                                        ->{oid_ifInBroadcastPkts} . '.' . $options{instance}}
-                                                   : 0;
-    $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}})
-                                                   ? $self->{results}->{                                                            $self
-                                                                                                                                        ->{oid_ifInMulticastPkts} . '.' . $options{instance}}
-                                                   : 0;
+    $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}} : 0;
+    $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}} : 0;
     $self->{int}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifOutUcastPkts} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}})
-                                                   ? $self->{results}->{                                                              $self
-                                                                                                                                          ->{oid_ifOutMulticastPkts} . '.' . $options{instance}}
-                                                   : 0;
-    $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}})
-                                                   ? $self->{results}->{                                                              $self
-                                                                                                                                          ->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}
-                                                   : 0;
+    $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}} : 0;
+    $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}} : 0;
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
 
         if (defined($iucast) && $iucast ne '' &&
             ($iucast != 0 || defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{iucast} = $iucast;
-            $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}})
-                                                           ? $self->{results}->{                                                                $self
-                                                                                                                                                    ->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}
-                                                           : 0;
-            $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}})
-                                                           ? $self->{results}->{                                                                $self
-                                                                                                                                                    ->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}
-                                                           : 0;
+            $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}} : 0;
+            $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}} : 0;
             $self->{int}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifHCOutUcastPkts} . '.' . $options{instance}};
-            $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}})
-                                                           ? $self->{results}->{                                                                  $self
-                                                                                                                                                      ->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}}
-                                                           : 0;
-            $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}})
-                                                           ? $self->{results}->{                                                                  $self
-                                                                                                                                                      ->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}}
-                                                           : 0;
+            $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}} : 0;
+            $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}} : 0;
             $self->{int}->{$options{instance}}->{mode_cast} = 64;
         }
     }
@@ -1702,10 +1653,7 @@ sub add_result_cast {
     if (defined($self->{int}->{$options{instance}}->{indiscard})) {
         $self->{int}->{$options{instance}}->{total_in_packets} += $self->{int}->{$options{instance}}->{indiscard};
     }
-    $self->{int}->{$options{instance}}->{total_out_packets} = $self->{int}->{$options{instance}}->{oucast} + $self->{int}->{$options{instance}}->{omcast} + $self
-        ->{int}
-        ->{$options{instance}}
-        ->{obcast};
+    $self->{int}->{$options{instance}}->{total_out_packets} = $self->{int}->{$options{instance}}->{oucast} + $self->{int}->{$options{instance}}->{omcast} + $self->{int}->{$options{instance}}->{obcast};
 }
 
 sub add_result_speed {
@@ -1732,7 +1680,7 @@ sub add_result_volume {
     $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
-        if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
+        if (!is_empty($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) &&
             ($self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0 || defined($self->{option_results}->{force_counters64}))) {
             $self->{int}->{$options{instance}}->{mode_traffic} = 64;
             $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
@@ -1947,7 +1895,7 @@ Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta',
 
 =item B<--units-errors>
 
-Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'percent', 'delta', 'deltaps', 'counter').
+Units of thresholds for errors/discards (default: 'percent_delta') ('percent_delta', 'delta', 'deltaps', 'counter').
 
 =item B<--units-cast>
 
