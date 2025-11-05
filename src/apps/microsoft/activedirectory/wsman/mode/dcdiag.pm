@@ -137,7 +137,7 @@ sub read_config {
 			<critical>non ha superato</critical>
 		</messages>
 	</dcdiag>
-		<dcdiag language="de">
+	<dcdiag language="de">
 		<messages>
 			<global>Starting test.*?:\s+(.*?)\n.*?(bestanden|warnung|fehlgeschlagen)</global>
 			<ok>bestanden</ok>
@@ -271,7 +271,7 @@ Set the language used in config file (default: 'en').
 
 =item B<--dfsr>
 
-Specifies that SysVol replication uses C<DFS> instead of FRS (Windows 2008 or later)
+Specifies that SysVol replication uses Distributed File System Replication instead of File Replication Service (Windows 2008 or later)
 
 =item B<--nomachineaccount>
 
