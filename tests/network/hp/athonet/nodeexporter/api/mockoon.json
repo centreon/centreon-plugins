@@ -2194,6 +2194,266 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.277,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "7d3963bf-95f5-4403-b36f-ea5804129056",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"udr\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"udr\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.412,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.412,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udr.DataLayer.Repository.Session\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.412,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}"
+        },
+        {
+          "uuid": "8a28d66c-ab74-4965-8641-5f3b67fdbc9a",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"udr\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"udr\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:1::3:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:2::3:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:1::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:2::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:1::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Session\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:2::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Session\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "99324a98-c04c-44b5-80da-e381179c02e6",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"udr\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"udr\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.903,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "51760729-44fb-49bf-bb7e-e8fa654d33fd",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_table_row_count{table=\"supi\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_table_row_count{table=\"supi\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_table_row_count\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"table\": \"supi\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.608,\n                    \"102\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "cc450f5f-1c09-4db9-96aa-f666999820ed",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "100*scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))/(scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))-scalar(nf_data_layer_table_row_count{table=\"supi\"}))",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "100*scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))/(scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))-scalar(nf_data_layer_table_row_count{table=\"supi\"}))",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"scalar\",\n        \"result\": [\n            1745478845.703,\n            \"-0\"\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,

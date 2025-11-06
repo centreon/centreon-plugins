@@ -84,7 +84,7 @@ sub prefix_cluster_metrics_output {
 sub prefix_sbi_registration_output {
     my ($self, %options) = @_;
 
-    return "SBI registration network function";
+    return "SBI registration network function ";
 }
 
 sub set_counters {
