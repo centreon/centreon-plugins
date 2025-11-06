@@ -393,11 +393,11 @@ Open a session to the remote-host with authentication. This also needs --remote-
 
 =item B<--no-mailflow>
 
-Don't check <CMailflow> connectivity.
+Don't check Mailflow connectivity.
 
 =item B<--no-mapi>
 
-Don't check <CMapi> connectivity.
+Don't check MAPI connectivity.
 
 =item B<--no-copystatus>
 
