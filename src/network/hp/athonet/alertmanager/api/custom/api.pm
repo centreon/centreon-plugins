@@ -272,15 +272,15 @@ __END__
 
 =head1 NAME
 
-Prometheus Rest API
+Prometheus Rest API.
 
 =head1 SYNOPSIS
 
-Prometheus Rest API custom mode
+Prometheus Rest API custom mode.
 
 =head1 REST API OPTIONS
 
-Prometheus Rest API
+Prometheus Rest API.
 
 =over 8
 
@@ -290,7 +290,7 @@ Set timeframe in seconds (i.e. 3600 to check last hour).
 
 =item B<--step>
 
-Set the step of the metric query (examples: '30s', '1m', '15m', '1h').
+Set the step of the metric query (examples: C<30s>, C<1m>, C<15m>, C<1h>).
 
 =item B<--hostname>
 
@@ -298,27 +298,27 @@ Prometheus hostname.
 
 =item B<--url-path>
 
-API url path (default: '/core/alertmanager/api/v2')
+API url path (default: '/core/alertmanager/api/v2').
 
 =item B<--port>
 
-API port (default: 443)
+API port (default: 443).
 
 =item B<--proto>
 
-Define https if needed (default: 'https')
+Define the protocol (default: 'https').
 
 =item B<--api-username>
 
-Define the username for authentication
+Define the username for authentication.
 
 =item B<--api-password>
 
-Define the password for authentication
+Define the password for authentication.
 
 =item B<--timeout>
 
-Set HTTP timeout
+Set HTTP timeout.
 
 =back
 

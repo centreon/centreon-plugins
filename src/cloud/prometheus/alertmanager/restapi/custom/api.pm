@@ -132,15 +132,15 @@ __END__
 
 =head1 NAME
 
-Prometheus Alertmanager Rest API
+Prometheus Alertmanager Rest API.
 
 =head1 SYNOPSIS
 
-Prometheus Alertmanager Rest API custom mode
+Prometheus Alertmanager Rest API custom mode.
 
 =head1 REST API OPTIONS
 
-Prometheus Alertmanager Rest API
+Prometheus Alertmanager Rest API.
 
 =over 8
 
@@ -150,39 +150,39 @@ Prometheus hostname.
 
 =item B<--url-path>
 
-API url path (default: '/api/v2')
+API url path (default: '/api/v2').
 
 =item B<--port>
 
-API port (default: 9093)
+API port (default: 9093).
 
 =item B<--proto>
 
-Specify https if needed (default: 'http')
+Specify the protocol (default: 'http').
 
 =item B<--credentials>
 
-Specify this option if you access the API with authentication
+Specify this option if you access the API with authentication.
 
 =item B<--username>
 
-Specify the username for authentication (mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if C<--credentials> is specified).
 
 =item B<--password>
 
-Specify the password for authentication (mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if C<--credentials> is specified).
 
 =item B<--basic>
 
-Specify this option if you access the API over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your web server.
+Specify this option if you access the API over basic authentication and don't want a C<401 UNAUTHORIZED> error to be logged on your web server.
 
-Specify this option if you access the API over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+Specify this option if you access the API over hidden basic authentication or you'll get a C<404 NOT FOUND> error.
 
-(use with --credentials)
+(use with C<--credentials>).
 
 =item B<--timeout>
 
-Set HTTP timeout
+Set HTTP timeout.
 
 =back
 

@@ -1,5 +1,5 @@
 {
-    "pkg_name": "centreon-plugin-Hp-Athonet-Alertmanager-Api",
+    "pkg_name": "centreon-plugin-Network-Hp-Athonet-Alertmanager-Api",
     "pkg_summary": "Centreon Plugin",
     "plugin_name": "centreon_hp_athonet_alertmanager_api.pl",
     "files": [
