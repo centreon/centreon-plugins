@@ -223,7 +223,7 @@ Filter alerts by severity (can use regexp).
 
 =item B<--display-alerts>
 
-Display alerts in verbose output (default: 'alert [start: %(startsAt)] [state: %(state)] [severity: %(severity)]: %(alertname)').
+Display alerts in verbose output (default: C<'alert [start: %(startsAt)] [state: %(state)] [severity: %(severity)]: %(alertname)'>).
 
 =item B<--warning-active>
 

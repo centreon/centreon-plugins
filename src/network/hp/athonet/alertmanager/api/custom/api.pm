@@ -298,7 +298,7 @@ Prometheus hostname.
 
 =item B<--url-path>
 
-API url path (default: '/core/alertmanager/api/v2').
+API url path (default: C<'/core/alertmanager/api/v2'>).
 
 =item B<--port>
 
