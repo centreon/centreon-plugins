@@ -2454,6 +2454,266 @@
           "crudKey": "id",
           "callbacks": [],
           "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"scalar\",\n        \"result\": [\n            1745478845.703,\n            \"-0\"\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "f7dbb9af-c583-47d6-9c80-da2b569d03ec",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_sessions\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497821.876,\n                    \"26\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "bc98842b-fed3-4924-8fdb-dec03b5b7a78",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_gtpu_ifaces",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_gtpu_ifaces",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_gtpu_ifaces\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497821.974,\n                    \"4\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "cd9e1670-bbbd-453d-94f9-c7e5a7ead57b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_ip_ifaces",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_ip_ifaces",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_ip_ifaces\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.07,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "40c9a675-5d54-4f8d-8511-bdce73adae48",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_apn_dnn_total",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_apn_dnn_total",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_apn_dnn_total\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.167,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "e6966662-9955-4a55-96ea-9a07f9d516fb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_node_status{target_type=\"upf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_node_status{target_type=\"upf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.8\",\n                    \"remote_ip\": \"172.42.2.10\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.372,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.8\",\n                    \"remote_ip\": \"172.42.2.9\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.372,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
         }
       ],
       "responseMode": null,
