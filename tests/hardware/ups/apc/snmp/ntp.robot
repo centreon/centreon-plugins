@@ -20,7 +20,7 @@ ${CMD}     ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-time ${tc}
+NTP/time ${tc}
     [Tags]    hardware    ups    apc    ntp
 
     ${OLD_PERL5OPT}=    Get Environment Variable     PERL5OPT   default=
