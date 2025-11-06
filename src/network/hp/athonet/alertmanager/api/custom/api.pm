@@ -77,16 +77,13 @@ sub check_options {
     my ($self, %options) = @_;
 
     if (is_empty($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify hostname option.");
     }
     if (is_empty($self->{option_results}->{api_username})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify --api-username option.');
     }
     if (is_empty($self->{option_results}->{api_password})) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify --api-password option.');
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -196,8 +193,7 @@ sub get_access_token {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-            $self->{output}->option_exit();
+            $self->{output}->option_exit(short_msg => "Cannot decode json response");
         }
 
         $access_token = $decoded->{access_token};

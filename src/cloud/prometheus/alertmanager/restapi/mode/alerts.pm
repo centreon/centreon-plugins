@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw(is_excluded);
 
 sub prefix_output_active {
     my ($self, %options) = @_;
@@ -46,64 +47,94 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{active} = [
-        { label => 'active', nlabel => 'alerts.active.count', set => {
-            key_values      => [ { name => 'active' }, { name => 'total' } ],
-            output_template => 'detected: %d',
-            perfdatas       => [
-                { template => '%d', min => 0, max => 'total' }
-            ]
-        }
+        { label  => 'active',
+          nlabel => 'alerts.active.count',
+          set    => {
+              key_values      => [ { name => 'active' }, { name => 'total' } ],
+              output_template => 'detected: %d',
+              perfdatas       => [ {
+                  template => '%d',
+                  min      => 0,
+                  max      => 'total'
+              } ]
+          }
         },
-        { label => 'active-warning', nlabel => 'alerts.active.warning.count', set => {
-            key_values      => [ { name => 'warning' }, { name => 'total' } ],
-            output_template => 'warning: %d',
-            perfdatas       => [
-                { template => '%d', min => 0, max => 'total' }
-            ]
-        }
+        { label  => 'active-warning',
+          nlabel => 'alerts.active.warning.count',
+          set    => {
+              key_values      => [ { name => 'warning' }, { name => 'total' } ],
+              output_template => 'warning: %d',
+              perfdatas       => [ {
+                  template => '%d',
+                  min      => 0,
+                  max      => 'total'
+              } ]
+          }
         },
-        { label => 'active-critical', nlabel => 'alerts.active.critical.count', set => {
-            key_values      => [ { name => 'critical' }, { name => 'total' } ],
-            output_template => 'critical: %d',
-            perfdatas       => [
-                { template => '%d', min => 0, max => 'total' }
-            ]
-        }
+        { label  => 'active-critical',
+          nlabel => 'alerts.active.critical.count',
+          set    => {
+              key_values      => [ { name => 'critical' }, { name => 'total' } ],
+              output_template => 'critical: %d',
+              perfdatas       => [ {
+                  emplate => '%d',
+                  min     => 0,
+                  max     => 'total'
+              } ]
+          }
         },
-        { label => 'active-info', nlabel => 'alerts.active.info.count', set => {
-            key_values      => [ { name => 'info' }, { name => 'total' } ],
-            output_template => 'info: %d',
-            perfdatas       => [
-                { template => '%d', min => 0, max => 'total' }
-            ]
-        }
+        { label  => 'active-info',
+          nlabel => 'alerts.active.info.count',
+          set    => {
+              key_values      => [ { name => 'info' }, { name => 'total' } ],
+              output_template => 'info: %d',
+              perfdatas       => [ {
+                  template => '%d',
+                  min      => 0,
+                  max      => 'total'
+              } ]
+          }
         }
     ];
 
     $self->{maps_counters}->{other} = [
-        { label => 'total', nlabel => 'alerts.total.count', display_ok => 0, set => {
-            key_values      => [ { name => 'total' } ],
-            output_template => 'total: %d',
-            perfdatas       => [
-                { template => '%d', min => 0 }
-            ]
-        }
+        { label      => 'total',
+          nlabel     => 'alerts.total.count',
+          display_ok => 0,
+          set        => {
+              key_values      => [ { name => 'total' } ],
+              output_template => 'total: %d',
+              perfdatas       => [ {
+                  template => '%d',
+                  min      => 0
+              } ]
+          }
         },
-        { label => 'unprocessed', nlabel => 'alerts.unprocessed.count', display_ok => 0, set => {
-            key_values      => [ { name => 'unprocessed' }, { name => 'total' } ],
-            output_template => 'unprocessed: %d',
-            perfdatas       => [
-                { template => '%d', min => 0, max => 'total' }
-            ]
-        }
+        { label      => 'unprocessed',
+          nlabel     => 'alerts.unprocessed.count',
+          display_ok => 0,
+          set        => {
+              key_values      => [ { name => 'unprocessed' }, { name => 'total' } ],
+              output_template => 'unprocessed: %d',
+              perfdatas       => [ {
+                  template => '%d',
+                  min      => 0,
+                  max      => 'total'
+              } ]
+          }
         },
-        { label => 'suppressed', nlabel => 'alerts.suppressed.count', display_ok => 0, set => {
-            key_values      => [ { name => 'suppressed' }, { name => 'total' } ],
-            output_template => 'suppressed: %d',
-            perfdatas       => [
-                { template => '%d', min => 0, max => 'total' }
-            ]
-        }
+        { label      => 'suppressed',
+          nlabel     => 'alerts.suppressed.count',
+          display_ok => 0,
+          set        => {
+              key_values      => [ { name => 'suppressed' }, { name => 'total' } ],
+              output_template => 'suppressed: %d',
+              perfdatas       => [ {
+                  template => '%d',
+                  min      => 0,
+                  max      => 'total'
+              } ]
+          }
         }
     ];
 }
@@ -144,10 +175,7 @@ sub check_options {
         }
 
         while ($self->{option_results}->{display_alerts} =~ /\%\((.*?)\)/g) {
-            if (!defined($mapping->{$1})) {
-                $self->{output}->add_option_msg(short_msg => "option --display-alerts unsupported label: %($1)");
-                $self->{output}->option_exit();
-            }
+            $self->{output}->option_exit(short_msg => "option --display-alerts unsupported label: %($1)") unless defined($mapping->{$1});
         }
     }
 }
@@ -165,10 +193,8 @@ sub manage_selection {
     $self->{active} = { total => 0, warning => 0, critical => 0, info => 0 };
     $self->{other} = { total => 0, unprocessed => 0, suppressed => 0 };
     foreach my $alert (@$results) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-                 && $alert->{labels}->{alertname} !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_severity}) && $self->{option_results}->{filter_severity} ne ''
-                 && $alert->{labels}->{severity} !~ /$self->{option_results}->{filter_severity}/);
+        next if is_excluded($alert->{labels}->{alertname}, $self->{option_results}->{filter_name});
+        next if is_excluded($alert->{labels}->{severity}, $self->{option_results}->{filter_severity});
 
         if ($alert->{status}->{state} eq 'active') {
             $self->{active}->{active}++;
