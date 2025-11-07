@@ -397,7 +397,7 @@ Don't check mail flow connectivity.
 
 =item B<--no-mapi>
 
-Don't check C<MAPI> connectivity.
+Don't check MAPI connectivity.
 
 =item B<--no-copystatus>
 
