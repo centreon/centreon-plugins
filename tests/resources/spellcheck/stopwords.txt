@@ -169,6 +169,7 @@ LTE
 LUN
 LUNs
 mA
+MAPI
 machineaccount
 --map-speed-dsl
 MBean
