@@ -393,7 +393,7 @@ Open a session to the remote-host with authentication. This also needs --remote-
 
 =item B<--no-mailflow>
 
-Don't check C<Mailflow> connectivity.
+Don't check mail flow connectivity.
 
 =item B<--no-mapi>
 
@@ -438,11 +438,11 @@ Filter mailboxes by database server name (regexp can be used. In Powershell).
 
 =item B<--ps-database-filter>
 
-Filter database (only wild card '*' can be used. In Powershell).
+Filter database (only wildcard '*' can be used. In Powershell).
 
 =item B<--ps-database-test-filter>
 
-Skip Mapi/Mailflow test (regexp can be used. In Powershell).
+Filter tests at the Powershell level using a regular expression to select only MAPI or mail flow tests.
 
 =item B<--warning-status>
 
