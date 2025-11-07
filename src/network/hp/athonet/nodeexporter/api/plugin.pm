@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::prometheus::exporters::nodeexporter::plugin;
+package network::hp::athonet::nodeexporter::api::plugin;
 
 use strict;
 use warnings;
@@ -30,16 +30,29 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'chf'          => 'network::hp::athonet::nodeexporter::api::mode::chf',
         'cpu'          => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
         'cpu-detailed' => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
+        'dra'          => 'network::hp::athonet::nodeexporter::api::mode::dra',
+        'eir'          => 'network::hp::athonet::nodeexporter::api::mode::eir',
         'interfaces'   => 'cloud::prometheus::exporters::nodeexporter::mode::interfaces',
+        'licenses'     => 'network::hp::athonet::nodeexporter::api::mode::licenses',
         'load'         => 'cloud::prometheus::exporters::nodeexporter::mode::load',
         'memory'       => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
+        'mme'          => 'network::hp::athonet::nodeexporter::api::mode::mme',
+        'nrf'          => 'network::hp::athonet::nodeexporter::api::mode::nrf',
+        'pcf'          => 'network::hp::athonet::nodeexporter::api::mode::pcf',
+        'sgwc'         => 'network::hp::athonet::nodeexporter::api::mode::sgwc',
+        'smf'          => 'network::hp::athonet::nodeexporter::api::mode::smf',
+        'smsf'         => 'network::hp::athonet::nodeexporter::api::mode::smsf',
         'storage'      => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
+        'udm'          => 'network::hp::athonet::nodeexporter::api::mode::udm',
+        'udr'          => 'network::hp::athonet::nodeexporter::api::mode::udr',
+        'upf'          => 'network::hp::athonet::nodeexporter::api::mode::upf',
         'uptime'       => 'cloud::prometheus::exporters::nodeexporter::mode::uptime'
     };
 
-    $self->{custom_modes}->{api} = 'cloud::prometheus::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'network::hp::athonet::nodeexporter::api::custom::api';
     return $self;
 }
 
@@ -49,6 +62,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check node_exporter metrics through Prometheus server.
+Check HP Athonet through Prometheus node exporter API.
 
 =cut
