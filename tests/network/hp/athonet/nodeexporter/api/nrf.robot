@@ -27,7 +27,7 @@ NRF (Network Repository Function) ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extra_options                                                            expected_result    --
             ...       1   ${EMPTY}                                                                 OK: All registration network functions are ok - All clusters are ok | 'clusters.detected.count'=2;;;0; 'nf.registrations.detected.count'=12;;;0; 'nf.registrations.registered.count'=12;;;0;12 'nf.registrations.suspended.count'=0;;;0;12 'nf.registration.last.seconds'=16789624s;;;0; 'nf.registration.last.seconds'=16789624s;;;0; 'nf.registration.last.seconds'=16789623s;;;0; 'nf.registration.last.seconds'=16789623s;;;0; 'nf.registration.last.seconds'=16789623s;;;0; 'nf.registration.last.seconds'=16789624s;;;0; 'repository#cluster.nodes.detected.count'=2;;;0; 'repository#cluster.nodes.running.count'=2;;;0;2 'repository#cluster.nodes.notrunning.count'=0;;;0;2 'xdb recovery configuration#cluster.nodes.detected.count'=2;;;0; 'xdb recovery configuration#cluster.nodes.running.count'=2;;;0;2 'xdb recovery configuration#cluster.nodes.notrunning.count'=0;;;0;2
