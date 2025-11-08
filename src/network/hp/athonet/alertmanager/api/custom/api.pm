@@ -27,6 +27,7 @@ use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::statefile;
 use centreon::plugins::misc qw/is_empty json_decode json_encode/;
+use centreon::plugins::constants qw(:messages);
 
 sub new {
     my ($class, %options) = @_;
@@ -132,8 +133,8 @@ sub get_access_token {
             refresh_token => $refresh_token
         };
         my $encoded = json_encode($json_request,
-                      errstr => 'cannot encode json request',
-                      output => $self->{output});
+                                  errstr => 'cannot encode json request',
+                                  output => $self->{output});
 
         my $content = $self->{http}->request(
             method          => 'POST',
@@ -268,25 +269,17 @@ __END__
 
 =head1 NAME
 
-Prometheus Rest API.
+HP Athonet Rest API.
 
 =head1 SYNOPSIS
 
-Prometheus Rest API custom mode.
+HP Athonet Rest API custom mode.
 
 =head1 REST API OPTIONS
 
-Prometheus Rest API.
+HP Athonet Rest API.
 
 =over 8
-
-=item B<--timeframe>
-
-Set timeframe in seconds (i.e. 3600 to check last hour).
-
-=item B<--step>
-
-Set the step of the metric query (examples: C<30s>, C<1m>, C<15m>, C<1h>).
 
 =item B<--hostname>
 
