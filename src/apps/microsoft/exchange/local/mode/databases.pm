@@ -72,13 +72,13 @@ sub custom_space_available_perfdata {
 sub custom_mapi_output {
     my ($self, %options) = @_;
 
-    return 'mapi test connectivity is ' . $self->{result_values}->{mapi_result};
+    return 'MAPI test connectivity is ' . $self->{result_values}->{mapi_result};
 }
 
 sub custom_mailflow_output {
     my ($self, %options) = @_;
 
-    return 'mapi test result is ' . $self->{result_values}->{mailflow_result};
+    return 'mail flow test result is ' . $self->{result_values}->{mailflow_result};
 }
 
 sub custom_copystatus_output {
