@@ -354,17 +354,17 @@ Check mobility management entity.
 
 =over 8
 
-=item B<--unknown-interface-s1enb-status-status>
+=item B<--unknown-interface-s1enb-status>
 
 Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: C<%{status}>, C<%{enbId}>.
 
-=item B<--warning-interface-s1enb-status-status>
+=item B<--warning-interface-s1enb-status>
 
 Define the conditions to match for the status to be WARNING.
 You can use the following variables: C<%{status}>, C<%{enbId}>.
 
-=item B<--critical-interface-s1enb-status-status>
+=item B<--critical-interface-s1enb-status>
 
 Define the conditions to match for the status to be CRITICAL (default: C<%{status} =~ /down/i>).
 You can use the following variables: C<%{status}>, C<%{enbId}>.
