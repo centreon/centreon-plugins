@@ -63,11 +63,11 @@ sub windows_execute {
     $cmd .= $options{command_options} if (defined($options{command_options}));
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output}, module => 'Win32::Job',
+        output    => $options{output}, module => 'Win32::Job',
         error_msg => "Cannot load module 'Win32::Job'."
     );
     centreon::plugins::misc::mymodule_load(
-        output => $options{output}, module => 'Time::HiRes',
+        output    => $options{output}, module => 'Time::HiRes',
         error_msg => "Cannot load module 'Time::HiRes'."
     );
 
@@ -80,9 +80,9 @@ sub windows_execute {
     my $stderr = 'NUL';
     $stderr = \*TO_PARENT if ($options{output}->is_debug());
     if (!($pid = $job->spawn(undef, $cmd,
-                       { stdin => 'NUL',
-                         stdout => \*TO_PARENT,
-                         stderr => $stderr }))) {
+                             { stdin  => 'NUL',
+                               stdout => \*TO_PARENT,
+                               stderr => $stderr }))) {
         $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
         $options{output}->option_exit();
     }
@@ -186,17 +186,17 @@ sub unix_execute {
         if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
             $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(' ', @$args);
             ($lerror, $stdout, $exit_code) = backtick(
-                command => $cmd,
-                timeout => $options{options}->{timeout},
-                wait_exit => $wait_exit,
+                command         => $cmd,
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
                 redirect_stderr => $redirect_stderr
             );
         } else {
             ($lerror, $stdout, $exit_code) = backtick(
-                command => $cmd,
-                arguments => [@$args, $sub_cmd],
-                timeout => $options{options}->{timeout},
-                wait_exit => $wait_exit,
+                command         => $cmd,
+                arguments       => [ @$args, $sub_cmd ],
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
                 redirect_stderr => $redirect_stderr
             );
         }
@@ -207,16 +207,15 @@ sub unix_execute {
         $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
 
         if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
-            my @args = split(' ',$cmd);
+            my @args = split(' ', $cmd);
             ($lerror, $stdout, $exit_code) = backtick(
                 command         => $args[0],
-                arguments       => [@args[1.. $#args]],
+                arguments       => [ @args[1 .. $#args] ],
                 timeout         => $options{options}->{timeout},
                 wait_exit       => $wait_exit,
                 redirect_stderr => $redirect_stderr
             );
-        }
-        else {
+        } else {
             ($lerror, $stdout, $exit_code) = backtick(
                 command         => $cmd,
                 timeout         => $options{options}->{timeout},
@@ -273,10 +272,10 @@ sub mymodule_load {
 
 sub backtick {
     my %arg = (
-        command => undef,
-        arguments => [],
-        timeout => 30,
-        wait_exit => 0,
+        command         => undef,
+        arguments       => [],
+        timeout         => 30,
+        wait_exit       => 0,
         redirect_stderr => 0,
         @_,
     );
@@ -295,21 +294,21 @@ sub backtick {
     $SIG{TTOU} = 'IGNORE';
     $| = 1;
 
-    if (!defined($pid = open( KID, "-|" ))) {
+    if (!defined($pid = open(KID, "-|"))) {
         return (-1001, "Cant fork: $!", -1);
     }
 
     if ($pid) {
 
         eval {
-           local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
-           alarm( $arg{timeout} );
-           while (<KID>) {
-               chomp;
-               push @output, $_;
-           }
+            local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
+            alarm($arg{timeout});
+            while (<KID>) {
+                chomp;
+                push @output, $_;
+            }
 
-           alarm(0);
+            alarm(0);
         };
 
         if ($@) {
@@ -332,7 +331,7 @@ sub backtick {
         # set the child process to be a group leader, so that
         # kill -9 will kill it and all its descendents
         # We have ignore SIGTTOU to let write background processes
-        setpgrp( 0, 0 );
+        setpgrp(0, 0);
 
         if ($arg{redirect_stderr} == 1) {
             open STDERR, '>&STDOUT';
@@ -368,10 +367,11 @@ sub value_of($$;$) {
 
     return $default unless defined $variable;
 
-    state $safe = do { my $s = Safe->new();
-                       $s->share('$v');
-                       $s;
-                     };
+    state $safe = do {
+        my $s = Safe->new();
+        $s->share('$v');
+        $s;
+    };
     our $v = $variable;
     my $value = $safe->reval("\$v$expression", 1);
 
@@ -415,7 +415,7 @@ sub flatten_arrays($;$) {
     my ($array_of_values, $separator) = @_;
     $separator //= ',';
 
-    return [ ] unless ref $array_of_values eq 'ARRAY';
+    return [] unless ref $array_of_values eq 'ARRAY';
 
     return [ map { split $separator } @{$array_of_values} ];
 }
@@ -427,7 +427,7 @@ sub flatten_to_hash($;$;$) {
     $separator //= ',';
     $default //= 1;
 
-    return { } unless ref $array_of_values eq 'ARRAY';
+    return {} unless ref $array_of_values eq 'ARRAY';
 
     return { map { $_ => $default } map { split $separator } @{$array_of_values} };
 }
@@ -515,7 +515,7 @@ sub scale_bytesbit {
         }
 
         return ($options{value}, $auto[$i], $options{src_unit});
-    } elsif (defined($options{dst_quantity}) && ($options{dst_quantity} eq '' || $options{dst_quantity} =~ /[kmgtpe]/i )) {
+    } elsif (defined($options{dst_quantity}) && ($options{dst_quantity} eq '' || $options{dst_quantity} =~ /[kmgtpe]/i)) {
         my $dst_expo = $expo{lc($options{dst_quantity})};
         if ($dst_expo - $src_expo > 0) {
             $options{value} = $options{value} / ($base ** ($dst_expo - $src_expo));
@@ -567,12 +567,12 @@ sub alert_triggered {
     my ($rv_warn, $warning) = parse_threshold(threshold => $options{warning});
     my ($rv_crit, $critical) = parse_threshold(threshold => $options{critical});
 
-    foreach ([$rv_warn, $warning], [$rv_crit, $critical]) {
+    foreach ([ $rv_warn, $warning ], [ $rv_crit, $critical ]) {
         next if ($_->[0] == 0);
 
         if ($_->[1]->{arobase} == 0 && ($options{value} < $_->[1]->{start} || $options{value} > $_->[1]->{end})) {
             return 1;
-        } elsif ($_->[1]->{arobase}  == 1 && ($options{value} >= $_->[1]->{start} && $options{value} <= $_->[1]->{end})) {
+        } elsif ($_->[1]->{arobase} == 1 && ($options{value} >= $_->[1]->{start} && $options{value} <= $_->[1]->{end})) {
             return 1;
         }
     }
@@ -595,15 +595,15 @@ sub parse_threshold {
         $perf_result->{end} =~ s/\+//;
         if ($perf_result->{start} =~ s/([KMGTPE])([bB])//) {
             $perf_result->{start} = scale_bytesbit(
-                value => $perf_result->{start},
-                src_unit => $2, dst_unit => $2,
+                value        => $perf_result->{start},
+                src_unit     => $2, dst_unit => $2,
                 src_quantity => $1, dst_quantity => '',
             );
         }
         if ($perf_result->{end} =~ s/([KMGTPE])([bB])//) {
             $perf_result->{end} = scale_bytesbit(
-                value => $perf_result->{end},
-                src_unit => $2, dst_unit => $2,
+                value        => $perf_result->{end},
+                src_unit     => $2, dst_unit => $2,
                 src_quantity => $1, dst_quantity => '',
             );
         }
@@ -630,9 +630,9 @@ sub get_threshold_litteral {
     my (%options) = @_;
 
     my $perf_output = ($options{arobase} == 1 ? '@' : '') .
-        (($options{infinite_neg} == 0) ? $options{start} : '~') .
-        ':' .
-        (($options{infinite_pos} == 0) ? $options{end} : '');
+                      (($options{infinite_neg} == 0) ? $options{start} : '~') .
+                      ':' .
+                      (($options{infinite_pos} == 0) ? $options{end} : '');
     return $perf_output;
 }
 
@@ -642,7 +642,7 @@ sub set_timezone {
     return {} if (!defined($options{name}) || $options{name} eq '');
 
     centreon::plugins::misc::mymodule_load(
-        output => $options{output}, module => 'DateTime::TimeZone',
+        output    => $options{output}, module => 'DateTime::TimeZone',
         error_msg => "Cannot load module 'DateTime::TimeZone'."
     );
     if (DateTime::TimeZone->is_valid_name($options{name})) {
@@ -670,11 +670,11 @@ sub eval_ssl_options {
     return $ssl_context if (!defined($options{ssl_opt}));
 
     my ($rv) = centreon::plugins::misc::mymodule_load(
-        output => $options{output}, module => 'Safe',
+        output  => $options{output}, module => 'Safe',
         no_quit => 1
     );
     centreon::plugins::misc::mymodule_load(
-        output => $options{output}, module => 'IO::Socket::SSL',
+        output  => $options{output}, module => 'IO::Socket::SSL',
         no_quit => 1
     );
 
@@ -752,7 +752,7 @@ sub check_security_command {
         (defined($options{command_path}) && $options{command_path} ne ''))
     );
 
-    return 0 if (! -r "$security_file" || -z "$security_file");
+    return 0 if (!-r "$security_file" || -z "$security_file");
 
     my $content = slurp_file(output => $options{output}, file => $security_file);
 
@@ -780,7 +780,7 @@ sub check_security_whitelist {
     $command = $options{command_path} . '/' . $options{command} if (defined($options{command_path}) && $options{command_path} ne '');
     $command .= ' ' . $options{command_options} if (defined($options{command_options}) && $options{command_options} ne '');
 
-    return 0 if (! -r "$security_file" || -z "$security_file");
+    return 0 if (!-r "$security_file" || -z "$security_file");
 
     my $content = slurp_file(output => $options{output}, file => $security_file);
 
@@ -795,7 +795,7 @@ sub check_security_whitelist {
 
     return 0 if (!defined($security->{whitelist_enabled}) || $security->{whitelist_enabled} !~ /^(?:1|true)$/i);
 
-    if (! -r "$whitelist_file") {
+    if (!-r "$whitelist_file") {
         $options{output}->add_option_msg(short_msg => 'Cannot read whitelist security file content');
         $options{output}->option_exit();
     }
