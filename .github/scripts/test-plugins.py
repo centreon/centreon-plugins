@@ -52,7 +52,7 @@ def install_plugin(plugin, archi, build):
                 install_name = f"./{plugin.lower()}*.deb"
             else:
                 install_name = plugin.lower()
-            command = f"apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y --allow-downgrades {install_name}"
+            command = f"apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y --allow-downgrades {install_name}"
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
@@ -109,7 +109,7 @@ def test_plugin(plugin_name, plugin_command, plugin_paths):
 def remove_plugin(plugin, archi):
     with open('/var/log/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
-            command = f"export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y {plugin.lower()}"
+            command = f"export SUDO_FORCE_REMOVE=yes; apt -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y {plugin.lower()}"
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
