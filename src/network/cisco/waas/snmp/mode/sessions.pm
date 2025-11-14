@@ -127,7 +127,7 @@ __END__
 
 =head1 MODE
 
-Check optimized and passthrough sessions on Cisco WAAS equipments against total number of licence (CISCO-WAN-OPTIMIZATION-MIB). Available on all Cisco ISR G2 (You need to configure through IOS CLI).
+Check optimized and passthrough sessions on Cisco WaaS equipments against total number of license (CISCO-WAN-OPTIMIZATION-MIB). Available on all C<Cisco ISR G2> (You need to configure through IOS CLI).
 
 =over 8
 
