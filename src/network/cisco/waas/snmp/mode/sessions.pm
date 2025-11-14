@@ -135,10 +135,10 @@ Check optimized and passthrough sessions on Cisco WAAS equipments against total 
 
 Warning threshold: Percentage value of passthrough sessions resulting in a warning state
 
-=item B<--critical-average>
+=item B<--critical>
 
 Critical threshold: Percentage value of passthrough sessions resulting in a critical state
 
 =back
 
-==cut
+=cut
