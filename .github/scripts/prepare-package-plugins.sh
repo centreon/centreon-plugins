@@ -1,6 +1,7 @@
 #!/bin/bash
 
 plugins_json_file="$1"
+package_extension="$2"
 
 for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plugins_json_file); do
   PACKAGE_PATH=$PLUGIN
@@ -46,7 +47,7 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
     < .github/packaging/centreon-plugin.yaml.template \
     >> .github/packaging/$PLUGIN.yaml
 
-  if [ "${{ matrix.package_extension }}" = "rpm" ]; then
+  if [ "$package_extension" = "rpm" ]; then
     sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
       .github/packaging/$PLUGIN.yaml
   else
