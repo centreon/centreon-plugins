@@ -4,6 +4,7 @@ import subprocess
 import sys
 import os
 import json
+import argparse
 
 
 def try_command(cmd, error):
@@ -138,12 +139,14 @@ def remove_plugin(plugin, archi):
 
 if __name__ == '__main__':
     print("Starting program")
-    if len(sys.argv) < 1:
-        print("Please provide architecture (deb or rpm)")
-        sys.exit(1)
+
+    parser = argparse.ArgumentParser(description='Test des plugins Centreon')
+    parser.add_argument('--extension', required=True, type=str, choices=['deb', 'rpm'], help='Architecture (deb ou rpm)')
+    parser.add_argument('--runner-id', type=int, help='ID du runner pour le test des plugins')
+    args = parser.parse_args()
 
     launch_snmp_sim()
-    archi = sys.argv.pop(1)  # expected either deb or rpm.
+    archi = args.extension  # expected either deb or rpm.
     script_name = sys.argv.pop(0)
 
     nb_plugins = 0
@@ -161,6 +164,8 @@ if __name__ == '__main__':
     with open("plugins.json") as plugins_file:
         plugins = json.load(plugins_file)
         for plugin in plugins:
+            if args.runner_id and plugins[plugin]["runner_id"] != args.runner_id:
+                continue
             print("Testing plugin : ", plugin)
 
             nb_plugins += 1

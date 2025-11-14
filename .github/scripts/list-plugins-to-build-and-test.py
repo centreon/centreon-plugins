@@ -3,16 +3,25 @@
 from sys import argv
 import json
 import subprocess
+import argparse
 
-common = argv[1] == 'true'
+parser = argparse.ArgumentParser()
+parser.add_argument('--common', required=True, type=str, help='Mode commun: lance le build de tous les plugins')
+parser.add_argument('--max_runners', required=True, type=int, help='Nombre de runners maximum')
+args = parser.parse_args()
+
+common = True if args.common == "true" else False
+max_runners = args.max_runners
 
 list_plugins = {}
 package_plugins = False
 test_plugins = False
+runner_id = 1
+runner_id_max = False
 
 
 def add_package_info(packaging_file, build=True, test=True):
-    global package_plugins, test_plugins
+    global package_plugins, test_plugins, runner_id, runner_id_max, max_runners
     if build:
         package_plugins = True
     if test:
@@ -28,8 +37,14 @@ def add_package_info(packaging_file, build=True, test=True):
                 "command": packaging['plugin_name'],
                 "paths": plugin_paths,
                 "build": build,
-                "test": test
+                "test": test,
+                "runner_id": runner_id
             }
+            if runner_id == max_runners:
+                runner_id = 1
+                runner_id_max = True
+            else:
+                runner_id += 1
 
 
 def get_pack_from_path(path):
@@ -67,4 +82,4 @@ if __name__ == '__main__':
     with open('plugins.json', 'w') as outfile:
         json.dump(list_plugins, outfile, indent=4)
 
-print(package_plugins, test_plugins)
+print(package_plugins, test_plugins, max_runners if runner_id_max else runner_id - 1)
