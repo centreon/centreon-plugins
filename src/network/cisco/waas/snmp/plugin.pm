@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::WaaS::plugin;
+package network::cisco::waas::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-        'sessions' => 'network::cisco::WaaS::mode::sessions',
+        'sessions' => 'network::cisco::waas::snmp::mode::sessions',
     );
 
     return $self;

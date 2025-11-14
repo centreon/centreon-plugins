@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::WaaS::mode::sessions;
+package network::cisco::waas::snmp::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
