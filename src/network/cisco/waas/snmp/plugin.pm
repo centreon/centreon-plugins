@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco WAAS Hardware Family in SNMP.
+Check Cisco WaaS Hardware Family in SNMP.
 
 =cut
