@@ -19,7 +19,7 @@ for script in "$DIR"/*.sh; do
   [ -e "$script" ] || { echo "no pre-commit hook found, maybe check $DIR folder for executable .sh files" ; exit 1 ; }
 
   echo "Running $script ..."
-  sh "$script"
+  /bin/bash "$script"
   exit_code=$?
 
   # Update the highest exit code if necessary
