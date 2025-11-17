@@ -1,14 +1,15 @@
 *** Settings ***
 Documentation       Check Chapsvision antivirus
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${cmd}      ${CENTREON_PLUGINS} 
+${cmd}      ${CENTREON_PLUGINS}
 ...         --plugin=network::chapsvision::crossing::snmp::plugin
 ...         --mode=antivirus
 ...         --hostname=${HOSTNAME}
@@ -26,7 +27,6 @@ Antivirus new ${tc}
     ...    --snmp-community=network/chapsvision/crossing/snmp/chapsvision
     ...    ${extra_options}
 
-
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                         expected_result    --
@@ -38,7 +38,6 @@ Antivirus new ${tc}
             ...      6     --warning-database-last-update='1'    WARNING: antivirus 'Anonymized 008' database last update [\\\\dyMwdms ]*- antivirus 'Anonymized 106' database last update [\\\\dyMwdms ]*| 'antivirus.database.lastupdate.seconds'=\\\\d+s;0:1;;0; 'Anonymized 008#antivirus.license.expires.seconds'=\\\\d+s;;;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;0:1;;0; 'Anonymized 106#antivirus.license.expires.seconds'=\\\\d+s;;;0;
             ...      7     --critical-database-last-update='1'   CRITICAL: antivirus 'Anonymized 008' database last update [\\\\dyMwdms ]*- antivirus 'Anonymized 106' database last update [\\\\dyMwdms ]*| 'antivirus.database.lastupdate.seconds'=\\\\d+s;;0:1;0; 'Anonymized 008#antivirus.license.expires.seconds'=\\\\d+s;;;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;;0:1;0; 'Anonymized 106#antivirus.license.expires.seconds'=\\\\d+s;;;0;
 
-
 Antivirus old ${tc}
     [Documentation]    Check the antivirus with the old OIDs
     [Tags]    network    chapvision    crossing
@@ -46,7 +45,6 @@ Antivirus old ${tc}
     ...    ${cmd}
     ...    --snmp-community=network/chapsvision/crossing/snmp/chapsvision_old_oids
     ...    ${extra_options}
-
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
@@ -58,5 +56,3 @@ Antivirus old ${tc}
             ...      5     --critical-license-expires='1'        CRITICAL: antivirus 'Anonymized 008-old' license expires in [\\\\dyMwdms ]* - antivirus 'Anonymized 106-old' license expires in [\\\\dyMwdms ]*| 'antivirus.database.lastupdate.seconds'=\\\\d+s;;;0; 'Anonymized 008-old#antivirus.license.expires.seconds'=\\\\d+s;;0:1;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;;;0; 'Anonymized 106-old#antivirus.license.expires.seconds'=\\\\d+s;;0:1;0;
             ...      6     --warning-database-last-update='1'    WARNING: antivirus 'Anonymized 008-old' database last update [\\\\dyMwdms ]*- antivirus 'Anonymized 106-old' database last update [\\\\dyMwdms ]*| 'antivirus.database.lastupdate.seconds'=\\\\d+s;0:1;;0; 'Anonymized 008-old#antivirus.license.expires.seconds'=\\\\d+s;;;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;0:1;;0; 'Anonymized 106-old#antivirus.license.expires.seconds'=\\\\d+s;;;0;
             ...      7     --critical-database-last-update='1'   CRITICAL: antivirus 'Anonymized 008-old' database last update [\\\\dyMwdms ]*- antivirus 'Anonymized 106-old' database last update [\\\\dyMwdms ]*| 'antivirus.database.lastupdate.seconds'=\\\\d+s;;0:1;0; 'Anonymized 008-old#antivirus.license.expires.seconds'=\\\\d+s;;;0; 'antivirus.database.lastupdate.seconds'=\\\\d+s;;0:1;0; 'Anonymized 106-old#antivirus.license.expires.seconds'=\\\\d+s;;;0;
-
-

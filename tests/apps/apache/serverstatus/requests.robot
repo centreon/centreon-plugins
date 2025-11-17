@@ -1,5 +1,7 @@
+*** Comments ***
 # Note: With these tests a counter is incremented in the Mockoon mock data.
 # To reset it, make sure to restart the Mockoon server before each robot execution.
+
 
 *** Settings ***
 Documentation       Check Apache WebServer Requests statistics
@@ -19,6 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --mode=requests
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
+
 
 *** Test Cases ***
 Requests ${tc}

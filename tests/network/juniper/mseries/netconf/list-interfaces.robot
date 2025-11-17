@@ -10,11 +10,12 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::juniper::mseries::netconf::plugin
-    ...    --mode=list-interfaces
-    ...    --hostname=${HOSTNAME}
-    ...    --sshcli-command=get_data
-    ...    --sshcli-path=${CURDIR}
-    ...    --sshcli-option="-f=${CURDIR}${/}data${/}interfaces-discovery.netconf"
+...         --mode=list-interfaces
+...         --hostname=${HOSTNAME}
+...         --sshcli-command=get_data
+...         --sshcli-path=${CURDIR}
+...         --sshcli-option="-f=${CURDIR}${/}data${/}interfaces-discovery.netconf"
+
 
 *** Test Cases ***
 List Interface ${tc}

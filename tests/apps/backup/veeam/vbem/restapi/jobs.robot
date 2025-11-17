@@ -9,19 +9,20 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}restapi.json
+${MOCKOON_JSON}     ${CURDIR}${/}restapi.json
 
-${cmd}              ${CENTREON_PLUGINS} 
-...                 --plugin=apps::backup::veeam::vbem::restapi::plugin 
+${cmd}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::backup::veeam::vbem::restapi::plugin
 ...                 --hostname=${HOSTNAME}
-...                 --api-username='username' 
-...                 --api-password='password' 
+...                 --api-username='username'
+...                 --api-password='password'
 ...                 --proto='http'
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Create cache from API
-    [Tags]    apps    backup   veeam    vbem    restapi    jobs    cache
+    [Tags]    apps    backup    veeam    vbem    restapi    jobs    cache
     ${output}    Run
     ...    ${CMD} --mode=cache --proto=http --port=${APIPORT} --hostname=${HOSTNAME}
 
@@ -29,14 +30,14 @@ Create cache from API
     Should Contain    ${output}    OK: Cache files created successfully
 
 jobs ${tc}
-    [Tags]    apps    backup   veeam    vbem    restapi    jobs
-    
+    [Tags]    apps    backup    veeam    vbem    restapi    jobs
+
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=jobs
     ...    --cache-use
     ...    ${extraoptions}
-    
+
     Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:    tc     extraoptions                                                                                                                     expected_result   --

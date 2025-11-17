@@ -1,11 +1,10 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -19,9 +18,10 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::pl
 ...                 --port=3000
 ...                 --esx-id=host-22
 
+
 *** Test Cases ***
 Memory ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware    vsphere8    esx
     ${command}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

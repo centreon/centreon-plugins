@@ -44,14 +44,14 @@ sub get_target_time {
     my $oid_mconfigClockTime = '.1.3.6.1.4.1.318.2.1.6.2.0';
     my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_mconfigClockDate, $oid_mconfigClockTime ], nothing_quit => 1);
 
-    my $timezone = value_of($self, '->{option_results}->{timezone}');
-    $timezone = 'UTC' if $timezone eq '';
+    my $timezone = value_of($self, '->{option_results}->{timezone}', 'UTC');
+
+    $timezone =~ s/^://;
     $self->{output}->option_exit(short_msg => "Timezone '$timezone' does not exist.")
         unless DateTime::TimeZone->is_valid_name($timezone);
+    local $ENV{'TZ'} = $timezone;
 
-    my $epoch = Date::Parse::str2time(
-        $snmp_result->{$oid_mconfigClockDate} . ' ' . $snmp_result->{$oid_mconfigClockTime},
-        $timezone);
+    my $epoch = Date::Parse::str2time($snmp_result->{$oid_mconfigClockDate} . ' ' . $snmp_result->{$oid_mconfigClockTime});
     return $self->get_from_epoch(date => $epoch);
 }
 

@@ -12,11 +12,11 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}commvault.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
-...                 --plugin=apps::backup::commvault::commserve::restapi::plugin 
+${CMD}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::backup::commvault::commserve::restapi::plugin
 ...                 --hostname=${HOSTNAME}
-...                 --api-username='username' 
-...                 --api-password='password' 
+...                 --api-username='username'
+...                 --api-password='password'
 ...                 --proto='http'
 ...                 --mode=jobs
 ...                 --port=${APIPORT}
@@ -24,14 +24,14 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 jobs ${tc}
-    [Tags]    apps    backup   commvalt   commserve  restapi
-    
+    [Tags]    apps    backup    commvalt    commserve    restapi
+
     ${command}    Catenate
     ...    ${CMD}
 
     ${command}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}           ${expected_result}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                expected_result    --
             ...      1     ${EMPTY}                                     OK: Total jobs: 6 - All policies are ok | 'jobs.total.count'=6;;;0; 'jobs.problems.current.count'=0;;;0;

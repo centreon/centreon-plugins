@@ -36,8 +36,7 @@ sub new {
         exit 3;
     }
     if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
+        $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.");
     }
 
     if (!defined($options{noptions})) {
@@ -77,8 +76,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
 
     if ($self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify hostname option.');
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
@@ -95,8 +93,7 @@ sub json_decode {
         $decoded = JSON::XS->new->utf8->decode($options{content});
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Cannot decode json response: $@");
     }
 
     return $decoded;
@@ -143,8 +140,7 @@ sub request {
 
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
     }
     return $decoded;
 }
@@ -246,29 +242,35 @@ sub get_container_infos {
     my ($self, %options) = @_;
 
     my $stats = $self->request(
-        endpoint => 'containers/stats?stream=false&containers=' . $options{container_name},
+        endpoint => 'containers/stats',
+        get_param => [
+            'stream=false',
+            'containers=' . $options{container_name}
+        ],
         method   => 'GET'
     );
 
-    my $containers = $self->list_containers();
-    my $state;
-    foreach my $container_id (sort keys %{$containers}) {
-        if ($containers->{$container_id}->{Name} eq $options{container_name}) {
-            $state = $containers->{$container_id}->{State};
-        }
+    my $container_info;
+    my $state = 'unknown';
+    foreach my $stat (@{$stats->{Stats}}) {
+        next if ($stat->{Name} ne $options{container_name});
+        $container_info = {
+            cpu_usage    => $stat->{CPU},
+            memory_usage => $stat->{MemUsage},
+            io_read      => $stat->{BlockInput},
+            io_write     => $stat->{BlockOutput},
+            network_in   => $stat->{NetInput},
+            network_out  => $stat->{NetOutput}
+        };
+        last;
     }
-
-    my $container = {
-        cpu_usage    => $stats->{Stats}->[0]->{CPU},
-        memory_usage => $stats->{Stats}->[0]->{MemUsage},
-        io_read      => $stats->{Stats}->[0]->{BlockInput},
-        io_write     => $stats->{Stats}->[0]->{BlockOutput},
-        network_in   => $stats->{Stats}->[0]->{NetInput},
-        network_out  => $stats->{Stats}->[0]->{NetOutput},
-        state        => $state
-    };
-
-    return $container;
+    my $containers = $self->list_containers();
+    foreach my $container_id (sort keys %{$containers}) {
+        next if ($containers->{$container_id}->{Name} ne $options{container_name});
+        $container_info->{state} = $containers->{$container_id}->{State};
+        last;
+    }
+    return $container_info;
 }
 
 1;
