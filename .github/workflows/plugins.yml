@@ -154,32 +154,31 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
-        image: [unit-tests-bookworm]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
-#          - package_extension: rpm
-#            image: unit-tests-alma8
-#            distrib: el8
-#          - package_extension: rpm
-#            image: unit-tests-alma9
-#            distrib: el9
-#          - package_extension: deb
-#            image: unit-tests-bullseye
-#            distrib: bullseye
-#          - package_extension: deb
-#            image: unit-tests-bullseye-arm64
-#            runner_name: ubuntu-24.04-arm
-#            distrib: bullseye
+          - package_extension: rpm
+            image: unit-tests-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: unit-tests-alma9
+            distrib: el9
+          - package_extension: deb
+            image: unit-tests-bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: unit-tests-bullseye-arm64
+            runner_name: ubuntu-24.04-arm
+            distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
-#          - package_extension: deb
-#            image: unit-tests-jammy
-#            distrib: jammy
-#          - package_extension: deb
-#            image: unit-tests-noble
-#            distrib: noble
+          - package_extension: deb
+            image: unit-tests-jammy
+            distrib: jammy
+          - package_extension: deb
+            image: unit-tests-noble
+            distrib: noble
 
     runs-on: ${{ matrix.runner_name }}
 
@@ -257,27 +256,27 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - package_extension: rpm
-#            image: packaging-plugins-alma8
-#            distrib: el7
-#          - package_extension: rpm
-#            image: packaging-plugins-alma8
-#            distrib: el8
-#          - package_extension: rpm
-#            image: packaging-plugins-alma9
-#            distrib: el9
-#          - package_extension: deb
-#            image: packaging-plugins-bullseye
-#            distrib: bullseye
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el7
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
-#          - package_extension: deb
-#            image: packaging-plugins-jammy
-#            distrib: jammy
-#          - package_extension: deb
-#            image: packaging-plugins-noble
-#            distrib: noble
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
+          - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -336,33 +335,32 @@ jobs:
       fail-fast: false
       matrix:
         index: ${{ fromJson(needs.get-plugins.outputs.index_matrix) }}
-        #image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
-        image: [testing-plugins-bookworm]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
           - runner_name: ubuntu-24.04
-#          - package_extension: rpm
-#            image: testing-plugins-alma8
-#            distrib: el8
-#          - package_extension: rpm
-#            image: testing-plugins-alma9
-#            distrib: el9
-#          - package_extension: deb
-#            image: testing-plugins-bullseye
-#            distrib: bullseye
+          - package_extension: rpm
+            image: testing-plugins-alma8
+            distrib: el8
+          - package_extension: rpm
+            image: testing-plugins-alma9
+            distrib: el9
+          - package_extension: deb
+            image: testing-plugins-bullseye
+            distrib: bullseye
           - package_extension: deb
             image: testing-plugins-bookworm
             distrib: bookworm
-#          - package_extension: deb
-#            image: testing-plugins-jammy
-#            distrib: jammy
-#          - package_extension: deb
-#            image: testing-plugins-noble
-#            distrib: noble
-#          - package_extension: deb
-#            image: testing-plugins-bullseye-arm64
-#            distrib: bullseye
-#            arch: arm64
-#            runner_name: ubuntu-24.04-arm
+          - package_extension: deb
+            image: testing-plugins-jammy
+            distrib: jammy
+          - package_extension: deb
+            image: testing-plugins-noble
+            distrib: noble
+          - package_extension: deb
+            image: testing-plugins-bullseye-arm64
+            distrib: bullseye
+            arch: arm64
+            runner_name: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runner_name }}
 
@@ -390,7 +388,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
-          name: test-plugins-log-${{ matrix.distrib }}-${{ matrix.runner_name }}
+          name: test-plugins-log-${{ matrix.distrib }}-${{ matrix.runner_name }}-${{ matrix.index }}
           path: |
             /var/log/test-plugins-*.log
             reports
