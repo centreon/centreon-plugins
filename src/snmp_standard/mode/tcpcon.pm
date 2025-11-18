@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -345,7 +345,7 @@ __END__
 
 =head1 MODE
 
-Check tcp connections.
+Check TCP connections.
 
 =over 8
 
@@ -359,7 +359,7 @@ Critical threshold for total connections.
 
 =item B<--service>
 
-Check tcp connections following rules:
+Check TCP connections following rules:
 tag,[type],[state],[port-src],[port-dst],[filter-ip-src],[filter-ip-dst],[threshold-warning],[threshold-critical]
 
 Example to test SSH connections on the server: --service="ssh,,,22,,,,10,20" 
@@ -376,7 +376,7 @@ regexp - can use 'ipv4', 'ipv6'. Empty means all.
 
 =item <state>
 
-regexp - can use 'finWait1', 'established',... Empty means all (minus listen).
+regexp - can use C<finWait1>, C<established>,... Empty means all (minus listen).
 
 =item <filter-ip-*>
 
@@ -390,7 +390,7 @@ nagios-perfdata - number of connections.
 
 =item B<--application>
 
-Check tcp connections of mutiple services:
+Check TCP connections of multiple services:
 tag,[services],[threshold-warning],[threshold-critical]
 
 Example:
