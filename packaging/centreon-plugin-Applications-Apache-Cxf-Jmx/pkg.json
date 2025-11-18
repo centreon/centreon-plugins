@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Apache-Cxf-Jmx",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_apache_cxf_jmx.pl",
+    "files": [
+	"centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "apps/java/cxf/jmx/"
+    ]
+}
