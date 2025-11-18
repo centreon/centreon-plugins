@@ -326,7 +326,7 @@ sub run {
     $self->test_services();
     $self->test_applications();
 
-    foreach (keys %{$self->{states}}) {
+    foreach (sort keys %{$self->{states}}) {
         $self->{output}->perfdata_add(
             label => 'con_' . $_,
             nlabel => 'connections.tcp.' . lc($_) . '.count',
