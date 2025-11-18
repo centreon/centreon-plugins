@@ -1668,13 +1668,149 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus},
 Define the conditions to match for the status to be CRITICAL (default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-total-port>
 
 Thresholds.
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
-'speed' (b/s).
+
+=item B<--critical-total-port>
+
+Thresholds.
+
+=item B<--warning-total-admin-up>
+
+Thresholds.
+
+=item B<--critical-total-admin-up>
+
+Thresholds.
+
+=item B<--warning-total-admin-down>
+
+Thresholds.
+
+=item B<--critical-total-admin-down>
+
+Thresholds.
+
+=item B<--warning-total-oper-up>
+
+Thresholds.
+
+=item B<--critical-total-oper-up>
+
+Thresholds.
+
+=item B<--warning-total-oper-down>
+
+Thresholds.
+
+=item B<--critical-total-oper-down>
+
+Thresholds.
+
+=item B<--warning-in-traffic>
+
+Thresholds.
+
+=item B<--critical-in-traffic>
+
+Thresholds.
+
+=item B<--warning-out-traffic>
+
+Thresholds.
+
+=item B<--critical-out-traffic>
+
+Thresholds.
+
+=item B<--warning-in-error>
+
+Thresholds.
+
+=item B<--critical-in-error>
+
+Thresholds.
+
+=item B<--warning-in-discard>
+
+Thresholds.
+
+=item B<--critical-in-discard>
+
+Thresholds.
+
+=item B<--warning-out-error>
+
+Thresholds.
+
+=item B<--critical-out-error>
+
+Thresholds.
+
+=item B<--warning-out-discard>
+
+Thresholds.
+
+=item B<--critical-out-discard>
+
+Thresholds.
+
+=item B<--warning-in-ucast>
+
+Thresholds.
+
+=item B<--critical-in-ucast>
+
+Thresholds.
+
+=item B<--warning-in-bcast>
+
+Thresholds.
+
+=item B<--critical-in-bcast>
+
+Thresholds.
+
+=item B<--warning-in-mcast>
+
+Thresholds.
+
+=item B<--critical-in-mcast>
+
+Thresholds.
+
+=item B<--warning-out-ucast>
+
+Thresholds.
+
+=item B<--critical-out-ucast>
+
+Thresholds.
+
+=item B<--warning-out-bcast>
+
+Thresholds.
+
+=item B<--critical-out-bcast>
+
+Thresholds.
+
+=item B<--warning-out-mcast>
+
+Thresholds.
+
+=item B<--critical-out-mcast>
+
+Thresholds.
+
+=item B<--warning-speed>
+
+Thresholds in b/s.
+
+=item B<--critical-speed>
+
+Thresholds in b/s.
 
 =item B<--units-traffic>
 
