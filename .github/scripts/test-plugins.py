@@ -72,19 +72,43 @@ def install_plugin(plugin, archi, build):
             exit(1)
     return output_status
 
+def get_plugin_modes(plugin_command):
+    command = f"/usr/lib/centreon/plugins/{plugin_command} --list-mode"
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    modes = []
+    in_modes_section = False
+    if result.returncode == 3:
+        for line in result.stdout.splitlines():
+            if line.strip() == "Modes Available:":
+                in_modes_section = True
+                continue
+            if in_modes_section:
+                match = re.match(r"\s+(\w+)$", line)
+                if match:
+                    modes.append(match.group(1))
+                elif line.strip() == "" or not line.startswith(" "):
+                    break
+    print(modes)
+    return modes
 
-def test_plugin(plugin_name, plugin_command, plugin_paths):
+def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths):
     tests_path = []
     for path in plugin_paths:
         if os.path.exists(f"tests/{path}"):
             tests_path.append(f"tests/{path}")
     if len(tests_path) == 0:
+        output_status = 3;
         with open('/var/log/test-plugins-help.log', "a") as outfile:
             print(
                 f"No tests for {plugin_name}, checking it can be executed with --help")
-            command = f"/usr/lib/centreon/plugins/{plugin_command} --help"
-            output_status = (subprocess.run(command, shell=True, check=False,
-                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            modes = get_plugin_modes(plugin_command)
+            for mode in modes:
+                command = f"/usr/lib/centreon/plugins/{plugin_command} --plugin={plugin_perl_package} --mode={mode} --help"
+                status = (subprocess.run(command, shell=True, check=False,
+                          stderr=subprocess.STDOUT, stdout=outfile)).returncode
+                if status != 3:
+                    print(f"Failed to get --help for {plugin_name} mode {mode}, output status : {status}")
+                    output_status = status
         if output_status == 3:
             return 0
         else:
@@ -175,8 +199,7 @@ if __name__ == '__main__':
                 list_plugin_error.add(plugin)
             else:
                 if plugins[plugin]["test"]:
-                    tmp = test_plugin(
-                        plugin, plugins[plugin]["command"], plugins[plugin]["paths"])
+                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"])
                     if tmp > 0:
                         error_tests += 1
                         list_plugin_error.add(plugin)
