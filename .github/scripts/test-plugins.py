@@ -89,7 +89,6 @@ def get_plugin_modes(plugin_command):
                     modes.append(match.group(1))
                 elif line.strip() == "" or not line.startswith(" "):
                     break
-    print(modes)
     return modes
 
 def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths):
