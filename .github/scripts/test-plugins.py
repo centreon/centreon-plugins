@@ -75,7 +75,7 @@ def install_plugin(plugin, archi, build):
 
 def get_plugin_modes(plugin_command):
     command = f"/usr/lib/centreon/plugins/{plugin_command} --list-mode"
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     modes = []
     in_modes_section = False
     if result.returncode == 3:
