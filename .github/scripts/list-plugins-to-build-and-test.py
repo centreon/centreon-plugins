@@ -3,6 +3,7 @@
 import json
 import subprocess
 import argparse
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--common', required=True, type=str, help='Mode commun: lance le build de tous les plugins')
@@ -32,11 +33,13 @@ def add_package_info(packaging_file, build=True, test=True):
         for plugin_file in packaging['files']:
             if not (plugin_file.startswith("centreon") or plugin_file.startswith("example") or plugin_file.startswith("snmp_standard")):
                 plugin_paths.append(plugin_file)
-                with open(f"src/{plugin_file}/plugin.pm") as pf:
-                    for line in pf:
-                        if line.startswith("package "):
-                            plugin_package_name = line.split()[1].replace(";", "")
-                            break
+                plugin_file_path = Path(f"src/{plugin_file}/plugin.pm")
+                if Path(plugin_file_path).exists():
+                    with open(plugin_file_path) as pf:
+                        for line in pf:
+                            if line.startswith("package "):
+                                plugin_package_name = line.split()[1].replace(";", "")
+                                break
         if packaging['pkg_name'] not in list_plugins:
             list_plugins[packaging['pkg_name']] = {
                 "perl_package": plugin_package_name,

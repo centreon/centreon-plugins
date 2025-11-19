@@ -5,6 +5,6 @@
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
-        "network/evertz/FC7800/"
+        "network/evertz/FC7800/snmp/"
     ]
 }
