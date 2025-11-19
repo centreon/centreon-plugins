@@ -5,6 +5,7 @@ import sys
 import os
 import json
 import argparse
+import re
 
 
 def try_command(cmd, error):
@@ -97,7 +98,7 @@ def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths):
         if os.path.exists(f"tests/{path}"):
             tests_path.append(f"tests/{path}")
     if len(tests_path) == 0:
-        output_status = 3;
+        output_status = 3
         with open('/var/log/test-plugins-help.log', "a") as outfile:
             print(
                 f"No tests for {plugin_name}, checking it can be executed with --help")
