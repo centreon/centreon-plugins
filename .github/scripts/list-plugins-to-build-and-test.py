@@ -33,7 +33,10 @@ def add_package_info(packaging_file, build=True, test=True):
         for plugin_file in packaging['files']:
             if not (plugin_file.startswith("centreon") or plugin_file.startswith("example") or plugin_file.startswith("snmp_standard")):
                 plugin_paths.append(plugin_file)
-                plugin_file_path = Path(f"src/{plugin_file}/plugin.pm")
+                if plugin_file.endswith("plugin.pm"):
+                    plugin_file_path = Path(f"src/{plugin_file}")
+                else:
+                    plugin_file_path = Path(f"src/{plugin_file}/plugin.pm")
                 if Path(plugin_file_path).exists():
                     with open(plugin_file_path) as pf:
                         for line in pf:
