@@ -48,7 +48,7 @@ jobs:
             # "Crypt::OpenSSL::AES",
             # "DataStruct::Flat",
             # "DateTime::Format::Duration::ISO8601",
-            "DBD::mysql",
+            "DBD::MySQL",
             # "DBD::Sybase",
             # "Device::Modbus",
             # "Device::Modbus::RTU::Client",
@@ -116,7 +116,7 @@ jobs:
           #   revision: "3"
           # - name: "DateTime::Format::Duration::ISO8601"
           #   rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
-          - name: "DBD::mysql"
+          - name: "DBD::MySQL"
             version: "4.054"
           # - name: "Device::Modbus::RTU::Client"
           #   version: "0.022"
@@ -213,6 +213,7 @@ jobs:
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
+          set -x
           PACKAGE_VERSION=" -v ${{ steps.package-infos.outputs.package_version }}"
 
           if [ -z "${{ matrix.rpm_dependencies }}" ]; then
