@@ -48,7 +48,7 @@ jobs:
             # "Crypt::OpenSSL::AES",
             # "DataStruct::Flat",
             # "DateTime::Format::Duration::ISO8601",
-            "DBD::MySQL",
+            "DBD::mysql",
             # "DBD::Sybase",
             # "Device::Modbus",
             # "Device::Modbus::RTU::Client",
