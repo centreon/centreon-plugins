@@ -334,65 +334,49 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        index: ${{ fromJson(needs.get-plugins.outputs.index_matrix) }}
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
-          - runner_name: ubuntu-24.04
           - package_extension: rpm
             image: testing-plugins-alma8
             distrib: el8
+            arch: amd64
           - package_extension: rpm
             image: testing-plugins-alma9
             distrib: el9
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bullseye
             distrib: bullseye
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bookworm
             distrib: bookworm
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-noble
             distrib: noble
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
             arch: arm64
-            runner_name: ubuntu-24.04-arm
 
-    runs-on: ${{ matrix.runner_name }}
+    name: "Test plugins on ${{ matrix.distrib }}${{ matrix.arch }}"
 
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
-
-    name: "Tests ${{ matrix.index }} on ${{ matrix.distrib }}"
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-      - uses: ./.github/actions/test-plugins
-        with:
-          packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          get-packages: ${{ needs.get-plugins.outputs.package_plugins == 'True' }}
-          plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
-          package-extension: ${{ matrix.package_extension }}
-          runner-id: ${{ matrix.index }}
-
-      - name: Upload logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-        with:
-          name: test-plugins-log-${{ matrix.distrib }}-${{ matrix.runner_name }}-${{ matrix.index }}
-          path: |
-            /var/log/test-plugins-*.log
-            reports
-          retention-days: 1
+    uses: ./.github/workflows/plugins-robot-tests.yml
+    with:
+      image: ${{ matrix.image }}
+      indexes: needs.get-plugins.outputs.index_matrix
+      distrib: ${{ matrix.distrib }}
+      arch: ${{ matrix.arch }}
+      get-packages: ${{ needs.get-plugins.outputs.package_plugins == 'True' }}
+      package-extension: ${{ matrix.package_extension }}
+      packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+      plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
