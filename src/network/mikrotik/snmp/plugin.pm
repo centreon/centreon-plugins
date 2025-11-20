@@ -40,6 +40,7 @@ sub new {
         'list-frequencies'    => 'network::mikrotik::snmp::mode::listfrequencies',
         'list-lte-interfaces' => 'network::mikrotik::snmp::mode::listlteinterfaces',
         'list-ssids'          => 'network::mikrotik::snmp::mode::listssids',
+        'lte'                 => 'network::mikrotik::snmp::mode::lte',
         'lte-interfaces'      => 'network::mikrotik::snmp::mode::lteinterfaces',
         'memory'              => 'network::mikrotik::snmp::mode::memory',
         'signal'              => 'network::mikrotik::snmp::mode::signal',
