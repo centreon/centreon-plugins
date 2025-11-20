@@ -102,6 +102,7 @@ jobs:
           - no-auto-depends: "false"
           - preinstall_cpanlibs: ""
           - revision: "2"
+          - fpm_options: ""
           - distrib: el8
             package_extension: rpm
             image: packaging-plugins-alma8
@@ -118,6 +119,7 @@ jobs:
           #   rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "DBD::mysql"
             version: "4.054"
+            fpm_options: "-n perl-DBD-MySQL"
           # - name: "Device::Modbus::RTU::Client"
           #   version: "0.022"
           # - name: "Device::Modbus::TCP::Client"
@@ -214,6 +216,11 @@ jobs:
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
         run: |
           set -x
+
+          if [ ${{ matrix.name }} == "DBD::mysql" ]; then
+            dnf install -y mysql-devel
+          fi
+
           PACKAGE_VERSION=" -v ${{ steps.package-infos.outputs.package_version }}"
 
           if [ -z "${{ matrix.rpm_dependencies }}" ]; then
@@ -244,7 +251,7 @@ jobs:
 
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --rpm-digest sha256 --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
+          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --rpm-digest sha256 --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.fpm_options }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: fpm command failed"
