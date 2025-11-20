@@ -18,10 +18,11 @@
 # limitations under the License.
 #
 
-package network::cisco::WaaS::mode::sessions;
+package network::cisco::waas::snmp::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
+use centreon::plugins::misc qw/is_empty/;
 use strict;
 use warnings;
 
@@ -29,7 +30,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments =>
                                 {
                                   "warning:s"       => { name => 'warning', default => '60' },
@@ -56,24 +57,47 @@ sub check_options {
 	}
 }
 
+sub abs_range_from_prct_range {
+    my (%options) = @_;
+    # $options{range_prct} : the nagios-style range threshold in percent (eg. '0:20', '@10:15' or '60:'
+    # $options{max} : the maximum value the metric can have
+    # returns the threshold converted into absolute value
+
+    return '' if is_empty($options{range_prct});
+    # no change if the max value is not provided
+    return $options{range_prct} if (is_empty($options{max}) || $options{max} == 0) ;
+
+    my $range_prct = $options{range_prct};
+    my $max = $options{max};
+    # keep the starting '@' or empty string
+    my $range_abs = $range_prct =~ s/^@// ? '@' : '';
+
+    # split the threshold, perform the calculation, and join it back together to append it to the potential '@'
+    $range_abs .= join(':', map {$_ eq '' ? '' : $_ * $max / 100} split /:/, $range_prct);
+
+    return $range_abs;
+}
+
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
     
-#   Nombre de licences
+    # Number of licenses
     my $oid_cwoTfoStatsMaxActiveConn = '.1.3.6.1.4.1.9.9.762.1.2.1.3.0';
-#   Nombre de sessions optimized
+    # Number of optimized sessions
     my $oid_cwoTfoStatsActiveOptConn = '.1.3.6.1.4.1.9.9.762.1.2.1.2.0';
-#   Nombre de session pass-through (non-optimized)
+    # Number of pass-through sessions (non-optimized)
     my $oid_cwoTfoStatsActivePTConn = '.1.3.6.1.4.1.9.9.762.1.2.1.10.0';
 
     my $result = $self->{snmp}->get_leef(oids => [$oid_cwoTfoStatsMaxActiveConn, $oid_cwoTfoStatsActiveOptConn,
                                                   $oid_cwoTfoStatsActivePTConn], nothing_quit => 1);
 
     my $prct = $result->{$oid_cwoTfoStatsActiveOptConn} / $result->{$oid_cwoTfoStatsMaxActiveConn} * 100;
-    
-    my $abs_warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning') / 100 * $result->{$oid_cwoTfoStatsMaxActiveConn};
-    my $abs_critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical') / 100 * $result->{$oid_cwoTfoStatsMaxActiveConn};
+
+    my ($abs_warning, $abs_critical) = map {  abs_range_from_prct_range(
+        range_prct => $self->{perfdata}->get_perfdata_for_output(label => $_),
+        max        => $result->{$oid_cwoTfoStatsMaxActiveConn}
+    )} ('warning', 'critical');
     
     my $exit = $self->{perfdata}->threshold_check(value => $prct,
                                         threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -103,7 +127,7 @@ __END__
 
 =head1 MODE
 
-Check optimized and passthrough sessions on Cisco WAAS equipments against total number of licence (CISCO-WAN-OPTIMIZATION-MIB). Available on all Cisco ISR G2 (You need to configure through IOS CLI).
+Check optimized and passthrough sessions on Cisco WaaS equipments against total number of license (CISCO-WAN-OPTIMIZATION-MIB). Available on all C<Cisco ISR G2> (You need to configure through IOS CLI).
 
 =over 8
 
@@ -111,10 +135,10 @@ Check optimized and passthrough sessions on Cisco WAAS equipments against total 
 
 Warning threshold: Percentage value of passthrough sessions resulting in a warning state
 
-=item B<--critical-average>
+=item B<--critical>
 
 Critical threshold: Percentage value of passthrough sessions resulting in a critical state
 
 =back
 
-==cut
+=cut
