@@ -48,7 +48,7 @@ jobs:
             # "Crypt::OpenSSL::AES",
             # "DataStruct::Flat",
             # "DateTime::Format::Duration::ISO8601",
-            "DBD::MySQL",
+            "DBD::mysql",
             # "DBD::Sybase",
             # "Device::Modbus",
             # "Device::Modbus::RTU::Client",
@@ -116,7 +116,7 @@ jobs:
           #   revision: "3"
           # - name: "DateTime::Format::Duration::ISO8601"
           #   rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
-          - name: "DBD::MySQL"
+          - name: "DBD::mysql"
             version: "4.054"
           # - name: "Device::Modbus::RTU::Client"
           #   version: "0.022"
