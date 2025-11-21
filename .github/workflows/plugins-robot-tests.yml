@@ -33,6 +33,11 @@ on:
         description: "The cache key for plugin's json"
         required: true
         type: string
+    secrets:
+      registry_username:
+        required: true
+      registry_password:
+        required: true
 
 jobs:
   test-image-to-cache:
