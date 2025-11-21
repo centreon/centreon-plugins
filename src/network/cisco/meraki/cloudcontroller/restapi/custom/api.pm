@@ -143,6 +143,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{http}->add_header(key => 'X-Cisco-Meraki-API-Key', value => $self->{api_token});
+    $self->{http}->add_header(key => 'User-Agent', value => 'CentreonPlugin/1.0 Centreon');
 }
 
 sub settings {
@@ -197,6 +198,7 @@ sub request_api {
 
         if ($code < 200 || $code >= 300) {
             $self->{output}->add_option_msg(short_msg => $code . ' ' . $self->{http}->get_message());
+            $self->{output}->add_option_msg(short_msg => 'Have you checked that you are using the correct --hostname? See the connector documentation for details');
             $self->{output}->option_exit();
         }
 
@@ -589,6 +591,16 @@ Rest API custom mode
 =item B<--hostname>
 
 Meraki API hostname (default: 'api.meraki.com')
+
+The default value 'api.meraki.com' will work for most of the world.
+However, for organizations hosted in the following country dashboards, you need to override this value and specify the respective base URI instead:
+
+    Canada: https://api.meraki.ca/api/v1
+    China: https://api.meraki.cn/api/v1
+    India: https://api.meraki.in/api/v1
+    United States FedRAMP: https://api.gov-meraki.com/api/v1
+
+Please refer to Meraki API documentation https://developer.cisco.com/meraki/api-v1/getting-started/#base-uri for more details.
 
 =item B<--port>
 

@@ -1,4 +1,4 @@
-## Copyright 2016 Centreon
+# Copyright 2024 Centreon
 ##
 ## Licensed under the Apache License, Version 2.0 (the "License");
 ## you may not use this file except in compliance with the License.
@@ -19,7 +19,8 @@
 Description=Centreon VMWare
 
 [Service]
-ExecStart=/usr/bin/perl /usr/bin/centreon_vmware.pl --logfile=/var/log/centreon/centreon_vmware.log --severity=error
+EnvironmentFile=-/etc/default/centreon_vmware
+ExecStart=/usr/bin/perl /usr/bin/centreon_vmware.pl $OPTIONS
 Type=simple
 User=centreon
 

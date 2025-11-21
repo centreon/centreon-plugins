@@ -75,7 +75,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $luns = $options{custom}->request_api(endpoint => '/api/storage/luns?fields=*');
+    my $luns = $options{custom}->request_api(endpoint => '/api/storage/luns?fields=name,status');
 
     $self->{luns} = {};
     foreach (@{$luns->{records}}) {

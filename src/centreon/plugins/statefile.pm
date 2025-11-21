@@ -170,7 +170,10 @@ sub check_options {
     }
 
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
-    if ($self->{statefile_dir} ne $default_dir && defined($options{option_results}->{statefile_concat_cwd})) {
+    if (defined($self->{statefile_dir})
+            && $self->{statefile_dir} ne $default_dir
+            && defined($options{option_results}->{statefile_concat_cwd})
+    ) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'Cwd',
@@ -179,8 +182,7 @@ sub check_options {
         $self->{statefile_dir} = Cwd::cwd() . '/' . $self->{statefile_dir};
     }
 
-    $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
-    $self->{memexpiration} = $options{option_results}->{memexpiration};
+    $self->{$_} = $options{option_results}->{$_} foreach qw/statefile_suffix memexpiration/;
 }
 
 sub error {
@@ -443,11 +445,185 @@ __END__
 
 =head1 NAME
 
-Statefile class
+centreon::plugins::statefile - A module for managing state files with various storage backends.
 
 =head1 SYNOPSIS
 
--
+    use centreon::plugins::statefile;
+
+    my $statefile = centreon::plugins::statefile->new(
+        output => $output,
+        options => $options
+    );
+
+    $statefile->check_options(option_results => $option_results);
+    $statefile->read(statefile => 'my_statefile');
+    my $data = $statefile->get(name => 'some_key');
+    $statefile->write(data => { some_key => 'some_value' });
+
+=head1 DESCRIPTION
+
+The `centreon::plugins::statefile` module provides methods to manage state files (files storing the data to keep from an
+execution to the next one), supporting various storage backends such as local files, Memcached, and Redis. It also supports encryption and different serialization formats.
+
+=head1 METHODS
+
+=head2 new
+
+    my $statefile = centreon::plugins::statefile->new(%options);
+
+Creates a new `centreon::plugins::statefile` object.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<output> - An C<centreon::plugins::output> object to log error messages.
+
+=item * C<options> - A C<centreon::plugins::options> object to add command-line options.
+
+=back
+
+=back
+
+=head2 check_options
+
+    $statefile->check_options(%options);
+
+Checks and processes the provided options.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<option_results> - A hash of option results.
+
+=back
+
+=back
+
+=head2 read
+
+    $statefile->read(%options);
+
+Reads the state file.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<statefile> - The name of the state file to read.
+
+=item * C<statefile_suffix> - An optional suffix for the state file name.
+
+=item * C<statefile_dir> - An optional directory for the state file.
+
+=item * C<no_quit> - An optional flag to prevent the program from exiting on error.
+
+=back
+
+=back
+
+=head2 write
+
+    $statefile->write(%options);
+
+Writes data to the state file.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<data> - A hash reference containing the data to write.
+
+=back
+
+=back
+
+=head2 get
+
+    my $value = $statefile->get(%options);
+
+Retrieves a value from the state file data.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<name> - The key name of the value to retrieve.
+
+=back
+
+=back
+
+=head2 get_string_content
+
+    my $string = $statefile->get_string_content();
+
+Returns the state file data as a string.
+
+=head2 error
+
+    my $error = $statefile->error();
+
+Gets or sets the error state.
+
+=over 4
+
+=item * C<$error> - An optional error value to set.
+
+=back
+
+=head1 EXAMPLES
+
+=head2 Creating a Statefile Object
+
+    use centreon::plugins::statefile;
+
+    my $statefile = centreon::plugins::statefile->new(
+        output => $output,
+        options => $options
+    );
+
+=head2 Checking Options
+
+    $statefile->check_options(option_results => $option_results);
+
+=head2 Reading a Statefile
+
+    $statefile->read(statefile => 'my_statefile');
+
+=head2 Writing to a Statefile
+
+    $statefile->write(data => { some_key => 'some_value' });
+
+=head2 Retrieving a Value
+
+    my $value = $statefile->get(name => 'some_key');
+
+=head2 Getting Statefile Data as a String
+
+    my $string = $statefile->get_string_content();
+
+=head1 AUTHOR
+
+Centreon
+
+=head1 LICENSE
+
+Licensed under the Apache License, Version 2.0.
+
+=cut
 
 =head1 RETENTION OPTIONS
 
@@ -471,7 +647,7 @@ Set Redis database index.
 
 =item B<--failback-file>
 
-Failback on a local file if Redis connection fails.
+Fall back on a local file if Redis connection fails.
 
 =item B<--memexpiration>
 

@@ -136,6 +136,14 @@ sub set_counters_errors {
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
+        },
+        { label => 'out-fc-wait', filter => 'add_fc_fe_errors', nlabel => 'interface.wait.out.count', set => {
+                key_values => [ { name => 'fcTxWait', diff => 1 }, { name => 'display' } ],
+                output_template => 'Fc Out Wait : %s',
+                perfdatas => [
+                    { label => 'fcTxWait', template => '%s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         }
     ;
 }
@@ -146,8 +154,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'add-qos-limit'   => { name => 'add_qos_limit' },
-        'add-err-disable' => { name => 'add_err_disable' }
+        'add-qos-limit'    => { name => 'add_qos_limit' },
+        'add-err-disable'  => { name => 'add_err_disable' },
+        'add-fc-fe-errors' => { name => 'add_fc_fe_errors' }
     });
 
     return $self;
@@ -158,14 +167,14 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{checking} = '';
-    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_qos_limit')) {
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_qos_limit', 'add_fc_fe_errors')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{checking} .= $_;
         }
     }
 }
 
-sub reload_cache_custom {
+sub reload_cache_qos_limit {
     my ($self, %options) = @_;
 
     return if (!defined($self->{option_results}->{add_qos_limit}));
@@ -207,7 +216,29 @@ sub reload_cache_custom {
     }
 }
 
-sub custom_load {
+sub reload_cache_fc_fe_errors {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_fc_fe_errors}));
+
+    my $oid_fcIfWwn = '.1.3.6.1.4.1.9.9.289.1.1.2.1.1';
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_fcIfWwn);
+
+    $options{datas}->{fc_fe} = {};
+    foreach (keys %$snmp_result) {
+        next if ($_ !~ /^$oid_fcIfWwn\.(.*)$/);
+        $options{datas}->{fc_fe}->{$1} = { wwn => $snmp_result->{$_} };
+    }
+}
+
+sub reload_cache_custom {
+    my ($self, %options) = @_;
+
+    $self->reload_cache_fc_fe_errors(%options);
+    $self->reload_cache_qos_limit(%options);
+}
+
+sub custom_load_qos_limit {
     my ($self, %options) = @_;
 
     return if (!defined($self->{option_results}->{add_qos_limit}));
@@ -230,6 +261,32 @@ sub custom_load {
     );
 }
 
+sub custom_load_fc_fe_errors {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_fc_fe_errors}));
+
+    my $oid_fcIfTxWaitCount = '.1.3.6.1.4.1.9.9.289.1.2.1.1.15';
+
+    my $entries = $self->{statefile_cache}->get(name => 'fc_fe');
+    my @instances = keys %$entries;
+
+    return if (scalar(@instances) <= 0);
+
+    $self->{snmp}->load(
+        oids => [ $oid_fcIfTxWaitCount ],
+        instances => [@instances],
+        instance_regexp => '^(.*)$'
+    );
+}
+
+sub custom_load {
+    my ($self, %options) = @_;
+
+    $self->custom_load_fc_fe_errors(%options);
+    $self->custom_load_qos_limit(%options);
+}
+
 sub load_errors {
     my ($self, %options) = @_;
 
@@ -250,12 +307,12 @@ sub load_status {
     $self->SUPER::load_status(%options);
     if (defined($self->{option_results}->{add_err_disable})) {
         $self->{snmp_errdisable_result} = $self->{snmp}->get_table(oid => $self->{oid_cErrDisableIfStatusCause});
-    }    
+    }
 }
 
 sub add_result_errors {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
@@ -279,7 +336,7 @@ sub add_result_status {
                 $self->{int}->{$options{instance}}->{errdisable} = $self->{oid_cErrDisableIfStatusCause_mapping}->{ $self->{snmp_errdisable_result}->{$_} };
                 last;
             }
-            
+
             $self->{int}->{$options{instance}}->{errdisable} .= $append . 'vlan' . $1 . ':' . $self->{oid_cErrDisableIfStatusCause_mapping}->{ $self->{snmp_errdisable_result}->{$_} };
             $append = ',';
         }
@@ -289,7 +346,7 @@ sub add_result_status {
         if ($self->{int}->{$options{instance}}->{errdisable} eq '');
 }
 
-sub custom_add_result {
+sub custom_add_result_qos_limit {
     my ($self, %options) = @_;
 
     return if (!defined($self->{option_results}->{add_qos_limit}));
@@ -304,7 +361,7 @@ sub custom_add_result {
         defined($self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}}) &&
         $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}} =~ /(\d+)/) {
         $self->{int}->{ $options{instance} }->{traffic_in_limit} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}};
-        
+
         $self->{int}->{ $options{instance} }->{speed_in} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{input}}
             if (!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '');
     }
@@ -317,6 +374,30 @@ sub custom_add_result {
         $self->{int}->{ $options{instance} }->{speed_out} = $self->{results}->{$oid_cbQosPoliceCfgRate64 . '.' . $qos->{ $options{instance} }->{output}}
             if (!defined($self->{option_results}->{speed_out}) || $self->{option_results}->{speed_out} eq '');
     }
+}
+
+sub custom_add_result_fc_fe_errors {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_fc_fe_errors}));
+
+    my $entries = $self->{statefile_cache}->get(name => 'fc_fe');
+
+    return if (!defined($entries->{ $options{instance} }));
+
+    my $oid_fcIfTxWaitCount = '.1.3.6.1.4.1.9.9.289.1.2.1.1.15';
+
+    if (defined($self->{results}->{ $oid_fcIfTxWaitCount . '.' . $options{instance} }) &&
+        $self->{results}->{ $oid_fcIfTxWaitCount . '.' . $options{instance} } =~ /(\d+)/) {
+        $self->{int}->{ $options{instance} }->{fcTxWait} = $self->{results}->{ $oid_fcIfTxWaitCount . '.' . $options{instance} };
+    }
+}
+
+sub custom_add_result {
+    my ($self, %options) = @_;
+
+    $self->custom_add_result_fc_fe_errors(%options);
+    $self->custom_add_result_qos_limit(%options);
 }
 
 1;
@@ -353,6 +434,10 @@ Check interface traffic.
 
 Check interface errors.
 
+=item B<--add-fc-fe-errors>
+
+Check interface fiber channel fiber element errors.
+
 =item B<--add-cast>
 
 Check interface cast.
@@ -388,7 +473,7 @@ You can use the following variables: %{admstatus}, %{opstatus}, %{duplexstatus},
 Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-traffic-limit', 'out-traffic-limit',
-'in-crc', 'in-fcserror', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-crc', 'in-fcserror', 'out-fc-wait', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast', 'in-bcast', 'in-mcast', 'out-ucast', 'out-bcast', 'out-mcast',
 'speed' (b/s).
 
@@ -406,7 +491,7 @@ Units of thresholds for communication types (default: 'percent_delta') ('percent
 
 =item B<--nagvis-perfdata>
 
-Display traffic perfdata to be compatible with nagvis widget.
+Display traffic perfdata to be compatible with NagVis widget.
 
 =item B<--interface>
 
@@ -430,7 +515,7 @@ Set interface speed for outgoing traffic (in Mb).
 
 =item B<--force-counters32>
 
-Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+Force to use 32 bits counters (even in SNMP version 2c and version 3). Should be used when 64 bits counters are buggy.
 
 =item B<--reload-cache-time>
 

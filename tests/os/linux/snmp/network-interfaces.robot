@@ -1,8 +1,10 @@
 *** Settings ***
-Documentation       Network Interfaces
+Documentation       Network table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -13,7 +15,6 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=os/linux/snmp/network-interfaces
-...         --statefile-dir=/dev/shm/
 
 ${COND}     ${PERCENT}\{sub\} =~ /exited/ && ${PERCENT}{display} =~ /network/'
 
@@ -38,6 +39,10 @@ Interfaces by id ${tc}
             ...      7     2,3,4                     --add-traffic                 OK: All interfaces are ok | 'traffic_in_eth0'=0.00b/s;;;0;1000000000 'traffic_out_eth0'=0.00b/s;;;0;1000000000 'traffic_in_eth1'=0.00b/s;;;0;1000000000 'traffic_out_eth1'=0.00b/s;;;0;1000000000 'traffic_in_eth2'=0.00b/s;;;0;1000000000 'traffic_out_eth2'=0.00b/s;;;0;1000000000
 # theese test are linked together. The test 3 create the cache file in /dev/shm/, and the test 4 use this cache file
 # to calculate traffic throughput by second.
+
+Cleanup
+    Ctn Generic Suite Teardown
+    Ctn Generic Suite Setup
 
 Interfaces by id regexp ${tc}
     [Tags]    os    linux    network    interfaces

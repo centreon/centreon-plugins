@@ -68,6 +68,28 @@ my %unit_map_chronyc = (
     's'  => 1000
 );
 
+my %unit_map_timedatectl = (
+    'us' => 0.001,
+    'ms' => 1,
+    's'  => 1000,
+    'min' => 60 * 1000,
+    'h' => 60 * 60 * 1000,
+    'd' => 24 * 60 *60 * 1000
+);
+
+my %state_map_timedatectl = (
+    'synchronized' => 'currently active and fully synchronized',
+    'syncing' => 'currently active and synchronizing',
+    'available' => 'configured and available for use',
+    'unused' => 'configured as fallback but not used',
+    'inactive' => 'not used because NTP service is inactive'
+);
+
+my %type_map_timedatectl = (
+    'primary' => 'Primary NTP Server',
+    'fallback' => 'Fallback NTP Server'
+);
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
@@ -82,7 +104,7 @@ sub custom_status_output {
 sub custom_offset_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rawstate} ne '*') {
+    if ($self->{result_values}->{rawstate} !~ /(\*|synchronized)/) {
         $self->{output}->perfdata_add(
             nlabel => $self->{nlabel},
             unit => 'ms',
@@ -106,9 +128,8 @@ sub custom_offset_perfdata {
 sub custom_offset_threshold {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{rawstate} ne '*') {
-        return 'ok';
-    }
+    return 'ok' if $self->{result_values}->{rawstate} !~ /^(\*|synchronized)$/;
+
     return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
 }
 
@@ -176,9 +197,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'ntp-mode:s'     => { name => 'ntp_mode', default => 'ntpq' },
-        'filter-name:s'  => { name => 'filter_name' },
-        'filter-state:s' => { name => 'filter_state' }
+        'ntp-mode:s'      => { name => 'ntp_mode', default => 'auto' },
+        'filter-name:s'   => { name => 'filter_name', default => '' },
+        'exclude-name:s'  => { name => 'exclude_name', default => '' },
+        'filter-state:s'  => { name => 'filter_state', default => '' },
+        'exclude-state:s' => { name => 'exclude_state', default => '' }
     });
 
     return $self;
@@ -188,7 +211,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if ($self->{option_results}->{ntp_mode} !~ /^(?:ntpq|chronyc|all)$/) {
+    if ($self->{option_results}->{ntp_mode} !~ /^(ntpq|chronyc|timedatectl|all|auto)$/) {
         $self->{output}->add_option_msg(short_msg => "ntp mode '" . $self->{option_results}->{ntp_mode} . "' not implemented" );
         $self->{output}->option_exit();
     }
@@ -209,39 +232,186 @@ sub get_ntp_modes {
             command => 'chronyc',
             command_options => '-n sources 2>&1',
             type => 'chronyc'
+        },
+        timedatectl => {
+            regexp => '',
+            command => '',
+            command_options => '',
+            type => 'timedatectl'
         }
     };
 
-    if ($self->{option_results}->{ntp_mode} eq 'ntpq') {
-        return [ $modes->{ntpq} ];
-    } elsif ($self->{option_results}->{ntp_mode} eq 'chronyc') {
-        return [ $modes->{chronyc} ];
+    # Returns the selected mode or all modes
+    return [ $modes->{$self->{option_results}->{ntp_mode}} ?
+                $modes->{$self->{option_results}->{ntp_mode}} :
+                ( $modes->{timedatectl}, $modes->{chronyc}, $modes->{ntpq} ) ];
+}
+
+sub skip_record {
+    my ($self, %options) = @_;
+
+    my $name = $options{display} // '';
+    my $address = $options{address} // '';
+    my $rawstate = $options{rawstate} // '';
+    my $state = $options{state} // '';
+
+    # filter_name includes name and address
+    if ($self->{option_results}->{filter_name} ne '' && $name !~ /$self->{option_results}->{filter_name}/ && $address !~ /$self->{option_results}->{filter_name}/) {
+        $self->{output}->output_add(long_msg => "skipping '$name': no matching filter peer name.", debug => 1);
+        return 1;
+    }
+    if ($self->{option_results}->{exclude_name} ne '' && ($name =~ /$self->{option_results}->{exclude_name}/ || $address =~ /$self->{option_results}->{exclude_name}/)) {
+        $self->{output}->output_add(long_msg => "skipping '$name': excluded peer name.", debug => 1);
+        return 1;
     }
 
-    return [ $modes->{chronyc}, $modes->{ntpq} ];
+    if ($self->{option_results}->{filter_state} ne '' && $state !~ /$self->{option_results}->{filter_state}/ && $rawstate !~ /$self->{option_results}->{filter_state}/) {
+        $self->{output}->output_add(long_msg => "skipping '$name': no matching filter peer state.", debug => 1);
+        return 1;
+    }
+    if ($self->{option_results}->{exclude_state} ne '' && ($state =~ /$self->{option_results}->{exclude_state}/ || $rawstate =~ /$self->{option_results}->{exclude_state}/)) {
+        $self->{output}->output_add(long_msg => "skipping '$name': excluded peer state.", debug => 1);
+        return 1;
+    }
+
+    return 0;
+}
+
+sub manage_timedatectl {
+    my ($self, %options) = @_;
+
+    # With timedatectl three calls are required to retrieve all information
+    #
+    # timedatectl status to retrieve 'NTP service' and 'System clock synchronized'
+    # Output snippet:
+    #    System clock synchronized: yes
+    #                  NTP service: active
+    #
+    # timedatectl timesync-status to retrieve 'Offset', 'Stratum' and 'Packet count'
+    # Output snippet:
+    #       Version: 4
+    #       Stratum: 2
+    #        Offset: -398us
+    #        Jitter: 150us
+    #  Packet count: 2
+    #
+    # timedatectl show-timesync to retrieve 'SystemNTPServers', 'FallbackNTPServers', 'ServerAddress' and 'ServerName'
+    # Output snippet:
+    # SystemNTPServers=0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org
+    # FallbackNTPServers=3.pool.ntp.org 4.pool.ntp.org
+    # ServerName=0.pool.ntp.org
+    # ServerAddress=188.125.64.7
+    # PollIntervalUSec=4min 16s
+    # NTPMessage={ Leap=0, Version=4, Mode=4, Stratum=2, Precision=-25, RootDelay=79.940ms, RootDispersion=1.358ms, Reference=628B853E, OriginateTimestamp=Thu 2025-08-28 14:31:58 CEST, ReceiveTimestamp=Thu 2025-08-28 14:31:58 CEST, TransmitTimestamp=Thu 2025-08-28 14:31:58 CEST, DestinationTimestamp=Thu 2025-08-28 14:31:58 CEST, Ignored=no PacketCount=3, Jitter=573us }
+
+    my ($stdout_status) = $options{custom}->execute_command(    command => 'timedatectl',
+                                                                command_options => 'status 2>&1',
+                                                                no_quit => 1, );
+    my ($stdout_timesync) = $options{custom}->execute_command(  command => 'timedatectl',
+                                                                command_options => 'timesync-status 2>&1',
+                                                                no_quit => 1, );
+    my ($stdout_show) = $options{custom}->execute_command(      command => 'timedatectl',
+                                                                command_options => 'show-timesync 2>&1',
+                                                                no_quit => 1, );
+
+    my %values = ( ( map { /^\s*(.+?): (.+)$/ } split /\n/, $stdout_timesync ),
+                   ( map { /^(.+?)=(.+)$/ } split /\n/, $stdout_show ),
+                   ( map { /^\s*(.+?): (.+)$/ } split /\n/, $stdout_status ) );
+
+    return "timedatectl not available" unless $values{'NTP service'};
+
+    $values{$_}//='' foreach ('SystemNTPServers', 'FallbackNTPServers', 'ServerAddress', 'ServerName', 'Offset', 'Stratum', 'Packet count', 'System clock synchronized');
+
+    my $active_is_fallback = 0;
+
+    # Primary and fallback servers are initialized, the active server is excluded as it will be initialized later with additional information
+    # A server has either the type 'primary' or 'fallback'
+    # A 'primary' server can have the states 'available', 'synchronized', 'syncing' or 'inactive'
+    # A 'fallback' server can have the states 'unused', synchronized', 'syncing' or 'inactive'
+    foreach my $srv (split /\s/, $values{SystemNTPServers}) {
+        next if $values{ServerAddress} && ($srv eq $values{ServerAddress} || $srv eq $values{ServerName});
+
+        $self->{peers}->{$srv} = { display => $srv, rawstate => 'available', stratum => 0, rawtype => 'primary', reach => 0, offset => 0 };
+        $self->{global}->{peers}++
+    }
+    foreach my $srv (split /\s/, $values{FallbackNTPServers}) {
+        if ($values{ServerAddress} && ($srv eq $values{ServerAddress} || $srv eq $values{ServerName})) {
+            $active_is_fallback = 1;
+            next
+        }
+        $self->{peers}->{$srv} = { display => $srv, rawstate => 'unused', stratum => 0, rawtype => 'fallback', reach => 0, offset => 0 };
+        $self->{global}->{peers}++
+    }
+
+    if ($values{ServerAddress} ne '') {
+        # If there is an active server it is initialized here with all information
+        $values{ServerName} = $values{ServerAddress} if $values{ServerName} eq '';
+        $values{'Offset'} = $1 * $unit_map_timedatectl{$2} if $values{'Offset'} =~ /^(.*?)([a-z]+)$/ && $unit_map_timedatectl{$2};
+
+        $self->{peers}->{$values{ServerAddress}} = { display => $values{ServerName},
+                                                     address => $values{ServerAddress},
+                                                     rawstate => $values{'System clock synchronized'} eq 'yes' ? 'synchronized' : 'syncing',
+                                                     rawtype => $active_is_fallback ? 'fallback' : 'primary',
+                                                     stratum => $values{Stratum},
+                                                     reach => $values{'Packet count'},
+                                                     offset => $values{'Offset'} };
+        $self->{global}->{peers}++;
+    }
+
+    foreach my $peer (keys %{$self->{peers}}) {
+        $self->{peers}->{$peer}->{rawstate} = 'inactive' if $values{'NTP service'} ne 'active';
+        $self->{peers}->{$peer}->{state} = $state_map_timedatectl{$self->{peers}->{$peer}->{rawstate}};
+        $self->{peers}->{$peer}->{type} = $type_map_timedatectl{$self->{peers}->{$peer}->{rawtype}};
+
+        # Data is only filtered here becase all states must be initialized first
+        if ($self->skip_record(%{$self->{peers}->{$peer}})) {
+            delete $self->{peers}->{$peer};
+            $self->{global}->{peers}--;
+            next
+        }
+    }
+
+    undef;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $request_mode = $self->{option_results}->{ntp_mode};
+    my $no_quit = $self->{option_results}->{ntp_mode} =~ /^(all|auto)$/;
     my $modes = $self->get_ntp_modes();
 
     $self->{global} = { peers => 0 };
     $self->{peers} = {};
+
     foreach my $mode (@$modes) {
+        # Exit if we are in auto mode and the previous mode has already found peers
+        last if $self->{global}->{peers} && $request_mode eq 'auto';
+
+        if ($mode->{type} eq 'timedatectl') {
+            # timedatectl differs from other modes so it is handled in its own function
+            my $error = $self->manage_timedatectl( custom => $options{custom} );
+
+            if ($no_quit == 0 && $error) {
+                $self->{output}->add_option_msg(short_msg => $error);
+                $self->{output}->option_exit();
+            }
+            next
+        }
+
         my ($stdout) = $options{custom}->execute_command(
             command => $mode->{command},
             command_options => $mode->{command_options},
-            no_quit => $self->{option_results}->{ntp_mode} eq 'all' ? 1 : undef
+            no_quit => $no_quit
         );
 
-        my @lines = split(/\n/, $stdout);
+        my @lines = split /\n/, $stdout;
         foreach my $line (@lines) {
-            if ($self->{option_results}->{ntp_mode} ne 'all' && $line =~ /Connection refused/) {
+            if ($no_quit == 0 && $line =~ /Connection refused/) {
                 $self->{output}->add_option_msg(short_msg => "check ntp.conf and ntp daemon" );
                 $self->{output}->option_exit();
             }
-            next if ($line !~ /$mode->{regexp}/);
+            next if $line !~ /$mode->{regexp}/;
 
             my $entry = {};
             my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
@@ -273,16 +443,7 @@ sub manage_selection {
                 };
             }
 
-            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-                $remote_peer !~ /$self->{option_results}->{filter_name}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter peer name.", debug => 1);
-                next;
-            }
-            if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                $peer_fate !~ /$self->{option_results}->{filter_state}/) {
-                $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter peer state.", debug => 1);
-                next;
-            }
+            next if $self->skip_record(%$entry);
 
             if ($mode->{type} eq 'ntpq') {
                 my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
@@ -308,23 +469,33 @@ __END__
 
 =head1 MODE
 
-Check ntp daemons.
+Check NTP daemons.
 
-Command used: 'ntpq -p -n 2>&1' or 'chronyc -n sources 2>&1'
+Command used: C<timedatectl status ; timedatectl timesync-status ; timedatectl show-timesync> or C<ntpq -p -n> or C<chronyc -n sources>
 
 =over 8
 
 =item B<--ntp-mode>
 
-Default mode for parsing and command: 'ntpq' (default), 'chronyc' or 'all'.
+Default mode for parsing and command: C<auto> (default), C<timedatectl>, C<ntpq>, C<chronyc> or C<all>.
+In 'auto' mode the data is taken from the first working mode (in order).
+In 'all' mode the data is taken and aggregated from all working mode.
 
 =item B<--filter-name>
 
 Filter peer name (can be a regexp).
 
+=item B<--exclude-name>
+
+Exclude by peer name (can be a regexp).
+
 =item B<--filter-state>
 
 Filter peer state (can be a regexp).
+
+=item B<--exclude-state>
+
+Exclude by peer state (can be a regexp).
 
 =item B<--warning-peers>
 

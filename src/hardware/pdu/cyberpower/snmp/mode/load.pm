@@ -120,6 +120,14 @@ sub set_counters {
                     { template => '%s', unit => 'W', min => 0, label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'phase-voltage', nlabel => 'phase.voltage.volt', set => {
+                key_values => [ { name => 'voltage' } ],
+                output_template => 'voltage : %s V',
+                perfdatas => [
+                    { template => '%s', unit => 'V', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 }
@@ -197,6 +205,7 @@ sub check_pdu2 {
         number  => { oid => '.1.3.6.1.4.1.3808.1.1.6.4.4.1.3' }, # ePDU2PhaseStatusNumber
         state   => { oid => '.1.3.6.1.4.1.3808.1.1.6.4.4.1.4', map => $map_pdu_status }, # ePDU2PhaseStatusLoadState
         current => { oid => '.1.3.6.1.4.1.3808.1.1.6.4.4.1.5' }, # ePDU2PhaseStatusLoad
+        voltage   => { oid => '.1.3.6.1.4.1.3808.1.1.6.4.4.1.6' }, # ePDU2PhaseStatusVoltage
         power   => { oid => '.1.3.6.1.4.1.3808.1.1.6.4.4.1.7' } # ePDU2PhaseStatusPower
     };
     my $mapping_bank = {
@@ -230,7 +239,8 @@ sub check_pdu2 {
             display => $result->{number},
             state => $result->{state},
             current => $result->{current} / 10,
-            power => $result->{power} * 10 # hundreth of kW. So * 10 for watt
+            voltage => $result->{voltage}/10,
+            power => $result->{power}
         }
     }
 
@@ -317,7 +327,7 @@ You can use the following variables: %{state}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'phase-current', 'phase-power', 'bank-current'.
+Can be: 'phase-current', 'phase-power', 'phase-voltage', 'bank-current'.
 
 =back
 

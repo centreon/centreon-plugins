@@ -1,4 +1,4 @@
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets 
 # the needs in IT infrastructure and application monitoring for 
@@ -25,7 +25,7 @@ use VMware::VIRuntime;
 use VMware::VILib;
 use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
-use JSON::XS;;
+use JSON::XS;
 
 my $manager_display = {};
 my $manager_response = {};
@@ -45,7 +45,7 @@ sub init_response {
     my (%options) = @_;
 
     $manager_response->{code} = 0;
-    $manager_response->{vmware_connector_version} = '3.2.6';
+    $manager_response->{vmware_connector_version} = '20250501';
     $manager_response->{short_message} = 'OK';
     $manager_response->{extra_message} = '';
     $manager_response->{identity} = $options{identity} if (defined($options{identity}));
@@ -792,6 +792,40 @@ sub vsan_get_performances {
     }
 
     return $result;
+}
+
+sub transform_json_to_object {
+    my ($json_data) = @_;
+
+    my $json_as_object;
+    eval {
+        $json_as_object = decode_json($json_data);
+    };
+    if ($@) {
+        return ('error_message' => "Could not decode JSON from '$json_data'. Reason: " . $@);
+    };
+    return($json_as_object);
+}
+
+sub parse_json_file {
+    my (%options) = @_;
+
+    my $fh;
+    my $json_data = '';
+
+    if ( !defined($options{json_file}) ) {
+        return ('error_message' => "parse_json_file: json_file option is mandatory");
+    }
+
+    my $json_file = $options{json_file};
+
+    open($fh, '<', $json_file) or return ('error_message' => "parse_json_file: Cannot open " . $json_file);
+    for my $line (<$fh>) {
+        chomp $line;
+        $json_data .= $line;
+    }
+    close($fh);
+    return transform_json_to_object($json_data);
 }
 
 1;

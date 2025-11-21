@@ -43,12 +43,16 @@ sub load {
 sub check {
     my ($self, %options) = @_;
 
+    my $power_factor_dependencies;
     foreach my $component (sort keys %raritan_type) {
         my $long_msg = 0;
-        next if ($component !~ /$options{component}/);
+        if ($options{component} eq 'powerFactor') {
+            next if ($component !~ /activePower|onOff|powerFactor/);
+        } elsif ($component !~ /$options{component}/) {
+            next;
+        }
         $self->{components}->{$component} = { name => $component, total => 0, skip => 0 };
         next if ($self->check_filter(section => $component));
-
         my $instance_type = $raritan_type{$component};
         my $value_type = $map_type{$instance_type};
         foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
@@ -77,17 +81,38 @@ sub check {
 
             next if ($self->check_filter(section => $component, instance => $instance));
 
-            if ($long_msg == 0) {
-                $self->{output}->output_add(long_msg => "Checking " . $component);
-                $long_msg = 1;
+            if ($component =~ /$options{component}/) {
+                $self->{components}->{$component}->{total}++;
             }
-
-            $self->{components}->{$component}->{total}++;
 
             my $value = (defined($result->{Value}) && $result->{Value} ne '') ? $result->{Value} : '-';
             if ($value =~ /[0-9]/) {
                 $value *= 10 ** -int($result->{Decimal});
             }
+            
+            if ($component eq 'activePower' && $value == 0) {
+                $power_factor_dependencies->{$instance}->{activePower} = 1;
+            }
+
+            if ($component eq 'onOff') {
+                if ($result->{State} eq 'off') {
+                    $power_factor_dependencies->{$instance}->{absent} = 1;
+                
+                } elsif (defined($power_factor_dependencies->{$instance}->{activePower})) {
+                    $power_factor_dependencies->{$instance}->{absent} = 1;
+                }
+            }
+
+            if ($component eq 'powerFactor' && defined($power_factor_dependencies->{$instance}->{absent})) {
+                $result->{State} = 'absent';
+            }
+
+            next if ($component !~ /$options{component}/);
+            if ($long_msg == 0) {
+                $self->{output}->output_add(long_msg => "Checking " . $component);
+                $long_msg = 1;
+            }
+
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "'%s' %s state is '%s' [instance: %s, value: %s, unit: %s, label: %s, pdu: %s]", 
@@ -158,7 +183,7 @@ sub check {
             my $nunit = (defined($result->{Unit}->{nunit}) ? $result->{Unit}->{nunit} : lc($result->{Unit}->{unit}));
 
             $self->{output}->perfdata_add(
-                nlabel => 'hardware.sensor.' . $options{type} . '.' . lc($component) . '.' . $nunit,
+                nlabel => $nunit ne '' ? 'hardware.sensor.' . $options{type} . '.' . lc($component) . '.' . $nunit : 'hardware.sensor.' . $options{type} . '.' . lc($component),
                 unit => $result->{Unit}->{unit},
                 instances => [$pduName, $instance],
                 value => $value,

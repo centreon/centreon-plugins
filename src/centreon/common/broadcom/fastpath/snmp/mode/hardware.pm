@@ -104,7 +104,6 @@ Can be specific or global: --absent-problem=fan,1
 
 Define the expected status if no components are found (default: critical).
 
-
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
@@ -119,6 +118,14 @@ Example: --warning='temperature,.*,40'
 
 Set critical threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,50'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

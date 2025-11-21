@@ -47,7 +47,7 @@ sub custom_select_threshold {
         $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{warning})) {
         $status = 'warning';
     } elsif (defined($self->{result_values}->{config}->{unknown}) && $self->{result_values}->{config}->{unknown} &&
-        $self->{instance_mode}->reval($self->{result_values}->{config}->{unknown})) {
+        $self->{instance_mode}->{safe}->reval($self->{result_values}->{config}->{unknown})) {
         $status = 'unknown';
     }
     if ($@) {

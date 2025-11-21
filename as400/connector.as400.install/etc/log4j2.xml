@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+    <Appenders>
+        <Console name="console" target="System.err">
+            <PatternLayout pattern="[%-20d{dd/MM/yyyy HH:mm:ss}] [%-6p] %m %n"/>
+        </Console>
+
+        <RollingFile name="RollingFile">
+            <FileName>${sys:CONNECTOR_LOG}/connector.log</FileName>
+            <FilePattern>${sys:CONNECTOR_LOG}/connector.%d{yyyy-MM-dd}.log</FilePattern>
+            <PatternLayout>
+                <Pattern>[%-20d{dd/MM/yyyy HH:mm:ss}] [%-6p] %m %n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="5MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.apache.log4j.xml" level="info"/>
+        <Root level="error">
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

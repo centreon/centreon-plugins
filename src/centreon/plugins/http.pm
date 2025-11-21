@@ -23,6 +23,8 @@ package centreon::plugins::http;
 use strict;
 use warnings;
 
+use centreon::plugins::curllogger;
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -39,6 +41,8 @@ sub new {
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
     }
 
+    my $curllogger = centreon::plugins::curllogger->new();
+
     centreon::plugins::misc::mymodule_load(
         output => $options{output},
         module => 'centreon::plugins::backend::http::lwp',
@@ -51,7 +55,7 @@ sub new {
         module => 'centreon::plugins::backend::http::curl',
         error_msg => "Cannot load module 'centreon::plugins::backend::http::curl'."
     );
-    $self->{backend_curl} = centreon::plugins::backend::http::curl->new(%options);
+    $self->{backend_curl} = centreon::plugins::backend::http::curl->new(%options, curl_logger => $curllogger);
 
     $self->{default_backend} = defined($options{default_backend}) && $options{default_backend} ne '' ?
         $options{default_backend} : 'lwp';
@@ -130,7 +134,7 @@ sub check_options {
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
         foreach (@{$options{request}->{header}}) {
-            if (/^(:.+?|.+?):(.*)/) {
+            if (/^(:.+?|.+?):\s*(.*)/) {
                 $options{request}->{headers}->{$1} = $2;
             }
         }
@@ -260,7 +264,7 @@ Proxy URL. Example: http://my.proxy:3128
 
 =item B<--proxypac>
 
-Proxy pac file (can be a URL or a local file).
+Proxy PAC file (can be a URL or a local file).
 
 =item B<--insecure>
 

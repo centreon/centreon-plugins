@@ -1,0 +1,180 @@
+name: check-status
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+      - hotfix-*
+      - release-*
+
+jobs:
+  check-status:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check workflow statuses and display token usage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "current rest api rate usage:"
+          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq .rate
+          echo ""
+          echo ""
+          echo "current graphql rate usage:"
+          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq .resources.graphql
+          echo ""
+          echo ""
+
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+        with:
+          script: |
+            await exec.exec("sleep 20s");
+
+            for (let i = 0; i < 120; i++) {
+              const failure = [];
+              const cancelled = [];
+              const pending = [];
+
+              const result = await github.rest.checks.listSuitesForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "${{ github.head_ref }}"
+              });
+              result.data.check_suites.forEach(({ app: { slug }, conclusion, id}) => {
+                if (slug === 'github-actions') {
+                  if (conclusion === 'failure' || conclusion === 'cancelled') {
+                    failure.push(id);
+                  } else if (conclusion === null) {
+                    pending.push(id);
+                  }
+                  console.log(`check suite ${id} => ${conclusion === null ? 'pending' : conclusion}`);
+                }
+              });
+
+              if (pending.length === 0) {
+                core.setFailed("Cannot get pull request check status");
+                return;
+              }
+
+              if (failure.length > 0) {
+                let failureMessage = '';
+                const failedCheckRuns = [];
+                for await (const suite_id of failure) {
+                  const resultCheckRuns = await github.rest.checks.listForSuite({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    check_suite_id: suite_id
+                  });
+
+                  resultCheckRuns.data.check_runs.forEach(({ conclusion, name, html_url }) => {
+                    if (conclusion === 'failure' || conclusion === 'cancelled') {
+                      failedCheckRuns.push(`<a href="${html_url}">${name} (${conclusion})</a>`);
+                    }
+                  });
+                }
+
+                core.summary.addRaw(`${failedCheckRuns.length} job(s) failed:`, true)
+                core.summary.addList(failedCheckRuns);
+                core.summary.write()
+
+                if (failedCheckRuns.length > 0) {
+                  core.setFailed(`${failedCheckRuns.length} job(s) failed`);
+                  return;
+                }
+              }
+
+              if (pending.length === 1) {
+                core.info("All workflows are ok");
+                return;
+              }
+
+              core.info(`${pending.length} workflows in progress`);
+
+              await exec.exec("sleep 30s");
+            }
+
+            core.setFailed("Timeout: some jobs are still in progress");
+
+  get-environment:
+    if: |
+      contains(fromJSON('["pull_request"]') , github.event_name) &&
+      (startsWith(github.base_ref, 'release-') || startsWith(github.base_ref, 'hotfix-'))
+    uses: ./.github/workflows/get-environment.yml
+
+  check-cherry-pick:
+    needs: [get-environment, check-status]
+    runs-on: ubuntu-24.04
+    if: |
+      contains(fromJSON('["pull_request"]') , github.event_name) &&
+      needs.get-environment.outputs.target_stability == 'testing' &&
+      ! contains(needs.get-environment.outputs.labels, 'skip-cherry-pick')
+
+    steps:
+      - name: Check if the PR is a cherry-pick from dev branch
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          LINKED_DEV_BRANCH: develop
+        with:
+          script: |
+            let linkedPrs = [];
+            let errorMessage = `This pull request is not a cherry-pick from ${process.env.LINKED_DEV_BRANCH} or has no reference to a pull request which has been merged on ${process.env.LINKED_DEV_BRANCH}\n`;
+
+            try {
+              const pull = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number
+              });
+
+              const { title, body } = pull.data;
+
+              [title, body].forEach((text) => {
+                const linkedPrMatches = text.matchAll(/(?:#|\/pull\/)(\d+)/g);
+                if (linkedPrMatches) {
+                  [...linkedPrMatches].forEach((match) => {
+                    linkedPrs.push(Number(match[1]));
+                  });
+                }
+              });
+
+              // remove duplicates
+              linkedPrs = [...new Set(linkedPrs)];
+              console.log(`Linked pull requests found in PR title and body: ${linkedPrs.join(', ')}`);
+            } catch (e) {
+              throw new Error(`Failed to get information of pull request #${context.issue.number}: ${e}`);
+            }
+
+            for await (const prNumber of linkedPrs) {
+              try {
+                const pull = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber
+                });
+
+                if (pull.data.base.ref === process.env.LINKED_DEV_BRANCH) {
+                  if (pull.data.state === 'closed' && pull.data.merged === true) {
+                    console.log(`This pull request is a cherry-pick from pull request #${prNumber} on ${process.env.LINKED_DEV_BRANCH}`);
+                    return;
+                  } else {
+                    errorMessage += `This pull request seems to be a cherry-pick from pull request #${prNumber} on ${process.env.LINKED_DEV_BRANCH} but it is not merged yet\n`;
+                  }
+                } else {
+                  errorMessage += `Pull request #${prNumber} is linked to ${pull.data.base.ref} instead of ${process.env.LINKED_DEV_BRANCH}\n`;
+                }
+              } catch (e) {
+                errorMessage += `Failed to get information on pull request #${prNumber}: ${e}\n`;
+              }
+            }
+
+            errorMessage += `\nIf you are sure this PR does not need to be a cherry-pick from ${process.env.LINKED_DEV_BRANCH} or must be merged urgently, `;
+            errorMessage += `open the pull request on ${process.env.LINKED_DEV_BRANCH} and add label "skip-cherry-pick" to the PR and re-run all jobs of workflow check-status\n`;
+
+            throw new Error(errorMessage);

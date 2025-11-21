@@ -1,0 +1,138 @@
+{
+  "uuid": "20ecec1e-2ec6-4d60-ae84-3332b89316f8",
+  "lastMigration": 33,
+  "name": "Health array",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3013,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "f43bc2a6-68f8-467e-b9ab-76ca368a43c3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/monitor/firewall/health/select/",
+      "responses": [
+        {
+          "uuid": "932e27d9-c3af-4583-b2bb-73d5436e65b6",
+          "body": "[\n{\n  \"name\" : \"health\",\n  \"vdom\" : \"root1\",\n  \"action\" : \"select\",\n  \"version\" : \"v7.4.7\",\n  \"serial\" : \"abcdefgh12345\",\n  \"build\" : 2732,\n  \"path\" : \"firewall\",\n  \"status\" : \"success\"\n}\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "array",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8120b558-27d1-4e33-8235-4618ec59d1e9",
+          "body": "{\n  \"name\" : \"health\",\n  \"vdom\" : \"root1\",\n  \"action\" : \"select\",\n  \"version\" : \"v7.4.7\",\n  \"serial\" : \"abcdefgh12345\",\n  \"build\" : 2732,\n  \"path\" : \"firewall\",\n  \"status\" : \"success\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "hash",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": "SEQUENTIAL",
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "f43bc2a6-68f8-467e-b9ab-76ca368a43c3"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

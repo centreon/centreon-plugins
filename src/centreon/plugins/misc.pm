@@ -24,10 +24,26 @@ use strict;
 use warnings;
 use utf8;
 use JSON::XS;
+use Safe;
+use Encode;
+
+use Exporter 'import';
+use feature 'state';
+
+our @EXPORT_OK = qw/change_seconds
+                    flatten_arrays
+                    flatten_to_hash
+                    graphql_escape
+                    is_empty
+                    is_excluded
+                    json_encode
+                    json_decode
+                    slurp_file
+                    value_of/;
 
 sub execute {
     my (%options) = @_;
-    
+
     if ($^O eq 'MSWin32') {
         return windows_execute(%options, timeout => $options{options}->{timeout});
     } else {
@@ -74,7 +90,7 @@ sub windows_execute {
     my $ein = '';
     vec($ein, fileno(FROM_CHILD), 1) = 1;
     $job->watch(
-        sub {            
+        sub {
             my ($buffer);
             my $time = $options{timeout};
             my $last_time = Time::HiRes::time();
@@ -88,7 +104,7 @@ sub windows_execute {
                     last;
                 }
                 $options{timeout} -= Time::HiRes::time() - $last_time;
-                last if ($options{timeout} <= 0);         
+                last if ($options{timeout} <= 0);
                 $last_time = Time::HiRes::time();
             }
             return 1 if ($ended == 0);
@@ -98,14 +114,14 @@ sub windows_execute {
     );
 
     $result = $job->status;
-    close FROM_CHILD;    
+    close FROM_CHILD;
 
     if ($ended == 0) {
         $options{output}->add_option_msg(short_msg => 'Command too long to execute (timeout)...');
         $options{output}->option_exit();
     }
     chomp $stdout;
-    
+
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
         return ($stdout, $result->{$pid}->{exitcode});
     }
@@ -132,7 +148,7 @@ sub unix_execute {
 
     # Build command line
     # Can choose which command is done remotely (can filter and use local file)
-    if (defined($options{options}->{remote}) && 
+    if (defined($options{options}->{remote}) &&
         ($options{options}->{remote} eq '' || !defined($options{label}) || $options{label} =~ /$options{options}->{remote}/)) {
         my $sub_cmd;
 
@@ -150,6 +166,15 @@ sub unix_execute {
             push @$args, $options{options}->{ssh_address};
         } else {
             push @$args, $options{options}->{hostname};
+        }
+
+        if (defined($options{options}->{ssh_option_eol})) {
+            foreach (@{$options{options}->{ssh_option_eol}}) {
+                if (/^(.*?)(?:=(.*))?$/) {
+                    push @$args, $1 if (defined($1));
+                    push @$args, $2 if (defined($2));
+                }
+            }
         }
 
         $sub_cmd = 'sudo ' if (defined($options{sudo}));
@@ -177,18 +202,30 @@ sub unix_execute {
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
-        $cmd .= $options{command} . ' ' if (defined($options{command}));
-        $cmd .= $options{command_options} if (defined($options{command_options}));
+        $cmd .= $options{command} if (defined($options{command}));
+        $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
 
-        ($lerror, $stdout, $exit_code) = backtick(
-            command => $cmd,
-            timeout => $options{options}->{timeout},
-            wait_exit => $wait_exit,
-            redirect_stderr => $redirect_stderr
-        );
+        if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
+            my @args = split(' ',$cmd);
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $args[0],
+                arguments       => [@args[1.. $#args]],
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
+        else {
+            ($lerror, $stdout, $exit_code) = backtick(
+                command         => $cmd,
+                timeout         => $options{options}->{timeout},
+                wait_exit       => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
+        }
     }
 
-    if (defined($options{options}->{show_output}) && 
+    if (defined($options{options}->{show_output}) &&
         ($options{options}->{show_output} eq '' || (defined($options{label}) && $options{label} eq $options{options}->{show_output}))) {
         print $stdout;
         exit $exit_code;
@@ -262,7 +299,7 @@ sub backtick {
     }
 
     if ($pid) {
-        
+
         eval {
            local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
            alarm( $arg{timeout} );
@@ -319,9 +356,30 @@ sub is_empty {
     return 0;
 }
 
+# Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+# The returned value will never be undef.
+# I.g:  value_of($hash, '->{key}->{subkey}', 'default')
+#       value_of($array, '->[0]', 'default')
+#       value_of($complex, '->{key}->[0]->{subkey}', 'default')
+sub value_of($$;$) {
+    my ($variable, $expression, $default) = @_;
+    $default //= '';
+
+    return $default unless defined $variable;
+
+    state $safe = do { my $s = Safe->new();
+                       $s->share('$v');
+                       $s;
+                     };
+    our $v = $variable;
+    my $value = $safe->reval("\$v$expression", 1);
+
+    return defined $value ? $value : $default;
+}
+
 sub trim {
     my ($value) = $_[0];
-    
+
     # Sometimes there is a null character
     $value =~ s/\x00$//;
     $value =~ s/^[ \t\n]+//;
@@ -345,15 +403,43 @@ sub powershell_escape {
     return $value;
 }
 
+sub graphql_escape($) {
+    my ($value) = $_[0];
+    $value =~ s/"/\\"/g;
+    return $value;
+}
+
+# Returns an array from arrays containing values separated by $separator
+sub flatten_arrays($;$) {
+    my ($array_of_values, $separator) = @_;
+    $separator //= ',';
+
+    return [ ] unless ref $array_of_values eq 'ARRAY';
+
+    return [ map { split $separator } @{$array_of_values} ];
+}
+
+# Returns an hash from arrays containing values separated by $separator
+# Values are set to $default (1 if not defined)
+sub flatten_to_hash($;$;$) {
+    my ($array_of_values, $separator, $default) = @_;
+    $separator //= ',';
+    $default //= 1;
+
+    return { } unless ref $array_of_values eq 'ARRAY';
+
+    return { map { $_ => $default } map { split $separator } @{$array_of_values} };
+}
+
 sub minimal_version {
     my ($version_src, $version_dst) = @_;
-        
+
     # No Version. We skip   
-    if (!defined($version_src) || !defined($version_dst) || 
+    if (!defined($version_src) || !defined($version_dst) ||
         $version_src !~ /^[0-9]+(?:\.[0-9\.]+)*$/ || $version_dst !~ /^[0-9x]+(?:\.[0-9x]+)*$/) {
         return 1;
     }
-  
+
     my @version_src = split /\./, $version_src;
     my @versions = split /\./, $version_dst;
     for (my $i = 0; $i < scalar(@versions); $i++) {
@@ -364,7 +450,7 @@ sub minimal_version {
         return 0 if ($versions[$i] > int($1));
         return 1 if ($versions[$i] < int($1));
     }
-    
+
     return 1;
 }
 
@@ -386,7 +472,7 @@ sub change_seconds {
         $sign = '-';
         $options{value} = abs($options{value});
     }
-    
+
     foreach (@$periods) {
         next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($options{value} / $_->{value});
@@ -406,7 +492,7 @@ sub change_seconds {
 
 sub scale_bytesbit {
     my (%options) = @_;
-    
+
     my $base = 1024;
     if (defined($options{dst_unit}) && defined($options{src_unit})) {
         $options{value} *= 8 if ($options{dst_unit} =~ /b/ && $options{src_unit} =~ /B/);
@@ -415,7 +501,7 @@ sub scale_bytesbit {
             $base = 1000;
         }
     }
-        
+
     my %expo = ('' => 0, k => 1, m => 2, g => 3, t => 4, p => 5, e => 6);
     my ($src_expo, $dst_expo) = (0, 0);
     $src_expo = $expo{lc($options{src_quantity})} if (defined($options{src_quantity}) && $options{src_quantity} =~ /[kmgtpe]/i);
@@ -436,7 +522,7 @@ sub scale_bytesbit {
             $options{value} = $options{value} * ($base ** (($dst_expo - $src_expo) * -1));
         }
     }
-    
+
     return $options{value};
 }
 
@@ -450,8 +536,8 @@ sub convert_bytes {
         $value = $1;
         $unit = $2;
     }
-    
-    my $base = defined($options{network}) ? 1000 : 1024;    
+
+    my $base = defined($options{network}) ? 1000 : 1024;
     if ($unit =~ /([kmgtp])i?b/i) {
         $value = $value * ($base ** $expo{lc($1)});
     }
@@ -499,7 +585,7 @@ sub parse_threshold {
     my $perf = trim($options{threshold});
     my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => '', end => '' };
 
-    my $global_status = 1;    
+    my $global_status = 1;
     if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?(?:[KMGTPE][bB])?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?(?:[KMGTPE][bB])?)?$/) {
         $perf_result->{start} = $2 if (defined($2));
         $perf_result->{end} = $3 if (defined($3));
@@ -524,10 +610,10 @@ sub parse_threshold {
             $perf_result->{end} = 1e500;
             $perf_result->{infinite_pos} = 1;
         }
-        $perf_result->{start} = 0 if ($perf_result->{start} eq '');      
+        $perf_result->{start} = 0 if ($perf_result->{start} eq '');
         $perf_result->{start} =~ s/,/\./;
         $perf_result->{end} =~ s/,/\./;
-        
+
         if ($perf_result->{start} eq '~') {
             $perf_result->{start} = -1e500;
             $perf_result->{infinite_neg} = 1;
@@ -542,9 +628,9 @@ sub parse_threshold {
 sub get_threshold_litteral {
     my (%options) = @_;
 
-    my $perf_output = ($options{arobase} == 1 ? '@' : '') . 
-        (($options{infinite_neg} == 0) ? $options{start} : '~') . 
-        ':' . 
+    my $perf_output = ($options{arobase} == 1 ? '@' : '') .
+        (($options{infinite_neg} == 0) ? $options{start} : '~') .
+        ':' .
         (($options{infinite_pos} == 0) ? $options{end} : '');
     return $perf_output;
 }
@@ -581,7 +667,7 @@ sub eval_ssl_options {
 
     my $ssl_context = {};
     return $ssl_context if (!defined($options{ssl_opt}));
-    
+
     my ($rv) = centreon::plugins::misc::mymodule_load(
         output => $options{output}, module => 'Safe',
         no_quit => 1
@@ -603,7 +689,7 @@ sub eval_ssl_options {
             'SSL_OCSP_NO_STAPLE', 'SSL_OCSP_MUST_STAPLE', 'SSL_OCSP_FAIL_HARD', 'SSL_OCSP_FULL_CHAIN', 'SSL_OCSP_TRY_STAPLE'
         ]);
     }
-    
+
     foreach (@{$options{ssl_opt}}) {
         if (/(SSL_[A-Za-z_]+)\s+=>\s*(\S+)/) {
             my ($label, $eval) = ($1, $2);
@@ -745,6 +831,749 @@ sub check_security_whitelist {
     return 0;
 }
 
+sub json_decode {
+    my ($content, %options) = @_;
+
+    $content =~ s/\r//mg;
+
+    $content = decode('UTF-8', $content, Encode::FB_DEFAULT);
+
+    my $decoder = JSON::XS->new;
+
+    # this option
+    if ($options{booleans_as_strings}) {
+        # boolean_values() is not available on old versions of JSON::XS (Alma 8 still provides v3.04)
+        if (JSON::XS->can('boolean_values')) {
+            $decoder = $decoder->boolean_values("false", "true");
+        } else {
+            # if boolean_values is not available, perform a dirty substitution of booleans
+            $content =~ s/"(\w+)"\s*:\s*(true|false)(\s*,?)/"$1": "$2"$3/gm;
+        }
+    }
+
+    my $object = eval { $decoder->decode($content) };
+
+    if ($@) {
+        # To keep compatibilty with old json_decode:
+        # If 'output' not set, print error on STDERR unless 'silence' is set
+        # Otherwise print error on 'output' and exit unless 'no_exit' is set
+        my $msg = $options{errstr} // "Cannot decode JSON string: $@";
+
+        if ($options{output}) {
+            $options{output}->option_exit(short_msg => $msg)
+                unless $options{no_exit};
+
+            $options{output}->output_add(long_msg => $msg, debug => 1);
+        } else {
+            warn "$msg\n" unless $options{silence};
+        }
+
+        return undef;
+    }
+
+    return $object;
+}
+
+sub json_encode {
+    my ($object, %options) = @_;
+
+    $object =~ s/\r//mg;
+    my $encoded;
+    eval {
+        $encoded = JSON::XS->new->utf8->canonical->encode($object);
+    };
+
+    if ($@) {
+        # To keep compatibilty with old json_encode:
+        # If 'output' not set, print error on STDERR unless 'silence' is set
+        # Otherwise print error on 'output' and exit unless 'no_exit' is set
+        my $msg = $options{errstr} // "Cannot encode object to JSON. Error message: $@";
+
+        if ($options{output}) {
+            $options{output}->option_exit(short_msg => $msg)
+                unless $options{no_exit};
+
+            $options{output}->output_add(long_msg => $msg, debug => 1);
+        } else {
+            warn "$msg\n" unless $options{silence};
+        }
+
+        return undef;
+    }
+
+    return $encoded;
+}
+
+sub is_local_ip($) {
+    my ($ip) = @_;
+
+    return 0 unless $ip;
+
+    return 1 if $ip =~ /^127\./;
+    return 1 if $ip =~ /^10\./;
+    return 1 if $ip =~ /^192\.168\./;
+    return 1 if $ip =~ /^172\.(1[6-9]|2[0-9]|3[0-1])\./;
+    return 1 if $ip =~ /^169\.254\./;
+    return 1 if $ip eq '0.0.0.0';
+
+    return 0;
+}
+
+# This function is used with "sort", it sorts an array of IP addresses.
+# $_[0] and $_[1] correspond to Perl's special variables $a and $b used by sort.
+# I can't use $a and $b directly here, otherwise Perl generates a warning: "uninitialized value".
+sub sort_ips($$) {
+    my @a = split /\./, $_[0];
+    my @b = split /\./, $_[1];
+    return $a[0] <=> $b[0] || $a[1] <=> $b[1] || $a[2] <=> $b[2] || $a[3] <=> $b[3]
+}
+
+# function to assess if a string has to be excluded given an include regexp and an exclude regexp
+sub is_excluded {
+    my ($string, $include_regexp, $exclude_regexp) = @_;
+    return 1 unless defined($string);
+    return 1 if (defined($exclude_regexp) && $exclude_regexp ne '' && $string =~ /$exclude_regexp/);
+    return 0 if (!defined($include_regexp) || $include_regexp eq '' || $string =~ /$include_regexp/);
+
+    return 1;
+}
+
 1;
 
 __END__
+
+=head1 NAME
+
+centreon::plugins::misc - A collection of miscellaneous utility functions for Centreon plugins.
+
+=head1 SYNOPSIS
+
+    use centreon::plugins::misc;
+
+    my $result = centreon::plugins::misc::execute(
+        command => 'ls',
+        command_options => '-l'
+    );
+
+=head1 DESCRIPTION
+
+The `centreon::plugins::misc` module provides a variety of utility functions that can be used in Centreon plugins. These functions include command execution, string manipulation, file handling, and more.
+
+=head1 METHODS
+
+=head2 execute
+
+    my $result = centreon::plugins::misc::execute(%options);
+
+Executes a command and returns the result.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<command_options> - Options for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 windows_execute
+
+    my ($stdout, $exit_code) = centreon::plugins::misc::windows_execute(%options);
+
+Executes a command on Windows and returns the output and exit code.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<command_options> - Options for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 unix_execute
+
+    my $stdout = centreon::plugins::misc::unix_execute(%options);
+
+Executes a command on Unix and returns the output.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<command_options> - Options for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=item * C<wait_exit> - bool.
+
+=item * C<redirect_stderr> - bool.
+
+=item * C<sudo> - bool prepend sudo to the command executed.
+
+=item * C<no_shell_interpretation> - bool don't use sh interpolation on command executed
+
+
+=back
+
+=back
+
+=head2 mymodule_load
+
+    my $result = centreon::plugins::misc::mymodule_load(%options);
+
+Loads a Perl module dynamically.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<module> - The module to load.
+
+=item * C<error_msg> - Error message to display if the module cannot be loaded.
+
+=back
+
+=back
+
+=head2 backtick
+
+    my ($status, $output, $exit_code) = centreon::plugins::misc::backtick(%options);
+
+Executes a command using backticks and returns the status, output, and exit code.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to execute.
+
+=item * C<arguments> - Arguments for the command.
+
+=item * C<timeout> - Timeout for the command execution.
+
+=back
+
+=back
+
+=head2 is_empty
+
+    my $is_empty = centreon::plugins::misc::is_empty($value);
+
+Checks if a value is empty.
+
+=over 4
+
+=item * C<$value> - The value to check.
+
+=back
+
+=head2 value_of
+
+    my $value = centreon::plugins::misc::value_of($variable, $expression, $default);
+
+Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
+
+=over 4
+
+=item * C<$value> - The return value.
+
+=item * C<$expression> - The expression to test.
+
+=item * C<$default> - The default value to return if expression is not defined (optional).
+
+=back
+
+=head2 trim
+
+    my $trimmed_value = centreon::plugins::misc::trim($value);
+
+Trims whitespace from a string.
+
+=over 4
+
+=item * C<$value> - The string to trim.
+
+=back
+
+=head2 powershell_encoded
+
+    my $encoded = centreon::plugins::misc::powershell_encoded($value);
+
+Encodes a string for use in PowerShell.
+
+=over 4
+
+=item * C<$value> - The string to encode.
+
+=back
+
+=head2 powershell_escape
+
+    my $escaped = centreon::plugins::misc::powershell_escape($value);
+
+Escapes special characters in a string for use in PowerShell.
+
+=over 4
+
+=item * C<$value> - The string to escape.
+
+=back
+
+=head2 graphql_escape
+
+    my $escaped = centreon::plugins::misc::graphql_escape($value);
+
+Escapes special characters in a string for use in GraphQL query.
+
+=over 4
+
+=item * C<$value> - The string to escape.
+
+=back
+
+=head2 flatten_arrays
+
+    my $array = centreon::plugins::misc::flatten_arrays($arrays, $separator);
+
+Returns an array from arrays containing values separated by a separator ( default comma ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
+
+=back
+
+=head2 flatten_to_hash
+
+    my $hash = centreon::plugins::misc::flatten_to_hash($arrays, $separator, $default);
+
+Returns a hash from arrays containing values separated by a separator ( default comma ). Values are set to optional parameter $default ( 1 if undef ).
+
+=over 4
+
+=item * C<$arrays> - Arrays to expand.
+
+=item * C<$separator> - Separator ( comma if undef ).
+
+=item * C<$default> - Default value ( 1 if undef ).
+
+=back
+
+=head2 minimal_version
+
+    my $is_minimal = centreon::plugins::misc::minimal_version($version_src, $version_dst);
+
+Checks if a version is at least a specified version.
+
+=over 4
+
+=item * C<$version_src> - The source version.
+
+=item * C<$version_dst> - The destination version.
+
+=back
+
+=head2 change_seconds
+
+    my $formatted_time = centreon::plugins::misc::change_seconds(%options);
+
+Converts seconds into a human-readable format.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The number of seconds.
+
+=item * C<start> - The starting unit.
+
+=back
+
+=back
+
+=head2 scale_bytesbit
+
+    my $scaled_value = centreon::plugins::misc::scale_bytesbit(%options);
+
+Scales a value between bytes and bits.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to scale.
+
+=item * C<src_unit> - The source unit.
+
+=item * C<dst_unit> - The destination unit.
+
+=back
+
+=back
+
+=head2 convert_bytes
+
+    my $bytes = centreon::plugins::misc::convert_bytes(%options);
+
+Converts a value to bytes.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to convert.
+
+=item * C<unit> - The unit of the value.
+
+=back
+
+=back
+
+=head2 convert_fahrenheit
+
+    my $celsius = centreon::plugins::misc::convert_fahrenheit(%options);
+
+Converts a temperature from Fahrenheit to Celsius.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The temperature in Fahrenheit.
+
+=back
+
+=back
+
+=head2 expand_exponential
+
+    my $expanded = centreon::plugins::misc::expand_exponential(%options);
+
+Expands an exponential value to its full form.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The exponential value.
+
+=back
+
+=back
+
+=head2 alert_triggered
+
+    my $is_triggered = centreon::plugins::misc::alert_triggered(%options);
+
+Checks if an alert is triggered based on thresholds.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to check.
+
+=item * C<warning> - The warning threshold.
+
+=item * C<critical> - The critical threshold.
+
+=back
+
+=back
+
+=head2 parse_threshold
+
+    my ($status, $threshold) = centreon::plugins::misc::parse_threshold(%options);
+
+Parses a threshold string.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<threshold> - The threshold string.
+
+=back
+
+=back
+
+=head2 get_threshold_litteral
+
+    my $threshold_str = centreon::plugins::misc::get_threshold_litteral(%options);
+
+Returns the literal representation of a threshold.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<arobase> - Indicates if the threshold is inclusive.
+
+=item * C<start> - The start of the threshold.
+
+=item * C<end> - The end of the threshold.
+
+=back
+
+=back
+
+=head2 set_timezone
+
+    my $timezone = centreon::plugins::misc::set_timezone(%options);
+
+Sets the timezone.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<name> - The name of the timezone.
+
+=back
+
+=back
+
+=head2 uniq
+
+    my @unique = centreon::plugins::misc::uniq(@values);
+
+Returns a list of unique values.
+
+=over 4
+
+=item * C<@values> - The list of values.
+
+=back
+
+=head2 eval_ssl_options
+
+    my $ssl_context = centreon::plugins::misc::eval_ssl_options(%options);
+
+Evaluates SSL options.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<ssl_opt> - The SSL options.
+
+=back
+
+=back
+
+=head2 slurp_file
+
+    my $content = centreon::plugins::misc::slurp_file(%options);
+
+Reads the content of a file.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<file> - The file to read.
+
+=back
+
+=back
+
+=head2 sanitize_command_param
+
+    my $sanitized = centreon::plugins::misc::sanitize_command_param(%options);
+
+Sanitizes a command parameter.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<value> - The value to sanitize.
+
+=back
+
+=back
+
+=head2 check_security_command
+
+    my $status = centreon::plugins::misc::check_security_command(%options);
+
+Checks the security of a command.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to check.
+
+=item * C<command_options> - Options for the command.
+
+=back
+
+=back
+
+=head2 check_security_whitelist
+
+    my $status = centreon::plugins::misc::check_security_whitelist(%options);
+
+Checks if a command is in the security whitelist.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<command> - The command to check.
+
+=item * C<command_options> - Options for the command.
+
+=back
+
+=back
+
+=head2 json_decode
+
+    my $decoded = centreon::plugins::misc::json_decode($content, %options);
+
+Decodes a JSON string.
+
+=over 4
+
+=item * C<$content> - The JSON string to decode and transform into an object.
+
+=item * C<%options> - Options passed to the function.
+
+=over 4
+
+=item * C<booleans_as_strings> - Defines whether booleans must be converted to C<true>/C<false> strings instead of
+JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
+
+=item * C<errstr> - Custom error message to display if JSON string cannot be decoded.
+
+=item * C<output> - Output object to use for displaying errors.
+
+=item * C<no_exit> - Do not exit if there is an error and C<output> is defined.
+
+=item * C<silence> - Do not print error on STDERR if C<output> is not defined.
+
+=back
+
+=back
+
+=head2 json_encode
+
+    my $encoded = centreon::plugins::misc::json_encode($object);
+
+Encodes an object to a JSON string.
+
+=over 4
+
+=item * C<$object> - The object to encode.
+
+=back
+
+=head2 is_local_ip
+
+    my $is_local = centreon::plugins::misc::is_local_ip($ip);
+
+Returns 1 if an IPv4 IP is within a local address range.
+
+=over 4
+
+=item * C<$ip> - IP to test.
+
+=back
+
+=head2 sort_ips
+
+    my @array = ( '192.168.0.3', '127.0.0.1' );
+    @array = sort centreon::plugins::misc::sort_ips @array;
+
+Returns a sorted array.
+
+=over 4
+
+=item * C<@array> - An array containing IPs to be sorted.
+
+=back
+
+=head2 is_excluded
+
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+
+Determines whether a string should be excluded based on include and exclude regular expressions.
+
+=over 4
+
+=item * C<$string> - The string to evaluate. If undefined, the function returns 1 (excluded).
+
+=item * C<$include_regexp> - A regular expression to include the string.
+
+=item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
+
+=back
+
+Returns 1 if the string is excluded, 0 if it is included.
+The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
+not match the string. The string will also be excluded if it is undefined.
+
+=head1 AUTHOR
+
+Centreon
+
+=head1 LICENSE
+
+Licensed under the Apache License, Version 2.0.
+
+=cut

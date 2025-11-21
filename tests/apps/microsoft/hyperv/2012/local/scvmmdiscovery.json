@@ -1,0 +1,25 @@
+[
+    {
+        "description":"description",
+        "type":"vm",
+        "computerName":"computer1.centreon.local",
+        "vmId":"VM-123",
+        "ipv4Addresses":"10.0.0.1",
+        "name":"Computer1",
+        "hostGroupPath":"Hostgroup1",
+        "tag":"(aucun)",
+        "vmHostId":"DEF-456",
+        "status":0,
+        "operatingSystem":"Windows Server 2022 Standard",
+        "enabled":true
+    },
+    {
+        "description":"description",
+        "type":"host",
+        "clusterName":"cluster.centreon.local",
+        "id":"CL-456",
+        "name": "host.centreon.local",
+        "fqdn":"host.centreon.local",
+        "operatingSystem":"Windows Server 2022 Standard"
+    }
+]

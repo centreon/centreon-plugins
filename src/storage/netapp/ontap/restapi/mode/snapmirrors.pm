@@ -76,7 +76,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snapmirrors = $options{custom}->request_api(endpoint => '/api/snapmirror/relationships?fields=*');
+    my $snapmirrors = $options{custom}->request_api(endpoint => '/api/snapmirror/relationships?fields=source,destination,healthy,state,transfer');
 
     $self->{snapmirrors} = {};
     foreach (@{$snapmirrors->{records}}) {
@@ -89,7 +89,7 @@ sub manage_selection {
 
         $self->{snapmirrors}->{$name} = {
             display => $name,
-            healthy => $_->{healthy} =~ /true|1/i ? 'true' : 'false',
+            healthy => (defined($_->{healthy}) && $_->{healthy} =~ /true|1/i) ? 'true' : 'false',
             state => $_->{state},
             transfer_state => defined($_->{transfer}->{state}) ? $_->{transfer}->{state} : 'n/a'
         };
@@ -107,13 +107,13 @@ __END__
 
 =head1 MODE
 
-Check snapmirrors.
+Check SnapMirrors.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter snapmirror name (can be a regexp).
+Filter SnapMirror name (can be a regexp).
 
 =item B<--unknown-status>
 

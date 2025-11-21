@@ -1,0 +1,233 @@
+name: "package-delivery"
+description: "Deliver packages"
+inputs:
+  module_name:
+    description: "The package module name"
+    required: true
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  arch:
+    description: "The target distribution architecture"
+    required: false
+  cache_key:
+    description: "The cached package key"
+    required: true
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+  release_type:
+    description: "Type of release (hotfix, release)"
+    required: true
+  artifactory_token:
+    description: "token for artifactory"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        script: |
+          if ('${{ inputs.module_name }}' === '') {
+            throw new Error('module_name input must be defined');
+          }
+
+          if (! ['stable', 'testing', 'unstable'].includes('${{ inputs.stability }}')) {
+            throw new Error(`Stability ${{ inputs.stability }} should not deliver packages`);
+          }
+
+          if ('${{ inputs.stability }}' === 'testing' && ! ['release', 'hotfix'].includes('${{ inputs.release_type }}')) {
+            throw new Error('release_type input must be defined when stability is testing');
+          }
+
+    - name: Parse distrib name
+      id: parse-distrib
+      uses: ./.github/actions/parse-distrib
+      with:
+        distrib: ${{ inputs.distrib }}
+
+    - name: Get repository stability path
+      id: get_repository_stability_path
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        script: |
+          let stabilitySubdirectory = '${{ inputs.stability }}';
+
+          if ('${{ inputs.stability }}' === 'testing' && '${{ inputs.release_type }}' === 'hotfix') {
+            stabilitySubdirectory = '${{ inputs.stability }}-${{ inputs.release_type }}';
+          }
+
+          let repositoryStabilityPath = '';
+          if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
+            repositoryStabilityPath = `rpm-plugins/${{ inputs.distrib }}/${stabilitySubdirectory}`;
+          } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
+            repositoryStabilityPath = `ubuntu-plugins-${{ inputs.stability }}`;
+          } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
+            repositoryStabilityPath = `apt-plugins-${{ inputs.stability }}`;
+          } else {
+            throw new Error(`Repository cannot be find for distribution: ${{ inputs.distrib }}`);
+          }
+
+          core.setOutput(
+            'repository_stability_path',
+            repositoryStabilityPath,
+          );
+
+    - if: ${{ inputs.stability != 'stable' }}
+      name: Restore packages from cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ./*.${{ steps.parse-distrib.outputs.package_extension }}
+        key: ${{ inputs.cache_key }}
+        fail-on-cache-miss: true
+
+    - uses: jfrog/setup-jfrog-cli@9fe0f98bd45b19e6e931d457f4e98f8f84461fb5 # v4.4.1
+      with:
+        disable-job-summary: true
+        disable-auto-build-publish: true
+      env:
+        JF_URL: https://centreon.jfrog.io
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+
+    - if: ${{ inputs.stability == 'testing' }}
+      name: Clean existing testing packages
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        script: |
+          if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
+            await exec.exec(
+              `jf rt del "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/*/${{ inputs.module_name }}/*.rpm" --exclusions "*/RPMS/*" --quiet`
+            );
+          } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
+            await exec.exec(
+              `jf rt del "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --quiet --props "release_type=${{ inputs.release_type }}"`
+            );
+          }
+
+    - name: Download packages from testing
+      if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      with:
+        script: |
+          const commitSha = context.sha;
+
+          const pulls = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            sort: 'updated',
+            direction: 'desc',
+            state: 'closed',
+            per_page: 100
+          });
+
+          core.startGroup(`Checking pull request linked to commit ${commitSha}`);
+          const pr = pulls.data.find(p => {
+            console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
+            return p.merge_commit_sha === commitSha;
+          });
+          core.endGroup();
+          if (!pr) {
+            core.error(`No pull request found for merge commit ${commitSha}`);
+            return;
+          }
+
+          const prHeadRef = pr?.head?.ref || 'unknown';
+          let releaseType = '';
+          switch (true) {
+            case /^release.+/.test(prHeadRef):
+              releaseType = 'release';
+              break;
+            case /^hotfix.+/.test(prHeadRef):
+              releaseType = 'hotfix';
+              break;
+            default:
+              core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
+              return;
+          }
+          console.log(`Release type: ${releaseType}`);
+
+          let fromStabilitySubdirectory = 'testing';
+          if (releaseType === 'hotfix' ) {
+            fromStabilitySubdirectory = `testing-${releaseType}`;
+          }
+
+          if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
+            await exec.exec(
+              `jf rt download "rpm-plugins/${{ inputs.distrib }}/${fromStabilitySubdirectory}/*/${{ inputs.module_name }}/*.rpm" --flat`
+            );
+          } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'ubuntu') {
+            await exec.exec(
+              `jf rt download "ubuntu-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
+            );
+          } else if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'debian') {
+            await exec.exec(
+              `jf rt download "apt-plugins-testing/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --props "release_type=${releaseType}" --flat`
+            );
+          }
+
+    - name: Publish packages to ${{ inputs.stability }}
+      if: |
+        contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
+        (inputs.stability == 'stable' && github.event_name == 'push')
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        JF_URL: https://packages.centreon.com
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+      with:
+        script: |
+          const path = require('path');
+          const globber = await glob.create('*.${{ steps.parse-distrib.outputs.package_extension }}');
+
+          let stableRpmSubdirectory = '';
+          if ('${{ inputs.stability }}' === 'stable') {
+            stableRpmSubdirectory = 'RPMS/';
+          }
+
+          const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
+
+          let rpmReindexPaths = [];
+          let debReindexPaths = [];
+          for await (const file of globber.globGenerator()) {
+            const fileName = path.basename(file);
+
+            if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'rpm') {
+              let arch = 'noarch';
+              if (/x86_64/.test(fileName)) {
+                arch = 'x86_64';
+              }
+              rpmReindexPaths.push(`${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}`);
+              await exec.exec(
+                `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${stableRpmSubdirectory}${{ inputs.module_name }}/" --flat`
+              );
+            } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
+              let arch = 'all';
+              const matches = fileName.match(/_([^_]+)\.deb/);
+              if (matches !== null && matches.length > 1) {
+                arch = matches[1];
+              }
+              if ('${{ inputs.arch }}' === '' || '${{ inputs.arch }}' === arch) {
+                await exec.exec(
+                  `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
+                );
+                debReindexPaths.push(`${{ steps.get_repository_stability_path.outputs.repository_stability_path }}`.split('/')[0]);
+              }
+            }
+          }
+
+          rpmReindexPaths = [...new Set(rpmReindexPaths)];
+          for (const rpmReindexPath of rpmReindexPaths) {
+            const rootRepoPath = rpmReindexPath.split('/')[0];
+            const repoPath = rpmReindexPath.split('/').slice(1).join('/');
+            await exec.exec(
+              `curl -H "Authorization: Bearer ${{ env.JF_ACCESS_TOKEN }}" -X POST "${{ env.JF_URL }}/artifactory/api/yum/${rootRepoPath}?path=/${repoPath}&async=1"`
+            );
+          }
+
+          debReindexPaths = [...new Set(debReindexPaths)];
+          for (const debReindexPath of debReindexPaths) {
+            await exec.exec(
+              `curl -H "Authorization: Bearer ${{ env.JF_ACCESS_TOKEN }}" -X POST "${{ env.JF_URL }}/artifactory/api/deb/reindex/${debReindexPath}?async=1"`
+            );
+          }

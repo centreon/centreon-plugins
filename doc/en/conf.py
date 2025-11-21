@@ -30,10 +30,7 @@ on_centreon_rtd = os.environ.get('CENTREON_RTD', None) == 'True'
 extensions = ['sphinx.ext.todo', 'sphinx.ext.intersphinx']
 
 intersphinx_mapping = {
-	'centreon-engine': ('http://documentation.centreon.com/docs/centreon-engine/en/latest', None),
-	'centreon-broker': ('http://documentation.centreon.com/docs/centreon-broker/en/latest', None),
-	'centreon-clib': ('http://documentation.centreon.com/docs/centreon-clib/en/latest', None),
-        'ces': ('http://documentation.centreon.com/docs/centreon-enterprise-server/en/latest', None),
+	'centreon-documentation': ('https://docs.centreon.com/', None),
 	}
 
 # Add any paths that contain templates here, relative to this directory.

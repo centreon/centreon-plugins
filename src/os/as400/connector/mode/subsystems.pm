@@ -121,11 +121,25 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-subsystem-name:s'    => { name => 'filter_subsystem_name' },
-        'filter-subsystem-library:s' => { name => 'filter_subsystem_library' }
+        'include-subsystem-name:s'    => { name => 'include_subsystem_name' },
+        'filter-subsystem-name:s'     => { redirect => 'include_subsystem_name' },
+        'include-subsystem-library:s' => { name => 'include_subsystem_library' },
+        'filter-subsystem-library:s'  => { redirect => 'include_subsystem_library' }
     });
     
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{uuid} = '';
+    foreach ('filter_counters', 'include_subsystem_name', 'include_subsystem_library') {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
+            $self->{uuid} .= $self->{option_results}->{$_};
+        }
+    }
 }
 
 my $map_subsys_status = {
@@ -139,18 +153,22 @@ my $map_subsys_status = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $subsys = $options{custom}->request_api(command => 'listSubsystems');
+    my %cmd = (command => 'listSubsystems', args => {});
+    if ($self->{uuid} ne '') {
+        $cmd{args}->{uuid} = $self->{uuid};
+    }
+    my $subsys = $options{custom}->request_api(%cmd);
 
     $self->{global} = { total => 0, active => 0, ending => 0, inactive => 0, restricted => 0, starting => 0 };
     $self->{subsys} = {};
     foreach my $entry (@{$subsys->{result}}) {
-        if (defined($self->{option_results}->{filter_subsystem_name}) && $self->{option_results}->{filter_subsystem_name} ne '' &&
-            $entry->{name} !~ /$self->{option_results}->{filter_subsystem_name}/) {
+        if (defined($self->{option_results}->{include_subsystem_name}) && $self->{option_results}->{include_subsystem_name} ne '' &&
+            $entry->{name} !~ /$self->{option_results}->{include_subsystem_name}/) {
             $self->{output}->output_add(long_msg => "skipping subsystem '" . $entry->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_subsystem_library}) && $self->{option_results}->{filter_subsystem_library} ne '' &&
-            $entry->{library} !~ /$self->{option_results}->{filter_subsystem_library}/) {
+        if (defined($self->{option_results}->{include_subsystem_library}) && $self->{option_results}->{include_subsystem_library} ne '' &&
+            $entry->{library} !~ /$self->{option_results}->{include_subsystem_library}/) {
             $self->{output}->output_add(long_msg => "skipping subsystem '" . $entry->{name} . "': no matching filter.", debug => 1);
             next;
         }
@@ -177,11 +195,11 @@ Check subsystems.
 
 =over 8
 
-=item B<--filter-subsystem-name>
+=item B<--include-subsystem-name>
 
 Filter subsystems by name (can be a regexp).
 
-=item B<--filter-subsystem-library>
+=item B<--include-subsystem-library>
 
 Filter subsystems by library (can be a regexp).
 
@@ -200,12 +218,61 @@ You can use the following variables: %{status}, %{name}, %{library}
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}, %{library}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-active>
 
-Thresholds.
-Can be: 'subsystems-total', 'subsystems-active', 'subsystems-ending', 
-'subsystems-inactive', 'subsystems-restricted', 'subsystems-starting', 
-'jobs-active'.
+Threshold.
+
+=item B<--critical-jobs-active>
+
+Threshold.
+
+=item B<--warning-subsystems-active>
+
+Threshold.
+
+=item B<--critical-subsystems-active>
+
+Threshold.
+
+=item B<--warning-subsystems-ending>
+
+Threshold.
+
+=item B<--critical-subsystems-ending>
+
+Threshold.
+
+=item B<--warning-subsystems-inactive>
+
+Threshold.
+
+=item B<--critical-subsystems-inactive>
+
+Threshold.
+
+=item B<--warning-subsystems-restricted>
+
+Threshold.
+
+=item B<--critical-subsystems-restricted>
+
+Threshold.
+
+=item B<--warning-subsystems-starting>
+
+Threshold.
+
+=item B<--critical-subsystems-starting>
+
+Threshold.
+
+=item B<--warning-subsystems-total>
+
+Threshold.
+
+=item B<--critical-subsystems-total>
+
+Threshold.
 
 =back
 

@@ -59,6 +59,13 @@ sub manage_selection {
                 type => { oid => '.1.3.6.1.4.1.5127.1.1.1.8.1.9.1.3' }
             }
         },
+        ex4100 => {
+            volumeTable => '.1.3.6.1.4.1.5127.1.1.1.6.1.9.1',
+            volume => {
+                name => { oid => '.1.3.6.1.4.1.5127.1.1.1.6.1.9.1.2' },
+                type => { oid => '.1.3.6.1.4.1.5127.1.1.1.6.1.9.1.3' }
+            }
+        },
         pr2100 => {
             volumeTable => '.1.3.6.1.4.1.5127.1.1.1.9.1.9.1',
             volume => {
@@ -79,6 +86,7 @@ sub manage_selection {
         oids => [
             { oid => $nas->{ex2}->{volumeTable} },
             { oid => $nas->{ex2ultra}->{volumeTable} },
+            { oid => $nas->{ex4100}->{volumeTable} },
             { oid => $nas->{pr2100}->{volumeTable} },
             { oid => $nas->{pr4100}->{volumeTable} }
         ]

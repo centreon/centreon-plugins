@@ -15,32 +15,39 @@ on:
       - ".github/**"
 
 jobs:
-  actionlint:
-    runs-on: ubuntu-22.04
+  action-lint:
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Download actionlint
         id: get_actionlint
-        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash)
         shell: bash
 
       - name: Check workflow files
         run: |
           ${{ steps.get_actionlint.outputs.executable }} \
-          -ignore 'label "common" is unknown' \
-          -ignore 'label "veracode" is unknown' \
+          -ignore 'label "centreon-(common|collect-arm64)" is unknown' \
+          -ignore 'label "ubuntu-(24.04|24.04-arm)" is unknown' \
           -ignore '"github.head_ref" is potentially untrusted' \
           -shellcheck= \
           -pyflakes= \
           -color
         shell: bash
+
+      - name: Ensure SHA pinned actions
+        uses: centreon/github-actions-ensure-sha-pinned-actions@47d553c67ceb08ad660deaeb3b994e47a3dd8fc3 # v3.0.23.3
+        with:
+          allowlist: |
+            centreon/security-tools
+
   yaml-lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Install Yaml
         run: |

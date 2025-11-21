@@ -4,7 +4,12 @@ FROM ${REGISTRY_URL}/almalinux:9
 
 RUN bash -e <<EOF
 
-dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
+useradd snmp
+mkdir -p /var/lib/snmp/cert_indexes/
+chown snmp:snmp -R /var/lib/snmp/cert_indexes/
+mkdir -p /tmp/cache/
+
+dnf install -y dnf-plugins-core epel-release zstd jq procps-ng
 dnf config-manager --set-enabled crb
 dnf clean all
 
@@ -12,13 +17,13 @@ dnf clean all
 dnf install -y python3.11 python3.11-pip
 pip3.11 install robotframework robotframework-examples
 # Install snmpsim
-pip3.11 install snmpsim-lextudio
+pip3.11 install snmpsim
 
 # Install node
 curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
 yum install -y nodejs
 # Install mockoon
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\
@@ -58,6 +63,12 @@ enabled=1\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
 >> /etc/yum.repos.d/centreon-plugins.repo
+
+# Add Centreon plugins repositories
+dnf config-manager --add-repo https://packages.centreon.com/rpm-standard/24.10/el9/centreon-24.10.repo
+dnf install -y centreon-connector-perl centreon-clib
+
+rm -f /etc/yum.repos.d/centreon-24.10.repo
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/

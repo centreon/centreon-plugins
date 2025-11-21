@@ -3,11 +3,13 @@ Documentation       Network Teldat SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                          ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
 
 
 *** Test Cases ***
@@ -28,7 +30,6 @@ CPU ${tc}
     ...    --critical-cpu-utilization-5m=${criticalcpuutilization5m}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
-
 
     Examples:         tc  warningcpuutilization5s  criticalcpuutilization5s  warningcpuutilization1m  criticalcpuutilization1m  warningcpuutilization5m  criticalcpuutilization5m  expected_result    --
             ...       1   ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  ${EMPTY}                 ${EMPTY}                  OK: cpu average usage: 1.00 % (5s), 1.00 % (1m), 1.00 % (5m) | 'cpu.utilization.5s.percentage'=1.00%;;;0;100 'cpu.utilization.1m.percentage'=1.00%;;;0;100 'cpu.utilization.15m.percentage'=1.00%;;;0;100

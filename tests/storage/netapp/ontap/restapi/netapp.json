@@ -1,0 +1,522 @@
+{
+  "uuid": "ed4ed773-dfc4-4d37-aa5f-6dd89d5fc516",
+  "lastMigration": 32,
+  "name": "Netapp",
+  "endpointPrefix": "api/",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "b092c6f2-c7f9-49a9-8959-8fa6260dbbed",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/volumes",
+      "responses": [
+        {
+          "uuid": "ef8f650f-c3cb-4948-b907-3b31a284a065",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"state\": \"online\",\r\n      \"name\": \"volume1\",\r\n      \"space\": {\r\n        \"auto_adaptive_compression_footprint_data_reduction\": 0,\r\n        \"available\": 421353881600,\r\n        \"size\": 4398046511104,\r\n        \"afs_total\": 4398046511104,\r\n        \"block_storage_inactive_user_data\": 0,\r\n        \"block_storage_inactive_user_data_percent\": 0,\r\n        \"capacity_tier_footprint\": 0,\r\n        \"capacity_tier_footprint_data_reduction\": 0,\r\n        \"compaction_footprint_data_reduction\": 0,\r\n        \"cross_volume_dedupe_metafiles_footprint\": 0,\r\n        \"cross_volume_dedupe_metafiles_temporary_footprint\": 0,\r\n        \"dedupe_metafiles_footprint\": 0,\r\n        \"dedupe_metafiles_temporary_footprint\": 0,\r\n        \"delayed_free_footprint\": 0,\r\n        \"effective_total_footprint\": 0,\r\n        \"file_operation_metadata\": 0,\r\n        \"filesystem_size\": 0,\r\n        \"footprint\": 0,\r\n        \"local_tier_footprint\": 0,\r\n        \"max_size\": \"string\",\r\n        \"logical_space\": {\r\n          \"available\": 348998594560,\r\n          \"used\": 3169438617600,\r\n          \"used_by_afs\": 0,\r\n          \"used_by_snapshots\": 0,\r\n          \"used_percent\": 90\r\n        },\r\n        \"metadata\": 0,\r\n        \"over_provisioned\": 0,\r\n        \"overwrite_reserve\": 0,\r\n        \"overwrite_reserve_used\": 0,\r\n        \"percent_used\": 0,\r\n        \"performance_tier_footprint\": 0,\r\n        \"size_available_for_snapshots\": 0,\r\n        \"snapmirror_destination_footprint\": 0,\r\n        \"snapshot\": {\r\n          \"autodelete\": {\r\n            \"commitment\": \"string\",\r\n            \"defer_delete\": \"string\",\r\n            \"delete_order\": \"string\",\r\n            \"prefix\": \"string\",\r\n            \"trigger\": \"string\"\r\n          },\r\n          \"autodelete_trigger\": \"string\",\r\n          \"reserve_available\": 0,\r\n          \"reserve_size\": 0,\r\n          \"space_used_percent\": 0,\r\n          \"used\": 0\r\n        },\r\n        \"snapshot_reserve_unusable\": 0,\r\n        \"snapshot_spill\": 0,\r\n        \"total_footprint\": 0,\r\n        \"total_metadata\": 0,\r\n        \"total_metadata_footprint\": 0,\r\n        \"used\": 3097083330560,\r\n        \"used_by_afs\": 3097083330560,\r\n        \"user_data\": 0,\r\n        \"volume_guarantee_footprint\": 0,\r\n        \"available_percent\": 9.58\r\n      },\r\n      \"metric\": {\r\n        \"cloud\": {\r\n          \"duration\": \"PT15S\",\r\n          \"iops\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"latency\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"duration\": \"PT15S\",\r\n        \"flexcache\": {\r\n          \"bandwidth_savings\": 4096,\r\n          \"cache_miss_percent\": 20,\r\n          \"duration\": \"PT1D\",\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"iops\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"latency\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"status\": \"ok\",\r\n        \"throughput\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "svm,name,space,metric",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "name",
+              "value": "volume1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2fc4bd82-8f83-4344-bfd7-baa50e6c544a",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"state\": \"online\",\r\n      \"name\": \"volume1\",\r\n      \"space\": {\r\n        \"auto_adaptive_compression_footprint_data_reduction\": 0,\r\n        \"available\": 421353881600,\r\n        \"size\": 4398046511104,\r\n        \"afs_total\": 4398046511104,\r\n        \"block_storage_inactive_user_data\": 0,\r\n        \"block_storage_inactive_user_data_percent\": 0,\r\n        \"capacity_tier_footprint\": 0,\r\n        \"capacity_tier_footprint_data_reduction\": 0,\r\n        \"compaction_footprint_data_reduction\": 0,\r\n        \"cross_volume_dedupe_metafiles_footprint\": 0,\r\n        \"cross_volume_dedupe_metafiles_temporary_footprint\": 0,\r\n        \"dedupe_metafiles_footprint\": 0,\r\n        \"dedupe_metafiles_temporary_footprint\": 0,\r\n        \"delayed_free_footprint\": 0,\r\n        \"effective_total_footprint\": 0,\r\n        \"file_operation_metadata\": 0,\r\n        \"filesystem_size\": 0,\r\n        \"footprint\": 0,\r\n        \"local_tier_footprint\": 0,\r\n        \"max_size\": \"string\",\r\n        \"metadata\": 0,\r\n        \"over_provisioned\": 0,\r\n        \"overwrite_reserve\": 0,\r\n        \"overwrite_reserve_used\": 0,\r\n        \"percent_used\": 0,\r\n        \"performance_tier_footprint\": 0,\r\n        \"size_available_for_snapshots\": 0,\r\n        \"snapmirror_destination_footprint\": 0,\r\n        \"snapshot\": {\r\n          \"autodelete\": {\r\n            \"commitment\": \"string\",\r\n            \"defer_delete\": \"string\",\r\n            \"delete_order\": \"string\",\r\n            \"prefix\": \"string\",\r\n            \"trigger\": \"string\"\r\n          },\r\n          \"autodelete_trigger\": \"string\",\r\n          \"reserve_available\": 0,\r\n          \"reserve_size\": 0,\r\n          \"space_used_percent\": 0,\r\n          \"used\": 0\r\n        },\r\n        \"snapshot_reserve_unusable\": 0,\r\n        \"snapshot_spill\": 0,\r\n        \"total_footprint\": 0,\r\n        \"total_metadata\": 0,\r\n        \"total_metadata_footprint\": 0,\r\n        \"used\": 3097083330560,\r\n        \"user_data\": 0,\r\n        \"volume_guarantee_footprint\": 0,\r\n        \"used_by_afs\": 3097083330560,\r\n        \"available_percent\": 9.58\r\n      },\r\n      \"metric\": {\r\n        \"cloud\": {\r\n          \"duration\": \"PT15S\",\r\n          \"iops\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"latency\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"duration\": \"PT15S\",\r\n        \"flexcache\": {\r\n          \"bandwidth_savings\": 4096,\r\n          \"cache_miss_percent\": 20,\r\n          \"duration\": \"PT1D\",\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"iops\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"latency\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"status\": \"ok\",\r\n        \"throughput\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "svm,name,space,metric",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "c7fed47d-33b4-49ca-ae60-4a36466b56e2",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/aggregates",
+      "responses": [
+        {
+          "uuid": "59a322e4-bb92-4f7c-af6c-d34ce6c0efee",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"name\": \"aggregate1\",\r\n      \"space\": {\r\n        \"block_storage\": {\r\n          \"aggregate_metadata\": 2655,\r\n          \"aggregate_metadata_percent\": 8,\r\n          \"available\": 10156560384,\r\n          \"data_compacted_count\": 1990000,\r\n          \"data_compaction_space_saved\": 1996000,\r\n          \"data_compaction_space_saved_percent\": 27,\r\n          \"full_threshold_percent\": 0,\r\n          \"inactive_user_data\": 304448,\r\n          \"inactive_user_data_percent\": 0,\r\n          \"performance_tier_cache_used\": 22348,\r\n          \"physical_used\": 2461696,\r\n          \"physical_used_percent\": 50,\r\n          \"size\": 10156769280,\r\n          \"used\": 2088960,\r\n          \"used_including_snapshot_reserve\": 674685,\r\n          \"used_including_snapshot_reserve_percent\": 35,\r\n          \"used_percent\": 50,\r\n          \"volume_deduplication_shared_count\": 1990000,\r\n          \"volume_deduplication_space_saved\": 1996000,\r\n          \"volume_deduplication_space_saved_percent\": 27,\r\n          \"volume_footprints_percent\": 14\r\n        },\r\n        \"cloud_storage\": {\r\n          \"used\": 402743264\r\n        },\r\n        \"efficiency\": {\r\n          \"logical_used\": 0,\r\n          \"ratio\": 0,\r\n          \"savings\": 0,\r\n          \"wise_tsse_min_used_capacity_pct\": 0\r\n        },\r\n        \"efficiency_without_snapshots\": {\r\n          \"logical_used\": 0,\r\n          \"ratio\": 0,\r\n          \"savings\": 0\r\n        },\r\n        \"efficiency_without_snapshots_flexclones\": {\r\n          \"logical_used\": 0,\r\n          \"ratio\": 0,\r\n          \"savings\": 0\r\n        },\r\n        \"footprint\": 608896,\r\n        \"snapshot\": {\r\n          \"available\": 2000,\r\n          \"reserve_percent\": 20,\r\n          \"total\": 5000,\r\n          \"used\": 3000,\r\n          \"used_percent\": 45\r\n        }\r\n      },\r\n      \"state\": \"online\",\r\n      \"uuid\": \"uuid1\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name,uuid,state,space",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "d7113366-3743-4835-840c-50c951325dbc",
+          "body": "{\r\n  \"metric\": {\r\n    \"duration\": \"PT15S\",\r\n    \"iops\": {\r\n      \"read\": 500,\r\n      \"total\": 1000,\r\n      \"write\": 200\r\n    },\r\n    \"latency\": {\r\n      \"read\": 500,\r\n      \"total\": 1000,\r\n      \"write\": 200\r\n    },\r\n    \"throughput\": {\r\n      \"read\": 500,\r\n      \"total\": 1000,\r\n      \"write\": 200\r\n    }\r\n  }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "8a4da98b-bb46-4354-99a2-5bedf85f600c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/aggregates/uuid1",
+      "responses": [
+        {
+          "uuid": "e865d16b-1ee0-4869-9cf3-9442dae20e91",
+          "body": "{\r\n  \"metric\": {\r\n    \"duration\": \"PT15S\",\r\n    \"iops\": {\r\n      \"read\": 500,\r\n      \"total\": 1000,\r\n      \"write\": 200,\r\n      \"other\": 100\r\n    },\r\n    \"latency\": {\r\n      \"read\": 500,\r\n      \"total\": 1000,\r\n      \"write\": 200,\r\n      \"other\": 100\r\n    },\r\n    \"throughput\": {\r\n      \"read\": 500,\r\n      \"total\": 1000,\r\n      \"write\": 200,\r\n      \"other\": 100\r\n    }\r\n  }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "metric",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "b7353636-e212-42db-b9a9-92c8243c8bbe",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "cluster/nodes",
+      "responses": [
+        {
+          "uuid": "85d0f9d0-ab71-4b2b-a13f-c51afa1fa740",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"name\": \"node-01\",\r\n      \"service_processor\": {\r\n        \"api_service\": {\r\n          \"port\": 0\r\n        },\r\n        \"auto_config\": {\r\n          \"ipv4_subnet\": \"ipv4_mgmt\",\r\n          \"ipv6_subnet\": \"ipv6_mgmt\"\r\n        },\r\n        \"backup\": {\r\n          \"state\": \"string\",\r\n          \"version\": \"11.6\"\r\n        },\r\n        \"firmware_version\": \"string\",\r\n        \"ipv4_interface\": {\r\n          \"address\": \"10.0.0.1\",\r\n          \"gateway\": \"10.1.1.1\",\r\n          \"netmask\": \"255.255.0.0\",\r\n          \"setup_state\": \"string\"\r\n        },\r\n        \"ipv6_interface\": {\r\n          \"address\": \"fd20:8b1e:b255:5011:10:141:4:97\",\r\n          \"gateway\": \"fd20:8b1e:b255:5011:10::1\",\r\n          \"link_local_ip\": \"FE80::/10\",\r\n          \"netmask\": 64,\r\n          \"router_ip\": \"2001:0db8:85a3:0000:0000:8a2e:0370:7334\",\r\n          \"setup_state\": \"string\"\r\n        },\r\n        \"last_update_state\": \"string\",\r\n        \"link_status\": \"string\",\r\n        \"mac_address\": \"string\",\r\n        \"primary\": {\r\n          \"state\": \"string\",\r\n          \"version\": \"11.6\"\r\n        },\r\n        \"ssh_info\": {\r\n          \"allowed_addresses\": [\r\n            \"10.0.0.32/24\"\r\n          ]\r\n        },\r\n        \"state\": \"online\",\r\n        \"type\": \"string\"\r\n      }\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name,service_processor",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "dd645a12-810b-430b-9dba-a52e860c1389",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/disks",
+      "responses": [
+        {
+          "uuid": "05795870-c33f-4bc6-a911-51d1b0d89b14",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"bay\": 1,\r\n      \"name\": \"name1\",\r\n      \"serial_number\": \"SERIALNUMBER1\",\r\n      \"state\": \"present\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name,state,serial_number,bays",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "2d1d1ff3-4ba6-4bc2-8f51-0894e08dd7a1",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/shelves",
+      "responses": [
+        {
+          "uuid": "44d9f780-3f6b-4a96-82aa-2c8415da3e26",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"bays\": [\r\n        {\r\n          \"drawer\": {\r\n            \"id\": 1,\r\n            \"slot\": 0\r\n          },\r\n          \"id\": 0,\r\n          \"state\": \"ok\",\r\n          \"type\": \"single_disk\"\r\n        }\r\n      ],\r\n      \"frus\": [\r\n        {\r\n          \"firmware_version\": \"0191\",\r\n          \"installed\": 1,\r\n          \"part_number\": \"111-00690+A2\",\r\n          \"psu\": {\r\n            \"crest_factor\": 92,\r\n            \"model\": \"00\",\r\n            \"power_drawn\": 210,\r\n            \"power_rating\": 1600\r\n          },\r\n          \"serial_number\": \"8000166294\",\r\n          \"state\": \"ok\",\r\n          \"type\": \"module\"\r\n        }\r\n      ],\r\n      \"name\": \"name1\",\r\n      \"serial_number\": \"SERIALNUMBER1\",\r\n      \"state\": \"ok\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name,state,serial_number,bays,frus",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "d8a1376f-13eb-4f0a-8cfc-6e27cc9fad44",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/luns",
+      "responses": [
+        {
+          "uuid": "a24b1b62-4f9a-4562-b28a-a9312897c224",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"name\": \"/vol/volume1/qtree1/lun1\",\r\n      \"status\": {\r\n        \"container_state\": \"string\",\r\n        \"state\": \"online\"\r\n      }\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name,status",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "10b0762f-0ffa-4abc-9a61-e07b4ead2d41",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "storage/quota/reports",
+      "responses": [
+        {
+          "uuid": "341450a3-2dde-4d72-9d0b-e18542c13baf",
+          "body": "{\r\n\r\n  \"records\": [\r\n    {\r\n      \"index\": 0,\r\n      \"qtree\": {\r\n        \"id\": 1,\r\n        \"name\": \"qt1\"\r\n      },\r\n      \"space\": {\r\n        \"hard_limit\": 100,\r\n        \"soft_limit\": 90,\r\n        \"used\": {\r\n          \"hard_limit_percent\": 0,\r\n          \"soft_limit_percent\": 0,\r\n          \"total\": 50\r\n        }\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"volume\": {\r\n        \"_links\": {\r\n          \"self\": {\r\n            \"href\": \"/api/resourcelink\"\r\n          }\r\n        },\r\n        \"name\": \"volume1\",\r\n        \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n      }\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "index,qtree,volume,svm,space",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "98e5a1f9-d66f-4958-9cd7-52a252c6421b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "snapmirror/relationships",
+      "responses": [
+        {
+          "uuid": "331c652b-bc0d-407c-b746-b9c11cdaaaa9",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"destination\": {\r\n        \"cluster\": {\r\n          \"_links\": {\r\n            \"self\": {\r\n              \"href\": \"/api/resourcelink\"\r\n            }\r\n          },\r\n          \"name\": \"cluster1\",\r\n          \"uuid\": \"1cd8a442-86d1-11e0-ae1c-123478563412\"\r\n        },\r\n        \"consistency_group_volumes\": [\r\n          {\r\n            \"name\": \"volume1\",\r\n            \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n          }\r\n        ],\r\n        \"ipspace\": \"Default\",\r\n        \"path\": \"svm1:volume1\",\r\n        \"svm\": {\r\n          \"_links\": {\r\n            \"self\": {\r\n              \"href\": \"/api/resourcelink\"\r\n            }\r\n          },\r\n          \"name\": \"svm1\",\r\n          \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n        },\r\n        \"uuid\": \"4ea7a442-86d1-11e0-ae1c-123478563412\"\r\n      },\r\n      \"source\": {\r\n        \"cluster\": {\r\n          \"_links\": {\r\n            \"self\": {\r\n              \"href\": \"/api/resourcelink\"\r\n            }\r\n          },\r\n          \"name\": \"cluster1\",\r\n          \"uuid\": \"1cd8a442-86d1-11e0-ae1c-123478563412\"\r\n        },\r\n        \"consistency_group_volumes\": [\r\n          {\r\n            \"name\": \"volume1\",\r\n            \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n          }\r\n        ],\r\n        \"path\": \"svm1:volume1\",\r\n        \"svm\": {\r\n          \"_links\": {\r\n            \"self\": {\r\n              \"href\": \"/api/resourcelink\"\r\n            }\r\n          },\r\n          \"name\": \"svm1\",\r\n          \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n        },\r\n        \"uuid\": \"4ea7a442-86d1-11e0-ae1c-123478563412\"\r\n      },\r\n      \"state\": \"snapmirrored\",\r\n      \"transfer\": {\r\n        \"end_time\": \"2020-12-02 21:36:19 -0500\",\r\n        \"last_updated_time\": \"2023-09-14 18:39:19 -0400\",\r\n        \"state\": \"string\",\r\n        \"total_duration\": \"PT28M41S\",\r\n        \"type\": \"initialize\",\r\n        \"uuid\": \"4ea7a442-86d1-11e0-ae1c-123478563412\"\r\n      },\r\n      \"unhealthy_reason\": [\r\n        {\r\n          \"arguments\": [],\r\n          \"code\": \"6621444\",\r\n          \"message\": \"Failed to complete update operation on one or more item relationships.\"\r\n        },\r\n        {\r\n          \"arguments\": [],\r\n          \"code\": \"6621445\",\r\n          \"message\": \"Group Update failed\"\r\n        }\r\n      ]\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "source,destination,healthy,state,transfer",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "39d42600-9290-4c9c-aecc-331a5b8683be",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "cluster",
+      "responses": [
+        {
+          "uuid": "1347a6b4-a393-4ff2-84c7-729b23c7f64a",
+          "body": "{\r\n  \"metric\": {\r\n    \"_links\": {\r\n      \"self\": {\r\n        \"href\": \"/api/resourcelink\"\r\n      }\r\n    },\r\n    \"duration\": \"PT15S\",\r\n    \"iops\": {\r\n      \"read\": 200,\r\n      \"total\": 1000,\r\n      \"write\": 100,\r\n      \"other\": 100\r\n    },\r\n    \"latency\": {\r\n      \"read\": 200,\r\n      \"total\": 1000,\r\n      \"write\": 100,\r\n      \"other\": 100\r\n    },\r\n    \"status\": \"ok\",\r\n    \"throughput\": {\r\n      \"read\": 200,\r\n      \"total\": 1000,\r\n      \"write\": 100\r\n    },\r\n    \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n  },\r\n  \"name\": \"cluster1\",\r\n  \"statistics\": {\r\n    \"iops_raw\": {\r\n      \"read\": 200,\r\n      \"total\": 1000,\r\n      \"write\": 100,\r\n      \"other\": 100\r\n    },\r\n    \"latency_raw\": {\r\n      \"read\": 200,\r\n      \"total\": 1000,\r\n      \"write\": 100\r\n    },\r\n    \"status\": \"ok\",\r\n    \"throughput_raw\": {\r\n      \"read\": 200,\r\n      \"total\": 1000,\r\n      \"write\": 100,\r\n      \"other\": 100\r\n    },\r\n    \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n  }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name,statistics,metric",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "b092c6f2-c7f9-49a9-8959-8fa6260dbbed"
+    },
+    {
+      "type": "route",
+      "uuid": "c7fed47d-33b4-49ca-ae60-4a36466b56e2"
+    },
+    {
+      "type": "route",
+      "uuid": "8a4da98b-bb46-4354-99a2-5bedf85f600c"
+    },
+    {
+      "type": "route",
+      "uuid": "b7353636-e212-42db-b9a9-92c8243c8bbe"
+    },
+    {
+      "type": "route",
+      "uuid": "dd645a12-810b-430b-9dba-a52e860c1389"
+    },
+    {
+      "type": "route",
+      "uuid": "2d1d1ff3-4ba6-4bc2-8f51-0894e08dd7a1"
+    },
+    {
+      "type": "route",
+      "uuid": "d8a1376f-13eb-4f0a-8cfc-6e27cc9fad44"
+    },
+    {
+      "type": "route",
+      "uuid": "10b0762f-0ffa-4abc-9a61-e07b4ead2d41"
+    },
+    {
+      "type": "route",
+      "uuid": "98e5a1f9-d66f-4958-9cd7-52a252c6421b"
+    },
+    {
+      "type": "route",
+      "uuid": "39d42600-9290-4c9c-aecc-331a5b8683be"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

@@ -112,7 +112,7 @@ sub request_api {
         $self->{output}->option_exit();
     }
     if ($self->{http}->get_code() != 200) {
-        $self->{output}->add_option_msg(short_msg => "Connection issue: " . $decoded->{message});
+        $self->{output}->add_option_msg(short_msg => "Connection issue: " . defined($decoded->{message}) ? $decoded->{message}  : '');
         $self->{output}->option_exit();
     }
 
@@ -125,11 +125,11 @@ __END__
 
 =head1 NAME
 
-SFDC API boilerplate
+Monitor SFDC API boilerplate
 
 =head1 SYNOPSIS
 
-Get informations from SFDC API
+Get information from SFDC API
 
 =head1 REST API OPTIONS
 
@@ -137,15 +137,15 @@ Get informations from SFDC API
 
 =item B<--hostname>
 
-Set hostname to query (default: 'api.status.salesforce.com')
+Define the hostname to query (default: C<api.status.salesforce.com>)
 
 =item B<--timeout>
 
-Set HTTP timeout in seconds (default: '10').
+Define the HTTP timeout in seconds (default: '10').
 
 =item B<--api-version>
 
-API version (default: 'v1').
+Define the API version (default: 'v1').
 
 =back
 

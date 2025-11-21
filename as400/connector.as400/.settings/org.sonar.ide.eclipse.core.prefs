@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+extraProperties=sonar.java.coveragePlugin\=jacoco\r\nsonar.language\=java\r\nsonar.jacoco.itReportPath\=/home/jblamotte/git/centreon-connector-as400/connector.as400/../target/jacoco-it.exec\r\nsonar.dynamicAnalysis\=reuseReports
+projectKey=com.centreon.connector\:connector-as400
+serverUrl=http\://localhost\:9000
+version=2

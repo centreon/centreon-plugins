@@ -333,9 +333,14 @@ sub gcp_get_metrics {
         }
 
         my $metric_calc = { points => 0 };
+        my $value;
         foreach my $point (@{$timeserie->{points}}) {
             if (defined($point->{value})) {
-                my $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
+                if (lc($timeserie->{valueType}) eq 'distribution') {
+                    $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' }->{ $options{distribution_value} };
+                } else {
+                    $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
+                }
                 if (defined($aggregations{average})) {
                     $metric_calc->{average} = 0 if (!defined($metric_calc->{average}));
                     $metric_calc->{average} += $value;
@@ -343,7 +348,7 @@ sub gcp_get_metrics {
                 }
                 if (defined($aggregations{minimum})) {
                     $metric_calc->{minimum} = $value
-                        if (!defined($metric_calc->{$metric_name}->{minimum}) || $value < $$metric_calc->{minimum});
+                        if (!defined($metric_calc->{minimum}) || $value < $metric_calc->{minimum});
                 }
                 if (defined($aggregations{maximum})) {
                     $metric_calc->{maximum} = $value
@@ -360,6 +365,7 @@ sub gcp_get_metrics {
         if (defined($metric_calc->{average})) {
             $metric_calc->{average} /= $metric_calc->{points};
         }
+        $metric_calc->{unit} = $timeserie->{unit} // undef;
         $results->{$instance}->{$metric_name} = $metric_calc;
         $results->{$instance}->{resource} = $timeserie->{resource};
         $results->{$instance}->{labels} = $timeserie->{metric}->{labels};

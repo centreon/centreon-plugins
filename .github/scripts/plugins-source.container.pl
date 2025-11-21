@@ -66,6 +66,8 @@ foreach my $plugin (@plugins) {
         File::Path::remove_tree('lib');
         File::Path::make_path('lib');
         my @common_files = (
+            'centreon/plugins/curllogger.pm',
+            'centreon/plugins/constants.pm',
             'centreon/plugins/http.pm',
             'centreon/plugins/misc.pm',
             'centreon/plugins/mode.pm',
@@ -82,7 +84,9 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/backend/http/useragent.pm',
             'centreon/plugins/alternative/Getopt.pm',
             'centreon/plugins/alternative/FatPackerOptions.pm',
+            'centreon/plugins/passwordmgr/centreonvault.pm',
             'centreon/plugins/passwordmgr/environment.pm',
+            'centreon/plugins/passwordmgr/file.pm',
             'centreon/plugins/passwordmgr/hashicorpvault.pm',
             'centreon/plugins/passwordmgr/keepass.pm',
             'centreon/plugins/passwordmgr/teampass.pm',

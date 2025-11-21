@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}velocloud.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=cloud::vmware::velocloud::restapi::plugin
 ...                 --mode edge-status
 ...                 --hostname=${HOSTNAME}
@@ -21,12 +21,12 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 ...                 --custommode=api
-...                 --statefile-dir=/dev/shm/
+
 
 *** Test Cases ***
 Edge Status ${tc}
-    [Tags]    cloud     api    vmware
-    ${command}    Catenate    ${CMD}    ${extraoptions}    
+    [Tags]    cloud    api    vmware
+    ${command}    Catenate    ${CMD}    ${extraoptions}
     ${output}    Run    ${command}
 
     ${output}    Strip String    ${output}
@@ -36,7 +36,6 @@ Edge Status ${tc}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-
 
     Examples:    tc        extraoptions                  expected_result   --
         ...      1        ${EMPTY}                       CRITICAL: Edge 'MYEDGE#02' State is 'OFFLINE', Service State is 'IN_SERVICE', HA State is 'READY', Activation State is 'ACTIVATED'

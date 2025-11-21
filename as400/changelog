@@ -1,0 +1,17 @@
+2024-10-21 Pieter Kippes <pkippes@centreon.com> - 2.0.6
+ * Fixed packaging issues with config files and java version
+
+2024-10-18 Pieter Kippes <pkippes@centreon.com> - 2.0.5
+ * Fixed packaging for config files
+
+2024-10-11 Olivier Mercier <omercier@centreon.com> - 2.0.4
+ * Use io.undertow 2.3.17
+
+2024-10-10 Olivier Mercier <omercier@centreon.com> - 2.0.3
+ * New build workflow
+
+2021-12-31 Quentin Garnier <qgarnier@centreon.com> - 2.0.1
+ * Use log4j 2.17.1
+
+2021-10-13 Quentin Garnier <qgarnier@centreon.com> - 2.0.0
+ * New release

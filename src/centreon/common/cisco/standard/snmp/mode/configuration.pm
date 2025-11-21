@@ -24,98 +24,111 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_perfdata {
-    my ($self, %options) = @_;
-    
-    $self->{output}->perfdata_add(label => 'running_last_changed', unit => 's',
-                                  value => sprintf("%d", $self->{result_values}->{running_last_changed}),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'running_last_saved', unit => 's',
-                                  value => sprintf("%d", $self->{result_values}->{running_last_saved}),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'startup_last_changed', unit => 's',
-                                  value => sprintf("%d", $self->{result_values}->{startup_last_changed}),
-                                  min => 0);
-}
+use centreon::plugins::misc;
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = sprintf("Configuration Running Last Changed: %s, Running Last Saved: %s, Startup Last Changed: %s",
-        ($self->{result_values}->{running_last_changed} > 0) ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{running_last_changed}) : "-",
-        ($self->{result_values}->{running_last_saved} > 0) ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{running_last_saved}) : "-",
-        ($self->{result_values}->{startup_last_changed} > 0) ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{startup_last_changed}) : "-");
-    return $msg;
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{running_last_changed} = $options{new_datas}->{$self->{instance} . '_running_last_changed'};
-    $self->{result_values}->{running_last_saved} = $options{new_datas}->{$self->{instance} . '_running_last_saved'};
-    $self->{result_values}->{startup_last_changed} = $options{new_datas}->{$self->{instance} . '_startup_last_changed'};
-    return 0;
+    return $self->{result_values}->{output_message};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'running_last_changed' }, { name => 'running_last_saved' }, { name => 'startup_last_changed' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+        { 
+            label => 'config-running-ahead', nlabel => 'configuration.running.ahead.since.seconds',
+            set => {
+                key_values => [ { name => 'running_ahead' }, { name => 'output_message' } ],
                 closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-status:s"  => { name => 'warning_status', default => '' },
-                                  "critical-status:s" => { name => 'critical_status', default => '%{running_last_changed} > %{running_last_saved}' },
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
-}
-
-my $oid_ccmHistoryRunningLastChanged = '.1.3.6.1.4.1.9.9.43.1.1.1.0';
-my $oid_ccmHistoryRunningLastSaved = '.1.3.6.1.4.1.9.9.43.1.1.2.0';
-my $oid_ccmHistoryStartupLastChanged = '.1.3.6.1.4.1.9.9.43.1.1.3.0';
-
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->{global} = {};
+    my $oid_ccmHistoryRunningLastChanged = '.1.3.6.1.4.1.9.9.43.1.1.1.0';
+    my $oid_ccmHistoryRunningLastSaved = '.1.3.6.1.4.1.9.9.43.1.1.2.0';
+    my $oid_ccmHistoryStartupLastChanged = '.1.3.6.1.4.1.9.9.43.1.1.3.0';
+    my $oid_sysUpTime = '.1.3.6.1.2.1.1.3.0';
+    my $oid_snmpEngineTime = '.1.3.6.1.6.3.10.2.1.3.0';
 
-    $self->{results} = $self->{snmp}->get_leef(oids => [ $oid_ccmHistoryRunningLastChanged, $oid_ccmHistoryRunningLastSaved,
-                                                      $oid_ccmHistoryStartupLastChanged ], nothing_quit => 1);
-   
+    my $ctime = time();
+    my $runningChangedMarginAfterReload = 300;
+
+    my $results = $options{snmp}->get_leef(
+        oids => [
+            $oid_ccmHistoryRunningLastChanged,
+            $oid_ccmHistoryRunningLastSaved,
+            $oid_ccmHistoryStartupLastChanged,
+            $oid_sysUpTime,
+            $oid_snmpEngineTime
+        ],
+        nothing_quit => 1
+    );
+
+    my $uptime = defined($results->{$oid_snmpEngineTime}) ? $results->{$oid_snmpEngineTime} : ($results->{$oid_sysUpTime} / 100);
+
+    my $start_time = $ctime - $uptime;
+    my $ccmHistoryRunningLastChanged = $start_time + ($results->{$oid_ccmHistoryRunningLastChanged} / 100);
+    my $ccmHistoryRunningLastSaved   = $start_time + ($results->{$oid_ccmHistoryRunningLastSaved} / 100);
+    my $ccmHistoryStartupLastChanged = $start_time + ($results->{$oid_ccmHistoryStartupLastChanged} / 100);
+
+    $self->{output}->output_add(long_msg => sprintf(
+        "ccmHistoryRunningLastChanged: %s (%s)",
+        $ccmHistoryRunningLastChanged,
+        scalar(localtime($ccmHistoryRunningLastChanged)))
+    );
+    $self->{output}->output_add(long_msg => sprintf(
+        "ccmHistoryRunningLastSaved: %s (%s)",
+        $ccmHistoryRunningLastSaved,
+        scalar(localtime($ccmHistoryRunningLastSaved)))
+    );
+    $self->{output}->output_add(long_msg => sprintf(
+        "ccmHistoryStartupLastChanged: %s (%s)",
+        $ccmHistoryStartupLastChanged,
+        scalar(localtime($ccmHistoryStartupLastChanged)))
+    );
+
+    my $runningUnchangedDuration = $ctime - $ccmHistoryRunningLastChanged;
+    my $startupUnchangedDuration = $ctime - $ccmHistoryStartupLastChanged;
+
+    my $runningAhead = 0;
+    my $output = 'saved config is up to date';
+    if ($runningUnchangedDuration < $startupUnchangedDuration) {
+        if (($runningUnchangedDuration + $runningChangedMarginAfterReload) > $uptime) {
+            $output = sprintf("running config has not changed since reload (using a %d second margin)", $runningChangedMarginAfterReload);
+        } else {
+            $output = sprintf(
+                "running config is ahead of startup config since %s. changes will be lost in case of a reboot",
+                centreon::plugins::misc::change_seconds(value => $runningUnchangedDuration)
+            );
+            $runningAhead = $runningUnchangedDuration;
+        }
+    }
+
     $self->{global} = {
-        running_last_changed => $self->{results}->{$oid_ccmHistoryRunningLastChanged} / 100,
-        running_last_saved => $self->{results}->{$oid_ccmHistoryRunningLastSaved} / 100,
-        startup_last_changed => $self->{results}->{$oid_ccmHistoryStartupLastChanged} / 100,
+        output_message => $output,
+        running_ahead => $runningAhead
     }
 }
 
@@ -129,15 +142,13 @@ Check Cisco changed and saved configurations (CISCO-CONFIG-MAN-MIB).
 
 =over 8
 
-=item B<--warning-status>
+=item B<--warning-config-running-ahead> 
 
-Define the conditions to match for the status to be WARNING (default: '').
-You can use the following variables: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
+Thresholds.
 
-=item B<--critical-status>
+=item B<--critical-config-running-ahead>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{running_last_changed} > %{running_last_saved}').
-You can use the following variables: %{running_last_changed}, %{running_last_saved}, %{startup_last_changed}
+Thresholds.
 
 =back
 

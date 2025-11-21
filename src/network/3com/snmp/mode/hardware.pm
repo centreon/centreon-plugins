@@ -32,7 +32,7 @@ sub set_system {
     
     $self->{thresholds} = {        
         default => [
-            ['active', 'OK'],
+            ['^active$', 'OK'],
             ['deactive', 'CRITICAL'],
             ['not-install', 'OK'],
             ['unsupport', 'WARNING']

@@ -1,22 +1,30 @@
-*                   @centreon/owners-connectors
+*                                   @centreon/owners-connectors
 
-*.md                @centreon/owners-doc
-*.mdx               @centreon/owners-doc
+*.md                                @centreon/owners-doc
+*.mdx                               @centreon/owners-doc
 
-*.cmake             @centreon/owners-cpp
-CMakeLists.txt      @centreon/owners-cpp
-Makefile            @centreon/owners-cpp
+*.cmake                             @centreon/owners-cpp
+CMakeLists.txt                      @centreon/owners-cpp
+Makefile                            @centreon/owners-cpp
 
-*.pm                @centreon/owners-perl
-*.pl                @centreon/owners-perl
+*.pm                                @centreon/owners-perl
+*.pl                                @centreon/owners-perl
+*.t                                 @centreon/owners-perl
 
-*.py                @centreon/owners-python
+*.py                                @centreon/owners-python
 
-*.sh                @centreon/owners-bash
+*.sh                                @centreon/owners-bash
 
-tests/**            @centreon/owners-robot-e2e
+tests/**                            @centreon/owners-robot-e2e
 
-.github/**          @centreon/owners-pipelines
-packaging/**        @centreon/owners-pipelines
-selinux/**          @centreon/owners-pipelines
-.github/scripts/pod_spell_check.t  @centreon/owners-perl
+.github/**                          @centreon/owners-pipelines
+packaging/**                        @centreon/owners-perl
+selinux/**                          @centreon/owners-pipelines
+.github/scripts/pod_spell_check.t   @centreon/owners-perl
+
+.gitleaks.toml                      @centreon/owners-security
+.gitleaksignore                     @centreon/owners-security
+**/security-checks.yml              @centreon/owners-security
+.githooks/**                        @centreon/owners-perl
+.githooks/pre-commit.d/gitleaks.sh  @centreon/owners-security
+.githooks/pre-commit                @centreon/owners-security

@@ -30,7 +30,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'group'     => { name => 'group' },
         'inventory' => { name => 'inventory' },
@@ -54,7 +54,7 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $hosts = $options{custom}->tower_list_hosts(
-        group => $self->{option_results}->{group},
+        group     => $self->{option_results}->{group},
         inventory => $self->{option_results}->{inventory}
     );
 
@@ -71,6 +71,14 @@ sub run {
         $host{inventory_name} = $host->{summary_fields}->{inventory}->{name};
         $host{groups} = $host->{summary_fields}->{groups}->{results};
         $host{enabled} = $host->{enabled};
+        # Get the ansible host IP address if available
+        eval {
+            my $json = decode_json($host->{variables});
+            $host{ansible_host} = $json->{ansible_host} || '';
+        };
+        if ($@) {
+            $host{ansible_host} = '';
+        }
         push @disco_data, \%host;
     }
 
@@ -88,7 +96,7 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-    
+
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();

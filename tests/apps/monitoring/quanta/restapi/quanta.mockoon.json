@@ -1,0 +1,754 @@
+{
+  "uuid": "5469fd1e-4a50-463f-840a-df519d945878",
+  "lastMigration": 33,
+  "name": "Quanta.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3006,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "7959e15f-ca2e-42b4-a375-e26189dba421",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "aef9fcfa-10ed-4bea-88ba-fc81947cc047",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2423bf6c-19eb-406e-8b3c-52e5e4298cc7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/sites/(\\d+)/user_journeys/",
+      "responses": [
+        {
+          "uuid": "26203911-c40d-48bf-8c73-ddea70b9970f",
+          "body": "{\"user_journeys\":[{\"id\":3666,\"name\":\"Basic user journey\",\"site_id\":10767,\"enabled\":true,\"current_incident_id\":null,\"polling_interval\":180},{\"id\":3669,\"name\":\"Connector journey\",\"site_id\":10767,\"enabled\":true,\"current_incident_id\":null,\"polling_interval\":360}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "90991ab4-7439-4883-998d-aa7b06f2dff4",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/v1/data_export",
+      "responses": [
+        {
+          "uuid": "bf5fe5bc-9a07-4d56-8280-e3e01f6d3416",
+          "body": "{\"resources\":[{\"type\":\"site\",\"id\":10767,\"name\":\"www.ariege.com\",\"metrics\":[{\"name\":\"performance_score\",\"values\":[{\"timestamp\":1755475200,\"average\":72.0},{\"timestamp\":1755561600,\"average\":76.0},{\"timestamp\":1755648000,\"average\":75.0},{\"timestamp\":1755734400,\"average\":77.0}]},{\"name\":\"digital_sobriety_score\",\"values\":[{\"timestamp\":1755475200,\"average\":56.0},{\"timestamp\":1755561600,\"average\":62.0},{\"timestamp\":1755648000,\"average\":52.0},{\"timestamp\":1755734400,\"average\":52.0}]},{\"name\":\"eco_design_score\",\"values\":[{\"timestamp\":1755475200,\"average\":62.0},{\"timestamp\":1755561600,\"average\":64.3333},{\"timestamp\":1755648000,\"average\":61.6667},{\"timestamp\":1755734400,\"average\":61.6667}]},{\"name\":\"carbon_footprint_per_click\",\"values\":[{\"timestamp\":1755475200,\"average\":1.28432},{\"timestamp\":1755561600,\"average\":0.906906},{\"timestamp\":1755648000,\"average\":1.60231},{\"timestamp\":1755734400,\"average\":1.61868}]}]}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "site-overview",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.resources[0].id",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.resources[0].type",
+              "value": "site",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": true,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c0e5a0c9-2897-4712-936a-9d610c228e20",
+          "body": "{\"resources\":[{\"type\":\"interaction\",\"id\":19493,\"name\":\"Home\",\"metrics\":[{\"name\":\"hero_time\",\"values\":[{\"timestamp\":1756115640,\"average\":36656.8},{\"timestamp\":1756115820,\"average\":36787.3}]},{\"name\":\"speed_index\",\"values\":[{\"timestamp\":1756115640,\"average\":8993.9},{\"timestamp\":1756115820,\"average\":10660.5}]},{\"name\":\"net_request_ttfb\",\"values\":[{\"timestamp\":1756115640,\"average\":11.911},{\"timestamp\":1756115820,\"average\":1134.36}]},{\"name\":\"lh_performance_score\",\"values\":[{\"timestamp\":1756115640,\"average\":30},{\"timestamp\":1756115820,\"average\":10}]}]},{\"type\":\"interaction\",\"id\":19494,\"name\":\"Decline cookies\",\"metrics\":[{\"name\":\"hero_time\",\"values\":[{\"timestamp\":1756115640,\"average\":570.811},{\"timestamp\":1756115820,\"average\":727.254}]},{\"name\":\"lh_performance_score\",\"values\":[{\"timestamp\":1756115640,\"average\":30},{\"timestamp\":1756115820,\"average\":10}]}]},{\"type\":\"interaction\",\"id\":19495,\"name\":\"Category\",\"metrics\":[{\"name\":\"hero_time\",\"values\":[{\"timestamp\":1756115640,\"average\":1233.38},{\"timestamp\":1756115820,\"average\":1822.43}]},{\"name\":\"speed_index\",\"values\":[{\"timestamp\":1756115640,\"average\":6328.55},{\"timestamp\":1756115820,\"average\":5653.49}]},{\"name\":\"net_request_ttfb\",\"values\":[{\"timestamp\":1756115640,\"average\":10.313},{\"timestamp\":1756115820,\"average\":1208.27}]},{\"name\":\"lh_performance_score\",\"values\":[{\"timestamp\":1756115640,\"average\":30},{\"timestamp\":1756115820,\"average\":10}]}]},{\"type\":\"journey\",\"id\":3666,\"name\":\"Basic user journey\",\"metrics\":[{\"name\":\"total_hero_time\",\"values\":[{\"timestamp\":1756115640,\"average\":38461.0},{\"timestamp\":1756115820,\"average\":39337.0}]},{\"name\":\"total_speed_index\",\"values\":[{\"timestamp\":1756115640,\"average\":15322.4},{\"timestamp\":1756115820,\"average\":16314.0}]},{\"name\":\"total_net_request_ttfb\",\"values\":[{\"timestamp\":1756115640,\"average\":22.224},{\"timestamp\":1756115820,\"average\":2342.64}]},{\"name\":\"avg_lh_performance_score\",\"values\":[{\"timestamp\":1731871034,\"average\":73.6296},{\"timestamp\":1737932096,\"average\":76.85200043320032}]}]}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "interaction",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.resources[0].id",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.resources[0].type",
+              "value": "interaction",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": true,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "3aa05ca7-7eea-4081-b248-e18334bf8b2f",
+          "body": "{\"resources\":[{\"type\":\"journey\",\"id\":3666,\"name\":\"Basic user journey\",\"metrics\":[{\"name\":\"total_hero_time\",\"values\":[{\"timestamp\":1755868500,\"average\":38933.4},{\"timestamp\":1755868680,\"average\":34607.9},{\"timestamp\":1755868860,\"average\":39407.7},{\"timestamp\":1755869040,\"average\":38513.6},{\"timestamp\":1755869220,\"average\":36120.3},{\"timestamp\":1755869400,\"average\":42274.8},{\"timestamp\":1755869580,\"average\":42229.5},{\"timestamp\":1755869760,\"average\":34202.7},{\"timestamp\":1755869940,\"average\":36813.0},{\"timestamp\":1755870120,\"average\":36049.8},{\"timestamp\":1755870300,\"average\":53831.2},{\"timestamp\":1755870480,\"average\":34042.3},{\"timestamp\":1755870660,\"average\":39423.9},{\"timestamp\":1755870840,\"average\":37858.8},{\"timestamp\":1755871020,\"average\":37836.5},{\"timestamp\":1755871200,\"average\":36322.6},{\"timestamp\":1755871380,\"average\":42674.1},{\"timestamp\":1755871560,\"average\":39852.2},{\"timestamp\":1755871740,\"average\":31803.4},{\"timestamp\":1755871920,\"average\":44416.1},{\"timestamp\":1755872100,\"average\":35933.1}]},{\"name\":\"total_speed_index\",\"values\":[{\"timestamp\":1755868500,\"average\":13687.7},{\"timestamp\":1755868680,\"average\":11300.4},{\"timestamp\":1755868860,\"average\":16571.3},{\"timestamp\":1755869040,\"average\":19220.5},{\"timestamp\":1755869220,\"average\":16938.3},{\"timestamp\":1755869400,\"average\":19875.6},{\"timestamp\":1755869580,\"average\":14047.5},{\"timestamp\":1755869760,\"average\":12821.4},{\"timestamp\":1755869940,\"average\":11490.3},{\"timestamp\":1755870120,\"average\":16767.4},{\"timestamp\":1755870300,\"average\":30773.8},{\"timestamp\":1755870480,\"average\":13725.9},{\"timestamp\":1755870660,\"average\":10890.2},{\"timestamp\":1755870840,\"average\":17891.7},{\"timestamp\":1755871020,\"average\":17390.6},{\"timestamp\":1755871200,\"average\":14207.4},{\"timestamp\":1755871380,\"average\":17310.6},{\"timestamp\":1755871560,\"average\":20124.4},{\"timestamp\":1755871740,\"average\":12337.0},{\"timestamp\":1755871920,\"average\":18064.3},{\"timestamp\":1755872100,\"average\":13754.2}]},{\"name\":\"total_net_request_ttfb\",\"values\":[{\"timestamp\":1755868500,\"average\":25.007},{\"timestamp\":1755868680,\"average\":26.938},{\"timestamp\":1755868860,\"average\":2374.37},{\"timestamp\":1755869040,\"average\":2270.23},{\"timestamp\":1755869220,\"average\":28.352},{\"timestamp\":1755869400,\"average\":4159.98},{\"timestamp\":1755869580,\"average\":46.453},{\"timestamp\":1755869760,\"average\":83.631},{\"timestamp\":1755869940,\"average\":33.742},{\"timestamp\":1755870120,\"average\":2349.4},{\"timestamp\":1755870300,\"average\":16032.7},{\"timestamp\":1755870480,\"average\":90.23},{\"timestamp\":1755870660,\"average\":53.019},{\"timestamp\":1755870840,\"average\":1735.43},{\"timestamp\":1755871020,\"average\":1975.22},{\"timestamp\":1755871200,\"average\":76.923},{\"timestamp\":1755871380,\"average\":66.28},{\"timestamp\":1755871560,\"average\":2350.19},{\"timestamp\":1755871740,\"average\":43.881},{\"timestamp\":1755871920,\"average\":2495.67},{\"timestamp\":1755872100,\"average\":33.563}]},{\"name\":\"avg_lh_performance_score\",\"values\":[{\"timestamp\":1731871034,\"average\":73.6296},{\"timestamp\":1737932096,\"average\":76.85200043320032}]}]}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "user--journey-statistics",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.resources[0].id",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.resources[0].type",
+              "value": "journey",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "dd6d5882-e0a9-4f13-80b6-ac157ebca4d0",
+          "body": "{pasbon}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "80a54f9f-9304-4e32-8629-bf0a61d9c4d7",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/sites/(\\d+)/user_journeys/(\\d+)/incidents",
+      "responses": [
+        {
+          "uuid": "a50c45ca-6b1d-4018-94ef-26facd0b2806",
+          "body": "{\"incidents\":[{\"id\":6249583,\"start_clock\":1752446880,\"end_clock\":1752447060,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6252544,\"start_clock\":1752530580,\"end_clock\":1752530760,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6254112,\"start_clock\":1752574860,\"end_clock\":1752575040,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19494,\"kind\":\"bad_response_code\"},{\"id\":6258742,\"start_clock\":1752700500,\"end_clock\":1752700680,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"interaction_timeout\"},{\"id\":6261903,\"start_clock\":1752787440,\"end_clock\":1752787620,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6262628,\"start_clock\":1752807780,\"end_clock\":1752807960,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6267737,\"start_clock\":1752968880,\"end_clock\":1752969060,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6270458,\"start_clock\":1753058520,\"end_clock\":1753058700,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"expectation_failed\"},{\"id\":6271593,\"start_clock\":1753093620,\"end_clock\":1753093800,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6285465,\"start_clock\":1753496100,\"end_clock\":1753496280,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6292630,\"start_clock\":1753693380,\"end_clock\":1753693560,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6292916,\"start_clock\":1753701120,\"end_clock\":1753701300,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"unknown_browser_error\"},{\"id\":6292923,\"start_clock\":1753701300,\"end_clock\":1753701480,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"unknown_browser_error\"},{\"id\":6292933,\"start_clock\":1753701480,\"end_clock\":1753701660,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"unknown_browser_error\"},{\"id\":6296215,\"start_clock\":1753783200,\"end_clock\":1753783380,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6298189,\"start_clock\":1753834860,\"end_clock\":1753835040,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"interaction_timeout\"},{\"id\":6302040,\"start_clock\":1753930620,\"end_clock\":1753930800,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6305818,\"start_clock\":1754022960,\"end_clock\":1754023140,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6311061,\"start_clock\":1754154900,\"end_clock\":1754155080,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6314803,\"start_clock\":1754253000,\"end_clock\":1754253180,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6318022,\"start_clock\":1754335080,\"end_clock\":1754335440,\"duration\":360,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6320016,\"start_clock\":1754385660,\"end_clock\":1754385840,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6320233,\"start_clock\":1754390700,\"end_clock\":1754390880,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6330359,\"start_clock\":1754664480,\"end_clock\":1754664660,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"expectation_failed\"},{\"id\":6330361,\"start_clock\":1754664660,\"end_clock\":1754665020,\"duration\":360,\"journey_id\":3666,\"interaction_id\":19493,\"kind\":\"expectation_failed\"},{\"id\":6330695,\"start_clock\":1754675100,\"end_clock\":1754675280,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6333267,\"start_clock\":1754750700,\"end_clock\":1754750880,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6346420,\"start_clock\":1755103500,\"end_clock\":1755103680,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6356576,\"start_clock\":1755385560,\"end_clock\":1755385740,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6360243,\"start_clock\":1755491400,\"end_clock\":1755491580,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6361167,\"start_clock\":1755516060,\"end_clock\":1755516240,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"interaction_timeout\"},{\"id\":6374087,\"start_clock\":1755852660,\"duration\":180,\"journey_id\":3666,\"interaction_id\":19495,\"kind\":\"expectation_failed\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "579b9b50-b41b-44b0-b44d-5313bd45336f",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/v1/rum_data_export",
+      "responses": [
+        {
+          "uuid": "8923b083-0b32-4f78-b85e-6e8829be33a6",
+          "body": "{\"datapoints_period\":1800,\"end_ts\":1755873869,\"progress\":1.0,\"results\":[{\"datapoints\":[[1755872069,{\"backend_time\":{\"count\":46,\"mean\":1371.891304347826,\"sum\":63107},\"bounces\":{\"count\":27,\"mean\":0.4074074074074074,\"sum\":11},\"frontend_time\":{\"count\":49,\"mean\":5404.734693877551,\"sum\":264832},\"interaction_to_next_paint\":{\"count\":68,\"mean\":45.411764705882355,\"sum\":3088},\"page_views\":{\"count\":49,\"mean\":1.0,\"sum\":49},\"sessions\":{\"count\":21,\"mean\":1.0,\"sum\":21},\"speed_index\":{\"count\":38,\"mean\":2345.5789473684213,\"sum\":89132}}]],\"dimensions\":{\"os\":\"Windows\"},\"total\":{\"backend_time\":{\"count\":46,\"mean\":1371.891304347826,\"sum\":63107},\"bounces\":{\"count\":27,\"mean\":0.4074074074074074,\"sum\":11},\"frontend_time\":{\"count\":49,\"mean\":5404.734693877551,\"sum\":264832},\"interaction_to_next_paint\":{\"count\":68,\"mean\":45.411764705882355,\"sum\":3088},\"page_views\":{\"count\":49,\"mean\":1.0,\"sum\":49},\"sessions\":{\"count\":21,\"mean\":1.0,\"sum\":21},\"speed_index\":{\"count\":38,\"mean\":2345.5789473684213,\"sum\":89132}}},{\"datapoints\":[[1755872069,{\"backend_time\":{\"count\":1,\"mean\":1264.0,\"sum\":1264},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":3,\"mean\":1916.0,\"sum\":5748},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1445.0,\"sum\":1445}}]],\"dimensions\":{\"os\":\"Mac OS X\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":1264.0,\"sum\":1264},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":3,\"mean\":1916.0,\"sum\":5748},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1445.0,\"sum\":1445}}},{\"datapoints\":[[1755872069,{\"backend_time\":{\"count\":1,\"mean\":3092.0,\"sum\":3092},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":11991.0,\"sum\":11991},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6095.0,\"sum\":6095}}]],\"dimensions\":{\"os\":\"Android\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":3092.0,\"sum\":3092},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":11991.0,\"sum\":11991},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6095.0,\"sum\":6095}}},{\"datapoints\":[[1755872069,{\"backend_time\":{\"count\":1,\"mean\":6226.0,\"sum\":6226},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":8563.0,\"sum\":8563},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6764.0,\"sum\":6764}}]],\"dimensions\":{\"os\":\"Linux\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":6226.0,\"sum\":6226},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":8563.0,\"sum\":8563},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6764.0,\"sum\":6764}}},{\"datapoints\":[[1755872069,{\"backend_time\":{\"count\":1,\"mean\":1183.0,\"sum\":1183},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":2572.0,\"sum\":2572},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1446.0,\"sum\":1446}}]],\"dimensions\":{\"os\":\"iOS\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":1183.0,\"sum\":1183},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":2572.0,\"sum\":2572},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1446.0,\"sum\":1446}}}],\"start_ts\":1755872069}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "perspective=os",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.index",
+              "value": "os",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1fee69d0-e80a-42c3-94be-8e86b4abbc3e",
+          "body": "{\"datapoints_period\":1800,\"end_ts\":1755874350,\"progress\":1.0,\"results\":[{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":13,\"mean\":1225.0,\"sum\":15925},\"frontend_time\":{\"count\":13,\"mean\":6997.461538461538,\"sum\":90967},\"interaction_to_next_paint\":{\"count\":20,\"mean\":21.2,\"sum\":424},\"page_views\":{\"count\":13,\"mean\":1.0,\"sum\":13},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":7,\"mean\":2967.8571428571427,\"sum\":20775}}]],\"dimensions\":{\"city\":\"Maisons-Alfort\",\"country_code\":\"FR\"},\"total\":{\"backend_time\":{\"count\":13,\"mean\":1225.0,\"sum\":15925},\"frontend_time\":{\"count\":13,\"mean\":6997.461538461538,\"sum\":90967},\"interaction_to_next_paint\":{\"count\":20,\"mean\":21.2,\"sum\":424},\"page_views\":{\"count\":13,\"mean\":1.0,\"sum\":13},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":7,\"mean\":2967.8571428571427,\"sum\":20775}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":9,\"mean\":1380.0,\"sum\":12420},\"bounces\":{\"count\":7,\"mean\":0.14285714285714285,\"sum\":1},\"frontend_time\":{\"count\":11,\"mean\":3178.818181818182,\"sum\":34967},\"interaction_to_next_paint\":{\"count\":13,\"mean\":85.53846153846153,\"sum\":1112},\"page_views\":{\"count\":11,\"mean\":1.0,\"sum\":11},\"sessions\":{\"count\":5,\"mean\":1.0,\"sum\":5},\"speed_index\":{\"count\":9,\"mean\":1817.4444444444443,\"sum\":16357}}]],\"dimensions\":{\"city\":null,\"country_code\":\"FR\"},\"total\":{\"backend_time\":{\"count\":9,\"mean\":1380.0,\"sum\":12420},\"bounces\":{\"count\":7,\"mean\":0.14285714285714285,\"sum\":1},\"frontend_time\":{\"count\":11,\"mean\":3178.818181818182,\"sum\":34967},\"interaction_to_next_paint\":{\"count\":13,\"mean\":85.53846153846153,\"sum\":1112},\"page_views\":{\"count\":11,\"mean\":1.0,\"sum\":11},\"sessions\":{\"count\":5,\"mean\":1.0,\"sum\":5},\"speed_index\":{\"count\":9,\"mean\":1817.4444444444443,\"sum\":16357}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":7,\"mean\":1128.7142857142858,\"sum\":7901},\"frontend_time\":{\"count\":7,\"mean\":1716.0,\"sum\":12012},\"interaction_to_next_paint\":{\"count\":12,\"mean\":32.0,\"sum\":384},\"page_views\":{\"count\":7,\"mean\":1.0,\"sum\":7},\"speed_index\":{\"count\":7,\"mean\":1300.857142857143,\"sum\":9106}}]],\"dimensions\":{\"city\":\"Tallinn\",\"country_code\":\"EE\"},\"total\":{\"backend_time\":{\"count\":7,\"mean\":1128.7142857142858,\"sum\":7901},\"frontend_time\":{\"count\":7,\"mean\":1716.0,\"sum\":12012},\"interaction_to_next_paint\":{\"count\":12,\"mean\":32.0,\"sum\":384},\"page_views\":{\"count\":7,\"mean\":1.0,\"sum\":7},\"speed_index\":{\"count\":7,\"mean\":1300.857142857143,\"sum\":9106}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":4,\"mean\":2587.75,\"sum\":10351},\"bounces\":{\"count\":5,\"mean\":0.6,\"sum\":3},\"frontend_time\":{\"count\":6,\"mean\":4897.666666666667,\"sum\":29386},\"page_views\":{\"count\":6,\"mean\":1.0,\"sum\":6},\"sessions\":{\"count\":4,\"mean\":1.0,\"sum\":4},\"speed_index\":{\"count\":4,\"mean\":3131.0,\"sum\":12524}}]],\"dimensions\":{\"city\":null,\"country_code\":\"US\"},\"total\":{\"backend_time\":{\"count\":4,\"mean\":2587.75,\"sum\":10351},\"bounces\":{\"count\":5,\"mean\":0.6,\"sum\":3},\"frontend_time\":{\"count\":6,\"mean\":4897.666666666667,\"sum\":29386},\"page_views\":{\"count\":6,\"mean\":1.0,\"sum\":6},\"sessions\":{\"count\":4,\"mean\":1.0,\"sum\":4},\"speed_index\":{\"count\":4,\"mean\":3131.0,\"sum\":12524}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":4,\"mean\":1305.25,\"sum\":5221},\"bounces\":{\"count\":6,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":5,\"mean\":3521.0,\"sum\":17605},\"interaction_to_next_paint\":{\"count\":12,\"mean\":51.333333333333336,\"sum\":616},\"page_views\":{\"count\":5,\"mean\":1.0,\"sum\":5},\"sessions\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":5,\"mean\":1403.4,\"sum\":7017}}]],\"dimensions\":{\"city\":\"Paris\",\"country_code\":\"FR\"},\"total\":{\"backend_time\":{\"count\":4,\"mean\":1305.25,\"sum\":5221},\"bounces\":{\"count\":6,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":5,\"mean\":3521.0,\"sum\":17605},\"interaction_to_next_paint\":{\"count\":12,\"mean\":51.333333333333336,\"sum\":616},\"page_views\":{\"count\":5,\"mean\":1.0,\"sum\":5},\"sessions\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":5,\"mean\":1403.4,\"sum\":7017}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":3,\"mean\":1171.3333333333333,\"sum\":3514},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":3,\"mean\":4867.333333333333,\"sum\":14602},\"interaction_to_next_paint\":{\"count\":4,\"mean\":52.0,\"sum\":208},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":3,\"mean\":1357.6666666666667,\"sum\":4073}}]],\"dimensions\":{\"city\":\"Rasta\",\"country_code\":\"NO\"},\"total\":{\"backend_time\":{\"count\":3,\"mean\":1171.3333333333333,\"sum\":3514},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":3,\"mean\":4867.333333333333,\"sum\":14602},\"interaction_to_next_paint\":{\"count\":4,\"mean\":52.0,\"sum\":208},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":3,\"mean\":1357.6666666666667,\"sum\":4073}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":3,\"mean\":1660.0,\"sum\":4980},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":3,\"mean\":3668.6666666666665,\"sum\":11006},\"interaction_to_next_paint\":{\"count\":6,\"mean\":36.0,\"sum\":216},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":3,\"mean\":2294.6666666666665,\"sum\":6884}}]],\"dimensions\":{\"city\":\"French Rocks\",\"country_code\":\"IN\"},\"total\":{\"backend_time\":{\"count\":3,\"mean\":1660.0,\"sum\":4980},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":3,\"mean\":3668.6666666666665,\"sum\":11006},\"interaction_to_next_paint\":{\"count\":6,\"mean\":36.0,\"sum\":216},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":3,\"mean\":2294.6666666666665,\"sum\":6884}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":1,\"mean\":1183.0,\"sum\":1183},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":2572.0,\"sum\":2572},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1446.0,\"sum\":1446}}]],\"dimensions\":{\"city\":\"Montreuil\",\"country_code\":\"FR\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":1183.0,\"sum\":1183},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":2572.0,\"sum\":2572},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1446.0,\"sum\":1446}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":1,\"mean\":3092.0,\"sum\":3092},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":11991.0,\"sum\":11991},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6095.0,\"sum\":6095}}]],\"dimensions\":{\"city\":\"Casablanca\",\"country_code\":\"MA\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":3092.0,\"sum\":3092},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":11991.0,\"sum\":11991},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6095.0,\"sum\":6095}}},{\"datapoints\":[[1755872550,{\"backend_time\":{\"count\":1,\"mean\":2693.0,\"sum\":2693},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":1,\"mean\":23566.0,\"sum\":23566},\"interaction_to_next_paint\":{\"count\":1,\"mean\":64.0,\"sum\":64},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":17320.0,\"sum\":17320}}]],\"dimensions\":{\"city\":null,\"country_code\":\"SN\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":2693.0,\"sum\":2693},\"bounces\":{\"count\":2,\"mean\":0.0,\"sum\":0},\"frontend_time\":{\"count\":1,\"mean\":23566.0,\"sum\":23566},\"interaction_to_next_paint\":{\"count\":1,\"mean\":64.0,\"sum\":64},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":17320.0,\"sum\":17320}}}],\"start_ts\":1755872550}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "perspective=city",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.index",
+              "value": "city",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0ef8f845-c193-4d53-85ef-edcc0d7b800b",
+          "body": "{\"datapoints_period\":1800,\"end_ts\":1755874717,\"progress\":1.0,\"results\":[{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":6,\"mean\":1741.6666666666667,\"sum\":10450},\"frontend_time\":{\"count\":8,\"mean\":5020.375,\"sum\":40163},\"interaction_to_next_paint\":{\"count\":8,\"mean\":74.0,\"sum\":592},\"page_views\":{\"count\":8,\"mean\":1.0,\"sum\":8},\"speed_index\":{\"count\":7,\"mean\":3838.714285714286,\"sum\":26871}}]],\"dimensions\":{\"url\":\"/fr/\"},\"total\":{\"backend_time\":{\"count\":6,\"mean\":1741.6666666666667,\"sum\":10450},\"frontend_time\":{\"count\":8,\"mean\":5020.375,\"sum\":40163},\"interaction_to_next_paint\":{\"count\":8,\"mean\":74.0,\"sum\":592},\"page_views\":{\"count\":8,\"mean\":1.0,\"sum\":8},\"speed_index\":{\"count\":7,\"mean\":3838.714285714286,\"sum\":26871}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":5,\"mean\":2308.0,\"sum\":11540},\"frontend_time\":{\"count\":6,\"mean\":5970.0,\"sum\":35820},\"interaction_to_next_paint\":{\"count\":9,\"mean\":58.666666666666664,\"sum\":528},\"page_views\":{\"count\":6,\"mean\":1.0,\"sum\":6},\"speed_index\":{\"count\":6,\"mean\":2710.0,\"sum\":16260}}]],\"dimensions\":{\"url\":\"/\"},\"total\":{\"backend_time\":{\"count\":5,\"mean\":2308.0,\"sum\":11540},\"frontend_time\":{\"count\":6,\"mean\":5970.0,\"sum\":35820},\"interaction_to_next_paint\":{\"count\":9,\"mean\":58.666666666666664,\"sum\":528},\"page_views\":{\"count\":6,\"mean\":1.0,\"sum\":6},\"speed_index\":{\"count\":6,\"mean\":2710.0,\"sum\":16260}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":1,\"mean\":1264.0,\"sum\":1264},\"frontend_time\":{\"count\":3,\"mean\":1916.0,\"sum\":5748},\"interaction_to_next_paint\":{\"count\":3,\"mean\":64.0,\"sum\":192},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":1,\"mean\":1445.0,\"sum\":1445}}]],\"dimensions\":{\"url\":\"/guzet/\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":1264.0,\"sum\":1264},\"frontend_time\":{\"count\":3,\"mean\":1916.0,\"sum\":5748},\"interaction_to_next_paint\":{\"count\":3,\"mean\":64.0,\"sum\":192},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":1,\"mean\":1445.0,\"sum\":1445}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":2,\"mean\":543.5,\"sum\":1087},\"frontend_time\":{\"count\":3,\"mean\":2847.6666666666665,\"sum\":8543},\"interaction_to_next_paint\":{\"count\":4,\"mean\":112.0,\"sum\":448},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":2,\"mean\":1062.5,\"sum\":2125}}]],\"dimensions\":{\"url\":\"/fr/stgirons/\"},\"total\":{\"backend_time\":{\"count\":2,\"mean\":543.5,\"sum\":1087},\"frontend_time\":{\"count\":3,\"mean\":2847.6666666666665,\"sum\":8543},\"interaction_to_next_paint\":{\"count\":4,\"mean\":112.0,\"sum\":448},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":2,\"mean\":1062.5,\"sum\":2125}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":3,\"mean\":1171.3333333333333,\"sum\":3514},\"frontend_time\":{\"count\":3,\"mean\":4867.333333333333,\"sum\":14602},\"interaction_to_next_paint\":{\"count\":4,\"mean\":52.0,\"sum\":208},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":3,\"mean\":1357.6666666666667,\"sum\":4073}}]],\"dimensions\":{\"url\":\"/montardit/\"},\"total\":{\"backend_time\":{\"count\":3,\"mean\":1171.3333333333333,\"sum\":3514},\"frontend_time\":{\"count\":3,\"mean\":4867.333333333333,\"sum\":14602},\"interaction_to_next_paint\":{\"count\":4,\"mean\":52.0,\"sum\":208},\"page_views\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":3,\"mean\":1357.6666666666667,\"sum\":4073}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":2,\"mean\":1380.0,\"sum\":2760},\"frontend_time\":{\"count\":2,\"mean\":2198.0,\"sum\":4396},\"interaction_to_next_paint\":{\"count\":3,\"mean\":50.666666666666664,\"sum\":152},\"page_views\":{\"count\":2,\"mean\":1.0,\"sum\":2},\"speed_index\":{\"count\":2,\"mean\":1521.0,\"sum\":3042}}]],\"dimensions\":{\"url\":\"/ariege/departement/\"},\"total\":{\"backend_time\":{\"count\":2,\"mean\":1380.0,\"sum\":2760},\"frontend_time\":{\"count\":2,\"mean\":2198.0,\"sum\":4396},\"interaction_to_next_paint\":{\"count\":3,\"mean\":50.666666666666664,\"sum\":152},\"page_views\":{\"count\":2,\"mean\":1.0,\"sum\":2},\"speed_index\":{\"count\":2,\"mean\":1521.0,\"sum\":3042}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":2,\"mean\":3469.5,\"sum\":6939},\"frontend_time\":{\"count\":2,\"mean\":9203.5,\"sum\":18407},\"page_views\":{\"count\":2,\"mean\":1.0,\"sum\":2},\"speed_index\":{\"count\":2,\"mean\":4092.5,\"sum\":8185}}]],\"dimensions\":{\"url\":\"/fr/contrazy/\"},\"total\":{\"backend_time\":{\"count\":2,\"mean\":3469.5,\"sum\":6939},\"frontend_time\":{\"count\":2,\"mean\":9203.5,\"sum\":18407},\"page_views\":{\"count\":2,\"mean\":1.0,\"sum\":2},\"speed_index\":{\"count\":2,\"mean\":4092.5,\"sum\":8185}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":2,\"mean\":1174.5,\"sum\":2349},\"frontend_time\":{\"count\":2,\"mean\":5819.5,\"sum\":11639},\"interaction_to_next_paint\":{\"count\":3,\"mean\":29.333333333333332,\"sum\":88},\"page_views\":{\"count\":2,\"mean\":1.0,\"sum\":2},\"speed_index\":{\"count\":2,\"mean\":6318.0,\"sum\":12636}}]],\"dimensions\":{\"url\":\"/fr/merigon/\"},\"total\":{\"backend_time\":{\"count\":2,\"mean\":1174.5,\"sum\":2349},\"frontend_time\":{\"count\":2,\"mean\":5819.5,\"sum\":11639},\"interaction_to_next_paint\":{\"count\":3,\"mean\":29.333333333333332,\"sum\":88},\"page_views\":{\"count\":2,\"mean\":1.0,\"sum\":2},\"speed_index\":{\"count\":2,\"mean\":6318.0,\"sum\":12636}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":1,\"mean\":2484.0,\"sum\":2484},\"frontend_time\":{\"count\":1,\"mean\":13258.0,\"sum\":13258},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1}}]],\"dimensions\":{\"url\":\"/massat/\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":2484.0,\"sum\":2484},\"frontend_time\":{\"count\":1,\"mean\":13258.0,\"sum\":13258},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1}}},{\"datapoints\":[[1755872917,{\"backend_time\":{\"count\":1,\"mean\":1491.0,\"sum\":1491},\"frontend_time\":{\"count\":1,\"mean\":2713.0,\"sum\":2713},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1697.0,\"sum\":1697}}]],\"dimensions\":{\"url\":\"/fr/ariege/\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":1491.0,\"sum\":1491},\"frontend_time\":{\"count\":1,\"mean\":2713.0,\"sum\":2713},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1697.0,\"sum\":1697}}}],\"start_ts\":1755872917}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "perspective=url",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.index",
+              "value": "url",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "1fd11bdd-d6f0-430a-af7c-4b382ae10e0f",
+          "body": "{\"datapoints_period\":1800,\"end_ts\":1755874532,\"progress\":1.0,\"results\":[{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":16,\"mean\":1554.3125,\"sum\":24869},\"bounces\":{\"count\":20,\"mean\":0.5,\"sum\":10},\"frontend_time\":{\"count\":22,\"mean\":5495.909090909091,\"sum\":120910},\"interaction_to_next_paint\":{\"count\":21,\"mean\":80.38095238095238,\"sum\":1688},\"page_views\":{\"count\":22,\"mean\":1.0,\"sum\":22},\"sessions\":{\"count\":16,\"mean\":1.0,\"sum\":16},\"speed_index\":{\"count\":16,\"mean\":2706.625,\"sum\":43306}}]],\"dimensions\":{\"browser\":\"Chrome\"},\"total\":{\"backend_time\":{\"count\":16,\"mean\":1554.3125,\"sum\":24869},\"bounces\":{\"count\":20,\"mean\":0.5,\"sum\":10},\"frontend_time\":{\"count\":22,\"mean\":5495.909090909091,\"sum\":120910},\"interaction_to_next_paint\":{\"count\":21,\"mean\":80.38095238095238,\"sum\":1688},\"page_views\":{\"count\":22,\"mean\":1.0,\"sum\":22},\"sessions\":{\"count\":16,\"mean\":1.0,\"sum\":16},\"speed_index\":{\"count\":16,\"mean\":2706.625,\"sum\":43306}}},{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":18,\"mean\":1330.0555555555557,\"sum\":23941},\"bounces\":{\"count\":12,\"mean\":0.3333333333333333,\"sum\":4},\"frontend_time\":{\"count\":18,\"mean\":4063.1666666666665,\"sum\":73137},\"interaction_to_next_paint\":{\"count\":30,\"mean\":41.86666666666667,\"sum\":1256},\"page_views\":{\"count\":18,\"mean\":1.0,\"sum\":18},\"sessions\":{\"count\":8,\"mean\":1.0,\"sum\":8},\"speed_index\":{\"count\":16,\"mean\":1592.8125,\"sum\":25485}}]],\"dimensions\":{\"browser\":\"Edge\"},\"total\":{\"backend_time\":{\"count\":18,\"mean\":1330.0555555555557,\"sum\":23941},\"bounces\":{\"count\":12,\"mean\":0.3333333333333333,\"sum\":4},\"frontend_time\":{\"count\":18,\"mean\":4063.1666666666665,\"sum\":73137},\"interaction_to_next_paint\":{\"count\":30,\"mean\":41.86666666666667,\"sum\":1256},\"page_views\":{\"count\":18,\"mean\":1.0,\"sum\":18},\"sessions\":{\"count\":8,\"mean\":1.0,\"sum\":8},\"speed_index\":{\"count\":16,\"mean\":1592.8125,\"sum\":25485}}},{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":15,\"mean\":1233.4,\"sum\":18501},\"bounces\":{\"count\":3,\"mean\":0.3333333333333333,\"sum\":1},\"frontend_time\":{\"count\":15,\"mean\":6396.266666666666,\"sum\":95944},\"interaction_to_next_paint\":{\"count\":22,\"mean\":20.727272727272727,\"sum\":456},\"page_views\":{\"count\":15,\"mean\":1.0,\"sum\":15},\"sessions\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":9,\"mean\":2624.5555555555557,\"sum\":23621}}]],\"dimensions\":{\"browser\":\"Firefox\"},\"total\":{\"backend_time\":{\"count\":15,\"mean\":1233.4,\"sum\":18501},\"bounces\":{\"count\":3,\"mean\":0.3333333333333333,\"sum\":1},\"frontend_time\":{\"count\":15,\"mean\":6396.266666666666,\"sum\":95944},\"interaction_to_next_paint\":{\"count\":22,\"mean\":20.727272727272727,\"sum\":456},\"page_views\":{\"count\":15,\"mean\":1.0,\"sum\":15},\"sessions\":{\"count\":3,\"mean\":1.0,\"sum\":3},\"speed_index\":{\"count\":9,\"mean\":2624.5555555555557,\"sum\":23621}}},{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":1,\"mean\":5021.0,\"sum\":5021},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":7429.0,\"sum\":7429},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":5260.0,\"sum\":5260}}]],\"dimensions\":{\"browser\":\"Chrome Mobile\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":5021.0,\"sum\":5021},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":7429.0,\"sum\":7429},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":5260.0,\"sum\":5260}}},{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":1,\"mean\":3092.0,\"sum\":3092},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":11991.0,\"sum\":11991},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6095.0,\"sum\":6095}}]],\"dimensions\":{\"browser\":\"Opera Mobile\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":3092.0,\"sum\":3092},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":11991.0,\"sum\":11991},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6095.0,\"sum\":6095}}},{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":1,\"mean\":6226.0,\"sum\":6226},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":8563.0,\"sum\":8563},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6764.0,\"sum\":6764}}]],\"dimensions\":{\"browser\":\"HeadlessChrome\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":6226.0,\"sum\":6226},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":8563.0,\"sum\":8563},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":6764.0,\"sum\":6764}}},{\"datapoints\":[[1755872732,{\"backend_time\":{\"count\":1,\"mean\":1183.0,\"sum\":1183},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":2572.0,\"sum\":2572},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1446.0,\"sum\":1446}}]],\"dimensions\":{\"browser\":\"Mobile Safari\"},\"total\":{\"backend_time\":{\"count\":1,\"mean\":1183.0,\"sum\":1183},\"bounces\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"frontend_time\":{\"count\":1,\"mean\":2572.0,\"sum\":2572},\"page_views\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"sessions\":{\"count\":1,\"mean\":1.0,\"sum\":1},\"speed_index\":{\"count\":1,\"mean\":1446.0,\"sum\":1446}}}],\"start_ts\":1755872732}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "perspective=browser",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.index",
+              "value": "browser",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c75f7efd-4a6a-44ce-ba33-50f3cfe8e4d9",
+          "body": "{\"datapoints_period\":1800,\"end_ts\":1755874944,\"progress\":1.0,\"results\":[{\"datapoints\":[[1755873144,{\"backend_time\":{\"count\":17,\"mean\":1859.1764705882354,\"sum\":31606},\"bounces\":{\"count\":19,\"mean\":0.5789473684210527,\"sum\":11},\"frontend_time\":{\"count\":20,\"mean\":5606.7,\"sum\":112134},\"interaction_to_next_paint\":{\"count\":22,\"mean\":79.63636363636364,\"sum\":1752},\"page_views\":{\"count\":20,\"mean\":1.0,\"sum\":20},\"sessions\":{\"count\":16,\"mean\":1.0,\"sum\":16},\"speed_index\":{\"count\":15,\"mean\":2104.9333333333334,\"sum\":31574}}]],\"dimensions\":{},\"total\":{\"backend_time\":{\"count\":56,\"mean\":1617.7142857142858,\"sum\":90592},\"bounces\":{\"count\":43,\"mean\":0.4883720930232558,\"sum\":21},\"frontend_time\":{\"count\":62,\"mean\":5494.822580645161,\"sum\":340679},\"interaction_to_next_paint\":{\"count\":74,\"mean\":46.7027027027027,\"sum\":3456},\"page_views\":{\"count\":62,\"mean\":1.0,\"sum\":62},\"sessions\":{\"count\":34,\"mean\":1.0,\"sum\":34},\"speed_index\":{\"count\":48,\"mean\":2536.6666666666665,\"sum\":121760}}}],\"start_ts\":1755873144}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "perspective=all",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.index",
+              "value": "all",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "dc0a228d-cbe6-456b-9435-a525f61208c1",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "98aa7182-a68d-4e82-a1d4-2e9e3ec6d7ce",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/sites/(\\d+)/user_journeys/(\\d+)/interactions/(\\d+)",
+      "responses": [
+        {
+          "uuid": "10f1b177-286b-4ff8-924e-683a7e286d4c",
+          "body": "{\"interaction\":{\"id\":19494,\"name\":\"Decline cookies\",\"no\":1,\"enabled\":true,\"measured\":true,\"timeout\":null,\"available_resources\":[\"metrics\",\"incidents\"]}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5c3c6cde-d2db-4033-a80e-5ae41bc21b84",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/sites/(\\d+)/user_journeys/(\\d+)/interactions",
+      "responses": [
+        {
+          "uuid": "006bb82c-1ad4-4cd8-b468-1ccaaa55e402",
+          "body": "{\"interactions\":[{\"id\":19493,\"name\":\"Home\",\"no\":0,\"enabled\":true,\"measured\":true,\"timeout\":null},{\"id\":19494,\"name\":\"Decline cookies\",\"no\":1,\"enabled\":true,\"measured\":true,\"timeout\":null},{\"id\":19495,\"name\":\"Category\",\"no\":2,\"enabled\":true,\"measured\":true,\"timeout\":null}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "7959e15f-ca2e-42b4-a375-e26189dba421"
+    },
+    {
+      "type": "route",
+      "uuid": "2423bf6c-19eb-406e-8b3c-52e5e4298cc7"
+    },
+    {
+      "type": "route",
+      "uuid": "90991ab4-7439-4883-998d-aa7b06f2dff4"
+    },
+    {
+      "type": "route",
+      "uuid": "80a54f9f-9304-4e32-8629-bf0a61d9c4d7"
+    },
+    {
+      "type": "route",
+      "uuid": "579b9b50-b41b-44b0-b44d-5313bd45336f"
+    },
+    {
+      "type": "route",
+      "uuid": "98aa7182-a68d-4e82-a1d4-2e9e3ec6d7ce"
+    },
+    {
+      "type": "route",
+      "uuid": "5c3c6cde-d2db-4033-a80e-5ae41bc21b84"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

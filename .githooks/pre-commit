@@ -1,0 +1,31 @@
+#!/usr/bin/env sh
+set -eu
+
+# Directory containing the scripts (relative to this script's location)
+DIR="$(dirname "$0")/pre-commit.d"
+
+# Variable to keep track of the highest exit code
+max_exit_code=0
+
+# Check if the directory exists
+if [ ! -d "$DIR" ]; then
+  echo "Error: directory '$DIR' does not exist." >&2
+  exit 1
+fi
+
+# Execute each .sh file in the directory
+for script in "$DIR"/*.sh; do
+  # Skip if no .sh files are found
+  [ -e "$script" ] || { echo "no pre-commit hook found, maybe check $DIR folder for executable .sh files" ; exit 1 ; }
+
+  echo "Running $script ..."
+  sh "$script"
+  exit_code=$?
+
+  # Update the highest exit code if necessary
+  if [ "$exit_code" -gt "$max_exit_code" ]; then
+    max_exit_code=$exit_code
+  fi
+done
+
+exit $max_exit_code

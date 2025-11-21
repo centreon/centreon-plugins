@@ -31,13 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu'              => 'network::cyberoam::snmp::mode::cpu',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::cyberoam::snmp::mode::memory',
-        'requests'         => 'network::cyberoam::snmp::mode::requests',
-        'services'         => 'network::cyberoam::snmp::mode::services',
-        'storage'          => 'network::cyberoam::snmp::mode::storage'
+        'cpu'             => 'network::cyberoam::snmp::mode::cpu',
+        'ha-status'       => 'network::cyberoam::snmp::mode::hastatus',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'license'         => 'network::cyberoam::snmp::mode::license',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-vpns'       => 'network::cyberoam::snmp::mode::listvpns',
+        'memory'          => 'network::cyberoam::snmp::mode::memory',
+        'requests'        => 'network::cyberoam::snmp::mode::requests',
+        'services'        => 'network::cyberoam::snmp::mode::services',
+        'storage'         => 'network::cyberoam::snmp::mode::storage',
+        'vpn-status'      => 'network::cyberoam::snmp::mode::vpnstatus'
     };
 
     return $self;

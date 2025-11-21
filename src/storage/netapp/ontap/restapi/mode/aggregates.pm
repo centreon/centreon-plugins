@@ -219,7 +219,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $aggregates = $options{custom}->request_api(endpoint => '/api/storage/aggregates?fields=*');
+    my $aggregates = $options{custom}->request_api(endpoint => '/api/storage/aggregates?fields=name,uuid,state,space');
 
     $self->{aggregates} = {};
     foreach (@{$aggregates->{records}}) {

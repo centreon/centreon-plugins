@@ -43,14 +43,20 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'   => { name => 'api_username' },
-            'api-password:s'   => { name => 'api_password' },
-            'hostname:s'       => { name => 'hostname' },
-            'port:s'           => { name => 'port' },
-            'proto:s'          => { name => 'proto' },
-            'timeout:s'        => { name => 'timeout' },
-            'url-path:s'       => { name => 'url_path' },
-            'authent-endpoint' => { name => 'authent_endpoint' }
+            'api-key:s'            => { name => 'api_key', default => '' },
+            'api-username:s'       => { name => 'api_username', default => '' },
+            'api-password:s'       => { name => 'api_password', default => '' },
+            'hostname:s'           => { name => 'hostname', default => 'api.ekara.ip-label.net' },
+            'port:s'               => { name => 'port', default => 443 },
+            'proto:s'              => { name => 'proto', default => 'https' },
+            'timeout:s'            => { name => 'timeout', default => 10 },
+            'url-path:s'           => { name => 'url_path', default => '' },
+            'filter-id:s'          => { name => 'filter_id' },
+            'filter-name:s'        => { name => 'filter_name' },
+            'filter-workspaceid:s' => { name => 'filter_workspaceid' },
+            'filter-siteid:s'      => { name => 'filter_siteid' },
+            'filter-status:s@'     => { name => 'filter_status' },
+            'authent-endpoint'     => { name => 'authent_endpoint', default => '/auth/login' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -72,31 +78,40 @@ sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
+    use Data::Dumper;
+    $self->{unknown_http_status} = $self->{option_results}->{unknown_http_status} // '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = $self->{option_results}->{warning_http_status} // '';
+    $self->{critical_http_status} = $self->{option_results}->{critical_http_status} // '';
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'api.ekara.ip-label.net';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '';
-    $self->{authent_endpoint} = (defined($self->{option_results}->{authent_endpoint})) ? $self->{option_results}->{authent_endpoint} : '/auth/login';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{$_} = $self->{option_results}->{$_} for qw/api_key api_password api_username authent_endpoint hostname port proto timeout url_path/;
+
     $self->{cache}->check_options(option_results => $self->{option_results});
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+    if ($self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
+
+    # Ekara REST API support two authentication modes: API key or username/password
+    # Both modes cannot be used simultaneously
+    if (($self->{api_username} ne '' || $self->{api_password} ne '') && $self->{api_key} ne '') {
+        $self->{output}->add_option_msg(short_msg => "Cannot use both --api-key and --api-username/--api-password options.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
-        $self->{output}->option_exit();
+
+    if ($self->{api_key} eq '') {
+        # username/password required if api_key is not set
+        foreach (qw/api_username api_password/) {
+            if ($self->{option_results}->{$_} eq '') {
+                $self->{output}->add_option_msg(short_msg => "Need to specify --api-key or --api-username/--api-password options.");
+                $self->{output}->option_exit();
+            }
+        }
+        # authent_endpoint is required if username/password authentication mode is used
+        if ($self->{authent_endpoint} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Need to specify --authent-endpoint option.");
+            $self->{output}->option_exit();
+        }
     }
 
     return 0;
@@ -119,7 +134,11 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token}) if (defined($self->{access_token}));
+    if ($self->{api_key} ne '') {
+        $self->{http}->add_header(key => 'X-API-KEY', value => $self->{api_key});
+    } elsif ($self->{access_token}) {
+        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
+    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -170,10 +189,61 @@ sub get_access_token {
     return $access_token;
 }
 
+sub request_scenarios_status{
+    my ($self, %options) = @_;
+
+    my $status_filter = {};
+    my @get_param;
+
+    if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status}[0] ne '') {
+        $status_filter->{statusFilter} = $self->{option_results}->{filter_status};
+    }
+    if (defined($self->{option_results}->{filter_workspaceid}) && $self->{option_results}->{filter_workspaceid} ne '') {
+        push(@get_param, "workspaceId=$self->{option_results}->{filter_workspaceid}");
+    }
+    if (defined($self->{option_results}->{filter_siteid}) && $self->{option_results}->{filter_siteid} ne '') {
+        push(@get_param, "siteId=$self->{option_results}->{filter_siteid}");
+    }
+    my $results = $self->request_api(
+        endpoint => '/results-api/scenarios/status',
+        method => 'POST',
+        post_body => $status_filter,
+        get_param => \@get_param,
+    );
+    if (ref($results) eq "HASH" ) {
+        if (defined($results->{message})) {
+            $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{message});
+            $self->{output}->option_exit();
+        }
+        if (defined($results->{error})) {
+            $self->{output}->add_option_msg(short_msg => "Cannot get scenarios : " . $results->{error});
+            $self->{output}->option_exit();
+        }
+        $self->{output}->add_option_msg(short_msg => "Cannot get scenarios due to an unknown error, please use the --debug option to find more information");
+        $self->{output}->option_exit();
+    }
+
+    my @scenarios;
+    for my $scenario (@$results) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $scenario->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+            $scenario->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $scenario->{scenarioName} . "': no matching filter.", debug => 1);
+            next;
+        }
+        push(@scenarios, $scenario);
+    }
+    return \@scenarios;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
-    if (!defined($self->{access_token})) {
+    if ($self->{api_key} eq '' && !$self->{access_token}) {
         $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
     }
 
@@ -181,7 +251,7 @@ sub request_api {
 
     my ($json, $response);
 
-    my $post_json = defined($options{post_body}) ? $options{post_body} : {};
+    my $post_json = $options{post_body} // {};
 
     $response = $self->{http}->request(
         get_param => $options{get_param},
@@ -191,11 +261,17 @@ sub request_api {
     );
     $self->{output}->output_add(long_msg => $response, debug => 1);
 
+    # Bad API key returns 401 Unauthorized
+    if ($self->{api_key} ne '' && ($self->{http}->get_code() // '') eq '401') {
+        $self->{output}->add_option_msg(short_msg => "API key is not valid.");
+        $self->{output}->option_exit();
+    }
+
     eval {
         $json = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode Vault JSON response: $@");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode ekara JSON response: $@");
         $self->{output}->option_exit();
     };
 
@@ -209,11 +285,31 @@ __END__
 
 =head1 NAME
 
-Ip-Label Ekara Rest API
+ip-label Ekara Rest API
 
 =head1 REST API OPTIONS
 
-Ip-Label Ekara Rest API
+ip-label Ekara Rest API
+
+=head2 Authentication
+
+Ekara REST API supports two authentication modes which cannot be use simultaneously: API key or username/password.
+
+=over 8
+
+=item B<--api-key>
+
+Set API key authentication.
+
+=item B<--api-username>
+
+Set username.
+
+=item B<--api-password>
+
+Set password.
+
+=head2 Other common API options
 
 =over 8
 
@@ -229,13 +325,37 @@ Port used (default: 443)
 
 Specify https if needed (default: 'https')
 
-=item B<--api-username>
 
-Set username.
+=item B<--filter-id>
 
-=item B<--api-password>
+Filter by monitor ID (can be a regexp).
 
-Set password.
+=item B<--filter-name>
+
+Filter by monitor name (can be a regexp).
+
+=item B<--filter-status>
+
+Filter by numeric status (can be multiple).
+0 => 'Unknown',
+1 => 'Success',
+2 => 'Failure',
+3 => 'Aborted',
+4 => 'No execution',
+5 => 'No execution',
+6 => 'Stopped',
+7 => 'Excluded',
+8 => 'Degraded'
+
+Example: --filter-status='1,2'
+
+=item B<--filter-workspaceid>
+
+Filter scenario to check by workspace id.
+
+=item B<--filter-siteid>
+
+Filter scenario to check by site id.
 
 =item B<--timeout>
 

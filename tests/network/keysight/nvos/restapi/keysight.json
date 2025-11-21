@@ -1,0 +1,367 @@
+{
+  "uuid": "969b130b-0ab9-4d14-aa8d-5ba775260baf",
+  "lastMigration": 33,
+  "name": "Keysight",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "beee08c1-0fbb-4ccc-b233-90908aebfa03",
+      "type": "http",
+      "documentation": "Retrieve a stats snapshot",
+      "method": "post",
+      "endpoint": "api/stats",
+      "responses": [
+        {
+          "uuid": "48b94195-9437-4494-97bc-70513f46dc4d",
+          "body": "{\r\n   \"stats_snapshot\":[\r\n      {\r\n         \"default_name\":\"PG1\",\r\n         \"id\":\"104\",\r\n         \"reset_time\":1679354883450,\r\n         \"rs_average_drop_rate_packets\":0,\r\n         \"rs_average_receive_rate_bytes\":65705532,\r\n         \"rs_average_receive_rate_packets\":34666,\r\n         \"rs_average_transmit_rate_bytes\":65722821,\r\n         \"rs_average_transmit_rate_packets\":34689,\r\n         \"rs_current_drop_rate_packets\":0,\r\n         \"rs_current_receive_rate_bytes\":148553403,\r\n         \"rs_current_receive_rate_packets\":77538,\r\n         \"rs_current_transmit_rate_bytes\":148578576,\r\n         \"rs_current_transmit_rate_packets\":77570,\r\n         \"rs_peak_drop_rate_packets\":0,\r\n         \"rs_peak_drop_rate_packets_time\":1701966818122,\r\n         \"rs_peak_receive_rate_bytes\":958952724,\r\n         \"rs_peak_receive_rate_bytes_time\":1684920909112,\r\n         \"rs_peak_receive_rate_packets\":341706,\r\n         \"rs_peak_receive_rate_packets_time\":1695195630913,\r\n         \"rs_peak_transmit_rate_bytes\":958959729,\r\n         \"rs_peak_transmit_rate_bytes_time\":1684920909112,\r\n         \"rs_peak_transmit_rate_packets\":341735,\r\n         \"rs_peak_transmit_rate_packets_time\":1695195630913,\r\n         \"rs_total_drop_count_packets\":0,\r\n         \"rs_total_receive_count_bytes\":185716152331665,\r\n         \"rs_total_receive_count_packets\":783881855284,\r\n         \"rs_total_transmit_count_bytes\":185765018913713,\r\n         \"rs_total_transmit_count_packets\":784388603790,\r\n         \"stats_time\":1701966818122,\r\n         \"tp_afm_drop_time\":1701966818151,\r\n         \"tp_average_drop_rate_packets\":0,\r\n         \"tp_average_insp_rate_packets\":34689,\r\n         \"tp_average_pass_percent_packets\":0.99999887,\r\n         \"tp_average_pass_rate_bits\":65722821,\r\n         \"tp_average_pass_rate_packets\":34689,\r\n         \"tp_average_tx_rate_bits\":65703282,\r\n         \"tp_average_tx_rate_packets\":34665,\r\n         \"tp_average_tx_utilization\":0.01781242,\r\n         \"tp_current_burst_buffer_fill_mb\":0,\r\n         \"tp_current_burst_buffer_fill_percent\":0,\r\n         \"tp_current_drop_rate_packets\":0,\r\n         \"tp_current_insp_rate_packets\":77570,\r\n         \"tp_current_pass_percent_packets\":1,\r\n         \"tp_current_pass_rate_bits\":148578576,\r\n         \"tp_current_pass_rate_packets\":77570,\r\n         \"tp_current_tx_rate_bits\":148545116,\r\n         \"tp_current_tx_rate_packets\":77509,\r\n         \"tp_current_tx_utilization\":0.04023664,\r\n         \"tp_drop_reset_time\":1679354883450,\r\n         \"tp_peak_burst_buffer_fill_mb\":0,\r\n         \"tp_peak_burst_buffer_fill_percent\":0,\r\n         \"tp_peak_burst_buffer_fill_time\":0,\r\n         \"tp_peak_drop_rate_packets\":0,\r\n         \"tp_peak_drop_rate_packets_time\":1701966818122,\r\n         \"tp_peak_insp_rate_packets\":341706,\r\n         \"tp_peak_insp_rate_packets_time\":1695195630913,\r\n         \"tp_peak_pass_percent_packets\":1,\r\n         \"tp_peak_pass_percent_packets_time\":1701966818122,\r\n         \"tp_peak_pass_rate_bits\":958959729,\r\n         \"tp_peak_pass_rate_bits_time\":1684920910112,\r\n         \"tp_peak_pass_rate_packets\":341735,\r\n         \"tp_peak_pass_rate_packets_time\":1695195631913,\r\n         \"tp_peak_tx_rate_bits\":959252656,\r\n         \"tp_peak_tx_rate_bits_time\":1684920909112,\r\n         \"tp_peak_tx_rate_packets\":341659,\r\n         \"tp_peak_tx_rate_packets_time\":1695195630913,\r\n         \"tp_peak_tx_utilization\":0.24709128,\r\n         \"tp_peak_tx_utilization_time\":1684920909112,\r\n         \"tp_total_afm_drop_count_packets\":0,\r\n         \"tp_total_arp_req_pkt_cnt\":0,\r\n         \"tp_total_bp_fifo_pkts_dropped\":0,\r\n         \"tp_total_bp_fifo_pkts_passed\":0,\r\n         \"tp_total_data_masking_count_packets\":0,\r\n         \"tp_total_data_masking_percent_packets\":0,\r\n         \"tp_total_dedup_count_packets\":506748505,\r\n         \"tp_total_dedup_percent_packets\":0.00064604264,\r\n         \"tp_total_drop_count_packets\":0,\r\n         \"tp_total_erspan_strip_count_packets\":0,\r\n         \"tp_total_erspan_strip_error_packets\":0,\r\n         \"tp_total_erspan_strip_percent_packets\":0,\r\n         \"tp_total_etag_strip_count_packets\":0,\r\n         \"tp_total_etag_strip_percent_packets\":0,\r\n         \"tp_total_fabric_path_strip_count_packets\":0,\r\n         \"tp_total_fabric_path_strip_percent_packets\":0,\r\n         \"tp_total_generic_strip_count_packets\":0,\r\n         \"tp_total_generic_strip_error_packets\":0,\r\n         \"tp_total_generic_strip_percent_packets\":0,\r\n         \"tp_total_gre_encap_count_packets\":0,\r\n         \"tp_total_gre_encap_percent_packets\":0,\r\n         \"tp_total_gtp_strip_count_packets\":0,\r\n         \"tp_total_gtp_strip_error_packets\":0,\r\n         \"tp_total_gtp_strip_percent_packets\":0,\r\n         \"tp_total_insp_count_packets\":784389485086,\r\n         \"tp_total_l2gre_strip_count_packets\":0,\r\n         \"tp_total_l2gre_strip_error_packets\":0,\r\n         \"tp_total_l2gre_strip_percent_packets\":0,\r\n         \"tp_total_lisp_strip_count_packets\":0,\r\n         \"tp_total_lisp_strip_error_packets\":0,\r\n         \"tp_total_lisp_strip_percent_packets\":0,\r\n         \"tp_total_mpls_strip_count_packets\":0,\r\n         \"tp_total_mpls_strip_error_packets\":0,\r\n         \"tp_total_mpls_strip_percent_packets\":0,\r\n         \"tp_total_packet_fragmentation_count_frags\":0,\r\n         \"tp_total_packet_fragmentation_count_packets\":0,\r\n         \"tp_total_packet_fragmentation_percent_packets\":0,\r\n         \"tp_total_pass_count_bytes\":185765018913713,\r\n         \"tp_total_pass_count_packets\":784388603790,\r\n         \"tp_total_pppoe_strip_count_packets\":0,\r\n         \"tp_total_pppoe_strip_percent_packets\":0,\r\n         \"tp_total_reassembly_count_frags\":0,\r\n         \"tp_total_reassembly_notprocessed_count_frags\":0,\r\n         \"tp_total_reassembly_percent_frags\":0,\r\n         \"tp_total_reassembly_reassembled_count_packets\":0,\r\n         \"tp_total_reassembly_timedout_count_frags\":0,\r\n         \"tp_total_rx_pause_count_packets\":0,\r\n         \"tp_total_timestamp_or_packet_length_trailer_count_packets\":0,\r\n         \"tp_total_timestamp_or_packet_length_trailer_percent_packets\":0,\r\n         \"tp_total_timestamp_translation_count_packets\":0,\r\n         \"tp_total_timestamp_translation_count_passed\":0,\r\n         \"tp_total_timestamp_translation_percent_packets\":0,\r\n         \"tp_total_timestamp_translation_percent_passed\":0,\r\n         \"tp_total_trailer_strip_count_packets\":0,\r\n         \"tp_total_trailer_strip_percent_packets\":0,\r\n         \"tp_total_trim_count_bytes\":0,\r\n         \"tp_total_trim_count_packets\":0,\r\n         \"tp_total_trim_percent_bytes\":0,\r\n         \"tp_total_trim_percent_packets\":0,\r\n         \"tp_total_tx_1024to1518_byte_packets\":7080046313,\r\n         \"tp_total_tx_128to255_byte_packets\":614962256602,\r\n         \"tp_total_tx_1519to2047_byte_packets\":964291407,\r\n         \"tp_total_tx_2048to4095_byte_packets\":0,\r\n         \"tp_total_tx_256to511_byte_packets\":81881445216,\r\n         \"tp_total_tx_4096to9216_byte_packets\":0,\r\n         \"tp_total_tx_512to1023_byte_packets\":9623709334,\r\n         \"tp_total_tx_64_byte_packets\":4343645730,\r\n         \"tp_total_tx_65to127_byte_packets\":65000131223,\r\n         \"tp_total_tx_9217to16838_byte_packets\":0,\r\n         \"tp_total_tx_count_bcast_packets\":8242921,\r\n         \"tp_total_tx_count_bytes\":185709790646386,\r\n         \"tp_total_tx_count_invalid_packets\":0,\r\n         \"tp_total_tx_count_mcast_packets\":1537179755,\r\n         \"tp_total_tx_count_packets\":783855525825,\r\n         \"tp_total_tx_count_ucast_packets\":782310103149,\r\n         \"tp_total_vntag_strip_count_packets\":0,\r\n         \"tp_total_vntag_strip_percent_packets\":0,\r\n         \"tp_total_vxlan_strip_count_packets\":0,\r\n         \"tp_total_vxlan_strip_error_packets\":0,\r\n         \"tp_total_vxlan_strip_percent_packets\":0,\r\n         \"type\":\"Port Group\"\r\n      },\r\n      {\r\n         \"default_name\":\"P01\",\r\n         \"id\":\"8\",\r\n         \"np_average_deny_percent_bytes\":0,\r\n         \"np_average_deny_percent_packets\":0,\r\n         \"np_average_deny_rate_bits\":0,\r\n         \"np_average_deny_rate_packets\":0,\r\n         \"np_average_pass_percent_bytes\":1,\r\n         \"np_average_pass_percent_packets\":1,\r\n         \"np_average_pass_rate_bits\":29733460,\r\n         \"np_average_pass_rate_packets\":16474,\r\n         \"np_average_rx_rate_bits\":29733460,\r\n         \"np_average_rx_rate_packets\":16474,\r\n         \"np_average_rx_utilization\":0.0323693,\r\n         \"np_current_deny_percent_bytes\":0,\r\n         \"np_current_deny_percent_packets\":0,\r\n         \"np_current_deny_rate_bits\":0,\r\n         \"np_current_deny_rate_packets\":0,\r\n         \"np_current_pass_percent_bytes\":1,\r\n         \"np_current_pass_percent_packets\":1,\r\n         \"np_current_pass_rate_bits\":134391377,\r\n         \"np_current_pass_rate_packets\":72264,\r\n         \"np_current_rx_rate_bits\":134391377,\r\n         \"np_current_rx_rate_packets\":72264,\r\n         \"np_current_rx_utilization\":0.14595361,\r\n         \"np_peak_deny_percent_bytes\":0,\r\n         \"np_peak_deny_percent_bytes_time\":1701966818122,\r\n         \"np_peak_deny_percent_packets\":0,\r\n         \"np_peak_deny_percent_packets_time\":1701966818122,\r\n         \"np_peak_deny_rate_bits\":0,\r\n         \"np_peak_deny_rate_bits_time\":1701966818122,\r\n         \"np_peak_deny_rate_packets\":0,\r\n         \"np_peak_deny_rate_packets_time\":1701966818122,\r\n         \"np_peak_pass_percent_bytes\":1,\r\n         \"np_peak_pass_percent_bytes_time\":1701966818122,\r\n         \"np_peak_pass_percent_packets\":1,\r\n         \"np_peak_pass_percent_packets_time\":1701966818122,\r\n         \"np_peak_pass_rate_bits\":944393289,\r\n         \"np_peak_pass_rate_bits_time\":1684920909112,\r\n         \"np_peak_pass_rate_packets\":250841,\r\n         \"np_peak_pass_rate_packets_time\":1701264643494,\r\n         \"np_peak_rx_rate_bits\":944393289,\r\n         \"np_peak_rx_rate_bits_time\":1684920909112,\r\n         \"np_peak_rx_rate_packets\":250841,\r\n         \"np_peak_rx_rate_packets_time\":1701264643494,\r\n         \"np_peak_rx_utilization\":0.97251076,\r\n         \"np_peak_rx_utilization_time\":1684920909112,\r\n         \"np_total_deny_count_bytes\":0,\r\n         \"np_total_deny_count_packets\":0,\r\n         \"np_total_pass_count_bytes\":86076080313402,\r\n         \"np_total_pass_count_packets\":381548953598,\r\n         \"np_total_rx_1024to1518_byte_packets\":3956134495,\r\n         \"np_total_rx_128to255_byte_packets\":324901447067,\r\n         \"np_total_rx_1519to2047_byte_packets\":562594056,\r\n         \"np_total_rx_2048to4095_byte_packets\":0,\r\n         \"np_total_rx_256to511_byte_packets\":3900051788,\r\n         \"np_total_rx_4096to9216_byte_packets\":0,\r\n         \"np_total_rx_512to1023_byte_packets\":4656112321,\r\n         \"np_total_rx_64_byte_packets\":2987489964,\r\n         \"np_total_rx_65to127_byte_packets\":40585123907,\r\n         \"np_total_rx_9217to16838_byte_packets\":0,\r\n         \"np_total_rx_count_alignment_errors\":0,\r\n         \"np_total_rx_count_bcast_packets\":4670772,\r\n         \"np_total_rx_count_bytes\":86076080313402,\r\n         \"np_total_rx_count_collisions\":0,\r\n         \"np_total_rx_count_crc_alignment_errors\":0,\r\n         \"np_total_rx_count_fcs_errors\":0,\r\n         \"np_total_rx_count_fragments\":0,\r\n         \"np_total_rx_count_frames_too_long\":0,\r\n         \"np_total_rx_count_invalid_packets\":0,\r\n         \"np_total_rx_count_jabbers\":0,\r\n         \"np_total_rx_count_mcast_packets\":941115606,\r\n         \"np_total_rx_count_nucast_packets\":945786378,\r\n         \"np_total_rx_count_packets\":381548953598,\r\n         \"np_total_rx_count_runts\":0,\r\n         \"np_total_rx_count_symbol_errors\":0,\r\n         \"np_total_rx_count_ucast_packets\":380603167220,\r\n         \"np_total_rx_count_valid_packets\":381548953598,\r\n         \"reset_by\":\"admin\",\r\n         \"reset_time\":1678807433611,\r\n         \"stats_time\":1701966818122,\r\n         \"type\":\"Port\"\r\n      },\r\n      {\r\n         \"default_name\":\"P12\",\r\n         \"id\":\"19\",\r\n         \"np_average_deny_percent_bytes\":0,\r\n         \"np_average_deny_percent_packets\":0,\r\n         \"np_average_deny_rate_bits\":0,\r\n         \"np_average_deny_rate_packets\":0,\r\n         \"np_average_pass_percent_bytes\":0.86485845,\r\n         \"np_average_pass_percent_packets\":0.9955057,\r\n         \"np_average_pass_rate_bits\":21958190,\r\n         \"np_average_pass_rate_packets\":7301,\r\n         \"np_average_rx_rate_bits\":21958245,\r\n         \"np_average_rx_rate_packets\":7301,\r\n         \"np_average_rx_utilization\":0.0023126404,\r\n         \"np_current_deny_percent_bytes\":0,\r\n         \"np_current_deny_percent_packets\":0,\r\n         \"np_current_deny_rate_bits\":0,\r\n         \"np_current_deny_rate_packets\":0,\r\n         \"np_current_pass_percent_bytes\":0.78630006,\r\n         \"np_current_pass_percent_packets\":0.99144804,\r\n         \"np_current_pass_rate_bits\":23227924,\r\n         \"np_current_pass_rate_packets\":12012,\r\n         \"np_current_rx_rate_bits\":23250241,\r\n         \"np_current_rx_rate_packets\":12044,\r\n         \"np_current_rx_utilization\":0.0025177281,\r\n         \"np_peak_deny_percent_bytes\":0,\r\n         \"np_peak_deny_percent_bytes_time\":1701966818122,\r\n         \"np_peak_deny_percent_packets\":0,\r\n         \"np_peak_deny_percent_packets_time\":1701966818122,\r\n         \"np_peak_deny_rate_bits\":0,\r\n         \"np_peak_deny_rate_bits_time\":1701966818122,\r\n         \"np_peak_deny_rate_packets\":0,\r\n         \"np_peak_deny_rate_packets_time\":1701966818122,\r\n         \"np_peak_pass_percent_bytes\":1,\r\n         \"np_peak_pass_percent_bytes_time\":1701966818122,\r\n         \"np_peak_pass_percent_packets\":1,\r\n         \"np_peak_pass_percent_packets_time\":1701966818122,\r\n         \"np_peak_pass_rate_bits\":2525321424,\r\n         \"np_peak_pass_rate_bits_time\":1701911128909,\r\n         \"np_peak_pass_rate_packets\":213541,\r\n         \"np_peak_pass_rate_packets_time\":1701911128909,\r\n         \"np_peak_rx_rate_bits\":2518773072,\r\n         \"np_peak_rx_rate_bits_time\":1701911127910,\r\n         \"np_peak_rx_rate_packets\":212970,\r\n         \"np_peak_rx_rate_packets_time\":1701911127910,\r\n         \"np_peak_rx_utilization\":0.25528482,\r\n         \"np_peak_rx_utilization_time\":1701911127910,\r\n         \"np_total_afm_drop_count_packets\":0,\r\n         \"np_total_data_masking_count_packets\":0,\r\n         \"np_total_data_masking_percent_packets\":0,\r\n         \"np_total_dedup_count_packets\":616154859,\r\n         \"np_total_dedup_percent_packets\":0.004486405,\r\n         \"np_total_deny_count_bytes\":0,\r\n         \"np_total_deny_count_packets\":0,\r\n         \"np_total_erspan_strip_count_packets\":0,\r\n         \"np_total_erspan_strip_error_packets\":0,\r\n         \"np_total_erspan_strip_percent_packets\":0,\r\n         \"np_total_etag_strip_count_packets\":0,\r\n         \"np_total_etag_strip_percent_packets\":0,\r\n         \"np_total_fabric_path_strip_count_packets\":0,\r\n         \"np_total_fabric_path_strip_percent_packets\":0,\r\n         \"np_total_generic_strip_count_packets\":0,\r\n         \"np_total_generic_strip_error_packets\":0,\r\n         \"np_total_generic_strip_percent_packets\":0,\r\n         \"np_total_gtp_strip_count_packets\":0,\r\n         \"np_total_gtp_strip_error_packets\":0,\r\n         \"np_total_gtp_strip_percent_packets\":0,\r\n         \"np_total_l2gre_strip_count_packets\":0,\r\n         \"np_total_l2gre_strip_error_packets\":0,\r\n         \"np_total_l2gre_strip_percent_packets\":0,\r\n         \"np_total_lisp_strip_count_packets\":0,\r\n         \"np_total_lisp_strip_error_packets\":0,\r\n         \"np_total_lisp_strip_percent_packets\":0,\r\n         \"np_total_mpls_strip_count_packets\":0,\r\n         \"np_total_mpls_strip_error_packets\":0,\r\n         \"np_total_mpls_strip_percent_packets\":0,\r\n         \"np_total_pass_count_bytes\":44652849531751,\r\n         \"np_total_pass_count_packets\":136722061650,\r\n         \"np_total_pppoe_strip_count_packets\":0,\r\n         \"np_total_pppoe_strip_percent_packets\":0,\r\n         \"np_total_reassembly_count_frags\":0,\r\n         \"np_total_reassembly_notprocessed_count_frags\":0,\r\n         \"np_total_reassembly_percent_frags\":0,\r\n         \"np_total_reassembly_reassembled_count_packets\":0,\r\n         \"np_total_reassembly_timedout_count_frags\":0,\r\n         \"np_total_rx_1024to1518_byte_packets\":16663529888,\r\n         \"np_total_rx_128to255_byte_packets\":39533710939,\r\n         \"np_total_rx_1519to2047_byte_packets\":894595025,\r\n         \"np_total_rx_2048to4095_byte_packets\":0,\r\n         \"np_total_rx_256to511_byte_packets\":45301311400,\r\n         \"np_total_rx_4096to9216_byte_packets\":0,\r\n         \"np_total_rx_512to1023_byte_packets\":4869385104,\r\n         \"np_total_rx_64_byte_packets\":155426,\r\n         \"np_total_rx_65to127_byte_packets\":30076616625,\r\n         \"np_total_rx_9217to16838_byte_packets\":0,\r\n         \"np_total_rx_count_alignment_errors\":0,\r\n         \"np_total_rx_count_bcast_packets\":836117,\r\n         \"np_total_rx_count_bytes\":51630239202095,\r\n         \"np_total_rx_count_collisions\":0,\r\n         \"np_total_rx_count_crc_alignment_errors\":12,\r\n         \"np_total_rx_count_fcs_errors\":12,\r\n         \"np_total_rx_count_fragments\":0,\r\n         \"np_total_rx_count_frames_too_long\":0,\r\n         \"np_total_rx_count_invalid_packets\":12,\r\n         \"np_total_rx_count_jabbers\":0,\r\n         \"np_total_rx_count_mcast_packets\":12191533,\r\n         \"np_total_rx_count_nucast_packets\":13027650,\r\n         \"np_total_rx_count_packets\":137339304406,\r\n         \"np_total_rx_count_runts\":0,\r\n         \"np_total_rx_count_symbol_errors\":2,\r\n         \"np_total_rx_count_ucast_packets\":137326276744,\r\n         \"np_total_rx_count_valid_packets\":137339304394,\r\n         \"np_total_timestamp_or_packet_length_trailer_count_packets\":0,\r\n         \"np_total_timestamp_or_packet_length_trailer_percent_packets\":0,\r\n         \"np_total_timestamp_translation_count_packets\":0,\r\n         \"np_total_timestamp_translation_count_passed\":0,\r\n         \"np_total_timestamp_translation_percent_packets\":0,\r\n         \"np_total_timestamp_translation_percent_passed\":0,\r\n         \"np_total_trim_count_bytes\":0,\r\n         \"np_total_trim_count_packets\":0,\r\n         \"np_total_trim_percent_bytes\":0,\r\n         \"np_total_trim_percent_packets\":0,\r\n         \"np_total_tunnel_term_count_packets\":137326023912,\r\n         \"np_total_tunnel_term_error_packets\":0,\r\n         \"np_total_tunnel_term_percent_packets\":1,\r\n         \"np_total_vntag_strip_count_packets\":0,\r\n         \"np_total_vntag_strip_percent_packets\":0,\r\n         \"np_total_vxlan_strip_count_packets\":0,\r\n         \"np_total_vxlan_strip_error_packets\":0,\r\n         \"np_total_vxlan_strip_percent_packets\":0,\r\n         \"reset_time\":1683156484552,\r\n         \"rs_average_drop_rate_packets\":0,\r\n         \"rs_average_transmit_rate_bytes\":21958190,\r\n         \"rs_average_transmit_rate_packets\":7301,\r\n         \"rs_current_drop_rate_packets\":0,\r\n         \"rs_current_transmit_rate_bytes\":23227924,\r\n         \"rs_current_transmit_rate_packets\":12012,\r\n         \"rs_peak_drop_rate_packets\":0,\r\n         \"rs_peak_drop_rate_packets_time\":1701966818122,\r\n         \"rs_peak_transmit_rate_bytes\":2525321424,\r\n         \"rs_peak_transmit_rate_bytes_time\":1701911127910,\r\n         \"rs_peak_transmit_rate_packets\":213541,\r\n         \"rs_peak_transmit_rate_packets_time\":1701911127910,\r\n         \"rs_total_drop_count_packets\":0,\r\n         \"rs_total_transmit_count_bytes\":51630112107898,\r\n         \"rs_total_transmit_count_packets\":137338216489,\r\n         \"stats_time\":1701966818122,\r\n         \"type\":\"Port\"\r\n      },\r\n      {\r\n         \"default_name\":\"P17\",\r\n         \"id\":\"24\",\r\n         \"reset_by\":\"trakoto\",\r\n         \"reset_time\":1676469625207,\r\n         \"stats_time\":1701966818122,\r\n         \"tp_average_drop_rate_packets\":0,\r\n         \"tp_average_insp_rate_packets\":10429,\r\n         \"tp_average_pass_percent_packets\":1,\r\n         \"tp_average_pass_rate_bits\":64169785,\r\n         \"tp_average_pass_rate_packets\":10429,\r\n         \"tp_average_tx_rate_bits\":64169785,\r\n         \"tp_average_tx_rate_packets\":10429,\r\n         \"tp_average_tx_utilization\":0.0065838424,\r\n         \"tp_current_drop_rate_packets\":0,\r\n         \"tp_current_insp_rate_packets\":0,\r\n         \"tp_current_pass_percent_packets\":0,\r\n         \"tp_current_pass_rate_bits\":0,\r\n         \"tp_current_pass_rate_packets\":0,\r\n         \"tp_current_tx_rate_bits\":0,\r\n         \"tp_current_tx_rate_packets\":0,\r\n         \"tp_current_tx_utilization\":0,\r\n         \"tp_drop_reset_by\":\"trakoto\",\r\n         \"tp_drop_reset_time\":1676469625207,\r\n         \"tp_peak_drop_rate_packets\":0,\r\n         \"tp_peak_drop_rate_packets_time\":1701966818122,\r\n         \"tp_peak_insp_rate_packets\":145172,\r\n         \"tp_peak_insp_rate_packets_time\":1700559879522,\r\n         \"tp_peak_pass_percent_packets\":1,\r\n         \"tp_peak_pass_percent_packets_time\":1701300392504,\r\n         \"tp_peak_pass_rate_bits\":943515944,\r\n         \"tp_peak_pass_rate_bits_time\":1683215824054,\r\n         \"tp_peak_pass_rate_packets\":145172,\r\n         \"tp_peak_pass_rate_packets_time\":1700559879522,\r\n         \"tp_peak_tx_rate_bits\":943515944,\r\n         \"tp_peak_tx_rate_bits_time\":1683215824054,\r\n         \"tp_peak_tx_rate_packets\":145172,\r\n         \"tp_peak_tx_rate_packets_time\":1700559879522,\r\n         \"tp_peak_tx_utilization\":0.09615128,\r\n         \"tp_peak_tx_utilization_time\":1683215824054,\r\n         \"tp_total_drop_count_packets\":0,\r\n         \"tp_total_insp_count_packets\":265915012102,\r\n         \"tp_total_pass_count_bytes\":204518676518600,\r\n         \"tp_total_pass_count_packets\":265915012102,\r\n         \"tp_total_rx_pause_count_packets\":0,\r\n         \"tp_total_tx_1024to1518_byte_packets\":88492905359,\r\n         \"tp_total_tx_128to255_byte_packets\":32192973755,\r\n         \"tp_total_tx_1519to2047_byte_packets\":31154829805,\r\n         \"tp_total_tx_2048to4095_byte_packets\":0,\r\n         \"tp_total_tx_256to511_byte_packets\":16868075006,\r\n         \"tp_total_tx_4096to9216_byte_packets\":0,\r\n         \"tp_total_tx_512to1023_byte_packets\":17803279118,\r\n         \"tp_total_tx_64_byte_packets\":37364972736,\r\n         \"tp_total_tx_65to127_byte_packets\":42037976323,\r\n         \"tp_total_tx_9217to16838_byte_packets\":0,\r\n         \"tp_total_tx_count_bcast_packets\":73911,\r\n         \"tp_total_tx_count_bytes\":204518676518600,\r\n         \"tp_total_tx_count_invalid_packets\":0,\r\n         \"tp_total_tx_count_mcast_packets\":49224976,\r\n         \"tp_total_tx_count_packets\":265915012102,\r\n         \"tp_total_tx_count_ucast_packets\":265865713215,\r\n         \"type\":\"Port\"\r\n      },\r\n      {\r\n         \"default_name\":\"P14\",\r\n         \"id\":\"21\",\r\n         \"np_average_deny_percent_bytes\":0,\r\n         \"np_average_deny_percent_packets\":0,\r\n         \"np_average_deny_rate_bits\":0,\r\n         \"np_average_deny_rate_packets\":0,\r\n         \"np_average_pass_percent_bytes\":1,\r\n         \"np_average_pass_percent_packets\":1,\r\n         \"np_average_pass_rate_bits\":22477642,\r\n         \"np_average_pass_rate_packets\":10578,\r\n         \"np_average_rx_rate_bits\":22477642,\r\n         \"np_average_rx_rate_packets\":10578,\r\n         \"np_average_rx_utilization\":0.0024170121,\r\n         \"np_current_deny_percent_bytes\":0,\r\n         \"np_current_deny_percent_packets\":0,\r\n         \"np_current_deny_rate_bits\":0,\r\n         \"np_current_deny_rate_packets\":0,\r\n         \"np_current_pass_percent_bytes\":1,\r\n         \"np_current_pass_percent_packets\":1,\r\n         \"np_current_pass_rate_bits\":25532275,\r\n         \"np_current_pass_rate_packets\":16308,\r\n         \"np_current_rx_rate_bits\":25532275,\r\n         \"np_current_rx_rate_packets\":16308,\r\n         \"np_current_rx_utilization\":0.0028141555,\r\n         \"np_peak_deny_percent_bytes\":0,\r\n         \"np_peak_deny_percent_bytes_time\":1701966818122,\r\n         \"np_peak_deny_percent_packets\":0,\r\n         \"np_peak_deny_percent_packets_time\":1701966818122,\r\n         \"np_peak_deny_rate_bits\":0,\r\n         \"np_peak_deny_rate_bits_time\":1701966818122,\r\n         \"np_peak_deny_rate_packets\":0,\r\n         \"np_peak_deny_rate_packets_time\":1701966818122,\r\n         \"np_peak_pass_percent_bytes\":1,\r\n         \"np_peak_pass_percent_bytes_time\":1701966818122,\r\n         \"np_peak_pass_percent_packets\":1,\r\n         \"np_peak_pass_percent_packets_time\":1701966818122,\r\n         \"np_peak_pass_rate_bits\":2439314064,\r\n         \"np_peak_pass_rate_bits_time\":1701911127910,\r\n         \"np_peak_pass_rate_packets\":216277,\r\n         \"np_peak_pass_rate_packets_time\":1701911127910,\r\n         \"np_peak_rx_rate_bits\":2439314064,\r\n         \"np_peak_rx_rate_bits_time\":1701911127910,\r\n         \"np_peak_rx_rate_packets\":216277,\r\n         \"np_peak_rx_rate_packets_time\":1701911127910,\r\n         \"np_peak_rx_utilization\":0.24739183,\r\n         \"np_peak_rx_utilization_time\":1701911127910,\r\n         \"np_total_deny_count_bytes\":0,\r\n         \"np_total_deny_count_packets\":0,\r\n         \"np_total_pass_count_bytes\":65082974198729,\r\n         \"np_total_pass_count_packets\":245046060993,\r\n         \"np_total_rx_1024to1518_byte_packets\":21428145885,\r\n         \"np_total_rx_128to255_byte_packets\":85098305179,\r\n         \"np_total_rx_1519to2047_byte_packets\":1921,\r\n         \"np_total_rx_2048to4095_byte_packets\":0,\r\n         \"np_total_rx_256to511_byte_packets\":7635601428,\r\n         \"np_total_rx_4096to9216_byte_packets\":0,\r\n         \"np_total_rx_512to1023_byte_packets\":7026993037,\r\n         \"np_total_rx_64_byte_packets\":11093907539,\r\n         \"np_total_rx_65to127_byte_packets\":112763106004,\r\n         \"np_total_rx_9217to16838_byte_packets\":0,\r\n         \"np_total_rx_count_alignment_errors\":0,\r\n         \"np_total_rx_count_bcast_packets\":210635079,\r\n         \"np_total_rx_count_bytes\":65082974198729,\r\n         \"np_total_rx_count_collisions\":0,\r\n         \"np_total_rx_count_crc_alignment_errors\":0,\r\n         \"np_total_rx_count_fcs_errors\":0,\r\n         \"np_total_rx_count_fragments\":0,\r\n         \"np_total_rx_count_frames_too_long\":0,\r\n         \"np_total_rx_count_invalid_packets\":0,\r\n         \"np_total_rx_count_jabbers\":0,\r\n         \"np_total_rx_count_mcast_packets\":637170736,\r\n         \"np_total_rx_count_nucast_packets\":847805815,\r\n         \"np_total_rx_count_packets\":245046060993,\r\n         \"np_total_rx_count_runts\":0,\r\n         \"np_total_rx_count_symbol_errors\":0,\r\n         \"np_total_rx_count_ucast_packets\":244198255178,\r\n         \"np_total_rx_count_valid_packets\":245046060993,\r\n         \"reset_by\":\"admin\",\r\n         \"reset_time\":1678803187943,\r\n         \"stats_time\":1701966818122,\r\n         \"tp_average_drop_rate_packets\":0,\r\n         \"tp_average_insp_rate_packets\":10578,\r\n         \"tp_average_pass_percent_packets\":1,\r\n         \"tp_average_pass_rate_bits\":22477642,\r\n         \"tp_average_pass_rate_packets\":10578,\r\n         \"tp_average_tx_rate_bits\":22477642,\r\n         \"tp_average_tx_rate_packets\":10578,\r\n         \"tp_average_tx_utilization\":0.0024170121,\r\n         \"tp_current_drop_rate_packets\":0,\r\n         \"tp_current_insp_rate_packets\":16307,\r\n         \"tp_current_pass_percent_packets\":1,\r\n         \"tp_current_pass_rate_bits\":25532275,\r\n         \"tp_current_pass_rate_packets\":16307,\r\n         \"tp_current_tx_rate_bits\":25532275,\r\n         \"tp_current_tx_rate_packets\":16307,\r\n         \"tp_current_tx_utilization\":0.0028141395,\r\n         \"tp_drop_reset_by\":\"admin\",\r\n         \"tp_drop_reset_time\":1678803187943,\r\n         \"tp_peak_drop_rate_packets\":0,\r\n         \"tp_peak_drop_rate_packets_time\":1701966818122,\r\n         \"tp_peak_insp_rate_packets\":216277,\r\n         \"tp_peak_insp_rate_packets_time\":1701911127910,\r\n         \"tp_peak_pass_percent_packets\":1,\r\n         \"tp_peak_pass_percent_packets_time\":1701966818122,\r\n         \"tp_peak_pass_rate_bits\":2439314064,\r\n         \"tp_peak_pass_rate_bits_time\":1701911127910,\r\n         \"tp_peak_pass_rate_packets\":216277,\r\n         \"tp_peak_pass_rate_packets_time\":1701911127910,\r\n         \"tp_peak_tx_rate_bits\":2439314064,\r\n         \"tp_peak_tx_rate_bits_time\":1701911127910,\r\n         \"tp_peak_tx_rate_packets\":216277,\r\n         \"tp_peak_tx_rate_packets_time\":1701911127910,\r\n         \"tp_peak_tx_utilization\":0.24739183,\r\n         \"tp_peak_tx_utilization_time\":1701911127910,\r\n         \"tp_total_drop_count_packets\":0,\r\n         \"tp_total_insp_count_packets\":245046060993,\r\n         \"tp_total_pass_count_bytes\":65082974198729,\r\n         \"tp_total_pass_count_packets\":245046060993,\r\n         \"tp_total_rx_pause_count_packets\":0,\r\n         \"tp_total_tx_1024to1518_byte_packets\":21428145885,\r\n         \"tp_total_tx_128to255_byte_packets\":85098305179,\r\n         \"tp_total_tx_1519to2047_byte_packets\":1921,\r\n         \"tp_total_tx_2048to4095_byte_packets\":0,\r\n         \"tp_total_tx_256to511_byte_packets\":7635601428,\r\n         \"tp_total_tx_4096to9216_byte_packets\":0,\r\n         \"tp_total_tx_512to1023_byte_packets\":7026993037,\r\n         \"tp_total_tx_64_byte_packets\":11093907539,\r\n         \"tp_total_tx_65to127_byte_packets\":112763106004,\r\n         \"tp_total_tx_9217to16838_byte_packets\":0,\r\n         \"tp_total_tx_count_bcast_packets\":210635079,\r\n         \"tp_total_tx_count_bytes\":65082974198729,\r\n         \"tp_total_tx_count_invalid_packets\":0,\r\n         \"tp_total_tx_count_mcast_packets\":637170736,\r\n         \"tp_total_tx_count_packets\":245046060993,\r\n         \"tp_total_tx_count_ucast_packets\":244198255178,\r\n         \"type\":\"Port\"\r\n      },\r\n      {\r\n         \"default_name\":\"F23\",\r\n         \"df_average_deny_percent_bytes\":0,\r\n         \"df_average_deny_percent_packets\":0,\r\n         \"df_average_deny_rate_bits\":0,\r\n         \"df_average_deny_rate_packets\":0,\r\n         \"df_average_insp_rate_bits\":541243419,\r\n         \"df_average_insp_rate_packets\":72182,\r\n         \"df_average_pass_percent_bytes\":1,\r\n         \"df_average_pass_percent_packets\":1,\r\n         \"df_average_pass_rate_bits\":541243419,\r\n         \"df_average_pass_rate_packets\":72182,\r\n         \"df_current_deny_percent_bytes\":0,\r\n         \"df_current_deny_percent_packets\":0,\r\n         \"df_current_deny_rate_bits\":0,\r\n         \"df_current_deny_rate_packets\":0,\r\n         \"df_current_insp_rate_bits\":582952981,\r\n         \"df_current_insp_rate_packets\":82823,\r\n         \"df_current_pass_percent_bytes\":1,\r\n         \"df_current_pass_percent_packets\":1,\r\n         \"df_current_pass_rate_bits\":582952981,\r\n         \"df_current_pass_rate_packets\":82823,\r\n         \"df_peak_deny_percent_bytes\":0,\r\n         \"df_peak_deny_percent_bytes_time\":1701966818122,\r\n         \"df_peak_deny_percent_packets\":0,\r\n         \"df_peak_deny_percent_packets_time\":1701966818122,\r\n         \"df_peak_deny_rate_bits\":0,\r\n         \"df_peak_deny_rate_bits_time\":1701966818122,\r\n         \"df_peak_deny_rate_packets\":0,\r\n         \"df_peak_deny_rate_packets_time\":1701966818122,\r\n         \"df_peak_insp_rate_bits\":1138739896,\r\n         \"df_peak_insp_rate_bits_time\":1701856845806,\r\n         \"df_peak_insp_rate_packets\":163328,\r\n         \"df_peak_insp_rate_packets_time\":1701936649299,\r\n         \"df_peak_pass_percent_bytes\":1,\r\n         \"df_peak_pass_percent_bytes_time\":1701966818122,\r\n         \"df_peak_pass_percent_packets\":1,\r\n         \"df_peak_pass_percent_packets_time\":1701966818122,\r\n         \"df_peak_pass_rate_bits\":1138739896,\r\n         \"df_peak_pass_rate_bits_time\":1701856845806,\r\n         \"df_peak_pass_rate_packets\":163328,\r\n         \"df_peak_pass_rate_packets_time\":1701936649299,\r\n         \"df_total_deny_count_bytes\":0,\r\n         \"df_total_deny_count_packets\":0,\r\n         \"df_total_insp_count_bytes\":12972477769527,\r\n         \"df_total_insp_count_packets\":13840518683,\r\n         \"df_total_pass_before_resource_count_bytes\":12972477769527,\r\n         \"df_total_pass_before_resource_count_packets\":13840518683,\r\n         \"df_total_pass_count_bytes\":12972477769527,\r\n         \"df_total_pass_count_packets\":13840518683,\r\n         \"id\":\"161\",\r\n         \"reset_by\":\"admin\",\r\n         \"reset_time\":1701775074780,\r\n         \"stats_time\":1701966818122,\r\n         \"type\":\"Dynamic Filter\"\r\n      },\r\n      {\r\n         \"default_name\":\"F22\",\r\n         \"df_average_deny_percent_bytes\":0,\r\n         \"df_average_deny_percent_packets\":0,\r\n         \"df_average_deny_rate_bits\":0,\r\n         \"df_average_deny_rate_packets\":0,\r\n         \"df_average_insp_rate_bits\":30559366,\r\n         \"df_average_insp_rate_packets\":13540,\r\n         \"df_average_pass_percent_bytes\":0.9999998,\r\n         \"df_average_pass_percent_packets\":0.99999976,\r\n         \"df_average_pass_rate_bits\":30559360,\r\n         \"df_average_pass_rate_packets\":13540,\r\n         \"df_current_deny_percent_bytes\":0,\r\n         \"df_current_deny_percent_packets\":0,\r\n         \"df_current_deny_rate_bits\":0,\r\n         \"df_current_deny_rate_packets\":0,\r\n         \"df_current_insp_rate_bits\":25539843,\r\n         \"df_current_insp_rate_packets\":16275,\r\n         \"df_current_pass_percent_bytes\":1,\r\n         \"df_current_pass_percent_packets\":1,\r\n         \"df_current_pass_rate_bits\":25655098,\r\n         \"df_current_pass_rate_packets\":16294,\r\n         \"df_peak_deny_percent_bytes\":0,\r\n         \"df_peak_deny_percent_bytes_time\":1701966818122,\r\n         \"df_peak_deny_percent_packets\":0,\r\n         \"df_peak_deny_percent_packets_time\":1701966818122,\r\n         \"df_peak_deny_rate_bits\":0,\r\n         \"df_peak_deny_rate_bits_time\":1701966818122,\r\n         \"df_peak_deny_rate_packets\":0,\r\n         \"df_peak_deny_rate_packets_time\":1701966818122,\r\n         \"df_peak_insp_rate_bits\":2445067960,\r\n         \"df_peak_insp_rate_bits_time\":1701911127910,\r\n         \"df_peak_insp_rate_packets\":216800,\r\n         \"df_peak_insp_rate_packets_time\":1701911127910,\r\n         \"df_peak_pass_percent_bytes\":1,\r\n         \"df_peak_pass_percent_bytes_time\":1701966818122,\r\n         \"df_peak_pass_percent_packets\":1,\r\n         \"df_peak_pass_percent_packets_time\":1701966818122,\r\n         \"df_peak_pass_rate_bits\":2445910912,\r\n         \"df_peak_pass_rate_bits_time\":1701911127910,\r\n         \"df_peak_pass_rate_packets\":216884,\r\n         \"df_peak_pass_rate_packets_time\":1701911127910,\r\n         \"df_total_deny_count_bytes\":0,\r\n         \"df_total_deny_count_packets\":0,\r\n         \"df_total_insp_count_bytes\":49273247902243,\r\n         \"df_total_insp_count_packets\":174658538323,\r\n         \"df_total_pass_before_resource_count_bytes\":49273247902243,\r\n         \"df_total_pass_before_resource_count_packets\":174658538323,\r\n         \"df_total_pass_count_bytes\":49273237928768,\r\n         \"df_total_pass_count_packets\":174658495168,\r\n         \"id\":\"151\",\r\n         \"np_total_afm_drop_count_packets\":0,\r\n         \"np_total_data_masking_count_packets\":0,\r\n         \"np_total_data_masking_percent_packets\":0,\r\n         \"np_total_dedup_count_packets\":132,\r\n         \"np_total_dedup_percent_packets\":7.5576057E-10,\r\n         \"np_total_erspan_strip_count_packets\":0,\r\n         \"np_total_erspan_strip_error_packets\":0,\r\n         \"np_total_erspan_strip_percent_packets\":0,\r\n         \"np_total_etag_strip_count_packets\":0,\r\n         \"np_total_etag_strip_percent_packets\":0,\r\n         \"np_total_fabric_path_strip_count_packets\":0,\r\n         \"np_total_fabric_path_strip_percent_packets\":0,\r\n         \"np_total_generic_strip_count_packets\":0,\r\n         \"np_total_generic_strip_error_packets\":0,\r\n         \"np_total_generic_strip_percent_packets\":0,\r\n         \"np_total_gtp_strip_count_packets\":0,\r\n         \"np_total_gtp_strip_error_packets\":0,\r\n         \"np_total_gtp_strip_percent_packets\":0,\r\n         \"np_total_l2gre_strip_count_packets\":0,\r\n         \"np_total_l2gre_strip_error_packets\":0,\r\n         \"np_total_l2gre_strip_percent_packets\":0,\r\n         \"np_total_lisp_strip_count_packets\":0,\r\n         \"np_total_lisp_strip_error_packets\":0,\r\n         \"np_total_lisp_strip_percent_packets\":0,\r\n         \"np_total_mpls_strip_count_packets\":0,\r\n         \"np_total_mpls_strip_error_packets\":0,\r\n         \"np_total_mpls_strip_percent_packets\":0,\r\n         \"np_total_pppoe_strip_count_packets\":0,\r\n         \"np_total_pppoe_strip_percent_packets\":0,\r\n         \"np_total_reassembly_count_frags\":0,\r\n         \"np_total_reassembly_notprocessed_count_frags\":0,\r\n         \"np_total_reassembly_percent_frags\":0,\r\n         \"np_total_reassembly_reassembled_count_packets\":0,\r\n         \"np_total_reassembly_timedout_count_frags\":0,\r\n         \"np_total_timestamp_or_packet_length_trailer_count_packets\":0,\r\n         \"np_total_timestamp_or_packet_length_trailer_percent_packets\":0,\r\n         \"np_total_timestamp_translation_count_packets\":0,\r\n         \"np_total_timestamp_translation_count_passed\":0,\r\n         \"np_total_timestamp_translation_percent_packets\":0,\r\n         \"np_total_timestamp_translation_percent_passed\":0,\r\n         \"np_total_trim_count_bytes\":0,\r\n         \"np_total_trim_count_packets\":0,\r\n         \"np_total_trim_percent_bytes\":0,\r\n         \"np_total_trim_percent_packets\":0,\r\n         \"np_total_vntag_strip_count_packets\":0,\r\n         \"np_total_vntag_strip_percent_packets\":0,\r\n         \"np_total_vxlan_strip_count_packets\":0,\r\n         \"np_total_vxlan_strip_error_packets\":0,\r\n         \"np_total_vxlan_strip_percent_packets\":0,\r\n         \"reset_by\":\"admin\",\r\n         \"reset_time\":1689067794830,\r\n         \"rs_average_drop_rate_packets\":0,\r\n         \"rs_average_transmit_rate_bytes\":30559360,\r\n         \"rs_average_transmit_rate_packets\":13540,\r\n         \"rs_current_drop_rate_packets\":0,\r\n         \"rs_current_transmit_rate_bytes\":25655098,\r\n         \"rs_current_transmit_rate_packets\":16293,\r\n         \"rs_peak_drop_rate_packets\":0,\r\n         \"rs_peak_drop_rate_packets_time\":1701966818122,\r\n         \"rs_peak_transmit_rate_bytes\":2445910912,\r\n         \"rs_peak_transmit_rate_bytes_time\":1701911127910,\r\n         \"rs_peak_transmit_rate_packets\":216884,\r\n         \"rs_peak_transmit_rate_packets_time\":1701911127910,\r\n         \"rs_total_drop_count_packets\":0,\r\n         \"rs_total_transmit_count_bytes\":49273237945356,\r\n         \"rs_total_transmit_count_packets\":174658495301,\r\n         \"stats_time\":1701966818122,\r\n         \"type\":\"Dynamic Filter\"\r\n      }\r\n   ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "The request has succeeded",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "046ff40f-fc70-4292-92a8-28c991316240",
+      "type": "http",
+      "documentation": "Get PG1 port details (Port Group)",
+      "method": "get",
+      "endpoint": "api/ports/PG1",
+      "responses": [
+        {
+          "uuid": "a88f272f-a8de-46f2-a62f-0b9dd209c079",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8690a790-9a24-45c3-a6ad-fc27d8f3d8fe",
+      "type": "http",
+      "documentation": "Get P01 port details (Network Port)",
+      "method": "get",
+      "endpoint": "api/ports/P01",
+      "responses": [
+        {
+          "uuid": "15cb91a9-91fa-442f-80d0-48c807cd7773",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c308af63-c0b5-4d5e-a121-f532fe35f2a2",
+      "type": "http",
+      "documentation": "Get P12 port details (Network Port with dedup)",
+      "method": "get",
+      "endpoint": "api/ports/P12",
+      "responses": [
+        {
+          "uuid": "273baba8-e0fb-4aac-8612-6731228d529b",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a9936e6f-a78c-4de2-ba66-9823460b24a4",
+      "type": "http",
+      "documentation": "Get P17 port details (Tool Port)",
+      "method": "get",
+      "endpoint": "api/ports/P17",
+      "responses": [
+        {
+          "uuid": "1f967d6d-9847-4c8b-a093-080481b1bed1",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3e56d0a7-0048-47f0-99e6-f686b85307d4",
+      "type": "http",
+      "documentation": "Get P14 port details (Loopback dedup)",
+      "method": "get",
+      "endpoint": "api/ports/P14",
+      "responses": [
+        {
+          "uuid": "d0203a6b-2698-47b6-a0db-e7f44503bacc",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "977c593b-78ea-484c-92d2-2a9aeef5c7bc",
+      "type": "http",
+      "documentation": "Get F23 port details (Dynamic Filter without dedup)",
+      "method": "get",
+      "endpoint": "api/ports/F23",
+      "responses": [
+        {
+          "uuid": "f263a9d4-b331-4852-97aa-97279bb26e7d",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "754605e2-78ef-4c98-820c-9c56c08c3367",
+      "type": "http",
+      "documentation": "Get F22 port details (Dynamic Filter with dedup)",
+      "method": "get",
+      "endpoint": "api/ports/F22",
+      "responses": [
+        {
+          "uuid": "9fbb85f7-137f-4c04-813b-df7e8ab7052e",
+          "body": "{\r\n   \"enabled\":1,\r\n   \"license_status\":\"VALID\",\r\n   \"link_status\":{\r\n      \"link_up\":1\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "b0e757a3-0415-4735-bb4a-b10f1fc7d43b",
+      "type": "http",
+      "documentation": "Get system properties",
+      "method": "get",
+      "endpoint": "api/system",
+      "responses": [
+        {
+          "uuid": "d7ad5274-8136-4254-8745-8cc2daa82759",
+          "body": "{\r\n   \"subsystem_alarms\":{\r\n      \"subsystem_alarms\":{\r\n         \"LicenseExpirationStatus\":{\r\n            \"info\":[\r\n                \"Expired: Maintenance; Oct 20, 2023 23:59:59 GMT\"\r\n            ],\r\n            \"state\":\"NONE\",\r\n            \"time\":1701701956881\r\n         }\r\n      }\r\n   }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "beee08c1-0fbb-4ccc-b233-90908aebfa03"
+    },
+    {
+      "type": "route",
+      "uuid": "046ff40f-fc70-4292-92a8-28c991316240"
+    },
+    {
+      "type": "route",
+      "uuid": "8690a790-9a24-45c3-a6ad-fc27d8f3d8fe"
+    },
+    {
+      "type": "route",
+      "uuid": "c308af63-c0b5-4d5e-a121-f532fe35f2a2"
+    },
+    {
+      "type": "route",
+      "uuid": "a9936e6f-a78c-4de2-ba66-9823460b24a4"
+    },
+    {
+      "type": "route",
+      "uuid": "3e56d0a7-0048-47f0-99e6-f686b85307d4"
+    },
+    {
+      "type": "route",
+      "uuid": "977c593b-78ea-484c-92d2-2a9aeef5c7bc"
+    },
+    {
+      "type": "route",
+      "uuid": "754605e2-78ef-4c98-820c-9c56c08c3367"
+    },
+    {
+      "type": "route",
+      "uuid": "b0e757a3-0415-4735-bb4a-b10f1fc7d43b"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

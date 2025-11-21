@@ -87,7 +87,7 @@ sub run {
         $new_datas->{$row->[2] . '_blks_hit'} = $row->[0];
         $new_datas->{$row->[2] . '_blks_read'} = $row->[1];
 
-        if (defined($self->{option_results}->{exclude}) && $row->[2] !~ /$self->{option_results}->{exclude}/) {
+        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $row->[2] =~ /$self->{option_results}->{exclude}/) {
             $self->{output}->output_add(long_msg => "Skipping database '" . $row->[2] . '"');
             next;
         }
@@ -165,7 +165,7 @@ __END__
 
 =head1 MODE
 
-Check hitratio (in buffer cache) for databases.
+Check hit ratio (in buffer cache) for databases.
 
 =over 8
 

@@ -1,0 +1,1333 @@
+{
+  "uuid": "7cb573a3-d7c3-4d52-9c9d-51afb22705e1",
+  "lastMigration": 33,
+  "name": "Scenario (copy)",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "655cde3b-919e-4849-932b-8f5e8f7c000e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "2c9ac093-4a53-400a-83f8-d5516223f33b",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c5445880-be60-406c-b722-a8ca5ef5068b",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "auth/login",
+      "responses": [
+        {
+          "uuid": "9648cbc2-0bbe-40c9-8416-8a2209406f97",
+          "body": "{\"success\":true,\"token\":\"VeryLongTokenToAuthenticate\",\"refreshToken\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFkY2YyYzY3LTFkYjAtNGRmZC1iNWRhLTFlZGI1YmE1NjU5MyIsImlhdCI6MTczNTU1NTA5MSwiZXhwIjoxNzM1NjQxNDkxfQ.vlFegdSvC9207ATXpb4ocNBESBU7wPfMsGwXOvZd8yU\",\"language\":\"fr-FR\",\"role\":[{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"restitution\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"configuration\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"infrastructure\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"administration\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"script\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"script\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"script\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"script\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"rum.bo.tracker\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"rum.bo.tracker\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"rum.bo.tracker\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"rum.bo.tracker\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"rum.bo.urlgroup\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"rum.bo.urlgroup\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"rum.bo.urlgroup\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"rum.bo.customdims\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"rum.bo.customdims\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"rum.bo.customdims\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"rum.bo.reference\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"rum.bo.reference\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"rum.bo.reference\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"rum.bo.reference\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"rum.restit\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"client\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"client\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"client\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"client\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"enterprise\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"application\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"application\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"application\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"application\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"scenario\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"scenario\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"scenario\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"scenario\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"user\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"user\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"user\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"user\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"zone\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"zone\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"zone\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"zone\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"planning\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"planning\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"planning\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"planning\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"queue\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"site\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"user.current\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"dataviz\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"alert\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"alert\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"alert\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"alert\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"report\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"report\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"report\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"report\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.overview\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.consoles\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.performance\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.rum\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.rumtendency\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.zones\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.scenarios\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.scripts\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.trackers\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.urlgroup\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.customdim\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.entities\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.applications\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.users\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"robot\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.plannings\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"rumbi\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.alerts\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"rum.bo.tracker.ratio\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.incidents\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.reports.views\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.reports.share\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.report\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"exposedConfig\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"useractionlog\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.useractionlog\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"downloadvuecontent\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"shareddata\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"shareddata\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"shareddata\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"shareddata\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.shareddata\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.workspaces\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"workspace\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"workspace\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"workspace\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"workspace\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"dataexclusion\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"dataexclusion\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"dataexclusion\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.failures\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.designCompare\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"clientrestriction\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"notificationpush\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"notificationpush\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"notificationpush\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.sitesCompare\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"webhooks\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"webhooks\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"webhooks\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"webhooks\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"tagvalues\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.dataexclusion\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"proxy\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"proxy\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"proxy\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.integration.webhooks\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.integration.identityproviders\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"identityproviders\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"identityproviders\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"identityproviders\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"identityproviders\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.proxiesConfigurations\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"proxiesConfigurations\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"proxiesConfigurations\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"proxiesConfigurations\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"proxiesConfigurations\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"comment\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"comment\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"comment\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"comment\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.comments\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.usage.consumption\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"failurespersites\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.failurespersites\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"usageConsumption\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.goals\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.reports.published\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.statustimeline\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.infrastructure.home\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"inventories\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.infrastructure.load\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"infra_sitesworkersload\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.trend\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"green_app\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.green.home\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"scenarioreplay\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"scenarioreplay\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"scenarioreplay\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"scenariodetail\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.integration.apikeys\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"apikeys\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"apikeys\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"apikeys\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"apikeys\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.scenariostatus\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.browseragents\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"browseragents\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"browseragents\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"browseragents\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"browseragents\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.administration.roles\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"role\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"role\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"role\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"role\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"component\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"component\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"component\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"component\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.browseragents\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.configuration.browseragents.targeturls\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"targeturl\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"targeturl\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"targeturl\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"targeturl\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"scenario-startstop\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"falsepositive\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.falsepositive.home\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"robot-ip\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"consumption-quota\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"configuration-dataexclusion\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"configuration-dataexclusion\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"menu.restitution.dashboard\"},{\"role\":\"Manager\",\"action\":\"read:any\",\"resource\":\"ekara-availability\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"restitution-dataexclusion\"},{\"role\":\"Manager\",\"action\":\"delete:any\",\"resource\":\"restitution-dataexclusion\"},{\"role\":\"Manager\",\"action\":\"create:any\",\"resource\":\"configuration-script\"},{\"role\":\"Manager\",\"action\":\"update:any\",\"resource\":\"configuration-script\"}],\"password\":{\"status\":\"ACTIVE\",\"expirationDate\":\"2025-06-10\"},\"rgpd\":\"2023-10-11T07:56:13Z\",\"license\":{\"customerName\":\"IPLABEL PROD\",\"expirationDate\":\"2028-02-06\",\"platform\":\"Cloud Platform\",\"options\":{\"ekaraOnCall\":false,\"browserAgent\":true},\"status\":\"ACTIVE\"},\"features\":[]}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "$.password",
+              "value": "password",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "body",
+              "modifier": "$.email",
+              "value": "username",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "78743a5e-1c29-4fa3-8a5d-b9e0298a9318",
+          "body": "{\n  \"success\": false,\n  \"message\": \"Wrong email or password\"\n}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "if user/password are not sent, don't send back the token.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a6aab3c4-806e-4d3d-a3ba-2be0dec50ef5",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/scenarios/status",
+      "responses": [
+        {
+          "uuid": "e68a70e7-5eef-4f78-808c-e3cdaa19606c",
+          "body": "[\n  {\n    \"scenarioId\": \"09fe2561-315b-470f-a7ac-9c30fbd2e0fb\",\n    \"scenarioName\": \"AKILA - (Web)\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2024-12-30T10:21:03Z\"\n  },\n  {\n    \"scenarioId\": \"127a149b-0fa6-4859-820e-9c4db23b6454\",\n    \"scenarioName\": \"AKILA - (Browser Page Load)\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-30T07:20:08Z\"\n  },\n  {\n    \"scenarioId\": \"41d36b91-a4d3-4b00-a3ca-9e4fcf737d30\",\n    \"scenarioName\": \"Centreon Demo Parcours - Custom views\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-29T23:48:39Z\"\n  },\n  {\n    \"scenarioId\": \"425bff8b-51eb-4b68-8529-6258e7b7888c\",\n    \"scenarioName\": \"Centreon Demo ping Paris\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-04T06:15:00Z\"\n  },\n  {\n    \"scenarioId\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scenarioName\": \"Centreon Demo Navigation\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2024-12-30T10:06:04Z\"\n  },\n  {\n    \"scenarioId\": \"4fa9f25d-ae49-4848-823a-945e7f865f4b\",\n    \"scenarioName\": \"Centreon Demo ping NA\",\n    \"currentStatus\": 8,\n    \"startTime\": \"2024-12-30T10:30:21Z\"\n  },\n  {\n    \"scenarioId\": \"7622678e-ffec-49f5-8a67-7d1b4452bff6\",\n    \"scenarioName\": \"wrong currentstatus, no perfdata\",\n    \"currentStatus\": 14,\n    \"startTime\": \"2024-12-30T02:00:45Z\"\n  },\n  {\n    \"scenarioId\": \"8d0a798c-1b47-4142-869d-9bdabc9c126c\",\n    \"scenarioName\": \"Centreon Demo Parcours - Login\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-29T23:51:35Z\"\n  },\n  {\n    \"scenarioId\": \"eae701ac-4231-4fc5-94e3-08601ac591e9\",\n    \"scenarioName\": \"Centreon Demo ping Singapore\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-30T10:15:11Z\"\n  },\n  {\n    \"scenarioId\": \"fc6b739e-c18c-40ab-917c-61d20dff830c\",\n    \"scenarioName\": \"AKILA - Business App\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-30T09:30:23Z\"\n  },\n  {\n    \"scenarioId\": \"fe1ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"AKILA - (API) \",\n    \"currentStatus\": 1,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"unknown Status 0\",\n    \"currentStatus\": 0,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"unknown Status 3\",\n    \"currentStatus\": 3,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"unknown Status 4\",\n    \"currentStatus\": 4,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"unknown Status 5\",\n    \"currentStatus\": 5,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"unknown Status 6\",\n    \"currentStatus\": 6,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"unknown Status 7\",\n    \"currentStatus\": 7,\n    \"startTime\": \"2024-12-30T10:10:55Z\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "body",
+              "modifier": "$.statusFilter",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "X-api-key",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "04e28b1e-32fa-4f4b-bee2-b9ef5ad96516",
+          "body": "[\n  {\n    \"scenarioId\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scenarioName\": \"Centreon Demo Navigation\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2024-12-30T10:06:04Z\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filter by status for status 2",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "$.statusFilter.[*]",
+              "value": "2",
+              "invert": false,
+              "operator": "array_includes"
+            },
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "05977710-18d1-4571-8df1-f36ada2a139f",
+          "body": "[\n  {\n    \"scenarioId\": \"09fe2561-315b-470f-a7ac-9c30fbd2e0fb\",\n    \"scenarioName\": \"X-AKILA - (Web)\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2025-12-30T10:21:03Z\"\n  },\n  {\n    \"scenarioId\": \"127a149b-0fa6-4859-820e-9c4db23b6454\",\n    \"scenarioName\": \"X-AKILA - (Browser Page Load)\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T07:20:08Z\"\n  },\n  {\n    \"scenarioId\": \"41d36b91-a4d3-4b00-a3ca-9e4fcf737d30\",\n    \"scenarioName\": \"X-Centreon Demo Parcours - Custom views\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-29T23:48:39Z\"\n  },\n  {\n    \"scenarioId\": \"425bff8b-51eb-4b68-8529-6258e7b7888c\",\n    \"scenarioName\": \"X-Centreon Demo ping Paris\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-04T06:15:00Z\"\n  },\n  {\n    \"scenarioId\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scenarioName\": \"X-Centreon Demo Navigation\",\n    \"currentStatus\": 2,\n    \"startTime\": \"2025-12-30T10:06:04Z\"\n  },\n  {\n    \"scenarioId\": \"4fa9f25d-ae49-4848-823a-945e7f865f4b\",\n    \"scenarioName\": \"X-Centreon Demo ping NA\",\n    \"currentStatus\": 8,\n    \"startTime\": \"2025-12-30T10:30:21Z\"\n  },\n  {\n    \"scenarioId\": \"7622678e-ffec-49f5-8a67-7d1b4452bff6\",\n    \"scenarioName\": \"X-wrong currentstatus, no perfdata\",\n    \"currentStatus\": 14,\n    \"startTime\": \"2025-12-30T02:00:45Z\"\n  },\n  {\n    \"scenarioId\": \"8d0a798c-1b47-4142-869d-9bdabc9c126c\",\n    \"scenarioName\": \"X-Centreon Demo Parcours - Login\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-29T23:51:35Z\"\n  },\n  {\n    \"scenarioId\": \"eae701ac-4231-4fc5-94e3-08601ac591e9\",\n    \"scenarioName\": \"X-Centreon Demo ping Singapore\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T10:15:11Z\"\n  },\n  {\n    \"scenarioId\": \"fc6b739e-c18c-40ab-917c-61d20dff830c\",\n    \"scenarioName\": \"X-AKILA - Business App\",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T09:30:23Z\"\n  },\n  {\n    \"scenarioId\": \"fe1ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-AKILA - (API) \",\n    \"currentStatus\": 1,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 0\",\n    \"currentStatus\": 0,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 3\",\n    \"currentStatus\": 3,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 4\",\n    \"currentStatus\": 4,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 5\",\n    \"currentStatus\": 5,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 6\",\n    \"currentStatus\": 6,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  },\n  {\n    \"scenarioId\": \"121ca10e-1cf6-45c8-a7e9-b9b85272c086\",\n    \"scenarioName\": \"X-unknown Status 7\",\n    \"currentStatus\": 7,\n    \"startTime\": \"2025-12-30T10:10:55Z\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Access with api-key authentication",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.statusFilter",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "25c6c5e3-750f-4fc5-9993-e248f81d2490",
+          "body": "[\n  {\n    \"scenarioId\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scenarioName\": \"Centreon Demo Navigation\",\n    \"currentStatus\": 3,\n    \"startTime\": \"2024-12-30T10:06:04Z\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "filter by status for status 3 with API-KEY authentication",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "$.statusFilter.[*]",
+              "value": "2",
+              "invert": false,
+              "operator": "array_includes"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e22fcbe0-73a7-43c5-acd9-8d2f32974117",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "fa4d5c05-0ac7-4a26-bd25-03f663b4ef73",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "12d2126c-a45d-40b1-82c7-abc002d2d235",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/09fe2561-315b-470f-a7ac-9c30fbd2e0fb",
+      "responses": [
+        {
+          "uuid": "debf59fb-35ca-4482-b957-5cdf3b7777da",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 45.76\n    },\n    {\n      \"name\": \"Total time for all steps\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 4733\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2025-02-24T10:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 10288,\n      \"count\": 2,\n      \"value\": 5144\n    },\n    {\n      \"planningTime\": \"2025-02-24T10:40:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 7320,\n      \"count\": 2,\n      \"value\": 3660\n    },\n    {\n      \"planningTime\": \"2025-02-24T10:40:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 126,\n      \"count\": 1,\n      \"value\": 126\n    },\n    {\n      \"planningTime\": \"2025-02-24T10:40:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 78,\n      \"count\": 1,\n      \"value\": 78\n    },\n    {\n      \"planningTime\": \"2025-02-24T10:50:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 6347,\n      \"count\": 2,\n      \"value\": 3174\n    },\n    {\n      \"planningTime\": \"2025-02-24T10:50:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 152,\n      \"count\": 1,\n      \"value\": 152\n    },\n    {\n      \"planningTime\": \"2025-02-24T10:50:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 109,\n      \"count\": 1,\n      \"value\": 109\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:00:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 9041,\n      \"count\": 2,\n      \"value\": 4521\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:00:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 4623,\n      \"count\": 1,\n      \"value\": 4623\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:00:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 78,\n      \"count\": 1,\n      \"value\": 78\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:15:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 5565,\n      \"count\": 2,\n      \"value\": 2783\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:15:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 1531,\n      \"count\": 1,\n      \"value\": 1531\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:15:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 124,\n      \"count\": 1,\n      \"value\": 124\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 7322,\n      \"count\": 2,\n      \"value\": 3661\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 127,\n      \"count\": 1,\n      \"value\": 127\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 1975,\n      \"count\": 1,\n      \"value\": 1975\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:45:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 5449,\n      \"count\": 2,\n      \"value\": 2725\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:45:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 76,\n      \"count\": 1,\n      \"value\": 76\n    },\n    {\n      \"planningTime\": \"2025-02-24T11:45:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 25,\n      \"count\": 1,\n      \"value\": 25\n    },\n    {\n      \"planningTime\": \"2025-02-24T12:00:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 5702,\n      \"count\": 2,\n      \"value\": 2851\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n      \"name\": \"Paris (Iliad)\"\n    },\n    {\n      \"id\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n      \"name\": \"Paris (SFR)\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"eco_index\",\n      \"mtr_name\": \"Eco Efficiency\",\n      \"mtr_order\": 300,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"nb_dom_elements\",\n      \"mtr_name\": \"Number of DOM Elements\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"rum_speedindex\",\n      \"mtr_name\": \"RUM Speed Index\",\n      \"mtr_order\": 40,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"start_render\",\n      \"mtr_name\": \"Start render time\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_appcache\",\n      \"mtr_name\": \"Application cache\",\n      \"mtr_order\": 220,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_connect\",\n      \"mtr_name\": \"Connection time\",\n      \"mtr_order\": 240,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_interaction\",\n      \"mtr_name\": \"Time to interact\",\n      \"mtr_order\": 20,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 20,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_namelookup\",\n      \"mtr_name\": \"Lookup time\",\n      \"mtr_order\": 230,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_pageload\",\n      \"mtr_name\": \"Page load time\",\n      \"mtr_order\": 280,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_received\",\n      \"mtr_name\": \"Response time\",\n      \"mtr_order\": 270,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_redirect\",\n      \"mtr_name\": \"Redirection time\",\n      \"mtr_order\": 210,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_request\",\n      \"mtr_name\": \"First byte time\",\n      \"mtr_order\": 260,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_security_connect\",\n      \"mtr_name\": \"TLS time\",\n      \"mtr_order\": 250,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Total time for all steps\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 30,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_fcp\",\n      \"mtr_name\": \"First Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_fid\",\n      \"mtr_name\": \"First Input Delay\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_inp\",\n      \"mtr_name\": \"Interaction to Next Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_lcp\",\n      \"mtr_name\": \"Largest Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"wv_cls\",\n      \"mtr_name\": \"Cumulative Layout Shift\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Home\",\n      \"index\": 1\n    },\n    {\n      \"name\": \"Dashboard v2\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard v3\",\n      \"index\": 3\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_multi_step\",\n          \"time_total_allsteps\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"WEB\",\n    \"plugin_name\": \"Web\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": true,\n      \"hasWaterfall\": true,\n      \"hasEcoEfficiency\": true,\n      \"showThirdPartyContent\": true\n    },\n    \"scenarioName\": \"AKILA - (Web)\",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-02-24T10:24:54Z\",\n      \"endTime\": \"2025-02-24T10:51:48Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-02-24T10:23:46Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"75ecc8db-889f-4b83-84f2-f6cc2aec96b1.32\",\n          \"planningTime\": \"2025-02-24T10:20:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-02-24T10:51:48Z\",\n      \"endTime\": \"2025-02-24T10:51:53Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-02-24T10:51:48Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"af7db903-9888-438a-bc7f-854699e93025.35\",\n          \"planningTime\": \"2025-02-24T10:50:00Z\",\n          \"thresholdExceeded\": \"PT4.017S\"\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-02-24T10:51:53Z\",\n      \"endTime\": \"2025-02-24T11:00:07Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 2,\n          \"execTime\": \"2025-02-24T10:51:53Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"c34f64af-d16d-413a-a1b8-909be6ea2067.35\",\n          \"planningTime\": \"2025-02-24T10:50:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-02-24T11:00:07Z\",\n      \"endTime\": \"2025-02-24T11:04:23Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2025-02-24T11:00:07Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"df59373d-f667-4152-8aa2-d9c45166f49e.0\",\n          \"planningTime\": \"2025-02-24T11:00:00Z\",\n          \"thresholdExceeded\": \"PT10.323S\"\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-02-24T11:04:23Z\",\n      \"endTime\": \"2025-02-24T11:16:09Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-02-24T11:04:23Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"f12c4245-5a29-4439-ae8b-866c4d569917.0\",\n          \"planningTime\": \"2025-02-24T11:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-02-24T11:16:09Z\",\n      \"endTime\": \"2025-02-24T11:34:53Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-02-24T11:16:09Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"79367bab-2548-4774-8f81-b960d9a8c6df.1\",\n          \"planningTime\": \"2025-02-24T11:15:00Z\",\n          \"thresholdExceeded\": \"PT4.58S\"\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-02-24T11:34:53Z\",\n      \"endTime\": \"2025-02-24T11:37:24Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-02-24T11:34:53Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"05bf238a-12d0-48b0-be61-5be12c98967f.2\",\n          \"planningTime\": \"2025-02-24T11:30:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-02-24T11:37:24Z\",\n      \"endTime\": \"2025-02-24T11:49:36Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2025-02-24T11:37:24Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"116cd0c5-e74c-4eb6-9322-a54552358081.2\",\n          \"planningTime\": \"2025-02-24T11:30:00Z\",\n          \"thresholdExceeded\": \"PT5.551S\"\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-02-24T11:49:36Z\",\n      \"endTime\": \"2025-02-24T11:52:01Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 2,\n          \"execTime\": \"2025-02-24T11:49:36Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"8774c789-7ade-4d9e-b4df-06c8d3231a84.3\",\n          \"planningTime\": \"2025-02-24T11:45:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-02-24T11:52:01Z\",\n      \"endTime\": \"2025-02-24T12:03:28Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-02-24T11:52:01Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"a30965e7-22f5-483b-afd9-61c2d03ca235.3\",\n          \"planningTime\": \"2025-02-24T11:45:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-02-24T12:03:28Z\",\n      \"endTime\": \"2025-02-24T12:19:26Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-02-24T12:03:28Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"5ba8e6c1-884d-4292-b3a7-6f821ea939d8.4\",\n          \"planningTime\": \"2025-02-24T12:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-02-24T12:19:26Z\",\n      \"endTime\": \"2025-02-24T12:29:54Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2025-02-24T12:19:26Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"2ee138ba-6670-400e-b285-ef43fe768c39.5\",\n          \"planningTime\": \"2025-02-24T12:15:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Test",
+              "value": "2",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "b33f660f-e7b5-45f7-92c9-72b2dacc71e4",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 64.48\n    },\n    {\n      \"name\": \"Total time for all steps\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 4031\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2025-03-10T14:45:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 9741,\n      \"count\": 2,\n      \"value\": 4871\n    },\n    {\n      \"planningTime\": \"2025-03-10T14:45:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 48,\n      \"count\": 1,\n      \"value\": 48\n    },\n    {\n      \"planningTime\": \"2025-03-10T14:45:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 23,\n      \"count\": 1,\n      \"value\": 23\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:00:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 7096,\n      \"count\": 2,\n      \"value\": 3548\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:00:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 69,\n      \"count\": 1,\n      \"value\": 69\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:00:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 29,\n      \"count\": 1,\n      \"value\": 29\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:15:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 6420,\n      \"count\": 2,\n      \"value\": 3210\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:15:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 51,\n      \"count\": 1,\n      \"value\": 51\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:15:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 750,\n      \"count\": 1,\n      \"value\": 750\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 5986,\n      \"count\": 2,\n      \"value\": 2993\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 2499,\n      \"count\": 2,\n      \"value\": 1250\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 91,\n      \"count\": 2,\n      \"value\": 46\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:45:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 6275,\n      \"count\": 2,\n      \"value\": 3138\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:45:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 263,\n      \"count\": 2,\n      \"value\": 132\n    },\n    {\n      \"planningTime\": \"2025-03-10T15:45:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 197,\n      \"count\": 2,\n      \"value\": 99\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:00:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 7029,\n      \"count\": 2,\n      \"value\": 3515\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:00:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 221,\n      \"count\": 1,\n      \"value\": 221\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:00:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 38,\n      \"count\": 1,\n      \"value\": 38\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:15:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 7397,\n      \"count\": 2,\n      \"value\": 3699\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:15:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 1611,\n      \"count\": 1,\n      \"value\": 1611\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:15:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 1583,\n      \"count\": 1,\n      \"value\": 1583\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 7724,\n      \"count\": 2,\n      \"value\": 3862\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 215,\n      \"count\": 1,\n      \"value\": 215\n    },\n    {\n      \"planningTime\": \"2025-03-10T16:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 68,\n      \"count\": 1,\n      \"value\": 68\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n      \"name\": \"Paris (Iliad)\"\n    },\n    {\n      \"id\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n      \"name\": \"Paris (SFR)\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"eco_index\",\n      \"mtr_name\": \"Eco Efficiency\",\n      \"mtr_order\": 300,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"nb_dom_elements\",\n      \"mtr_name\": \"Number of DOM Elements\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"rum_speedindex\",\n      \"mtr_name\": \"RUM Speed Index\",\n      \"mtr_order\": 40,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"start_render\",\n      \"mtr_name\": \"Start render time\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_appcache\",\n      \"mtr_name\": \"Application cache\",\n      \"mtr_order\": 220,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_connect\",\n      \"mtr_name\": \"Connection time\",\n      \"mtr_order\": 240,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_interaction\",\n      \"mtr_name\": \"Time to interact\",\n      \"mtr_order\": 20,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 20,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_namelookup\",\n      \"mtr_name\": \"Lookup time\",\n      \"mtr_order\": 230,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_pageload\",\n      \"mtr_name\": \"Page load time\",\n      \"mtr_order\": 280,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_received\",\n      \"mtr_name\": \"Response time\",\n      \"mtr_order\": 270,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_redirect\",\n      \"mtr_name\": \"Redirection time\",\n      \"mtr_order\": 210,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_request\",\n      \"mtr_name\": \"First byte time\",\n      \"mtr_order\": 260,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_security_connect\",\n      \"mtr_name\": \"TLS time\",\n      \"mtr_order\": 250,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Total time for all steps\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 30,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_fcp\",\n      \"mtr_name\": \"First Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_fid\",\n      \"mtr_name\": \"First Input Delay\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_inp\",\n      \"mtr_name\": \"Interaction to Next Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_lcp\",\n      \"mtr_name\": \"Largest Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"wv_cls\",\n      \"mtr_name\": \"Cumulative Layout Shift\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Home\",\n      \"index\": 1\n    },\n    {\n      \"name\": \"Dashboard v2\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard v3\",\n      \"index\": 3\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_multi_step\",\n          \"time_total_allsteps\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"WEB\",\n    \"plugin_name\": \"Web\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": true,\n      \"hasWaterfall\": true,\n      \"hasEcoEfficiency\": true,\n      \"showThirdPartyContent\": true\n    },\n    \"scenarioName\": \"AKILA - (Web)\",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-03-10T14:42:04Z\",\n      \"endTime\": \"2025-03-10T14:45:08Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2025-03-10T14:35:36Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"2d592f6b-5c6c-49e0-b0a6-7cb05d5ddc60.14\",\n          \"planningTime\": \"2025-03-10T14:30:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-03-10T14:45:08Z\",\n      \"endTime\": \"2025-03-10T14:48:45Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 2,\n          \"execTime\": \"2025-03-10T14:45:08Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"671bfa25-9a96-4ff5-a3e4-cd2846608c88.15\",\n          \"planningTime\": \"2025-03-10T14:45:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-03-10T14:48:45Z\",\n      \"endTime\": \"2025-03-10T15:02:06Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-03-10T14:48:45Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"5b5172ba-b850-40f2-a1b7-82d194231580.15\",\n          \"planningTime\": \"2025-03-10T14:45:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-03-10T15:02:06Z\",\n      \"endTime\": \"2025-03-10T15:07:18Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-03-10T15:02:06Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"dfff8856-51e7-4c31-9f41-263b7af85ac3.16\",\n          \"planningTime\": \"2025-03-10T15:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-03-10T15:07:18Z\",\n      \"endTime\": \"2025-03-10T15:17:33Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2025-03-10T15:07:18Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"404ded6b-ef1f-4085-800b-0b9e64730c24.16\",\n          \"planningTime\": \"2025-03-10T15:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-03-10T15:17:33Z\",\n      \"endTime\": \"2025-03-10T15:34:58Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-03-10T15:17:33Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"811c4c8d-51ce-4092-aa4d-d0bf218f477f.17\",\n          \"planningTime\": \"2025-03-10T15:15:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-03-10T15:34:58Z\",\n      \"endTime\": \"2025-03-10T16:08:21Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-03-10T15:34:58Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"a060532c-dc28-4ece-a06f-a8e2bdc8ad8c.18\",\n          \"planningTime\": \"2025-03-10T15:30:00Z\",\n          \"thresholdExceeded\": \"PT5.492S\"\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-03-10T16:08:21Z\",\n      \"endTime\": \"2025-03-10T16:15:56Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 2,\n          \"execTime\": \"2025-03-10T16:08:21Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"da588130-ed28-4528-89b6-aaeaaae19aec.20\",\n          \"planningTime\": \"2025-03-10T16:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-03-10T16:15:56Z\",\n      \"endTime\": \"2025-03-10T16:21:40Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-03-10T16:15:56Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"c77b8248-45aa-4f51-bfbc-a1dd76baa08f.21\",\n          \"planningTime\": \"2025-03-10T16:15:00Z\",\n          \"thresholdExceeded\": \"PT7.468S\"\n        }\n      ]\n    },\n    {\n      \"status\": 2,\n      \"startTime\": \"2025-03-10T16:21:40Z\",\n      \"endTime\": \"2025-03-10T16:32:15Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 2,\n          \"execTime\": \"2025-03-10T16:21:40Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"cf72d69c-017f-43eb-8678-87ffacf9235b.21\",\n          \"planningTime\": \"2025-03-10T16:15:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    },\n    {\n      \"status\": 1,\n      \"startTime\": \"2025-03-10T16:32:15Z\",\n      \"endTime\": \"2025-03-10T16:47:04Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT15M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2025-03-10T16:32:15Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"ecdd45c2-9919-49ce-8231-d9c0bf6880e6.22\",\n          \"planningTime\": \"2025-03-10T16:30:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [\n    \"2025-03-10T16:45:00Z\"\n  ],\n  \"retentionDateExceeded\": false\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "With more steps, will display if \"Test: 2\" header provided",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Test",
+              "value": "2",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8977f4b6-97c8-4d6b-a6f5-ff5dbebdef24",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "73af6aa6-3809-45cf-8c3f-a057ba5fc7a5",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/127a149b-0fa6-4859-820e-9c4db23b6454",
+      "responses": [
+        {
+          "uuid": "e1882d7b-2d65-41fa-b7e5-ca33713138db",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 100\n    },\n    {\n      \"name\": \"Time to interact\",\n      \"order\": 20,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_interaction\",\n      \"value\": 887\n    },\n    {\n      \"name\": \"Perceptual Speed Index\",\n      \"order\": 30,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"perceptual_speedindex\",\n      \"value\": 835\n    },\n    {\n      \"name\": \"Full page load time\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total\",\n      \"value\": 1097\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_interaction\",\n      \"duration\": 1773,\n      \"count\": 2,\n      \"value\": 887\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_total\",\n      \"duration\": 2193,\n      \"count\": 2,\n      \"value\": 1097\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"perceptual_speedindex\",\n      \"duration\": 1670,\n      \"count\": 2,\n      \"value\": 835\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n      \"name\": \"Paris (Iliad)\"\n    },\n    {\n      \"id\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n      \"name\": \"Paris (SFR)\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"cls\",\n      \"mtr_name\": \"Cumulative Layout Shift\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"eco_index\",\n      \"mtr_name\": \"Eco Efficiency\",\n      \"mtr_order\": 300,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"nb_dom_elements\",\n      \"mtr_name\": \"Number of DOM Elements\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"perceptual_speedindex\",\n      \"mtr_name\": \"Perceptual Speed Index\",\n      \"mtr_order\": 30,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 20,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"rum_speedindex\",\n      \"mtr_name\": \"RUM Speed Index\",\n      \"mtr_order\": 40,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"start_render\",\n      \"mtr_name\": \"Start render time\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_appcache\",\n      \"mtr_name\": \"Application cache\",\n      \"mtr_order\": 220,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_connect\",\n      \"mtr_name\": \"Connection time\",\n      \"mtr_order\": 240,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_fcp\",\n      \"mtr_name\": \"First Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_interaction\",\n      \"mtr_name\": \"Time to interact\",\n      \"mtr_order\": 20,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 30,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_lcp\",\n      \"mtr_name\": \"Largest Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_namelookup\",\n      \"mtr_name\": \"Lookup time\",\n      \"mtr_order\": 230,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_pageload\",\n      \"mtr_name\": \"Page load time\",\n      \"mtr_order\": 280,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_received\",\n      \"mtr_name\": \"Response time\",\n      \"mtr_order\": 270,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_redirect\",\n      \"mtr_name\": \"Redirection time\",\n      \"mtr_order\": 210,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_request\",\n      \"mtr_name\": \"First byte time\",\n      \"mtr_order\": 260,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_security_connect\",\n      \"mtr_name\": \"TLS time\",\n      \"mtr_order\": 250,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total\",\n      \"mtr_name\": \"Full page load time\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"BROWSER PAGE LOAD\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 40,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Home\",\n      \"index\": 1\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"perceptual_speedindex\",\n          \"time_interaction\",\n          \"time_total\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"BROWSER PAGE LOAD\",\n    \"plugin_name\": \"Browser Page Load\",\n    \"info\": {\n      \"hasStep\": false,\n      \"showKPI\": true,\n      \"hasWaterfall\": true,\n      \"hasEcoEfficiency\": true,\n      \"showThirdPartyContent\": true\n    },\n    \"scenarioName\": \"AKILA - (Browser Page Load)\",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T10:23:11Z\",\n      \"endTime\": \"2024-12-30T10:38:11Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T07:20:08Z\",\n          \"siteName\": \"Paris (SFR)\",\n          \"executionId\": \"2d793bbc-b49d-4359-81a8-25b0b40d69c9.14\",\n          \"planningTime\": \"2024-12-30T07:20:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "23147a3c-6da3-4370-897f-2b484ee11f65",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9a91468b-aae8-40a7-994f-2aa7536f7c49",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/41d36b91-a4d3-4b00-a3ca-9e4fcf737d30",
+      "responses": [
+        {
+          "uuid": "07c2e64c-53c7-48c4-a684-328fc7baeb57",
+          "body": "{\"kpis\":[{\"name\":\"Availability\",\"order\":0,\"type\":\"User\",\"unit\":\"percent\",\"label\":\"availability\",\"value\":100},{\"name\":\"Total time for all steps\",\"order\":100,\"type\":\"User\",\"unit\":\"ms\",\"label\":\"time_total_allsteps\",\"value\":9359}],\"results\":[{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"0\",\"metric\":\"time_step\",\"duration\":2382,\"count\":1,\"value\":2382},{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"1\",\"metric\":\"time_step\",\"duration\":3874,\"count\":1,\"value\":3874},{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"2\",\"metric\":\"time_step\",\"duration\":3103,\"count\":1,\"value\":3103}],\"siteIds\":[{\"id\":\"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\"name\":\"Paris (Orange)\"}],\"metrics\":[{\"mtr_id\":\"eco_index\",\"mtr_name\":\"Eco Efficiency\",\"mtr_order\":300,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\" \",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"nb_dom_elements\",\"mtr_name\":\"Number of DOM Elements\",\"mtr_order\":-1,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\" \",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"rum_speedindex\",\"mtr_name\":\"RUM Speed Index\",\"mtr_order\":40,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":10,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"start_render\",\"mtr_name\":\"Start render time\",\"mtr_order\":10,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_appcache\",\"mtr_name\":\"Application cache\",\"mtr_order\":220,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_connect\",\"mtr_name\":\"Connection time\",\"mtr_order\":240,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_interaction\",\"mtr_name\":\"Time to interact\",\"mtr_order\":20,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":20,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_multi_step\",\"mtr_name\":\"Cumulative Time Step\",\"mtr_order\":100,\"mtr_type\":\"Cumulative\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_namelookup\",\"mtr_name\":\"Lookup time\",\"mtr_order\":230,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_pageload\",\"mtr_name\":\"Page load time\",\"mtr_order\":280,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_received\",\"mtr_name\":\"Response time\",\"mtr_order\":270,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_redirect\",\"mtr_name\":\"Redirection time\",\"mtr_order\":210,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_request\",\"mtr_name\":\"First byte time\",\"mtr_order\":260,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_security_connect\",\"mtr_name\":\"TLS time\",\"mtr_order\":250,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_step\",\"mtr_name\":\"Time Step\",\"mtr_order\":100,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_total_allsteps\",\"mtr_name\":\"Total time for all steps\",\"mtr_order\":100,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":30,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_fcp\",\"mtr_name\":\"First Contentful Paint\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_fid\",\"mtr_name\":\"First Input Delay\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_inp\",\"mtr_name\":\"Interaction to Next Paint\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_lcp\",\"mtr_name\":\"Largest Contentful Paint\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"wv_cls\",\"mtr_name\":\"Cumulative Layout Shift\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\" \",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false}],\"retries\":[],\"replays\":[],\"updates\":[],\"runningReplayId\":null,\"steps\":[{\"name\":\"Reach Centreon Demo\",\"index\":1},{\"name\":\"Log-in\",\"index\":2},{\"name\":\"Custom views\",\"index\":3}],\"infos\":{\"active_filter\":[{\"type\":\"measurementIds\",\"items\":[\"time_step\",\"time_multi_step\",\"time_total_allsteps\"]}],\"plugin_id\":\"WEB\",\"plugin_name\":\"Web\",\"info\":{\"hasStep\":true,\"showKPI\":true,\"hasWaterfall\":true,\"hasEcoEfficiency\":true,\"showThirdPartyContent\":true},\"scenarioName\":\"Centreon Demo Parcours - Custom views\",\"default_plugin\":false},\"timelineDetails\":[{\"status\":1,\"startTime\":\"2024-12-30T10:23:11Z\",\"endTime\":\"2024-12-30T10:38:11Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\"status\":1,\"execTime\":\"2024-12-29T23:48:39Z\",\"siteName\":\"Paris (Orange)\",\"executionId\":\"75da9c65-cdf2-405f-af0e-5d20886463b3.3\",\"planningTime\":\"2024-12-29T23:45:00Z\",\"thresholdExceeded\":null}]}],\"aggregate\":\"rowdata\",\"emptyResults\":[],\"retentionDateExceeded\":false}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "32bbafbb-dde7-446a-8313-6083d03ead1e",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "129e5dd8-feb9-4405-926f-ef2944dec47c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/425bff8b-51eb-4b68-8529-6258e7b7888c",
+      "responses": [
+        {
+          "uuid": "b862b4f5-de3a-49b0-83a5-75aaf19a4d68",
+          "body": "{\"kpis\":[{\"name\":\"Availability\",\"order\":0,\"type\":\"User\",\"unit\":\"percent\",\"label\":\"availability\",\"value\":100},{\"name\":\"Total time\",\"order\":100,\"type\":\"User\",\"unit\":\"ms\",\"label\":\"time_total\",\"value\":154}],\"results\":[{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"0\",\"metric\":\"time_total\",\"duration\":154,\"count\":1,\"value\":154}],\"siteIds\":[{\"id\":\"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\"name\":\"Paris (Orange)\"}],\"metrics\":[{\"mtr_id\":\"time_connect\",\"mtr_name\":\"Connection time\",\"mtr_order\":220,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_namelookup\",\"mtr_name\":\"Lookup time\",\"mtr_order\":210,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_received\",\"mtr_name\":\"Response time\",\"mtr_order\":260,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_redirect\",\"mtr_name\":\"Redirection time\",\"mtr_order\":240,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_request\",\"mtr_name\":\"First byte time\",\"mtr_order\":250,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_security_connect\",\"mtr_name\":\"TLS time\",\"mtr_order\":230,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_total\",\"mtr_name\":\"Total time\",\"mtr_order\":100,\"mtr_type\":\"User\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":10,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false}],\"retries\":[],\"replays\":[],\"updates\":[],\"runningReplayId\":null,\"steps\":[{\"name\":\"Login\",\"index\":1}],\"infos\":{\"active_filter\":[{\"type\":\"measurementIds\",\"items\":[\"time_total\"]}],\"plugin_id\":\"HTTP REQUEST\",\"plugin_name\":\"Check HTTP\",\"info\":{\"hasStep\":false,\"showKPI\":false,\"hasWaterfall\":false},\"scenarioName\":\"Centreon Demo ping Paris\",\"default_plugin\":false},\"timelineDetails\":[{\"status\":1,\"startTime\":\"2024-12-30T10:23:11Z\",\"endTime\":\"2024-12-30T10:38:11Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\"status\":1,\"execTime\":\"2024-12-04T06:15:00Z\",\"siteName\":\"Paris (Orange)\",\"executionId\":\"6bf2b683-c352-4d9a-9508-673f3eaaf996.29\",\"planningTime\":\"2024-12-04T06:15:00Z\",\"thresholdExceeded\":null}]}],\"aggregate\":\"rowdata\",\"emptyResults\":[],\"retentionDateExceeded\":false}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c8076fd8-3708-44ef-bf31-dd77490daa6f",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c05b9a70-fe37-44c8-a099-2f393901290c",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/478a6915-1c00-4e85-9fe2-7d919e28ce88",
+      "responses": [
+        {
+          "uuid": "49056e84-6551-40ae-b477-d2d02d7cb23b",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 20\n    },\n    {\n      \"name\": \"Total time for all steps\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 17535\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T22:00:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 2179,\n      \"count\": 1,\n      \"value\": 2179\n    },\n    {\n      \"planningTime\": \"2024-12-30T22:00:00Z\",\n      \"stepId\": \"3\",\n      \"metric\": \"time_step\",\n      \"duration\": 6059,\n      \"count\": 1,\n      \"value\": 6059\n    },\n    {\n      \"planningTime\": \"2024-12-30T22:00:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 2341,\n      \"count\": 1,\n      \"value\": 2341\n    },\n    {\n      \"planningTime\": \"2024-12-30T22:00:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 4243,\n      \"count\": 1,\n      \"value\": 4243\n    },\n    {\n      \"planningTime\": \"2024-12-30T22:00:00Z\",\n      \"stepId\": \"4\",\n      \"metric\": \"time_step\",\n      \"duration\": 2713,\n      \"count\": 1,\n      \"value\": 2713\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n      \"name\": \"Paris (Orange)\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"eco_index\",\n      \"mtr_name\": \"Eco Efficiency\",\n      \"mtr_order\": 300,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"nb_dom_elements\",\n      \"mtr_name\": \"Number of DOM Elements\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"rum_speedindex\",\n      \"mtr_name\": \"RUM Speed Index\",\n      \"mtr_order\": 40,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"start_render\",\n      \"mtr_name\": \"Start render time\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_appcache\",\n      \"mtr_name\": \"Application cache\",\n      \"mtr_order\": 220,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_connect\",\n      \"mtr_name\": \"Connection time\",\n      \"mtr_order\": 240,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_interaction\",\n      \"mtr_name\": \"Time to interact\",\n      \"mtr_order\": 20,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 20,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_namelookup\",\n      \"mtr_name\": \"Lookup time\",\n      \"mtr_order\": 230,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_pageload\",\n      \"mtr_name\": \"Page load time\",\n      \"mtr_order\": 280,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_received\",\n      \"mtr_name\": \"Response time\",\n      \"mtr_order\": 270,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_redirect\",\n      \"mtr_name\": \"Redirection time\",\n      \"mtr_order\": 210,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_request\",\n      \"mtr_name\": \"First byte time\",\n      \"mtr_order\": 260,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_security_connect\",\n      \"mtr_name\": \"TLS time\",\n      \"mtr_order\": 250,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Total time for all steps\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 30,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_fcp\",\n      \"mtr_name\": \"First Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_fid\",\n      \"mtr_name\": \"First Input Delay\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_inp\",\n      \"mtr_name\": \"Interaction to Next Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_wv_lcp\",\n      \"mtr_name\": \"Largest Contentful Paint\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"wv_cls\",\n      \"mtr_name\": \"Cumulative Layout Shift\",\n      \"mtr_order\": -1,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"WEB\",\n      \"mtr_unit\": \" \",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Reach Centreon Demo\",\n      \"index\": 1\n    },\n    {\n      \"name\": \"Log-in\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Resources Menu\",\n      \"index\": 3\n    },\n    {\n      \"name\": \"Type searchbar\",\n      \"index\": 4\n    },\n    {\n      \"name\": \"Disconnect\",\n      \"index\": 5\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_multi_step\",\n          \"time_total_allsteps\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"WEB\",\n    \"plugin_name\": \"Web\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": true,\n      \"hasWaterfall\": true,\n      \"hasEcoEfficiency\": true,\n      \"showThirdPartyContent\": true\n    },\n    \"scenarioName\": \"Centreon Demo Navigation\",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T21:35:10Z\",\n      \"endTime\": \"2024-12-30T22:25:10Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT1H\",\n          \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T21:06:49Z\",\n          \"siteName\": \"Paris (Orange)\",\n          \"executionId\": \"694a796c-21e2-442f-ba38-30317529539e.22\",\n          \"planningTime\": \"2024-12-30T21:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "6ab96810-7550-4299-8ebb-9d0813f8c089",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0c06529b-c638-46ef-b9f5-83bcb54b077d",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/4fa9f25d-ae49-4848-823a-945e7f865f4b",
+      "responses": [
+        {
+          "uuid": "ecc298b8-8328-496c-a1d1-7a7e3b21ea55",
+          "body": "{\"kpis\":[{\"name\":\"Availability\",\"order\":0,\"type\":\"User\",\"unit\":\"percent\",\"label\":\"availability\",\"value\":100},{\"name\":\"Total time\",\"order\":100,\"type\":\"User\",\"unit\":\"ms\",\"label\":\"time_total\",\"value\":480}],\"results\":[{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"0\",\"metric\":\"time_total\",\"duration\":959,\"count\":2,\"value\":480}],\"siteIds\":[{\"id\":\"8b63e658-e446-4a26-a8df-d119eb267f2a\",\"name\":\"Toronto (Azure)\"},{\"id\":\"d20cfff8-bc80-4b79-b1b1-6ee6ead86dc2\",\"name\":\"Washington DC (AWS)\"}],\"metrics\":[{\"mtr_id\":\"time_connect\",\"mtr_name\":\"Connection time\",\"mtr_order\":220,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_namelookup\",\"mtr_name\":\"Lookup time\",\"mtr_order\":210,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_received\",\"mtr_name\":\"Response time\",\"mtr_order\":260,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_redirect\",\"mtr_name\":\"Redirection time\",\"mtr_order\":240,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_request\",\"mtr_name\":\"First byte time\",\"mtr_order\":250,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_security_connect\",\"mtr_name\":\"TLS time\",\"mtr_order\":230,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_total\",\"mtr_name\":\"Total time\",\"mtr_order\":100,\"mtr_type\":\"User\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":10,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false}],\"retries\":[],\"replays\":[],\"updates\":[],\"runningReplayId\":null,\"steps\":[{\"name\":\"Login\",\"index\":1}],\"infos\":{\"active_filter\":[{\"type\":\"measurementIds\",\"items\":[\"time_total\"]}],\"plugin_id\":\"HTTP REQUEST\",\"plugin_name\":\"Check HTTP\",\"info\":{\"hasStep\":false,\"showKPI\":false,\"hasWaterfall\":false},\"scenarioName\":\"Centreon Demo ping NA\",\"default_plugin\":false},\"timelineDetails\":[{\"status\":8,\"startTime\":\"2024-12-30T10:23:11Z\",\"endTime\":\"2024-12-30T10:30:01Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"8b63e658-e446-4a26-a8df-d119eb267f2a\",\"status\":1,\"execTime\":\"2024-12-30T10:15:36Z\",\"siteName\":\"Toronto (Azure)\",\"executionId\":\"244079ac-f115-4379-8116-a136ad7328a4.45\",\"planningTime\":\"2024-12-30T10:15:00Z\",\"thresholdExceeded\":\"PT0.617S\"}]},{\"status\":1,\"startTime\":\"2024-12-30T10:30:01Z\",\"endTime\":\"2024-12-30T10:30:21Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"d20cfff8-bc80-4b79-b1b1-6ee6ead86dc2\",\"status\":1,\"execTime\":\"2024-12-30T10:30:01Z\",\"siteName\":\"Washington DC (AWS)\",\"executionId\":\"d19ec309-0939-4908-83d2-c3ff9a643197.46\",\"planningTime\":\"2024-12-30T10:30:00Z\",\"thresholdExceeded\":null}]},{\"status\":8,\"startTime\":\"2024-12-30T10:30:21Z\",\"endTime\":\"2024-12-30T10:38:11Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"8b63e658-e446-4a26-a8df-d119eb267f2a\",\"status\":1,\"execTime\":\"2024-12-30T10:30:21Z\",\"siteName\":\"Toronto (Azure)\",\"executionId\":\"244079ac-f115-4379-8116-a136ad7328a4.46\",\"planningTime\":\"2024-12-30T10:30:00Z\",\"thresholdExceeded\":\"PT0.652S\"}]}],\"aggregate\":\"rowdata\",\"emptyResults\":[],\"retentionDateExceeded\":false}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "dca50edf-c6ef-468c-a614-c368f8e494c0",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "756da49e-1ce5-4a1e-a1a0-b90fe6a79046",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/7622678e-ffec-49f5-8a67-7d1b4452bff6",
+      "responses": [
+        {
+          "uuid": "1e9dd117-758d-42c9-a3b3-8be8510b5cf7",
+          "body": "{\n  \"kpis\": [],\n  \"results\": [],\n  \"siteIds\": [],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"time_connect\",\n      \"mtr_name\": \"Connection time\",\n      \"mtr_order\": 220,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_namelookup\",\n      \"mtr_name\": \"Lookup time\",\n      \"mtr_order\": 210,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_received\",\n      \"mtr_name\": \"Response time\",\n      \"mtr_order\": 260,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_redirect\",\n      \"mtr_name\": \"Redirection time\",\n      \"mtr_order\": 240,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_request\",\n      \"mtr_name\": \"First byte time\",\n      \"mtr_order\": 250,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_security_connect\",\n      \"mtr_name\": \"TLS time\",\n      \"mtr_order\": 230,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total\",\n      \"mtr_name\": \"Total time\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"HTTP REQUEST\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_total\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"HTTP REQUEST\",\n    \"plugin_name\": \"Check HTTP\",\n    \"info\": {\n      \"hasStep\": false,\n      \"showKPI\": false,\n      \"hasWaterfall\": false\n    },\n    \"scenarioName\": \"AKILA - (HTTP Request) ð\",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 5,\n      \"startTime\": \"2024-12-30T23:51:29Z\",\n      \"endTime\": \"2024-12-30T23:51:59Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT1H56.079S\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 5,\n          \"execTime\": null,\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": null,\n          \"planningTime\": \"2024-12-30T22:00:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "d0bc8061-ab14-4178-8a4e-73b04bd8f12b",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2646ada3-d2e2-459e-97e0-6bc0c9a226e3",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/8d0a798c-1b47-4142-869d-9bdabc9c126c",
+      "responses": [
+        {
+          "uuid": "adcada46-8c3c-423a-8d15-4d8ac47c68a9",
+          "body": "{\"kpis\":[{\"name\":\"Availability\",\"order\":0,\"type\":\"User\",\"unit\":\"percent\",\"label\":\"availability\",\"value\":100},{\"name\":\"Total time for all steps\",\"order\":100,\"type\":\"User\",\"unit\":\"ms\",\"label\":\"time_total_allsteps\",\"value\":8239}],\"results\":[{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"0\",\"metric\":\"time_step\",\"duration\":2457,\"count\":1,\"value\":2457},{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"1\",\"metric\":\"time_step\",\"duration\":3855,\"count\":1,\"value\":3855},{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"2\",\"metric\":\"time_step\",\"duration\":1927,\"count\":1,\"value\":1927}],\"siteIds\":[{\"id\":\"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\"name\":\"Paris (Orange)\"}],\"metrics\":[{\"mtr_id\":\"eco_index\",\"mtr_name\":\"Eco Efficiency\",\"mtr_order\":300,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\" \",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"nb_dom_elements\",\"mtr_name\":\"Number of DOM Elements\",\"mtr_order\":-1,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\" \",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"rum_speedindex\",\"mtr_name\":\"RUM Speed Index\",\"mtr_order\":40,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":10,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"start_render\",\"mtr_name\":\"Start render time\",\"mtr_order\":10,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_appcache\",\"mtr_name\":\"Application cache\",\"mtr_order\":220,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_connect\",\"mtr_name\":\"Connection time\",\"mtr_order\":240,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_interaction\",\"mtr_name\":\"Time to interact\",\"mtr_order\":20,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":20,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_multi_step\",\"mtr_name\":\"Cumulative Time Step\",\"mtr_order\":100,\"mtr_type\":\"Cumulative\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_namelookup\",\"mtr_name\":\"Lookup time\",\"mtr_order\":230,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_pageload\",\"mtr_name\":\"Page load time\",\"mtr_order\":280,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_received\",\"mtr_name\":\"Response time\",\"mtr_order\":270,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_redirect\",\"mtr_name\":\"Redirection time\",\"mtr_order\":210,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_request\",\"mtr_name\":\"First byte time\",\"mtr_order\":260,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_security_connect\",\"mtr_name\":\"TLS time\",\"mtr_order\":250,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_step\",\"mtr_name\":\"Time Step\",\"mtr_order\":100,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_total_allsteps\",\"mtr_name\":\"Total time for all steps\",\"mtr_order\":100,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":30,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_fcp\",\"mtr_name\":\"First Contentful Paint\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_fid\",\"mtr_name\":\"First Input Delay\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_inp\",\"mtr_name\":\"Interaction to Next Paint\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_wv_lcp\",\"mtr_name\":\"Largest Contentful Paint\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"wv_cls\",\"mtr_name\":\"Cumulative Layout Shift\",\"mtr_order\":-1,\"mtr_type\":\"User\",\"mtr_scn_type\":\"WEB\",\"mtr_unit\":\" \",\"mtr_preferred_metric\":-1,\"filterEnabled\":false,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false}],\"retries\":[],\"replays\":[],\"updates\":[],\"runningReplayId\":null,\"steps\":[{\"name\":\"Reach Centreon Demo\",\"index\":1},{\"name\":\"Log-in\",\"index\":2},{\"name\":\"Resources Status\",\"index\":3}],\"infos\":{\"active_filter\":[{\"type\":\"measurementIds\",\"items\":[\"time_step\",\"time_multi_step\",\"time_total_allsteps\"]}],\"plugin_id\":\"WEB\",\"plugin_name\":\"Web\",\"info\":{\"hasStep\":true,\"showKPI\":true,\"hasWaterfall\":true,\"hasEcoEfficiency\":true,\"showThirdPartyContent\":true},\"scenarioName\":\"Centreon Demo Parcours - Login\",\"default_plugin\":false},\"timelineDetails\":[{\"status\":1,\"startTime\":\"2024-12-30T10:23:11Z\",\"endTime\":\"2024-12-30T10:38:11Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\"status\":1,\"execTime\":\"2024-12-29T23:51:35Z\",\"siteName\":\"Paris (Orange)\",\"executionId\":\"BAO4HABVJLLT5B81UKVTCJS2UT.3\",\"planningTime\":\"2024-12-29T23:45:00Z\",\"thresholdExceeded\":null}]}],\"aggregate\":\"rowdata\",\"emptyResults\":[],\"retentionDateExceeded\":false}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5ced752d-467b-48e3-8564-75f1e56136f4",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "571c4527-56d6-48bc-93d0-522efd99ed9f",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/eae701ac-4231-4fc5-94e3-08601ac591e9",
+      "responses": [
+        {
+          "uuid": "19b10ca6-e4c9-4038-9ce2-f83a0f1639e0",
+          "body": "{\"kpis\":[{\"name\":\"Availability\",\"order\":0,\"type\":\"User\",\"unit\":\"percent\",\"label\":\"availability\",\"value\":100},{\"name\":\"Total time\",\"order\":100,\"type\":\"User\",\"unit\":\"ms\",\"label\":\"time_total\",\"value\":750}],\"results\":[{\"planningTime\":\"2024-12-30T10:30:00Z\",\"stepId\":\"0\",\"metric\":\"time_total\",\"duration\":750,\"count\":1,\"value\":750}],\"siteIds\":[{\"id\":\"144c7dd1-8ce9-464c-9305-3b6a530a5fc4\",\"name\":\"Singapore (AWS)\"}],\"metrics\":[{\"mtr_id\":\"time_connect\",\"mtr_name\":\"Connection time\",\"mtr_order\":220,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_namelookup\",\"mtr_name\":\"Lookup time\",\"mtr_order\":210,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_received\",\"mtr_name\":\"Response time\",\"mtr_order\":260,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_redirect\",\"mtr_name\":\"Redirection time\",\"mtr_order\":240,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_request\",\"mtr_name\":\"First byte time\",\"mtr_order\":250,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_security_connect\",\"mtr_name\":\"TLS time\",\"mtr_order\":230,\"mtr_type\":\"Technical\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":-1,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false},{\"mtr_id\":\"time_total\",\"mtr_name\":\"Total time\",\"mtr_order\":100,\"mtr_type\":\"User\",\"mtr_scn_type\":\"HTTP REQUEST\",\"mtr_unit\":\"ms\",\"mtr_preferred_metric\":10,\"filterEnabled\":true,\"filterDisabledOnMultiStep\":false,\"filterDisabledOnAllStep\":false,\"filterDisabledOnPartialStep\":false}],\"retries\":[],\"replays\":[],\"updates\":[],\"runningReplayId\":null,\"steps\":[{\"name\":\"Login\",\"index\":1}],\"infos\":{\"active_filter\":[{\"type\":\"measurementIds\",\"items\":[\"time_total\"]}],\"plugin_id\":\"HTTP REQUEST\",\"plugin_name\":\"Check HTTP\",\"info\":{\"hasStep\":false,\"showKPI\":false,\"hasWaterfall\":false},\"scenarioName\":\"Centreon Demo ping Singapore\",\"default_plugin\":false},\"timelineDetails\":[{\"status\":1,\"startTime\":\"2024-12-30T10:23:11Z\",\"endTime\":\"2024-12-30T10:38:11Z\",\"execs\":[{\"period\":\"PT15M\",\"siteId\":\"144c7dd1-8ce9-464c-9305-3b6a530a5fc4\",\"status\":1,\"execTime\":\"2024-12-30T10:15:11Z\",\"siteName\":\"Singapore (AWS)\",\"executionId\":\"8beec26b-8ff6-43df-bceb-b92894d65bbd.45\",\"planningTime\":\"2024-12-30T10:15:00Z\",\"thresholdExceeded\":null}]}],\"aggregate\":\"rowdata\",\"emptyResults\":[],\"retentionDateExceeded\":false}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8069a415-cf19-4967-a6a7-21d11c7677f5",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8b6089c2-b07b-45b3-af27-eed3591d2590",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/fc6b739e-c18c-40ab-917c-61d20dff830c",
+      "responses": [
+        {
+          "uuid": "13780366-a431-4a45-9727-76a473889d7f",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 100\n    },\n    {\n      \"name\": \"Total time for all steps\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 4280\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"3\",\n      \"metric\": \"time_step\",\n      \"duration\": 848,\n      \"count\": 1,\n      \"value\": 848\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 898,\n      \"count\": 1,\n      \"value\": 898\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 2534,\n      \"count\": 1,\n      \"value\": 2534\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"a182ec70-c319-40de-9af0-556877fa64a1\",\n      \"name\": \"GSA_POC_2_Win\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total\",\n      \"mtr_name\": \"Total time for a step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": null,\n      \"filterDisabledOnMultiStep\": null,\n      \"filterDisabledOnAllStep\": null,\n      \"filterDisabledOnPartialStep\": null\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Total time for all steps\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Clean\",\n      \"index\": 1,\n      \"isNeutral\": true,\n      \"isMyBlock\": false\n    },\n    {\n      \"name\": \"Run Chrome\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard 2\",\n      \"index\": 3\n    },\n    {\n      \"name\": \"Dashboard 3\",\n      \"index\": 4\n    },\n    {\n      \"name\": \"Clean\",\n      \"index\": 5,\n      \"isNeutral\": true,\n      \"isMyBlock\": false\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_multi_step\",\n          \"time_total_allsteps\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"DESKTOP\",\n    \"plugin_name\": \"Desktop\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": false,\n      \"hasWaterfall\": false,\n      \"showThirdPartyContent\": false\n    },\n    \"scenarioName\": \"AKILA - (Business App) \",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T10:23:11Z\",\n      \"endTime\": \"2024-12-30T10:38:11Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"a182ec70-c319-40de-9af0-556877fa64a1\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T09:30:23Z\",\n          \"siteName\": \"GSA_POC_2_Win\",\n          \"executionId\": \"22dd8614-400c-40e5-9689-57c48c328055.27\",\n          \"planningTime\": \"2024-12-30T09:30:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "37c2d4dc-e03d-41d8-8e43-f90e283e6361",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 100\n    },\n    {\n      \"name\": \"Total time for all steps\",\n      \"order\": 100,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 4280\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"3\",\n      \"metric\": \"time_step\",\n      \"duration\": 848,\n      \"count\": 1,\n      \"value\": 848\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 898,\n      \"count\": 1,\n      \"value\": 898\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 2534,\n      \"count\": 1,\n      \"value\": 2534\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"a182ec70-c319-40de-9af0-556877fa64a1\",\n      \"name\": \"GSA_POC_2_Win\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total\",\n      \"mtr_name\": \"Total time for a step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": -1,\n      \"filterEnabled\": null,\n      \"filterDisabledOnMultiStep\": null,\n      \"filterDisabledOnAllStep\": null,\n      \"filterDisabledOnPartialStep\": null\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Total time for all steps\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"DESKTOP\",\n      \"mtr_unit\": \"ms\",\n      \"mtr_preferred_metric\": 10,\n      \"filterEnabled\": false,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Clean\",\n      \"index\": 1,\n      \"isNeutral\": true,\n      \"isMyBlock\": false\n    },\n    {\n      \"name\": \"Run Chrome\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard 2\",\n      \"index\": 3\n    },\n    {\n      \"name\": \"Dashboard 3\",\n      \"index\": 4\n    },\n    {\n      \"name\": \"Clean\",\n      \"index\": 5,\n      \"isNeutral\": true,\n      \"isMyBlock\": false\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_multi_step\",\n          \"time_total_allsteps\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"DESKTOP\",\n    \"plugin_name\": \"Desktop\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": false,\n      \"hasWaterfall\": false,\n      \"showThirdPartyContent\": false\n    },\n    \"scenarioName\": \"AKILA - (Business App) \",\n    \"default_plugin\": false\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T10:23:11Z\",\n      \"endTime\": \"2024-12-30T10:38:11Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"a182ec70-c319-40de-9af0-556877fa64a1\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T09:30:23Z\",\n          \"siteName\": \"GSA_POC_2_Win\",\n          \"executionId\": \"22dd8614-400c-40e5-9689-57c48c328055.27\",\n          \"planningTime\": \"2024-12-30T09:30:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Access with X-API-KEY",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "18a93ed3-0df4-4287-8d1e-300a0229c683",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "74a6704c-607b-4f44-9cc4-1af9dfab767b",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/fe1ca10e-1cf6-45c8-a7e9-b9b85272c086",
+      "responses": [
+        {
+          "uuid": "2ae43dd0-c2e5-483b-92a8-199d2af8a6c9",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 100\n    },\n    {\n      \"name\": \"Time Total Allsteps\",\n      \"order\": 10,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 192\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 307,\n      \"count\": 2,\n      \"value\": 154\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 45,\n      \"count\": 2,\n      \"value\": 23\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 31,\n      \"count\": 2,\n      \"value\": 16\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n      \"name\": \"Paris (Iliad)\"\n    },\n    {\n      \"id\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n      \"name\": \"Paris (SFR)\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"dns\",\n      \"mtr_name\": \"Dns\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"download\",\n      \"mtr_name\": \"Download\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"firstByte\",\n      \"mtr_name\": \"FirstByte\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"prepare\",\n      \"mtr_name\": \"Prepare\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"process\",\n      \"mtr_name\": \"Process\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"responseTime\",\n      \"mtr_name\": \"ResponseTime\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"secureHandshake\",\n      \"mtr_name\": \"SecureHandshake\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"tcp\",\n      \"mtr_name\": \"Tcp\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": true,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Time Total Allsteps\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": true\n    },\n    {\n      \"mtr_id\": \"total\",\n      \"mtr_name\": \"Total\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"wait\",\n      \"mtr_name\": \"Wait\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Dashboard v1\",\n      \"index\": 1\n    },\n    {\n      \"name\": \"Dashboard v2\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard v3\",\n      \"index\": 3\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_total_allsteps\",\n          \"time_multi_step\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"API\",\n    \"plugin_name\": \"Api\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": false,\n      \"hasWaterfall\": false\n    },\n    \"scenarioName\": \"AKILA - (API) \",\n    \"default_plugin\": true\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T10:23:11Z\",\n      \"endTime\": \"2024-12-30T10:38:11Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T10:10:55Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"B5KPKPSB34GYUQB532O0N076XYX.31\",\n          \"planningTime\": \"2024-12-30T10:10:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "f50517b2-8af5-4389-bc9f-d50fd8db2712",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a184ab53-5369-4916-b204-5fd1e5146bbd",
+      "type": "http",
+      "documentation": "used by mode incidents of ekara plugin",
+      "method": "post",
+      "endpoint": "results-api/incidents",
+      "responses": [
+        {
+          "uuid": "23166d3b-7f1a-47b3-a13e-b9f3534bd976",
+          "body": "[\n  {\n    \"ssr_id\": \"25423513\",\n    \"startTime\": \"2024-12-30T23:07:08Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T23:07:08Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"1e75b3fb-56b1-4d33-9da9-a4c46e29dfd2.0\",\n        \"planningTime\": \"2024-12-30T23:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"Centreon Demo Navigation\",\n    \"application\": \"Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT1H57M7S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25422458\",\n    \"startTime\": \"2024-12-30T20:09:21Z\",\n    \"endTime\": \"2024-12-30T21:06:49Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T20:09:21Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"bbab21cf-031e-46a9-bb3d-03e5a9bd3cce.21\",\n        \"planningTime\": \"2024-12-30T20:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"Centreon Demo Navigation\",\n    \"application\": \"Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT57M28S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25421962\",\n    \"startTime\": \"2024-12-30T18:52:43Z\",\n    \"endTime\": \"2024-12-30T19:07:26Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT15M\",\n        \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T18:52:43Z\",\n        \"siteName\": \"Paris (Iliad)\",\n        \"executionId\": \"37ca8215-f72b-4982-b088-58e68b701b5d.31\",\n        \"planningTime\": \"2024-12-30T18:45:00Z\",\n        \"thresholdExceeded\": null\n      },\n      {\n        \"period\": \"PT15M\",\n        \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T19:01:39Z\",\n        \"siteName\": \"Paris (SFR)\",\n        \"executionId\": \"e34837a6-f807-4347-a454-e505f65be258.32\",\n        \"planningTime\": \"2024-12-30T19:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"09fe2561-315b-470f-a7ac-9c30fbd2e0fb\",\n    \"scnName\": \"AKILA - (Web)\",\n    \"application\": \"AKILA\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT14M43S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25421291\",\n    \"startTime\": \"2024-12-30T17:09:44Z\",\n    \"endTime\": \"2024-12-30T18:01:19Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T17:09:44Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"2ea22968-f89d-4638-838a-47774b0c91f5.18\",\n        \"planningTime\": \"2024-12-30T17:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"Centreon Demo Navigation\",\n    \"application\": \"Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT51M35S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-API-KEY",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "92f7fab0-db29-48b4-9aeb-df2079337cbd",
+          "body": "[\n  {\n    \"ssr_id\": \"25423513\",\n    \"startTime\": \"2024-12-30T23:07:08Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T23:07:08Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"1e75b3fb-56b1-4d33-9da9-a4c46e29dfd2.0\",\n        \"planningTime\": \"2024-12-30T23:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"X-Centreon Demo Navigation\",\n    \"application\": \"X-Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT1H57M7S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25422458\",\n    \"startTime\": \"2024-12-30T20:09:21Z\",\n    \"endTime\": \"2024-12-30T21:06:49Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T20:09:21Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"bbab21cf-031e-46a9-bb3d-03e5a9bd3cce.21\",\n        \"planningTime\": \"2024-12-30T20:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"X-Centreon Demo Navigation\",\n    \"application\": \"X-Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT57M28S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25421962\",\n    \"startTime\": \"2024-12-30T18:52:43Z\",\n    \"endTime\": \"2024-12-30T19:07:26Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT15M\",\n        \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T18:52:43Z\",\n        \"siteName\": \"Paris (Iliad)\",\n        \"executionId\": \"37ca8215-f72b-4982-b088-58e68b701b5d.31\",\n        \"planningTime\": \"2024-12-30T18:45:00Z\",\n        \"thresholdExceeded\": null\n      },\n      {\n        \"period\": \"PT15M\",\n        \"siteId\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T19:01:39Z\",\n        \"siteName\": \"Paris (SFR)\",\n        \"executionId\": \"e34837a6-f807-4347-a454-e505f65be258.32\",\n        \"planningTime\": \"2024-12-30T19:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"09fe2561-315b-470f-a7ac-9c30fbd2e0fb\",\n    \"scnName\": \"X-AKILA - (Web)\",\n    \"application\": \"X-AKILA\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT14M43S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  },\n  {\n    \"ssr_id\": \"25421291\",\n    \"startTime\": \"2024-12-30T17:09:44Z\",\n    \"endTime\": \"2024-12-30T18:01:19Z\",\n    \"status\": 2,\n    \"execList\": [\n      {\n        \"period\": \"PT1H\",\n        \"siteId\": \"8e9538eb-dafe-46fd-9cee-6605fe3e4f60\",\n        \"status\": 2,\n        \"execTime\": \"2024-12-30T17:09:44Z\",\n        \"siteName\": \"Paris (Orange)\",\n        \"executionId\": \"2ea22968-f89d-4638-838a-47774b0c91f5.18\",\n        \"planningTime\": \"2024-12-30T17:00:00Z\",\n        \"thresholdExceeded\": null\n      }\n    ],\n    \"scn_id\": \"478a6915-1c00-4e85-9fe2-7d919e28ce88\",\n    \"scnName\": \"X-Centreon Demo Navigation\",\n    \"application\": \"X-Centreon\",\n    \"severity\": \"Critical\",\n    \"duration\": \"PT51M35S\",\n    \"comments\": false,\n    \"dataExclutionId\": null,\n    \"startProcessTime\": null,\n    \"dataExclutionStatus\": null\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Access with API KEY",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "X-api-key",
+              "value": "PaSsWoRdZ",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Authentication",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "a2e22546-df45-4513-9163-3ef7520bc17d",
+          "body": "[]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "empty response",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "$.",
+              "value": "SendEmptyValue",
+              "invert": false,
+              "operator": "array_includes"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3684b9e7-c4bf-4313-855f-b223a727eb21",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "results-api/results/121ca10e-1cf6-45c8-a7e9-b9b85272c086",
+      "responses": [
+        {
+          "uuid": "a5ac5470-43e9-4665-ba3b-bd4b43bec14b",
+          "body": "{\n  \"kpis\": [\n    {\n      \"name\": \"Availability\",\n      \"order\": 0,\n      \"type\": \"User\",\n      \"unit\": \"percent\",\n      \"label\": \"availability\",\n      \"value\": 100\n    },\n    {\n      \"name\": \"Time Total Allsteps\",\n      \"order\": 10,\n      \"type\": \"User\",\n      \"unit\": \"ms\",\n      \"label\": \"time_total_allsteps\",\n      \"value\": 192\n    }\n  ],\n  \"results\": [\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"0\",\n      \"metric\": \"time_step\",\n      \"duration\": 307,\n      \"count\": 2,\n      \"value\": 154\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"1\",\n      \"metric\": \"time_step\",\n      \"duration\": 45,\n      \"count\": 2,\n      \"value\": 23\n    },\n    {\n      \"planningTime\": \"2024-12-30T10:30:00Z\",\n      \"stepId\": \"2\",\n      \"metric\": \"time_step\",\n      \"duration\": 31,\n      \"count\": 2,\n      \"value\": 16\n    }\n  ],\n  \"siteIds\": [\n    {\n      \"id\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n      \"name\": \"Paris (Iliad)\"\n    },\n    {\n      \"id\": \"d1c377bf-745f-4d63-b25f-904b16582649\",\n      \"name\": \"Paris (SFR)\"\n    }\n  ],\n  \"metrics\": [\n    {\n      \"mtr_id\": \"dns\",\n      \"mtr_name\": \"Dns\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"download\",\n      \"mtr_name\": \"Download\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"firstByte\",\n      \"mtr_name\": \"FirstByte\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"prepare\",\n      \"mtr_name\": \"Prepare\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"process\",\n      \"mtr_name\": \"Process\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"responseTime\",\n      \"mtr_name\": \"ResponseTime\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"secureHandshake\",\n      \"mtr_name\": \"SecureHandshake\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"tcp\",\n      \"mtr_name\": \"Tcp\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_step\",\n      \"mtr_name\": \"Time Step\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"Technical\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": true,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_total_allsteps\",\n      \"mtr_name\": \"Time Total Allsteps\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": false,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": true\n    },\n    {\n      \"mtr_id\": \"total\",\n      \"mtr_name\": \"Total\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"wait\",\n      \"mtr_name\": \"Wait\",\n      \"mtr_order\": 10,\n      \"mtr_type\": \"User\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": true,\n      \"filterDisabledOnMultiStep\": true,\n      \"filterDisabledOnAllStep\": false,\n      \"filterDisabledOnPartialStep\": false\n    },\n    {\n      \"mtr_id\": \"time_multi_step\",\n      \"mtr_name\": \"Cumulative Time Step\",\n      \"mtr_order\": 100,\n      \"mtr_type\": \"Cumulative\",\n      \"mtr_scn_type\": \"API\",\n      \"mtr_unit\": \"ms\",\n      \"filterEnabled\": false\n    }\n  ],\n  \"retries\": [],\n  \"replays\": [],\n  \"updates\": [],\n  \"runningReplayId\": null,\n  \"steps\": [\n    {\n      \"name\": \"Dashboard v1\",\n      \"index\": 1\n    },\n    {\n      \"name\": \"Dashboard v2\",\n      \"index\": 2\n    },\n    {\n      \"name\": \"Dashboard v3\",\n      \"index\": 3\n    }\n  ],\n  \"infos\": {\n    \"active_filter\": [\n      {\n        \"type\": \"measurementIds\",\n        \"items\": [\n          \"time_step\",\n          \"time_total_allsteps\",\n          \"time_multi_step\"\n        ]\n      }\n    ],\n    \"plugin_id\": \"API\",\n    \"plugin_name\": \"Api\",\n    \"info\": {\n      \"hasStep\": true,\n      \"showKPI\": false,\n      \"hasWaterfall\": false\n    },\n    \"scenarioName\": \"AKILA - (API) \",\n    \"default_plugin\": true\n  },\n  \"timelineDetails\": [\n    {\n      \"status\": 1,\n      \"startTime\": \"2024-12-30T10:23:11Z\",\n      \"endTime\": \"2024-12-30T10:38:11Z\",\n      \"execs\": [\n        {\n          \"period\": \"PT10M\",\n          \"siteId\": \"76300f93-1714-4235-aa20-105d0815b4e0\",\n          \"status\": 1,\n          \"execTime\": \"2024-12-30T10:10:55Z\",\n          \"siteName\": \"Paris (Iliad)\",\n          \"executionId\": \"B5KPKPSB34GYUQB532O0N076XYX.31\",\n          \"planningTime\": \"2024-12-30T10:10:00Z\",\n          \"thresholdExceeded\": null\n        }\n      ]\n    }\n  ],\n  \"aggregate\": \"rowdata\",\n  \"emptyResults\": [],\n  \"retentionDateExceeded\": false\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "Bearer VeryLongTokenToAuthenticate",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "cd248f5d-0bf0-4a5b-9800-2f6f114d6b14",
+          "body": "{\"success\":false,\"code\":\"AUTH40001\",\"message\":\"No token provided.\"}",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "if token not present don't send back data.",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "655cde3b-919e-4849-932b-8f5e8f7c000e"
+    },
+    {
+      "type": "route",
+      "uuid": "c5445880-be60-406c-b722-a8ca5ef5068b"
+    },
+    {
+      "type": "route",
+      "uuid": "a6aab3c4-806e-4d3d-a3ba-2be0dec50ef5"
+    },
+    {
+      "type": "route",
+      "uuid": "12d2126c-a45d-40b1-82c7-abc002d2d235"
+    },
+    {
+      "type": "route",
+      "uuid": "73af6aa6-3809-45cf-8c3f-a057ba5fc7a5"
+    },
+    {
+      "type": "route",
+      "uuid": "9a91468b-aae8-40a7-994f-2aa7536f7c49"
+    },
+    {
+      "type": "route",
+      "uuid": "129e5dd8-feb9-4405-926f-ef2944dec47c"
+    },
+    {
+      "type": "route",
+      "uuid": "c05b9a70-fe37-44c8-a099-2f393901290c"
+    },
+    {
+      "type": "route",
+      "uuid": "0c06529b-c638-46ef-b9f5-83bcb54b077d"
+    },
+    {
+      "type": "route",
+      "uuid": "756da49e-1ce5-4a1e-a1a0-b90fe6a79046"
+    },
+    {
+      "type": "route",
+      "uuid": "2646ada3-d2e2-459e-97e0-6bc0c9a226e3"
+    },
+    {
+      "type": "route",
+      "uuid": "571c4527-56d6-48bc-93d0-522efd99ed9f"
+    },
+    {
+      "type": "route",
+      "uuid": "8b6089c2-b07b-45b3-af27-eed3591d2590"
+    },
+    {
+      "type": "route",
+      "uuid": "74a6704c-607b-4f44-9cc4-1af9dfab767b"
+    },
+    {
+      "type": "route",
+      "uuid": "a184ab53-5369-4916-b204-5fd1e5146bbd"
+    },
+    {
+      "type": "route",
+      "uuid": "3684b9e7-c4bf-4313-855f-b223a727eb21"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

@@ -1,0 +1,28 @@
+{
+  "bind": "*",
+  "case_insensitive": 0,
+  "credstore_file": "/root/.vmware/credstore/vicredentials.xml",
+  "credstore_use": 0,
+  "dynamic_timeout_kill": 86400,
+  "ipc_file": "/tmp/centreon_vmware/routing.ipc",
+  "port": 5700,
+  "refresh_keeper_session": 15,
+  "timeout": 60,
+  "timeout_kill": 30,
+  "timeout_vsphere": 60,
+  "vsan_sdk_path": "/usr/local/share/perl5/VMware",
+  "vsphere_server": [
+    {
+      "name": "additional",
+      "password": "XXXXXX",
+      "url": "https://vcenter2/sdk",
+      "username": "XXXXXX"
+    },
+    {
+      "name": "default",
+      "password": "XXXXXX",
+      "url": "https://vcenter/sdk",
+      "username": "XXXXXX"
+    }
+  ]
+}

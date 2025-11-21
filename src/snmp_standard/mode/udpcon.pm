@@ -16,7 +16,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 
 package snmp_standard::mode::udpcon;
 
@@ -301,7 +301,7 @@ __END__
 
 =head1 MODE
 
-Check udp connections.
+Check UDP connections.
 
 =over 8
 
@@ -315,7 +315,7 @@ Critical threshold for total connections.
 
 =item B<--service>
 
-Check udp connections following rules:
+Check UDP connections following rules:
 tag,[type],[port],[filter-ip],[threshold-warning],[threshold-critical]
 
 Example to test NTP connections on the server: --service="ntp,,123,1,2"
@@ -342,7 +342,7 @@ nagios-perfdata - number of connections.
 
 =item B<--application>
 
-Check udp connections of mutiple services:
+Check UDP connections of multiple services:
 tag,[services],[threshold-warning],[threshold-critical]
 
 Example:

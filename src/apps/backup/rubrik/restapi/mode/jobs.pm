@@ -221,7 +221,8 @@ sub new {
         'filter-location-name:s' => { name => 'filter_location_name' },
         'filter-object-type:s'   => { name => 'filter_object_type' },
         'unit:s'                 => { name => 'unit', default => 's' },
-        'limit:s'                => { name => 'limit' }
+        'limit:s'                => { name => 'limit' },
+        'check-retention'        => { name => 'check_retention' }
     });
 
     $self->{cache_exec} = centreon::plugins::statefile->new(%options);
@@ -247,7 +248,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jobs_exec = $options{custom}->get_jobs_monitoring(get_param => [ 'limit=' . $self->{option_results}->{limit} ]);
+    my $get_param = [ 'limit=' . $self->{option_results}->{limit} ];
+    if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '') {
+        push @{$get_param}, 'job_type=' . $self->{option_results}->{filter_job_type};
+    }
+    my $jobs_exec = $options{custom}->get_jobs_monitoring(get_param => $get_param);
 
     $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' .
         Digest::MD5::md5_hex(
@@ -260,7 +265,8 @@ sub manage_selection {
     );
     my $ctime = time();
     my $last_exec_times = $self->{cache_exec}->get(name => 'jobs');
-    $last_exec_times = {} if (!defined($last_exec_times));    
+    $last_exec_times = {} if (!defined($last_exec_times));   
+    my %jobs_detected = ();
 
     $self->{global} = { detected => 0 };
     $self->{jobs} = {};
@@ -269,13 +275,13 @@ sub manage_selection {
             $job_exec->{objectId} !~ /$self->{option_results}->{filter_job_id}/);
         next if (defined($self->{option_results}->{filter_job_name}) && $self->{option_results}->{filter_job_name} ne '' && 
             $job_exec->{objectName} !~ /$self->{option_results}->{filter_job_name}/);
-        next if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '' && 
-            $job_exec->{jobType} !~ /$self->{option_results}->{filter_job_type}/i);
         next if (defined($self->{option_results}->{filter_object_type}) && $self->{option_results}->{filter_object_type} ne '' && 
             $job_exec->{objectType} !~ /$self->{option_results}->{filter_object_type}/i);
         next if (defined($self->{option_results}->{filter_location_name}) && $self->{option_results}->{filter_location_name} ne '' && 
             $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
 
+        $self->{global}->{detected}++;
+        $jobs_detected{$job_exec->{objectName}} = 1;
         $job_exec->{jobType} = lc($job_exec->{jobType});
 
         if (!defined($self->{jobs}->{ $job_exec->{objectId} })) {
@@ -302,7 +308,6 @@ sub manage_selection {
                 $last_exec = $_;
             }
 
-            $self->{global}->{detected}++;
             # Failure, Scheduled, Success, SuccessfulWithWarnings, Active, Canceled
             $failed++ if ($_->{jobStatus} =~ /Failure/i);
             $total++;
@@ -326,7 +331,9 @@ sub manage_selection {
             $last_exec_times->{ $job_exec->{objectId} } = {
                 jobName => $job_exec->{objectName},
                 jobType => $job_exec->{jobType},
-                epoch => $dt->epoch()
+                epoch => $dt->epoch(),
+                objectType => $job_exec->{objectType},
+                locationName => $job_exec->{locationName}
             };
         }
 
@@ -355,6 +362,8 @@ sub manage_selection {
         $self->{jobs}->{$objectId} = {
             name => $last_exec_times->{$objectId}->{jobName},
             jobType => $last_exec_times->{$objectId}->{jobType},
+            objectType => $last_exec_times->{$objectId}->{objectType},
+            locationName => $last_exec_times->{$objectId}->{locationName},
             timers => {
                 jobName => $last_exec_times->{$objectId}->{jobName},
                 jobType => $last_exec_times->{$objectId}->{jobType},
@@ -362,6 +371,15 @@ sub manage_selection {
                 lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $last_exec_times->{$objectId}->{epoch})
             }
         };
+    }
+
+    if ($self->{global}->{detected} == 0 && defined($self->{option_results}->{check_retention})) {
+            my $jobs_last_detected = $self->{cache_exec}->get(name => 'jobs');
+            foreach my $job_id (keys %{$jobs_last_detected}) {
+                if (!defined($jobs_detected{$jobs_last_detected->{$job_id}->{jobName}})) {
+                    $self->{global}->{detected}++;
+                }
+            }
     }
 
     $self->{cache_exec}->write(data => {
@@ -406,6 +424,10 @@ Select the time unit for last execution time thresholds. May be 's' for seconds,
 =item B<--limit>
 
 Define the number of entries to retrieve for the pagination (default: 500). 
+
+=item B<--check-retention>
+
+Use the retention file to check if a job has been detected once but does not appear in the API response. 
 
 =item B<--unknown-execution-status>
 

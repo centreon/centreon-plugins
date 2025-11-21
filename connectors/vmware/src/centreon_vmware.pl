@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright 2015 Centreon (http://www.centreon.com/)
+# Copyright 2024 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,6 +20,14 @@
 use warnings;
 use FindBin;
 use lib "$FindBin::Bin";
+
+BEGIN {
+    # This package centreon_vmware_requirements is used to check if the VMware Perl SDK is installed.
+    # I use a script based module in order to log the error message in the Centreon configured log file.
+    use centreon::script::centreon_vmware_requirements;
+    centreon::script::centreon_vmware_requirements->new()->run();
+}
+
 use centreon::script::centreon_vmware;
 
 centreon::script::centreon_vmware->new()->run();
@@ -42,6 +50,10 @@ centreon_vmware.pl [options]
 
 Specify the path to the centreon_vmware configuration file (default: /etc/centreon/centreon_vmware.pm).
 
+=item B<--vault-config>
+
+Full path to the file defining access to the Centreon vault (/etc/centreon-engine/centreonvault.json by default).
+
 =item B<--help>
 
 Print a brief help message and exits.
@@ -51,6 +63,6 @@ Print a brief help message and exits.
 =head1 DESCRIPTION
 
 B<centreon_vmware.pl> will connect to ESX and/or VirtualCenter.
-Use the plugin 'apps::vmware::connector::plugin' from: https://github.com/centreon/centreon-plugins
+To be used with the plugin 'apps::vmware::connector::plugin' from: https://github.com/centreon/centreon-plugins
 
 =cut

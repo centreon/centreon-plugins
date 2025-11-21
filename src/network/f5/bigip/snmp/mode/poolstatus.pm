@@ -91,7 +91,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pool_connections} = [
-        { label => 'current-server-connections', nlabel => 'pool.connections.server.count', set => {
+        { label => 'current-server-connections', nlabel => 'pool.connections.server.current.count', set => {
                 key_values => [ { name => 'ltmPoolStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections: %s',
                 perfdatas => [
@@ -360,10 +360,29 @@ You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeNam
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{status}, %{poolName}, %{nodeName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current-server-connections>
 
 Thresholds.
-Can be: 'current-server-connections', 'current-active-members', 'current-total-members'.
+
+=item B<--critical-current-server-connections>
+
+Thresholds.
+
+=item B<--warning-current-active-members>
+
+Thresholds.
+
+=item B<--critical-current-active-members>
+
+Thresholds.
+
+=item B<--warning-current-total-members>
+
+Thresholds.
+
+=item B<--critical-current-total-members>
+
+Thresholds.
 
 =back
 

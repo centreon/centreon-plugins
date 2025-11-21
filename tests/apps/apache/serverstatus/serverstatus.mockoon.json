@@ -1,0 +1,139 @@
+{
+  "uuid": "a213c65b-587e-41a7-bbd0-4fa7c0ce527b",
+  "lastMigration": 33,
+  "name": "Apache",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "3467f012-2e63-4806-b036-56e6e5889f14",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "server-status/",
+      "responses": [
+        {
+          "uuid": "68e70383-91e5-43c4-9ddf-d773a1228648",
+          "body": "172.17.0.1\nServerVersion: Apache/2.4.63 (Ubuntu)\nServerMPM: prefork\nServer Built: 2025-03-07T13:40:17\nCurrentTime: Wednesday, 02-Jul-2025 10:53:07 CEST\nRestartTime: Monday, 23-Jun-2025 08:45:20 CEST\nParentServerConfigGeneration: 6\nParentServerMPMGeneration: 5\nServerUptimeSeconds: 785267\nServerUptime: 9 days 2 hours 7 minutes 47 seconds\nLoad1: 0.69\nLoad5: 0.63\nLoad15: 0.80\nTotal Accesses: 475000\nTotal kBytes: 59600\nTotal Duration: 12300\nCPUUser: 3.18\nCPUSystem: 9.79\nCPUChildrenUser: .1\nCPUChildrenSystem: .14\nCPULoad: .00168223\nUptime: 785267\nReqPerSec: 300\nBytesPerSec: 10\nBytesPerReq: 2211284.85\nDurationPerReq: .258947\nBusyWorkers: 1\nGracefulWorkers: 0\nIdleWorkers: 5\nScoreboard: _____W................................................................................................................................................",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/html"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "48731c52-6855-420a-be13-3a62af4faf7f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "server-status-2/",
+      "responses": [
+        {
+          "uuid": "07bb3b4e-4595-42ea-ba64-b491d7bb0d79",
+          "body": "172.17.0.1\nServerVersion: Apache/2.4.63 (Ubuntu)\nServerMPM: prefork\nServer Built: 2025-03-07T13:40:17\nCurrentTime: Wednesday, 02-Jul-2025 10:57:28 CEST\nRestartTime: Monday, 23-Jun-2025 08:45:20 CEST\nParentServerConfigGeneration: 6\nParentServerMPMGeneration: 5\nServerUptimeSeconds: 785528\nServerUptime: 9 days 2 hours 12 minutes 8 seconds\nLoad1: 0.40\nLoad5: 0.57\nLoad15: 0.75\nTotal Accesses: 484\nTotal kBytes: 607\nTotal Duration: 127\nCPUUser: 3.18\nCPUSystem: 9.8\nCPUChildrenUser: .1\nCPUChildrenSystem: .14\nCPULoad: .00168294\nUptime: 785528\nReqPerSec: 300\nBytesPerSec: 100\nBytesPerReq: 1284.23\nDurationPerReq: .262397\nBusyWorkers: 1\nGracefulWorkers: 0\nIdleWorkers: 5\nScoreboard: W_____................................................................................................................................................",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/html"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "3467f012-2e63-4806-b036-56e6e5889f14"
+    },
+    {
+      "type": "route",
+      "uuid": "48731c52-6855-420a-be13-3a62af4faf7f"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

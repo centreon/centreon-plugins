@@ -1,0 +1,4 @@
+Open List of Jobs (QGYOLJOB) API
+Retrieve Job Queue Information (QSPRJOBQ) API
+List Subsystem Job Queues (QWDLSJBQ) API
+Open List of ASPs (QYASPOL) API

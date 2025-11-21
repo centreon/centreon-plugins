@@ -1,0 +1,78 @@
+<pcml version="1.0">
+
+<!-- PCML source for calling "Open List of ASPs (QYASPOL) API" (QYASPOL) API -->
+<!-- http://publib.boulder.ibm.com/infocenter/iseries/v5r4/index.jsp?topic=%2Fapis%2Fqyaspol.htm -->
+
+	<!-- YASP0100 -->
+  <struct name="yasp0100">
+    <data name="aspNumber"         		type="int" length="4" />
+    <data name="resourceName"  			type="char" length="10"  />
+    <data name="deviceDescriptionName" 	type="char" length="10"  />
+    <data name="version"  				type="int" length="4" />
+    <data name="aspUsage"  				type="int" length="4" />
+    <data name="aspStatus"  			type="int" length="4" />
+    <data name="databaseName"  			type="char" length="18" />
+    <data name="primaryAspName"  		type="char" length="10" />
+  </struct>
+  
+  <!-- List information structure (common for "Open List" type APIs) -->
+  <struct name="listInfo">
+    <data name="totalRcds"    type="int"  length="4" />
+    <data name="rcdsReturned" type="int"  length="4" />
+    <data name="rqsHandle"    type="byte" length="4" />
+    <data name="rcdLength"    type="int"  length="4" />
+    <data name="infoComplete" type="char" length="1" />
+    <data name="dateCreated"  type="char" length="7" />
+    <data name="timeCreated"  type="char" length="6" />
+    <data name="listStatus"   type="char" length="1" />
+    <data                     type="byte" length="1" />
+    <data name="lengthOfInfo" type="int"  length="4" />
+    <data name="firstRecord"  type="int"  length="4" />
+    <data                     type="byte" length="40" />
+  </struct>
+        
+	<struct name="filterInformation" usage="input">
+		<data name="sizeOfFileEntry"		type="int" length="4" init="16"/>
+    	<data name="filterKey"  			type="int" length="4"  init="1"/>
+    	<data name="sizeOfFilterData"		type="int" length="4"  init="4"/>
+    	<data name="filterData"				type="int" length="4"  init="1"/>
+	</struct>
+        
+  <!-- Program QYASPOL and its parameter list-->
+  <program name="qyaspol" path="/QSYS.lib/QGY.lib/QYASPOL.pgm" parseorder="listInfo receiver">
+  	<!-- 1	Receiver variable	Output	Char(*) -->
+    <data   name="receiver"       	type="struct" struct="yasp0100" usage="output" count="listInfo.rcdsReturned" outputsize="receiverLength" />
+    <!-- 2	Length of receiver variable	Input	Binary(4) -->
+    <data   name="receiverLength" 	type="int"    length="4"        usage="input" init="16384" />
+    <!-- 3	List information	Output	Char(80) -->
+    <data   name="listInfo"       	type="struct" struct="listInfo" usage="output" />
+    <!-- 4	Number of records to return	Input	Binary(4) -->
+    <data   name="rcdsToReturn"   	type="int"    length="4"        usage="input" init="264" />
+    <!-- 5	Number of filters	Input	Binary(4) -->
+    <data   name="numberOfFilters"	type="int"   length="4"         usage="input" init="1" />
+    <!-- 6	Filter information	Input	Char(*) -->
+	<data   name="filterInfo"      	type="struct" struct="filterInformation" usage="input" /> 
+    <!-- 7	Format name	Input	Char(8) -->
+    <data   name="format"         	type="char"   length="8"        usage="input" init="YASP0100" />
+    <!-- 8	Error Code	I/O	Char(*) -->
+    <data   name="errorCode"      	type="int"    length="4"        usage="input" init="0" />
+
+  </program>
+    
+  <!-- Program QGYGTLE returned additional "records" from the list created by QYASPOL. -->
+  <program name="qgygtle" path="/QSYS.lib/QGY.lib/QGYGTLE.pgm" parseorder="listInfo receiver">
+    <data   name="receiver"       type="struct" struct="yasp0100" usage="output" count="listInfo.rcdsReturned" outputsize="receiverLength" />
+    <data   name="receiverLength" type="int"    length="4"        usage="input" init="16384" />
+    <data   name="requestHandle"  type="byte"   length="4"        usage="input" />
+    <data   name="listInfo"       type="struct" struct="listInfo" usage="output" />
+    <data   name="rcdsToReturn"   type="int"    length="4"        usage="input" init="264" />
+    <data   name="startingRcd"    type="int"    length="4"        usage="input" />
+    <data   name="errorCode"      type="int"    length="4"        usage="input" init="0" />
+  </program>
+    
+  <!-- Program QGYCLST closes the list, freeing resources on the server -->
+  <program name="qgyclst" path="/QSYS.lib/QGY.lib/QGYCLST.pgm" >
+    <data   name="requestHandle"  type="byte"   length="4"        usage="input" />
+    <data   name="errorCode"      type="int"    length="4"        usage="input" init="0" />
+  </program>
+</pcml>

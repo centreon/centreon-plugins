@@ -138,7 +138,7 @@ of time that this processor was not idle)
 
 =item B<--use-ucd>
 
-Use UCD mib for CPU average.
+Use UCD MIB for CPU average.
 
 =item B<--warning-average>
 

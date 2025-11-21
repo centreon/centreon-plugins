@@ -1,0 +1,151 @@
+<pcml version="1.0">
+
+<!-- PCML source for calling "Open List of ASPs (QYASPOL) API" (QYASPOL) API -->
+<!-- http://publib.boulder.ibm.com/infocenter/iseries/v5r4/index.jsp?topic=%2Fapis%2Fqyaspol.htm -->
+
+0 	0 	BINARY(4) 	ASP number
+4 	4 	CHAR(4) 	Disk type
+8 	8 	CHAR(4) 	Disk model
+12 	C 	CHAR(10) 	Disk serial number
+22 	16 	CHAR(10) 	Resource name
+32 	20 	BINARY(4) 	Disk unit number
+36 	24 	BINARY(4) 	Disk capacity
+40 	28 	BINARY(4) 	Disk storage available
+44 	2C 	BINARY(4) 	Disk storage reserved for system
+48 	30 	CHAR(1) 	Mirrored unit protected
+49 	31 	CHAR(1) 	Mirrored unit reported
+50 	32 	CHAR(1) 	Mirrored unit status
+51 	33 	CHAR(1) 	Reserved
+52 	34 	BINARY(4) 	Unit control
+56 	38 	BINARY(4) 	Blocks transferred to main storage
+60 	3C 	BINARY(4) 	Blocks transferred from main storage
+64 	40 	BINARY(4) 	Requests for data transfer to main storage
+68 	44 	BINARY(4) 	Requests for data transfer from main storage
+72 	48 	BINARY(4) 	Permanent blocks transferred from main storage
+76 	4C 	BINARY(4) 	Requests for permanent data transfer from main storage
+80 	50 	BINARY(4) 	Sample count
+84 	64 	BINARY(4) 	Not busy count
+88 	68 	CHAR(1) 	Compression status
+89 	69 	CHAR(1) 	Disk protection type
+90 	6A 	CHAR(1) 	Compressed unit
+91 	6B 	CHAR(1) 	Storage allocation restricted unit
+92 	6C 	CHAR(1) 	Availability parity set unit
+93 	6D 	CHAR(1) 	Multiple connection unit
+
+	<!-- YASP0300 -->
+  <struct name="yasp0300">
+    <data name="aspNumber"							type="int" length="4" />
+    <data name="diskType"							type="char" length="4" />
+    <data name="diskModel"							type="char" length="4" />
+    <data name="diskSerialNumber"					type="char" length="10" />
+    <data name="resourceName"						type="char" length="10" />
+    <data name="diskUnitNumber"						type="int" length="4" />
+    <data name="diskCapacity"						type="int" length="4" />
+    <data name="diskStorageAvailable"         		type="int" length="4" />
+    <data name="diskStorageReservedForSystem"		type="int" length="4" />
+    <data name="mirroredUnitProtected"         		type="char" length="1" />
+    <data name="mirroredUnitReported"         		type="char" length="1" />
+    <data name="mirroredUnitStatus"         		type="char" length="1" />
+    <data name="reserved"							type="char" length="1"  />
+    <data name="unitControl"						type="int" length="4"  />
+    <data name="blockTransferredToMainStorage"		type="int" length="4" />
+    <data name="blockTransferredFromMainStorage"	type="int" length="4" />
+    <data name="requestForDataToMainStorage"		type="int" length="4" />
+    <data name="requestForDataForMainStorage"		type="int" length="4" />
+    <data name="requestForPermanentFromMainStorage"	type="int" length="4" />
+    <data name="sampleCount"						type="int" length="4" />
+    <data name="notBusyCount"						type="int" length="4"  />
+    <data name="compressionStatus"					type="char" length="1" />
+    <data name="diskProtectionType"					type="char" length="1" />
+    <data name="compressedUnit"						type="char" length="1" />
+    <data name="storageAllocationRestrictedUnit"	type="char" length="1" />
+    <data name="availabilityParitySetUnit"  		type="char" length="1" />
+    <data name="multipleConnectionUnit"				type="char" length="1" />
+  </struct>
+  
+  
+
+0 	0 	BINARY(4) 	Total records
+4 	4 	BINARY(4) 	Records returned
+8 	8 	CHAR(4) 	Request handle
+12 	C 	BINARY(4) 	Record length
+16 	10 	CHAR(1) 	Information complete indicator
+17 	11 	CHAR(13) 	Date and time created
+30 	1E 	CHAR(1) 	List status indicator
+31 	1F 	CHAR(1) 	Reserved
+32 	20 	BINARY(4) 	Length of information returned
+36 	24 	BINARY(4) 	First record in receiver variable
+40 	28 	CHAR(40) 	Reserved
+  
+  <!-- List information structure (common for "Open List" type APIs) -->
+  <struct name="listInfo">
+    <data name="totalRcds"    type="int"  length="4" />
+    <data name="rcdsReturned" type="int"  length="4" />
+    <data name="rqsHandle"    type="byte" length="4" />
+    <data name="rcdLength"    type="int"  length="4" />
+    <data name="infoComplete" type="char" length="1" />
+    <data name="dateCreated"  type="char" length="7" />
+    <data name="timeCreated"  type="char" length="6" />
+    <data name="listStatus"   type="char" length="1" />
+    <data                     type="byte" length="1" />
+    <data name="lengthOfInfo" type="int"  length="4" />
+    <data name="firstRecord"  type="int"  length="4" />
+    <data                     type="byte" length="40" />
+  </struct>
+        
+	<struct name="filterInformation" usage="input">
+		<data name="sizeOfFileEntry"		type="int" length="4" init="16"/>
+    	<data name="filterKey"  			type="int" length="4"  init="1"/>
+    	<data name="sizeOfFilterData"		type="int" length="4"  init="4"/>
+    	<data name="filterData"				type="int" length="4"  init="1"/>
+	</struct>
+        
+  <!-- Program QYASPOL and its parameter list-->
+  <program name="qyaspol" path="/QSYS.lib/QGY.lib/QYASPOL.pgm" parseorder="listInfo receiver">
+  	<!-- 1	Receiver variable	Output	Char(*) -->
+    <data   name="receiver"       	type="struct" struct="yasp0300" usage="output" count="listInfo.rcdsReturned" outputsize="receiverLength" />
+    <!-- 2	Length of receiver variable	Input	Binary(4) -->
+    <data   name="receiverLength" 	type="int"    length="4"        usage="input" init="94" />
+    <!-- 3	List information	Output	Char(80) -->
+    <data   name="listInfo"       	type="struct" struct="listInfo" usage="output" />
+    <!-- 4	Number of records to return	Input	Binary(4) -->
+    <data   name="rcdsToReturn"   	type="int"    length="4"        usage="input" init="264" />
+    <!-- 5	Number of filters	Input	Binary(4) -->
+    <data   name="numberOfFilters"	type="int"   length="4"         usage="input" init="1" />
+    <!-- 6	Filter information	Input	Char(*) -->
+	<data   name="filterInfo"      	type="struct" struct="filterInformation" usage="input" />
+
+    <!-- 7	Format name	Input	Char(8) -->
+    <data   name="format"         	type="char"   length="8"        usage="input" init="YASP0300" />
+    <!-- 8	Error Code	I/O	Char(*) -->
+    <data   name="errorCode"      	type="int"    length="4"        usage="input" init="0" />
+
+  </program>
+    
+    
+
+
+1 	Receiver variable 	Output 	Char(*)
+2 	Length of receiver variable 	Input 	Binary(4)
+3 	Request handle 	Input 	Char(4)
+4 	List information 	Output 	Char(80)
+5 	Number of records to return 	Input 	Binary(4)
+6 	Starting record 	Input 	Binary(4)
+7 	Error code 	I/O 	Char(*)    
+  <!-- Program QGYGTLE returned additional "records" from the list created by QYASPOL. -->
+  <program name="qgygtle" path="/QSYS.lib/QGY.lib/QGYGTLE.pgm" parseorder="listInfo receiver">
+    <data   name="receiver"       type="struct" struct="yasp0300" usage="output" count="listInfo.rcdsReturned" outputsize="receiverLength" />
+    <data   name="receiverLength" type="int"    length="4"        usage="input" init="94" />
+    <data   name="requestHandle"  type="byte"   length="4"        usage="input" />
+    <data   name="listInfo"       type="struct" struct="listInfo" usage="output" />
+    <data   name="rcdsToReturn"   type="int"    length="4"        usage="input" init="264" />
+    <data   name="startingRcd"    type="int"    length="4"        usage="input" />
+    <data   name="errorCode"      type="int"    length="4"        usage="input" init="0" />
+  </program>
+    
+  <!-- Program QGYCLST closes the list, freeing resources on the server -->
+  <program name="qgyclst" path="/QSYS.lib/QGY.lib/QGYCLST.pgm" >
+    <data   name="requestHandle"  type="byte"   length="4"        usage="input" />
+    <data   name="errorCode"      type="int"    length="4"        usage="input" init="0" />
+  </program>
+</pcml>

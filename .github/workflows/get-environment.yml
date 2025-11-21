@@ -4,63 +4,399 @@ on:
       version_file:
         required: false
         type: string
+      nightly_manual_trigger:
+        required: false
+        type: boolean
     outputs:
-      stability:
-        description: "branch stability (stable, testing, unstable, canary)"
-        value: ${{ jobs.get-version.outputs.stability }}
       version:
         description: "version"
-        value: ${{ jobs.get-version.outputs.version }}
+        value: ${{ jobs.get-environment.outputs.version }}
       release:
-        description: "release number"
-        value: ${{ jobs.get-version.outputs.release }}
+        description: "release"
+        value: ${{ jobs.get-environment.outputs.release }}
+      stability:
+        description: "branch stability (stable, testing, unstable, canary)"
+        value: ${{ jobs.get-environment.outputs.stability }}
+      target_stability:
+        description: "Final target branch stability (stable, testing, unstable, canary or not defined if not a pull request)"
+        value: ${{ jobs.get-environment.outputs.target_stability }}
+      is_nightly:
+        description: "if the current workflow run is considered a nightly"
+        value: ${{ jobs.get-environment.outputs.is_nightly }}
+      release_type:
+        description: "type of release (hotfix, release or not defined if not a release)"
+        value: ${{ jobs.get-environment.outputs.release_type }}
+      is_targeting_feature_branch:
+        description: "if it is a PR, check if targeting a feature branch"
+        value: ${{ jobs.get-environment.outputs.is_targeting_feature_branch }}
+      skip_workflow:
+        description: "if the current workflow should be skipped"
+        value: ${{ jobs.get-environment.outputs.skip_workflow }}
+      labels:
+        description: "list of labels on the PR"
+        value: ${{ jobs.get-environment.outputs.labels }}
 
 jobs:
-  get-version:
-    runs-on: ubuntu-22.04
+  get-environment:
+    runs-on: ubuntu-24.04
     outputs:
-      stability: ${{ steps.get_environment.outputs.stability }}
-      version: ${{ steps.get_environment.outputs.version }}
-      release: ${{ steps.get_environment.outputs.release }}
+      version: ${{ steps.get_version.outputs.version }}
+      release: ${{ steps.get_release.outputs.release }}
+      stability: ${{ steps.get_stability.outputs.stability }}
+      target_stability: ${{ steps.get_stability.outputs.target_stability }}
+      release_type: ${{ steps.get_release_type.outputs.release_type }}
+      is_targeting_feature_branch: ${{ steps.get_stability.outputs.is_targeting_feature_branch }}
+      is_nightly: ${{ steps.get_nightly_status.outputs.is_nightly }}
+      skip_workflow: ${{ steps.skip_workflow.outputs.result }}
+      labels: ${{ steps.has_skip_label.outputs.labels }}
 
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Check if PR has skip label
+        id: has_skip_label
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            let hasSkipLabel = false;
+            let labels = [];
 
-      - id: get_environment
+            if (${{ contains(fromJSON('["pull_request"]') , github.event_name) }} === true) {
+              try {
+                const fetchedLabels = await github.rest.issues.listLabelsOnIssue({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number
+                });
+                fetchedLabels.data.forEach(({ name }) => {
+                  labels.push(name);
+                  if (name === '${{ format('skip-workflow-{0}', github.workflow) }}') {
+                    hasSkipLabel = true;
+                  }
+                });
+              } catch (e) {
+                core.warning(`failed to list labels: ${e}`);
+              }
+            }
+
+            core.setOutput('labels', labels);
+
+            return hasSkipLabel;
+
+      - name: Checkout sources (current branch)
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: ${{ steps.has_skip_label.outputs.result == 'true' && 100 || 1 }}
+
+      - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
+        name: Get workflow triggered paths
+        id: get_workflow_triggered_paths
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const fs = require('fs');
+
+            let paths = [];
+
+            const workflowFilePath = '${{ github.workflow_ref }}'.replace('${{ github.repository }}/', '').split('@').shift();
+
+            if (fs.existsSync(workflowFilePath)) {
+              const workflowFileContent = fs.readFileSync(workflowFilePath, 'utf8');
+              const workflowFileContentLines = workflowFileContent.split('\n');
+
+              let hasReadOn = false;
+              let hasReadPullRequest = false;
+              let hasReadPaths = false;
+              for (const line of workflowFileContentLines) {
+                if (line.match(/^on:\s*$/)) {
+                  hasReadOn = true;
+                  continue;
+                }
+                if (line.match(/^\s{2}pull_request(_target)?:\s*$/)) {
+                  hasReadPullRequest = true;
+                  continue;
+                }
+                if (line.match(/^\s{4}paths:\s*$/)) {
+                  hasReadPaths = true;
+                  continue;
+                }
+
+                if (hasReadOn && hasReadPullRequest && hasReadPaths) {
+                  const matches = line.match(/^\s{6}-\s['"](.+)['"]\s*$/);
+                  if (matches) {
+                    paths.push(matches[1].trim());
+                  } else {
+                    break;
+                  }
+                }
+              }
+            }
+
+            if (paths.length === 0) {
+              paths = ['**'];
+            }
+
+            console.log(paths);
+
+            return paths;
+
+      - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
+        name: Get push changes
+        id: get_push_changes
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
+        with:
+          since_last_remote_commit: true
+          json: true
+          escape_json: false
+          files: ${{ join(fromJSON(steps.get_workflow_triggered_paths.outputs.result), ';') }}
+          files_separator: ';'
+
+      - name: Check if current workflow should be skipped
+        id: skip_workflow
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            if (${{ steps.has_skip_label.outputs.result }} === false) {
+              return false;
+            }
+
+            const label = '${{ format('skip-workflow-{0}', github.workflow) }}';
+            if ('${{ steps.get_push_changes.outputs.any_changed }}' === 'true') {
+              try {
+                await github.rest.issues.removeLabel({
+                  name: label,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number
+                });
+                core.notice(`label ${label} removed because changes were detected on last push.`);
+              } catch (e) {
+                core.warning(`failed to remove label ${label}: ${e}`);
+              }
+
+              return false;
+            }
+
+            return true;
+
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Get nested pull request path
+        id: pr_path
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const prPath = ['${{ github.head_ref }}', '${{ github.base_ref }}'];
+
+            const result = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+              state: 'open'
+            });
+
+            let found = true;
+            while (found) {
+              found = false;
+              result.data.forEach(({ head: { ref: headRef }, base: { ref: baseRef} }) => {
+                if (headRef === prPath[prPath.length - 1] && ! prPath.includes(baseRef)) {
+                  found = true;
+                  prPath.push(baseRef);
+                }
+              });
+            }
+
+            return prPath;
+
+      - name: Get stability
+        id: get_stability
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const getStability = (branchName) => {
+              switch (true) {
+                case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)/.test(branchName):
+                  return 'unstable';
+                case /(^release.+)|(^hotfix.+)/.test(branchName):
+                  return 'testing';
+                case /(^master$)|(^\d{2}\.\d{2}\.x$)/.test(branchName):
+                  return 'stable';
+                default:
+                  return 'canary';
+              }
+            };
+
+            core.setOutput('stability', getStability('${{ github.head_ref || github.ref_name }}'));
+
+            let isTargetingFeatureBranch = false;
+            if ("${{ github.event_name }}" === "pull_request") {
+              let targetStability = 'canary';
+              const prPath = ${{ steps.pr_path.outputs.result || '[]' }};
+              prPath.shift(); // remove current branch
+
+              if (prPath.length && getStability(prPath[0]) === 'canary') {
+                isTargetingFeatureBranch = true;
+              }
+
+              prPath.every((branchName) => {
+                console.log(`checking stability of ${branchName}`)
+                targetStability = getStability(branchName);
+
+                if (targetStability !== 'canary') {
+                  return false;
+                }
+
+                return true;
+              });
+
+              core.setOutput('target_stability', targetStability);
+            }
+
+            core.setOutput('is_targeting_feature_branch', isTargetingFeatureBranch);
+
+      - name: Detect nightly status
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        id: get_nightly_status
+        env:
+          NIGHTLY_MANUAL_TRIGGER: ${{ inputs.nightly_manual_trigger }}
+        with:
+          script: |
+            const getNightlyInput = () => {
+              const nightly_manual_trigger = process.env.NIGHTLY_MANUAL_TRIGGER;
+              console.log(nightly_manual_trigger);
+              if (typeof nightly_manual_trigger === 'undefined' || nightly_manual_trigger === '' || '${{ github.repository }}'.match(/^workflow-.*$/)) {
+                return 'false';
+              } else if (context.eventName === 'schedule' || context.eventName === 'workflow_dispatch' && nightly_manual_trigger === 'true' ) {
+                return 'true';
+              }
+              return 'false';
+            };
+
+            core.setOutput('is_nightly', getNightlyInput());
+
+      - name: Get version
+        id: get_version
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+            let version = '';
+            if ('${{ inputs.version_file }}'.match(/pom\.xml$/)) {
+                version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
+
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'stable') {
+              const { owner, repo } = context.repo;
+
+              // Fetch the most recent tag for plugins
+              const { data: tags } = await github.rest.repos.listTags({
+                owner,
+                repo,
+                per_page: 10
+              });
+
+              let latestTag = null;
+              let latestDate = 0;
+
+              // Filter tags matching format plugins-YYYYMMDD
+              for (const tag of tags) {
+                const match = tag.name.match(/^plugins-(\d{8})$/);
+
+                const tagDate = parseInt(match[1], 10);
+
+                // ensure we get the true latest tag and not the most recent created
+                if (tagDate > latestDate) {
+                  latestTag = tag.name;
+                  latestDate = tagDate;
+                }
+              }
+
+              console.log(`Most recent tag found: ${latestTag}`)
+
+              // Get current release tag from .version file
+              version = fs.readFileSync('.version.plugins', 'utf8').trim();
+
+              console.log(`Stable version based on .version.plugins file will be: ${version}`)
+
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'testing') {
+              const branchName = "${{ github.head_ref || github.ref_name }}";
+              const matches = branchName.match(/^(?:release|hotfix)-(\d{8})$/);
+              if (matches) {
+                version = matches[1];
+              } else {
+                throw new Error('invalid version');
+              }
+            } else if ('${{ steps.get_stability.outputs.stability }}' === 'unstable') {
+              const currentDate = new Date();
+              version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}${String(currentDate.getDate()).padStart(2, '0')}`;
+            } else {
+              const currentDate = new Date();
+              version = `${currentDate.getFullYear()}${("0" + (currentDate.getMonth() + 1)).slice(-2)}00`;
+            }
+
+            core.setOutput('version', version);
+
+      - name: "Get release: 1 for testing / stable, <date> for others"
+        id: get_release
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            let release = '';
+
+            if (${{ contains(fromJSON('["testing", "unstable"]') , steps.get_stability.outputs.stability) }} === true) {
+              release = "1"
+            } else {
+              release = Date.now()
+            }
+
+            core.setOutput('release', release);
+
+      - name: "Get release type: hotfix, release or not defined if not a release"
+        id: get_release_type
         run: |
-          if [[ -z "$GITHUB_HEAD_REF" ]]; then
-            BRANCHNAME="$GITHUB_REF_NAME"
-          else
-            BRANCHNAME="$GITHUB_HEAD_REF"
+          RELEASE_TYPE=$(echo "${{ github.head_ref || github.ref_name }}" | cut -d '-' -f 1)
+          if [[ "$RELEASE_TYPE" == "hotfix" || "$RELEASE_TYPE" == "release" ]]; then
+            echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
           fi
-
-          case "$BRANCHNAME" in
-            develop)
-              STABILITY="unstable"
-              ;;
-            release* | hotfix*)
-              STABILITY="testing"
-              ;;
-            master)
-              STABILITY="stable"
-              ;;
-            *)
-              STABILITY="canary"
-              ;;
-          esac
-
-          echo "stability=$STABILITY" >> $GITHUB_OUTPUT
-
-          if [[ "${{ inputs.version_file }}" == "" ]]; then
-            VERSION=$(date '+%Y%m%d')
-          elif [[ "${{ inputs.version_file }}" == */*.yaml ]]; then
-            VERSION=$(grep 'version: ' ${{ inputs.version_file }} | cut -d' ' -f2 | tr -d '"')
-          else
-            VERSION=$(grep VERSION ${{ inputs.version_file }} | cut -d "'" -f 2)
-          fi
-          echo "version=$(echo $VERSION)" >> $GITHUB_OUTPUT
-
-          RELEASE=$(date '+%H%M%S')
-          echo "release=$(echo $RELEASE)" >> $GITHUB_OUTPUT
         shell: bash
+
+      - name: Display info in job summary
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const outputTable = [
+              [{data: 'Name', header: true}, {data: 'Value', header: true}],
+              ['version', '${{ steps.get_version.outputs.version }}'],
+              ['release', '${{ steps.get_release.outputs.release }}'],
+              ['stability', '${{ steps.get_stability.outputs.stability }}'],
+              ['release_type', '${{ steps.get_release_type.outputs.release_type || '<em>not defined because this is not a release</em>' }}'],
+              ['is_targeting_feature_branch', '${{ steps.get_stability.outputs.is_targeting_feature_branch }}'],
+              ['target_stability', '${{ steps.get_stability.outputs.target_stability || '<em>not defined because current run is not triggered by pull request event</em>' }}'],
+              ['is_nightly', '${{ steps.get_nightly_status.outputs.is_nightly }}'],
+              ['skip_workflow', '${{ steps.skip_workflow.outputs.result }}'],
+              ['labels', '${{ steps.has_skip_label.outputs.labels }}'],
+            ];
+            core.summary
+              .addHeading(`${context.workflow} environment outputs`)
+              .addTable(outputTable);
+
+            if ("${{ github.event_name }}" === "pull_request") {
+              const prPath = ${{ steps.pr_path.outputs.result || '[]' }};
+              const mainBranchName = prPath.pop();
+              let codeBlock = `
+                %%{ init: { 'gitGraph': { 'mainBranchName': '${mainBranchName}', 'showCommitLabel': false } } }%%
+                gitGraph
+                  commit`;
+              prPath.reverse().forEach((branchName) => {
+                codeBlock = `${codeBlock}
+                  branch ${branchName}
+                  checkout ${branchName}
+                  commit`;
+              });
+
+              core.summary
+                .addHeading('Git workflow')
+                .addCodeBlock(
+                  codeBlock,
+                  "mermaid"
+                );
+            }
+
+            core.summary.write();

@@ -52,11 +52,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{servers} = [
-        { label => 'authserver-roundtrip-time', nlabel => 'radius.authserver.roundtrip.time.milliseconds', set => {
+        { label => 'authserver-roundtrip-time', nlabel => 'radius.authserver.roundtrip.time.microseconds', set => {
                 key_values => [ { name => 'round_trip_time' }, { name => 'name' } ],
-                output_template => 'round trip time: %s ms',
+                output_template => 'round trip time: %s µs',
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' }
+                    { template => '%s', min => 0, unit => 'µs', label_extra_instance => 1, instance_use => 'name' }
                 ]
             }
         },
@@ -187,11 +187,46 @@ Example: --filter-counters='^total$'
 
 Filter radius servers by name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-authservers-total>
 
 Thresholds.
-Can be: 'authservers-total', 'authserver-roundtrip-time', 'authserver-packets-access-requests',
-'authserver-packets-access-accepts', 'authserver-clients-timeout'.
+
+=item B<--critical-authservers-total>
+
+Thresholds.
+
+=item B<--warning-authserver-roundtrip-time>
+
+Thresholds.
+
+=item B<--critical-authserver-roundtrip-time>
+
+Thresholds.
+
+=item B<--warning-authserver-packets-access-requests>
+
+Thresholds.
+
+=item B<--critical-authserver-packets-access-requests>
+
+Thresholds.
+
+=item B<--warning-authserver-packets-access-accepts>
+
+Thresholds.
+
+=item B<--critical-authserver-packets-access-accepts>
+
+Thresholds.
+
+=item B<--warning-authserver-clients-timeout>
+
+Thresholds.
+
+=item B<--critical-authserver-clients-timeout>
+
+Thresholds.
+
 
 =back
 

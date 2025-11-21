@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+    <Appenders>
+        <Console name="console" target="System.err">
+            <PatternLayout pattern="[%-20d{dd/MM/yyyy HH:mm:ss}] [%-6p] %m %n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.apache.log4j.xml" level="info"/>
+        <Root level="error">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

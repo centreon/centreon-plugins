@@ -1,0 +1,36 @@
+*** Settings ***
+Documentation       Check interfaces.
+
+Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
+
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
+
+
+*** Variables ***
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
+
+
+*** Test Cases ***
+interfaces ${tc}
+    [Tags]    network    cyberoam
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --mode=interfaces
+    ...    --hostname=${HOSTNAME}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-port=${SNMPPORT}
+    ...    --snmp-community=network/cyberoam/snmp/slim_sophos
+    ...    --snmp-timeout=1
+    ...    ${extra_options}
+
+    # first run to build cache
+    Run    ${command}
+    # second run to control the output
+    Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
+
+    Examples:        tc    extra_options                                                                                                                                                                                                            expected_result    --
+            ...      1     ${EMPTY}                                                                                                                                                                                                                 CRITICAL: Interface 'Anonymized 232' Status : down (admin: up) - Interface 'Anonymized 191' Status : down (admin: up) - Interface 'Anonymized 141' Status : down (admin: up)
+            ...      2     --warning-total-admin-down=0 --critical-total-admin-down=0                                                                                                                                                               CRITICAL: Interface 'Anonymized 232' Status : down (admin: up) - Interface 'Anonymized 191' Status : down (admin: up) - Interface 'Anonymized 141' Status : down (admin: up)
+            ...      3     --interface='.*' --name --add-status --add-traffic --critical-status='' --warning-in-traffic='80' --critical-in-traffic='90' --warning-out-traffic='80' --critical-out-traffic='90' --verbose                            OK: All interfaces are ok | 'traffic_in_Anonymized 250'=0.00b/s;0:8000000;0:9000000;0;10000000 'traffic_out_Anonymized 250'=0.00b/s;0:8000000;0:9000000;0;10000000 'traffic_in_Anonymized 012'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 012'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 118'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 118'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 073'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 073'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 073'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 073'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 242'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 242'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 037'=0.00b/s;;;0; 'traffic_out_Anonymized 037'=0.00b/s;;;0; 'traffic_in_Anonymized 080'=0.00b/s;;;0; 'traffic_out_Anonymized 080'=0.00b/s;;;0; 'traffic_in_Anonymized 103'=0.00b/s;;;0; 'traffic_out_Anonymized 103'=0.00b/s;;;0; 'traffic_in_Anonymized 151'=0.00b/s;;;0; 'traffic_out_Anonymized 151'=0.00b/s;;;0; 'traffic_in_Anonymized 171'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 171'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 107'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 107'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 239'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 239'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 137'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_out_Anonymized 137'=0.00b/s;0:800000000;0:900000000;0;1000000000 'traffic_in_Anonymized 028'=0.00b/s;;;0; 'traffic_out_Anonymized 028'=0.00b/s;;;0; 'traffic_in_Anonymized 105'=0.00b/s;;;0; 'traffic_out_Anonymized 105'=0.00b/s;;;0; 'traffic_in_Anonymized 012'=0.00b/s;;;0; 'traffic_out_Anonymized 012'=0.00b/s;;;0; 'traffic_in_Anonymized 232'=0.00b/s;0:8000000000;0:9000000000;0;10000000000 'traffic_out_Anonymized 232'=0.00b/s;0:8000000000;0:9000000000;0;10000000000 Interface 'Anonymized 250' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 012' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 118' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 073' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 071' Status : down (admin: down) Interface 'Anonymized 073' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 232' Status : down (admin: up) Interface 'Anonymized 191' Status : down (admin: up) Interface 'Anonymized 242' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 175' Status : down (admin: down) Interface 'Anonymized 128' Status : down (admin: down) Interface 'Anonymized 037' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 080' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 092' Status : down (admin: down) Interface 'Anonymized 187' Status : down (admin: down) Interface 'Anonymized 163' Status : down (admin: down) Interface 'Anonymized 103' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 151' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 141' Status : down (admin: up) Interface 'Anonymized 171' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 184' Status : down (admin: down) Interface 'Anonymized 107' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 239' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 137' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 028' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 105' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 045' Status : down (admin: down) Interface 'Anonymized 101' Status : down (admin: down) Interface 'Anonymized 252' Status : down (admin: down) Interface 'Anonymized 012' Status : up (admin: up), Traffic In : 0.00b/s (-), Traffic Out : 0.00b/s (-) Interface 'Anonymized 232' Status : up (admin: up), Traffic In : 0.00b/s (0.00%), Traffic Out : 0.00b/s (0.00%) Interface 'Anonymized 072' Status : down (admin: down) Interface 'Anonymized 037' Status : down (admin: down)

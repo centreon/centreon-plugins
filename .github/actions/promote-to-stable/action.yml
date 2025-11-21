@@ -22,6 +22,12 @@ runs:
         JF_URL: https://centreon.jfrog.io
         JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
 
+    - name: Parse distrib name
+      id: parse-distrib
+      uses: ./.github/actions/parse-distrib
+      with:
+        distrib: ${{ inputs.distrib }}
+
     - name: Promote RPM packages to stable
       if: ${{ startsWith(inputs.distrib, 'el') }}
       run: |
@@ -60,27 +66,33 @@ runs:
       shell: bash
 
     - name: Promote DEB package to stable
-      if: ${{ contains(fromJSON('["bullseye", "bookworm"]'), inputs.distrib) }}
+      if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy", "noble"]'), inputs.distrib) }}
       run: |
         set -eux
 
         echo "[DEBUG] - Distrib: ${{ inputs.distrib }}"
         echo "[DEBUG] - Distrib: ${{ inputs.module }}"
 
+        if [[ "${{ inputs.distrib }}" == "jammy" || "${{ inputs.distrib }}" == "noble" ]]; then
+          repo="ubuntu-plugins"
+        else
+          repo="apt-plugins"
+        fi
+
         echo "[DEBUG] - Get path of testing DEB packages to promote to stable."
-        SRC_PATHS=$(jf rt search --include-dirs apt-plugins-testing/pool/${{ inputs.module }}/*${{ inputs.distrib }}*.deb | jq -r '.[].path')
+        SRC_PATHS=$(jf rt search --include-dirs $repo-testing/pool/${{ inputs.module }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb | jq -r '.[].path')
 
         if [[ ${SRC_PATHS[@]} ]]; then
           for SRC_PATH in ${SRC_PATHS[@]}; do
             echo "[DEBUG] - Source path found: $SRC_PATH"
           done
         else
-          echo "[DEBUG] - No source path found."
-          continue
+          echo "::warning::No source path found."
+          exit 0
         fi
 
         echo "[DEBUG] - Build target path."
-        TARGET_PATH="apt-plugins-${{ inputs.stability }}/pool/${{ inputs.module }}/"
+        TARGET_PATH="$repo-${{ inputs.stability }}/pool/${{ inputs.module }}/"
         echo "[DEBUG] - Target path: $TARGET_PATH"
 
         echo "[DEBUG] - Promoting DEB testing artifacts to stable."
@@ -89,11 +101,10 @@ runs:
           jf rt download $ARTIFACT --flat
         done
 
-        for ARTIFACT_DL in $(dir -1|grep -E ".+${{ inputs.distrib }}.+\.deb"); do
+        for ARTIFACT_DL in $(dir -1|grep -E ".+${{ steps.parse-distrib.outputs.package_distrib_name }}.+\.deb"); do
           ARCH=$(echo $ARTIFACT_DL | cut -d '_' -f3 | cut -d '.' -f1)
           echo "[DEBUG] - Promoting (upload) $ARTIFACT_DL to stable $TARGET_PATH."
           jf rt upload "$ARTIFACT_DL" "$TARGET_PATH" --deb "${{ inputs.distrib }}/main/$ARCH"
         done
         rm -f *.deb
-
       shell: bash
