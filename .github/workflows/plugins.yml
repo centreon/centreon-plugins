@@ -143,6 +143,15 @@ jobs:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
 
+      # Add to your PR the label upload-artifacts to get plugin.json as artifact
+      - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        name: Upload plugins.json artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: plugins_json
+          path: ./plugins.json
+          retention-days: 1
+
   unit-tests:
     needs: [get-environment, get-plugins]
     if: |
