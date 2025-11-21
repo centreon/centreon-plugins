@@ -508,9 +508,10 @@ sub request {
             }
         }
 
-        if (!defined($self->{response_code})) {
-            $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $err);
-            $self->{output}->option_exit();
+        unless (defined $self->{response_code}) {
+            $self->{output}->option_exit(short_msg => 'curl perform error : ' . $err)
+                unless $options{request}->{silently_fail};
+            $self->{response_code} = 503;
         }
     }
 

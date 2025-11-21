@@ -23,6 +23,10 @@ Start Mockoon
     Ctn Generic Suite Setup
     Remove File    ${MOCKOON_LOG_FILE}
 
+    # Thoses variables are accessible in Mockoon templates with {{ getEnvVar 'MOCKOON_HOSTNAME' }} and {{ getEnvVar 'MOCKOON_APIPORT' }}
+    Set Environment Variable    MOCKOON_HOSTNAME     ${HOSTNAME}
+    Set Environment Variable    MOCKOON_APIPORT      ${APIPORT}
+
     ${time_start}    Get Time    str=epoch
 
     ${process}    Start Process
@@ -31,7 +35,7 @@ Start Mockoon
     ...    --data
     ...    ${MOCKOON_JSON}
     ...    --port
-    ...    3000
+    ...    ${APIPORT}
     ...    stdout=${MOCKOON_LOG_FILE}
 
     Wait Until Created    ${MOCKOON_LOG_FILE}
