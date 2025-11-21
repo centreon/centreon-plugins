@@ -370,7 +370,7 @@ jobs:
     uses: ./.github/workflows/plugins-robot-tests.yml
     with:
       image: ${{ matrix.image }}
-      indexes: needs.get-plugins.outputs.index_matrix
+      indexes: ${{ needs.get-plugins.outputs.index_matrix }}
       distrib: ${{ matrix.distrib }}
       arch: ${{ matrix.arch }}
       get-packages: ${{ needs.get-plugins.outputs.package_plugins == 'True' }}
