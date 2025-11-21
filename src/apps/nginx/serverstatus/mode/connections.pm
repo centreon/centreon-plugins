@@ -41,14 +41,14 @@ sub set_counters {
     $self->{maps_counters}->{global} = [];
     foreach (('active', 'reading', 'writing', 'waiting')) {
         push @{$self->{maps_counters}->{global}},
-            { label => 'connections-' . $_, nlabel => 'server.connections.' . $_ . '.count', set => {
-                    key_values => [ { name => $_ }, { name => 'total' } ],
-                    output_template => $_ . ': %d',
-                    perfdatas => [
-                        { template => '%d', min => 0, max => 'total' }
-                    ]
-                }
-            };
+             { label => 'connections-' . $_, nlabel => 'server.connections.' . $_ . '.count', set => {
+                 key_values      => [ { name => $_ }, { name => 'total' } ],
+                 output_template => $_ . ': %d',
+                 perfdatas       => [
+                     { template => '%d', min => 0, max => 'total' }
+                 ]
+             }
+             };
     }
 }
 

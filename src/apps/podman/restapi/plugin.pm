@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'container-usage'   => 'apps::podman::restapi::mode::containerusage',
+        'container-usage' => 'apps::podman::restapi::mode::containerusage',
         'list-containers' => 'apps::podman::restapi::mode::listcontainers',
         'list-pods'       => 'apps::podman::restapi::mode::listpods',
-        'pod-status'       => 'apps::podman::restapi::mode::podstatus',
+        'pod-status'      => 'apps::podman::restapi::mode::podstatus',
         'system-status'   => 'apps::podman::restapi::mode::systemstatus'
     };
 
