@@ -1,6 +1,6 @@
 *** Settings ***
-Documentation       network::mellanox::snmp::plugin
-Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
+Documentation       snmp_standard
+Resource            ${CURDIR}${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
@@ -9,17 +9,17 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS}
-...         --plugin=network::mellanox::snmp::plugin
 ...         --mode=list-spanning-trees
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
-...         --snmp-community=network/mellanox/snmp/mellanox
 
 *** Test Cases ***
-List-spanning-trees
-    [Tags]    network    mellanox    snmp
+Mellanox-List-spanning-trees
+    [Tags]    network    mellanox    snmp    snmp_standard
     ${command}    Catenate
     ...    ${CMD}
+    ...    --plugin=network::mellanox::snmp::plugin
+    ...    --snmp-community=snmp_standard/network-mellanox
     ...    --disco-show
 
     ${root}=         Ctn Run Command And Return Parsed XML    ${command}
