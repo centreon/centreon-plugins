@@ -52,7 +52,7 @@ def install_plugin(plugin, archi, build):
                 install_name = f"./{plugin.lower()}*.deb"
             else:
                 install_name = plugin.lower()
-            command = f"apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y {install_name}"
+            command = f"apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y --allow-downgrades {install_name}"
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
