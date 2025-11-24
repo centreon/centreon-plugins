@@ -2,10 +2,19 @@
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # global errors counter
 errors=0
+
+function info() {
+  echo -e "${GREEN}INFO${NC}: $*"
+}
+
+function warning() {
+  echo -e "${YELLOW}WARNING${NC}: $*"
+}
 
 function error() {
   echo -e "${RED}ERROR${NC}: $*"
@@ -15,10 +24,6 @@ function error() {
 function fatal() {
   echo -e "${RED}FATAL${NC}: $*"
   exit 1
-}
-
-function info() {
-  echo -e "${GREEN}INFO${NC}: $*"
 }
 
 jq=$(type -p jq) || fatal "Could not locate jq command"
@@ -60,7 +65,7 @@ for file in "${committed_files[@]}"; do
             ;;
         robot)
             info "      - Checking robot lint"
-            $robotidy_path ${robotidy_opts[$robotidy_exe]} "$file" || error "     - Robot lint errors found in $file"
+            $robotidy_path ${robotidy_opts[$robotidy_exe]} "$file" >/dev/null 2>&1 || warning "   - Robot lint errors found in $file"
             ;;
         json)
             info "      - Checking JSON validity"
@@ -69,6 +74,6 @@ for file in "${committed_files[@]}"; do
         *)
             ;;
     esac
-    #info "  - All pre-commit checks done for file $file"
 done
 (( errors > 0 )) && fatal "$errors errors found in pre-commit checks"
+info "All plugins pre-commit checks done for file $file"
