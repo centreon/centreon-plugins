@@ -26,6 +26,12 @@ function fatal() {
   exit 1
 }
 
+function check_tabs() {
+    local file="$1"
+    info "      - Checking BASH indentation"
+    grep -P '^\t' "$file" >/dev/null 2>&1 && warning "   - File $file contains leading tab character (suspected bad indentation)."
+}
+
 jq=$(type -p jq) || fatal "Could not locate jq command"
 # Determining the robotidy command
 robotidy_path=$(type -p robocop) || robotidy_path=$(type -p robotidy) || fatal "Could not locate either robocop nor robotidy. Cannot check robot lint"
@@ -34,7 +40,7 @@ info "Robot lint tool is $robotidy_exe"
 # Options depend on the use binary
 declare -A robotidy_opts=([robotidy]="--check --skip-keyword-call Examples:" [robocop]="check" )
 # Get list of committed files
-committed_files=( $(git diff --cached --name-only --diff-filter=ACMR) )
+mapfile -t committed_files < <(git diff --cached --name-only --diff-filter=ACMR)
 info "Starting plugins pre-commit hooks for ${#committed_files[@]} files"
 for file in "${committed_files[@]}"; do
     info "  - $file:"
@@ -53,6 +59,7 @@ for file in "${committed_files[@]}"; do
             # check spelling
             info "      - Checking that spelling in file is OK"
             perl .github/scripts/pod_spell_check.t "$file" ./tests/resources/spellcheck/stopwords.txt >/dev/null 2>&1 || error "Spellcheck error on file $file"
+            check_tabs "$file"
             ;;
         txt)
             if [[ "${file##*/}" == "stopwords.txt" ]]; then
@@ -66,12 +73,18 @@ for file in "${committed_files[@]}"; do
         robot)
             info "      - Checking robot lint"
             $robotidy_path ${robotidy_opts[$robotidy_exe]} "$file" >/dev/null 2>&1 || warning "   - Robot lint errors found in $file"
+            check_tabs "$file"
             ;;
+        sh)
+            check_tabs "$file"
+          ;;
         json)
             info "      - Checking JSON validity"
             jq '' "$file" >/dev/null 2>&1 || error "     - JSON file $file is not valid"
+            check_tabs "$file"
           ;;
         *)
+            info "ON PASSE PAR LA"
             ;;
     esac
 done

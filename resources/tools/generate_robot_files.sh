@@ -75,7 +75,7 @@ EOF
 
 # main robot-generating function
 function print_robot() {
-	local plugin="$1" ; shift
+    local plugin="$1" ; shift
     local mode="$1" ; shift
     local community="$1" ; shift
     local options=( "\${EMPTY}" $* )
@@ -88,7 +88,7 @@ function print_robot() {
     for (( i=0 ; i < path_depth ; i++ )); do
         recursive_path="${recursive_path}..$slash"
     done
-
+#caca
     cat <<EOF
 *** Settings ***
 Documentation       $plugin
@@ -97,7 +97,7 @@ Resource            \${CURDIR}\${/}${recursive_path}resources/import.resource
 
 EOF
 
-	if [[ "$plugin" =~ snmp ]]; then
+    if [[ "$plugin" =~ snmp ]]; then
         print_snmp_tpl "$community"
     else
         print_mockoon_tpl
