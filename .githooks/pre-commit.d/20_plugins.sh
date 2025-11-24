@@ -28,7 +28,7 @@ function fatal() {
 
 jq=$(type -p jq) || fatal "Could not locate jq command"
 # Determining the robotidy command
-robotidy_path=$(type -p robocop) || robotidy_path=$(type -p robotidy) || fatal "Counld not locate either robocop nor robotidy. Cannot check robot lint"
+robotidy_path=$(type -p robocop) || robotidy_path=$(type -p robotidy) || fatal "Could not locate either robocop nor robotidy. Cannot check robot lint"
 robotidy_exe="${robotidy_path##*/}"
 info "Robot lint tool is $robotidy_exe"
 # Options depend on the use binary
@@ -43,7 +43,7 @@ for file in "${committed_files[@]}"; do
         pm|pl)
             # check that the perl file compiles
             info "      - Checking that file compiles"
-            PERL5LIB="$PERL5LIB::./src/" perl -c "$file" >/dev/null 2>&1 || error "     - File $file does not compile with perl -c"
+            PERL5LIB="$PERL5LIB:./src/" perl -c "$file" >/dev/null 2>&1 || error "     - File $file does not compile with perl -c"
             # check the copyright year
             info "      - Checking that file copyright is OK"
             grep "Copyright $(date +%Y)" "$file" >/dev/null || error "Copyright in $file does not contain the current year"
@@ -58,7 +58,7 @@ for file in "${committed_files[@]}"; do
             if [[ "${file##*/}" == "stopwords.txt" ]]; then
                 # sort file and check if it makes a difference
                 info "      - Checking that stopwords.txt is sorted "
-                cat "$file" | sort -ui >/tmp/sorted_stopwords
+                sort -ui "$file" >/tmp/sorted_stopwords
                 diff "$file" /tmp/sorted_stopwords >/dev/null || error "     - stopwords.txt not sorted properly"
 
             fi
@@ -76,4 +76,4 @@ for file in "${committed_files[@]}"; do
     esac
 done
 (( errors > 0 )) && fatal "$errors errors found in pre-commit checks"
-info "All plugins pre-commit checks done for file $file"
+info "All plugins pre-commit checks passed"

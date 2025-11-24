@@ -19,7 +19,7 @@ source "$source_path/lib/common_functions.sh"
 # infer the project root path
 project_path="$source_path/../.."
 # include the project's Perl sources to @INC
-PERL5LIB="$PERL5LIB::$project_path/src/"
+PERL5LIB="$PERL5LIB:$project_path/src/"
 
 base_cmd="$project_path/src/centreon_plugins.pl --plugin=$plugin"
 # transform the Perl package path into file system path of the Perl code

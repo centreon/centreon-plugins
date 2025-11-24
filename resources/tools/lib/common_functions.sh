@@ -19,7 +19,7 @@ function info() {
 # Display an error message with red ERROR tag and increment errors counter if defined
 function error() {
   echo -e "${RED}ERROR${NC}: $*">&2
-  [[ -n "$errors" && "$errors" =~ ^[[:digit:]]+$ ]] && $((errors++))
+  [[ -n "$errors" && "$errors" =~ ^[[:digit:]]+$ ]] && ((errors++))
 }
 
 # Display an error message with red FATAL tag and exits immediately
