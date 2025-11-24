@@ -34,7 +34,7 @@ function fatal() {
 function parse_modes() {
   local IFS=$'\n'
   [[ $DEBUG ]] && set -x
-  local MODES_OUTPUT=( $(perl $* 2>/dev/null ) )
+  local MODES_OUTPUT=( $(perl "$@" 2>/dev/null ) )
   [[ $DEBUG ]] && set +x
   
   declare -a modes
@@ -67,7 +67,7 @@ function parse_threshold_options_from_help() {
   [[ $DEBUG ]] && set +x
   
   declare -a threshold_options
-  # Remove all lines above "Modes Available:"
+  # Remove all lines above "Mode:"
   
   local in_mode_help=
   local line
