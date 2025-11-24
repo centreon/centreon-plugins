@@ -46,7 +46,7 @@ for file in "${committed_files[@]}"; do
             PERL5LIB="$PERL5LIB:./src/" perl -c "$file" >/dev/null 2>&1 || error "     - File $file does not compile with perl -c"
             # check the copyright year
             info "      - Checking that file copyright is OK"
-            grep "Copyright $(date +%Y)" "$file" >/dev/null || error "Copyright in $file does not contain the current year"
+            grep "Copyright $(date +%Y)-Present Centreon" "$file" >/dev/null || error "Copyright in $file does not contain \"Copyright $(date +%Y)-Present Centreon\""
             # check that no help is written as --warning-* --critical-*
             info "      - Checking there's no unsplitted '--warning-*' / '--critical-*'"
             grep -- '--warning-\*\|--critical-\*' "$file"  >/dev/null && error "     - File $file contains help that is written as --warning-* or --critical-*"
