@@ -92,6 +92,7 @@ function print_robot() {
     cat <<EOF
 *** Settings ***
 Documentation       $plugin
+
 Resource            \${CURDIR}\${/}${recursive_path}resources/import.resource
 
 EOF
@@ -108,6 +109,7 @@ EOF
     # example: os::linux::snmp::plugin --> we keep 'os', 'linux' and 'snmp'
     local tags_str="${tags[0]}    ${tags[1]}    ${tags[${#tags[@]} - 2]}"
     cat <<EOF
+
 *** Test Cases ***
 ${mode^} \${tc}
     [Tags]    $tags_str
@@ -119,30 +121,14 @@ ${mode^} \${tc}
 
 EOF
     # init test case counter
-    tc=1
-    # fix test case column width
-    tc_width=6
-    # set default (minimum) column width for the extra_options
-    option_width=13
-    # set the actual width to fit the longest option
-    for option in "${options[@]}"; do
-        (( option_width < ${#option} )) && option_width=${#option}
-    done
-    option_width=$(( option_width + 8))
-    echo -n "    Examples:      tc    extra_options"
-    remaining_width=$((option_width + 6 ))
-    printf '% '$remaining_width's' "expected_result    --"
-    echo
+    local tc=1
+    local line_prefix='    ...    '
+    echo -e "    Examples:\n${line_prefix}tc\n${line_prefix}extra_options\n${line_prefix}expected_result\n${line_prefix}--"
     for option in "${options[@]}"; do
         [[ "$option" != "\${EMPTY}" ]] && option="$option=1"
-        # "tambouille" to print aligned rows
-        echo -n "            ..."
-        printf '% '${tc_width}'s' $tc
-        echo -n "    "
-        printf '%s' "$option"
-        remaining_width=$((option_width - ${#option} ))
-        printf '% '$remaining_width's' "OK"
-        echo ""
+        echo "${line_prefix}${tc}"
+        echo "${line_prefix}${option}"
+        echo "${line_prefix}OK"
         # increment the test case counter
         : $((tc++))
     done
