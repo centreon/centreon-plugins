@@ -2,10 +2,11 @@
 Documentation       Network moxa SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
-
 Test Timeout        120s
+
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS}
@@ -14,6 +15,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-community=network/moxa/switch/snmp/interfaces
+
 
 *** Test Cases ***
 network interface ${tc}

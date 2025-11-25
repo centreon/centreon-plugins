@@ -20,6 +20,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 UserJourneyStatistics ${tc}
     [Tags]    quanta    api
@@ -29,7 +30,7 @@ UserJourneyStatistics ${tc}
     ...    --journey-id=3666
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp     ${command}    ${expected_regexp}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:        tc       extraoptions                                                          expected_regexp    --
             ...      1        ${EMPTY}                                                              OK: journey "Basic user journey" journey performance score: 76, journey hero time: 35933.10ms, journey speed index: 13754.20ms, journey ttfb: 33.56ms \\\\| 'journey_Basic user journey#journey.performance.score'=76;;;0;100 'journey_Basic user journey#journey.herotime.milliseconds'=35933.10ms;;;0; 'journey_Basic user journey#journey.speedindex.time.milliseconds'=13754.20ms;;;0; 'journey_Basic user journey#journey.ttfb.milliseconds'=33.56ms;;;0;

@@ -19,6 +19,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --proto=http
 
+
 *** Test Cases ***
 List-Containers ${tc}
     [Documentation]    Check list-containers results

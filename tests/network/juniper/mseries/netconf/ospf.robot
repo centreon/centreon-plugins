@@ -10,11 +10,12 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::juniper::mseries::netconf::plugin
-    ...    --mode=ospf
-    ...    --hostname=${HOSTNAME}
-    ...    --sshcli-command=get_data
-    ...    --sshcli-path=${CURDIR}
-    ...    --sshcli-option="-f=${CURDIR}${/}data${/}ospf.netconf"
+...         --mode=ospf
+...         --hostname=${HOSTNAME}
+...         --sshcli-command=get_data
+...         --sshcli-path=${CURDIR}
+...         --sshcli-option="-f=${CURDIR}${/}data${/}ospf.netconf"
+
 
 *** Test Cases ***
 Ospf ${tc}

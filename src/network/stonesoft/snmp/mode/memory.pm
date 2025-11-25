@@ -167,7 +167,7 @@ __END__
 
 =head1 MODE
 
-Check stonesoftFirewall memory usage (STONESOFT-FIREWALL-MIB).
+Check C<Stonesoft> Firewall memory usage (C<STONESOFT-FIREWALL-MIB>).
 
 =over 8
 
@@ -179,7 +179,7 @@ Warning threshold in percent.
 
 Critical threshold in percent.
 
-=item B<-swap>
+=item B<--swap>
 
 Check swap also.
 

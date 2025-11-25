@@ -131,9 +131,7 @@ ssh command path (default: C<none>)
 
 =item B<--sshcli-option>
 
-Specify SSH CLI options (example: C<--sshcli-option='-o=StrictHostKeyChecking=no'>).
-The default option is C<--sshcli-options='-o=LogLevel=ERROR'> which hides SSH banner.
-If you override this option, make sure to include it again.
+Specify SSH CLI options (example: --sshcli-option='-o=StrictHostKeyChecking=no -o=LogLevel=ERROR'). The default parameter is --sshcli-options='-o=LogLevel=ERROR' which hides the SSH banner. If you override this parameter, make sure to append '-o=LogLevel=ERROR' to your new value to maintain this behavior. This parameter can be used multiple times and multiple options can be specified in the same parameter.
 
 =back
 

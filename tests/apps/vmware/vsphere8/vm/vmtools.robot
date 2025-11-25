@@ -1,12 +1,11 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
-Test Timeout        120s
 Test Setup          Ctn Cleanup Cache
+Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -19,13 +18,13 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vm::plu
 ...                 --proto=http
 ...                 --port=3000
 
+
 *** Test Cases ***
 Vm-Tools ${tc}
-    [Tags]    apps    api    vmware   vsphere8    vm
+    [Tags]    apps    api    vmware    vsphere8    vm
     ${command}    Catenate    ${CMD} ${filter_vm} ${extraoptions}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
-    
-    
+
     Examples:    tc     filter_vm                   extraoptions                      expected_result   --
         ...      1     --vm-name=db-server-01       ${EMPTY}                          OK: vm-7722 had 1 install attempts - version is UNMANAGED (v12.2.0) - updates are MANUAL (auto-updates not allowed) - tools are RUNNING | 'tools.install.attempts.count'=1;;;0;
         ...      2     --vm-name=web-server-01      ${EMPTY}                          OK: vm-7657 had 4 install attempts - version is CURRENT (v12.3.0) - updates are MANUAL (auto-updates allowed) - tools are RUNNING | 'tools.install.attempts.count'=4;;;0;

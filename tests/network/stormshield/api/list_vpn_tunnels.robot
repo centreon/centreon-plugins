@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
@@ -34,7 +33,6 @@ list-vpn-tunnels ${tc}
     ...    Wrong output result for command:\n${CMD} ${extraoptions}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-
 
     Examples:    tc    extraoptions       expected_result   --
         ...      1     ${EMPTY}           24

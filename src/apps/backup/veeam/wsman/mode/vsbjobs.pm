@@ -123,10 +123,21 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
         'exclude-name:s'    => { name => 'exclude_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-type:s'     => { name => 'filter_type' },
+        'veeam-version:s'   => { name => 'veeam_version' },
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{veeam_version})
+        || $self->{option_results}->{veeam_version} !~ /^[\.\d]+$/) {
+        $self->{option_results}->{veeam_version} = '12';
+    }
 }
 
 sub manage_selection {
@@ -196,10 +207,17 @@ sub manage_selection {
         my $elapsed_time = 0;
         $elapsed_time = $current_time - $job->{creationTimeUTC} if ($job->{creationTimeUTC} =~ /[0-9]/);
 
+        my $sure_backup_job_type;
+        if (version->parse($options{veeam_version}) >= 12) {
+            $sure_backup_job_type = $job->{type} # Job Type is not returned with Get-VBRSureBackupJob whereas it is with Get-VSBJob
+        } else {
+            $sure_backup_job_type = $job_type->{ $job->{type} } // 'unknown'
+        }
+
         my $status = defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ? $job_result->{ $job->{result} } : '-';
         $self->{jobs}->{ $job->{name} } = {
             name => $job->{name},
-            type => defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown',
+            type => $sure_backup_job_type,
             duration => $elapsed_time,
             status => $status
         };
@@ -217,7 +235,6 @@ __END__
 [EXPERIMENTAL] Monitor SureBackup jobs.
 
 =over 8
-
 
 =item B<--ps-display>
 
@@ -254,10 +271,37 @@ Can used special variables like: %{name}, %{type}, %{status}, %{duration}.
 Set critical threshold for status (Default: 'not %{status} =~ /success/i').
 Can used special variables like: %{name}, %{type}, %{status}, %{duration}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-detected>
 
 Thresholds.
-Can be: 'jobs-detected', 'jobs-success', 'jobs-warning', 'jobs-failed'.
+
+=item B<--critical-jobs-detected>
+
+Thresholds.
+
+=item B<--warning-jobs-success>
+
+Thresholds.
+
+=item B<--critical-jobs-success>
+
+Thresholds.
+
+=item B<--warning-jobs-warning>
+
+Thresholds.
+
+=item B<--critical-jobs-warning>
+
+Thresholds.
+
+=item B<--warning-jobs-failed>
+
+Thresholds.
+
+=item B<--critical-jobs-failed>
+
+Thresholds.
 
 =back
 

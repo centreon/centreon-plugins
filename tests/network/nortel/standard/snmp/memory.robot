@@ -1,6 +1,6 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
@@ -12,8 +12,8 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::nortel::standard::snmp::plugin
 
 *** Test Cases ***
 memory-4950gts ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=memory
@@ -28,8 +28,8 @@ memory-4950gts ${tc}
             ...      1       ${EMPTY}                          OK: Memory '3.10.0'
 
 memory-5520-24t ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=memory
@@ -46,8 +46,8 @@ memory-5520-24t ${tc}
             ...      3       --critical-usage-prct=0:0         CRITICAL: Memory 'slot_1' total: 1.94 GB used: 1.17 GB (60.39%) free: 785.41 MB (39.61%) | 'slot_1#memory.usage.bytes'=1255702528B;;;0;2079264768 'slot_1#memory.free.bytes'=823562240B;;;0;2079264768 'slot_1#memory.usage.percentage'=60.39%;;0:0;0;100
 
 memory-7520-48y-8c ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=memory
@@ -64,8 +64,8 @@ memory-7520-48y-8c ${tc}
             ...      3       --critical-usage-prct=0:0         CRITICAL: Memory 'slot_1' total: 15.61 GB used: 2.10 GB (13.47%) free: 13.51 GB (86.53%) | 'slot_1#memory.usage.bytes'=2257336320B;;;0;16761507840 'slot_1#memory.free.bytes'=14504171520B;;;0;16761507840 'slot_1#memory.usage.percentage'=13.47%;;0:0;0;100
 
 memory-7520-48ye-8ce ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=memory

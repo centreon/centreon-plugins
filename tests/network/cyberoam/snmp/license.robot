@@ -3,9 +3,10 @@ Documentation       Check current HA-State. HA-States: notapplicable, auxiliary,
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
+
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
@@ -23,7 +24,7 @@ ha-status ${tc}
     ...    --snmp-community=network/cyberoam/snmp/slim_sophos
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                          expected_result    --

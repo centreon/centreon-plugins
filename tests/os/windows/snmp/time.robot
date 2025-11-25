@@ -11,9 +11,10 @@ Test Timeout        120s
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::windows::snmp::plugin
 
+
 *** Test Cases ***
 time ${tc}
-    [Tags]    os    Windows
+    [Tags]    os    windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=time
@@ -23,7 +24,7 @@ time ${tc}
     ...    --snmp-community=os/windows/snmp/windows_anon
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Match Regexp    ${output}    ${expected_result}

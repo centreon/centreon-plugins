@@ -128,6 +128,9 @@ sub manage_selection {
             $self->{sites}->{$site->{id}}->{$metric->{name}} = $metric->{values}[0]->{average};
         }
     }
+
+    $self->{output}->option_exit(short_msg => "Couldn't get overview performance metrics for site id: ".$self->{site_id})
+        if (scalar(keys %{$self->{sites}}) <= 0);
 }
 
 1;

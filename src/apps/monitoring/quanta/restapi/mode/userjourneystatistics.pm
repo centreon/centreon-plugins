@@ -199,6 +199,9 @@ sub manage_selection {
             }
         }
     }
+
+    $self->{output}->option_exit(short_msg => "Couldn't get statistics for user journey id ".$self->{journey_id}." and site id ".$self->{site_id})
+        if (scalar(keys %{$self->{metrics}}) <= 0);
 }
 
 1;

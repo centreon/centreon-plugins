@@ -10,8 +10,8 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}backbox.json
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
+${HOSTNAME}         127.0.0.1
+${APIPORT}          3000
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=network::backbox::restapi::plugin
@@ -21,6 +21,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --api-token=token
 ...                 --mode=device-backup
+
 
 *** Test Cases ***
 Device backup ${tc}

@@ -10,9 +10,9 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-primera.mockoon.json
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
-${CMD}              ${CENTREON_PLUGINS} 
+${HOSTNAME}         127.0.0.1
+${APIPORT}          3000
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::primera::restapi::plugin
 ...                 --mode=list-disks
 ...                 --hostname=${HOSTNAME}
@@ -21,11 +21,12 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 ...                 --custommode=api
-...                 
+...                 ${EMPTY}
+
 
 *** Test Cases ***
 List-Disks ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${output}    Run    ${CMD} ${extraoptions} | wc -l
 
     ${output}    Strip String    ${output}
@@ -35,7 +36,6 @@ List-Disks ${tc}
     ...    Wrong output result for command:\n${CMD} ${extraoptions}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-
 
     Examples:    tc    extraoptions       expected_result   --
         ...      1     ${EMPTY}           83

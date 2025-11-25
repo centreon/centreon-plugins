@@ -11,9 +11,10 @@ Test Timeout        120s
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS}
 
+
 *** Test Cases ***
 list-storages ${tc}
-    [Tags]    os    Windows
+    [Tags]    os    windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --plugin=os::windows::snmp::plugin
@@ -24,7 +25,7 @@ list-storages ${tc}
     ...    --snmp-community=os/windows/snmp/windows_anon
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                   expected_result    --

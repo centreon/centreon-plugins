@@ -20,6 +20,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 UserJourneyIncidents ${tc}
     [Tags]    quanta    api
@@ -29,7 +30,7 @@ UserJourneyIncidents ${tc}
     ...    --journey-id=3666
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Regexp     ${command}    ${expected_regexp}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
 
     Examples:        tc       extraoptions                                                                           expected_regexp    --
             ...      1        ${EMPTY}                                                                               CRITICAL: Incident for interaction 'Decline cookies' status: open \\\\| 'quanta.incidents.total.count'=32;;;0;
