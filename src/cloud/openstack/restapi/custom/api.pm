@@ -288,8 +288,8 @@ sub check_options {
     my ($self, %options) = @_;
 
     # Init caches
-    $self->{$_}->check_options(option_results => $self->{option_results})
-        foreach qw/cache_authent cache_flavor cache_image/;
+    $self->{'cache_'.$_}->check_options(option_results => $self->{option_results})
+        foreach @_caches;
 
     $self->{$_} = $self->{option_results}->{$_}
         foreach qw/authent_by_env authent_by_file disco_mode user_domain_id project_name project_domain_id username password insecure proto hostname timeout/;
