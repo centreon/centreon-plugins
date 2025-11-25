@@ -63,8 +63,8 @@ sub new {
         'filter-project-id:s'          => { name => 'filter_project_id', default => '' },
         'exclude-no-ip:s'              => { name => 'exclude_no_ip', default => 1 },
 
-	# to handle host disovery mode
-	'host-discovery'               => { name => 'host_discovery' },
+        # to handle host disovery mode
+        'host-discovery'               => { name => 'host_discovery' },
         'prettify'                     => { name => 'prettify', default => 0 }
     });
 
@@ -108,11 +108,11 @@ sub set_counters {
             },
         },
         (   map {       # define a counter for each other key
-                    {   label => $_, type => 2, display_ok => 1,
+                    {   label => $_ =~ s/_/-/gr, type => 2, display_ok => 1,
                         set => {
                             key_values => [ map { { name => $_ } } @_instance_keys, ],
                             output_use => $_,
-                            output_template => ucfirst $_.': %s',
+                            output_template => ucfirst ($_ =~ s/_/-/gr).': %s',
                             closure_custom_threshold_check => \&catalog_status_threshold_ng,
                         },
                     }

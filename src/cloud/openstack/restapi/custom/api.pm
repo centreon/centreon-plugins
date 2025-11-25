@@ -183,7 +183,7 @@ sub service_check_options {
         # A valid keystone URL is always required since it is the authentication service
         # First part of Keystone URL is also used to define cache filename
 
-        $self->{output}->option_exit(short_msg => 'A valid --'.$options{type}."-url option is '$service' required=> ".$self->{$service.'url'} )
+        $self->{output}->option_exit(short_msg => 'A valid --'.$options{type}.'-url option is required. "'.$self->{$service.'url'}.'" is not valid.' )
             if $invalid_url;
         $self->{identity_base_url} = $1;
     } else {
