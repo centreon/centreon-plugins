@@ -162,6 +162,9 @@ sub manage_selection {
 
         $self->{global}->{total}++;
     }
+
+    $self->{output}->option_exit(short_msg => "Couldn't get incidents for user journey id ".$self->{journey_id}." and site id ".$self->{site_id})
+        if (scalar(keys %{$self->{incidents}}) <= 0);
 }
 
 1;

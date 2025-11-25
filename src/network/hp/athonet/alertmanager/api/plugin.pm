@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,22 +18,22 @@
 # limitations under the License.
 #
 
-package network::cisco::WaaS::plugin;
+package network::hp::athonet::alertmanager::api::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.5';
-    %{$self->{modes}} = (
-        'sessions' => 'network::cisco::WaaS::mode::sessions',
-    );
+    $self->{modes} = {
+        'alerts' => 'cloud::prometheus::alertmanager::restapi::mode::alerts'
+    };
 
+    $self->{custom_modes}->{api} = 'network::hp::athonet::alertmanager::api::custom::api';
     return $self;
 }
 
@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco WAAS Hardware Family in SNMP.
+Check HP Athonet through Prometheus Alertmanager.
 
 =cut

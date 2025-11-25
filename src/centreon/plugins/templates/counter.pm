@@ -26,7 +26,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_empty/;
 use JSON::XS;
 
 my $sort_subs = {
@@ -688,6 +688,9 @@ sub run_multiple_prefix_output {
 
 sub run_multiple {
     my ($self, %options) = @_;
+
+    return undef if (!is_empty($self->{option_results}->{filter_counters_block})
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
 
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {

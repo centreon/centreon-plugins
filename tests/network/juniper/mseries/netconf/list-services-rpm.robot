@@ -10,11 +10,12 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::juniper::mseries::netconf::plugin
-    ...    --mode=list-services-rpm
-    ...    --hostname=${HOSTNAME}
-    ...    --sshcli-command=get_data
-    ...    --sshcli-path=${CURDIR}
-    ...    --sshcli-option="-f=${CURDIR}${/}data${/}services_rpm.netconf"
+...         --mode=list-services-rpm
+...         --hostname=${HOSTNAME}
+...         --sshcli-command=get_data
+...         --sshcli-path=${CURDIR}
+...         --sshcli-option="-f=${CURDIR}${/}data${/}services_rpm.netconf"
+
 
 *** Test Cases ***
 List Service Rpm ${tc}

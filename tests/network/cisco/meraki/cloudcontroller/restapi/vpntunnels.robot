@@ -33,7 +33,7 @@ vpn-tunnels ${tc}
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=vpn-tunnels --cache-use ${extra_options}
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc   extra_options                    expected_result   --

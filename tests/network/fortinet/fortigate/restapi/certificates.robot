@@ -1,12 +1,12 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-** Variables ***
+
+*** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}certificates.json
 
 ${CMD}              ${CENTREON_PLUGINS}
@@ -17,13 +17,13 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --access-token=mokoon-token
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 certificates ${tc}
     [Tags]    network    fortinet    fortigate    restapi
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
- 
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 

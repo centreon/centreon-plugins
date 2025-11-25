@@ -1,0 +1,160 @@
+{
+  "uuid": "91c8c467-170c-4f5d-9e72-83b6b718433c",
+  "lastMigration": 32,
+  "name": "Gcp",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3007,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "7bfcd249-da4d-4fcf-ae01-eeeb2ad78b1a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "projects/demo-project/timeSeries/",
+      "responses": [
+        {
+          "uuid": "a528383e-ffd0-4d61-a144-24b3021c9201",
+          "body": "{\r\n  \"timeSeries\": [\r\n    {\r\n      \"metric\": {\r\n        \"labels\": {\r\n          \"proxy_continent\": \"Europe\",\r\n          \"load_balancing_scheme\": \"EXTERNAL\",\r\n          \"client_country\": \"France\"\r\n        },\r\n        \"type\": \"loadbalancing.googleapis.com/https/frontend_tcp_rtt\"\r\n      },\r\n      \"resource\": {\r\n        \"type\": \"https_lb_rule\",\r\n        \"labels\": {\r\n          \"url_map_name\": \"example-urlmap\",\r\n          \"backend_scope_type\": \"REGION\",\r\n          \"backend_scope\": \"europe-west1\",\r\n          \"backend_name\": \"example-backend-neg\",\r\n          \"backend_type\": \"NETWORK_ENDPOINT_GROUP\",\r\n          \"region\": \"global\",\r\n          \"project_id\": \"example-project\",\r\n          \"forwarding_rule_name\": \"example-fwdrule\",\r\n          \"target_proxy_name\": \"example-https-proxy\",\r\n          \"backend_target_type\": \"BACKEND_SERVICE\",\r\n          \"backend_target_name\": \"example-backend\",\r\n          \"matched_url_path_rule\": \"UNMATCHED\"\r\n        }\r\n      },\r\n      \"metricKind\": \"DELTA\",\r\n      \"valueType\": \"DISTRIBUTION\",\r\n      \"points\": [\r\n        {\r\n          \"interval\": {\r\n            \"startTime\": \"2025-05-12T09:41:00.001Z\",\r\n            \"endTime\": \"2025-05-12T09:42:00Z\"\r\n          },\r\n          \"value\": {\r\n            \"distributionValue\": {\r\n              \"count\": \"68\",\r\n              \"mean\": \"16\",\r\n              \"bucketOptions\": {\r\n                \"exponentialBuckets\": {\r\n                  \"numFiniteBuckets\": 66,\r\n                  \"growthFactor\": 1.4,\r\n                  \"scale\": 1\r\n                }\r\n              },\r\n              \"bucketCounts\": [\r\n                \"68\"\r\n              ]\r\n            }\r\n          }\r\n        },\r\n        {\r\n          \"interval\": {\r\n            \"startTime\": \"2025-05-12T09:40:00.001Z\",\r\n            \"endTime\": \"2025-05-12T09:41:00Z\"\r\n          },\r\n          \"value\": {\r\n            \"distributionValue\": {\r\n              \"count\": \"40\",\r\n              \"mean\": \"28\",\r\n              \"bucketOptions\": {\r\n                \"exponentialBuckets\": {\r\n                  \"numFiniteBuckets\": 66,\r\n                  \"growthFactor\": 1.4,\r\n                  \"scale\": 1\r\n                }\r\n              },\r\n              \"bucketCounts\": [\r\n                \"40\"\r\n              ]\r\n            }\r\n          }\r\n        }\r\n      ],\r\n      \"unit\": \"s\"\r\n    }\r\n  ]\r\n}\r\n ",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": ".*resource.labels.project_id.*",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7e756a1d-7a9a-47cc-95ea-aa7bc68fda62",
+          "body": "{\r\n\r\n  \"timeSeries\": [\r\n\r\n    {\r\n\r\n      \"metric\": {\r\n\r\n        \"labels\": {\r\n\r\n          \"load_balancing_scheme\": \"EXTERNAL\",\r\n\r\n          \"client_country\": \"Belgium\",\r\n\r\n          \"proxy_continent\": \"Europe\"\r\n\r\n        },\r\n\r\n        \"type\": \"loadbalancing.googleapis.com/https/frontend_tcp_rtt\"\r\n\r\n      },\r\n\r\n      \"resource\": {\r\n\r\n        \"type\": \"https_lb_rule\",\r\n\r\n        \"labels\": {\r\n\r\n          \"forwarding_rule_name\": \"generic-fw-rule\",\r\n\r\n          \"backend_target_type\": \"BACKEND_SERVICE\",\r\n\r\n          \"backend_name\": \"generic-neg\",\r\n\r\n          \"backend_type\": \"NETWORK_ENDPOINT_GROUP\",\r\n\r\n          \"project_id\": \"project-id-123\",\r\n\r\n          \"backend_scope_type\": \"REGION\",\r\n\r\n          \"matched_url_path_rule\": \"UNMATCHED\",\r\n\r\n          \"backend_scope\": \"europe-west1\",\r\n\r\n          \"region\": \"global\",\r\n\r\n          \"url_map_name\": \"generic-url-map\",\r\n\r\n          \"backend_target_name\": \"generic-backend\",\r\n\r\n          \"target_proxy_name\": \"generic-https-proxy\"\r\n\r\n        }\r\n\r\n      },\r\n\r\n      \"metricKind\": \"DELTA\",\r\n\r\n      \"valueType\": \"DISTRIBUTION\",\r\n\r\n      \"points\": [\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:17:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:18:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"59\",\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"59\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        },\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:16:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:17:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"80\",\r\n\r\n              \"mean\": 0.1,\r\n\r\n              \"sumOfSquaredDeviation\": 7.2,\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"72\", \"8\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        },\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:15:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:16:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"106\",\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"106\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        },\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:14:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:15:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"58\",\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"58\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        },\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:13:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:14:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"72\",\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"72\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        },\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:12:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:13:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"48\",\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"48\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        },\r\n\r\n        {\r\n\r\n          \"interval\": {\r\n\r\n            \"startTime\": \"2025-06-02T14:11:00.001Z\",\r\n\r\n            \"endTime\": \"2025-06-02T14:12:00Z\"\r\n\r\n          },\r\n\r\n          \"value\": {\r\n\r\n            \"distributionValue\": {\r\n\r\n              \"count\": \"32\",\r\n\r\n              \"bucketOptions\": {\r\n\r\n                \"exponentialBuckets\": {\r\n\r\n                  \"numFiniteBuckets\": 66,\r\n\r\n                  \"growthFactor\": 1.4,\r\n\r\n                  \"scale\": 1\r\n\r\n                }\r\n\r\n              },\r\n\r\n              \"bucketCounts\": [\"32\"]\r\n\r\n            }\r\n\r\n          }\r\n\r\n        }\r\n\r\n      ]\r\n\r\n    }\r\n\r\n  ]\r\n\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": ".*resource.labels.url_map_name.*",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "d89fee3b-3eac-40d4-bcb2-7f6d36b4dc03",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "oauth2/v4/token",
+      "responses": [
+        {
+          "uuid": "fd6e4e10-66cd-4db8-8a56-b0e8bcbe48da",
+          "body": "{\n  \"access_token\": \"token\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "7bfcd249-da4d-4fcf-ae01-eeeb2ad78b1a"
+    },
+    {
+      "type": "route",
+      "uuid": "d89fee3b-3eac-40d4-bcb2-7f6d36b4dc03"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

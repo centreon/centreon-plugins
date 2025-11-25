@@ -3,13 +3,13 @@ Documentation       Network Teldat SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                          ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::teldat::snmp::plugin
 
 
 *** Test Cases ***
@@ -28,9 +28,8 @@ Memory ${tc}
     ...    --critical-usage-free=${criticalusagefree}
     ...    --warning-usage-prct=${warningusageprct}
     ...    --critical-usage-prct=${criticalusageprct}
-    
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  warningusage  criticalusage  warningusagefree  criticalusagefree  warningusageprct  criticalusageprct    expected_result    --
             ...       1   ${EMPTY}      ${EMPTY}       ${EMPTY}          ${EMPTY}           ${EMPTY}           ${EMPTY}            OK: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
@@ -39,4 +38,4 @@ Memory ${tc}
             ...       4   ${EMPTY}      ${EMPTY}       100               ${EMPTY}           ${EMPTY}           ${EMPTY}            WARNING: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;0:100;;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
             ...       5   ${EMPTY}      ${EMPTY}       ${EMPTY}          100                ${EMPTY}           ${EMPTY}            CRITICAL: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;0:100;0;268435456 'system#memory.usage.percentage'=39.27%;;;0;100
             ...       6   ${EMPTY}      ${EMPTY}       ${EMPTY}          ${EMPTY}           30                 ${EMPTY}            WARNING: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;0:30;;0;100
-            ...       7   ${EMPTY}      ${EMPTY}       ${EMPTY}          ${EMPTY}           ${EMPTY}           30                  CRITICAL: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;0:30;0;100                 
+            ...       7   ${EMPTY}      ${EMPTY}       ${EMPTY}          ${EMPTY}           ${EMPTY}           30                  CRITICAL: Memory 'system' total: 256.00 MB used: 100.54 MB (39.27%) free: 155.46 MB (60.73%) | 'system#memory.usage.bytes'=105419600B;;;0;268435456 'system#memory.free.bytes'=163015856B;;;0;268435456 'system#memory.usage.percentage'=39.27%;;0:30;0;100

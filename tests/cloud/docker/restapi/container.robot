@@ -18,9 +18,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Container usage ${tc}
-    [Tags]    cloud     kubernetes
+    [Tags]    cloud    kubernetes
 
     ${command}    Catenate
     ...    ${cmd}

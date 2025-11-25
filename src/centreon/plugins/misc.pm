@@ -44,7 +44,7 @@ our @EXPORT_OK = qw/change_seconds
 
 sub execute {
     my (%options) = @_;
-    
+
     if ($^O eq 'MSWin32') {
         return windows_execute(%options, timeout => $options{options}->{timeout});
     } else {
@@ -91,7 +91,7 @@ sub windows_execute {
     my $ein = '';
     vec($ein, fileno(FROM_CHILD), 1) = 1;
     $job->watch(
-        sub {            
+        sub {
             my ($buffer);
             my $time = $options{timeout};
             my $last_time = Time::HiRes::time();
@@ -105,7 +105,7 @@ sub windows_execute {
                     last;
                 }
                 $options{timeout} -= Time::HiRes::time() - $last_time;
-                last if ($options{timeout} <= 0);         
+                last if ($options{timeout} <= 0);
                 $last_time = Time::HiRes::time();
             }
             return 1 if ($ended == 0);
@@ -115,14 +115,14 @@ sub windows_execute {
     );
 
     $result = $job->status;
-    close FROM_CHILD;    
+    close FROM_CHILD;
 
     if ($ended == 0) {
         $options{output}->add_option_msg(short_msg => 'Command too long to execute (timeout)...');
         $options{output}->option_exit();
     }
     chomp $stdout;
-    
+
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
         return ($stdout, $result->{$pid}->{exitcode});
     }
@@ -149,7 +149,7 @@ sub unix_execute {
 
     # Build command line
     # Can choose which command is done remotely (can filter and use local file)
-    if (defined($options{options}->{remote}) && 
+    if (defined($options{options}->{remote}) &&
         ($options{options}->{remote} eq '' || !defined($options{label}) || $options{label} =~ /$options{options}->{remote}/)) {
         my $sub_cmd;
 
@@ -226,7 +226,7 @@ sub unix_execute {
         }
     }
 
-    if (defined($options{options}->{show_output}) && 
+    if (defined($options{options}->{show_output}) &&
         ($options{options}->{show_output} eq '' || (defined($options{label}) && $options{label} eq $options{options}->{show_output}))) {
         print $stdout;
         exit $exit_code;
@@ -300,7 +300,7 @@ sub backtick {
     }
 
     if ($pid) {
-        
+
         eval {
            local $SIG{ALRM} = sub { die "Timeout by signal ALARM\n"; };
            alarm( $arg{timeout} );
@@ -380,7 +380,7 @@ sub value_of($$;$) {
 
 sub trim {
     my ($value) = $_[0];
-    
+
     # Sometimes there is a null character
     $value =~ s/\x00$//;
     $value =~ s/^[ \t\n]+//;
@@ -434,13 +434,13 @@ sub flatten_to_hash($;$;$) {
 
 sub minimal_version {
     my ($version_src, $version_dst) = @_;
-        
+
     # No Version. We skip   
-    if (!defined($version_src) || !defined($version_dst) || 
+    if (!defined($version_src) || !defined($version_dst) ||
         $version_src !~ /^[0-9]+(?:\.[0-9\.]+)*$/ || $version_dst !~ /^[0-9x]+(?:\.[0-9x]+)*$/) {
         return 1;
     }
-  
+
     my @version_src = split /\./, $version_src;
     my @versions = split /\./, $version_dst;
     for (my $i = 0; $i < scalar(@versions); $i++) {
@@ -451,7 +451,7 @@ sub minimal_version {
         return 0 if ($versions[$i] > int($1));
         return 1 if ($versions[$i] < int($1));
     }
-    
+
     return 1;
 }
 
@@ -473,7 +473,7 @@ sub change_seconds {
         $sign = '-';
         $options{value} = abs($options{value});
     }
-    
+
     foreach (@$periods) {
         next if (defined($options{start}) && $values{$_->{unit}} < $values{$options{start}});
         my $count = int($options{value} / $_->{value});
@@ -493,7 +493,7 @@ sub change_seconds {
 
 sub scale_bytesbit {
     my (%options) = @_;
-    
+
     my $base = 1024;
     if (defined($options{dst_unit}) && defined($options{src_unit})) {
         $options{value} *= 8 if ($options{dst_unit} =~ /b/ && $options{src_unit} =~ /B/);
@@ -502,7 +502,7 @@ sub scale_bytesbit {
             $base = 1000;
         }
     }
-        
+
     my %expo = ('' => 0, k => 1, m => 2, g => 3, t => 4, p => 5, e => 6);
     my ($src_expo, $dst_expo) = (0, 0);
     $src_expo = $expo{lc($options{src_quantity})} if (defined($options{src_quantity}) && $options{src_quantity} =~ /[kmgtpe]/i);
@@ -523,7 +523,7 @@ sub scale_bytesbit {
             $options{value} = $options{value} * ($base ** (($dst_expo - $src_expo) * -1));
         }
     }
-    
+
     return $options{value};
 }
 
@@ -537,8 +537,8 @@ sub convert_bytes {
         $value = $1;
         $unit = $2;
     }
-    
-    my $base = defined($options{network}) ? 1000 : 1024;    
+
+    my $base = defined($options{network}) ? 1000 : 1024;
     if ($unit =~ /([kmgtp])i?b/i) {
         $value = $value * ($base ** $expo{lc($1)});
     }
@@ -586,7 +586,7 @@ sub parse_threshold {
     my $perf = trim($options{threshold});
     my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => '', end => '' };
 
-    my $global_status = 1;    
+    my $global_status = 1;
     if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?(?:[KMGTPE][bB])?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?(?:[KMGTPE][bB])?)?$/) {
         $perf_result->{start} = $2 if (defined($2));
         $perf_result->{end} = $3 if (defined($3));
@@ -611,10 +611,10 @@ sub parse_threshold {
             $perf_result->{end} = 1e500;
             $perf_result->{infinite_pos} = 1;
         }
-        $perf_result->{start} = 0 if ($perf_result->{start} eq '');      
+        $perf_result->{start} = 0 if ($perf_result->{start} eq '');
         $perf_result->{start} =~ s/,/\./;
         $perf_result->{end} =~ s/,/\./;
-        
+
         if ($perf_result->{start} eq '~') {
             $perf_result->{start} = -1e500;
             $perf_result->{infinite_neg} = 1;
@@ -629,9 +629,9 @@ sub parse_threshold {
 sub get_threshold_litteral {
     my (%options) = @_;
 
-    my $perf_output = ($options{arobase} == 1 ? '@' : '') . 
-        (($options{infinite_neg} == 0) ? $options{start} : '~') . 
-        ':' . 
+    my $perf_output = ($options{arobase} == 1 ? '@' : '') .
+        (($options{infinite_neg} == 0) ? $options{start} : '~') .
+        ':' .
         (($options{infinite_pos} == 0) ? $options{end} : '');
     return $perf_output;
 }
@@ -668,7 +668,7 @@ sub eval_ssl_options {
 
     my $ssl_context = {};
     return $ssl_context if (!defined($options{ssl_opt}));
-    
+
     my ($rv) = centreon::plugins::misc::mymodule_load(
         output => $options{output}, module => 'Safe',
         no_quit => 1
@@ -690,7 +690,7 @@ sub eval_ssl_options {
             'SSL_OCSP_NO_STAPLE', 'SSL_OCSP_MUST_STAPLE', 'SSL_OCSP_FAIL_HARD', 'SSL_OCSP_FULL_CHAIN', 'SSL_OCSP_TRY_STAPLE'
         ]);
     }
-    
+
     foreach (@{$options{ssl_opt}}) {
         if (/(SSL_[A-Za-z_]+)\s+=>\s*(\S+)/) {
             my ($label, $eval) = ($1, $2);
@@ -879,12 +879,15 @@ sub json_encode {
     my ($object, %options) = @_;
 
     $object =~ s/\r//mg;
-    my $encoded = eval { JSON::XS->new->utf8->pretty($options{prettify} // 0)->encode($object) };
+
+    my $encoded = eval { JSON::XS->new->utf8->canonical->pretty($options{prettify} // 0)->encode($object) };
+
+
     if ($@) {
         # To keep compatibilty with old json_encode:
         # If 'output' not set, print error on STDERR unless 'silence' is set
         # Otherwise print error on 'output' and exit unless 'no_exit' is set
-        my $msg = $options{errstr} // "Cannot encode object to JSON: $@";
+        my $msg = $options{errstr} // "Cannot encode object to JSON. Error message: $@";
 
         if ($options{output}) {
             $options{output}->option_exit(short_msg => $msg)

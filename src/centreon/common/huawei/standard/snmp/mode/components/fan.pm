@@ -65,7 +65,7 @@ sub check {
         my $exit = $self->get_severity(section => 'fan', value => $result->{hwEntityFanState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s' state is '%s'", $instance, $result->{infoFanState}));
+                                        short_msg => sprintf("fan '%s' state is '%s'", $instance, $result->{hwEntityFanState}));
         }        
         
         next if (!defined($result->{hwEntityFanSpeed}) || $result->{hwEntityFanSpeed} !~ /[0-9]/);

@@ -7,11 +7,12 @@ Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
+
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-primera.mockoon.json
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
-${CMD}              ${CENTREON_PLUGINS} 
+${HOSTNAME}         127.0.0.1
+${APIPORT}          3000
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::primera::restapi::plugin
 ...                 --mode=volume-usage
 ...                 --hostname=${HOSTNAME}
@@ -21,9 +22,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --custommode=api
 
+
 *** Test Cases ***
 Volumeusage ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${output}    Run    ${CMD} ${extraoptions}
 
     ${output}    Strip String    ${output}

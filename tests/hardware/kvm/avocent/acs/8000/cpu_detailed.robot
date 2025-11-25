@@ -3,9 +3,9 @@ Documentation       cpu-detailed mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -30,7 +30,6 @@ Cpu-Detailed
     ...    ${output}
     ...    OK: CPU Usage: user : counter not moved, nice : counter not moved, system : counter not moved, idle : counter not moved, wait : counter not moved, kernel : counter not moved, interrupt : counter not moved, softirq : counter not moved, steal : counter not moved, guest : counter not moved, guestnice : counter not moved
     ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
-
 
 
 *** Keywords ***

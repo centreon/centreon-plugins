@@ -1,5 +1,7 @@
+*** Comments ***
 # Note: With these tests a counter is incremented in the Mockoon mock data.
 # To reset it, make sure to restart the Mockoon server before each robot execution.
+
 
 *** Settings ***
 Documentation       Check Apache WebServer SloteStates statistics
@@ -20,6 +22,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --mode=slotstates
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
+
 
 *** Test Cases ***
 SloteStates ${tc}

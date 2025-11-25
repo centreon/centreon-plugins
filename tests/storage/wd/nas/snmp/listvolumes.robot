@@ -3,13 +3,14 @@ Documentation       Check WD (Western Digital) NAS in SNMP
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                              ${CENTREON_PLUGINS} --plugin=storage::wd::nas::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::wd::nas::snmp::plugin
+
 
 *** Test Cases ***
 listvolumes ${tc}
@@ -22,7 +23,7 @@ listvolumes ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=storage/wd/nas/snmp/nas-wd
     ...    ${extra_option}
-    
+
     Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extra_option                                        expected_result    --
