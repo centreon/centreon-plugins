@@ -9,27 +9,27 @@ NC='\033[0m' # No Color
 errors=0
 
 function info() {
-  echo -e "${GREEN}INFO${NC}: $*"
+    echo -e "${GREEN}INFO${NC}: $*"
 }
 
 function warning() {
-  echo -e "${YELLOW}WARNING${NC}: $*"
+    echo -e "${YELLOW}WARNING${NC}: $*"
 }
 
 function error() {
-  echo -e "${RED}ERROR${NC}: $*"
-  : $((errors++))
+    echo -e "${RED}ERROR${NC}: $*"
+    : $((errors++))
 }
 
 function fatal() {
-  echo -e "${RED}FATAL${NC}: $*"
-  exit 1
+    echo -e "${RED}FATAL${NC}: $*"
+    exit 1
 }
 
 function check_tabs() {
     local file="$1"
-    info "      - Checking BASH indentation"
-    grep -P '^\t' "$file" >/dev/null 2>&1 && warning "   - File $file contains leading tab character (suspected bad indentation)."
+    info "--> Checking BASH indentation"
+    grep -P '^\t' "$file" >/dev/null 2>&1 && warning "--> File $file contains leading tab character (suspected bad indentation)."
 }
 
 jq=$(type -p jq) || fatal "Could not locate jq command"
@@ -38,53 +38,52 @@ robotidy_path=$(type -p robocop) || robotidy_path=$(type -p robotidy) || fatal "
 robotidy_exe="${robotidy_path##*/}"
 info "Robot lint tool is $robotidy_exe"
 # Options depend on the use binary
-declare -A robotidy_opts=([robotidy]="--check --skip-keyword-call Examples:" [robocop]="check" )
+declare -A robotidy_opts=([robotidy]="-->-check --skip-keyword-call Examples:" [robocop]="check" )
 # Get list of committed files
 mapfile -t committed_files < <(git diff --cached --name-only --diff-filter=ACMR)
 info "Starting plugins pre-commit hooks for ${#committed_files[@]} files"
 for file in "${committed_files[@]}"; do
-    info "  - $file:"
+    info "--> $file:"
     file_extension="${file##*.}"
     case "$file_extension" in
         pm|pl)
             # check that the perl file compiles
-            info "      - Checking that file compiles"
-            PERL5LIB="$PERL5LIB:./src/" perl -c "$file" >/dev/null 2>&1 || error "     - File $file does not compile with perl -c"
+            info "--> Checking that file compiles"
+            PERL5LIB="$PERL5LIB:./src/" perl -c "$file" >/dev/null 2>&1 || error "File $file does not compile with perl -c"
             # check the copyright year
-            info "      - Checking that file copyright is OK"
+            info "--> Checking that file copyright is OK"
             grep "Copyright 20..-Present Centreon" "$file" >/dev/null || error "Copyright in $file does not contain \"Copyright $(date +%Y)-Present Centreon\""
             # check that no help is written as --warning-* --critical-*
-            info "      - Checking there's no unsplitted '--warning-*' / '--critical-*'"
-            grep -- '--warning-\*\|--critical-\*' "$file"  >/dev/null && error "     - File $file contains help that is written as --warning-* or --critical-*"
+            info "--> Checking there's no unsplitted '--warning-*' / '--critical-*'"
+            grep -- '--warning-\*\|--critical-\*' "$file"  >/dev/null && error "File $file contains help that is written as --warning-* or --critical-*"
             # check spelling
-            info "      - Checking that spelling in file is OK"
+            info "--> Checking that spelling in file is OK"
             perl .github/scripts/pod_spell_check.t "$file" ./tests/resources/spellcheck/stopwords.txt >/dev/null 2>&1 || error "Spellcheck error on file $file"
             check_tabs "$file"
             ;;
         txt)
             if [[ "${file##*/}" == "stopwords.txt" ]]; then
                 # sort file and check if it makes a difference
-                info "      - Checking that stopwords.txt is sorted "
+                info "--> Checking that stopwords.txt is sorted "
                 sort -ui "$file" >/tmp/sorted_stopwords
-                diff "$file" /tmp/sorted_stopwords >/dev/null || error "     - stopwords.txt not sorted properly"
-
+                diff "$file" /tmp/sorted_stopwords >/dev/null || error "stopwords.txt not sorted properly"
             fi
             ;;
         robot)
-            info "      - Checking robot lint"
-            $robotidy_path ${robotidy_opts[$robotidy_exe]} "$file" >/dev/null 2>&1 || warning "   - Robot lint errors found in $file"
+            info "--> Checking robot lint"
+            $robotidy_path ${robotidy_opts[$robotidy_exe]} "$file" >/dev/null 2>&1 || warning "--> Robot lint errors found in $file"
             check_tabs "$file"
             ;;
         sh)
             check_tabs "$file"
           ;;
         json)
-            info "      - Checking JSON validity"
-            jq '' "$file" >/dev/null 2>&1 || error "     - JSON file $file is not valid"
+            info "--> Checking JSON validity"
+            jq '' "$file" >/dev/null 2>&1 || error "JSON file $file is not valid"
             check_tabs "$file"
           ;;
         *)
-            info "ON PASSE PAR LA"
+            info "File extension '.${file_extension}' has no checks"
             ;;
     esac
 done
