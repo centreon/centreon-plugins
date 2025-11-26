@@ -297,13 +297,13 @@ Exclude by instance placement (can be a regexp and can be used multiple times or
 
 =item B<--include-vm-state>
 
-Filter by instance vm state (can be a regexp and can be used multiple times or for comma separated values).
-Please refer to https://docs.openstack.org/nova/latest/reference/vm-states.html for more information about vm states.
+Filter by instance VM state (can be a regexp and can be used multiple times or for comma separated values).
+Please refer to https://docs.openstack.org/nova/latest/reference/vm-states.html for more information about VM states.
 
 =item B<--exclude-vm-state>
 
-Exclude by instance vm state (can be a regexp and can be used multiple times or for comma separated values).
-Please refer to https://docs.openstack.org/nova/latest/reference/vm-states.html for more information about vm states.
+Exclude by instance VM state (can be a regexp and can be used multiple times or for comma separated values).
+Please refer to https://docs.openstack.org/nova/latest/reference/vm-states.html for more information about VM states.
 
 =item B<--include-ip>
 
