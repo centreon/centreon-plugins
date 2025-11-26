@@ -7,6 +7,7 @@ Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
+
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}podman.json
 

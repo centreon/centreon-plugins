@@ -59,10 +59,9 @@ sub _service_filters_options {
 
 # All caches used by this connector
 # authent => contains authentication token and the service catalog list
-# tenant => contains tenant/project id to name mapping
 # flavor => contains flavor id to name mapping
 # image => contains image id to name mapping
-my @_caches = ('authent', 'tenant', 'flavor', 'image');
+my @_caches = ('authent', 'flavor', 'image');
 
 sub new {
     my ($class, %options) = @_;
@@ -92,7 +91,6 @@ sub new {
         _service_filters_options(type => 'image', ),
         _service_ident_options(type => 'volume',   port => 9292, endpoint => ''),
         _service_filters_options(type => 'volume', ),
-
 
         # Endpoint filters common to all services
         _endpoint_filters_options(),
@@ -186,7 +184,7 @@ sub service_check_options {
         # A valid keystone URL is always required since it is the authentication service
         # First part of Keystone URL is also used to define cache filename
 
-        $self->{output}->option_exit(short_msg => 'A valid --'.$options{type}."-url option is '$service' required=> ".$self->{$service.'url'} )
+        $self->{output}->option_exit(short_msg => 'A valid --'.$options{type}.'-url option is required. "'.$self->{$service.'url'}.'" is not valid.' )
             if $invalid_url;
         $self->{identity_base_url} = $1;
     } else {
@@ -291,8 +289,8 @@ sub check_options {
     my ($self, %options) = @_;
 
     # Init caches
-    $self->{$_}->check_options(option_results => $self->{option_results})
-        foreach qw/cache_authent cache_tenant cache_flavor cache_image/;
+    $self->{'cache_'.$_}->check_options(option_results => $self->{option_results})
+        foreach @_caches;
 
     $self->{$_} = $self->{option_results}->{$_}
         foreach qw/authent_by_env authent_by_file disco_mode user_domain_id project_name project_domain_id username password insecure proto hostname timeout/;
@@ -323,7 +321,7 @@ sub other_services_check_options {
 
     # Define connection parameters for each services
     $self->service_check_options(mandatory => 1, type => 'compute', keystone_services => $catalog );
-    $self->service_check_options(mandatory => 1, type => 'image',   keystone_services => $catalog );
+    $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
 }
 
@@ -420,6 +418,114 @@ sub cinder_list_volumes {
     return { http_status => 200, results => \@results }
 }
 
+# Returns Instances list by calling Nova service
+sub nova_list_instances {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+    $params{project_id} = $options{project_id}
+        if $options{project_id};
+
+    my $token = $options{token} || $self->{token};
+
+    # Nova natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'status', 'image', 'flavor', 'host') {
+        my $data = value_of(\%options, "->{include_".$filter."}->[0]", '');
+        next unless $data =~ /^[\w\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{compute_url}, resource => '/servers/detail'),
+            insecure => $self->{compute_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{servers};
+
+        last unless @{$response->{servers}};
+        $params{marker} = $response->{servers}[-1]->{id};
+
+        NOVA_SERVERS: foreach my $server (@{$response->{servers}}) {
+            next if is_excluded($server->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($server->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($server->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($server->{'OS-EXT-STS:vm_state'} // '', $options{include_vm_state}, $options{exclude_vm_state});
+            next if is_excluded($server->{'OS-EXT-SRV-ATTR:instance_name'} // '', $options{include_instance_name}, $options{exclude_instance_name});
+            next if is_excluded($server->{'OS-EXT-SRV-ATTR:host'} // '', $options{include_host}, $options{exclude_host});
+            next if is_excluded($server->{'OS-EXT-AZ:availability_zone'} // '', $options{include_zone}, $options{exclude_zone});
+
+            my @ips;
+            foreach my $adresses (values %{$server->{addresses}}) {
+                foreach my $network (@{$adresses}) {
+
+                    next NOVA_SERVERS if is_excluded($network->{addr}, $options{include_ip}, $options{exclude_ip});
+
+                    push @ips, $network->{addr};
+                }
+            }
+            next NOVA_SERVERS if $options{exclude_no_ip} && not @ips;
+
+            @ips = reverse sort { is_local_ip($a) <=> is_local_ip($b) } @ips;
+
+            my $flavor = value_of($server, '->{flavor}->{id}');
+            $flavor = $self->nova_get_flavor_label(flavor_id => $flavor) || $flavor;
+            my $image = value_of($server, '->{image}->{id}');
+            $image = $self->glance_get_image_label(image_id => $image) || $image;
+
+            next if is_excluded($flavor, $options{include_flavor}, $options{exclude_flavor});
+            next if is_excluded($image, $options{include_image}, $options{exclude_image});
+
+            my $items = { id => $server->{id},
+                          host => $server->{'OS-EXT-SRV-ATTR:host'} // 'N/A',
+                          name => $server->{name},
+                          instance_name => $server->{'OS-EXT-SRV-ATTR:instance_name'} // 'N/A',
+                          zone => $server->{'OS-EXT-AZ:availability_zone'} // 'N/A',
+                          vm_state => $server->{'OS-EXT-STS:vm_state'} // 'N/A',
+                          status => $server->{status},
+                          image => $image || 'N/A',
+                          flavor => $flavor || 'N/A',
+                          ip => @ips ? $ips[0] : 'N/A',
+                          ips => \@ips,
+                          bookmark => '',
+                          href => '',
+                          project_id => $server->{tenant_id}
+                        };
+
+            foreach my $href (@{$server->{links}}) {
+                if ($href->{rel} eq 'bookmark') {
+                    $items->{bookmark} = $href->{href};
+                } elsif ($href->{rel} eq 'self') {
+                    $items->{href} = $href->{href};
+                }
+            }
+
+            push @results, $items;
+        }
+
+        last if @{$response->{servers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
 # Returns image label from id by calling Glance service
 # Uses a cache file to limit API calls
 sub glance_get_image_label {
@@ -503,50 +609,6 @@ sub nova_get_flavor_label {
     $self->{cache_flavor_content} = $cache_flavor_data;
 
     return $self->{cache_flavor_content}->{$id} // '';
-}
-
-# Returns tenant label from id by calling Nova service
-# Uses a cache file to limit API calls
-sub keystone_get_tenant_label {
-    my ($self, %options) = @_;
-
-    my $id = $options{tenant_id} // '';
-    return $self->{cache_tenant_content}->{$id} if exists $self->{cache_tenant_content}->{$id};
-
-    $self->{cache_tenant}->read(statefile => $self->{keystone_cache_filename}.'tenant');
-    my $cache_tenant_data = $self->{cache_tenant}->{datas};
-
-    if (value_of($cache_tenant_data, '->{expires_at}', 0) - 60 < time() ||
-        not exists $cache_tenant_data->{$id}) {
-
-        my $token = $options{token} || $self->{token};
-
-        my $response_brut = $self->{http}->request(
-            method => 'GET',
-            header => [ 'X-Auth-Token: '. $token,
-                        'Content-Type: application/json' ],
-            $self->connect_info(url => $self->{identity_url}, resource => '/projects'),
-            insecure => $self->{identity_insecure},
-
-            silently_fail => 1,
-            critical_status => '',
-            warning_status => '',
-            unknown_status => ''
-        );
-
-        my $response = json_decode($response_brut, output => $self->{output}, no_exit => 1);
-
-        return '' if ref $response ne 'HASH' || not exists $response->{projects};
-
-        $cache_tenant_data = { expires_at => time() + 3600 };
-
-        $cache_tenant_data->{ $_->{id} } = $_->{name} foreach @{$response->{projects}};
-
-        $self->{cache_tenant}->write(data => $cache_tenant_data);
-    }
-    $self->{cache_tenant_content} = $cache_tenant_data;
-
-    return $self->{cache_tenant_content}->{$id} // '';
 }
 
 # Authenticate to Keystone service
@@ -728,7 +790,7 @@ OpenStack user domain to use with authentication (default: 'default').
 
 =item B<--project-name>
 
-OpenStack project name to use with authentication (default: 'default').
+OpenStack project name to use with authentication (default: 'demo').
 
 =item B<--project-domain>
 
@@ -843,6 +905,37 @@ When set to 0 the default insecure value passed with --insecure is used.
 
 Set HTTP timeout in seconds (default: '0').
 When set to 0 the default timeout value passed with --timeout is used.
+
+=item B<--image-url>
+
+Set the URL to use for the OpenStack Glance (image) service.
+A valid Glance URL is required since it is a mandatory service.
+Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+
+Example: C<--image-url="https://myopenstack.local:9292">
+
+This URL can also be construct with options (--image-hostname, --image-proto, --image-port, --image-endpoint).
+
+=item B<--image-hostname>
+
+Set the hostname part of the Glance service URL.
+
+=item B<--image-proto>
+
+Set the protocol to use in the Glance service URL (default: 'https').
+
+=item B<--image-port>
+
+Set the port to use in the Glance service URL (default: 8774).
+
+=item B<--image-endpoint>
+
+Set the endpoint to use in the Glance service URL (default: '/v2').
+
+=item B<--image-insecure>
+
+Allow insecure TLS connection (default: '0').
+When set to 0 the default insecure value passed with --insecure is used.
 
 =item B<--image-url>
 

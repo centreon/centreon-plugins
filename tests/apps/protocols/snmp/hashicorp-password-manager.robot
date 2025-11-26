@@ -33,7 +33,7 @@ check hashicorp vault manager${Name}
     ...    --format-ok='current value is: \\%{details_ok}'
     ...    --format-details-warning='current value is: \\%{details_warning}'
     ...    --format-details-critical='current value is: \\%{details_critical}'
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    Name               path-param                                                                       expected_result   --

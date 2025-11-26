@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,11 +27,14 @@ use Exporter qw(import);
 
 use constant {
     BUFFER_CREATION => -1,
-    NO_VALUE => -10
+    NO_VALUE => -10,
+
+    MSG_JSON_DECODE_ERROR => 'Cannot decode response (add --debug option to display returned content)'
 };
 
 our %EXPORT_TAGS = (
-    values => [ qw(NO_VALUE BUFFER_CREATION) ]
+    values => [ qw(NO_VALUE BUFFER_CREATION) ],
+    messages => [ qw(MSG_JSON_DECODE_ERROR) ]
 );
 $EXPORT_TAGS{all} = [ map { @$_ } values %EXPORT_TAGS ];
 

@@ -3,9 +3,10 @@ Documentation       Check VPN status. VPN-Connection-Status: inactive, active,pa
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
+
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
@@ -23,7 +24,7 @@ vpn-status ${tc}
     ...    --snmp-community=network/cyberoam/snmp/slim_sophos
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                              expected_result    --
@@ -41,4 +42,3 @@ vpn-status ${tc}
             ...      12    --critical-status='' --warning-total-active=0 --critical-total-active=0                                                    CRITICAL: VPN active: 3 | 'total'=4;;;0; 'total_inactive'=1;;;0; 'total_active'=3;0:0;0:0;0; 'total_partially_active'=0;;;0;
             ...      13    --critical-status='0' --warning-total-partially-active=1:1                                                                 WARNING: VPN partially active: 0 | 'total'=4;;;0; 'total_inactive'=1;;;0; 'total_active'=3;;;0; 'total_partially_active'=0;1:1;;0;
             ...      14    --critical-status='0' --critical-total-partially-active=1:1                                                                CRITICAL: VPN partially active: 0 | 'total'=4;;;0; 'total_inactive'=1;;;0; 'total_active'=3;;;0; 'total_partially_active'=0;;1:1;0;
-            

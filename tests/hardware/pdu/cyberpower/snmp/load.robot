@@ -1,16 +1,17 @@
-***Settings***
+*** Settings ***
 Documentation       Hardware Camera Avigilon memory
 
-Resource           ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} 
+${CMD}      ${CENTREON_PLUGINS}
 ...         --plugin=hardware::pdu::cyberpower::snmp::plugin
+
 
 *** Test Cases ***
 load ${tc}

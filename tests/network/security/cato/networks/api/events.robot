@@ -21,6 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Events ${tc}
     [Tags]    network    securirt    api    graphql    cato
@@ -28,8 +29,7 @@ Events ${tc}
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings   ${command}    ${expected_string}
-
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_string}
 
     Examples:      tc    extraoptions                                        expected_string    --
           ...      1     ${EMPTY}                                            OK: Number of records: 2 - All records are ok | 'count'=2;;;0;

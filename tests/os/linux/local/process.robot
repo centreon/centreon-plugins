@@ -3,9 +3,9 @@ Documentation       Linux Local list-systemdservices
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -44,4 +44,3 @@ Process ${tc}
             ...     14    ps-sap.output           gorgone-proxy     2:2         ${EMPTY}   WARNING: Number of current processes: 0 | 'processes.total.count'=0;2:2;;0;
             ...     15    ps-sap.output           gorgone-proxy     2:2         2:2        CRITICAL: Number of current processes: 0 | 'processes.total.count'=0;2:2;2:2;0;
             ...     16    ps-sap.output           gorgone-proxy     0:0         0:0        OK: Number of current processes: 0 | 'processes.total.count'=0;0:0;0:0;0;
-

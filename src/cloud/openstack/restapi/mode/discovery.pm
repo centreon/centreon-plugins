@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use JSON::XS;
-use centreon::plugins::misc qw/flatten_arrays is_excluded/;
+use centreon::plugins::misc qw/json_encode/;
 
 sub new {
     my ($class, %options) = @_;
@@ -89,10 +89,10 @@ sub manage_selection {
     my $filter = qr/(?:identity|image|network|compute|placement|volumev3)/;
     @horizon_url = ( 'http://please_change_me' ) unless @horizon_url;
     my %disco_data = ( managed_services => [ grep { $_->{type} =~ $filter } values %discovered_services ],
-                       others_services => [ grep { $_->{type} !~ $filter } values %discovered_services ],
-                       keystone_url => $options{custom}->{keystone_base_url},
-                       horizon_url => join ',', @horizon_url
-                   );
+                       others_services  => [ grep { $_->{type} !~ $filter } values %discovered_services ],
+                       keystone_url     => $options{custom}->{identity_base_url},
+                       horizon_url      => join ',', @horizon_url
+                     );
 
     return \%disco_data;
 }
@@ -110,9 +110,11 @@ sub run {
     $disco_stats->{discovered_items} = @{$results->{managed_services}} ? 1 : 0;
     $disco_stats->{results} = $results;
 
-    my $encoded_data = eval { JSON::XS->new->utf8->pretty($self->{prettify})->encode($disco_stats) };
+    my $encoded_data = json_encode($disco_stats, prettify => $self->{prettify},
+                                                 output => $self->{output},
+                                                 no_exit => 1);
     $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}'
-        if $@;
+        unless $encoded_data;
 
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);

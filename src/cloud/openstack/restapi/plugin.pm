@@ -31,21 +31,19 @@ sub new {
 
     $self->{modes} = {
         # Mode host "OpenStack"
-        'discovery'      => 'cloud::openstack::restapi::mode::discovery',
-        'list-services'  => 'cloud::openstack::restapi::mode::listservices',
-        'service'        => 'cloud::openstack::restapi::mode::service',
+        'discovery'         => 'cloud::openstack::restapi::mode::discovery',
+        'list-services'     => 'cloud::openstack::restapi::mode::listservices',
+        'service'           => 'cloud::openstack::restapi::mode::service',
 
         # Mode host "Project/Tenant"
-        'list-projects'  => 'cloud::openstack::restapi::mode::listprojects',
-        'volume'         => 'cloud::openstack::restapi::mode::volume',
-        'hypervisor'     => 'cloud::openstack::restapi::mode::hypervisor',
-        'network'        => 'cloud::openstack::restapi::mode::network',
-        'port'           => 'cloud::openstack::restapi::mode::port',
-        'loadbalancer'   => 'cloud::openstack::restapi::mode::loadbalancer',
-        'instance'       => 'cloud::openstack::restapi::mode::instance',
-
-        # Mode host
-        'host-discovery' => 'cloud::openstack::restapi::mode::hostdiscovery',
+        'project-discovery' => 'cloud::openstack::restapi::mode::projectdiscovery',
+        'volume'            => 'cloud::openstack::restapi::mode::volume',
+        'hypervisor'        => 'cloud::openstack::restapi::mode::hypervisor',
+        'network'           => 'cloud::openstack::restapi::mode::network',
+        'port'              => 'cloud::openstack::restapi::mode::port',
+        'loadbalancer'      => 'cloud::openstack::restapi::mode::loadbalancer',
+        # Mode host "Porjetct/Tenant" + Mode "host" ( when --host-discovery is set )
+        'instance'          => 'cloud::openstack::restapi::mode::instance',
     };
 
     $self->{custom_modes}->{cli} = 'cloud::openstack::restapi::custom::api';

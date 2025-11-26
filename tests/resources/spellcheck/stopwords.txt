@@ -12,6 +12,7 @@ ACS
 --add-sysdesc
 ADSL
 Alcatel
+Alertmanager
 allCapacity
 Alletra
 allsteps
@@ -27,6 +28,7 @@ api.meraki.com
 AppearTV
 AS400
 ASAM
+Athonet
 Avigilon
 Avocent
 aws
@@ -60,9 +62,9 @@ CX
 Cyberoam
 DaemonSet
 Datacore
-Datastore
 datasource
 datastore
+Datastore
 datastores
 dBm
 DC4
@@ -102,14 +104,15 @@ fibre
 Forcepoint
 Fortigate
 Fortinet
+FortiOS
 FQDN
 FreeBSD
 FrontDoor
 frsevent
 GCP
-GRAPHQL
-GraphQL
 --get-param
+GraphQL
+GRAPHQL
 HAProxy
 HashiCorp
 hashicorpvault
@@ -134,8 +137,8 @@ in-ucast
 io-cards
 iops
 IpAddr
-IPs
 ip-label
+IPs
 ipsec
 ipv4
 ipv6
@@ -169,6 +172,7 @@ LUN
 LUNs
 mA
 machineaccount
+MAPI
 --map-speed-dsl
 MBean
 Mbps
@@ -219,8 +223,8 @@ notapplicable
 NTLMv2
 NTP
 NVOS
---oid
 OAuth
+--oid
 OID
 --oid-display
 --oid-extra-display
@@ -238,6 +242,7 @@ out-ucast
 overprovisioning
 packetloss
 partiallyActive
+passthrough
 --patch-redhat
 perfdata
 pfSense
@@ -251,7 +256,6 @@ PPID
 prct
 Primera
 Procurve
-Proxmox
 PromQL
 proto
 Proxmox
@@ -262,11 +266,11 @@ Qtree
 queue-messages-inflighted
 quts
 raidvolume
+redis-cli
 ReplicaJobSession
 RestAPI
 RFC1628
 RRDCached
-redis-cli
 rsrp
 rsrq
 rssi
@@ -276,6 +280,7 @@ Sansymphony
 SAS
 scenarii
 --scope-datacenter
+SCVMM
 SFOS
 sfp.temperature
 SignalR
@@ -287,9 +292,8 @@ SnapMirrors
 snmp
 snmpd.conf
 space-usage-prct
---sql-errors-exit
-SCVMM
 Splunk
+--sql-errors-exit
 SRX
 SSDCapacity
 SSG
@@ -310,6 +314,7 @@ temperatureambient
 timeframe
 TiMOS
 TLS
+TLSv1
 TMM
 tmnxSasAlarmInputDescription
 topic-messages-inflighted
@@ -318,7 +323,6 @@ total-online-prct
 total-oper-down
 total-oper-up
 tower-cli
-TLSv1
 TrendMicro
 tsdb-version
 TWAMP
@@ -344,10 +348,8 @@ vdom
 vdomain
 VDSL2
 VE
-VTOM
 Veeam
 VeloCloud
-VE
 vhost
 VM
 VMs
@@ -358,6 +360,8 @@ VPN
 vSAN
 Vserver
 vSphere
+VTOM
+WaaS
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts
 --warning-authserver-packets-access-requests

@@ -11,9 +11,10 @@ Test Timeout        120s
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::windows::snmp::plugin
 
+
 *** Test Cases ***
 list-interfaces ${tc}
-    [Tags]    os    Windows
+    [Tags]    os    windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-interfaces
@@ -22,7 +23,7 @@ list-interfaces ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=os/windows/snmp/list-interfaces
     ...    ${extra_options}
- 
+
     Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                               expected_result    --

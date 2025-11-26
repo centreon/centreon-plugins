@@ -9,11 +9,12 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vm::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vm::plugin
+
 
 *** Test Cases ***
 Standard ${tc} - ${mode}
-    [Tags]    apps    api    vmware   vsphere8    vm
+    [Tags]    apps    api    vmware    vsphere8    vm
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=${mode}
