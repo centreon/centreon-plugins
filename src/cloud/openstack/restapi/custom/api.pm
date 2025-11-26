@@ -752,11 +752,11 @@ __END__
 
 =head1 NAME
 
-Openstack REST API
+OpenStack REST API
 
 =head1 SYNOPSIS
 
-Openstack Rest API custom mode
+OpenStack Rest API custom mode
 
 =head1 REST API OPTIONS
 
