@@ -446,6 +446,63 @@ sub nova_list_instances {
     return { http_status => 200, results => \@results }
 }
 
+# Returns Hypervisors list by calling Nova service
+sub nova_list_hypervisors {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{compute_url}, resource => '/os-hypervisors/detail'),
+            insecure => $self->{compute_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{hypervisors};
+
+        last unless @{$response->{hypervisors}};
+        $params{marker} = $response->{hypervisors}[-1]->{id};
+
+        foreach my $hypervisor (@{$response->{hypervisors}}) {
+            next if is_excluded($hypervisor->{hypervisor_hostname}, $options{include_hypervisor_hostname}, $options{exclude_hypervisor_hostname});
+            next if is_excluded($hypervisor->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($hypervisor->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($hypervisor->{state}, $options{include_state}, $options{exclude_state});
+            next if is_excluded($hypervisor->{hypervisor_type}, $options{include_hypervisor_type}, $options{exclude_hypervisor_type});
+
+            my $items = { id => $hypervisor->{id},
+                          hypervisor_hostname => $hypervisor->{hypervisor_hostname},
+                          status => $hypervisor->{status},
+                          state => $hypervisor->{state},
+                          hypervisor_type => $hypervisor->{hypervisor_type},
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{hypervisors}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
 # Returns image label from id by calling Glance service
 # Uses a cache file to limit API calls
 sub glance_get_image_label {
@@ -712,9 +769,9 @@ OpenStack user domain to use with authentication (default: 'default').
 
 OpenStack project name to use with authentication (default: 'demo').
 
-=item B<--project-domain>
+=item B<--project-domain-id>
 
-OpenStack project domain to use with authentication (default: 'default').
+OpenStack project domain id to use with authentication (default: 'default').
 
 =item B<--timeout>
 
