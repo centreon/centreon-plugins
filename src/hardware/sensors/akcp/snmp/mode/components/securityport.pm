@@ -40,22 +40,22 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking security ports");
-    $self->{components}->{security_port} = {name => 'security ports', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'security'));
+    $self->{components}->{securityport} = {name => 'security ports', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'securityport'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_securityPortEntry}})) {
         next if ($oid !~ /^$mapping->{securityPortStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_securityPortEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'security_port', instance => $instance));
-        $self->{components}->{security_port}->{total}++;
+        next if ($self->check_filter(section => 'securityport', instance => $instance));
+        $self->{components}->{securityport}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("security port '%s' status is '%s' [instance = %s]",
                                     $result->{securityPortDescription}, $result->{securityPortStatus}, $instance,
                                     ));
         
-        my $exit = $self->get_severity(label => 'default2', section => 'security_port', value => $result->{securityPortStatus});
+        my $exit = $self->get_severity(label => 'default2', section => 'securityport', value => $result->{securityPortStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Security port '%s' status is '%s'", $result->{securityPortDescription}, $result->{securityPortStatus}));
