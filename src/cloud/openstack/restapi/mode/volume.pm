@@ -287,7 +287,7 @@ Example: --warning-bootable='%{bootable} eq "1"'
 
 =item B<--critical-bootable>
 
-Define the conditions to match for the status to be CRITiCAL based on the volume bootable flag (can be 0 or 1).
+Define the conditions to match for the status to be CRITICAL based on the volume bootable flag (can be 0 or 1).
 Example: --critical-bootable='%{bootable} eq "1"'
 
 =item B<--warning-description>
@@ -307,7 +307,7 @@ Example: --warning-encrypted='%{encrypted} eq "1"'
 
 =item B<--critical-encrypted>
 
-Define the conditions to match for the status to be CRITiCAL based on the encrypted flag (can be 0 or 1).
+Define the conditions to match for the status to be CRITICAL based on the encrypted flag (can be 0 or 1).
 Example: --critical-encrypted='%{encrypted} eq "1"'
 
 =item B<--warning-id>
