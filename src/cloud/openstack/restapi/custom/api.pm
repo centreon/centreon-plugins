@@ -89,8 +89,10 @@ sub new {
         _service_filters_options(type => 'compute', ),
         _service_ident_options(type => 'image',    port => 9292, endpoint => ''),
         _service_filters_options(type => 'image', ),
-        _service_ident_options(type => 'volume',   port => 9292, endpoint => ''),
+        _service_ident_options(type => 'volume',   port => 8776, endpoint => ''),
         _service_filters_options(type => 'volume', ),
+        _service_ident_options(type => 'loadbalancer',    port => 9876, endpoint => ''),
+        _service_filters_options(type => 'loadbalancer', ),
 
         # Endpoint filters common to all services
         _endpoint_filters_options(),
@@ -159,6 +161,7 @@ sub service_check_options {
 
             foreach my $endpoint (@{$keystone_service->{endpoints}}) {
                 next if $self->is_excluded_endpoint($endpoint);
+
                 $self->{$service.'url'} = $endpoint->{url};
                 last KEYSTONE_CATALOG
             }
@@ -322,6 +325,7 @@ sub other_services_check_options {
     $self->service_check_options(mandatory => 1, type => 'compute', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
+    $self->service_check_options(mandatory => 1, type => 'loadbalancer',  keystone_services => $catalog );
 }
 
 sub settings {
@@ -334,7 +338,6 @@ sub connect_info {
     my ($self, %options) = @_;
 
     my $url = $options{url};
-
     ( full_url => $url.($options{resource} // ''), proto=> $url =~ s/^(https?).+/$1/r )
 }
 
@@ -441,6 +444,92 @@ sub nova_list_instances {
         }
 
         last if @{$response->{servers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Load Balancer list by calling Octavia service
+sub octavia_list_loadbalancer {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+    $params{project_id} = $options{project_id}
+        if $options{project_id};
+
+    my $token = $options{token} || $self->{token};
+
+    # Octavia natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'id') {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{loadbalancer_url}, resource => '/v2/lbaas/loadbalancers'),
+            insecure => $self->{loadbalancer_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{loadbalancers};
+
+        last unless @{$response->{loadbalancers}};
+        $params{marker} = $response->{loadbalancers}[-1]->{id};
+
+        foreach my $loadbalancer (@{$response->{loadbalancers}}) {
+            $loadbalancer->{admin_state_up} = $loadbalancer->{admin_state_up} ? "True": "False";
+            next if is_excluded($loadbalancer->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($loadbalancer->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($loadbalancer->{operating_status}, $options{include_operating_status}, $options{exclude_operating_status});
+            next if is_excluded($loadbalancer->{provisioning_status}, $options{include_provisioning_status}, $options{exclude_provisioning_status});
+            next if is_excluded($loadbalancer->{admin_state_up}, $options{include_admin_state_up}, $options{exclude_admin_state_up});
+            next if is_excluded($loadbalancer->{vip_address}, $options{include_vip_address}, $options{exclude_vip_address});
+            next if is_excluded($loadbalancer->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($loadbalancer->{provider}, $options{include_provider}, $options{exclude_provider});
+            next if is_excluded($loadbalancer->{project_id}, $options{project_id});
+
+            $loadbalancer->{pools} = [] unless $loadbalancer->{pools};
+            $loadbalancer->{listeners} = [] unless $loadbalancer->{listeners};
+
+            next if $options{exclude_no_pools} && not @{$loadbalancer->{pools}};
+            next if $options{exclude_no_listeners} && not @{$loadbalancer->{listeners}};
+
+            my $items = { id => $loadbalancer->{id},
+                          name => $loadbalancer->{name},
+                          operating_status => $loadbalancer->{'operating_status'},
+                          provisioning_status => $loadbalancer->{'provisioning_status'},
+                          admin_state_up => $loadbalancer->{admin_state_up},
+                          vip_address => $loadbalancer->{vip_address},
+                          description => $loadbalancer->{description},
+                          project_id => $loadbalancer->{project_id},
+                          provider => $loadbalancer->{provider},
+                          pool_count => scalar @{$loadbalancer->{pools}},
+                          listener_count => scalar @{$loadbalancer->{listeners}},
+                        };
+            push @results, $items;
+        }
+
+        last if @{$response->{loadbalancers}} < $limit;
     }
 
     return { http_status => 200, results => \@results }
@@ -601,11 +690,12 @@ sub keystone_authent {
     $expires_at = $expires_at->parse_datetime($response->{token}->{expires_at});
     $expires_at = $expires_at->epoch();
 
+    $_->{type} =~ s/-//g foreach @{$response->{token}->{catalog}};
+
     my %data = ( token => $token,
                  expires_at => $expires_at,
                  services => $response->{token}->{catalog}
                );
-
     $self->{cache_authent}->write(data => \%data);
 
     $self->{token} = $token;
