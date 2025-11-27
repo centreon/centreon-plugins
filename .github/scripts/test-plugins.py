@@ -183,7 +183,7 @@ if __name__ == '__main__':
     print(f"{nb_plugins} plugins tested.\n      there was {error_install} installation error, {error_tests} test "
           f"errors, and {error_purge} removal error list of error : {list_plugin_error}", )
 
-    command = "ps -ax | grep snmpsim-command-respond | cut -dp -f1 | xargs kill"
+    command = "ps -ax | grep sn[m]psim-command-respond | awk '{print $1}' | xargs kill"
     subprocess.run(command, shell=True, check=False)
 
     if error_install != 0 or error_tests != 0 or error_purge != 0:
