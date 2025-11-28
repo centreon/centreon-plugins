@@ -325,7 +325,7 @@ sub other_services_check_options {
     $self->service_check_options(mandatory => 1, type => 'compute', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
-    $self->service_check_options(mandatory => 1, type => 'loadbalancer',  keystone_services => $catalog );
+    $self->service_check_options(mandatory => 0, type => 'loadbalancer',  keystone_services => $catalog );
 }
 
 sub settings {
