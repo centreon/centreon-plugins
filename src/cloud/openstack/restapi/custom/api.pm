@@ -351,12 +351,18 @@ sub cinder_list_volumes {
 
     # Nova natively accepts certain filters but only one of each is allowed and they cannot be
     # regular expressions. We use our filters that satisfy these requirements
-    foreach (qw/status name id/) {
-        $params{$_} = $1 if $options{"include_".$_} =~ /^([\w\s]+)$/
+    foreach my $filter (qw/status name id/) {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
     }
     $params{availability_zone} = $1 if $options{"include_zone"} =~ /^([\w\s]+)$/;
 
-    $params{project_id} = $options{project_id} if $options{project_id};
+    $params{tenant_id} = $options{project_id} if $options{project_id};
 
     my $response_brut;
     my @results;
@@ -384,8 +390,8 @@ sub cinder_list_volumes {
 
         $params{marker} = $response->{volumes}[-1]->{id};
         foreach my $volume (@{$response->{volumes}}) {
+            $volume->{'os-vol-tenant-attr:tenant_id'} //= '';
             $volume->{bootable} = $volume->{bootable} =~ /true/i ? '1' : '0';
-            $volume->{encrypted} = $volume->{encrypted} ? '1' : '0';
             next if is_excluded($volume->{id}, $options{include_id}, $options{exclude_id});
             next if is_excluded($volume->{name}, $options{include_name}, $options{exclude_name});
             next if is_excluded($volume->{status}, $options{include_status}, $options{exclude_status});
@@ -394,14 +400,14 @@ sub cinder_list_volumes {
             next if is_excluded($volume->{bootable}, $options{include_bootable}, $options{exclude_bootable});
             next if is_excluded($volume->{encrypted}, $options{include_encrypted}, $options{exclude_encrypted});
             next if is_excluded($volume->{availability_zone}, $options{include_zone}, $options{exclude_zone});
-
+            next if $volume->{'os-vol-tenant-attr:tenant_id'} && is_excluded($volume->{'os-vol-tenant-attr:tenant_id'}, $options{project_id}, "");
 
             my $items = { id => $volume->{id},
                           name => $volume->{name},
                           description => $volume->{description},
                           status => $volume->{status},
                           size => $volume->{size},
-                          project_id => $volume->{'os-vol-tenant-attr:tenant_id'} // '',
+                          project_id => $volume->{'os-vol-tenant-attr:tenant_id'},
                           bootable => $volume->{bootable},
                           encrypted => $volume->{encrypted},
                           type => $volume->{volume_type},
