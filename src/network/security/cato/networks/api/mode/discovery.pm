@@ -50,6 +50,20 @@ sub check_options {
     $self->{filter_site_id} = flatten_arrays($self->{option_results}->{filter_site_id});
 }
 
+our @fields = qw/id name description connectivity_status operational_status last_connected connected_since pop_name/;
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{sites} = [];
+
+    my $response = $options{custom}->list_sites(filter_site_name => $self->{filter_site_name},
+                                                filter_site_id => $self->{filter_site_id},
+                                                connectivity_details => $self->{connectivity_details});
+    foreach my $site (@$response) {
+        push @{$self->{sites}}, { map { $_ => $site->{$_} // '' } @fields };
+    }
+}
 
 sub run {
     my ($self, %options) = @_;
@@ -57,19 +71,12 @@ sub run {
     my $disco_stats;
     $disco_stats->{start_time} = time();
 
-    my $response = $options{custom}->list_sites(filter_site_name => $self->{filter_site_name},
-                                               filter_site_id => $self->{filter_site_id},
-                                               connectivity_details => $self->{connectivity_details});
-    my @results;
-
-    foreach my $site (@$response) {
-        push @results, { map { $_ => $site->{$_} // '' } qw/id name description connectivity_status operational_status last_connected connected_since pop_name/ };
-    }
+    $self->manage_selection(%options);
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-    $disco_stats->{results}  = \@results;
-    $disco_stats->{discovered_items} = scalar(@results);
+    $disco_stats->{results}  = $self->{sites};
+    $disco_stats->{discovered_items} = scalar(@{$self->{sites}});
 
     my $encoded_data;
     eval {
@@ -80,9 +87,24 @@ sub run {
 
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
-
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => \@fields );
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    foreach my $site (@{$self->{sites}}) {
+        $self->{output}->add_disco_entry(
+            map { $_ => $site->{$_} // '' } @fields
+        );
+    }
+}
 1;
 
 __END__
