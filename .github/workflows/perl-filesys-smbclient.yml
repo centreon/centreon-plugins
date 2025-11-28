@@ -86,8 +86,8 @@ jobs:
       image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
-        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
+        username: ${{ secrets.HARBOR_CENTREON_PRIVATE_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PRIVATE_TOKEN }}
 
     steps:
       - run: |
