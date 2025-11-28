@@ -343,17 +343,17 @@ Valid operating status are: ONLINE, DRAINING, OFFLINE, DEGRADED, ERROR, NO_MONIT
 Example: --critical-operating-status='%{operating_status} =~ /ERROR/'
 Default: --critical-operating-status='%{operating_status} =~ /ERROR/'
 
-=item B<--warning-previsioning-status>
+=item B<--warning-provisioning-status>
 
-Define the conditions to match for the status to be WARNING based on the load balancer previsioning status.
-Valid previsioning status are: ACTIVE, ERROR, PENDING_CREATE, PENDING_UPDATE, PENDING_DELETE
-Example: --warning-previsioning-status='%{previsioning_status} =~ /DEGRADED/'
+Define the conditions to match for the status to be WARNING based on the load balancer provisioning status.
+Valid provisioning status are: ACTIVE, ERROR, PENDING_CREATE, PENDING_UPDATE, PENDING_DELETE
+Example: --warning-provisioning-status='%{provisioning_status} =~ /DEGRADED/'
 
-=item B<--critical-previsioning-status>
+=item B<--critical-provisioning-status>
 
-Define the conditions to match for the status to be CRITICAL based on the load balancer previsioning status.
-Valid previsioning status are: ONLINE, DRAINING, OFFLINE, DEGRADED, ERROR, NO_MONITOR
-Example: --critical-previsioning-status='%{previsioning_status} =~ /ERROR/'
+Define the conditions to match for the status to be CRITICAL based on the load balancer provisioning status.
+Valid provisioning status are: ONLINE, DRAINING, OFFLINE, DEGRADED, ERROR, NO_MONITOR
+Example: --critical-provisioning-status='%{provisioning_status} =~ /ERROR/'
 
 =item B<--warning-description>
 
