@@ -351,8 +351,8 @@ sub custom_traffic_calc {
         print $fh "Old datas:\n", map { "$_ => $options{old_datas}->{$_}\n" } keys %{$options{old_datas}};
         print $fh "\nNew datas:\n", map { "$_ => $options{new_datas}->{$_}\n" } keys %{$options{new_datas}};
         close($fh);
-        # delete the cache file
-        unlink $statefile or warn "Could not delete file $statefile: $!";
+        # no percentage for traffic
+        $self->{result_values}->{traffic_prct} = undef;
         $self->{error_msg} = 'clear buffer';
         return -2;
     }
@@ -473,19 +473,10 @@ sub custom_errors_calc {
 
     $self->{result_values}->{prct} = 0;
     $self->{result_values}->{prct} = $errors_diff * 100 / $total_diff if ($total_diff > 0);
-    if ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent_delta') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} =~ /^(percent_delta|delta|deltaps)$/) {
         $self->{result_values}->{used} = $errors_diff;
         $self->{result_values}->{total} = $total_diff;
-    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'percent') {
-        $self->{result_values}->{used} = $errors;
-        $self->{result_values}->{total} = $total;
-    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'delta') {
-        $self->{result_values}->{used} = $errors_diff;
-        $self->{result_values}->{total} = $total_diff;
-    } elsif ($self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps') {
-        $self->{result_values}->{used} = $errors_diff;
-        $self->{result_values}->{total} = $total_diff;
-        $self->{result_values}->{used_ps} = $errors_diff / $options{delta_time};
+        $self->{result_values}->{used_ps} = $errors_diff / $options{delta_time} if $self->{instance_mode}->{option_results}->{units_errors} eq 'deltaps';
     } else {
         $self->{result_values}->{used} = $errors;
         $self->{result_values}->{total} = $total;
@@ -501,16 +492,21 @@ sub custom_errors_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
 
     if ($self->{result_values}->{prct} > 100) {
-        my $time_str = time();
-        # Copy statefile to a new file for debug
-        my $statefile = $self->{statefile}->{statefile_dir} . '/' . $self->{statefile}->{statefile};
-        copy($statefile, $statefile . '_' . $time_str . '.json') or warn "Impossible de copier $statefile to " . $statefile . ".corrupted: $!";
-        # Save old and new datas to a file for debug
-        my $datafile = "$self->{statefile}->{statefile_dir}/" . $self->{label} . "_" . $self->{instance} . "_" . $time_str . ".log";
-        open(my $fh, '>', $datafile) or warn "Creation of $datafile failed: $!";
-        print $fh "Old datas:\n", map { "$_ => $options{old_datas}->{$_}\n" } keys %{$options{old_datas}};
-        print $fh "\nNew datas:\n", map { "$_ => $options{new_datas}->{$_}\n" } keys %{$options{new_datas}};
-        close($fh);
+        if ($self->{instance_mode}->{option_results}->{trace}) {
+            my $time_str = time();
+            # Copy statefile to a new file for debug
+            my $statefile = $self->{statefile}->{statefile_dir} . '/' . $self->{statefile}->{statefile};
+            copy($statefile, $statefile . '_' . $time_str . '.json') or warn "Impossible de copier $statefile to " . $statefile . ".corrupted: $!";
+            # Save old and new datas to a file for debug
+            my $datafile = "$self->{statefile}->{statefile_dir}/" . $self->{label} . "_" . $self->{instance} . "_" . $time_str . ".log";
+            open(my $fh, '>', $datafile) or warn "Creation of $datafile failed: $!";
+            print $fh "Old datas:\n", map { "$_ => $options{old_datas}->{$_}\n" } keys %{$options{old_datas}};
+            print $fh "\nNew datas:\n", map { "$_ => $options{new_datas}->{$_}\n" } keys %{$options{new_datas}};
+            close($fh);
+        }
+        $self->{result_values}->{prct} = undef;
+        $self->{error_msg} = "clear buffer";
+        return -2;
     }
 
     return 0;
@@ -1045,7 +1041,8 @@ sub new {
         'nagvis-perfdata'          => { name => 'nagvis_perfdata' },
         'force-counters32'         => { name => 'force_counters32' },
         'force-counters64'         => { name => 'force_counters64' },
-        'map-speed-dsl:s@'         => { name => 'map_speed_dsl' }
+        'map-speed-dsl:s@'         => { name => 'map_speed_dsl' },
+        'trace'                    => { name => 'trace' }
     });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { 'add-traffic' => { name => 'add_traffic' } });
