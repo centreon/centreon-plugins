@@ -188,7 +188,7 @@ __END__
 
 =head1 MODE
 
-List OpenStack Volumes
+Manage OpenStack Volumes
 
 =over 8
 
@@ -343,13 +343,15 @@ Example: --critical-size='%{size} =~ /1 GB/'
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING based on the volume status.
-Example: --warning-statu='%{status} =~ /downloading/'
+Example: --warning-status='%{status} =~ /downloading/'
+Default: --warning-status='%{status} =~ /(restoring-backup|backing-up|deleting)/'
 Please refer to https://docs.openstack.org/api-ref/block-storage/v3/#volumes-status for more information about status.
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL based on the volume status.
 Example: --critical-status='%{status} =~ /downloading/'
+Default: --critical-status='%{status} =~ /error/'
 Please refer to https://docs.openstack.org/api-ref/block-storage/v3/#volumes-status for more information about status.
 
 =item B<--warning-type>

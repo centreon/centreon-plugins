@@ -349,7 +349,7 @@ sub cinder_list_volumes {
 
     my $token = $options{token} || $self->{token};
 
-    # Nova natively accepts certain filters but only one of each is allowed and they cannot be
+    # Cinder natively accepts certain filters but only one of each is allowed and they cannot be
     # regular expressions. We use our filters that satisfy these requirements
     foreach my $filter (qw/status name id/) {
         my $filter_name = "include_".$filter;
@@ -367,7 +367,7 @@ sub cinder_list_volumes {
     my $response_brut;
     my @results;
 
-    # Retry to handle token expiration
+    # Retry to handle pagination
     while (1) {
         $response_brut = $self->{http}->request(
             method => 'GET',
@@ -383,7 +383,10 @@ sub cinder_list_volumes {
 
         my $response = json_decode($response_brut);
 
-        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+        return { http_status => $self->{http}->get_code(),
+                 message     => value_of($response, "->{error}->{title}", 'Bad request').': '.
+                                value_of($response, "->{error}->{message}", "Invalid response")
+               }
             if ref $response ne 'HASH' || $response->{error} || not $response->{volumes};
 
         last unless @{$response->{volumes}};
