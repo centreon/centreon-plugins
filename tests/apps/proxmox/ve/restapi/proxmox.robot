@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}proxmox.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::proxmox::ve::restapi::plugin
 ...                 --hostname=${HOSTNAME}
 ...                 --api-username=xx
@@ -20,9 +20,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Discovery ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode discovery
@@ -35,9 +36,8 @@ Discovery ${tc}
             ...      2        --resource-type=vm                                    (?=.*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\])(?=.*"os_info_name":"XXXXX GNU/Linux")
             ...      3        --resource-type=node                                  ^(?!.*(ip_addresses|os_info_name)).*$
 
-
 VmUsage ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode vm-usage

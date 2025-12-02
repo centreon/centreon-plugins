@@ -1,14 +1,13 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
+
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}vmware8-restapi.mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::plugin
 ...                 --mode=swap
@@ -19,15 +18,16 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::pl
 ...                 --port=3000
 ...                 --esx-id=host-22
 
+
 *** Test Cases ***
 Swap ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware    vsphere8    esx
     ${command}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc    extraoptions                                        expected_result   --
-        ...      1     ${EMPTY}                                            OK: usage-bytes : skipped (no value(s)), usage-prct : skipped (no value(s)) - no data for host host-22 counter mem.swap.current.HOST at the moment.
+        ...      1     ${EMPTY}                                            UNKNOWN: no data for resource host-22 counter mem.swap.current.HOST at the moment. - get_esx_stats function failed to retrieve stats The counter mem.swap.current.HOST was not recorded for resource host-22 before. It will now (creating acq_spec). The counter mem.swap.target.HOST was not recorded for resource host-22 before. It will now (creating acq_spec).
         ...      2     ${EMPTY}                                            OK: Swap usage: 120.56 MB (max available is 1.00 TB), Percent used: 0.01% | 'swap.usage.bytes'=126419660.8B;;;;1099511627776 'swap.usage.percent'=0.0114978011697531%;;;0;100
         ...      3     --add-rates                                         OK: Swap usage: 120.56 MB (max available is 1.00 TB), Percent used: 0.01% - Swap read rate is: 6.39 MB/s, Swap write rate is: 1.21 MB/s | 'swap.usage.bytes'=126419660.8B;;;;1099511627776 'swap.usage.percent'=0.0114978011697531%;;;0;100 'swap.read-rate.bytespersecond'=6700236.8Bps;;;; 'swap.write-rate.bytespersecond'=1264128Bps;;;;
         ...      4     --warning-read-rate-bps=1                           WARNING: Swap read rate is: 6.39 MB/s | 'swap.usage.bytes'=126419660.8B;;;;1099511627776 'swap.usage.percent'=0.0114978011697531%;;;0;100 'swap.read-rate.bytespersecond'=6700236.8Bps;0:1;;; 'swap.write-rate.bytespersecond'=1264128Bps;;;;

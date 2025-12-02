@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Security-Cato-Networks-Api",
+    "pkg_summary": "Centreon Plugin to monitor Cato Networks using API",
+    "plugin_name": "centreon_cato_networks_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/security/cato/networks/api"
+    ]
+}

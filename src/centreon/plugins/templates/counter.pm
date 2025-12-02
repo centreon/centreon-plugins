@@ -26,7 +26,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_empty/;
 use JSON::XS;
 
 my $sort_subs = {
@@ -175,6 +175,7 @@ sub new {
         }
     }
 
+    $options{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL COUNTERS OPTIONS', once => 1) if $options{display_template_help};
 
     return $self;
 }
@@ -688,6 +689,9 @@ sub run_multiple_prefix_output {
 sub run_multiple {
     my ($self, %options) = @_;
 
+    return undef if (!is_empty($self->{option_results}->{filter_counters_block})
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
+
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
@@ -867,9 +871,9 @@ sub custom_perfdata_instances {
 
 __END__
 
-=head1 MODE
+=head1 GLOBAL COUNTERS OPTIONS
 
-Default template for counters. Should be extended.
+Global options for counters.
 
 =over 8
 

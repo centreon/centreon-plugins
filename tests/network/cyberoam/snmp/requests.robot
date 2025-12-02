@@ -3,9 +3,10 @@ Documentation       Check request statistics.
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
+
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::cyberoam::snmp::plugin
@@ -22,7 +23,7 @@ requests ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/cyberoam/snmp/slim_sophos
     ...    --snmp-timeout=1
-    ...    ${extra_options}   
+    ...    ${extra_options}
 
     # first run to build cache
     Run    ${command}

@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+
 
 *** Test Cases ***
 vpn ${tc}
@@ -23,7 +24,7 @@ vpn ${tc}
     ...    --snmp-community=network/fortinet/fortigate/snmp/fortigate-vpn
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                                            expected_result    --

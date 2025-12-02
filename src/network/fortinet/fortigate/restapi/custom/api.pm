@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,8 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
+use centreon::plugins::misc qw/json_decode/;
+use centreon::plugins::constants qw(:messages);
 
 sub new {
     my ($class, %options) = @_;
@@ -142,14 +144,9 @@ sub request_api {
         $self->{output}->option_exit();
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
+    my $decoded = json_decode($content,
+                                 errstr => MSG_JSON_DECODE_ERROR,
+                                 output => $self->{output});
 
     return $decoded;
 }

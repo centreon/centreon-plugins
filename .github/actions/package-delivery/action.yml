@@ -27,7 +27,7 @@ runs:
   using: "composite"
   steps:
     - name: Validate inputs
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
           if ('${{ inputs.module_name }}' === '') {
@@ -50,7 +50,7 @@ runs:
 
     - name: Get repository stability path
       id: get_repository_stability_path
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
           let stabilitySubdirectory = '${{ inputs.stability }}';
@@ -77,7 +77,7 @@ runs:
 
     - if: ${{ inputs.stability != 'stable' }}
       name: Restore packages from cache
-      uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
         path: ./*.${{ steps.parse-distrib.outputs.package_extension }}
         key: ${{ inputs.cache_key }}
@@ -93,7 +93,7 @@ runs:
 
     - if: ${{ inputs.stability == 'testing' }}
       name: Clean existing testing packages
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
           if ('${{ steps.parse-distrib.outputs.distrib_family }}' === 'el') {
@@ -108,7 +108,7 @@ runs:
 
     - name: Download packages from testing
       if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
           const commitSha = context.sha;
@@ -171,7 +171,10 @@ runs:
       if: |
         contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
         (inputs.stability == 'stable' && github.event_name == 'push')
-      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+      env:
+        JF_URL: https://packages.centreon.com
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
       with:
         script: |
           const path = require('path');
@@ -184,6 +187,8 @@ runs:
 
           const debTargetProps = '${{ inputs.stability }}' == 'testing' ? '--target-props "release_type=${{ inputs.release_type }}"' : '';
 
+          let rpmReindexPaths = [];
+          let debReindexPaths = [];
           for await (const file of globber.globGenerator()) {
             const fileName = path.basename(file);
 
@@ -192,6 +197,7 @@ runs:
               if (/x86_64/.test(fileName)) {
                 arch = 'x86_64';
               }
+              rpmReindexPaths.push(`${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}`);
               await exec.exec(
                 `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/${arch}/${stableRpmSubdirectory}${{ inputs.module_name }}/" --flat`
               );
@@ -205,6 +211,23 @@ runs:
                 await exec.exec(
                   `jf rt upload "${fileName}" "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/" --deb "${{ inputs.distrib }}/main/${arch}" ${debTargetProps} --flat`
                 );
+                debReindexPaths.push(`${{ steps.get_repository_stability_path.outputs.repository_stability_path }}`.split('/')[0]);
               }
             }
+          }
+
+          rpmReindexPaths = [...new Set(rpmReindexPaths)];
+          for (const rpmReindexPath of rpmReindexPaths) {
+            const rootRepoPath = rpmReindexPath.split('/')[0];
+            const repoPath = rpmReindexPath.split('/').slice(1).join('/');
+            await exec.exec(
+              `curl -H "Authorization: Bearer ${{ env.JF_ACCESS_TOKEN }}" -X POST "${{ env.JF_URL }}/artifactory/api/yum/${rootRepoPath}?path=/${repoPath}&async=1"`
+            );
+          }
+
+          debReindexPaths = [...new Set(debReindexPaths)];
+          for (const debReindexPath of debReindexPaths) {
+            await exec.exec(
+              `curl -H "Authorization: Bearer ${{ env.JF_ACCESS_TOKEN }}" -X POST "${{ env.JF_URL }}/artifactory/api/deb/reindex/${debReindexPath}?async=1"`
+            );
           }

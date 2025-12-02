@@ -15,6 +15,7 @@ paths = [
   '''composer\.lock''',
   '''yarn\.lock''',
   '''\.gitleaks\.toml$''',
+  '''\.idea\/''',
   '''(.*?)(jpg|gif|doc|pdf|bin)$'''
 ]
 
