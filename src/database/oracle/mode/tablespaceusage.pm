@@ -639,7 +639,7 @@ Critical threshold.
 
 =item B<--filter-tablespace>
 
-Filter tablespace by name. Can be a regex
+Filter tablespaces by name. Can be a regex
 
 =item B<--units>
 

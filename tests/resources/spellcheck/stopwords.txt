@@ -307,6 +307,7 @@ SureBackup
 systemd
 SysVol
 TCP
+tablespaces
 teampass
 Teldat
 temperatureambient
