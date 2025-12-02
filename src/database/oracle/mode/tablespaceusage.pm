@@ -321,30 +321,7 @@ sub manage_selection {
     
     # request from check_oracle_health.
     my $query;
-    if ($self->{sql}->is_version_minimum(version => '12')) {
-         $query = sprintf(
-            q{
-             SELECT  
-              t.tablespace_name AS "Tablespace",  
-              t.status AS "Status",  
-              t.contents AS "Type",  
-              t.extent_management AS "Extent Mgmt",  
-              sum(a.user_bytes) AS "Bytes",  
-              sum(a.maxbytes) AS "Bytes_max"  
-             FROM dba_data_files a  
-                JOIN dba_tablespaces t  
-                ON a.tablespace_name = t.tablespace_name
-             GROUP BY  
-              t.tablespace_name,  
-              t.status,  
-              t.contents,  
-              t.extent_management %s
-            },
-            defined($self->{option_results}->{notemp}) ? 
-                "WHERE (t.contents != 'TEMPORARY' AND t.contents != 'UNDO')" : 
-                ''
-        );
-    } elsif ($self->{sql}->is_version_minimum(version => '11')) {
+    if ($self->{sql}->is_version_minimum(version => '11')) {
          $query = sprintf(
             q{
              SELECT
@@ -352,7 +329,7 @@ sub manage_selection {
               t.status "Status",
               t.contents "Type",
               t.extent_management "Extent Mgmt",
-              tum.used_space*t.block_size bytes,
+              GREATEST(tum.used_space*t.block_size,0) bytes,
               tum.tablespace_size*t.block_size bytes_max
              FROM
               DBA_TABLESPACE_USAGE_METRICS tum
