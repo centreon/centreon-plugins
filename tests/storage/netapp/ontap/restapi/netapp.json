@@ -1,6 +1,6 @@
 {
   "uuid": "ed4ed773-dfc4-4d37-aa5f-6dd89d5fc516",
-  "lastMigration": 32,
+  "lastMigration": 33,
   "name": "Netapp",
   "endpointPrefix": "api/",
   "latency": 0,
@@ -17,10 +17,44 @@
       "responses": [
         {
           "uuid": "ef8f650f-c3cb-4948-b907-3b31a284a065",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"state\": \"online\",\r\n      \"name\": \"volume1\",\r\n      \"state\": \"online\",\r\n      \"space\": {\r\n        \"auto_adaptive_compression_footprint_data_reduction\": 0,\r\n        \"available\": 421353881600,\r\n        \"size\": 4398046511104,\r\n        \"afs_total\": 4398046511104,\r\n        \"block_storage_inactive_user_data\": 0,\r\n        \"block_storage_inactive_user_data_percent\": 0,\r\n        \"capacity_tier_footprint\": 0,\r\n        \"capacity_tier_footprint_data_reduction\": 0,\r\n        \"compaction_footprint_data_reduction\": 0,\r\n        \"cross_volume_dedupe_metafiles_footprint\": 0,\r\n        \"cross_volume_dedupe_metafiles_temporary_footprint\": 0,\r\n        \"dedupe_metafiles_footprint\": 0,\r\n        \"dedupe_metafiles_temporary_footprint\": 0,\r\n        \"delayed_free_footprint\": 0,\r\n        \"effective_total_footprint\": 0,\r\n        \"file_operation_metadata\": 0,\r\n        \"filesystem_size\": 0,\r\n        \"footprint\": 0,\r\n        \"local_tier_footprint\": 0,\r\n        \"max_size\": \"string\",\r\n        \"logical_space\": {\r\n          \"available\": 348998594560,\r\n          \"used\": 3169438617600,\r\n          \"used_by_afs\": 0,\r\n          \"used_by_snapshots\": 0,\r\n          \"used_percent\": 90\r\n        },\r\n        \"metadata\": 0,\r\n        \"over_provisioned\": 0,\r\n        \"overwrite_reserve\": 0,\r\n        \"overwrite_reserve_used\": 0,\r\n        \"percent_used\": 0,\r\n        \"performance_tier_footprint\": 0,\r\n        \"size_available_for_snapshots\": 0,\r\n        \"snapmirror_destination_footprint\": 0,\r\n        \"snapshot\": {\r\n          \"autodelete\": {\r\n            \"commitment\": \"string\",\r\n            \"defer_delete\": \"string\",\r\n            \"delete_order\": \"string\",\r\n            \"prefix\": \"string\",\r\n            \"trigger\": \"string\"\r\n          },\r\n          \"autodelete_trigger\": \"string\",\r\n          \"reserve_available\": 0,\r\n          \"reserve_size\": 0,\r\n          \"space_used_percent\": 0,\r\n          \"used\": 0\r\n        },\r\n        \"snapshot_reserve_unusable\": 0,\r\n        \"snapshot_spill\": 0,\r\n        \"total_footprint\": 0,\r\n        \"total_metadata\": 0,\r\n        \"total_metadata_footprint\": 0,\r\n        \"used\": 3097083330560,\r\n        \"used_by_afs\": 3097083330560,\r\n        \"user_data\": 0,\r\n        \"volume_guarantee_footprint\": 0,\r\n        \"available_percent\": 9.58\r\n      },\r\n      \"metric\": {\r\n        \"cloud\": {\r\n          \"duration\": \"PT15S\",\r\n          \"iops\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"latency\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"duration\": \"PT15S\",\r\n        \"flexcache\": {\r\n          \"bandwidth_savings\": 4096,\r\n          \"cache_miss_percent\": 20,\r\n          \"duration\": \"PT1D\",\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"iops\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"latency\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"status\": \"ok\",\r\n        \"throughput\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Query all data (including state) for a specific volume",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "svm,name,state,space,metric",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "name",
+              "value": "volume1",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "59e7294f-8aec-4a7e-8c49-9e95c03941fd",
           "body": "{\r\n  \"records\": [\r\n    {\r\n      \"state\": \"online\",\r\n      \"name\": \"volume1\",\r\n      \"space\": {\r\n        \"auto_adaptive_compression_footprint_data_reduction\": 0,\r\n        \"available\": 421353881600,\r\n        \"size\": 4398046511104,\r\n        \"afs_total\": 4398046511104,\r\n        \"block_storage_inactive_user_data\": 0,\r\n        \"block_storage_inactive_user_data_percent\": 0,\r\n        \"capacity_tier_footprint\": 0,\r\n        \"capacity_tier_footprint_data_reduction\": 0,\r\n        \"compaction_footprint_data_reduction\": 0,\r\n        \"cross_volume_dedupe_metafiles_footprint\": 0,\r\n        \"cross_volume_dedupe_metafiles_temporary_footprint\": 0,\r\n        \"dedupe_metafiles_footprint\": 0,\r\n        \"dedupe_metafiles_temporary_footprint\": 0,\r\n        \"delayed_free_footprint\": 0,\r\n        \"effective_total_footprint\": 0,\r\n        \"file_operation_metadata\": 0,\r\n        \"filesystem_size\": 0,\r\n        \"footprint\": 0,\r\n        \"local_tier_footprint\": 0,\r\n        \"max_size\": \"string\",\r\n        \"logical_space\": {\r\n          \"available\": 348998594560,\r\n          \"used\": 3169438617600,\r\n          \"used_by_afs\": 0,\r\n          \"used_by_snapshots\": 0,\r\n          \"used_percent\": 90\r\n        },\r\n        \"metadata\": 0,\r\n        \"over_provisioned\": 0,\r\n        \"overwrite_reserve\": 0,\r\n        \"overwrite_reserve_used\": 0,\r\n        \"percent_used\": 0,\r\n        \"performance_tier_footprint\": 0,\r\n        \"size_available_for_snapshots\": 0,\r\n        \"snapmirror_destination_footprint\": 0,\r\n        \"snapshot\": {\r\n          \"autodelete\": {\r\n            \"commitment\": \"string\",\r\n            \"defer_delete\": \"string\",\r\n            \"delete_order\": \"string\",\r\n            \"prefix\": \"string\",\r\n            \"trigger\": \"string\"\r\n          },\r\n          \"autodelete_trigger\": \"string\",\r\n          \"reserve_available\": 0,\r\n          \"reserve_size\": 0,\r\n          \"space_used_percent\": 0,\r\n          \"used\": 0\r\n        },\r\n        \"snapshot_reserve_unusable\": 0,\r\n        \"snapshot_spill\": 0,\r\n        \"total_footprint\": 0,\r\n        \"total_metadata\": 0,\r\n        \"total_metadata_footprint\": 0,\r\n        \"used\": 3097083330560,\r\n        \"used_by_afs\": 3097083330560,\r\n        \"user_data\": 0,\r\n        \"volume_guarantee_footprint\": 0,\r\n        \"available_percent\": 9.58\r\n      },\r\n      \"metric\": {\r\n        \"cloud\": {\r\n          \"duration\": \"PT15S\",\r\n          \"iops\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"latency\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"duration\": \"PT15S\",\r\n        \"flexcache\": {\r\n          \"bandwidth_savings\": 4096,\r\n          \"cache_miss_percent\": 20,\r\n          \"duration\": \"PT1D\",\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"iops\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"latency\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"status\": \"ok\",\r\n        \"throughput\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n    }\r\n  ]\r\n}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "Query partial data (no state) for a specific volume",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -51,10 +85,37 @@
         },
         {
           "uuid": "2fc4bd82-8f83-4344-bfd7-baa50e6c544a",
+          "body": "{\r\n  \"records\": [\r\n    {\r\n      \"state\": \"online\",\r\n      \"name\": \"volume1\",\r\n      \"state\": \"online\",\r\n      \"space\": {\r\n        \"auto_adaptive_compression_footprint_data_reduction\": 0,\r\n        \"available\": 421353881600,\r\n        \"size\": 4398046511104,\r\n        \"afs_total\": 4398046511104,\r\n        \"block_storage_inactive_user_data\": 0,\r\n        \"block_storage_inactive_user_data_percent\": 0,\r\n        \"capacity_tier_footprint\": 0,\r\n        \"capacity_tier_footprint_data_reduction\": 0,\r\n        \"compaction_footprint_data_reduction\": 0,\r\n        \"cross_volume_dedupe_metafiles_footprint\": 0,\r\n        \"cross_volume_dedupe_metafiles_temporary_footprint\": 0,\r\n        \"dedupe_metafiles_footprint\": 0,\r\n        \"dedupe_metafiles_temporary_footprint\": 0,\r\n        \"delayed_free_footprint\": 0,\r\n        \"effective_total_footprint\": 0,\r\n        \"file_operation_metadata\": 0,\r\n        \"filesystem_size\": 0,\r\n        \"footprint\": 0,\r\n        \"local_tier_footprint\": 0,\r\n        \"max_size\": \"string\",\r\n        \"metadata\": 0,\r\n        \"over_provisioned\": 0,\r\n        \"overwrite_reserve\": 0,\r\n        \"overwrite_reserve_used\": 0,\r\n        \"percent_used\": 0,\r\n        \"performance_tier_footprint\": 0,\r\n        \"size_available_for_snapshots\": 0,\r\n        \"snapmirror_destination_footprint\": 0,\r\n        \"snapshot\": {\r\n          \"autodelete\": {\r\n            \"commitment\": \"string\",\r\n            \"defer_delete\": \"string\",\r\n            \"delete_order\": \"string\",\r\n            \"prefix\": \"string\",\r\n            \"trigger\": \"string\"\r\n          },\r\n          \"autodelete_trigger\": \"string\",\r\n          \"reserve_available\": 0,\r\n          \"reserve_size\": 0,\r\n          \"space_used_percent\": 0,\r\n          \"used\": 0\r\n        },\r\n        \"snapshot_reserve_unusable\": 0,\r\n        \"snapshot_spill\": 0,\r\n        \"total_footprint\": 0,\r\n        \"total_metadata\": 0,\r\n        \"total_metadata_footprint\": 0,\r\n        \"used\": 3097083330560,\r\n        \"user_data\": 0,\r\n        \"volume_guarantee_footprint\": 0,\r\n        \"used_by_afs\": 3097083330560,\r\n        \"available_percent\": 9.58\r\n      },\r\n      \"metric\": {\r\n        \"cloud\": {\r\n          \"duration\": \"PT15S\",\r\n          \"iops\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"latency\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"duration\": \"PT15S\",\r\n        \"flexcache\": {\r\n          \"bandwidth_savings\": 4096,\r\n          \"cache_miss_percent\": 20,\r\n          \"duration\": \"PT1D\",\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"iops\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"latency\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"status\": \"ok\",\r\n        \"throughput\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n    }\r\n  ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Query all data (including state) for all volumes",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "svm,name,state,space,metric",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7d6c2f5b-a267-4401-98b8-4080203af6d6",
           "body": "{\r\n  \"records\": [\r\n    {\r\n      \"state\": \"online\",\r\n      \"name\": \"volume1\",\r\n      \"space\": {\r\n        \"auto_adaptive_compression_footprint_data_reduction\": 0,\r\n        \"available\": 421353881600,\r\n        \"size\": 4398046511104,\r\n        \"afs_total\": 4398046511104,\r\n        \"block_storage_inactive_user_data\": 0,\r\n        \"block_storage_inactive_user_data_percent\": 0,\r\n        \"capacity_tier_footprint\": 0,\r\n        \"capacity_tier_footprint_data_reduction\": 0,\r\n        \"compaction_footprint_data_reduction\": 0,\r\n        \"cross_volume_dedupe_metafiles_footprint\": 0,\r\n        \"cross_volume_dedupe_metafiles_temporary_footprint\": 0,\r\n        \"dedupe_metafiles_footprint\": 0,\r\n        \"dedupe_metafiles_temporary_footprint\": 0,\r\n        \"delayed_free_footprint\": 0,\r\n        \"effective_total_footprint\": 0,\r\n        \"file_operation_metadata\": 0,\r\n        \"filesystem_size\": 0,\r\n        \"footprint\": 0,\r\n        \"local_tier_footprint\": 0,\r\n        \"max_size\": \"string\",\r\n        \"metadata\": 0,\r\n        \"over_provisioned\": 0,\r\n        \"overwrite_reserve\": 0,\r\n        \"overwrite_reserve_used\": 0,\r\n        \"percent_used\": 0,\r\n        \"performance_tier_footprint\": 0,\r\n        \"size_available_for_snapshots\": 0,\r\n        \"snapmirror_destination_footprint\": 0,\r\n        \"snapshot\": {\r\n          \"autodelete\": {\r\n            \"commitment\": \"string\",\r\n            \"defer_delete\": \"string\",\r\n            \"delete_order\": \"string\",\r\n            \"prefix\": \"string\",\r\n            \"trigger\": \"string\"\r\n          },\r\n          \"autodelete_trigger\": \"string\",\r\n          \"reserve_available\": 0,\r\n          \"reserve_size\": 0,\r\n          \"space_used_percent\": 0,\r\n          \"used\": 0\r\n        },\r\n        \"snapshot_reserve_unusable\": 0,\r\n        \"snapshot_spill\": 0,\r\n        \"total_footprint\": 0,\r\n        \"total_metadata\": 0,\r\n        \"total_metadata_footprint\": 0,\r\n        \"used\": 3097083330560,\r\n        \"user_data\": 0,\r\n        \"volume_guarantee_footprint\": 0,\r\n        \"used_by_afs\": 3097083330560,\r\n        \"available_percent\": 9.58\r\n      },\r\n      \"metric\": {\r\n        \"cloud\": {\r\n          \"duration\": \"PT15S\",\r\n          \"iops\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"latency\": {\r\n            \"read\": 200,\r\n            \"total\": 1000,\r\n            \"write\": 100\r\n          },\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"duration\": \"PT15S\",\r\n        \"flexcache\": {\r\n          \"bandwidth_savings\": 4096,\r\n          \"cache_miss_percent\": 20,\r\n          \"duration\": \"PT1D\",\r\n          \"status\": \"ok\",\r\n          \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n        },\r\n        \"iops\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"latency\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"status\": \"ok\",\r\n        \"throughput\": {\r\n          \"read\": 200,\r\n          \"total\": 1000,\r\n          \"write\": 100,\r\n          \"other\": 100\r\n        },\r\n        \"timestamp\": \"2017-01-25 06:20:13 -0500\"\r\n      },\r\n      \"svm\": {\r\n        \"name\": \"svm1\",\r\n        \"uuid\": \"02c9e252-41be-11e9-81d5-00a0986138f7\"\r\n      },\r\n      \"uuid\": \"028baa66-41bd-11e9-81d5-00a0986138f7\"\r\n    }\r\n  ]\r\n}",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "Query parial data (no state) for all volumes",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -72,12 +133,14 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": true,
+          "default": false,
           "crudKey": "id",
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "c7fed47d-33b4-49ca-ae60-4a36466b56e2",
@@ -133,7 +196,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "8a4da98b-bb46-4354-99a2-5bedf85f600c",
@@ -170,7 +235,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "b7353636-e212-42db-b9a9-92c8243c8bbe",
@@ -207,7 +274,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "dd645a12-810b-430b-9dba-a52e860c1389",
@@ -244,7 +313,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "2d1d1ff3-4ba6-4bc2-8f51-0894e08dd7a1",
@@ -281,7 +352,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "d8a1376f-13eb-4f0a-8cfc-6e27cc9fad44",
@@ -318,7 +391,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "10b0762f-0ffa-4abc-9a61-e07b4ead2d41",
@@ -355,7 +430,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "98e5a1f9-d66f-4958-9cd7-52a252c6421b",
@@ -392,7 +469,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "39d42600-9290-4c9c-aecc-331a5b8683be",
@@ -429,7 +508,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
