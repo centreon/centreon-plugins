@@ -147,6 +147,7 @@ sub service_check_options {
 
     $self->{$service.$_} = $self->{option_results}->{$service.$_}
         foreach qw/url insecure endpoint port interface timeout/;
+
     # Add default endpoint to URL if defined and not already present
     $self->{$service.'url'} .= $self->{$service.'endpoint'}
         if $self->{$service.'url'} ne '' && $self->{$service.'endpoint'} ne '' && $self->{$service.'url'} !~ /$self->{$service.'endpoint'}$/;
@@ -339,6 +340,94 @@ sub connect_info {
 
     my $url = $options{url};
     ( full_url => $url.($options{resource} // ''), proto=> $url =~ s/^(https?).+/$1/r )
+}
+
+# Returns volumes list by calling Cinder service
+sub cinder_list_volumes {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    # Cinder natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter (qw/status name id/) {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+    $params{availability_zone} = $1 if $options{"include_zone"} =~ /^([\w\s]+)$/;
+
+    $params{tenant_id} = $options{project_id} if $options{project_id};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle pagination
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{volume_url}, resource => '/volumes/detail'),
+            insecure => $self->{volume_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),
+                 message     => value_of($response, "->{error}->{title}", 'Bad request').': '.
+                                value_of($response, "->{error}->{message}", "Invalid response")
+               }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{volumes};
+
+        last unless @{$response->{volumes}};
+
+        $params{marker} = $response->{volumes}[-1]->{id};
+        foreach my $volume (@{$response->{volumes}}) {
+            $volume->{'os-vol-tenant-attr:tenant_id'} //= '';
+            $volume->{bootable} = $volume->{bootable} =~ /true/i ? '1' : '0';
+            next if is_excluded($volume->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($volume->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($volume->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($volume->{volume_type}, $options{include_type}, $options{exclude_type});
+            next if is_excluded($volume->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($volume->{bootable}, $options{include_bootable}, $options{exclude_bootable});
+            next if is_excluded($volume->{encrypted}, $options{include_encrypted}, $options{exclude_encrypted});
+            next if is_excluded($volume->{availability_zone}, $options{include_zone}, $options{exclude_zone});
+            next if $volume->{'os-vol-tenant-attr:tenant_id'} && is_excluded($volume->{'os-vol-tenant-attr:tenant_id'}, $options{project_id}, "");
+
+            my $items = { id => $volume->{id},
+                          name => $volume->{name},
+                          description => $volume->{description},
+                          status => $volume->{status},
+                          size => $volume->{size},
+                          project_id => $volume->{'os-vol-tenant-attr:tenant_id'},
+                          bootable => $volume->{bootable},
+                          encrypted => $volume->{encrypted},
+                          type => $volume->{volume_type},
+                          zone => $volume->{availability_zone} // '',
+                          attachments => scalar(@{$volume->{attachments}}),
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{volumes}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
 }
 
 # Returns Instances list by calling Nova service
@@ -936,7 +1025,7 @@ Set the protocol to use in the Glance service URL (default: 'https').
 
 =item B<--image-port>
 
-Set the port to use in the Glance service URL (default: 8774).
+Set the port to use in the Glance service URL (default: 9292).
 
 =item B<--image-endpoint>
 
@@ -947,7 +1036,38 @@ Set the endpoint to use in the Glance service URL (default: '/v2').
 Allow insecure TLS connection (default: '0').
 When set to 0 the default insecure value passed with --insecure is used.
 
-=item B<--image-timeout>
+=item B<--volume-url>
+
+Set the URL to use for the OpenStack Cinder (volume) service.
+A valid Glance URL is required since it is a mandatory service.
+Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+
+Example: C<--volume-url="https://myopenstack.local:8776">
+
+This URL can also be construct with options (--volume-hostname, --volume-proto, --image-port, --image-endpoint).
+
+=item B<--volume-hostname>
+
+Set the hostname part of the Cinder service URL.
+
+=item B<--volume-proto>
+
+Set the protocol to use in the Cinder service URL (default: 'https').
+
+=item B<--volume-port>
+
+Set the port to use in the Cinder service URL (default: 8776).
+
+=item B<--volume-endpoint>
+
+Set the endpoint to use in the Cinder service URL.
+
+=item B<--volume-insecure>
+
+Allow insecure TLS connection (default: '0').
+When set to 0 the default insecure value passed with --insecure is used.
+
+=item B<--volume-timeout>
 
 Set HTTP timeout in seconds (default: '0').
 When set to 0 the default timeout value passed with --timeout is used.
