@@ -511,6 +511,11 @@ sub neutron_list_networks {
         $params{marker} = $response->{networks}[-1]->{id};
 
         foreach my $network (@{$response->{networks}}) {
+            $network->{admin_state_up} = $network->{admin_state_up} ? "True": "False";
+            $network->{port_security_enabled} = $network->{port_security_enabled} ? "True": "False";
+            $network->{shared} = $network->{shared} ? "True": "False";
+            $network->{'router:external'} = $network->{'router:external'} ? "True": "False";
+
             next if is_excluded($network->{name}, $options{include_name}, $options{exclude_name});
             next if is_excluded($network->{id}, $options{include_id}, $options{exclude_id});
             next if is_excluded($network->{status}, $options{include_status}, $options{exclude_status});
@@ -519,13 +524,14 @@ sub neutron_list_networks {
             next if is_excluded($network->{shared}, $options{include_shared}, $options{exclude_shared});
             next if is_excluded($network->{port_security_enabled}, $options{include_port_security_enabled}, $options{exclude_port_security_enabled});
             next if is_excluded($network->{'router:external'}, $options{include_router_external}, $options{exclude_router_external});
-            next if is_excluded($network->{tenant_id}, $options{project_id});
+            next if is_excluded($network->{project_id} || $network->{tenant_id} || '', $options{project_id});
 
             my $items = { id => $network->{id},
                           name => $network->{name},
                           status => $network->{status},
                           admin_state_up => $network->{admin_state_up}, 
                           shared => $network->{shared},
+                          mtu => $network->{mtu},
                           port_security_enabled => $network->{port_security_enabled},
                           router_external => $network->{'router:external'},
                           project_id => $network->{project_id} || $network->{tenant_id},

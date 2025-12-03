@@ -40,10 +40,12 @@ my @_options = qw/include_name
                   exclude_port_security_enabled
                   include_id
                   exclude_id
+                  include_mtu
+                  exclude_mtu
                   include_router_external
                   exclude_router_external/;
 
-my @_network_keys = qw/id status name admin_state_up shared port_security_enabled router_external project_id/;
+my @_network_keys = qw/id status name admin_state_up shared port_security_enabled router_external project_id mtu/;
 
 sub new {
     my ($class, %options) = @_;
@@ -205,35 +207,43 @@ Can be:  ACTIVE, BUILD, DOWN, or ERROR.
 
 =item B<--include-admin-state-up>
 
-Filter by network admin state up flag (can be 0 or 1).
+Filter by network admin state up flag (can be True or False).
 
 =item B<--exclude-admin-state-up
 
-Exclude by network admin state up flag (can be 0 or 1).
+Exclude by network admin state up flag (can be True or False).
+
+=item B<--include-mtu>
+
+Filter by network MTU.
+
+=item B<--exclude-mtu>
+
+Exclude by network MTU.
 
 =item B<--include-shared>
 
-Filter by network shared flag (can be 0 or 1).
+Filter by network shared flag (can be True or False).
 
 =item B<--exclude-shared>
 
-Exclude by network shared flag (can be 0 or 1).
+Exclude by network shared flag (can be True or False).
 
 =item B<--include-port-security-enabled>
 
-Filter by network port security enabled flag (can be 0 or 1).
+Filter by network port security enabled flag (can be True or False).
 
 =item B<--exclude-port-security-enabled>
 
-Exclude by network port security enabled flag (can be 0 or 1).
+Exclude by network port security enabled flag (can be True or False).
 
 =item B<--include-router-external>
 
-Filter by network router external flag (can be 0 or 1).
+Filter by network router external flag (can be True or False).
 
 =item B<--exclude-router-external>
 
-Exclude by network router external flag (can be 0 or 1).
+Exclude by network router external flag (can be True or False).
 
 =item B<--include-id>
 
@@ -323,6 +333,14 @@ Example: --warning-id='%{id} =~ /abcdef/'
 
 Define the conditions to match for the status to be CRITICAL based on the network ID.
 Example: --critical-id='%{id} =~ /abcdef/'
+
+=item B<--warning-mtu>
+
+Define the conditions to match for the status to be WARNING based on the network MTU.
+
+=item B<--critical-mtu>
+
+Define the conditions to match for the status to be CRITICAL based on the network MTU. 
 
 =item B<--warning-project-id>
 
