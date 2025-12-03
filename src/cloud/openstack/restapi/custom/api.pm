@@ -89,7 +89,7 @@ sub new {
         _service_filters_options(type => 'compute', ),
         _service_ident_options(type => 'image',    port => 9292, endpoint => ''),
         _service_filters_options(type => 'image', ),
-        _service_ident_options(type => 'volume',   port => 9292, endpoint => ''),
+        _service_ident_options(type => 'volume',   port => 8776, endpoint => ''),
         _service_filters_options(type => 'volume', ),
 
         # Endpoint filters common to all services
@@ -935,7 +935,7 @@ Set the protocol to use in the Glance service URL (default: 'https').
 
 =item B<--image-port>
 
-Set the port to use in the Glance service URL (default: 8774).
+Set the port to use in the Glance service URL (default: 9292).
 
 =item B<--image-endpoint>
 
@@ -946,38 +946,38 @@ Set the endpoint to use in the Glance service URL (default: '/v2').
 Allow insecure TLS connection (default: '0').
 When set to 0 the default insecure value passed with --insecure is used.
 
-=item B<--image-url>
+=item B<--volume-url>
 
-Set the URL to use for the OpenStack Glance (image) service.
+Set the URL to use for the OpenStack Cinder (volume) service.
 A valid Glance URL is required since it is a mandatory service.
 Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
 
-Example: C<--image-url="https://myopenstack.local:9292">
+Example: C<--volume-url="https://myopenstack.local:8776">
 
-This URL can also be construct with options (--image-hostname, --image-proto, --image-port, --image-endpoint).
+This URL can also be construct with options (--volume-hostname, --volume-proto, --image-port, --image-endpoint).
 
-=item B<--image-hostname>
+=item B<--volume-hostname>
 
-Set the hostname part of the Glance service URL.
+Set the hostname part of the Cinder service URL.
 
-=item B<--image-proto>
+=item B<--volume-proto>
 
-Set the protocol to use in the Glance service URL (default: 'https').
+Set the protocol to use in the Cinder service URL (default: 'https').
 
-=item B<--image-port>
+=item B<--volume-port>
 
-Set the port to use in the Glance service URL (default: 8774).
+Set the port to use in the Cinder service URL (default: 8776).
 
-=item B<--image-endpoint>
+=item B<--volume-endpoint>
 
-Set the endpoint to use in the Glance service URL (default: '/v2').
+Set the endpoint to use in the Cinder service URL.
 
-=item B<--image-insecure>
+=item B<--volume-insecure>
 
 Allow insecure TLS connection (default: '0').
 When set to 0 the default insecure value passed with --insecure is used.
 
-=item B<--image-timeout>
+=item B<--volume-timeout>
 
 Set HTTP timeout in seconds (default: '0').
 When set to 0 the default timeout value passed with --timeout is used.

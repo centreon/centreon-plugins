@@ -78,6 +78,7 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         {   label => 'count', nlabel => 'volume.count',
+            unknown_default => '@0:0',
             set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Volume count: %s',
