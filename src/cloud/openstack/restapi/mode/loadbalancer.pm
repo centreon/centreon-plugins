@@ -253,13 +253,13 @@ Filter by load balancer description (can be a regexp and can be used multiple ti
 
 Exclude by load balancer description (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-state-up>
+=item B<--include-admin-state-up>
 
-Filter by load balancer state up flag (can be 0 or 1).
+Filter by load balancer admin state up flag (can be True or False).
 
-=item B<--exclude-state-up>
+=item B<--exclude-admin-state-up>
 
-Exclude by load balancer state up flag (can be true or false).
+Exclude by load balancer admin state up flag (can be True or False).
 
 =item B<--include-vip-address>
 
@@ -367,13 +367,13 @@ Example: --critical-description='%{description} =~ /test lb/'
 
 =item B<--warning-admin-state-up>
 
-Define the conditions to match for the status to be WARNING based on the admin state up flag (can be true or false).
-Example: --warning-state-up='%{admin_state_up} =~ /false/'
+Define the conditions to match for the status to be WARNING based on the admin state up flag (can be True or False).
+Example: --warning-admin-state-up='%{admin_state_up} =~ /False/'
 
 =item B<--critical-admin-state-up>
 
-Define the conditions to match for the status to be CRITICAL based on the admin state up flag (can be true or false).
-Example: --critical-state-up='%{admin_state_up} =~ /false/'
+Define the conditions to match for the status to be CRITICAL based on the admin state up flag (can be True or False).
+Example: --critical-admin-state-up='%{admin_state_up} =~ /False/'
 
 =item B<--warning-vip-address>
 
