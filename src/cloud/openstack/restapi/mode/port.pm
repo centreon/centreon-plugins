@@ -41,7 +41,7 @@ my @_options = qw/include_name
                   include_id
                   exclude_id/;
 
-my @_port_keys = qw/id status name description admin_state_up port_security_enabled project_id/;
+my @_port_keys = qw/id status name description admin_state_up port_security_enabled project_id admin_state_up port_security_enabled/;
 
 sub new {
     my ($class, %options) = @_;
@@ -96,11 +96,11 @@ sub set_counters {
             },
         },
         (   map {       # define a counter for each other key
-                    {   label => $_, type => 2, display_ok => 1,
+                    {   label => $_ =~ s/_/-/gr, type => 2, display_ok => 1,
                         set => {
                             key_values => [ map { { name => $_ } } @_port_keys, ],
                             output_use => $_,
-                            output_template => ucfirst $_.': %s',
+                            output_template => ucfirst $_ =~ s/_/-/gr.': %s',
                             closure_custom_threshold_check => \&catalog_status_threshold_ng,
                         },
                     }
@@ -210,19 +210,19 @@ Exclude by port description (can be a regexp and can be used multiple times or f
 
 =item B<--include-admin-state-up>
 
-Filter by port admin state up flag (can be 0 or 1).
+Filter by port admin state up flag (can be True or False).
 
 =item B<--exclude-admin-state-up>
 
-Exclude by port admin state up flag (can be 0 or 1).
+Exclude by port admin state up flag (can be True or False).
 
 =item B<--include-port-security-enabled>
 
-Filter by port security enabled flag (can be 0 or 1).
+Filter by port security enabled flag (can be True or False).
 
 =item B<--exclude-port-security-enabled>
 
-Exclude by port security enabled flag (can be 0 or 1).
+Exclude by port security enabled flag (can be True or False).
 
 =item B<--include-id>
 
@@ -242,13 +242,13 @@ Critical threshold for the number of ports returned.
 
 =item B<--warning-admin-state-up>
 
-Define the conditions to match for the status to be WARNING based on the admin state up flag (can be 0 or 1).
-Example: --warning-admin-state-up='%{admin_state_up} eq "1"'
+Define the conditions to match for the status to be WARNING based on the admin state up flag (can be True or False).
+Example: --warning-admin-state-up='%{admin_state_up} eq "True"'
 
 =item B<--critical-admin-state-up>
 
-Define the conditions to match for the status to be CRITICAL based on the admin state up flag (can be 0 or 1).
-Example: --critical-admin-state-up='%{admin_state_up} eq "1"'
+Define the conditions to match for the status to be CRITICAL based on the admin state up flag (can be True or False).
+Example: --critical-admin-state-up='%{admin_state_up} eq "True"'
 
 =item B<--warning-description>
 
@@ -262,13 +262,13 @@ Example: --critical-description='%{description} =~ /test port/'
 
 =item B<--warning-port-security-enabled>
 
-Define the conditions to match for the status to be WARNING based on the port security enabled flag (can be 0 or 1).
-Example: --warning-port-security-enabled='%{port_security_enabled} eq "1"'
+Define the conditions to match for the status to be WARNING based on the port security enabled flag (can be True or False).
+Example: --warning-port-security-enabled='%{port_security_enabled} eq "True"'
 
 =item B<--critical-port-security-enabled>
 
-Define the conditions to match for the status to be CRITICAL based on the port security enabled flag (can be 0 or 1).
-Example: --critical-port-security-enabled='%{port_security_enabled} eq "1"'
+Define the conditions to match for the status to be CRITICAL based on the port security enabled flag (can be True or False).
+Example: --critical-port-security-enabled='%{port_security_enabled} eq "True"'
 
 =item B<--warning-id>
 

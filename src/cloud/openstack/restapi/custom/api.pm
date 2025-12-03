@@ -364,7 +364,7 @@ sub nova_list_instances {
     my $response_brut;
     my @results;
 
-    # Retry to handle token expiration
+    # Retry to handle pagination
     while (1) {
         $response_brut = $self->{http}->request(
             method => 'GET',
@@ -477,7 +477,7 @@ sub neutron_list_ports {
     my $response_brut;
     my @results;
 
-    # Retry to handle token expiration
+    # Retry to handle pagination
     while (1) {
         $response_brut = $self->{http}->request(
             method => 'GET',
@@ -512,6 +512,9 @@ sub neutron_list_ports {
         $params{marker} = $response->{ports}[-1]->{id};
 
         foreach my $port (@{$response->{ports}}) {
+            $port->{admin_state_up} = $port->{admin_state_up} ? "True": "False";
+            $port->{port_security_enabled} = $port->{port_security_enabled} ? "True": "False";
+            $port->{description} //= '';
             next if is_excluded($port->{name}, $options{include_name}, $options{exclude_name});
             next if is_excluded($port->{id}, $options{include_id}, $options{exclude_id});
             next if is_excluded($port->{description}, $options{include_description}, $options{exclude_description});
@@ -527,7 +530,7 @@ sub neutron_list_ports {
                           admin_state_up => $port->{admin_state_up},
                           mac_address => $port->{mac_address},
                           port_security_enabled => $port->{port_security_enabled},
-                          project_id => $port->{project_id}
+                          project_id => $port->{project_id} || $port->{tenant_id},
                         };
 
             push @results, $items;
@@ -538,6 +541,7 @@ sub neutron_list_ports {
 
     return { http_status => 200, results => \@results }
 }
+
 # Returns image label from id by calling Glance service
 # Uses a cache file to limit API calls
 sub glance_get_image_label {
