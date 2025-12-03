@@ -210,11 +210,11 @@ Filter by hypervisor ID (can be a regexp and can be used multiple times or for c
 
 Exclude by hypervisor ID (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-type>
+=item B<--include-hypervisor-type>
 
 Filter by hypervisor type (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--exclude-type>
+=item B<--exclude-hypervisor-type>
 
 Exclude by hypervisor type (can be a regexp and can be used multiple times or for comma separated values).
 
@@ -246,16 +246,6 @@ Example: --warning-status='%{status} =~ /disabled/'
 Define the conditions to match for the status to be CRITICAL based on the hypervisor status (enabled or disabled).
 Example: --critical-status='%{status} =~ /disabled/'
 Default value: --critical-status='%{status} =~ /enabled/ && %{state} !~ /up/'
-
-=item B<--warning-state>
-
-Define the conditions to match for the state to be WARNING based on the hypervisor state (up or down).
-Example: --warning-state='%{state} =~ /down/'
-
-=item B<--critical-state>
-
-Define the conditions to match for the state to be CRITICAL based on the hypervisor state (up or down).
-Example: --critical-state='%{state} =~ /down/'
 
 =item B<--warning-hypervisor-hostname>
 

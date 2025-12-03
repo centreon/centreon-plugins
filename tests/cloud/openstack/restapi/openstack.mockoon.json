@@ -470,6 +470,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "fc6896c0-6380-43ef-bbb3-8d9aedc708c4",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "nova/v2.1/os-hypervisors/detail",
+      "responses": [
+        {
+          "uuid": "09102305-e01b-4972-99ae-11c39da0753d",
+          "body": "{\n  \"hypervisors\": [\n    {\n      \"id\": 1,\n      \"hypervisor_hostname\": \"compute-01\",\n      \"state\": \"up\",\n      \"status\": \"enabled\",\n      \"service\": {\n        \"id\": 101,\n        \"host\": \"compute-01\",\n        \"disabled_reason\": null\n      },\n      \"vcpus\": 16,\n      \"vcpus_used\": 4,\n      \"memory_mb\": 32768,\n      \"memory_mb_used\": 8192,\n      \"local_gb\": 500,\n      \"local_gb_used\": 120,\n      \"free_disk_gb\": 380,\n      \"free_ram_mb\": 24576,\n      \"hypervisor_type\": \"QEMU\",\n      \"hypervisor_version\": 2003000,\n      \"cpu_info\": \"{\\\"arch\\\": \\\"x86_64\\\", \\\"model\\\": \\\"Intel Xeon\\\", \\\"topology\\\": {\\\"cores\\\": 8, \\\"threads\\\": 2, \\\"sockets\\\": 1}}\",\n      \"running_vms\": 8,\n      \"disk_available_least\": 100,\n      \"host_ip\": \"192.168.1.10\"\n    },\n    {\n      \"id\": 2,\n      \"hypervisor_hostname\": \"compute-02\",\n      \"state\": \"up\",\n      \"status\": \"enabled\",\n      \"service\": {\n        \"id\": 102,\n        \"host\": \"compute-02\",\n        \"disabled_reason\": null\n      },\n      \"vcpus\": 32,\n      \"vcpus_used\": 16,\n      \"memory_mb\": 65536,\n      \"memory_mb_used\": 32768,\n      \"local_gb\": 1000,\n      \"local_gb_used\": 400,\n      \"free_disk_gb\": 600,\n      \"free_ram_mb\": 32768,\n      \"hypervisor_type\": \"KVM\",\n      \"hypervisor_version\": 3002000,\n      \"cpu_info\": \"{\\\"arch\\\": \\\"x86_64\\\", \\\"model\\\": \\\"AMD EPYC\\\", \\\"topology\\\": {\\\"cores\\\": 16, \\\"threads\\\": 2, \\\"sockets\\\": 1}}\",\n      \"running_vms\": 12,\n      \"disk_available_least\": 200,\n      \"host_ip\": \"192.168.1.11\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -524,6 +580,10 @@
     {
       "type": "route",
       "uuid": "90f6bfdc-cb26-4435-ac64-4f1c8c64b5fe"
+    },
+    {
+      "type": "route",
+      "uuid": "fc6896c0-6380-43ef-bbb3-8d9aedc708c4"
     }
   ],
   "proxyMode": false,
