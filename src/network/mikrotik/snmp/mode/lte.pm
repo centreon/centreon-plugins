@@ -79,22 +79,24 @@ sub manage_selection {
     };
 
     my $mtxrScriptName = '.1.3.6.1.4.1.14988.1.1.8.1.1.2'; # mtxrScriptName
-    my $mtxrScriptRunOutput = '.1.3.6.1.4.1.14988.1.1.18.1.1.2'; # mtxrScriptRunOutput
-    my $mtxrScrip_results = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $mtxrScriptName },
-            { oid => $mtxrScriptRunOutput },
-        ],
+    my $mtxrScriptRunOutput = '.1.3.6.1.4.1.14988.1.1.18.1.1.2'; # mtxrScriptRunOutput    
+    my $mtxrScriptName_results = $options{snmp}->get_table(
+        oid => $mtxrScriptName,
         nothing_quit => 1
     );
-    
-    my ($instance, $result, $result2);
 
-    foreach my $oid (keys %{$mtxrScrip_results->{$mtxrScriptName}}) {
+    my $mtxrScriptRunOutput_result;
+
+    foreach my $oid (keys %$mtxrScriptName_results) {
         for my $key (keys %{$lte_values}) {
-            if ($mtxrScrip_results->{$mtxrScriptName}->{$oid} eq $key) {
+            if ($mtxrScriptName_results->{$oid} eq $key) {
                 $oid =~ /\.(\d+)$/;
-                $lte_values->{$key} = $mtxrScrip_results->{$mtxrScriptRunOutput}->{$mtxrScriptRunOutput . "." . $1};
+                $mtxrScriptRunOutput_result = $options{snmp}->get_leef(
+                    oids => [ $mtxrScriptRunOutput . '.' . $1 ],
+                    nothing_quit => 1
+                );
+
+                $lte_values->{$key} = $mtxrScriptRunOutput_result->{$mtxrScriptRunOutput . '.' . $1};
             }
         }
     }
