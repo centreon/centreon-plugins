@@ -1,4 +1,4 @@
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets 
 # the needs in IT infrastructure and application monitoring for 
@@ -26,6 +26,7 @@ use VMware::VILib;
 use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use JSON::XS;
+use MIME::Base64;
 
 my $manager_display = {};
 my $manager_response = {};
@@ -45,7 +46,7 @@ sub init_response {
     my (%options) = @_;
 
     $manager_response->{code} = 0;
-    $manager_response->{vmware_connector_version} = '20250501';
+    $manager_response->{vmware_connector_version} = '20251208';
     $manager_response->{short_message} = 'OK';
     $manager_response->{extra_message} = '';
     $manager_response->{identity} = $options{identity} if (defined($options{identity}));
@@ -828,4 +829,108 @@ sub parse_json_file {
     return transform_json_to_object($json_data);
 }
 
+sub obfuscate_secret {
+    my $secret = shift;
+    # up to 6 characters, showing the first and last two characters makes it far too easy to gu***ss
+    return '***' unless (defined($secret) && length($secret) > 6);
+    substr($secret, 2, length($secret) - 4, '***');
+    return $secret;
+}
+
+sub aes256_decrypt {
+    my (%options) = @_;
+
+    my @mandatory_params = ('data', 'app_secret', 'logger');
+
+    foreach (@mandatory_params) {
+        return "aes256_decrypt: missing option '$_'" unless defined($options{$_});
+    }
+
+    my $binary_data = decode_base64($options{data});
+    $options{logger}->writeLogDebug("Data to extract and decrypt: '" . obfuscate_secret($options{data}) . "'");
+
+    # with AES-256, the IV length must 16 bytes
+    my $iv_length = 16;
+    # extract the IV, the hashed data, the encrypted data
+    my $iv             = substr($binary_data, 0, $iv_length);     # initialization vector
+    my $hashed_data    = substr($binary_data, $iv_length, 64);    # hmac of the original data, for integrity control
+    my $encrypted_data = substr($binary_data, $iv_length + 64);   # data to decrypt
+
+    my $key = substr(decode_base64($options{app_secret}), 0, 32);
+
+    # create the AES object
+    $options{logger}->writeLogDebug("Creating the AES decryption object with initialization vector (IV) of length "
+        . length($iv) * 8 . " bits and key of length " . length($key) * 8 . " bits.");
+
+    my $cipher;
+    eval {
+        $cipher = Crypt::OpenSSL::AES->new(
+            $key,
+            {
+                'cipher'  => 'AES-256-CBC',
+                'iv'      => $iv,
+                'padding' => 1
+            }
+        );
+    };
+    if ($@) {
+        $options{logger}->writeLogError("There was an error while creating the AES object: " . $@);
+        return $options{data};
+    }
+
+    # decrypt
+    $options{logger}->writeLogDebug("Decrypting the data of length " . length($encrypted_data) . " bytes.");
+    my $decrypted_data;
+    eval {$decrypted_data = $cipher->decrypt($encrypted_data);};
+    if ($@) {
+        $options{logger}->writeLogError("There was an error while decrypting one of the AES-encrypted data: " . $@
+            . "\nThe provided data will be used unchanged assuming it's a clear text password.");
+        return $options{data};
+    }
+
+    return $decrypted_data;
+}
+
 1;
+
+__END__
+
+=head1 NAME
+
+centreon::vmware::common
+
+=head1 SYNOPSIS
+
+Centreon VMware daemon common functions
+
+=head1 METHODS
+
+=head2 aes256_decrypt(%options)
+
+Decrypt secrets encrypted by Centreon using https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES
+
+NB: keep the decrypted data in local variables so that they stay in memory for as little time as possible.
+
+%options must provide:
+
+- C<logger>: an object of the centreon::vmware::logger class.
+
+- C<app_secret>: the AES encryption/decryption key.
+
+- C<data>: the encrypted data.
+
+=head2 obfuscate_secret($secret)
+
+Returns a string revealing only the first and last two characters of the given secret if the string is longer than 5 characters.
+
+Returns only stars (C<***>) if the string is too short).
+
+    print obfuscate_secret('myLongPassword')."\n";
+    print obfuscate_secret('toto')."\n";
+
+This code displays:
+
+    my***rd
+    ***
+
+=cut

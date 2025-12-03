@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,7 +86,7 @@ sub check_options {
     }
     if ( ! -f $self->{config_file} ) {
         $self->{logger}->writeLogError("The given configuration file " . $self->{config_file}
-            . " does not exist. Passwords won't be retrieved from Centreonvault. Ignore this if you don't use Centreonvault.");
+            . " does not exist. Passwords won't be retrieved from Centreonvault. Ignore this error if you don't use Centreonvault.");
         return undef;
     }
 
@@ -128,84 +128,33 @@ sub check_configuration {
         $self->{encryption_key} = $ENV{'APP_SECRET'}; # key for aes-256-cbc
     }
 
-
-
-
     return 1;
-}
-
-sub extract_and_decrypt {
-    my ($self, %options) = @_;
-
-    my $input = decode_base64($options{data});
-    $self->{logger}->writeLogDebug("data to extract and decrypt: '" . $options{data} . "'");
-
-    # with AES-256, the IV length must 16 bytes
-    my $iv_length = 16;
-    # extract the IV, the hashed data, the encrypted data
-    my $iv             = substr($input, 0, $iv_length);     # initialization vector
-    my $hashed_data    = substr($input, $iv_length, 64);    # hmac of the original data, for integrity control
-    my $encrypted_data = substr($input, $iv_length + 64);   # data to decrypt
-
-    # create the AES object
-    $self->{logger}->writeLogDebug(
-            "Creating the AES decryption object for initialization vector (IV) of length "
-            . length($iv) . "B, key of length " . length($self->{encryption_key}) . "B."
-    );
-    my $cipher;
-    eval {
-        $cipher = Crypt::OpenSSL::AES->new(
-            decode_base64( $self->{encryption_key} ),
-            {
-                'cipher'  => 'AES-256-CBC',
-                'iv'      => $iv,
-                'padding' => 1
-            }
-        );
-    };
-    if ($@) {
-        $self->{logger}->writeLogError("There was an error while creating the AES object: " . $@);
-        return undef;
-    }
-
-    # decrypt
-    $self->{logger}->writeLogDebug("Decrypting the data of length " . length($encrypted_data) . "B.");
-    my $decrypted_data;
-    eval {$decrypted_data = $cipher->decrypt($encrypted_data);};
-    if ($@) {
-        $self->{logger}->writeLogError("There was an error while decrypting one of the AES-encrypted data: " . $@);
-        return undef;
-    }
-
-    return $decrypted_data;
 }
 
 sub authenticate {
     my ($self) = @_;
 
+    my @ids_list = ('role_id', 'secret_id');
     # initial value: assuming the role and secret id might not be encrypted
-    my $role_id   = $self->{vault_config}->{role_id};
-    my $secret_id = $self->{vault_config}->{secret_id};
+    my ($role_id, $secret_id) = map $self->{vault_config}->{$_}, @ids_list;
 
-
+    # now if credentials are encrypted
     if ($self->{crypted_credentials}) {
-        # Then decrypt using https://github.com/perl-openssl/perl-Crypt-OpenSSL-AES
-        # keep the decrypted data in local variables so that they stay in memory for as little time as possible
-        $self->{logger}->writeLogDebug("Decrypting the credentials needed to authenticate to the vault.");
-        $role_id   = $self->extract_and_decrypt( ('data' => $role_id ));
-        $secret_id = $self->extract_and_decrypt( ('data' => $secret_id ));
+        ($role_id, $secret_id) = map
+            centreon::vmware::common::aes256_decrypt(
+                'data'       => $self->{vault_config}->{$_},
+                'app_secret' => $self->{encryption_key},
+                'logger'     => $self->{logger}
+            ), @ids_list;
         $self->{logger}->writeLogDebug("role_id and secret_id have been decrypted.");
-    } else {
-        $self->{logger}->writeLogDebug("role_id and secret_id are not crypted");
     }
-
+    my $post_data = "role_id=$role_id&secret_id=$secret_id";
 
     # Authenticate to get the token
     my $url = "https://" . $self->{vault_config}->{url} . ":" . $self->{vault_config}->{port} . "/v1/auth/approle/login";
     $self->{logger}->writeLogDebug("Authenticating to the vault server at URL: $url");
     $self->{curl_easy}->setopt( CURLOPT_URL, $url );
 
-    my $post_data = "role_id=$role_id&secret_id=$secret_id";
     my $auth_result_json;
     # to get more details (in STDERR)
     #$self->{curl_easy}->setopt(CURLOPT_VERBOSE, 1);
@@ -302,7 +251,6 @@ sub get_secret {
     }
 
     $self->{logger}->writeLogDebug("Request passed.");
-    # request_id
 
     # the result is a json string, convert it into an object
     my $get_result_obj = centreon::vmware::common::transform_json_to_object($get_result_json);
@@ -335,7 +283,7 @@ Centreon Vault password manager
 
 =head1 SYNOPSIS
 
-Allows to retrieve secrets (usually username and password) from a Hashicorp vault compatible API.
+Allows to retrieve secrets (usually username and password) from a HashiCorp vault compatible API.
 
     use centreon::vmware::logger;
     use centreon::script::centreonvault;
