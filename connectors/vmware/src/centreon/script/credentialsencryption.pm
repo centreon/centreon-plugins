@@ -25,9 +25,7 @@ use warnings;
 use JSON::XS;
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
-use centreon::vmware::common;
-
-my $ENCRYPTED_PATH_REGEX = qr/^encrypt::(.+)$/;
+use centreon::vmware::common qw(ENCRYPTED_PATH_REGEX);
 
 sub new {
     my ($class, %options) = @_;
@@ -116,7 +114,7 @@ sub get_secret {
     # if the feature is not enabled, return the secret unchanged
     return $secret if ( ! $self->{enabled});
 
-    my ($encrypted_secret) = $secret =~ $ENCRYPTED_PATH_REGEX;
+    my ($encrypted_secret) = $secret =~ ENCRYPTED_PATH_REGEX;
     if (!defined($encrypted_secret)) {
         $self->{logger}->writeLogInfo("A string given to get_secret does not look like a secret. Using it as a plain text credential?");
         return $secret;

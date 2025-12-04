@@ -26,9 +26,7 @@ use JSON::XS;
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
 use Net::Curl::Easy qw(:constants);
-use centreon::vmware::common;
-
-my $VAULT_PATH_REGEX = qr/^secret::hashicorp_vault::([^:]+)::(.+)$/;
+use centreon::vmware::common qw(VAULT_PATH_REGEX);
 
 sub new {
     my ($class, %options) = @_;
@@ -220,7 +218,7 @@ sub get_secret {
     # if vault not enabled, return the secret unchanged
     return $secret if ( ! $self->{enabled});
 
-    my ($secret_path, $secret_name) = $secret =~ $VAULT_PATH_REGEX;
+    my ($secret_path, $secret_name) = $secret =~ VAULT_PATH_REGEX;
     if (!defined($secret_path) || !defined($secret_name)) {
         $self->{logger}->writeLogInfo("A string given to get_secret does not look like a secret. Using it as a plain text credential?");
         return $secret;

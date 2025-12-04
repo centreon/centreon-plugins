@@ -26,12 +26,10 @@ use JSON::XS;
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
 use Net::Curl::Easy qw(:constants);
-use centreon::vmware::common;
+use centreon::vmware::common qw(VAULT_PATH_REGEX ENCRYPTED_PATH_REGEX);
 use centreon::script::centreonvault;
 use centreon::script::credentialsencryption;
 
-my $VAULT_PATH_REGEX = qr/^secret::hashicorp_vault::([^:]+)::(.+)$/;
-my $ENCRYPTED_PATH_REGEX = qr/^encrypt::(.+)$/;
 
 sub new {
     my ($class, %options) = @_;
@@ -96,8 +94,8 @@ sub get_secret {
     return $secret if ( ! $self->{enabled});
 
     $self->{logger}->writeLogDebug("Secret to reveal: " . centreon::vmware::common::obfuscate_secret($secret));
-    return $self->{vault}->get_secret($secret) if ($secret =~ $VAULT_PATH_REGEX);
-    return $self->{encryption}->get_secret($secret) if ($secret =~ $ENCRYPTED_PATH_REGEX);
+    return $self->{vault}->get_secret($secret) if ($secret =~ VAULT_PATH_REGEX);
+    return $self->{encryption}->get_secret($secret) if ($secret =~ ENCRYPTED_PATH_REGEX);
 
     $self->{logger}->writeLogDebug("The secret does not look like a secret. Using it as a plain text credential.");
     return $secret;

@@ -28,6 +28,14 @@ use ZMQ::Constants qw(:all);
 use JSON::XS;
 use MIME::Base64;
 
+use constant {
+    VAULT_PATH_REGEX     => qr/^secret::hashicorp_vault::([^:]+)::(.+)$/,
+    ENCRYPTED_PATH_REGEX => qr/^encrypt::(.+)$/
+};
+
+use Exporter qw(import);
+our @EXPORT_OK = ('VAULT_PATH_REGEX', 'ENCRYPTED_PATH_REGEX');
+
 my $manager_display = {};
 my $manager_response = {};
 my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
