@@ -316,6 +316,7 @@ sub check_options {
 
     # Define base cache filename based on Keystone URL
     $self->{keystone_cache_filename} = 'openstack_restapi_keystone_'.md5_hex(lc $self->{identity_base_url}.'##'.$self->{project_name}.'##'.$self->{username}).'_';
+
     return 0;
 }
 
@@ -536,6 +537,71 @@ sub nova_list_instances {
         }
 
         last if @{$response->{servers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns projects/tenants list by calling Nova service
+sub keystone_list_projects {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+
+    # Keystone natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    my $filter_name = value_of(\%options, "->{include_name}->[0]", '');
+    $params{'name'} = $filter_name
+        if $filter_name =~ /^[\w\s]+$/;
+
+    $params{enabled} = 'true'
+        if $options{enabled} && $options{enabled} =~ /^(?:1|true)$/i;
+
+    my $token = $options{token} || $self->{token};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{identity_url}, resource => '/projects'),
+            insecure => $self->{identity_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{projects};
+
+        last unless @{$response->{projects}};
+        $params{marker} = $response->{projects}[-1]->{id};
+
+        foreach my $project (@{$response->{projects}}) {
+            next if is_excluded($project->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($project->{domain_id}, $options{include_domain_id}, $options{exclude_domain_id});
+            my $domain_name = $self->keystone_get_domain_label(domain_id => $project->{domain_id});
+            next if is_excluded($domain_name, $options{include_domain_name}, $options{exclude_domain_name});
+
+            my $items = { id => $project->{id},
+                          name => $project->{name},
+                          domain_id => $project->{domain_id},
+                          domain_name => $domain_name,
+                          enabled => $project->{enabled}
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{projects}} < $limit;
     }
 
     return { http_status => 200, results => \@results }
@@ -875,7 +941,7 @@ sub keystone_authent {
     $self->{cache_authent}->read(statefile => $self->{keystone_cache_filename}.'authent');
     my $cache_authent_data = $self->{cache_authent}->{datas};
 
-    if (!$options{dont_read_cache} && ref $cache_authent_data eq 'HASH' && $cache_authent_data->{token} && $cache_authent_data->{expires_at} -60 < time()) {
+    if (!$options{dont_read_cache} && ref $cache_authent_data eq 'HASH' && $cache_authent_data->{token} && $cache_authent_data->{expires_at} - 60 > time()) {
         $self->{token} = $cache_authent_data->{token};
         return $cache_authent_data;
     }
