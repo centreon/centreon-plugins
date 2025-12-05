@@ -1359,7 +1359,7 @@ Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manua
 
 Example: C<--volume-url="https://myopenstack.local:8776">
 
-This URL can also be construct with options (--volume-hostname, --volume-proto, --image-port, --image-endpoint).
+This URL can also be construct with options (--volume-hostname, --volume-proto, --volume-port, --volume-endpoint).
 
 =item B<--volume-hostname>
 
@@ -1383,6 +1383,77 @@ Allow insecure TLS connection (default: '0').
 When set to 0 the default insecure value passed with --insecure is used.
 
 =item B<--volume-timeout>
+
+Set HTTP timeout in seconds (default: '0').
+When set to 0 the default timeout value passed with --timeout is used.
+
+=item B<--network-url>
+
+Set the URL to use for the OpenStack Neutron (network) service.
+A valid Neutron URL is required since it is a mandatory service.
+Neutron URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+
+Example: C<--network-url="https://myopenstack.local:9696">
+
+This URL can also be construct with options (--network-hostname, --network-proto, --network-port, --network-endpoint).
+
+=item B<--network-hostname>
+
+Set the hostname part of the Neutron service URL.
+
+=item B<--network-proto>
+
+Set the protocol to use in the Neutron service URL (default: 'https').
+
+=item B<--network-port>
+
+Set the port to use in the Neutron service URL (default: 9696).
+
+=item B<--network-endpoint>
+
+Set the endpoint to use in the Neutron service URL.
+
+=item B<--network-insecure>
+
+Allow insecure TLS connection (default: '0').
+When set to 0 the default insecure value passed with --insecure is used.
+
+=item B<--network-timeout>
+
+Set HTTP timeout in seconds (default: '0').
+When set to 0 the default timeout value passed with --timeout is used.
+
+=item B<--loadbalancer-url>
+
+Set the URL to use for the OpenStack Octavia (loadbalancer) service.
+Octavia URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+
+Example: C<--loadbalancer-url="https://myopenstack.local:9876">
+
+This URL can also be construct with options (--loadbalancer-hostname, --loadbalancer-proto, --loadbalancer-port, --loadbalancer-endpoint).
+
+=item B<--loadbalancer-hostname>
+
+Set the hostname part of the Ovtabia service URL.
+
+=item B<--loadbalancer-proto>
+
+Set the protocol to use in the Octavia service URL (default: 'https').
+
+=item B<--loadbalancer-port>
+
+Set the port to use in the Octavia service URL (default: 9876).
+
+=item B<--loadbalancer-endpoint>
+
+Set the endpoint to use in the Octavia service URL.
+
+=item B<--loadbalancer-insecure>
+
+Allow insecure TLS connection (default: '0').
+When set to 0 the default insecure value passed with --insecure is used.
+
+=item B<--loadbalancer-timeout>
 
 Set HTTP timeout in seconds (default: '0').
 When set to 0 the default timeout value passed with --timeout is used.
