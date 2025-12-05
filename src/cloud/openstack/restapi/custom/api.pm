@@ -457,7 +457,7 @@ sub nova_list_instances {
     my $response_brut;
     my @results;
 
-    # Retry to handle token expiration
+    # Retry to handle pagination
     while (1) {
         $response_brut = $self->{http}->request(
             method => 'GET',
@@ -537,6 +537,99 @@ sub nova_list_instances {
         }
 
         last if @{$response->{servers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Ports list by calling Neutron service
+sub neutron_list_ports {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+    $params{project_id} = $options{project_id}
+        if $options{project_id};
+
+    my $token = $options{token} || $self->{token};
+
+    # Neutron natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'status', 'image', 'flavor', 'host') {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $filter_id = $options{include_id} && scalar(@{$options{include_id}}) == 1 && $options{include_id}->[0] =~ /^[\w\-\s]+$/ ? $options{include_id}->[0] : '';
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle pagination
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{network_url}, resource => '/v2.0/ports'.( $filter_id ne '' ? '/'.$filter_id : '' )),
+            insecure => $self->{network_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        if (ref $response ne 'HASH' || $response->{error} || $response->{NeutronError} || (!$response->{ports} && !$response->{port})) {
+            my $message = "Bad request: Invalid response";
+            if (ref $response eq 'HASH') {
+                if ($response->{error}) {
+                    $message = value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response");
+                } elsif ($response->{NeutronError}) {
+                    $message = value_of($response, "->{NeutronError}->{type}", 'Bad request').': '.value_of($response, "->{NeutronError}->{message}");
+                }
+            }
+            return { http_status => $self->{http}->get_code(), message => $message };
+        }
+
+        # Return port when a specific ID is requested
+        $response->{ports} = [ $response->{port} ] if $response->{port};
+        last unless @{$response->{ports}};
+
+        $params{marker} = $response->{ports}[-1]->{id};
+
+        foreach my $port (@{$response->{ports}}) {
+            $port->{admin_state_up} = $port->{admin_state_up} ? "True": "False";
+            $port->{port_security_enabled} = $port->{port_security_enabled} ? "True": "False";
+            $port->{description} //= '';
+            next if is_excluded($port->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($port->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($port->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($port->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($port->{admin_state_up}, $options{include_admin_state_up}, $options{exclude_admin_state_up});
+            next if is_excluded($port->{mac_address}, $options{include_mac_address}, $options{exclude_mac_address});
+            next if is_excluded($port->{port_security_enabled}, $options{include_port_security_enabled}, $options{exclude_port_security_enabled});
+
+            my $items = { id => $port->{id},
+                          name => $port->{name},
+                          description => $port->{description},
+                          status => $port->{status},
+                          admin_state_up => $port->{admin_state_up},
+                          mac_address => $port->{mac_address},
+                          port_security_enabled => $port->{port_security_enabled},
+                          project_id => $port->{project_id} || $port->{tenant_id},
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{ports}} < $limit;
     }
 
     return { http_status => 200, results => \@results }
