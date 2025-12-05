@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -118,9 +118,14 @@ Check LTE information.
 
 =over 8
 
-=item B<--warning-status --critical-status>
+=item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING or CRITICAL.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: C<%{current_operator}>, C<%{imsi}>, C<%{iccid}>.
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: C<%{current_operator}>, C<%{imsi}>, C<%{iccid}>.
 
 =back
