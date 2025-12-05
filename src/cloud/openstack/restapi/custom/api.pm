@@ -91,6 +91,8 @@ sub new {
         _service_filters_options(type => 'image', ),
         _service_ident_options(type => 'volume',   port => 8776, endpoint => ''),
         _service_filters_options(type => 'volume', ),
+        _service_ident_options(type => 'network',   port => 9696, endpoint => ''),
+        _service_filters_options(type => 'network', ),
         _service_ident_options(type => 'loadbalancer',    port => 9876, endpoint => ''),
         _service_filters_options(type => 'loadbalancer', ),
 
@@ -326,6 +328,7 @@ sub other_services_check_options {
     $self->service_check_options(mandatory => 1, type => 'compute', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
+    $self->service_check_options(mandatory => 1, type => 'network',  keystone_services => $catalog );
     $self->service_check_options(mandatory => 0, type => 'loadbalancer',  keystone_services => $catalog );
 }
 
@@ -619,6 +622,102 @@ sub octavia_list_loadbalancer {
         }
 
         last if @{$response->{loadbalancers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Netwotks list by calling Neutron service
+sub neutron_list_networks {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    # Neutron natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'admin_state_up') {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $filter_id = $options{include_id} && scalar(@{$options{include_id}}) == 1 && $options{include_id}->[0] =~ /^[\w\-\s]+$/ ? $options{include_id}->[0] : '';
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info( url => $self->{network_url},
+                                 resource => '/v2.0/networks' . ($filter_id ? "/$filter_id" : '')),
+            insecure => $self->{network_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        if (ref $response ne 'HASH' || $response->{error} || $response->{NeutronError} || (!$response->{networks} && !$response->{network})) {
+            my $message = "Bad request: Invalid response";
+            if (ref $response eq 'HASH') {
+                if ($response->{error}) {
+                    $message = value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response");
+                } elsif ($response->{NeutronError}) {
+                    $message = value_of($response, "->{NeutronError}->{type}", 'Bad request').': '.value_of($response, "->{NeutronError}->{message}");
+                }
+            }
+            return { http_status => $self->{http}->get_code(), message => $message };
+        }
+
+        # Return nework when an ID filter is used
+        $response->{networks} = [ $response->{network} ] if $response->{network};
+        last unless @{$response->{networks}};
+        $params{marker} = $response->{networks}[-1]->{id};
+
+        foreach my $network (@{$response->{networks}}) {
+            $network->{admin_state_up} = $network->{admin_state_up} ? "True": "False";
+            $network->{port_security_enabled} = $network->{port_security_enabled} ? "True": "False";
+            $network->{shared} = $network->{shared} ? "True": "False";
+            $network->{'router:external'} = $network->{'router:external'} ? "True": "False";
+
+            next if is_excluded($network->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($network->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($network->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($network->{admin_state_up}, $options{include_admin_state_up}, $options{exclude_admin_state_up});
+            next if is_excluded($network->{mtu}, $options{include_mtu}, $options{exclude_mtu});
+            next if is_excluded($network->{shared}, $options{include_shared}, $options{exclude_shared});
+            next if is_excluded($network->{port_security_enabled}, $options{include_port_security_enabled}, $options{exclude_port_security_enabled});
+            next if is_excluded($network->{'router:external'}, $options{include_router_external}, $options{exclude_router_external});
+            next if is_excluded($network->{project_id} || $network->{tenant_id} || '', $options{project_id});
+
+            my $items = { id => $network->{id},
+                          name => $network->{name},
+                          status => $network->{status},
+                          admin_state_up => $network->{admin_state_up}, 
+                          shared => $network->{shared},
+                          mtu => $network->{mtu},
+                          port_security_enabled => $network->{port_security_enabled},
+                          router_external => $network->{'router:external'},
+                          project_id => $network->{project_id} || $network->{tenant_id},
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{networks}} < $limit;
     }
 
     return { http_status => 200, results => \@results }
