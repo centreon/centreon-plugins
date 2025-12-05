@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,13 +108,13 @@ Example: --warning='sensor.celsius,.*,30'
 Set critical threshold (syntax: type,regexp,threshold)
 Example: --critical='sensor.celsius,.*,40'
 
-=item B<--warning-count-*>
+=item B<--warning-count-sensor>
 
-Define the warning threshold for the number of components of one type (replace '*' with the component type).
+Threshold.
 
-=item B<--critical-count-*>
+=item B<--critical-count-sensor>
 
-Define the critical threshold for the number of components of one type (replace '*' with the component type).
+Threshold.
 
 =item B<--sensor-scale>
 
