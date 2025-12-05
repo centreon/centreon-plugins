@@ -879,9 +879,7 @@ sub json_encode {
     my ($object, %options) = @_;
 
     $object =~ s/\r//mg;
-
     my $encoded = eval { JSON::XS->new->utf8->canonical->pretty($options{prettify} // 0)->encode($object) };
-
 
     if ($@) {
         # To keep compatibilty with old json_encode:

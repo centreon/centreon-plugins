@@ -470,6 +470,230 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "fc6896c0-6380-43ef-bbb3-8d9aedc708c4",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "nova/v2.1/os-hypervisors/detail",
+      "responses": [
+        {
+          "uuid": "09102305-e01b-4972-99ae-11c39da0753d",
+          "body": "{\n  \"hypervisors\": [\n    {\n      \"id\": 1,\n      \"hypervisor_hostname\": \"compute-01\",\n      \"state\": \"up\",\n      \"status\": \"enabled\",\n      \"service\": {\n        \"id\": 101,\n        \"host\": \"compute-01\",\n        \"disabled_reason\": null\n      },\n      \"vcpus\": 16,\n      \"vcpus_used\": 4,\n      \"memory_mb\": 32768,\n      \"memory_mb_used\": 8192,\n      \"local_gb\": 500,\n      \"local_gb_used\": 120,\n      \"free_disk_gb\": 380,\n      \"free_ram_mb\": 24576,\n      \"hypervisor_type\": \"QEMU\",\n      \"hypervisor_version\": 2003000,\n      \"cpu_info\": \"{\\\"arch\\\": \\\"x86_64\\\", \\\"model\\\": \\\"Intel Xeon\\\", \\\"topology\\\": {\\\"cores\\\": 8, \\\"threads\\\": 2, \\\"sockets\\\": 1}}\",\n      \"running_vms\": 8,\n      \"disk_available_least\": 100,\n      \"host_ip\": \"192.168.1.10\"\n    },\n    {\n      \"id\": 2,\n      \"hypervisor_hostname\": \"compute-02\",\n      \"state\": \"up\",\n      \"status\": \"enabled\",\n      \"service\": {\n        \"id\": 102,\n        \"host\": \"compute-02\",\n        \"disabled_reason\": null\n      },\n      \"vcpus\": 32,\n      \"vcpus_used\": 16,\n      \"memory_mb\": 65536,\n      \"memory_mb_used\": 32768,\n      \"local_gb\": 1000,\n      \"local_gb_used\": 400,\n      \"free_disk_gb\": 600,\n      \"free_ram_mb\": 32768,\n      \"hypervisor_type\": \"KVM\",\n      \"hypervisor_version\": 3002000,\n      \"cpu_info\": \"{\\\"arch\\\": \\\"x86_64\\\", \\\"model\\\": \\\"AMD EPYC\\\", \\\"topology\\\": {\\\"cores\\\": 16, \\\"threads\\\": 2, \\\"sockets\\\": 1}}\",\n      \"running_vms\": 12,\n      \"disk_available_least\": 200,\n      \"host_ip\": \"192.168.1.11\"\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "741c4f88-7012-4dba-8481-302a0f35ecc5",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "nova/v2.1/v2/lbaas/loadbalancers",
+      "responses": [
+        {
+          "uuid": "34fa696e-5c43-48d3-a561-9357e6860e0b",
+          "body": "{\n  \"loadbalancers\": [\n    {\n      \"id\": \"lb-001\",\n      \"name\": \"web-loadbalancer-01\",\n      \"description\": \"Load balancer for test 1\",\n      \"vip_address\": \"192.168.10.10\",\n      \"vip_port_id\": \"port-001\",\n      \"vip_subnet_id\": \"subnet-001\",\n      \"provider\": \"octavia\",\n      \"provisioning_status\": \"ACTIVE\",\n      \"operating_status\": \"ONLINE\",\n      \"admin_state_up\": true,\n      \"listeners\": [\n        {\n          \"id\": \"listener-001\",\n          \"name\": \"http-listener\",\n          \"protocol\": \"HTTP\",\n          \"protocol_port\": 80\n        }\n      ],\n      \"pools\": [\n        {\n          \"id\": \"pool-001\",\n          \"name\": \"web-pool\",\n          \"protocol\": \"HTTP\",\n          \"lb_algorithm\": \"ROUND_ROBIN\"\n        }\n      ],\n      \"project_id\": \"project-001\"\n    },\n    {\n      \"id\": \"lb-002\",\n      \"name\": \"api-loadbalancer-01\",\n      \"description\": \"Load balancer for test 2\",\n      \"vip_address\": \"192.168.10.20\",\n      \"vip_port_id\": \"port-002\",\n      \"vip_subnet_id\": \"subnet-002\",\n      \"provider\": \"octavia\",\n      \"provisioning_status\": \"ACTIVE\",\n      \"operating_status\": \"ONLINE\",\n      \"admin_state_up\": true,\n      \"listeners\": [\n        {\n          \"id\": \"listener-002\",\n          \"name\": \"https-listener\",\n          \"protocol\": \"HTTPS\",\n          \"protocol_port\": 443\n        }\n      ],\n      \"pools\": [\n        {\n          \"id\": \"pool-002\",\n          \"name\": \"api-pool\",\n          \"protocol\": \"HTTPS\",\n          \"lb_algorithm\": \"LEAST_CONNECTIONS\"\n        }\n      ],\n      \"project_id\": \"project-002\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "7e6d1919-462c-4ef7-8656-000b0a6bcc60",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "neutron/v2.0/ports",
+      "responses": [
+        {
+          "uuid": "0e512fab-f66d-48da-aa4f-34d88d3de521",
+          "body": "{\n  \"ports\": [\n    {\n      \"id\": \"a1b2c3d4-5678-90ab-cdef-1234567890ab\",\n      \"name\": \"port-1\",\n      \"network_id\": \"net-12345678\",\n      \"tenant_id\": \"tenant-1111\",\n      \"status\": \"ACTIVE\",\n      \"description\": \"test\",\n      \"mac_address\": \"fa:16:3e:4c:2c:30\",\n      \"fixed_ips\": [\n        {\n          \"subnet_id\": \"subnet-1111\",\n          \"ip_address\": \"192.168.1.10\"\n        }\n      ],\n      \"device_id\": \"device-1111\",\n      \"device_owner\": \"compute:nova\",\n      \"security_groups\": [\n        \"sg-1111\"\n      ],\n      \"admin_state_up\": true,\n      \"binding:vif_type\": \"ovs\",\n      \"binding:vnic_type\": \"normal\",\n      \"created_at\": \"2025-12-03T10:00:00Z\",\n      \"updated_at\": \"2025-12-03T10:10:00Z\"\n    },\n    {\n      \"id\": \"b2c3d4e5-6789-01ab-cdef-2345678901bc\",\n      \"name\": \"port-2\",\n      \"network_id\": \"net-12345678\",\n      \"tenant_id\": \"tenant-1111\",\n      \"status\": \"DOWN\",\n      \"description\": \"test2\",\n      \"mac_address\": \"fa:16:3e:4c:2c:31\",\n      \"fixed_ips\": [\n        {\n          \"subnet_id\": \"subnet-1111\",\n          \"ip_address\": \"192.168.1.11\"\n        }\n      ],\n      \"device_id\": \"device-2222\",\n      \"device_owner\": \"network:dhcp\",\n      \"security_groups\": [\n        \"sg-1111\"\n      ],\n      \"admin_state_up\": true,\n      \"binding:vif_type\": \"ovs\",\n      \"binding:vnic_type\": \"normal\",\n      \"created_at\": \"2025-12-03T10:05:00Z\",\n      \"updated_at\": \"2025-12-03T10:12:00Z\"\n    }\n  ],\n  \"ports_links\": [\n    {\n      \"rel\": \"self\",\n      \"href\": \"http://example.com:9696/v2.0/ports?limit=200\"\n    },\n    {\n      \"rel\": \"next\",\n      \"href\": null\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "87a81f1d-1b7e-46aa-80ee-63fb489d55d3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "neutron/v2.0/networks",
+      "responses": [
+        {
+          "uuid": "a7202d2c-ab76-4a6f-8cb5-12ee2cf1dd71",
+          "body": "{\n  \"networks\": [\n    {\n      \"id\": \"a1b2c3d4-5678-90ab-cdef-1234567890ab\",\n      \"name\": \"private-net\",\n      \"tenant_id\": \"tenant-1111\",\n      \"status\": \"ACTIVE\",\n      \"subnets\": [\n        \"subnet-1111\"\n      ],\n      \"port_security_enabled\": false,\n      \"admin_state_up\": true,\n      \"shared\": false,\n      \"router:external\": false,\n      \"description\": \"Réseau privé interne\",\n      \"availability_zone_hints\": [],\n     \"mtu\": 1450,\n      \"tags\": [\"internal\", \"dev\"]\n    },\n    {\n      \"id\": \"b2c3d4e5-6789-01ab-cdef-2345678901bc\",\n      \"name\": \"public-net\",\n      \"tenant_id\": \"tenant-2222\",\n      \"status\": \"ACTIVE\",\n      \"subnets\": [\n        \"subnet-2222\"\n      ],\n      \"port_security_enabled\": false,\n      \"admin_state_up\": true,\n      \"shared\": true,\n      \"router:external\": true,\n      \"mtu\": 1450,\n      \"description\": \"Réseau public\",\n      \"availability_zone_hints\": [],\n      \"tags\": [\"external\", \"prod\"]\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -524,6 +748,22 @@
     {
       "type": "route",
       "uuid": "90f6bfdc-cb26-4435-ac64-4f1c8c64b5fe"
+    },
+    {
+      "type": "route",
+      "uuid": "fc6896c0-6380-43ef-bbb3-8d9aedc708c4"
+    },
+    {
+      "type": "route",
+      "uuid": "741c4f88-7012-4dba-8481-302a0f35ecc5"
+    },
+    {
+      "type": "route",
+      "uuid": "7e6d1919-462c-4ef7-8656-000b0a6bcc60"
+    },
+    {
+      "type": "route",
+      "uuid": "87a81f1d-1b7e-46aa-80ee-63fb489d55d3"
     }
   ],
   "proxyMode": false,
