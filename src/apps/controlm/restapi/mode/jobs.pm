@@ -79,7 +79,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -10 => 1, -11 => 1 } }
     ];
 
     $self->{maps_counters}->{jobs} = [
@@ -321,11 +321,45 @@ You can use the following variables: %{name}, %{status}, %{elapsed}, %{applicati
 Set critical threshold for long jobs.
 You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}, %{folder}, %{type}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-succeeded>
 
-Thresholds.
-Can be: 'jobs-succeeded', 'jobs-failed', 'jobs-executing', 'jobs-waiting',
-'job-failed'.
+Threshold.
+
+=item B<--critical-jobs-succeeded>
+
+Threshold.
+
+=item B<--warning-jobs-failed>
+
+Threshold.
+
+=item B<--critical-jobs-failed>
+
+Threshold.
+
+=item B<--warning-jobs-executing>
+
+Threshold.
+
+=item B<--critical-jobs-executing>
+
+Threshold.
+
+=item B<--warning-jobs-waiting>
+
+Threshold.
+
+=item B<--critical-jobs-waiting>
+
+Threshold.
+
+=item B<--warning-job-failed>
+
+Threshold.
+
+=item B<--critical-job-failedg>
+
+Threshold.
 
 =back
 
