@@ -638,6 +638,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "87a81f1d-1b7e-46aa-80ee-63fb489d55d3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "neutron/v2.0/networks",
+      "responses": [
+        {
+          "uuid": "a7202d2c-ab76-4a6f-8cb5-12ee2cf1dd71",
+          "body": "{\n  \"networks\": [\n    {\n      \"id\": \"a1b2c3d4-5678-90ab-cdef-1234567890ab\",\n      \"name\": \"private-net\",\n      \"tenant_id\": \"tenant-1111\",\n      \"status\": \"ACTIVE\",\n      \"subnets\": [\n        \"subnet-1111\"\n      ],\n      \"port_security_enabled\": false,\n      \"admin_state_up\": true,\n      \"shared\": false,\n      \"router:external\": false,\n      \"description\": \"Réseau privé interne\",\n      \"availability_zone_hints\": [],\n     \"mtu\": 1450,\n      \"tags\": [\"internal\", \"dev\"]\n    },\n    {\n      \"id\": \"b2c3d4e5-6789-01ab-cdef-2345678901bc\",\n      \"name\": \"public-net\",\n      \"tenant_id\": \"tenant-2222\",\n      \"status\": \"ACTIVE\",\n      \"subnets\": [\n        \"subnet-2222\"\n      ],\n      \"port_security_enabled\": false,\n      \"admin_state_up\": true,\n      \"shared\": true,\n      \"router:external\": true,\n      \"mtu\": 1450,\n      \"description\": \"Réseau public\",\n      \"availability_zone_hints\": [],\n      \"tags\": [\"external\", \"prod\"]\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -704,6 +760,10 @@
     {
       "type": "route",
       "uuid": "7e6d1919-462c-4ef7-8656-000b0a6bcc60"
+    },
+    {
+      "type": "route",
+      "uuid": "87a81f1d-1b7e-46aa-80ee-63fb489d55d3"
     }
   ],
   "proxyMode": false,

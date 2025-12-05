@@ -93,6 +93,8 @@ sub new {
         _service_filters_options(type => 'volume', ),
         _service_ident_options(type => 'network',   port => 9696, endpoint => ''),
         _service_filters_options(type => 'network', ),
+        _service_ident_options(type => 'loadbalancer',    port => 9876, endpoint => ''),
+        _service_filters_options(type => 'loadbalancer', ),
 
         # Endpoint filters common to all services
         _endpoint_filters_options(),
@@ -147,6 +149,7 @@ sub service_check_options {
 
     $self->{$service.$_} = $self->{option_results}->{$service.$_}
         foreach qw/url insecure endpoint port interface timeout/;
+
     # Add default endpoint to URL if defined and not already present
     $self->{$service.'url'} .= $self->{$service.'endpoint'}
         if $self->{$service.'url'} ne '' && $self->{$service.'endpoint'} ne '' && $self->{$service.'url'} !~ /$self->{$service.'endpoint'}$/;
@@ -161,6 +164,7 @@ sub service_check_options {
 
             foreach my $endpoint (@{$keystone_service->{endpoints}}) {
                 next if $self->is_excluded_endpoint($endpoint);
+
                 $self->{$service.'url'} = $endpoint->{url};
                 last KEYSTONE_CATALOG
             }
@@ -312,6 +316,7 @@ sub check_options {
 
     # Define base cache filename based on Keystone URL
     $self->{keystone_cache_filename} = 'openstack_restapi_keystone_'.md5_hex(lc $self->{identity_base_url}.'##'.$self->{project_name}.'##'.$self->{username}).'_';
+
     return 0;
 }
 
@@ -325,6 +330,7 @@ sub other_services_check_options {
     $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'network',  keystone_services => $catalog );
+    $self->service_check_options(mandatory => 0, type => 'loadbalancer',  keystone_services => $catalog );
 }
 
 sub settings {
@@ -337,8 +343,95 @@ sub connect_info {
     my ($self, %options) = @_;
 
     my $url = $options{url};
-
     ( full_url => $url.($options{resource} // ''), proto=> $url =~ s/^(https?).+/$1/r )
+}
+
+# Returns volumes list by calling Cinder service
+sub cinder_list_volumes {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    # Cinder natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter (qw/status name id/) {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+    $params{availability_zone} = $1 if $options{"include_zone"} =~ /^([\w\s]+)$/;
+
+    $params{tenant_id} = $options{project_id} if $options{project_id};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle pagination
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{volume_url}, resource => '/volumes/detail'),
+            insecure => $self->{volume_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),
+                 message     => value_of($response, "->{error}->{title}", 'Bad request').': '.
+                                value_of($response, "->{error}->{message}", "Invalid response")
+               }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{volumes};
+
+        last unless @{$response->{volumes}};
+
+        $params{marker} = $response->{volumes}[-1]->{id};
+        foreach my $volume (@{$response->{volumes}}) {
+            $volume->{'os-vol-tenant-attr:tenant_id'} //= '';
+            $volume->{bootable} = $volume->{bootable} =~ /true/i ? '1' : '0';
+            next if is_excluded($volume->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($volume->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($volume->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($volume->{volume_type}, $options{include_type}, $options{exclude_type});
+            next if is_excluded($volume->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($volume->{bootable}, $options{include_bootable}, $options{exclude_bootable});
+            next if is_excluded($volume->{encrypted}, $options{include_encrypted}, $options{exclude_encrypted});
+            next if is_excluded($volume->{availability_zone}, $options{include_zone}, $options{exclude_zone});
+            next if $volume->{'os-vol-tenant-attr:tenant_id'} && is_excluded($volume->{'os-vol-tenant-attr:tenant_id'}, $options{project_id}, "");
+
+            my $items = { id => $volume->{id},
+                          name => $volume->{name},
+                          description => $volume->{description},
+                          status => $volume->{status},
+                          size => $volume->{size},
+                          project_id => $volume->{'os-vol-tenant-attr:tenant_id'},
+                          bootable => $volume->{bootable},
+                          encrypted => $volume->{encrypted},
+                          type => $volume->{volume_type},
+                          zone => $volume->{availability_zone} // '',
+                          attachments => scalar(@{$volume->{attachments}}),
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{volumes}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
 }
 
 # Returns Instances list by calling Nova service
@@ -542,6 +635,310 @@ sub neutron_list_ports {
     return { http_status => 200, results => \@results }
 }
 
+# Returns projects/tenants list by calling Nova service
+sub keystone_list_projects {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+
+    # Keystone natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    my $filter_name = value_of(\%options, "->{include_name}->[0]", '');
+    $params{'name'} = $filter_name
+        if $filter_name =~ /^[\w\s]+$/;
+
+    $params{enabled} = 'true'
+        if $options{enabled} && $options{enabled} =~ /^(?:1|true)$/i;
+
+    my $token = $options{token} || $self->{token};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{identity_url}, resource => '/projects'),
+            insecure => $self->{identity_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{projects};
+
+        last unless @{$response->{projects}};
+        $params{marker} = $response->{projects}[-1]->{id};
+
+        foreach my $project (@{$response->{projects}}) {
+            next if is_excluded($project->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($project->{domain_id}, $options{include_domain_id}, $options{exclude_domain_id});
+            my $domain_name = $self->keystone_get_domain_label(domain_id => $project->{domain_id});
+            next if is_excluded($domain_name, $options{include_domain_name}, $options{exclude_domain_name});
+
+            my $items = { id => $project->{id},
+                          name => $project->{name},
+                          domain_id => $project->{domain_id},
+                          domain_name => $domain_name,
+                          enabled => $project->{enabled}
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{projects}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Hypervisors list by calling Nova service
+sub nova_list_hypervisors {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{compute_url}, resource => '/os-hypervisors/detail'),
+            insecure => $self->{compute_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{hypervisors};
+
+        last unless @{$response->{hypervisors}};
+        $params{marker} = $response->{hypervisors}[-1]->{id};
+
+        foreach my $hypervisor (@{$response->{hypervisors}}) {
+            next if is_excluded($hypervisor->{hypervisor_hostname}, $options{include_hypervisor_hostname}, $options{exclude_hypervisor_hostname});
+            next if is_excluded($hypervisor->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($hypervisor->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($hypervisor->{state}, $options{include_state}, $options{exclude_state});
+            next if is_excluded($hypervisor->{hypervisor_type}, $options{include_hypervisor_type}, $options{exclude_hypervisor_type});
+
+            my $items = { id => $hypervisor->{id},
+                          hypervisor_hostname => $hypervisor->{hypervisor_hostname},
+                          status => $hypervisor->{status},
+                          state => $hypervisor->{state},
+                          hypervisor_type => $hypervisor->{hypervisor_type},
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{hypervisors}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Load Balancer list by calling Octavia service
+sub octavia_list_loadbalancer {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+    $params{project_id} = $options{project_id}
+        if $options{project_id};
+
+    my $token = $options{token} || $self->{token};
+
+    # Octavia natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'id') {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{loadbalancer_url}, resource => '/v2/lbaas/loadbalancers'),
+            insecure => $self->{loadbalancer_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{loadbalancers};
+
+        last unless @{$response->{loadbalancers}};
+        $params{marker} = $response->{loadbalancers}[-1]->{id};
+
+        foreach my $loadbalancer (@{$response->{loadbalancers}}) {
+            $loadbalancer->{admin_state_up} = $loadbalancer->{admin_state_up} ? "True": "False";
+            next if is_excluded($loadbalancer->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($loadbalancer->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($loadbalancer->{operating_status}, $options{include_operating_status}, $options{exclude_operating_status});
+            next if is_excluded($loadbalancer->{provisioning_status}, $options{include_provisioning_status}, $options{exclude_provisioning_status});
+            next if is_excluded($loadbalancer->{admin_state_up}, $options{include_admin_state_up}, $options{exclude_admin_state_up});
+            next if is_excluded($loadbalancer->{vip_address}, $options{include_vip_address}, $options{exclude_vip_address});
+            next if is_excluded($loadbalancer->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($loadbalancer->{provider}, $options{include_provider}, $options{exclude_provider});
+            next if is_excluded($loadbalancer->{project_id}, $options{project_id});
+
+            $loadbalancer->{pools} = [] unless $loadbalancer->{pools};
+            $loadbalancer->{listeners} = [] unless $loadbalancer->{listeners};
+
+            next if $options{exclude_no_pools} && not @{$loadbalancer->{pools}};
+            next if $options{exclude_no_listeners} && not @{$loadbalancer->{listeners}};
+
+            my $items = { id => $loadbalancer->{id},
+                          name => $loadbalancer->{name},
+                          operating_status => $loadbalancer->{'operating_status'},
+                          provisioning_status => $loadbalancer->{'provisioning_status'},
+                          admin_state_up => $loadbalancer->{admin_state_up},
+                          vip_address => $loadbalancer->{vip_address},
+                          description => $loadbalancer->{description},
+                          project_id => $loadbalancer->{project_id},
+                          provider => $loadbalancer->{provider},
+                          pool_count => scalar @{$loadbalancer->{pools}},
+                          listener_count => scalar @{$loadbalancer->{listeners}},
+                        };
+            push @results, $items;
+        }
+
+        last if @{$response->{loadbalancers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Netwotks list by calling Neutron service
+sub neutron_list_networks {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    # Neutron natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'admin_state_up') {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $filter_id = $options{include_id} && scalar(@{$options{include_id}}) == 1 && $options{include_id}->[0] =~ /^[\w\-\s]+$/ ? $options{include_id}->[0] : '';
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info( url => $self->{network_url},
+                                 resource => '/v2.0/networks' . ($filter_id ? "/$filter_id" : '')),
+            insecure => $self->{network_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        if (ref $response ne 'HASH' || $response->{error} || $response->{NeutronError} || (!$response->{networks} && !$response->{network})) {
+            my $message = "Bad request: Invalid response";
+            if (ref $response eq 'HASH') {
+                if ($response->{error}) {
+                    $message = value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response");
+                } elsif ($response->{NeutronError}) {
+                    $message = value_of($response, "->{NeutronError}->{type}", 'Bad request').': '.value_of($response, "->{NeutronError}->{message}");
+                }
+            }
+            return { http_status => $self->{http}->get_code(), message => $message };
+        }
+
+        # Return nework when an ID filter is used
+        $response->{networks} = [ $response->{network} ] if $response->{network};
+        last unless @{$response->{networks}};
+        $params{marker} = $response->{networks}[-1]->{id};
+
+        foreach my $network (@{$response->{networks}}) {
+            $network->{admin_state_up} = $network->{admin_state_up} ? "True": "False";
+            $network->{port_security_enabled} = $network->{port_security_enabled} ? "True": "False";
+            $network->{shared} = $network->{shared} ? "True": "False";
+            $network->{'router:external'} = $network->{'router:external'} ? "True": "False";
+
+            next if is_excluded($network->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($network->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($network->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($network->{admin_state_up}, $options{include_admin_state_up}, $options{exclude_admin_state_up});
+            next if is_excluded($network->{mtu}, $options{include_mtu}, $options{exclude_mtu});
+            next if is_excluded($network->{shared}, $options{include_shared}, $options{exclude_shared});
+            next if is_excluded($network->{port_security_enabled}, $options{include_port_security_enabled}, $options{exclude_port_security_enabled});
+            next if is_excluded($network->{'router:external'}, $options{include_router_external}, $options{exclude_router_external});
+            next if is_excluded($network->{project_id} || $network->{tenant_id} || '', $options{project_id});
+
+            my $items = { id => $network->{id},
+                          name => $network->{name},
+                          status => $network->{status},
+                          admin_state_up => $network->{admin_state_up}, 
+                          shared => $network->{shared},
+                          mtu => $network->{mtu},
+                          port_security_enabled => $network->{port_security_enabled},
+                          router_external => $network->{'router:external'},
+                          project_id => $network->{project_id} || $network->{tenant_id},
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{networks}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
 # Returns image label from id by calling Glance service
 # Uses a cache file to limit API calls
 sub glance_get_image_label {
@@ -637,7 +1034,7 @@ sub keystone_authent {
     $self->{cache_authent}->read(statefile => $self->{keystone_cache_filename}.'authent');
     my $cache_authent_data = $self->{cache_authent}->{datas};
 
-    if (!$options{dont_read_cache} && ref $cache_authent_data eq 'HASH' && $cache_authent_data->{token} && $cache_authent_data->{expires_at} -60 < time()) {
+    if (!$options{dont_read_cache} && ref $cache_authent_data eq 'HASH' && $cache_authent_data->{token} && $cache_authent_data->{expires_at} - 60 > time()) {
         $self->{token} = $cache_authent_data->{token};
         return $cache_authent_data;
     }
@@ -697,11 +1094,12 @@ sub keystone_authent {
     $expires_at = $expires_at->parse_datetime($response->{token}->{expires_at});
     $expires_at = $expires_at->epoch();
 
+    $_->{type} =~ s/-//g foreach @{$response->{token}->{catalog}};
+
     my %data = ( token => $token,
                  expires_at => $expires_at,
                  services => $response->{token}->{catalog}
                );
-
     $self->{cache_authent}->write(data => \%data);
 
     $self->{token} = $token;
@@ -808,9 +1206,9 @@ OpenStack user domain to use with authentication (default: 'default').
 
 OpenStack project name to use with authentication (default: 'demo').
 
-=item B<--project-domain>
+=item B<--project-domain-id>
 
-OpenStack project domain to use with authentication (default: 'default').
+OpenStack project domain id to use with authentication (default: 'default').
 
 =item B<--timeout>
 
@@ -942,7 +1340,7 @@ Set the protocol to use in the Glance service URL (default: 'https').
 
 =item B<--image-port>
 
-Set the port to use in the Glance service URL (default: 8774).
+Set the port to use in the Glance service URL (default: 9292).
 
 =item B<--image-endpoint>
 
@@ -953,7 +1351,38 @@ Set the endpoint to use in the Glance service URL (default: '/v2').
 Allow insecure TLS connection (default: '0').
 When set to 0 the default insecure value passed with --insecure is used.
 
-=item B<--image-timeout>
+=item B<--volume-url>
+
+Set the URL to use for the OpenStack Cinder (volume) service.
+A valid Glance URL is required since it is a mandatory service.
+Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+
+Example: C<--volume-url="https://myopenstack.local:8776">
+
+This URL can also be construct with options (--volume-hostname, --volume-proto, --image-port, --image-endpoint).
+
+=item B<--volume-hostname>
+
+Set the hostname part of the Cinder service URL.
+
+=item B<--volume-proto>
+
+Set the protocol to use in the Cinder service URL (default: 'https').
+
+=item B<--volume-port>
+
+Set the port to use in the Cinder service URL (default: 8776).
+
+=item B<--volume-endpoint>
+
+Set the endpoint to use in the Cinder service URL.
+
+=item B<--volume-insecure>
+
+Allow insecure TLS connection (default: '0').
+When set to 0 the default insecure value passed with --insecure is used.
+
+=item B<--volume-timeout>
 
 Set HTTP timeout in seconds (default: '0').
 When set to 0 the default timeout value passed with --timeout is used.

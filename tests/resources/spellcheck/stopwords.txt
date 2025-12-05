@@ -34,6 +34,7 @@ Avocent
 aws
 AWSCLI
 --aws-role-arn
+bootable
 Backbox
 BackupJobSession
 BAM
@@ -203,6 +204,7 @@ MQTT
 --mqtt-ssl-key
 --mqtt-timeout
 --mqtt-username
+MTU
 MSSQL
 multiple
 MX
