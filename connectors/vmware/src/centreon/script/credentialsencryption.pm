@@ -100,7 +100,7 @@ sub check_configuration {
         # } else {
         #     $self->{hash_key} = $self->{salt}; # key for sha3-512 hmac
         }
-        $self->{logger}->writeLogDebug("Key $expected_key is defined int the config file. We may use it.");
+        $self->{logger}->writeLogDebug("Key $expected_key is defined in the config file. We may use it.");
         $self->{$expected_key} = $options{$expected_key};
     }
 
@@ -112,7 +112,7 @@ sub get_secret {
 
     $self->{logger}->writeLogDebug("Is credentials encryption enabled? " . $self->{enabled} . " (1 => true, 0 => false).");
     # if the feature is not enabled, return the secret unchanged
-    return $secret if ( ! $self->{enabled});
+    return $secret if ( !$self->{enabled} );
 
     my ($encrypted_secret) = $secret =~ ENCRYPTED_PATH_REGEX;
     if (!defined($encrypted_secret)) {
@@ -125,6 +125,7 @@ sub get_secret {
         'app_secret' => $self->{app_secret},
         'logger'     => $self->{logger}
     );
+
     $self->{logger}->writeLogDebug("Decrypted secret: " . centreon::vmware::common::obfuscate_secret($decrypted_secret));
     return $decrypted_secret;
 }

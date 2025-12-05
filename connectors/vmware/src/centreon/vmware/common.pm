@@ -851,7 +851,10 @@ sub aes256_decrypt {
     my @mandatory_params = ('data', 'app_secret', 'logger');
 
     foreach (@mandatory_params) {
-        return "aes256_decrypt: missing option '$_'" unless defined($options{$_});
+        if ( !defined($options{$_}) ) {
+            print STDERR "aes256_decrypt: missing mandatory option '$_'";
+            return undef;
+        }
     }
 
     my $binary_data = decode_base64($options{data});
