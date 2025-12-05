@@ -93,7 +93,8 @@ sub new {
         _service_filters_options(type => 'volume', ),
         _service_ident_options(type => 'network',   port => 9696, endpoint => ''),
         _service_filters_options(type => 'network', ),
-
+        _service_ident_options(type => 'loadbalancer',    port => 9876, endpoint => ''),
+        _service_filters_options(type => 'loadbalancer', ),
 
         # Endpoint filters common to all services
         _endpoint_filters_options(),
@@ -148,6 +149,7 @@ sub service_check_options {
 
     $self->{$service.$_} = $self->{option_results}->{$service.$_}
         foreach qw/url insecure endpoint port interface timeout/;
+
     # Add default endpoint to URL if defined and not already present
     $self->{$service.'url'} .= $self->{$service.'endpoint'}
         if $self->{$service.'url'} ne '' && $self->{$service.'endpoint'} ne '' && $self->{$service.'url'} !~ /$self->{$service.'endpoint'}$/;
@@ -162,6 +164,7 @@ sub service_check_options {
 
             foreach my $endpoint (@{$keystone_service->{endpoints}}) {
                 next if $self->is_excluded_endpoint($endpoint);
+
                 $self->{$service.'url'} = $endpoint->{url};
                 last KEYSTONE_CATALOG
             }
@@ -326,6 +329,7 @@ sub other_services_check_options {
     $self->service_check_options(mandatory => 1, type => 'image', keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'volume',  keystone_services => $catalog );
     $self->service_check_options(mandatory => 1, type => 'network',  keystone_services => $catalog );
+    $self->service_check_options(mandatory => 0, type => 'loadbalancer',  keystone_services => $catalog );
 }
 
 sub settings {
@@ -338,8 +342,95 @@ sub connect_info {
     my ($self, %options) = @_;
 
     my $url = $options{url};
-
     ( full_url => $url.($options{resource} // ''), proto=> $url =~ s/^(https?).+/$1/r )
+}
+
+# Returns volumes list by calling Cinder service
+sub cinder_list_volumes {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+
+    my %params = ( limit => $limit );
+
+    my $token = $options{token} || $self->{token};
+
+    # Cinder natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter (qw/status name id/) {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+    $params{availability_zone} = $1 if $options{"include_zone"} =~ /^([\w\s]+)$/;
+
+    $params{tenant_id} = $options{project_id} if $options{project_id};
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle pagination
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{volume_url}, resource => '/volumes/detail'),
+            insecure => $self->{volume_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),
+                 message     => value_of($response, "->{error}->{title}", 'Bad request').': '.
+                                value_of($response, "->{error}->{message}", "Invalid response")
+               }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{volumes};
+
+        last unless @{$response->{volumes}};
+
+        $params{marker} = $response->{volumes}[-1]->{id};
+        foreach my $volume (@{$response->{volumes}}) {
+            $volume->{'os-vol-tenant-attr:tenant_id'} //= '';
+            $volume->{bootable} = $volume->{bootable} =~ /true/i ? '1' : '0';
+            next if is_excluded($volume->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($volume->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($volume->{status}, $options{include_status}, $options{exclude_status});
+            next if is_excluded($volume->{volume_type}, $options{include_type}, $options{exclude_type});
+            next if is_excluded($volume->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($volume->{bootable}, $options{include_bootable}, $options{exclude_bootable});
+            next if is_excluded($volume->{encrypted}, $options{include_encrypted}, $options{exclude_encrypted});
+            next if is_excluded($volume->{availability_zone}, $options{include_zone}, $options{exclude_zone});
+            next if $volume->{'os-vol-tenant-attr:tenant_id'} && is_excluded($volume->{'os-vol-tenant-attr:tenant_id'}, $options{project_id}, "");
+
+            my $items = { id => $volume->{id},
+                          name => $volume->{name},
+                          description => $volume->{description},
+                          status => $volume->{status},
+                          size => $volume->{size},
+                          project_id => $volume->{'os-vol-tenant-attr:tenant_id'},
+                          bootable => $volume->{bootable},
+                          encrypted => $volume->{encrypted},
+                          type => $volume->{volume_type},
+                          zone => $volume->{availability_zone} // '',
+                          attachments => scalar(@{$volume->{attachments}}),
+                        };
+
+            push @results, $items;
+        }
+
+        last if @{$response->{volumes}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
 }
 
 # Returns Instances list by calling Nova service
@@ -445,6 +536,92 @@ sub nova_list_instances {
         }
 
         last if @{$response->{servers}} < $limit;
+    }
+
+    return { http_status => 200, results => \@results }
+}
+
+# Returns Load Balancer list by calling Octavia service
+sub octavia_list_loadbalancer {
+    my ($self, %options) = @_;
+
+    my $limit = 200;
+    my %params = ( limit => $limit );
+    $params{project_id} = $options{project_id}
+        if $options{project_id};
+
+    my $token = $options{token} || $self->{token};
+
+    # Octavia natively accepts certain filters but only one of each is allowed and they cannot be
+    # regular expressions. We use our filters that satisfy these requirements
+    foreach my $filter ('name', 'id') {
+        my $filter_name = "include_".$filter;
+        next unless $options{$filter_name} && scalar(@{$options{$filter_name}}) == 1;
+
+        my $data = $options{$filter_name}->[0];
+        next unless $data =~ /^[\w\-\s]+$/;
+
+        $params{$filter}=$data;
+    }
+
+    my $response_brut;
+    my @results;
+
+    # Retry to handle token expiration
+    while (1) {
+        $response_brut = $self->{http}->request(
+            method => 'GET',
+            get_params => \%params,
+            header => [ 'Content-Type: application/json',
+                        'X-Auth-Token: '.$token],
+            $self->connect_info(url => $self->{loadbalancer_url}, resource => '/v2/lbaas/loadbalancers'),
+            insecure => $self->{loadbalancer_insecure},
+            critical_status => '',
+            warning_status => '',
+            unknown_status => ''
+        );
+        my $response = json_decode($response_brut);
+
+        return { http_status => $self->{http}->get_code(),message => value_of($response, "->{error}->{title}", 'Bad request').': '.value_of($response, "->{error}->{message}", "Invalid response") }
+            if ref $response ne 'HASH' || $response->{error} || not $response->{loadbalancers};
+
+        last unless @{$response->{loadbalancers}};
+        $params{marker} = $response->{loadbalancers}[-1]->{id};
+
+        foreach my $loadbalancer (@{$response->{loadbalancers}}) {
+            $loadbalancer->{admin_state_up} = $loadbalancer->{admin_state_up} ? "True": "False";
+            next if is_excluded($loadbalancer->{name}, $options{include_name}, $options{exclude_name});
+            next if is_excluded($loadbalancer->{id}, $options{include_id}, $options{exclude_id});
+            next if is_excluded($loadbalancer->{operating_status}, $options{include_operating_status}, $options{exclude_operating_status});
+            next if is_excluded($loadbalancer->{provisioning_status}, $options{include_provisioning_status}, $options{exclude_provisioning_status});
+            next if is_excluded($loadbalancer->{admin_state_up}, $options{include_admin_state_up}, $options{exclude_admin_state_up});
+            next if is_excluded($loadbalancer->{vip_address}, $options{include_vip_address}, $options{exclude_vip_address});
+            next if is_excluded($loadbalancer->{description}, $options{include_description}, $options{exclude_description});
+            next if is_excluded($loadbalancer->{provider}, $options{include_provider}, $options{exclude_provider});
+            next if is_excluded($loadbalancer->{project_id}, $options{project_id});
+
+            $loadbalancer->{pools} = [] unless $loadbalancer->{pools};
+            $loadbalancer->{listeners} = [] unless $loadbalancer->{listeners};
+
+            next if $options{exclude_no_pools} && not @{$loadbalancer->{pools}};
+            next if $options{exclude_no_listeners} && not @{$loadbalancer->{listeners}};
+
+            my $items = { id => $loadbalancer->{id},
+                          name => $loadbalancer->{name},
+                          operating_status => $loadbalancer->{'operating_status'},
+                          provisioning_status => $loadbalancer->{'provisioning_status'},
+                          admin_state_up => $loadbalancer->{admin_state_up},
+                          vip_address => $loadbalancer->{vip_address},
+                          description => $loadbalancer->{description},
+                          project_id => $loadbalancer->{project_id},
+                          provider => $loadbalancer->{provider},
+                          pool_count => scalar @{$loadbalancer->{pools}},
+                          listener_count => scalar @{$loadbalancer->{listeners}},
+                        };
+            push @results, $items;
+        }
+
+        last if @{$response->{loadbalancers}} < $limit;
     }
 
     return { http_status => 200, results => \@results }
@@ -701,11 +878,12 @@ sub keystone_authent {
     $expires_at = $expires_at->parse_datetime($response->{token}->{expires_at});
     $expires_at = $expires_at->epoch();
 
+    $_->{type} =~ s/-//g foreach @{$response->{token}->{catalog}};
+
     my %data = ( token => $token,
                  expires_at => $expires_at,
                  services => $response->{token}->{catalog}
                );
-
     $self->{cache_authent}->write(data => \%data);
 
     $self->{token} = $token;
@@ -946,7 +1124,7 @@ Set the protocol to use in the Glance service URL (default: 'https').
 
 =item B<--image-port>
 
-Set the port to use in the Glance service URL (default: 8774).
+Set the port to use in the Glance service URL (default: 9292).
 
 =item B<--image-endpoint>
 
@@ -957,7 +1135,38 @@ Set the endpoint to use in the Glance service URL (default: '/v2').
 Allow insecure TLS connection (default: '0').
 When set to 0 the default insecure value passed with --insecure is used.
 
-=item B<--image-timeout>
+=item B<--volume-url>
+
+Set the URL to use for the OpenStack Cinder (volume) service.
+A valid Glance URL is required since it is a mandatory service.
+Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+
+Example: C<--volume-url="https://myopenstack.local:8776">
+
+This URL can also be construct with options (--volume-hostname, --volume-proto, --image-port, --image-endpoint).
+
+=item B<--volume-hostname>
+
+Set the hostname part of the Cinder service URL.
+
+=item B<--volume-proto>
+
+Set the protocol to use in the Cinder service URL (default: 'https').
+
+=item B<--volume-port>
+
+Set the port to use in the Cinder service URL (default: 8776).
+
+=item B<--volume-endpoint>
+
+Set the endpoint to use in the Cinder service URL.
+
+=item B<--volume-insecure>
+
+Allow insecure TLS connection (default: '0').
+When set to 0 the default insecure value passed with --insecure is used.
+
+=item B<--volume-timeout>
 
 Set HTTP timeout in seconds (default: '0').
 When set to 0 the default timeout value passed with --timeout is used.
