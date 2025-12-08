@@ -5,6 +5,8 @@ FROM ${REGISTRY_URL}/almalinux:8
 ARG NODE_VERSION=24
 ARG PNPM_VERSION=10.24.0
 
+COPY .github/docker/testing/package.json .github/docker/testing/pnpm-lock.yaml /root/
+
 RUN bash -e <<EOF
 
 dnf install -y 'dnf-command(config-manager)' epel-release zstd jq procps-ng
@@ -21,6 +23,7 @@ curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&\
 dnf install -y nodejs
 curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} sh -
 source \$HOME/.bashrc
+cd /root
 pnpm install --frozen-lockfile
 export PATH="~/node_modules/.bin/:$PATH"
 
