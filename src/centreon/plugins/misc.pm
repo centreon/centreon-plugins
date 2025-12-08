@@ -36,6 +36,7 @@ our @EXPORT_OK = qw/change_seconds
                     graphql_escape
                     is_empty
                     is_excluded
+                    is_local_ip
                     json_encode
                     json_decode
                     slurp_file
@@ -878,10 +879,7 @@ sub json_encode {
     my ($object, %options) = @_;
 
     $object =~ s/\r//mg;
-    my $encoded;
-    eval {
-        $encoded = JSON::XS->new->utf8->canonical->encode($object);
-    };
+    my $encoded = eval { JSON::XS->new->utf8->canonical->pretty($options{prettify} // 0)->encode($object) };
 
     if ($@) {
         # To keep compatibilty with old json_encode:
@@ -929,11 +927,19 @@ sub sort_ips($$) {
 }
 
 # function to assess if a string has to be excluded given an include regexp and an exclude regexp
-sub is_excluded {
+sub is_excluded($;$;$) {
     my ($string, $include_regexp, $exclude_regexp) = @_;
-    return 1 unless defined($string);
-    return 1 if (defined($exclude_regexp) && $exclude_regexp ne '' && $string =~ /$exclude_regexp/);
-    return 0 if (!defined($include_regexp) || $include_regexp eq '' || $string =~ /$include_regexp/);
+    return 1 unless defined $string;
+
+    if (defined $exclude_regexp) {
+        $exclude_regexp = [ $exclude_regexp ] unless ref $exclude_regexp eq 'ARRAY';
+        return 1 if grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp;
+    }
+    return 0 unless defined $include_regexp;
+    $include_regexp = [ $include_regexp ] unless ref $include_regexp eq 'ARRAY';
+    return 0 unless @{$include_regexp};
+
+    return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
 
     return 1;
 }
