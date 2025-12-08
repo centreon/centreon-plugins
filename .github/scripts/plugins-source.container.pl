@@ -94,6 +94,10 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/templates/counter.pm',
             'centreon/plugins/templates/hardware.pm'
         );
+        if (grep 'snmp_standard/modes/listinterfaces.pm', @{$config->{files}}) {
+            my %temp_map = map {$_ => 1 } (@{$config->{files}}, "snmp_standard/mode/resources/");
+            @{$config->{files}} = sort keys %temp_map;
+        }
         foreach my $file ((@common_files, @{$config->{files}})) {
             if (-f $file) {
                 File::Copy::Recursive::fcopy($file, 'lib/' . $file);
