@@ -57,7 +57,7 @@ interfaces - errors ${tc}
             ...      1     network/paloalto/snmp/paloalto1    ${EMPTY}
             ...      OK: Interface 'ethernet1' Packets In Discard : Buffer creation, Packets In Error : Buffer creation, Packets Out Discard : Buffer creation, Packets Out Error : Buffer creation
             ...      2     network/paloalto/snmp/paloalto1    ${EMPTY}
-            ...      OK: Interface 'ethernet1' Packets In Discard : 0.00% (0 on 0), Packets Out Discard : 0.00% (0 on 0), Packets Out Error : 0.00% (0 on 0) | 'packets_discard_in'=0.00%;;;0;100 'packets_discard_out'=0.00%;;;0;100 'packets_error_out'=0.00%;;;0;100
+            ...      OK: Interface 'ethernet1' Packets In Discard : 0.00% (0 on 0), Packets In Error : 0.00% (0 on 0), Packets Out Discard : 0.00% (0 on 0), Packets Out Error : 0.00% (0 on 0) | 'packets_discard_in'=0.00%;;;0;100 'packets_error_in'=0.00%;;;0;100 'packets_discard_out'=0.00%;;;0;100 'packets_error_out'=0.00%;;;0;100
             ...      3     network/paloalto/snmp/paloalto2    ${EMPTY}
             ...      OK: Interface 'ethernet1' Packets In Discard : 100.00% (35000000 on 35000000), Packets Out Discard : 71.50% (7150000 on 10000000), Packets Out Error : 0.35% (35000 on 10000000) | 'packets_discard_in'=100.00%;;;0;100 'packets_discard_out'=71.50%;;;0;100 'packets_error_out'=0.35%;;;0;100
             ...      4     network/paloalto/snmp/paloalto1    ${EMPTY}
