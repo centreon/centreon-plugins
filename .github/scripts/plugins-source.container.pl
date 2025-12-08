@@ -6,6 +6,7 @@ use File::Path;
 use File::Basename;
 use JSON;
 use Cwd qw(getcwd);
+use List::MoreUtils qw(uniq);
 
 my $pwd = (getcwd . '/');
 my $plugins_dir = ($pwd . 'src');
@@ -94,6 +95,9 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/templates/counter.pm',
             'centreon/plugins/templates/hardware.pm'
         );
+        if (grep 'snmp_standard/modes/listinterfaces.pm', @{$config->{files}}) {
+            @{$config->{files}} = uniq sort (@{$config->{files}}, "snmp_standard/mode/resources/");
+        }
         foreach my $file ((@common_files, @{$config->{files}})) {
             if (-f $file) {
                 File::Copy::Recursive::fcopy($file, 'lib/' . $file);
