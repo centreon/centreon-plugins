@@ -341,16 +341,18 @@ sub custom_traffic_calc {
     $self->{result_values}->{display} = $options{new_datas}->{ $self->{instance} . '_display' };
 
     if ($self->{result_values}->{traffic_prct} > 100) {
-        my $time_str = time();
-        # Copy statefile to a new file for debug
-        my $statefile = $self->{statefile}->{statefile_dir} . '/' . $self->{statefile}->{statefile};
-        copy($statefile, $statefile . '_' . $time_str . '.json') or warn "Impossible de copier $statefile to " . $statefile . ".corrupted: $!";
-        # Save old and new datas to a file for debug
-        my $datafile = "$self->{statefile}->{statefile_dir}/" . $self->{label} . "_" . $self->{instance} . "_" . $time_str . ".log";
-        open(my $fh, '>', $datafile) or warn "Creation of $datafile failed: $!";
-        print $fh "Old datas:\n", map { "$_ => $options{old_datas}->{$_}\n" } keys %{$options{old_datas}};
-        print $fh "\nNew datas:\n", map { "$_ => $options{new_datas}->{$_}\n" } keys %{$options{new_datas}};
-        close($fh);
+        if ($self->{instance_mode}->{option_results}->{trace}) {
+            my $time_str = time();
+            # Copy statefile to a new file for debug
+            my $statefile = $self->{statefile}->{statefile_dir} . '/' . $self->{statefile}->{statefile};
+            copy($statefile, $statefile . '_' . $time_str . '.json') or warn "Impossible de copier $statefile to " . $statefile . ".corrupted: $!";
+            # Save old and new datas to a file for debug
+            my $datafile = "$self->{statefile}->{statefile_dir}/" . $self->{label} . "_" . $self->{instance} . "_" . $time_str . ".log";
+            open(my $fh, '>', $datafile) or warn "Creation of $datafile failed: $!";
+            print $fh "Old datas:\n", map { "$_ => $options{old_datas}->{$_}\n" } keys %{$options{old_datas}};
+            print $fh "\nNew datas:\n", map { "$_ => $options{new_datas}->{$_}\n" } keys %{$options{new_datas}};
+            close($fh);
+        }
         # no percentage for traffic
         $self->{result_values}->{traffic_prct} = undef;
         $self->{error_msg} = 'clear buffer';
