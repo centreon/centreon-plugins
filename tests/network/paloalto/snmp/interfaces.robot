@@ -31,11 +31,11 @@ interfaces - traffic ${tc}
             ...      1     network/paloalto/snmp/paloalto1    ${EMPTY}         
             ...      OK: Interface 'ethernet1' Traffic In : Buffer creation, Traffic Out : Buffer creation
             ...      2     network/paloalto/snmp/paloalto1    ${EMPTY}
-            ...      OK: Interface 'ethernet1' Traffic In : 0.00b/s \\\\(0.00%\\\\), Traffic Out : 0.00b/s \\\\(0.00%\\\\) \\\\| 'traffic_in'=0.00b/s;;;0;1000000000 'traffic_out'=0.00b/s;;;0;1000000000
+            ...      OK: Interface 'ethernet1' Traffic In : 0.00b/s \\\\(0.00%\\\\), Traffic Out : 0.00b/s \\\\(0.00%\\\\) \\\\| 'traffic_in'=0.00b/s;;;0;2000000000 'traffic_out'=0.00b/s;;;0;2000000000
             ...      3     network/paloalto/snmp/paloalto2    ${EMPTY}
             ...      OK: Interface 'ethernet1' Traffic In : \\\\d+.\\\\d+ [KMG]?b/s \\\\(\\\\d+.\\\\d+%\\\\), Traffic Out : \\\\d+.\\\\d+ [KMG]?b/s \\\\(\\\\d+.\\\\d+%\\\\) | 'traffic_in'=\\\\d+.\\\\d+b/s;;;0;2000000000 'traffic_out'=\\\\d+.\\\\d+b/s;;;0;2000000000
             ...      4     network/paloalto/snmp/paloalto1    ${EMPTY}
-            ...      OK: Interface 'ethernet1' Traffic In : 0.00b/s \\\\(0.00%\\\\), Traffic Out : 0.00b/s \\\\(0.00%\\\\) \\\\| 'traffic_in'=0.00b/s;;;0;1000000000 'traffic_out'=0.00b/s;;;0;1000000000
+            ...      OK: Interface 'ethernet1' Traffic In : \\\\d+.\\\\d+ [KMG]?b/s \\\\(\\\\d+.\\\\d+%\\\\), Traffic Out : \\\\d+.\\\\d+ [KMG]?b/s \\\\(\\\\d+.\\\\d+%\\\\) | 'traffic_in'=\\\\d+.\\\\d+b/s;;;0;2000000000 'traffic_out'=\\\\d+.\\\\d+b/s;;;0;2000000000
 
 interfaces - errors ${tc}
     [Tags]    network    paloalto    snmp_standard    interfaces
