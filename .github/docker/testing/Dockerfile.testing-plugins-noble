@@ -5,7 +5,7 @@ FROM ${REGISTRY_URL}/ubuntu:noble
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG NODE_VERSION=24
-ARG PNPM_VERSION=10
+ARG PNPM_VERSION=10.24.0
 
 COPY package.json pnpm-lock.yaml ./
 

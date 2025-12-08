@@ -82,7 +82,7 @@ jobs:
           build-args: |
             "REGISTRY_URL=${{ vars.DOCKER_PROXY_REGISTRY_URL }}"
             "NODE_VERSION=24"
-            "PNPM_VERSION=10"
+            "PNPM_VERSION=10.24.0"
           pull: true
           push: true
           tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-${{ matrix.image }}:${{ github.head_ref || github.ref_name }}
