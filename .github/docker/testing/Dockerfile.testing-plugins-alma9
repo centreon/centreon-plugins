@@ -24,7 +24,7 @@ pip3.11 install snmpsim
 
 curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&\
 dnf install -y nodejs
-curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} sh -
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} ENV="\$HOME/.bashrc" SHELL="\$(which bash)" bash -
 pnpm install --frozen-lockfile
 export PATH="~/node_modules/.bin/:$PATH"
 
