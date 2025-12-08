@@ -2,6 +2,9 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/almalinux:8
 
+ARG NODE_VERSION=24
+ARG PNPM_VERSION=10
+
 RUN bash -e <<EOF
 
 dnf install -y 'dnf-command(config-manager)' epel-release zstd jq procps-ng
@@ -14,12 +17,11 @@ pip3.11 install robotframework robotframework-examples
 # Install snmpsim
 pip3.11 install snmpsim
 
-# Install node
-curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
-yum install -y nodejs
-
-# Install mockoon
-npm install -g -D @mockoon/cli@9.3.0
+curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&\
+dnf install -y nodejs
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} sh -
+pnpm install --frozen-lockfile
+export PATH="~/node_modules/.bin/:$PATH"
 
 # Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\

@@ -4,6 +4,11 @@ FROM ${REGISTRY_URL}/ubuntu:noble
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG NODE_VERSION=24
+ARG PNPM_VERSION=10
+
+COPY package.json pnpm-lock.yaml ./
+
 # fix locale
 RUN bash -e <<EOF
 
@@ -38,11 +43,11 @@ pip3 install robotframework robotframework-examples
 # Install snmpsim
 pip3 install snmpsim
 
-# Install nodejs
-curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
+curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&\
 apt-get install -y nodejs
-# Install mockoon (needs nodejs)
-npm install -g -D @mockoon/cli@9.3.0
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} sh -
+pnpm install --frozen-lockfile
+export PATH="~/node_modules/.bin/:$PATH"
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/ubuntu-standard-24.10-stable/ noble main" | tee -a /etc/apt/sources.list.d/centreon-stable.list
