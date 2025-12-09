@@ -85,8 +85,7 @@ jobs:
             "PNPM_VERSION=10.24.0"
           pull: true
           push: true
-          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-${{ matrix.image }}:${{ github.head_ref || github.ref_name }}
-          # tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-${{ matrix.image }}:latest
+          tags: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-${{ matrix.image }}:latest
 
   set-skip-label:
     needs: [get-environment, dockerize]
