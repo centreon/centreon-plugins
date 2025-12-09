@@ -20,6 +20,7 @@
 
 package centreon::plugins::dbi;
 
+
 use strict;
 use warnings;
 use DBI;

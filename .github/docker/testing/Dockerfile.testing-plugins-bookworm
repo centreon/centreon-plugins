@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG NODE_VERSION=24
 ARG PNPM_VERSION=10.24.0
 
-COPY .github/docker/testing/package.json .github/docker/testing/pnpm-lock.yaml /root/
+COPY .github/docker/testing/package.json .github/docker/testing/pnpm-lock.yaml /usr/local/src/
 
 # fix locale
 RUN bash -e <<EOF
@@ -40,13 +40,13 @@ pip3 install robotframework robotframework-examples
 # Install snmpsim
 pip3 install snmpsim
 
-curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&\
+curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 apt-get install -y nodejs
 curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bash -
-source \$HOME/.bashrc
+source ~/.bashrc
 cd /root
 pnpm install --frozen-lockfile
-export PATH="~/node_modules/.bin/:$PATH"
+echo 'export PATH="~/node_modules/.bin/:$PATH"' >> ~/.bashrc
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/apt-standard-24.10-stable bookworm main" | tee /etc/apt/sources.list.d/centreon.list
@@ -68,3 +68,5 @@ chmod 777 /var/lib/centreon/centplugins/
 apt-get clean
 
 EOF
+
+ENV PATH="/usr/local/src/node_modules/.bin/:$PATH"
