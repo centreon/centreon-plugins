@@ -40,6 +40,7 @@ pip3 install robotframework robotframework-examples
 # Install snmpsim
 pip3 install snmpsim
 
+set -x
 curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - &&\
 apt-get install -y nodejs
 curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bash -
