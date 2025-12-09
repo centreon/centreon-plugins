@@ -28,7 +28,7 @@ dnf module enable -y nodejs:24
 dnf install -y nodejs
 curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bash -
 source ~/.bashrc
-cd /root
+cd /usr/local/src
 pnpm install --frozen-lockfile
 echo 'export PATH="~/node_modules/.bin/:$PATH"' >> ~/.bashrc
 
