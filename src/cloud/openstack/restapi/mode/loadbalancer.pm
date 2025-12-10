@@ -139,13 +139,6 @@ sub check_options {
 
     $self->SUPER::check_options(%options);
 
-    foreach my $filter (qw/include exclude/) {
-        foreach my $value (@{$self->{option_results}->{$filter."_admin_state_up"}}) {
-            $self->{output}->option_exit(short_msg => "Invalid --$filter-state-up value: $value (True or False)")
-                unless $value =~ /^(true|false)$/i;
-        }
-    }
-
     $self->{$_} = flatten_arrays($self->{option_results}->{$_})
         foreach @_options;
 
