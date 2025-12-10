@@ -322,91 +322,112 @@ Set to 0 to include them in the list.
 
 =item B<--warning-bookmark>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the bookmark value.
+Example: --warning-bookmark='%{bookmark} =~ /abcd-defg/'
 
 =item B<--critical-bookmark>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the bookmark value.
+Example: --critical-bookmark='%{bookmark} =~ /abcd-defg/'
 
 =item B<--warning-count>
 
-Threshold.
+Warning threshold for the number of instances returned.
 
 =item B<--critical-count>
 
-Threshold.
+Critical threshold for the number of instances returned.
 
 =item B<--warning-flavor>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the flavor value.
+Example: --warning-flavor='%{flavor} =~ /1/'
 
 =item B<--critical-flavor>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the flavor value.
+Example: --critical-flavor='%{flavor} =~ /1/'
 
 =item B<--warning-host>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the host value.
+Example: --warning-host='%{host} =~ /localhost/'
 
 =item B<--critical-host>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the host value.
+Example: --critical-host='%{host} =~ /localhost/'
 
 =item B<--warning-id>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the instance ID.
+Example: --warning-id='%{id} =~ /abcdf/'
 
 =item B<--critical-id>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the instance ID.
+Example: --critical-id='%{id} =~ /abcdf/'
 
 =item B<--warning-image>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the image value.
+Example: --warning-image='%{image} =~ /image/'
 
 =item B<--critical-image>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the image value.
+Example: --critical-image='%{image} =~ /image/'
 
 =item B<--warning-instance-name>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the instance name.
+Example: --warning-instance-name='%{instance_name} =~ /test/'
 
 =item B<--critical-instance-name>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the instance name.
+Example: --critical-instance-name='%{instance_name} =~ /test/'
 
 =item B<--warning-ip>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the IP.
+Example: --warning-ip='%{ip} =~ /127/'
 
 =item B<--critical-ip>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the IP.
+Example: --critical-ip='%{ip} =~ /127/'
 
 =item B<--warning-project-id>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the project ID.
+Example: --warning-project-id='%{project_id} =~ /1/'
 
 =item B<--critical-project-id>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the project ID.
+Example: --critical-project-id='%{project_id} =~ /1/'
 
 =item B<--warning-status>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the status value.
+Example: --warning-status='%{status} =~ /ACTIVE/'
 
 =item B<--critical-status>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the status value.
+Example: --critical-status='%{status} =~ /ERROR/'
+Default value: '%{status} !~ /active/i',
 
 =item B<--warning-zone>
 
-Threshold.
+Define the conditions to match for the status to be WARNING based on the zone value.
+Example: --warning-zone='%{zone} =~ /nova/'
 
 =item B<--critical-zone>
 
-Threshold.
+Define the conditions to match for the status to be CRITICAL based on the zone value.
+Example: --critical-zone='%{zone} =~ /nova/'
 
 =back
 
