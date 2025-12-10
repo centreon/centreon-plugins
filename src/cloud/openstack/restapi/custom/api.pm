@@ -681,13 +681,10 @@ sub keystone_list_projects {
         foreach my $project (@{$response->{projects}}) {
             next if is_excluded($project->{name}, $options{include_name}, $options{exclude_name});
             next if is_excluded($project->{domain_id}, $options{include_domain_id}, $options{exclude_domain_id});
-            my $domain_name = $self->keystone_get_domain_label(domain_id => $project->{domain_id});
-            next if is_excluded($domain_name, $options{include_domain_name}, $options{exclude_domain_name});
 
             my $items = { id => $project->{id},
                           name => $project->{name},
                           domain_id => $project->{domain_id},
-                          domain_name => $domain_name,
                           enabled => $project->{enabled}
                         };
 
@@ -1198,7 +1195,7 @@ OpenStack username.
 
 OpenStack password.
 
-=item B<--user-domain>
+=item B<--user-domain-id>
 
 OpenStack user domain to use with authentication (default: 'default').
 
@@ -1354,8 +1351,8 @@ When set to 0 the default insecure value passed with --insecure is used.
 =item B<--volume-url>
 
 Set the URL to use for the OpenStack Cinder (volume) service.
-A valid Glance URL is required since it is a mandatory service.
-Glance URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
+A valid Cinder URL is required since it is a mandatory service.
+Cinder URL is retrieved from Keystone catalog unless disco-mode is set to 'manual' or a specific URL is provided with this option.
 
 Example: C<--volume-url="https://myopenstack.local:8776">
 

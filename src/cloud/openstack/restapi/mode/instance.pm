@@ -180,7 +180,7 @@ sub host_discovery {
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
     $disco_stats->{discovered_items} = keys %{$self->{server}};
-    $disco_stats->{results} = $self->{server};
+    $disco_stats->{results} = [ values %{$self->{server}} ];
 
     my $encoded_data = json_encode($disco_stats, prettify => $self->{prettify},
                                                  output => $options{output},
@@ -319,6 +319,94 @@ If a instance has multiple IP addresses this parameter must match at least one o
 
 Exclude instance that do not have any IP address assigned (default: 1).
 Set to 0 to include them in the list.
+
+=item B<--warning-bookmark>
+
+Threshold.
+
+=item B<--critical-bookmark>
+
+Threshold.
+
+=item B<--warning-count>
+
+Threshold.
+
+=item B<--critical-count>
+
+Threshold.
+
+=item B<--warning-flavor>
+
+Threshold.
+
+=item B<--critical-flavor>
+
+Threshold.
+
+=item B<--warning-host>
+
+Threshold.
+
+=item B<--critical-host>
+
+Threshold.
+
+=item B<--warning-id>
+
+Threshold.
+
+=item B<--critical-id>
+
+Threshold.
+
+=item B<--warning-image>
+
+Threshold.
+
+=item B<--critical-image>
+
+Threshold.
+
+=item B<--warning-instance-name>
+
+Threshold.
+
+=item B<--critical-instance-name>
+
+Threshold.
+
+=item B<--warning-ip>
+
+Threshold.
+
+=item B<--critical-ip>
+
+Threshold.
+
+=item B<--warning-project-id>
+
+Threshold.
+
+=item B<--critical-project-id>
+
+Threshold.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-zone>
+
+Threshold.
+
+=item B<--critical-zone>
+
+Threshold.
 
 =back
 

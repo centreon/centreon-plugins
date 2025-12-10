@@ -34,7 +34,8 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'prettify'        => { name => 'prettify', default => 0 },
-        'horizon-url:s'   => { name => 'horizon_url' , default => '' }
+        'horizon-url:s'   => { name => 'horizon_url' , default => '' },
+        'refresh-catalog' => { name => 'refresh_catalog' },
     });
 
     return $self;
@@ -43,7 +44,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    $self->{$_} = $self->{option_results}->{$_} foreach qw/horizon_url prettify/;
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/horizon_url prettify refresh_catalog/;
 }
 
 sub manage_selection {
@@ -113,11 +114,20 @@ sub run {
     my $encoded_data = json_encode($disco_stats, prettify => $self->{prettify},
                                                  output => $self->{output},
                                                  no_exit => 1);
-    $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}'
-        unless $encoded_data;
 
-    $self->{output}->output_add(short_msg => $encoded_data);
-    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
+    if ($self->{refresh_catalog}) {
+        if ($encoded_data) {
+            $self->{output}->output_add(short_msg => 'Keystone service catalog cache refreshed successfully.');
+        } else {
+            $self->{output}->output_add(severity => 'UNKNOWN', short_msg => 'Cannot refresh Keystone service catalog cache.' );
+        }
+        $self->{output}->display();
+    } else {
+        $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}'
+            unless $encoded_data;
+        $self->{output}->output_add(short_msg => $encoded_data);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
+    }
     $self->{output}->exit();
 }
 
@@ -134,6 +144,10 @@ OpenStack Services discovery
 =item B<--prettify>
 
 Prettify JSON output.
+
+=item B<--refresh-catalog>
+
+Only refresh the Keystone service catalog cache.
 
 =item B<--horizon-url>
 
