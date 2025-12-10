@@ -193,52 +193,52 @@ When this option is not set the endpoints to test are taken from the cached C<Ke
 service list previously generated with 'discovery' and 'list-services' commands and
 filtered by C<--include-*> and C<--exclude-*> options below.
 
-=item B<--include-type>
+=item B<--include-service-type>
 
 Filter by service type (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--exclude-type>
+=item B<--exclude-service-type>
 
 Exclude by service type (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-name>
+=item B<--include-service-name>
 
 Filter by service name (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--exclude-name>
+=item B<--exclude-service-name>
 
 Exclude by service name (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-id>
+=item B<--include-service-id>
 
 Filter by service id (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--exclude-id>
+=item B<--exclude-service-id>
 
 Exclude by service id (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-region>
+=item B<--include-endpoint-region>
 
 Filter by service region (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--exclude-region>
+=item B<--exclude-endpoint-region>
 
 Exclude by service region (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-region-id>
+=item B<--include-endpoint-region-id>
 
 Filter by service region ID (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--exclude-region-id>
+=item B<--exclude-endpoint-region-id>
 
 Exclude by service region ID (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--include-interface>
+=item B<--include-endpoint-interface>
 
 Filter by service interface ID (can be a regexp and can be used multiple times or for comma separated values).
 OpenStack interfaces are 'public', 'internal', 'admin'.
 
-=item B<--exclude-interface>
+=item B<--exclude-endpoint-interface>
 
 Exclude by service interface (can be a regexp and can be used multiple times or for comma separated values).
 OpenStack interfaces are 'public', 'internal', 'admin'.
