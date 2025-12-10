@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon:dem::restapi::mode::siteoverview;
+package apps::centreon::dem::restapi::mode::siteoverview;
 
 use base qw(centreon::plugins::templates::counter);
 

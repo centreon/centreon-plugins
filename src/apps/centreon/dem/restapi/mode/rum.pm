@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon:dem::restapi::mode::rum;
+package apps::centreon::dem::restapi::mode::rum;
 
 use base qw(centreon::plugins::templates::counter);
 

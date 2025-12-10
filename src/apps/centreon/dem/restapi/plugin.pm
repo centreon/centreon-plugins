@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'list-user-journeys'      => 'apps::centreon:dem::restapi::mode::listuserjourneys',
-        'rum'                     => 'apps::centreon:dem::restapi::mode::rum',
-        'site-overview'           => 'apps::centreon:dem::restapi::mode::siteoverview',
-        'user-journey-incidents'  => 'apps::centreon:dem::restapi::mode::userjourneyincidents',
-        'user-journey-statistics' => 'apps::centreon:dem::restapi::mode::userjourneystatistics'
+        'list-user-journeys'      => 'apps::centreon::dem::restapi::mode::listuserjourneys',
+        'rum'                     => 'apps::centreon::dem::restapi::mode::rum',
+        'site-overview'           => 'apps::centreon::dem::restapi::mode::siteoverview',
+        'user-journey-incidents'  => 'apps::centreon::dem::restapi::mode::userjourneyincidents',
+        'user-journey-statistics' => 'apps::centreon::dem::restapi::mode::userjourneystatistics'
     };
 
-    $self->{custom_modes}->{api} = 'apps::centreon:dem::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::centreon::dem::restapi::custom::api';
     return $self;
 }
 

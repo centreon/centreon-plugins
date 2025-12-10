@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon:dem::restapi::mode::userjourneystatistics;
+package apps::centreon::dem::restapi::mode::userjourneystatistics;
 
 use base qw(centreon::plugins::templates::counter);
 

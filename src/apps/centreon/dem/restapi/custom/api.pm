@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon:dem::restapi::custom::api;
+package apps::centreon::dem::restapi::custom::api;
 
 use strict;
 use warnings;
