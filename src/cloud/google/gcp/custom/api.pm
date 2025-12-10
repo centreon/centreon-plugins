@@ -337,7 +337,11 @@ sub gcp_get_metrics {
         foreach my $point (@{$timeserie->{points}}) {
             if (defined($point->{value})) {
                 if (lc($timeserie->{valueType}) eq 'distribution') {
-                    $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' }->{ $options{distribution_value} };
+                    if (defined($point->{value}->{ lc($timeserie->{valueType}) . 'Value' }->{ $options{distribution_value} })) {
+                        $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' }->{ $options{distribution_value} };
+                    } else {
+                        next;
+                    }
                 } else {
                     $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
                 }

@@ -187,6 +187,11 @@ sub manage_selection {
             }
         }
     }
+
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No metrics. Check your options or check GCP API distribution metrics' time series points returns the mean or count values.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
