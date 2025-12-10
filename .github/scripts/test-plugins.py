@@ -175,7 +175,7 @@ if __name__ == '__main__':
     archi = args.extension  # expected either deb or rpm.
     logs_dir = args.logs_dir
     if args.runner_id:
-        log_dir = os.path.join(logs_dir, f"runner-{args.runner_id}")
+        logs_dir = os.path.join(logs_dir, f"runner-{args.runner_id}")
     os.makedirs(logs_dir, exist_ok=True)
     reports_dir = args.reports_dir
     if args.runner_id:
