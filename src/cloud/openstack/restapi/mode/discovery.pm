@@ -109,7 +109,7 @@ sub run {
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
     $disco_stats->{discovered_items} = @{$results->{managed_services}} ? 1 : 0;
-    $disco_stats->{results} = $results;
+    $disco_stats->{results} = [ $results ];
 
     my $encoded_data = json_encode($disco_stats, prettify => $self->{prettify},
                                                  output => $self->{output},
