@@ -30,9 +30,7 @@ use centreon::plugins::misc qw/flatten_arrays json_encode/;
 my @_options = qw/include_name
                   exclude_name
                   include_domain_id
-                  exclude_domain_id
-                  include_domain_name
-                  exclude_domain_name/;
+                  exclude_domain_id/;
 
 sub new {
     my ($class, %options) = @_;
@@ -134,14 +132,6 @@ Filter project by domain id (can be a regexp and can be used multiple times or f
 =item B<--exclude-domain-id>
 
 Exclude project by domain id (can be a regexp and can be used multiple times or for comma separated values).
-
-=item B<--include-domain-name>
-
-Filter project by domain name (can be a regexp and can be used multiple times or for comma separated values).
-
-=item B<--exclude-domain-name>
-
-Exclude project by domain by VM image type name (can be a regexp and can be used multiple times or for comma separated values).
 
 =back
 

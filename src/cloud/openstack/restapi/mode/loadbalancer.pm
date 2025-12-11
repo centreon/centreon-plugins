@@ -139,13 +139,6 @@ sub check_options {
 
     $self->SUPER::check_options(%options);
 
-    foreach my $filter (qw/include exclude/) {
-        foreach my $value (@{$self->{option_results}->{$filter."_admin_state_up"}}) {
-            $self->{output}->option_exit(short_msg => "Invalid --$filter-state-up value: $value (True or False)")
-                unless $value =~ /^(true|false)$/i;
-        }
-    }
-
     $self->{$_} = flatten_arrays($self->{option_results}->{$_})
         foreach @_options;
 
@@ -235,12 +228,12 @@ Valid values are: ONLINE, DRAINING, OFFLINE, DEGRADED, ERROR, NO_MONITOR
 Exclude by load balancer operating status (can be a regexp and can be used multiple times or for comma separated values).
 Valid values are: ONLINE, DRAINING, OFFLINE, DEGRADED, ERROR, NO_MONITOR
 
-=item B<--include-provisioning-status status>
+=item B<--include-provisioning-status>
 
 Filter by load balancer provisioning status (can be a regexp and can be used multiple times or for comma separated values).
 Valid values are: ACTIVE, ERROR, PENDING_CREATE, PENDING_UPDATE, PENDING_DELETE
 
-=item B<--exclude-privisioning-status status>
+=item B<--exclude-privisioning-status>
 
 Exclude by load balancer provisioning status (can be a regexp and can be used multiple times or for comma separated values).
 Valid values are: ACTIVE, ERROR, PENDING_CREATE, PENDING_UPDATE, PENDING_DELETE
