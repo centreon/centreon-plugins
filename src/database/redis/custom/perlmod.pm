@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -100,12 +100,13 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    foreach (qw/username cert key/) {
-	if ($self->{$_} ne '') {
-            $self->{output}->add_option_msg(short_msg => "Unsupported --$_ option.");
-	    $self->{output}->option_exit();
-        }
+    foreach (qw/cert key/) {
+        $self->{output}->option_exit(short_msg => "Unsupported --$_ option.")
+            if $self->{$_} ne '';
     }
+
+    $self->{output}->option_exit(short_msg => "Use of --username requires Perl Redis module v2.0 or higher but $Redis::VERSION was found")
+        if $Redis::VERSION < 2 && $self->{username} ne '';
 
     return 0;
 }
@@ -133,10 +134,13 @@ sub get_info {
     } else {
         $redis = Redis->new(server => $self->{server} . ':' . $self->{port});
     }
-    if ($self->{password} ne '') {
+    if ($self->{username} ne '' && $self->{password} ne '') {
+        $redis->auth($self->{username}, $self->{password});
+    } elsif ($self->{password} ne '') {
+        # Anonymous connexion
         $redis->auth($self->{password});
     }
-    
+
     my $response = $redis->info();
     my $items;
     foreach my $attributes (keys %$response) {
@@ -171,6 +175,11 @@ Redis server.
 =item B<--port>
 
 Redis port (default: 6379).
+
+=item B<--username>
+
+Redis username.
+Use of this option requires Perl Redis module v2.0 or higher.
 
 =item B<--password>
 

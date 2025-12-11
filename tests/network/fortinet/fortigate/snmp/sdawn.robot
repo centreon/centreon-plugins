@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+
 
 *** Test Cases ***
 sdwan ${tc}
@@ -24,7 +25,7 @@ sdwan ${tc}
     ...    --snmp-timeout=10
     ...    --snmp-retries=3
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                expected_result    --

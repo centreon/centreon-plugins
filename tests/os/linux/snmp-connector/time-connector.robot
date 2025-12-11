@@ -1,5 +1,6 @@
 *** Settings ***
 Documentation       Check time table
+
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup

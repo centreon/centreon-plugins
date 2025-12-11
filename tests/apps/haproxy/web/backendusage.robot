@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::haproxy::web::plugin
 ...                 --mode=backend-usage
@@ -22,12 +22,12 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 backend-usage ${tc}
-    [Tags]    mockoon    restapi    
+    [Tags]    mockoon    restapi
     ${command}    Catenate
     ...    ${CMD}
     ...    --filter-name='${filter_name}'
     ...    ${extra_options}
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter_name         extra_options                                    expected_result    --
@@ -40,6 +40,3 @@ backend-usage ${tc}
             ...      7     APP-RIA             ${EMPTY}                                         OK: Backend 'APP-RIA' backend status: UP, current queue: 0, current session rate: 0/s, max session rate: 0/s, current sessions: 0, backend-total-sessions : Buffer creation, backend-traffic-in : Buffer creation, backend-traffic-out : Buffer creation, denied requests: 0, denied responses: 0, connection errors: 0, responses errors: 0 | 'APP-RIA#backend.queue.current.count'=0;;;0; 'APP-RIA#backend.session.current.rate.countpersecond'=0;;;0; 'APP-RIA#backend.session.max.rate.countpersecond'=0;;;0; 'APP-RIA#backend.sessions.current.count'=0;;;0; 'APP-RIA#backend.requests.denied.count'=0;;;0; 'APP-RIA#backend.responses.denied.count'=0;;;0; 'APP-RIA#backend.connections.error.count'=0;;;0; 'APP-RIA#backend.responses.error.count'=0;;;0;
             ...      8     APP-RIA             --warning-backend-denied-requests=1:1            WARNING: Backend 'APP-RIA' backend denied requests: 0 | 'APP-RIA#backend.queue.current.count'=0;;;0; 'APP-RIA#backend.session.current.rate.countpersecond'=0;;;0; 'APP-RIA#backend.session.max.rate.countpersecond'=0;;;0; 'APP-RIA#backend.sessions.current.count'=0;;;0; 'APP-RIA#backend.sessions.total.count'=0;;;0; 'APP-RIA#backend.traffic.in.bitpersecond'=0.00b/s;;;0; 'APP-RIA#backend.traffic.out.bitpersecond'=0.00b/s;;;0; 'APP-RIA#backend.requests.denied.count'=0;1:1;;0; 'APP-RIA#backend.responses.denied.count'=0;;;0; 'APP-RIA#backend.connections.error.count'=0;;;0; 'APP-RIA#backend.responses.error.count'=0;;;0;
             ...      9     APP-RIA             --critical-backend-denied-requests=1:1           CRITICAL: Backend 'APP-RIA' backend denied requests: 0 | 'APP-RIA#backend.queue.current.count'=0;;;0; 'APP-RIA#backend.session.current.rate.countpersecond'=0;;;0; 'APP-RIA#backend.session.max.rate.countpersecond'=0;;;0; 'APP-RIA#backend.sessions.current.count'=0;;;0; 'APP-RIA#backend.sessions.total.count'=0;;;0; 'APP-RIA#backend.traffic.in.bitpersecond'=0.00b/s;;;0; 'APP-RIA#backend.traffic.out.bitpersecond'=0.00b/s;;;0; 'APP-RIA#backend.requests.denied.count'=0;;1:1;0; 'APP-RIA#backend.responses.denied.count'=0;;;0; 'APP-RIA#backend.connections.error.count'=0;;;0; 'APP-RIA#backend.responses.error.count'=0;;;0;
-
-
-

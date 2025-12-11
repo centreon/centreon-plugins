@@ -9,7 +9,7 @@ mkdir -p /var/lib/snmp/cert_indexes/
 chown snmp:snmp -R /var/lib/snmp/cert_indexes/
 mkdir -p /tmp/cache/
 
-dnf install -y dnf-plugins-core epel-release zstd jq
+dnf install -y dnf-plugins-core epel-release zstd jq procps-ng
 dnf config-manager --set-enabled crb
 dnf clean all
 
@@ -23,7 +23,7 @@ pip3.11 install snmpsim
 curl -fsSL https://rpm.nodesource.com/setup_21.x | bash -
 yum install -y nodejs
 # Install mockoon
-npm install -g -D @mockoon/cli
+npm install -g -D @mockoon/cli@9.3.0
 
 # Add Centreon plugins repositories
 echo -e '[centreon-plugins-stable]\n\

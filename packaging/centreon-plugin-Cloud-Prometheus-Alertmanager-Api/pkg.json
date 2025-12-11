@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Prometheus-Alertmanager-Api",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_prometheus_alertmanager_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/prometheus/alertmanager/restapi/"
+    ]
+}

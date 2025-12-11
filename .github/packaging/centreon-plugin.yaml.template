@@ -54,6 +54,7 @@ overrides:
       perl(lib),
       perl(sort),
       perl(String::ShellQuote),
+      tzdata,
       @RPM_DEPENDENCIES@
     ]
     conflicts:
@@ -82,6 +83,7 @@ overrides:
       libdatetime-perl,
       libxml-libxml-perl,
       libstring-shellquote-perl,
+      tzdata,
       @DEB_DEPENDENCIES@
     ]
     conflicts:

@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
@@ -30,7 +30,7 @@ jobs:
               - added|modified: 'src/**/*.pm'
 
       - name: Install CPAN Libraries
-        uses: shogo82148/actions-setup-perl@22423f01bde48fb88785c007e3166fbbbd8e892a # v1.34.0
+        uses: shogo82148/actions-setup-perl@f9f0bf89e0d19ddbabb2f40d43db2e944bce7d2f # v1.36.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm

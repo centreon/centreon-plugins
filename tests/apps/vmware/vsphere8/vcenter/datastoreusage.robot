@@ -1,11 +1,10 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -18,16 +17,16 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vcenter
 ...                 --proto=http
 ...                 --port=3000
 
+
 *** Test Cases ***
 Datastore-Usage ${tc}
-    [Tags]    apps    api    vmware   vsphere8    vcenter
+    [Tags]    apps    api    vmware    vsphere8    vcenter
     ${command_curl}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
-    ${command_lwp}     Catenate    ${CMD} --http-backend=lwp ${extraoptions}
+    ${command_lwp}    Catenate    ${CMD} --http-backend=lwp ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command_curl}    ${expected_result}
-    Ctn Run Command And Check Result As Strings    ${command_lwp}     ${expected_result}
-    
-    
+    Ctn Run Command And Check Result As Strings    ${command_lwp}    ${expected_result}
+
     Examples:    tc     extraoptions                                                        expected_result   --
         ...      1      --include-name=Prod                                                 OK: 'Datastore - Production' accessible, Used: 637.46 GB (52.66%) - Free: 573.04 GB (47.34%) - Total: 1.18 TB | 'Datastore - Production#datastore.space.usage.bytes'=684471615488B;;;0;1299764477952 'Datastore - Production#datastore.space.free.bytes'=615292862464B;;;0;1299764477952 'Datastore - Production#datastore.space.usage.percentage'=52.66%;;;0;100
         ...      2      --include-name=Prod --warning-usage=5                               WARNING: Used: 637.46 GB (52.66%) - Free: 573.04 GB (47.34%) - Total: 1.18 TB | 'Datastore - Production#datastore.space.usage.bytes'=684471615488B;0:5;;0;1299764477952 'Datastore - Production#datastore.space.free.bytes'=615292862464B;;;0;1299764477952 'Datastore - Production#datastore.space.usage.percentage'=52.66%;;;0;100

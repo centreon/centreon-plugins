@@ -158,6 +158,14 @@ Example: --warning='temperature,cpu,30' --warning='fan,.*,1500'
 Set critical threshold for temperatures (syntax: type,regexp,threshold)
 Example: --critical='temperature,system,40' --critical='disk,.*,40'
 
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 =back
 
 =cut

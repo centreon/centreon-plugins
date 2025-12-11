@@ -447,7 +447,7 @@ sub request {
     my $headers = [];
     my $content_type_forced = 0;
     foreach my $key (keys %{$options{request}->{headers}}) {
-        my $header = $key . ':' . (defined($options{request}->{headers}->{$key}) ? $options{request}->{headers}->{$key} : '');
+        my $header = $key . ':' . (defined($options{request}->{headers}->{$key}) ? ' '.$options{request}->{headers}->{$key} : '');
         push @$headers, $header;
         if ($key =~ /content-type/i) {
             $content_type_forced = 1;
@@ -508,9 +508,10 @@ sub request {
             }
         }
 
-        if (!defined($self->{response_code})) {
-            $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $err);
-            $self->{output}->option_exit();
+        unless (defined $self->{response_code}) {
+            $self->{output}->option_exit(short_msg => 'curl perform error : ' . $err)
+                unless $options{request}->{silently_fail};
+            $self->{response_code} = 503;
         }
     }
 

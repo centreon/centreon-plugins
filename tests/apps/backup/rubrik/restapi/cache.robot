@@ -9,20 +9,20 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}applications-rubrik-restapi.json
-${cmd}              ${CENTREON_PLUGINS} 
-...                 --plugin=apps::backup::rubrik::restapi::plugin 
+${MOCKOON_JSON}     ${CURDIR}${/}applications-rubrik-restapi.json
+${cmd}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::backup::rubrik::restapi::plugin
 ...                 --hostname=${HOSTNAME}
-...                 --api-username='username' 
-...                 --api-password='password' 
+...                 --api-username='username'
+...                 --api-password='password'
 ...                 --proto='http'
 ...                 --port=${APIPORT}
 
 
 *** Test Cases ***
 cache ${tc}/1
-    [Tags]    apps    backup   rubrik    restapi    cache
-    
+    [Tags]    apps    backup    rubrik    restapi    cache
+
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=cache
@@ -31,4 +31,3 @@ cache ${tc}/1
 
     Examples:        tc    extra_options            expected_result    --
             ...      1     ${EMPTY}                 OK: Cache files created successfully
- 

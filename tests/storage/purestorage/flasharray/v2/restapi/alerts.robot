@@ -1,12 +1,12 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
-** Variables ***
+
+*** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mokoon.json
 
 ${CMD}              ${CENTREON_PLUGINS}
@@ -17,6 +17,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --api-version='2.4'
 ...                 --api-token='token'
 ...                 --port=${APIPORT}
+
 
 *** Test Cases ***
 alerts ${tc}
@@ -31,5 +32,5 @@ alerts ${tc}
             ...       2       --filter-category='array'                                                                                                                                         CRITICAL: 1 problem(s) detected | 'alerts.detected.count'=1;;;0;
             ...       3       --warning-status='\\\%{component_name} eq "ct1.eth0"' --filter-category="toto" --insecure --verbose                                                               WARNING: 1 problem(s) detected | 'alerts.detected.count'=1;;;0; warning: alert [component: ct1.eth0] [severity: warning] [category: toto] [issue: failure]
             ...       4       --critical-status='\\\%{component_name} eq "ch0" and \\\%{severity} =~ /critical/i' --filter-category="array" --insecure --verbose                                CRITICAL: 1 problem(s) detected | 'alerts.detected.count'=1;;;0; critical: alert [component: ch0] [severity: critical] [category: array] [issue: shelf drive failures(s)]
-            ...       5       --memory                                                                                                                                                          CRITICAL: 1 problem(s) detected | 'alerts.detected.count'=1;;;0;  #first memory alert to be defined
-            ...       6       --memory                                                                                                                                                          OK: 0 problem(s) detected | 'alerts.detected.count'=0;;;0;  #second check to ensure no new memory alert
+            ...       5       --memory                                                                                                                                                          CRITICAL: 1 problem(s) detected | 'alerts.detected.count'=1;;;0;  # first memory alert to be defined
+            ...       6       --memory                                                                                                                                                          OK: 0 problem(s) detected | 'alerts.detected.count'=0;;;0;  # second check to ensure no new memory alert

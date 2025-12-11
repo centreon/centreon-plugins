@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-OpenStack-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_openstack_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/openstack/restapi/"
+    ]
+}

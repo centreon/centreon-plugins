@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
@@ -8,12 +7,13 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
-...    --mode=hardware
-...    --hostname=${HOSTNAME}
-...    --snmp-version=${SNMPVERSION}
-...    --snmp-port=${SNMPPORT}
-...    --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+...         --mode=hardware
+...         --hostname=${HOSTNAME}
+...         --snmp-version=${SNMPVERSION}
+...         --snmp-port=${SNMPPORT}
+...         --snmp-community=network/f5/bigip/snmp/slim-f5-bigip
+
 
 *** Test Cases ***
 hardware ${tc}
