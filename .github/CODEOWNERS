@@ -27,4 +27,4 @@ selinux/**                          @centreon/owners-pipelines
 **/security-checks.yml              @centreon/owners-security
 .githooks/**                        @centreon/owners-perl
 .githooks/pre-commit.d/gitleaks.sh  @centreon/owners-security
-.githooks/pre-commit                @centreon/owners-security
+.githooks/pre-commit                @centreon/owners-security**/secu-*.yml               @centreon/owners-security
