@@ -125,11 +125,10 @@ jobs:
           mkdir -p logs
           docker run --rm \
           -v $(pwd):/test_plugins  \
-          -v logs:/var/log \
           --workdir /test_plugins \
           ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} \
           bash -c "if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; \
-          python3 .github/scripts/test-plugins.py --extension=${{ inputs.package-extension }} --runner-id=${{ matrix.index }} --logs-dir=/var/log --reports-dir=/test_plugins/reports"
+          python3 .github/scripts/test-plugins.py --extension=${{ inputs.package-extension }} --runner-id=${{ matrix.index }} --logs-dir=./logs --reports-dir=./reports"
           echo "Listing current directory content:"
           ls -ll
           echo "Listing logs directory content:"
