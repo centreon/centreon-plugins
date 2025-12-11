@@ -129,12 +129,6 @@ jobs:
           ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} \
           bash -c "if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; \
           python3 .github/scripts/test-plugins.py --extension=${{ inputs.package-extension }} --runner-id=${{ matrix.index }} --logs-dir=./logs --reports-dir=./reports"
-          echo "Listing current directory content:"
-          ls -ll
-          echo "Listing logs directory content:"
-          ls -ll logs
-          echo "Listing reports directory content:"
-          ls -ll reports
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
