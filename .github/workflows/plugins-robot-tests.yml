@@ -116,18 +116,15 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Load image
-        run: |
-          docker load --input ./${{ inputs.image }}
-          echo "Listing current directory content:"
-          ls -ll
+        run: docker load --input ./${{ inputs.image }}
 
       - name: Install, test and remove plugin
         shell: bash
         run: |
-          echo "Listing current directory content:"
-          ls -ll
           mkdir -p reports
           mkdir -p logs
+          echo "Listing current directory content:"
+          ls -ll
           docker run --rm \
           -v $(pwd):/test_plugins  \
           -v logs:/var/log \
@@ -135,6 +132,10 @@ jobs:
           ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} \
           bash -c "if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; \
           python3 .github/scripts/test-plugins.py --extension=${{ inputs.package-extension }} --runner-id=${{ matrix.index }} --logs-dir=/var/log --reports-dir=/test_plugins/reports"
+          echo "Listing logs directory content:"
+          ls -ll logs
+          echo "Listing reports directory content:"
+          ls -ll reports
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
