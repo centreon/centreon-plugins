@@ -382,7 +382,7 @@ jobs:
       indexes: ${{ needs.get-plugins.outputs.index_matrix }}
       distrib: ${{ matrix.distrib }}
       arch: ${{ matrix.arch }}
-      get-packages: ${{ needs.get-plugins.outputs.package_plugins == 'True' }}
+      get-packages: ${{ needs.get-plugins.outputs.package_plugins }}
       package-extension: ${{ matrix.package_extension }}
       packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}

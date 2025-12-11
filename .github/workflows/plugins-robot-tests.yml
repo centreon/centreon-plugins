@@ -19,7 +19,7 @@ on:
         default: "amd64"
       get-packages:
         description: "Whether to get the packages from cache or not"
-        type: boolean
+        type: string
         default: true
       package-extension:
         description: "Either 'rpm' or 'deb'. Needed to determine the package manager command (dnf or apt-get)."
@@ -74,7 +74,7 @@ jobs:
         uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ./${{ inputs.image }}
-          key: ${{ inputs.image }}
+          key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
 
   robot-test:
     needs: [test-image-to-cache]
@@ -97,11 +97,11 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ./${{ inputs.image }}
-          key: ${{ inputs.image }}
+          key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
           fail-on-cache-miss: true
 
       - name: Get the cached plugins
-        if: ${{ inputs.get-packages == 'true' }}
+        if: ${{ inputs.get-packages == 'True' }}
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ./*.${{ inputs.package-extension }}
