@@ -158,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check Nginx request statistics.
+Check NGINX request statistics.
 
 =over 8
 
