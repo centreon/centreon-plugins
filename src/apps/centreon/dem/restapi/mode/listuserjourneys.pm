@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon:dem::restapi::mode::listuserjourneys;
+package apps::centreon::dem::restapi::mode::listuserjourneys;
 
 use base qw(centreon::plugins::mode);
 
