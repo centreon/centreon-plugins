@@ -11,25 +11,29 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
       PLUGIN=$(echo ${BASH_REMATCH[2]})
   fi
 
+  PACKAGE_FILE="packaging/$PACKAGE_PATH/pkg.json"
+  DEB_PACKAGE_FILE="packaging/$PACKAGE_PATH/deb.json"
+  RPM_PACKAGE_FILE="packaging/$PACKAGE_PATH/rpm.json"
+
   PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
 
   echo "::group::Preparing $PLUGIN_NAME_LOWER"
 
   # Process package files
-  pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
+  pkg_values=($(jq -r '.pkg_name,.plugin_name' "$PACKAGE_FILE"))
   pkg_summary=$(echo "${pkg_values[0]}")
   plugin_name=$(echo "${pkg_values[1]}")
-  conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
-  replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
-  provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
-  deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies // [] | join(",")')
-  deb_conflicts=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.conflicts // [] | join(",")')
-  deb_replaces=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.replaces // [] | join(",")')
-  deb_provides=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.provides // [] | join(",")')
-  rpm_dependencies=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.dependencies // [] | join(",")')
-  rpm_conflicts=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.conflicts // [] | join(",")')
-  rpm_replaces=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.replaces // [] | join(",")')
-  rpm_provides=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.provides // [] | join(",")')
+  conflicts=$(jq -r '.conflicts // [] | join(",")' "$PACKAGE_FILE")
+  replaces=$(jq -r '.replaces // [] | join(",")' "$PACKAGE_FILE")
+  provides=$(jq -r '.provides // [] | join(",")' "$PACKAGE_FILE")
+  deb_dependencies=$(jq -r '.dependencies // [] | join(",")' "$DEB_PACKAGE_FILE")
+  rpm_dependencies=$(jq -r '.dependencies // [] | join(",")' "$RPM_PACKAGE_FILE")
+  deb_conflicts=$(jq -r '.conflicts // [] | join(",")' "$DEB_PACKAGE_FILE")
+  rpm_conflicts=$(jq -r '.conflicts // [] | join(",")' "$RPM_PACKAGE_FILE")
+  deb_replaces=$(jq -r '.replaces // [] | join(",")' "$DEB_PACKAGE_FILE")
+  rpm_replaces=$(jq -r '.replaces // [] | join(",")' "$RPM_PACKAGE_FILE")
+  deb_provides=$(jq -r '.provides // [] | join(",")' "$DEB_PACKAGE_FILE")
+  rpm_provides=$(jq -r '.provides // [] | join(",")' "$RPM_PACKAGE_FILE")
 
   sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
     -e "s/@SUMMARY@/$pkg_summary/g" \
