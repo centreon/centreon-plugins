@@ -262,17 +262,17 @@ Check battery status and charge remaining.
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown|notPresent/i').
-You can use the following variables: %{status}
+You can use the following variables: %{status}, %{replace}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '%{status} =~ /low/i').
-You can use the following variables: %{status}
+You can use the following variables: %{status}, %{replace}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{replace} =~ /yes/i').
-You can use the following variables: %{status}
+You can use the following variables: %{status}, %{replace}
 
 =item B<--warning-*> B<--critical-*>
 
