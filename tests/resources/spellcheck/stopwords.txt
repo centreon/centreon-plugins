@@ -390,4 +390,6 @@ WLAN
 WLC
 WSMAN
 XPath
+ZDX
 ZFS
+Zscaler

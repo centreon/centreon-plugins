@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Zscaler-Zdx-Api",
+    "pkg_summary": "Centreon Plugin to monitor Zscaler Digital Experience (ZDX)",
+    "plugin_name": "centreon_zscaler_zdx_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/zscaler/zdx/api"
+    ]
+}
