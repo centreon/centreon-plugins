@@ -22,5 +22,6 @@ paths = [
 regexTarget = "match"
 regexes = [
   '''ABCDEFG1234567890''',
+  '''odQ16TYwubSSi\/m4mo88D8Trupbf\+3ehgmfxA7wrEtbCEDciZciBRY2cc9Yb2yD\+ivR64WR8RsPVPpGbPj1AFpu1TIwL88ic7zjGZaZiIr5kZenoi6xJquxQZbNW5t2N8JaUb\/Qupp2wvQ2rxv9zoQ==''',
   '''s.aBCD123DEF456GHI789JKL012'''
 ]

@@ -85,12 +85,19 @@ sub test {
             exclude_regexp   => '^t.*t$',
             expected_boolean => 1,
             msg              => 'Test string with both include and exclude regexp matching the string'
-        },
+        }
     );
     for my $test (@tests) {
         my $is_excluded = centreon::plugins::misc::is_excluded($test->{string}, $test->{include_regexp}, $test->{exclude_regexp});
         is($is_excluded, $test->{expected_boolean}, $test->{msg});
+    }
 
+    for my $test (@tests) {
+        my $include = [ 'none', $test->{include_regexp} ];
+        my $exclude = [ 'none', $test->{exclude_regexp} ];
+        my $msg = "(Again with arrays) ".$test->{msg};
+        my $is_excluded = centreon::plugins::misc::is_excluded($test->{string}, $include,  $exclude);
+        is($is_excluded, $test->{expected_boolean}, $msg);
     }
 
 }
