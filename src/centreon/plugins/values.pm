@@ -297,6 +297,7 @@ sub execute {
                 next;
             }
             if ($old_datas->{$self->{instance} . '_' . $value->{name}} > $options{new_datas}->{$self->{instance} . '_' . $value->{name}}) {
+                $old_datas->{$self->{instance} . '_' . $value->{name} . '_real'} = $old_datas->{$self->{instance} . '_' . $value->{name}};
                 $old_datas->{$self->{instance} . '_' . $value->{name}} = 0;
             }
         } else {

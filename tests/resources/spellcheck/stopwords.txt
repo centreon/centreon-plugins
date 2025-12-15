@@ -34,6 +34,7 @@ Avocent
 aws
 AWSCLI
 --aws-role-arn
+bootable
 Backbox
 BackupJobSession
 BAM
@@ -171,12 +172,13 @@ LTE
 LUN
 LUNs
 mA
-MAPI
 machineaccount
+MAPI
 --map-speed-dsl
 MBean
 Mbps
 McAfee
+Mellanox
 memAvailReal
 memBuffer
 --memexpiration
@@ -203,6 +205,7 @@ MQTT
 --mqtt-ssl-key
 --mqtt-timeout
 --mqtt-username
+MTU
 MSSQL
 multiple
 MX
@@ -230,6 +233,7 @@ OID
 --oid-extra-display
 --oid-filter
 OIDs
+OpenStack
 okta
 oneaccess-sys-mib
 OpenMetrics
@@ -241,6 +245,7 @@ out-ucast
 overprovisioning
 packetloss
 partiallyActive
+passthrough
 --patch-redhat
 perfdata
 pfSense
@@ -306,6 +311,7 @@ SureBackup
 systemd
 SysVol
 TCP
+tablespaces
 teampass
 Teldat
 temperatureambient
@@ -359,6 +365,7 @@ vSAN
 Vserver
 vSphere
 VTOM
+WaaS
 --warning-authserver-clients-timeout
 --warning-authserver-packets-access-accepts
 --warning-authserver-packets-access-requests

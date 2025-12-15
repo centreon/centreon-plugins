@@ -36,3 +36,15 @@ Discovery ${tc}
           ...      2     --filter-site-name='Site Paris'                     {"discovered_items":1,"duration":0,"end_time":1758794685,"results":[{"connected_since":"2025-09-03T20:00:00Z","connectivity_status":"Connected","description":"HQ in Paris - main datacenter","id":"1001","last_connected":"2025-09-04T08:15:00Z","name":"Site Paris","operational_status":"active","pop_name":"POP-Paris"}],"start_time":1758794685}
           ...      3     --filter-site-id='1002'                             {"discovered_items":1,"duration":0,"end_time":1758794705,"results":[{"connected_since":"","connectivity_status":"","description":"","id":"1002","last_connected":"","name":"Site Toulouse","operational_status":"","pop_name":""}],"start_time":1758794705}
           ...      4     --connectivity-details=0                            {"discovered_items":3,"duration":0,"end_time":1758794726,"results":[{"connected_since":"","connectivity_status":"","description":"","id":"1001","last_connected":"","name":"Site Paris","operational_status":"","pop_name":""},{"connected_since":"","connectivity_status":"","description":"","id":"1002","last_connected":"","name":"Site Toulouse","operational_status":"","pop_name":""},{"connected_since":"","connectivity_status":"","description":"","id":"1003","last_connected":"","name":"Site Saint Girons","operational_status":"","pop_name":""}],"start_time":1758794726}
+
+List ${tc}
+    [Tags]    network    securirt    api    graphql    cato
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings   ${command}    ${expected_result}
+
+    Examples:      tc    extraoptions                                        expected_result    --
+          ...      1     --disco-format                                      <?xml version="1.0" encoding="utf-8"?> <data> <element>id</element> <element>name</element> <element>description</element> <element>connectivity_status</element> <element>operational_status</element> <element>last_connected</element> <element>connected_since</element> <element>pop_name</element> </data>
+          ...      2     --disco-show                                        <?xml version="1.0" encoding="utf-8"?> <data> <label connected_since="2025-09-03T20:00:00Z" connectivity_status="Connected" description="HQ in Paris - main datacenter" id="1001" last_connected="2025-09-04T08:15:00Z" name="Site Paris" operational_status="active" pop_name="POP-Paris"/> <label connected_since="" connectivity_status="Disconnected" description="Sud !" id="1002" last_connected="2025-09-03T23:45:00Z" name="Site Toulouse" operational_status="disabled" pop_name="POP-Toulouse"/> <label connected_since="2025-09-04T01:30:00Z" connectivity_status="Degraded" description="Ariege" id="1003" last_connected="2025-09-04T07:50:00Z" name="Site Saint Girons" operational_status="locked" pop_name="POP-Ariege"/> </data>

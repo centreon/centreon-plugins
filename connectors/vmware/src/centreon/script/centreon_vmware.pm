@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ use JSON::XS;
 use centreon::vmware::script;
 use centreon::vmware::common;
 use centreon::vmware::connector;
-use centreon::script::centreonvault;
+use centreon::script::centreonsecrets;
 
 my ($centreon_vmware, $frontend);
 
@@ -54,7 +54,7 @@ BEGIN {
 
 use base qw(centreon::vmware::script);
 
-my $VERSION = '20250501';
+my $VERSION = '20251200';
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
@@ -108,9 +108,10 @@ sub new {
 
     bless $self, $class;
     $self->add_options(
-            'config-extra=s' => \$self->{opt_extra},
-            'check-config'   => \$self->{opt_check_config},
-            'vault-config=s' => \$self->{opt_vault_config}
+        'config-extra=s'   => \$self->{opt_extra},
+        'check-config'     => \$self->{opt_check_config},
+        'vault-config=s'   => \$self->{opt_vault_config},
+        'engine-context=s' => \$self->{opt_engine_context},
     );
 
     %{$self->{centreon_vmware_default_config}} = (
@@ -142,7 +143,7 @@ sub new {
     $self->{counter_stats}        = {};
     $self->{whoaim}               = undef; # to know which vsphere to connect
     $self->{modules_registry}     = {};
-    $self->{vault}                = {};
+    $self->{secrets}              = {};
 
     return $self;
 }
@@ -169,9 +170,12 @@ sub read_configuration {
         $self->{centreon_vmware_config} = {%{$self->{centreon_vmware_default_config}}, %centreon_vmware_config};
     } elsif ($self->{opt_extra} =~ /.*\.json$/i) {
         $centreon_vmware_config_from_json = centreon::vmware::common::parse_json_file( 'json_file' => $self->{opt_extra} );
-        if (defined($centreon_vmware_config_from_json->{error_message})) {
-            $self->{logger}->writeLogFatal("Error while parsing " . $self->{opt_extra} . ": " . $centreon_vmware_config_from_json->{error_message});
-        }
+
+        $self->{logger}->writeLogFatal("Error while opening " . $self->{opt_extra} . ": " . $centreon_vmware_config_from_json)
+            if (ref($centreon_vmware_config_from_json) eq '');
+        $self->{logger}->writeLogFatal("Error while parsing " . $self->{opt_extra} . ": " . $centreon_vmware_config_from_json->{error_message})
+            if (defined($centreon_vmware_config_from_json->{error_message}));
+        
         # The structure of the JSON is different from the .pm file. The code was designed to work with the latter, so
         # the structure of $self->{centreon_vmware_config} must be adapted after parsing to avoid a massive refactoring of
         # the whole program. The wanted structure is a key-object dictionary instead of an array of objects.
@@ -225,10 +229,16 @@ sub init {
         $self->{logger}->writeLogInfo("No vault config file given. Applying default: " . $self->{opt_vault_config});
     }
 
-    $self->{logger}->writeLogDebug("Vault config file " . $self->{opt_vault_config} . " exists. Creating the vault object.");
-    $self->{vault} = centreon::script::centreonvault->new(
-            'logger'      => $self->{logger},
-            'config_file' => $self->{opt_vault_config}
+    if (! defined($self->{opt_engine_context}) || $self->{opt_engine_context} eq '') {
+        $self->{opt_engine_context} = '/etc/centreon-engine/engine-context.json';
+        $self->{logger}->writeLogInfo("No Engine context config file given. Applying default: " . $self->{opt_engine_context});
+    }
+
+    $self->{logger}->writeLogDebug("Calling the centreonsecrets object's constructor.");
+    $self->{secrets} = centreon::script::centreonsecrets->new(
+        'logger'             => $self->{logger},
+        'opt_vault_config'   => $self->{opt_vault_config},
+        'opt_engine_context' => $self->{opt_engine_context},
     );
 
     ##### Load modules
@@ -275,11 +285,11 @@ sub init {
                $self->{logger}->writeLogFatal("Can't get password for couple host='" . $server . "', username='" . $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{username} . "' : $@");
             }
         } else {
-            # we let the vault object handle the secrets
+            # we let the secrets object handle the secrets
             for my $key ('username', 'password') {
                 $self->{logger}->writeLogDebug("Retrieving secret: $key");
                 $self->{centreon_vmware_config}->{vsphere_server}->{$server}->{$key}
-                    = $self->{vault}->get_secret($self->{centreon_vmware_config}->{vsphere_server}->{$server}->{$key});
+                    = $self->{secrets}->get_secret($self->{centreon_vmware_config}->{vsphere_server}->{$server}->{$key});
             }
         }
     }

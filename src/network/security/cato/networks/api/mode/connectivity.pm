@@ -40,7 +40,7 @@ my @performance_metrics = ( { metric => 'bytesUpstreamMax',
                             },
                             { metric => 'bytesDownstreamMax',
                               label => 'downstream-max',
-                              nlabel => 'connectivity.upstream.max.bytes',
+                              nlabel => 'connectivity.downstream.max.bytes',
                               unit => 'B'
                             },
                             { metric => 'lostUpstreamPcnt',

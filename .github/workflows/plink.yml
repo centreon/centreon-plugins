@@ -80,8 +80,8 @@ jobs:
       image: docker.centreon.com/centreon-private/rpm-signing:latest
       options: -t
       credentials:
-        username: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_USERNAME }}
-        password: ${{ secrets.HARBOR_RPM_GPG_SIGNING_REPO_TOKEN }}
+        username: ${{ secrets.HARBOR_CENTREON_PRIVATE_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PRIVATE_TOKEN }}
 
     steps:
       - run: |
@@ -107,7 +107,7 @@ jobs:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: packages-${{ matrix.distrib }}
           path: ./*.rpm
