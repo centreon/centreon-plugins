@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Quanta
+Documentation       Centreon DEM (formerly Quanta)
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -9,11 +9,11 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}quanta.mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}centreon-dem.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
 ${CMD}              ${CENTREON_PLUGINS}
-...                 --plugin=apps::monitoring::quanta::restapi::plugin
+...                 --plugin=apps::centreon::dem::restapi::plugin
 ...                 --hostname=${HOSTNAME}
 ...                 --api-token=PaSsWoRd
 ...                 --site-id=10
@@ -23,7 +23,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 ListUserJourneys ${tc}
-    [Tags]    quanta    api
+    [Tags]    centreon-dem    api
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-user-journeys

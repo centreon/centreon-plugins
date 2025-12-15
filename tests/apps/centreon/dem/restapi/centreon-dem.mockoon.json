@@ -1,7 +1,7 @@
 {
   "uuid": "5469fd1e-4a50-463f-840a-df519d945878",
   "lastMigration": 33,
-  "name": "Quanta.mockoon",
+  "name": "Centreon-DEM.mockoon",
   "endpointPrefix": "",
   "latency": 0,
   "port": 3006,
