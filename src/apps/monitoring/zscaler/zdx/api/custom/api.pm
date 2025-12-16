@@ -27,7 +27,7 @@ use centreon::plugins::statefile;
 use DateTime;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc qw(json_decode);
+use centreon::plugins::misc qw(json_decode is_empty);
 
 sub new {
     my ($class, %options) = @_;
@@ -89,7 +89,7 @@ sub get_token {
     );
     my $decoded_content = json_decode($content, output => $self->{output});
 
-    $self->{output}->opt_exit("No token found in '$content'") unless ($decoded_content->{token});
+    $self->{output}->option_exit(short_msg => "No token found in '$content'") unless ($decoded_content->{token});
     $self->{token} = $decoded_content->{token};
     return $self->{token};
 }
@@ -104,9 +104,12 @@ sub get_apps {
 
     $self->get_token();
 
+    my $apps_endpoint = '/apps';
+    $apps_endpoint .= '/' . $options{application_id} if (!is_empty($options{application_id}));
+
     my $content = $self->{http}->request(
         method          => 'GET',
-        url_path        => '/apps'
+        url_path        => $apps_endpoint
     );
     my $decoded_content = centreon::plugins::misc::json_decode($content, output => $self->{output});
 

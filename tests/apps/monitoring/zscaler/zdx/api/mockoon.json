@@ -167,6 +167,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "685706bf-25d1-4607-831c-4e731baffd89",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "apps/:appid",
+      "responses": [
+        {
+          "uuid": "ec845866-b8a4-48b3-a58c-9c7324f0fd2d",
+          "body": "{\n  \"id\": {{urlParam 'appid'}},\n  \"name\": \"Microsoft Teams Call Quality\",\n  \"score\": 85,\n  \"most_impacted_geo\": {\n    \"id\": \"0.5332921.US\",\n    \"state\": \"California\",\n    \"country\": \"United States\",\n    \"geo_type\": \"Region\"\n  },\n  \"stats\": {\n    \"active_users\": 1345,\n    \"active_devices\": 1503,\n    \"num_poor\": 134,\n    \"num_okay\": 234,\n    \"num_good\": 334\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -177,6 +233,10 @@
     {
       "type": "route",
       "uuid": "28075cfb-d300-4c92-aa12-d12ce3d115f0"
+    },
+    {
+      "type": "route",
+      "uuid": "685706bf-25d1-4607-831c-4e731baffd89"
     }
   ],
   "proxyMode": false,
