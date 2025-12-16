@@ -27,7 +27,7 @@ use centreon::plugins::statefile;
 use DateTime;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc qw(json_decode is_empty);
+use centreon::plugins::misc qw(json_decode is_empty value_of);
 
 sub new {
     my ($class, %options) = @_;
@@ -66,20 +66,21 @@ sub new {
 sub get_token {
     my ($self, %options) = @_;
 
-    # my $has_cache_file = $self->{token_cache}->read(
-    #         statefile => 'zdx_api_token_' . md5_hex(
-    #                 $self->{hostname}
-    #                 . ':' . $self->{port}
-    #                 . '_' . $self->{username})
-    # );
-    #my $token = $self->{token_cache}->get(name => 'token');
-
-
     return $self->{token} if defined($self->{token});
 
-    # return token stored in cache if exists
-
     $self->settings();
+
+    my $has_cache_file = $self->{cache}->read(
+            statefile => 'zdx_token_' . md5_hex(
+                    $self->{hostname}
+                    . ':' . $self->{port}
+                    . '_' . $self->{key_id})
+    );
+    # return token stored in cache if exists
+    $self->{token} = $self->{cache}->get(name => 'token') if $has_cache_file;
+    my $expiration = $self->{cache}->get(name => 'expiration') if defined($self->{token});
+
+    return $self->{token} if (defined($expiration) && $expiration > time() + 60);
 
     my $content = $self->{http}->request(
         method          => 'POST',
@@ -91,8 +92,10 @@ sub get_token {
 
     $self->{output}->option_exit(short_msg => "No token found in '$content'") unless ($decoded_content->{token});
     $self->{token} = $decoded_content->{token};
+    $self->{cache}->write(data => { token => $decoded_content->{token}, expiration => ($decoded_content->{expires_in} + time()) });
     return $self->{token};
 }
+
 sub set_options {
     my ($self, %options) = @_;
 
@@ -127,24 +130,10 @@ sub check_options {
         $self->{output}->option_exit(short_msg => "Option '$_' must not contain following characters '$forbidden_chars'") if ($self->{$_} =~ $forbidden_chars);
     }
 
-
     $self->{cache}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
-
-# sub build_options_for_httplib {
-#     my ($self, %options) = @_;
-#
-#     $self->{option_results}->{hostname} = $self->{hostname};
-#     $self->{option_results}->{timeout} = $self->{timeout};
-#     $self->{option_results}->{port} = $self->{port};
-#     $self->{option_results}->{proto} = $self->{proto};
-#     $self->{option_results}->{url_path} = $self->{url_path};
-#     $self->{option_results}->{warning_status} = '';
-#     $self->{option_results}->{critical_status} = '';
-#     $self->{option_results}->{unknown_status} = '';
-# }
 
 sub settings {
     my ($self, %options) = @_;
