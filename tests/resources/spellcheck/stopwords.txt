@@ -227,6 +227,7 @@ NRPE
 --ntlmv2
 NTLMv2
 NTP
+Nutanix
 NVOS
 OAuth
 --oid

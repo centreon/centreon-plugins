@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/trim is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub prefix_controllervm_output {
@@ -200,6 +200,8 @@ sub set_counters {
                 ]
             }
         }
+        ,
+
     ];
 }
 
@@ -209,8 +211,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-controllervm:s' => { name => 'filter_controllervm' },
-        'filter-name:s'         => { name => 'filter_name' },
+        'filter-controllervm:s' => { name => 'filter_controllervm', default => '' },
+        'filter-name:s'         => { name => 'filter_name', default => '' },
         'units:s'               => { name => 'units', default => '%' },
         'free'                  => { name => 'free' }
     });
@@ -239,14 +241,13 @@ my $controllervm_mapping = {
 
 my $oid_dstEntry = '.1.3.6.1.4.1.41263.3.1';
 my $oid_cstEntry = '.1.3.6.1.4.1.41263.4.1';
+my $oid_cstControllerVM = '.1.3.6.1.4.1.41263.11.1.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to use SNMP v2c or v3.")
+        if $options{snmp}->is_snmpv1();
 
     $self->{controllervm} = {};
     my $controllervm_snmp_result = $options{snmp}->get_table(
@@ -256,76 +257,89 @@ sub manage_selection {
 
     my $controllervm_name_mapping = {};
     foreach my $oid (keys %{$controllervm_snmp_result}) {
-        next if ($oid !~ /^$controllervm_mapping->{crtControllerVMId}->{oid}\.(.*)$/);
+        next if $oid !~ /^$controllervm_mapping->{crtControllerVMId}->{oid}\.(.*)$/;
         my $controllervm_instance = $1;
         my $controllervm_result = $options{snmp}->map_instance(mapping => $controllervm_mapping, results => $controllervm_snmp_result, instance => $controllervm_instance);
 
-        $controllervm_result->{crtName} = centreon::plugins::misc::trim($controllervm_result->{crtName});
-
-        if (defined($self->{option_results}->{filter_controllervm}) && $self->{option_results}->{filter_controllervm} ne '' &&
-            $controllervm_result->{crtName} !~ /$self->{option_results}->{filter_controllervm}/) {
+        $controllervm_result->{crtName} = trim($controllervm_result->{crtName}) =~ s/^"(.*)"$/$1/r;
+        if (is_excluded($controllervm_result->{crtName}, $self->{option_results}->{filter_controllervm})) {
             $self->{output}->output_add(long_msg => "skipping '" . $controllervm_result->{crtName} . "': no matching filter.", debug => 1);
-            next;
+            next
         }
-
-        $self->{controllervm}->{ $controllervm_result->{crtName} } = {
-            disk => {}
-        };
 
         $controllervm_name_mapping->{ $controllervm_result->{crtControllerVMId} } = $controllervm_result->{crtName};
     }
-    
+
+    # CTOR-2055: Also check for ControlerVM IDs in cstControllerVMId
+    my $cstControllerVMId_snmp_result = $options{snmp}->get_table(
+        oid => $oid_cstControllerVM
+    );
+
+    my $controllervm_name_list_mapping={};
+    foreach my $cstControllerVMId (values %$cstControllerVMId_snmp_result) {
+        $cstControllerVMId =~ s/^"(.*)"$/$1/;
+        if (is_excluded($cstControllerVMId, $self->{option_results}->{filter_controllervm})) {
+            $self->{output}->output_add(long_msg => "skipping '" . $cstControllerVMId . "': no matching filter.", debug => 1);
+            next
+        }
+
+        $controllervm_name_list_mapping->{$cstControllerVMId} = 1;
+    }
+
     my $disk_snmp_result = $options{snmp}->get_table(
         oid => $oid_dstEntry,
         nothing_quit => 1
     );
 
     foreach my $oid (keys %$disk_snmp_result) {
-        next if ($oid !~ /^$disk_mapping->{dstDiskId}->{oid}\.(.*)$/);
+        next if $oid !~ /^$disk_mapping->{dstDiskId}->{oid}\.(.*)$/;
         my $disk_instance = $1;
         my $disk_result = $options{snmp}->map_instance(mapping => $disk_mapping, results => $disk_snmp_result, instance => $disk_instance);
 
-        if (!defined($controllervm_name_mapping->{$disk_result->{dstControllerVMId}})) {
-            next;
-        }
+        $disk_result->{dstControllerVMId} =~ s/^"(.*)"$/$1/;
+        $disk_result->{dstDiskId} =~ s/^"(.*)"$/$1/;
+        my $dstVM = $disk_result->{dstControllerVMId};
 
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $disk_result->{dstDiskId} !~ /$self->{option_results}->{filter_name}/) {
+        my $ctrName;
+        if (defined $controllervm_name_mapping->{$dstVM}) {
+            $ctrName = $controllervm_name_mapping->{$dstVM}
+        } elsif ($controllervm_name_list_mapping->{$dstVM}) {
+            $ctrName = $dstVM;
+        }
+        next unless defined $ctrName;
+
+        if (is_excluded($disk_result->{dstDiskId}, $self->{option_results}->{filter_name})) {
             $self->{output}->output_add(long_msg => "skipping '" . $disk_result->{dstDiskId} . "': no matching filter.", debug => 1);
-            next;
+            next
         }
 
-        $disk_result->{dstDiskId} = centreon::plugins::misc::trim($disk_result->{dstDiskId});
+        $disk_result->{dstDiskId} = trim($disk_result->{dstDiskId});
 
         my $inodes_used;
         $inodes_used = 100 - ($disk_result->{dstNumFreeInodes} * 100 / $disk_result->{dstNumTotalInodes}) if ($disk_result->{dstNumTotalInodes} > 0);
 
         $disk_result->{dstAverageLatency} /= 1000;
 
-        $self->{controllervm}->{ $controllervm_name_mapping->{ $disk_result->{dstControllerVMId} } }->{disk}->{ $disk_result->{dstDiskId} } = {
-            crtName => $controllervm_name_mapping->{ $disk_result->{dstControllerVMId} },
+        $self->{controllervm}->{ $ctrName }->{disk}->{ $disk_result->{dstDiskId} } = {
+            crtName => $ctrName,
             diskId => $disk_result->{dstDiskId}, 
+            inodes_used => $inodes_used,
+            inodes => 1111,
             %$disk_result,
-            inodes_used => $inodes_used          
         };
     }
 
-    if (scalar(keys %{$self->{controllervm}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No ControllerVM found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No ControllerVM found.")
+        if keys %{$self->{controllervm}} <= 0;
 
     my $disk_int = 0;
     foreach my $controllervm (keys %{$self->{controllervm}}) {
-        if (scalar(keys %{$self->{controllervm}->{$controllervm}->{disk}}) <= 0) {
-            $disk_int = $disk_int + 1;
-        }
+        $disk_int++
+            if keys %{$self->{controllervm}->{$controllervm}->{disk}} <= 0;
     }
     
-    if ($disk_int eq keys %{$self->{controllervm}}) {
-        $self->{output}->add_option_msg(short_msg => "No disk found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No disk found.")
+        if $disk_int eq keys %{$self->{controllervm}};
 }
 
 1;
@@ -349,7 +363,8 @@ Filter disk name (can be a regexp).
 
 =item B<--filter-controllervm>
 
-Filter controllervm name (can be a regexp).
+Filter controller VM name (can be a regexp).
+Depending on the Nutanix configuration and version this may refer to the controller VM's name or ID.
 
 =item B<--warning-status>
 
@@ -361,15 +376,37 @@ You can use the following variables: %{state}, %{crtName}, %{diskId}
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{state}, %{crtName}, %{diskId}
 
-=item B<--warning-*>
+=item B<--warning-avg-latency>
 
-Warning threshold.
-Can be: 'usage', 'inodes' (%), 'avg-latency', 'iops'.
+Threshold in milliseconds.
 
-=item B<--critical-*>
+=item B<--critical-avg-latency>
 
-Critical threshold.
-Can be: 'usage', 'inodes' (%), 'avg-latency', 'iops'.
+Threshold in milliseconds.
+
+=item B<--warning-inodes>
+
+Threshold in percentage.
+
+=item B<--critical-inodes>
+
+Threshold in percentage.
+
+=item B<--warning-iops>
+
+Threshold in iops.
+
+=item B<--critical-iops>
+
+Threshold in iops.
+
+=item B<--warning-usage>
+
+Threshold.
+
+=item B<--critical-usage>
+
+Threshold.
 
 =item B<--units>
 
