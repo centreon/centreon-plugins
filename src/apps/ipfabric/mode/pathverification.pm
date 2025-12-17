@@ -224,7 +224,7 @@ Check end-to-end path's result against predefined expected state in IP Fabric.
 
 =item B<--filter-src-ip>
 
-Filter paths by source ip (regexp can be used).
+Filter paths by source IP (regexp can be used).
 
 =item B<--filter-src-port>
 
@@ -232,11 +232,11 @@ Filter paths by source port (regexp can be used).
 
 =item B<--filter-dst-ip>
 
-Filter paths by destionation ip (regexp can be used).
+Filter paths by destination IP (regexp can be used).
 
 =item B<--filter-dst-port>
 
-Filter paths by destionation port (regexp can be used).
+Filter paths by destination port (regexp can be used).
 
 =item B<--warning-status>
 
