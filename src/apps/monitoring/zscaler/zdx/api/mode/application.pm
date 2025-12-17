@@ -26,7 +26,7 @@ use strict;
 use warnings;
 
 # All filter parameters that can be used
-my @_options = qw/application_id/;
+my @_options = qw/application_id include_application_name exclude_application_name/;
 
 sub new {
     my ($class, %options) = @_;
@@ -44,59 +44,64 @@ sub new {
 sub prefix_app_output {
     my ($self, %options) = @_;
 
-    return 'App "' . $options{instance_value}->{name} . '": ';
+    return 'App "' . $options{instance_value}->{name} . '" - ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_app_output' }
+        { name => 'application', type => 1, cb_prefix_output => 'prefix_app_output', message_multiple => 'All apps are ok' }
     ];
     
-    $self->{maps_counters}->{global} = [
-        {   label => 'total-users', nlabel => 'application.total-users.count',
-            set => {
-                key_values => [ { name => 'total_users' } ],
+    $self->{maps_counters}->{application} = [
+        {
+            label  => 'total-users',
+            nlabel => 'application.total-users.count',
+            set    => {
+                key_values      => [ { name => 'total_users' } ],
                 output_template => 'Users count: %s',
-                perfdatas => [
-                    { template => '%d', min => 0 }
-                ]
-              }
+                perfdatas       => [ { template => '%d', min => 0, label_extra_instance => 1 } ]
+            }
         },
-        {   label => 'score', nlabel => 'application.score.value',
-            set => {
-                key_values => [ { name => 'score' } ],
+        {
+            label  => 'score',
+            nlabel => 'application.score.value',
+            set    => {
+                key_values      => [ { name => 'score' } ],
                 output_template => 'Score: %s',
-                perfdatas => [
-                    { template => '%d' }
-                ]
-              }
+                perfdatas       => [ { template => '%d', label_extra_instance => 1 } ]
+            }
         }
     ];
-
 }
 
 sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::check_options(%options);
-    $self->{output}->option_exit(short_msg => "Option application_id cannot be empty") if $self->{option_results}->{application_id} eq '';
-    $self->{application_id} = $self->{option_results}->{application_id};
+    #$self->{output}->option_exit(short_msg => "Option application_id cannot be empty") if $self->{option_results}->{application_id} eq '';
+    foreach (@_options) {
+        $self->{$_} = $self->{option_results}->{$_};
+    }
 
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $app = $options{custom}->get_apps(application_id => $self->{application_id});
-    $self->{output}->option_exit(short_msg => 'score not available in API response') unless defined($app->{score});
-    $self->{output}->option_exit(short_msg => 'active_users not available in API response') unless defined($app->{stats}->{active_users});
-    $self->{global}->{score} = $app->{score};
-    $self->{global}->{name} = $app->{name};
-    $self->{global}->{total_users} = $app->{stats}->{active_users};
+    my $apps = $options{custom}->get_apps( map {$_ => $self->{$_}} @_options );
 
-
+    #$self->{output}->option_exit(short_msg => 'score not available in API response') unless defined($app->{score});
+    #$self->{output}->option_exit(short_msg => 'active_users not available in API response') unless defined($app->{stats}->{active_users});
+    foreach (@$apps) {
+        $self->{application}->{$_->{name}} = {
+            name        => $_->{name},
+            score       => $_->{score},
+            total_users => $_->{stats}->{active_users}
+        }
+    }
+    return 1;
 }
 
 1;
@@ -111,7 +116,18 @@ Monitor an application overall stats.
 
 =item B<--application-id>
 
-Define the C<appid> (mandatory parameter) to monitor.
+Define the C<appid> to monitor. Using this option is recommended to monitor one app because it will
+only retrieves the data related to the targeted app.
+
+=item B<--include-application-name>
+
+Regular expression to include applications to monitor by their name. Using this option is not recommended to monitor
+one app because it will first retrieve the list of all apps and then filter to get the targeted app.
+
+=item B<--exclude-application-name>
+
+Regular expression to exclude applications to monitor by their name. Using this option is not recommended to monitor
+one app because it will first retrieve the list of all apps and then filter to get the targeted app.
 
 =back
 

@@ -117,7 +117,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "apps",
+      "endpoint": "v1/apps",
       "responses": [
         {
           "uuid": "e2548dda-c2b8-4bb5-8fbe-acd0e8871a35",
@@ -161,7 +161,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"appli_1\",\n    \"score\": 42,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  },\n  {\n    \"id\": 2,\n    \"name\": \"appli_2\",\n    \"score\": 12,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  }\n]"
+          "body": "[\n  {\n    \"id\": 18,\n    \"name\": \"appli_18\",\n    \"score\": 42,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  },\n  {\n    \"id\": 42,\n    \"name\": \"appli_42\",\n    \"score\": 12,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  }\n]"
         }
       ],
       "responseMode": null,
@@ -173,11 +173,11 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "apps/:appid",
+      "endpoint": "v1/apps/:appid",
       "responses": [
         {
           "uuid": "ec845866-b8a4-48b3-a58c-9c7324f0fd2d",
-          "body": "{\n  \"id\": {{urlParam 'appid'}},\n  \"name\": \"Microsoft Teams Call Quality\",\n  \"score\": 85,\n  \"most_impacted_geo\": {\n    \"id\": \"0.5332921.US\",\n    \"state\": \"California\",\n    \"country\": \"United States\",\n    \"geo_type\": \"Region\"\n  },\n  \"stats\": {\n    \"active_users\": 1345,\n    \"active_devices\": 1503,\n    \"num_poor\": 134,\n    \"num_okay\": 234,\n    \"num_good\": 334\n  }\n}",
+          "body": "{\n  \"id\": {{urlParam 'appid'}},\n  \"name\": \"appli_{{urlParam 'appid'}}\",\n  \"score\": \n{{#switch (urlParam 'appid')}}\n  {{#case '18'}}85{{/case}}\n  {{#case '42'}}39{{/case}}\n  {{#default}}50{{/default}}\n{{/switch}}\n,\n  \"most_impacted_geo\": {\n    \"id\": \"0.5332921.US\",\n    \"state\": \"California\",\n    \"country\": \"United States\",\n    \"geo_type\": \"Region\"\n  },\n  \"stats\": {\n    \"active_users\": \n{{#switch (urlParam 'appid')}}\n  {{#case '18'}}1385{{/case}}\n  {{#case '42'}}1139{{/case}}\n  {{#default}}50{{/default}}\n{{/switch}}\n    ,\n    \"active_devices\": 1503,\n    \"num_poor\": 134,\n    \"num_okay\": 234,\n    \"num_good\": 334\n  }\n}",
           "latency": 0,
           "statusCode": 200,
           "label": "",

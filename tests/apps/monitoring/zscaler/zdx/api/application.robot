@@ -36,19 +36,25 @@ Application ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    UNKNOWN: Option application_id cannot be empty
+    ...    OK: All apps are ok | 'appli_18#application.total-users.count'=1385;;;0; 'appli_18#application.score.value'=85;;;; 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;;;
     ...    2
     ...    --application-id=42
-    ...    OK: App "Microsoft Teams Call Quality": Users count: 1345, Score: 85 | 'application.total-users.count'=1345;;;0; 'application.score.value'=85;;;;
+    ...    OK: App "appli_42" - Users count: 1139, Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;;;
     ...    3
     ...    --application-id=42 --warning-score=1
-    ...    WARNING: App "Microsoft Teams Call Quality": Score: 85 | 'application.total-users.count'=1345;;;0; 'application.score.value'=85;0:1;;;
+    ...    WARNING: App "appli_42" - Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;0:1;;;
     ...    4
     ...    --application-id=42 --critical-score=1
-    ...    CRITICAL: App "Microsoft Teams Call Quality": Score: 85 | 'application.total-users.count'=1345;;;0; 'application.score.value'=85;;0:1;;
+    ...    CRITICAL: App "appli_42" - Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;0:1;;
     ...    5
     ...    --application-id=42 --warning-total-users=1
-    ...    WARNING: App "Microsoft Teams Call Quality": Users count: 1345 | 'application.total-users.count'=1345;0:1;;0; 'application.score.value'=85;;;;
+    ...    WARNING: App "appli_42" - Users count: 1139 | 'appli_42#application.total-users.count'=1139;0:1;;0; 'appli_42#application.score.value'=39;;;;
     ...    6
     ...    --application-id=42 --critical-total-users=1
-    ...    CRITICAL: App "Microsoft Teams Call Quality": Users count: 1345 | 'application.total-users.count'=1345;;0:1;0; 'application.score.value'=85;;;;
+    ...    CRITICAL: App "appli_42" - Users count: 1139 | 'appli_42#application.total-users.count'=1139;;0:1;0; 'appli_42#application.score.value'=39;;;;
+    ...    7
+    ...    --include-application-name=1
+    ...    OK: App "appli_18" - Users count: 1385, Score: 85 | 'appli_18#application.total-users.count'=1385;;;0; 'appli_18#application.score.value'=85;;;;
+    ...    8
+    ...    --exclude-application-name=1
+    ...    OK: App "appli_42" - Users count: 1139, Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;;;

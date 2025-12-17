@@ -19,8 +19,8 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --key-id=1
 ...                 --key-secret=1
 ${EXPECTED_RESULT}  SEPARATOR=
-...                 {"discovered_items":2,"end_time":1765545358,"results":[{"id":1,"name":"appli_1"},\
-...                 {"name":"appli_2","id":2}],"duration":0,"start_time":1765545358}
+...                 {"discovered_items":2,"end_time":1765545358,"results":[{"id": 18, "name": "appli_18"}, {"name": \
+...                 "appli_42", "id": 42}],"duration":0,"start_time":1765545358}
 
 
 *** Test Cases ***

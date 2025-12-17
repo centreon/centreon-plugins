@@ -27,7 +27,7 @@ use centreon::plugins::statefile;
 use DateTime;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc qw(json_decode is_empty value_of);
+use centreon::plugins::misc qw(json_decode is_empty value_of is_excluded);
 
 sub new {
     my ($class, %options) = @_;
@@ -47,7 +47,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'key-id:s'     => { name => 'key_id', default => '' },
             'key-secret:s' => { name => 'key_secret', default => '' },
-            'api-path:s'   => { name => 'api_path', default => '/api' },
+            'api-path:s'   => { name => 'api_path', default => '/v1' },
             'hostname:s'   => { name => 'hostname', default => 'api.zdxcloud.net' },
             'port:s'       => { name => 'port', default => 443 },
             'proto:s'      => { name => 'proto', default => 'https' },
@@ -76,12 +76,13 @@ sub get_token {
                     . ':' . $self->{port}
                     . '_' . $self->{key_id})
     );
-    # return token stored in cache if exists
+    # return token stored in cache if exists after checking it is still valid
     $self->{token} = $self->{cache}->get(name => 'token') if $has_cache_file;
     my $expiration = $self->{cache}->get(name => 'expiration') if defined($self->{token});
 
     return $self->{token} if (defined($expiration) && $expiration > time() + 60);
 
+    # if we do not have a token or if it has to be renewed
     my $content = $self->{http}->request(
         method          => 'POST',
         url_path        => '/v1/oauth/token',
@@ -102,22 +103,47 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
+sub get_unique_app {
+    my ($self, %options) = @_;
+
+    my $content = $self->{http}->request(
+        method   => 'GET',
+        url_path => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
+    );
+    return json_decode($content, output => $self->{output});
+}
+
 sub get_apps {
     my ($self, %options) = @_;
 
     $self->get_token();
 
-    my $apps_endpoint = '/apps';
-    $apps_endpoint .= '/' . $options{application_id} if (!is_empty($options{application_id}));
+    my @stats;
+    # either we have a single app to get by its id
+    if (!is_empty($options{application_id})) {
+        push @stats, $self->get_unique_app(application_id => $options{application_id});
+        return \@stats;
+    }
 
-    my $content = $self->{http}->request(
-        method          => 'GET',
-        url_path        => $apps_endpoint
+    # or we have to get all apps and check which ones match the filters
+    my $all_apps_json = $self->{http}->request(
+        method     => 'GET',
+        url_path   => $self->{option_results}->{api_path} . '/apps/'
     );
-    my $decoded_content = centreon::plugins::misc::json_decode($content, output => $self->{output});
+    my $all_apps = json_decode($all_apps_json, output => $self->{output});
 
-    return $decoded_content;
+    foreach my $app_obj (@$all_apps) {
+        next if is_excluded(
+            $app_obj->{name},
+            $options{include_application_name},
+            $options{exclude_application_name});
+
+        push @stats, $self->get_unique_app(application_id => $app_obj->{id});
+    }
+
+    return \@stats;
 }
+
 sub set_defaults {}
 
 sub check_options {
