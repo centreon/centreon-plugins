@@ -230,7 +230,8 @@ Filter services by address (can be a regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(service) %(port)')
+Define perfdata instance (default: '%(service) %(port)')
+You can use the following variables: %{service}, %{port}
 
 =item B<--warning-faults-checked-application>
 
