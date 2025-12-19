@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_service_perfdata {
     my ($self) = @_;
@@ -77,8 +79,8 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'services', type => 3, cb_prefix_output => 'prefix_service_output', cb_long_output => 'service_long_output', indent_long_output => '    ', message_multiple => 'All services are ok',
             group => [
-                { name => 'invocation', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'faults', type => 0, cb_prefix_output => 'prefix_fault_output', skipped_code => { -10 => 1 } }
+                { name => 'invocation', type => 0, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'faults', type => 0, cb_prefix_output => 'prefix_fault_output', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -132,8 +134,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-service:s'            => { name => 'filter_service' },
-        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
+        'filter-service:s'            => { name => 'filter_service', default => '' },
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances', default => '' }
     });
 
     return $self;
@@ -143,9 +145,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
-        $self->{option_results}->{custom_perfdata_instances} = '%(service) %(port)';
-    }
+    $self->{option_results}->{custom_perfdata_instances} = '%(service) %(port)'
+        if $self->{option_results}->{custom_perfdata_instances} eq '';
 
     $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
         option_name => '--custom-perfdata-instances',
@@ -169,13 +170,13 @@ sub manage_selection {
     $self->{cache_name} = 'apache_cxf_' . $self->{mode} . '_' . 
         md5_hex(
             $options{custom}->get_connection_info() . '_' .
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_service}) ? $self->{option_results}->{filter_service} : '')
+            ($self->{option_results}->{filter_counters} // '') . '_' .
+            $self->{option_results}->{filter_service}
         );
 
     $self->{services} = {};
     foreach my $mbean (keys %$result) {
-        my ($attribute, $bus_id, $service, $port);
+        my ($attribute, $bus_id, $service, $port) = ('', '', '', '');
 
         $service = $1 if ($mbean =~ /service=(.*?)(?:,|$)/);
         $port = $1 if ($mbean =~ /port=(.*?)(?:,|$)/);
@@ -184,9 +185,7 @@ sub manage_selection {
         $service =~ s/^"(.*)"$/$1/;
         $service = $1 if ($service =~ /\{(.*)\}/);
         $port =~ s/^"(.*)"$/$1/;
-
-        next if (defined($self->{option_results}->{filter_service}) && $self->{option_results}->{filter_service} ne '' &&
-            $service !~ /$self->{option_results}->{filter_service}/);
+        next if is_excluded($service, $self->{option_results}->{filter_service});
 
         if (!defined($self->{services}->{$bus_id})) {
             $self->{services}->{$bus_id} = {
@@ -202,19 +201,17 @@ sub manage_selection {
                 }
             };
         }
-
         $self->{services}->{$bus_id}->{invocation}->{total} = $result->{$mbean}->{Count} if ($attribute =~ /Totals/i);
         $self->{services}->{$bus_id}->{invocation}->{inFlight} = $result->{$mbean}->{Count} if ($attribute =~ /In Flight/i);
 
-        $self->{services}->{$bus_id}->{faults}->{checkedApplication} = $result->{$mbean}->{Count} if ($attribute =~ /Checked Application Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{checkedApplication} = $result->{$mbean}->{Count} if ($attribute =~ /(?<!Un)Checked Application Faults/i);
         $self->{services}->{$bus_id}->{faults}->{unCheckedApplication} = $result->{$mbean}->{Count} if ($attribute =~ /Unchecked Application Faults/i);
         $self->{services}->{$bus_id}->{faults}->{logicalRuntime} = $result->{$mbean}->{Count} if ($attribute =~ /Logical Runtime Faults/i);
-        $self->{services}->{$bus_id}->{faults}->{runtime} = $result->{$mbean}->{Count} if ($attribute =~ /Runtime Faults/i);
+        $self->{services}->{$bus_id}->{faults}->{runtime} = $result->{$mbean}->{Count} if ($attribute =~ /(?<!Logical )Runtime Faults/i);
     }
 
-    if (scalar(keys %{$self->{services}}) <= 0) {
-        $self->{output}->output_add(short_msg => 'no services found');
-    }
+    $self->{output}->output_add(severity => 'UNKNOWN', short_msg => 'no services found')
+        if keys %{$self->{services}} <= 0;
 }
 
 1;
@@ -235,12 +232,53 @@ Filter services by address (can be a regexp).
 
 Define perfdatas instance (default: '%(service) %(port)')
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-faults-checked-application>
 
-Thresholds.
-Can be: 
-'invocations', 'inflight',
-'faults-checked-application', 'faults-unchecked-application', 'faults-logical-runtime', 'faults-runtime'.
+Threshold.
+
+=item B<--critical-faults-checked-application>
+
+Threshold.
+
+=item B<--warning-faults-logical-runtime>
+
+Threshold.
+
+=item B<--critical-faults-logical-runtime>
+
+Threshold.
+
+=item B<--warning-faults-runtime>
+
+Threshold.
+
+=item B<--critical-faults-runtime>
+
+Threshold.
+
+=item B<--warning-faults-unchecked-application>
+
+Threshold.
+
+=item B<--critical-faults-unchecked-application>
+
+Threshold.
+
+=item B<--warning-inflight>
+
+Threshold.
+
+=item B<--critical-inflight>
+
+Threshold.
+
+=item B<--warning-invocations>
+
+Threshold.
+
+=item B<--critical-invocations>
+
+Threshold.
 
 =back
 
