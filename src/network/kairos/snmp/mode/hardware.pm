@@ -18,84 +18,96 @@
 # limitations under the License.
 #
 
-package network::microsens::g6::snmp::mode::hardware;
+package network::kairos::snmp::mode::hardware;
 
-use base qw(centreon::plugins::templates::hardware);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
-sub set_system {
+sub prefix_board_output {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature)$';
-    
-    $self->{cb_hook2} = 'snmp_execute';
-    
-    $self->{thresholds} = {
-        fan => [
-            ['ok', 'OK'],
-            ['unused', 'OK'],
-            ['degraded', 'WARNING'],
-            ['fail', 'CRITICAL'],
-            ['missing', 'OK']
-        ],
-        psu => [
-            ['ok', 'OK'],
-            ['overload', 'WARNING'],
-            ['inputLow', 'OK'],
-            ['fuseFail', 'CRITICAL'],
-            ['notApplicable', 'OK'],
-            ['unmanaged', 'OK'],
-            ['notInstalled', 'OK'],
-        ],
-        sdcard => [
-            ['empty', 'OK'],
-            ['inserted', 'OK'],
-            ['writeProtected', 'OK'],
-            ['writing', 'OK']
-        ]
-    };
-    
-    $self->{components_path} = 'network::microsens::g6::snmp::mode::components';
-    $self->{components_module} = ['fan', 'psu', 'sdcard', 'temperature'];
+    return 'Board ';
 }
 
-sub snmp_execute {
+sub set_counters {
     my ($self, %options) = @_;
 
-    my $map_psu_status = {
-        0 => 'ok', 1 => 'overload', 2 => 'inputLow',
-        3 => 'fuseFail', 4 => 'notApplicable',
-        5 => 'unmanaged', 6 => 'notInstalled'
-    };
-    my $map_fan_status = {
-        0 => 'unused', 1 => 'ok', 2 => 'degraded',
-        3 => 'fail', 4 => 'missing'
-    };
-    my $map_sdcard_status = {
-        0 => 'empty', 1 => 'inserted', 2 => 'writeProtected', 3 => 'writing'
-    };
-    my $mapping = {
-        system_temp   => { oid => '.1.3.6.1.4.1.3181.10.6.1.30.104' }, # systemTemperature
-        psu1_status   => { oid => '.1.3.6.1.4.1.3181.10.6.1.31.100', map => $map_psu_status }, # hardwarePowerSupply1Status
-        psu2_status   => { oid => '.1.3.6.1.4.1.3181.10.6.1.31.101', map => $map_psu_status }, # hardwarePowerSupply2Status
-        fan_status    => { oid => '.1.3.6.1.4.1.3181.10.6.1.31.103', map => $map_fan_status }, # hardwareFanStatus
-        sdcard_status => { oid => '.1.3.6.1.4.1.3181.10.6.1.31.104', map => $map_sdcard_status }  # hardwareSdCardStatus
-    };
+    $self->{maps_counters_type} = [
+        { name => 'board', type => 0, cb_prefix_output => 'prefix_board_output' }
+    ];
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ map($_->{oid} . '.0', values(%$mapping)) ]);
-    $self->{results} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
+    $self->{maps_counters}->{board} = [
+        {
+            label => 'board-voltage', nlabel => 'board.voltage.volt',
+            set   => {
+                key_values      => [ { name => 'inputVoltage' } ],
+                output_template => 'voltage: %.2fV',
+                perfdatas       => [ { template => '%.2f', unit => 'V' } ]
+            }
+        },
+        {
+            label => 'board-tx-current', nlabel => 'board.tx.current.ampere',
+            set   => {
+                key_values      => [ { name => 'txCurrent' } ],
+                output_template => 'TX current: %.2fA',
+                perfdatas       => [ { template => '%.2f', unit => 'A' } ]
+            }
+        },
+        { label => 'board-temperature', nlabel => 'board.temperature.celsius', 
+            set => {
+                key_values => [ { name => 'boardTemp' } ],
+                output_template => 'temperature is %s C',
+                perfdatas => [
+                    { template => '%s', unit => 'C' }
+                ]
+            }
+        },
+        { label => 'board-tx-temperature', nlabel => 'board.tx.temperature.celsius', 
+            set => {
+                key_values => [ { name => 'txTemp' } ],
+                output_template => 'TX temperature is %s C',
+                perfdatas => [
+                    { template => '%s', unit => 'C' }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
-
     return $self;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $oid_kairosHndMainStatusInputVoltage = '.1.3.6.1.4.1.37755.61.2.1.1.0';
+    my $oid_kairosHndMainStatusBoardTemp = '.1.3.6.1.4.1.37755.61.2.1.2.0';
+    my $oid_kairosHndMainStatusTxTemp = '.1.3.6.1.4.1.37755.61.2.1.3.0';
+    my $oid_kairosHndMainStatusTxCurrent = '.1.3.6.1.4.1.37755.61.2.1.4.0';
+
+    my $snmp_result = $options{snmp}->get_leef(
+        oids         => [
+            $oid_kairosHndMainStatusInputVoltage,
+            $oid_kairosHndMainStatusBoardTemp,
+            $oid_kairosHndMainStatusTxTemp,
+            $oid_kairosHndMainStatusTxCurrent
+        ],
+        nothing_quit => 1
+    );
+
+    $self->{board} = {
+        inputVoltage => $snmp_result->{$oid_kairosHndMainStatusInputVoltage},
+        txCurrent    => $snmp_result->{$oid_kairosHndMainStatusTxCurrent},
+        boardTemp    => $snmp_result->{$oid_kairosHndMainStatusBoardTemp},
+        txTemp       => $snmp_result->{$oid_kairosHndMainStatusTxTemp}
+    };
 }
 
 1;
@@ -104,39 +116,13 @@ __END__
 
 =head1 MODE
 
-Check hardware.
+Check hardware sensors.
 
 =over 8
 
-=item B<--component>
+=item B<--warning-*> B<--critical-*>
 
-Which component to check (default: '.*').
-Can be: 'fan', 'psu', 'sdcard', 'temperature'.
-
-=item B<--filter>
-
-Exclude the items given as a comma-separated list (example: --filter=fan).
-You can also exclude items from specific instances: --filter=psu,2
-
-=item B<--no-component>
-
-Define the expected status if no components are found (default: critical).
-
-
-=item B<--threshold-overload>
-
-Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='sdcard,WARNING,empty'
-
-=item B<--warning>
-
-Set warning threshold for 'temperature' (syntax: type,regexp,threshold)
-Example: --warning='temperature,.*,40'
-
-=item B<--critical>
-
-Set critical threshold for 'temperature' (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,50'
+Thresholds: board-voltage (V), board-tx-current (A), board-temperature (C), board-tx-temperature (C)
 
 =back
 
