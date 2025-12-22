@@ -30,10 +30,10 @@ sub custom_output {
     my ($self, %options) = @_;
     
     return sprintf(
-        "alarm '%s' '%s' count: %d",
-        $self->{result_values}->{name},
+        "alarm '%s' count: %d [%s]",
         $self->{result_values}->{description},
-        $self->{result_values}->{count}
+        $self->{result_values}->{count},
+        $self->{result_values}->{name}
     );
 }
 
@@ -144,11 +144,11 @@ sub manage_selection {
 
     my $oid_alarmTable = '.1.3.6.1.4.1.37755.51';
 
-    my $snmp_result_name = $options{snmp}->get_table(oid => $oid_alarmTable, nothing_quit => 1);
-    foreach my $oid (keys %$snmp_result_name) {
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_alarmTable, nothing_quit => 1);
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$oid_alarmTable\.(\d+)\.\d+$/);
         my $instance = $1;
-        next if ($snmp_result_name->{$oid} !~ /^Alarm\s+(.*?)\s+->\s+Tot:(\d+)/i);
+        next if ($snmp_result->{$oid} !~ /^Alarm\s+(.*?)\s+->\s+Tot:(\d+)/i);
         my ($name, $description, $count) = ($map_name{$instance}, $1, $2);
 
         next if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
