@@ -35,6 +35,7 @@ sub new {
         'cpu-detailed'    => 'network::kairos::snmp::mode::cpudetailed',
         'hardware'        => 'network::kairos::snmp::mode::hardware',
         'interfaces'      => 'network::kairos::snmp::mode::interfaces',
+        'list-alarms'     => 'network::kairos::snmp::mode::listalarms',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'load'            => 'network::kairos::snmp::mode::load',
         'memory'          => 'network::kairos::snmp::mode::memory',
