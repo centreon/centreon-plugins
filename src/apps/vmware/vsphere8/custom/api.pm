@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -203,6 +203,7 @@ sub try_request_api {
     return {} if ($method eq 'PATCH' && $self->{http}->get_code() == 204
         || $method eq 'POST' && $self->{http}->get_code() == 201);
 
+    return $content unless ( $content =~ /^\s*[\{\[]/ ); # do not try to decode JSON if it's obviously not JSON
     my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
     if (!defined($decoded) && !$options{no_fail}) {
         $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"

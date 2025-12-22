@@ -79,9 +79,9 @@ sub set_counters {
             nlabel => 'system.uptime.seconds',
             type   => 1,
             set    => {
-                key_values      => [ { name => 'uptime' } ],
-                closure_custom_output => $self->can('custom_uptime_output'),
-                closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
+                key_values                     => [ { name => 'uptime' } ],
+                closure_custom_output          => $self->can('custom_uptime_output'),
+                closure_custom_perfdata        => $self->can('custom_uptime_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_uptime_threshold')
 
             }
@@ -94,10 +94,8 @@ sub new {
     my $self              = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
 
     $options{options}->add_options(
-        arguments => { 'unit:s' => { name => 'unit', default => 's' },
-}
+        arguments => { 'unit:s' => { name => 'unit', default => 's' } }
     );
-    $options{options}->add_help(package => __PACKAGE__, sections => 'MODE', once => 1);
 
     return $self;
 }
@@ -108,7 +106,6 @@ sub manage_selection {
     my $response = $self->get_value(%options, endpoint => 'system/uptime');
 
     $self->{global}->{uptime} = $response;
-
 
 }
 

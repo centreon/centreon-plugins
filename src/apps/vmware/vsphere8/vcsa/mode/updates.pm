@@ -90,15 +90,6 @@ sub set_counters {
     ];
 }
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
-
-    $options{options}->add_options( arguments => {} );
-
-    return $self;
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
