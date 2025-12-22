@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'alarms'          => 'network::kairos::snmp::mode::alarms',
         'cpu'             => 'network::kairos::snmp::mode::cpu',
         'cpu-detailed'    => 'network::kairos::snmp::mode::cpudetailed',
         'hardware'        => 'network::kairos::snmp::mode::hardware',
