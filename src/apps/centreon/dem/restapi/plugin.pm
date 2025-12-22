@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::quanta::restapi::plugin;
+package apps::centreon::dem::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'list-user-journeys'      => 'apps::monitoring::quanta::restapi::mode::listuserjourneys',
-        'rum'                     => 'apps::monitoring::quanta::restapi::mode::rum',
-        'site-overview'           => 'apps::monitoring::quanta::restapi::mode::siteoverview',
-        'user-journey-incidents'  => 'apps::monitoring::quanta::restapi::mode::userjourneyincidents',
-        'user-journey-statistics' => 'apps::monitoring::quanta::restapi::mode::userjourneystatistics'
+        'list-user-journeys'      => 'apps::centreon::dem::restapi::mode::listuserjourneys',
+        'rum'                     => 'apps::centreon::dem::restapi::mode::rum',
+        'site-overview'           => 'apps::centreon::dem::restapi::mode::siteoverview',
+        'user-journey-incidents'  => 'apps::centreon::dem::restapi::mode::userjourneyincidents',
+        'user-journey-statistics' => 'apps::centreon::dem::restapi::mode::userjourneystatistics'
     };
 
-    $self->{custom_modes}->{api} = 'apps::monitoring::quanta::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::centreon::dem::restapi::custom::api';
     return $self;
 }
 
@@ -48,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Quanta application probes results.
+Check Centreon DEM (formerly Quanta) application probes results using Rest API.
 
 =cut

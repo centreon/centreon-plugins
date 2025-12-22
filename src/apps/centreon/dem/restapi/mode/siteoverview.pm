@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::quanta::restapi::mode::siteoverview;
+package apps::centreon::dem::restapi::mode::siteoverview;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -139,7 +139,7 @@ __END__
 
 =head1 MODE
 
-Check Quanta by Centreon overview performance metrics for a given site.
+Check Centreon DEM (formerly Quanta) overview performance metrics for a given site.
 
 =over 8
 

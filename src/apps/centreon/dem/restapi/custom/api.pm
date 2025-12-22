@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::quanta::restapi::custom::api;
+package apps::centreon::dem::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -204,7 +204,7 @@ sub list_objects {
     }
 
     # Results are cached to avoid too many API calls
-    my $has_cache_file = $self->{cache_objects}->read(statefile => 'quanta_cache_' . md5_hex($options{site_id}) . md5_hex($endpoint));
+    my $has_cache_file = $self->{cache_objects}->read(statefile => 'centreon_dem_cache_' . md5_hex($options{site_id}) . md5_hex($endpoint));
     my $response = $self->{cache_objects}->get(name => 'response');
     my $freshness = defined($self->{cache_objects}->get(name => 'update_time')) ? time() - $self->{cache_objects}->get(name => 'update_time') : undef;
 
@@ -226,21 +226,21 @@ __END__
 
 =head1 NAME
 
-Quanta by Centreon Rest API
+Centreon DEM (formerly Quanta) Rest API
 
 =head1 SYNOPSIS
 
-Quanta by Centreon Rest API custom mode
+Centreon DEM (formerly Quanta) Rest API custom mode
 
 =head1 REST API OPTIONS
 
-Quanta by Centreon Rest API
+Centreon DEM (formerly Quanta) Rest API
 
 =over 8
 
 =item B<--hostname>
 
-Quanta API hostname (default: 'api.quanta.io')
+Centreon DEM (formerly Quanta) API hostname (default: 'api.quanta.io')
 
 =item B<--port>
 

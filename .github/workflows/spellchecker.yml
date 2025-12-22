@@ -13,7 +13,11 @@ on:
       - '.github/scripts/pod_spell_check.t'
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   pod-spell-check:
+    needs: [dependency-scan]
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'do-not-spellcheck') }}
     runs-on: ubuntu-24.04
 

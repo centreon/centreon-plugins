@@ -4,6 +4,8 @@ import subprocess
 import sys
 import os
 import json
+import argparse
+import re
 
 
 def try_command(cmd, error):
@@ -28,8 +30,8 @@ def launch_snmp_sim():
     try_command(cmd=snmpsim_cmd, error="Can't launch snmpsim daemon.")
 
 
-def refresh_packet_manager(archi):
-    with open('/var/log/test-plugins-installation.log', "a") as outfile:
+def refresh_packet_manager(archi, logs_dir):
+    with open(f'{logs_dir}/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             outfile.write("apt-get update\n")
             output_status = (subprocess.run(
@@ -45,14 +47,14 @@ def refresh_packet_manager(archi):
 
 
 # Install plugin, from local file if build is true, from repository if false.
-def install_plugin(plugin, archi, build):
-    with open('/var/log/test-plugins-installation.log', "a") as outfile:
+def install_plugin(plugin, archi, build, logs_dir):
+    with open(f'{logs_dir}/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             if build:
                 install_name = f"./{plugin.lower()}*.deb"
             else:
                 install_name = plugin.lower()
-            command = f"apt-get install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y --allow-downgrades {install_name}"
+            command = f"apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y --allow-downgrades {install_name}"
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
@@ -71,19 +73,42 @@ def install_plugin(plugin, archi, build):
             exit(1)
     return output_status
 
+def get_plugin_modes(plugin_command):
+    command = f"/usr/lib/centreon/plugins/{plugin_command} --list-mode"
+    result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    modes = []
+    in_modes_section = False
+    if result.returncode == 3:
+        for line in result.stdout.splitlines():
+            if line.strip() == "Modes Available:":
+                in_modes_section = True
+                continue
+            if in_modes_section:
+                match = re.match(r"\s+(\w+)$", line)
+                if match:
+                    modes.append(match.group(1))
+                elif line.strip() == "" or not line.startswith(" "):
+                    break
+    return modes
 
-def test_plugin(plugin_name, plugin_command, plugin_paths):
+def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir):
     tests_path = []
     for path in plugin_paths:
         if os.path.exists(f"tests/{path}"):
             tests_path.append(f"tests/{path}")
     if len(tests_path) == 0:
-        with open('/var/log/test-plugins-help.log', "a") as outfile:
+        output_status = 3
+        with open(f'{logs_dir}/test-plugins-help.log', "a") as outfile:
             print(
                 f"No tests for {plugin_name}, checking it can be executed with --help")
-            command = f"/usr/lib/centreon/plugins/{plugin_command} --help"
-            output_status = (subprocess.run(command, shell=True, check=False,
-                             stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            modes = get_plugin_modes(plugin_command)
+            for mode in modes:
+                command = f"/usr/lib/centreon/plugins/{plugin_command} --plugin={plugin_perl_package} --mode={mode} --help"
+                status = (subprocess.run(command, shell=True, check=False,
+                          stderr=subprocess.STDOUT, stdout=outfile)).returncode
+                if status != 3:
+                    print(f"Failed to get --help for {plugin_name} mode {mode}, output status : {status}")
+                    output_status = status
         if output_status == 3:
             return 0
         else:
@@ -100,16 +125,16 @@ def test_plugin(plugin_name, plugin_command, plugin_paths):
             # if tests have failed, copy the log file to the reports folder that will be uploaded as artifact in CI.
             try:
                 subprocess.run(
-                    f"cp -r /tmp/{plugin_name} reports/", shell=True, check=False)
+                    f"cp -r /tmp/{plugin_name} {reports_dir}", shell=True, check=False)
             except Exception as e:
                 print(f"Error while copying robot results : {str(e)}")
         return robot_results
 
 
-def remove_plugin(plugin, archi):
-    with open('/var/log/test-plugins-installation.log', "a") as outfile:
+def remove_plugin(plugin, archi, logs_dir):
+    with open(f'{logs_dir}/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
-            command = f"export SUDO_FORCE_REMOVE=yes; apt-get -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y {plugin.lower()}"
+            command = f"export SUDO_FORCE_REMOVE=yes; apt -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' autoremove -y {plugin.lower()}"
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
@@ -138,12 +163,24 @@ def remove_plugin(plugin, archi):
 
 if __name__ == '__main__':
     print("Starting program")
-    if len(sys.argv) < 1:
-        print("Please provide architecture (deb or rpm)")
-        sys.exit(1)
+
+    parser = argparse.ArgumentParser(description='Test des plugins Centreon')
+    parser.add_argument('--extension', required=True, type=str, choices=['deb', 'rpm'], help='Architecture (deb ou rpm)')
+    parser.add_argument('--runner-id', type=int, help='ID du runner pour le test des plugins')
+    parser.add_argument('--logs-dir', type=str, help='Répertoire des logs', default='/var/log')
+    parser.add_argument('--reports-dir', type=str, help='Répertoire des rapports', default='reports')
+    args = parser.parse_args()
 
     launch_snmp_sim()
-    archi = sys.argv.pop(1)  # expected either deb or rpm.
+    archi = args.extension  # expected either deb or rpm.
+    logs_dir = args.logs_dir
+    if args.runner_id:
+        logs_dir = os.path.join(logs_dir, f"runner-{args.runner_id}")
+    os.makedirs(logs_dir, exist_ok=True)
+    reports_dir = args.reports_dir
+    if args.runner_id:
+        reports_dir = os.path.join(reports_dir, f"runner-{args.runner_id}")
+    os.makedirs(reports_dir, exist_ok=True)
     script_name = sys.argv.pop(0)
 
     nb_plugins = 0
@@ -153,7 +190,7 @@ if __name__ == '__main__':
     list_plugin_error = set()
 
     # call apt update (or maybe dnf clean all if needed)
-    refresh_packet_manager(archi)
+    refresh_packet_manager(archi, logs_dir)
 
     # create the directory to store logs if it does not exist.
     os.makedirs("reports", exist_ok=True)
@@ -161,21 +198,22 @@ if __name__ == '__main__':
     with open("plugins.json") as plugins_file:
         plugins = json.load(plugins_file)
         for plugin in plugins:
+            if args.runner_id and plugins[plugin]["runner_id"] != args.runner_id:
+                continue
             print("Testing plugin : ", plugin)
 
             nb_plugins += 1
-            tmp = install_plugin(plugin, archi, plugins[plugin]["build"])
+            tmp = install_plugin(plugin, archi, plugins[plugin]["build"], logs_dir)
             if tmp > 0:
                 error_install += 1
                 list_plugin_error.add(plugin)
             else:
                 if plugins[plugin]["test"]:
-                    tmp = test_plugin(
-                        plugin, plugins[plugin]["command"], plugins[plugin]["paths"])
+                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir)
                     if tmp > 0:
                         error_tests += 1
                         list_plugin_error.add(plugin)
-            tmp = remove_plugin(plugin, archi)
+            tmp = remove_plugin(plugin, archi, logs_dir)
             if tmp > 0:
                 error_purge += 1
                 list_plugin_error.add(plugin)

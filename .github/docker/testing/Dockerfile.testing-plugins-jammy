@@ -4,6 +4,11 @@ FROM ${REGISTRY_URL}/ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG NODE_VERSION=24
+ARG PNPM_VERSION=10.24.0
+
+COPY .github/docker/testing/package.json .github/docker/testing/pnpm-lock.yaml /usr/local/src/
+
 # fix locale
 RUN bash -e <<EOF
 
@@ -35,11 +40,15 @@ pip3 install robotframework robotframework-examples
 # Install snmpsim
 pip3 install snmpsim
 
-# Install nodejs
-curl -fsSL https://deb.nodesource.com/setup_21.x | bash - &&\
+set -x
+curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
 apt-get install -y nodejs
-# Install mockoon (needs nodejs)
-npm install -g -D @mockoon/cli@9.3.0
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bash -
+# avoid escaping bashrc when debian is non-interactive
+sed -e '/[ -z "\$PS1" ] && return/ s/^#*/#/' -i \$HOME/.bashrc
+source ~/.bashrc
+cd /usr/local/src
+pnpm install --frozen-lockfile
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/ubuntu-standard-24.04-stable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-stable.list
@@ -60,3 +69,5 @@ chmod 777 /var/lib/centreon/centplugins/
 apt-get clean
 
 EOF
+
+ENV PATH="/usr/local/src/node_modules/.bin/:$PATH"

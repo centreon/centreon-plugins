@@ -216,12 +216,14 @@ NagVis
 Netconf
 Netscaler
 net-snmp
+NGINX
 NLCapacity
 --noeventlog
 --noidle
 -NoLogo
 --nomachineaccount
 notapplicable
+NRPE
 --ntlmv2
 NTLMv2
 NTP

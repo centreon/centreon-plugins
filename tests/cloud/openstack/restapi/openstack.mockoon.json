@@ -694,6 +694,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "8db83aa1-0460-4a93-9089-3c875a4c415c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v3/projects",
+      "responses": [
+        {
+          "uuid": "7bd41adf-635f-47dd-9e7c-e5692e306323",
+          "body": "{\n  \"projects\": [\n    {\n      \"id\": \"0c4d4f2b8a4c4f3e9f7adbf9b1234567\",\n      \"name\": \"admin\",\n      \"description\": \"Admin Project\",\n      \"domain_id\": \"default\",\n      \"enabled\": true,\n      \"parent_id\": null,\n      \"is_domain\": false,\n      \"tags\": []\n    },\n    {\n      \"id\": \"1a2b3c4d5e6f7890abcdeffedcba4321\",\n      \"name\": \"service\",\n      \"description\": \"Service Project\",\n      \"domain_id\": \"default\",\n      \"enabled\": true,\n      \"parent_id\": null,\n      \"is_domain\": false,\n      \"tags\": []\n    },\n    {\n      \"id\": \"9f8e7d6c5b4a3210fedcba0987654321\",\n      \"name\": \"demo\",\n      \"description\": \"Demo Project\",\n      \"domain_id\": \"default\",\n      \"enabled\": true,\n      \"parent_id\": null,\n      \"is_domain\": false,\n      \"tags\": []\n    }\n  ],\n  \"links\": {\n    \"self\": \"https://openstack.example.com:5000/v3/projects?limit=200\",\n    \"previous\": null,\n    \"next\": null\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -764,6 +820,10 @@
     {
       "type": "route",
       "uuid": "87a81f1d-1b7e-46aa-80ee-63fb489d55d3"
+    },
+    {
+      "type": "route",
+      "uuid": "8db83aa1-0460-4a93-9089-3c875a4c415c"
     }
   ],
   "proxyMode": false,

@@ -180,7 +180,7 @@ sub host_discovery {
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
     $disco_stats->{discovered_items} = keys %{$self->{server}};
-    $disco_stats->{results} = $self->{server};
+    $disco_stats->{results} = [ values %{$self->{server}} ];
 
     my $encoded_data = json_encode($disco_stats, prettify => $self->{prettify},
                                                  output => $options{output},
@@ -319,6 +319,115 @@ If a instance has multiple IP addresses this parameter must match at least one o
 
 Exclude instance that do not have any IP address assigned (default: 1).
 Set to 0 to include them in the list.
+
+=item B<--warning-bookmark>
+
+Define the conditions to match for the status to be WARNING based on the bookmark value.
+Example: --warning-bookmark='%{bookmark} =~ /abcd-defg/'
+
+=item B<--critical-bookmark>
+
+Define the conditions to match for the status to be CRITICAL based on the bookmark value.
+Example: --critical-bookmark='%{bookmark} =~ /abcd-defg/'
+
+=item B<--warning-count>
+
+Warning threshold for the number of instances returned.
+
+=item B<--critical-count>
+
+Critical threshold for the number of instances returned.
+
+=item B<--warning-flavor>
+
+Define the conditions to match for the status to be WARNING based on the flavor value.
+Example: --warning-flavor='%{flavor} =~ /1/'
+
+=item B<--critical-flavor>
+
+Define the conditions to match for the status to be CRITICAL based on the flavor value.
+Example: --critical-flavor='%{flavor} =~ /1/'
+
+=item B<--warning-host>
+
+Define the conditions to match for the status to be WARNING based on the host value.
+Example: --warning-host='%{host} =~ /localhost/'
+
+=item B<--critical-host>
+
+Define the conditions to match for the status to be CRITICAL based on the host value.
+Example: --critical-host='%{host} =~ /localhost/'
+
+=item B<--warning-id>
+
+Define the conditions to match for the status to be WARNING based on the instance ID.
+Example: --warning-id='%{id} =~ /abcdf/'
+
+=item B<--critical-id>
+
+Define the conditions to match for the status to be CRITICAL based on the instance ID.
+Example: --critical-id='%{id} =~ /abcdf/'
+
+=item B<--warning-image>
+
+Define the conditions to match for the status to be WARNING based on the image value.
+Example: --warning-image='%{image} =~ /image/'
+
+=item B<--critical-image>
+
+Define the conditions to match for the status to be CRITICAL based on the image value.
+Example: --critical-image='%{image} =~ /image/'
+
+=item B<--warning-instance-name>
+
+Define the conditions to match for the status to be WARNING based on the instance name.
+Example: --warning-instance-name='%{instance_name} =~ /test/'
+
+=item B<--critical-instance-name>
+
+Define the conditions to match for the status to be CRITICAL based on the instance name.
+Example: --critical-instance-name='%{instance_name} =~ /test/'
+
+=item B<--warning-ip>
+
+Define the conditions to match for the status to be WARNING based on the IP.
+Example: --warning-ip='%{ip} =~ /127/'
+
+=item B<--critical-ip>
+
+Define the conditions to match for the status to be CRITICAL based on the IP.
+Example: --critical-ip='%{ip} =~ /127/'
+
+=item B<--warning-project-id>
+
+Define the conditions to match for the status to be WARNING based on the project ID.
+Example: --warning-project-id='%{project_id} =~ /1/'
+
+=item B<--critical-project-id>
+
+Define the conditions to match for the status to be CRITICAL based on the project ID.
+Example: --critical-project-id='%{project_id} =~ /1/'
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING based on the status value.
+Example: --warning-status='%{status} =~ /ACTIVE/'
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL based on the status value.
+Example: --critical-status='%{status} =~ /ERROR/'
+Default value: '%{status} !~ /active/i',
+
+=item B<--warning-zone>
+
+Define the conditions to match for the status to be WARNING based on the zone value.
+Example: --warning-zone='%{zone} =~ /nova/'
+
+=item B<--critical-zone>
+
+Define the conditions to match for the status to be CRITICAL based on the zone value.
+Example: --critical-zone='%{zone} =~ /nova/'
 
 =back
 

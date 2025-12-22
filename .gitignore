@@ -6,3 +6,4 @@ report.html
 .venv
 tests/resources/__pycache__
 src/lib
+node_modules

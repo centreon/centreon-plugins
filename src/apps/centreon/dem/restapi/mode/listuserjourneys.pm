@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::quanta::restapi::mode::listuserjourneys;
+package apps::centreon::dem::restapi::mode::listuserjourneys;
 
 use base qw(centreon::plugins::mode);
 
@@ -103,7 +103,7 @@ __END__
 
 =head1 MODE
 
-List Quanta by Centreon user journeys for a given site.
+List Centreon DEM (formerly Quanta) user journeys for a given site.
 
 =over 8
 

@@ -206,7 +206,7 @@ Valid values are: up, down.
 
 Filter by hypervisor ID (can be a regexp and can be used multiple times or for comma separated values).
 
-=item B<--excluder-id>
+=item B<--exclude-id>
 
 Exclude by hypervisor ID (can be a regexp and can be used multiple times or for comma separated values).
 
