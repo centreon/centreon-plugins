@@ -175,6 +175,205 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "0495f13a-2bfe-4ffc-b133-8a523020192f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/services",
+      "responses": [
+        {
+          "uuid": "02d9c627-e069-408b-80ce-c3e2a71722f9",
+          "body": "{\n  \"appliance-shutdown\": {\n    \"description\": \"/etc/rc.local.shutdown Compatibility\",\n    \"state\": \"STOPPED\"\n  },\n  \"atftpd\": {\n    \"description\": \"The tftp server serves files using the trivial file transfer protocol.\",\n    \"state\": \"STOPPED\"\n  },\n  \"auditd\": {\n    \"description\": \"Security Auditing Service\",\n    \"state\": \"STARTED\"\n  },\n  \"cap-lighttpd\": {\n    \"description\": \"CAP Lighttpd Web Server\",\n    \"state\": \"STARTED\"\n  },\n  \"cap-workflow-engine\": {\n    \"description\": \"Cap workflow engine\",\n    \"state\": \"STARTED\"\n  },\n  \"cloud-init-local\": {\n    \"description\": \"Cloud-init: Local Stage (pre-network)\",\n    \"state\": \"STOPPED\"\n  },\n  \"crond\": {\n    \"description\": \"Command Scheduler\",\n    \"state\": \"STARTED\"\n  },\n  \"dbus\": {\n    \"description\": \"D-Bus System Message Bus\",\n    \"state\": \"STARTED\"\n  },\n  \"dm-event\": {\n    \"description\": \"Device-mapper event daemon\",\n    \"state\": \"STOPPED\"\n  },\n  \"dnsmasq\": {\n    \"description\": \"A lightweight, caching DNS proxy\",\n    \"state\": \"STARTED\"\n  },\n  \"dracut-cmdline\": {\n    \"description\": \"dracut cmdline hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-initqueue\": {\n    \"description\": \"dracut initqueue hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-mount\": {\n    \"description\": \"dracut mount hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-mount\": {\n    \"description\": \"dracut pre-mount hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-pivot\": {\n    \"description\": \"dracut pre-pivot and cleanup hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-trigger\": {\n    \"description\": \"dracut pre-trigger hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-udev\": {\n    \"description\": \"dracut pre-udev hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-shutdown\": {\n    \"description\": \"Restore /run/initramfs on shutdown\",\n    \"state\": \"STARTED\"\n  },\n  \"emergency\": {\n    \"description\": \"Emergency Shell\",\n    \"state\": \"STOPPED\"\n  },\n  \"getty@tty1\": {\n    \"description\": \"Getty on tty1\",\n    \"state\": \"STARTED\"\n  },\n  \"getty@tty2\": {\n    \"description\": \"DCUI\",\n    \"state\": \"STARTED\"\n  },\n  \"haveged\": {\n    \"description\": \"Entropy Daemon based on the HAVEGE algorithm\",\n    \"state\": \"STARTED\"\n  },\n  \"import-state\": {\n    \"description\": \"Import network configuration from initramfs\",\n    \"state\": \"STARTED\"\n  },\n  \"initrd-cleanup\": {\n    \"description\": \"Cleaning Up and Shutting Down Daemons\",\n    \"state\": \"STOPPED\"\n  },\n  \"initrd-parse-etc\": {\n    \"description\": \"Reload Configuration from the Real Root\",\n    \"state\": \"STOPPED\"\n  },\n  \"initrd-switch-root\": {\n    \"description\": \"Switch Root\",\n    \"state\": \"STOPPED\"\n  },\n  \"initrd-udevadm-cleanup-db\": {\n    \"description\": \"Cleanup udev Database\",\n    \"state\": \"STOPPED\"\n  },\n  \"irqbalance\": {\n    \"description\": \"irqbalance daemon\",\n    \"state\": \"STARTED\"\n  },\n  \"kmod-static-nodes\": {\n    \"description\": \"Create list of static device nodes for the current kernel\",\n    \"state\": \"STARTED\"\n  },\n  \"loadmodules\": {\n    \"description\": \"Load legacy module configuration\",\n    \"state\": \"STOPPED\"\n  },\n  \"logrotate\": {\n    \"description\": \"Rotate log files\",\n    \"state\": \"STOPPED\"\n  },\n  \"lsassd\": {\n    \"description\": \"Likewise Security and Authentication Subsystem\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@65:0\": {\n    \"description\": \"LVM event activation on device 65:0\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:112\": {\n    \"description\": \"LVM event activation on device 8:112\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:128\": {\n    \"description\": \"LVM event activation on device 8:128\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:144\": {\n    \"description\": \"LVM event activation on device 8:144\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:160\": {\n    \"description\": \"LVM event activation on device 8:160\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:176\": {\n    \"description\": \"LVM event activation on device 8:176\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:192\": {\n    \"description\": \"LVM event activation on device 8:192\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:208\": {\n    \"description\": \"LVM event activation on device 8:208\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:224\": {\n    \"description\": \"LVM event activation on device 8:224\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:240\": {\n    \"description\": \"LVM event activation on device 8:240\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:32\": {\n    \"description\": \"LVM event activation on device 8:32\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:4\": {\n    \"description\": \"LVM event activation on device 8:4\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:48\": {\n    \"description\": \"LVM event activation on device 8:48\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:64\": {\n    \"description\": \"LVM event activation on device 8:64\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:80\": {\n    \"description\": \"LVM event activation on device 8:80\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:96\": {\n    \"description\": \"LVM event activation on device 8:96\",\n    \"state\": \"STARTED\"\n  },\n  \"lwsmd\": {\n    \"description\": \"Likewise Service Control Manager Service\",\n    \"state\": \"STARTED\"\n  },\n  \"modprobe@configfs\": {\n    \"description\": \"Load Kernel Module configfs\",\n    \"state\": \"STOPPED\"\n  },\n  \"modprobe@drm\": {\n    \"description\": \"Load Kernel Module drm\",\n    \"state\": \"STOPPED\"\n  },\n  \"modprobe@fuse\": {\n    \"description\": \"Load Kernel Module fuse\",\n    \"state\": \"STOPPED\"\n  },\n  \"ntpd\": {\n    \"description\": \"Network Time Service\",\n    \"state\": \"STARTED\"\n  },\n  \"observability\": {\n    \"description\": \"VMware Observability Service\",\n    \"state\": \"STARTED\"\n  },\n  \"rc-local\": {\n    \"description\": \"/etc/rc.d/rc.local Compatibility\",\n    \"state\": \"STOPPED\"\n  },\n  \"rescue\": {\n    \"description\": \"Rescue Shell\",\n    \"state\": \"STOPPED\"\n  },\n  \"rpmdb-rebuild\": {\n    \"description\": \"RPM database rebuild\",\n    \"state\": \"STOPPED\"\n  },\n  \"rsyslog\": {\n    \"description\": \"System Logging Service\",\n    \"state\": \"STARTED\"\n  },\n  \"sendmail\": {\n    \"description\": \"Sendmail Mail Transport Agent\",\n    \"state\": \"STARTED\"\n  },\n  \"sshd-keygen\": {\n    \"description\": \"Generate sshd host keys\",\n    \"state\": \"STOPPED\"\n  },\n  \"sshd\": {\n    \"description\": \"OpenSSH Daemon\",\n    \"state\": \"STARTED\"\n  },\n  \"sysstat-collect\": {\n    \"description\": \"system activity accounting tool\",\n    \"state\": \"STOPPED\"\n  },\n  \"sysstat-summary\": {\n    \"description\": \"Generate a daily summary of process accounting\",\n    \"state\": \"STOPPED\"\n  },\n  \"sysstat\": {\n    \"description\": \"Resets System Activity Logs\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-ask-password-console\": {\n    \"description\": \"Dispatch Password Requests to Console\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-ask-password-wall\": {\n    \"description\": \"Forward Password Requests to Wall\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-binfmt\": {\n    \"description\": \"Set Up Additional Binary Formats\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-boot-system-token\": {\n    \"description\": \"Store a System Token in an EFI Variable\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-fsck-root\": {\n    \"description\": \"File System Check on Root Device\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-hwdb-update\": {\n    \"description\": \"Rebuild Hardware Database\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-initctl\": {\n    \"description\": \"initctl Compatibility Daemon\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-journal-catalog-update\": {\n    \"description\": \"Rebuild Journal Catalog\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-journal-flush\": {\n    \"description\": \"Flush Journal to Persistent Storage\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-journald\": {\n    \"description\": \"Journal Service\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-logind\": {\n    \"description\": \"User Login Management\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-machine-id-commit\": {\n    \"description\": \"Commit a transient machine-id on disk\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-modules-load\": {\n    \"description\": \"Load Kernel Modules\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-networkd-wait-online\": {\n    \"description\": \"Wait for Network to be Configured\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-networkd\": {\n    \"description\": \"Network Service\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-pstore\": {\n    \"description\": \"Platform Persistent Storage Archival\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-quotacheck\": {\n    \"description\": \"File System Quota Check\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-random-seed\": {\n    \"description\": \"Load/Save Random Seed\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-remount-fs\": {\n    \"description\": \"Remount Root and Kernel File Systems\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-repart\": {\n    \"description\": \"Repartition Root Disk\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-resolved\": {\n    \"description\": \"Network Name Resolution\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-sysctl\": {\n    \"description\": \"Apply Kernel Variables\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-tmpfiles-clean\": {\n    \"description\": \"Cleanup of Temporary Directories\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-tmpfiles-setup-dev\": {\n    \"description\": \"Create Static Device Nodes in /dev\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-tmpfiles-setup\": {\n    \"description\": \"Create Volatile Files and Directories\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-udev-settle\": {\n    \"description\": \"Wait for udev To Complete Device Initialization\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-udev-trigger\": {\n    \"description\": \"Coldplug All udev Devices\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-udevd\": {\n    \"description\": \"Rule-based Manager for Device Events and Files\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-update-done\": {\n    \"description\": \"Update is Completed\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-update-utmp-runlevel\": {\n    \"description\": \"Update UTMP about System Runlevel Changes\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-update-utmp\": {\n    \"description\": \"Update UTMP about System Boot/Shutdown\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-user-sessions\": {\n    \"description\": \"Permit User Sessions\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-userdbd\": {\n    \"description\": \"User Database Manager\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-vconsole-setup\": {\n    \"description\": \"Setup Virtual Console\",\n    \"state\": \"STOPPED\"\n  },\n  \"vgauthd\": {\n    \"description\": \"VGAuth Service for open-vm-tools\",\n    \"state\": \"STARTED\"\n  },\n  \"vmafdd\": {\n    \"description\": \"LSB: Authentication Framework Daemon\",\n    \"state\": \"STARTED\"\n  },\n  \"vmcad\": {\n    \"description\": \"LSB: Start and Stop vmca\",\n    \"state\": \"STARTED\"\n  },\n  \"vmdird\": {\n    \"description\": \"LSB: Start and Stop vmdir\",\n    \"state\": \"STARTED\"\n  },\n  \"vmon_2_systemd\": {\n    \"description\": \"Unit to regenerate systemd services\",\n    \"state\": \"STOPPED\"\n  },\n  \"vmtoolsd\": {\n    \"description\": \"Service for virtual machines hosted on VMware\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-expecttls\": {\n    \"description\": \"Vmware Expecttls daemon\",\n    \"state\": \"STOPPED\"\n  },\n  \"vmware-firewall\": {\n    \"description\": \"VMware Firewall service\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-pit\": {\n    \"description\": \"Service for centralized OS property modifications and tweaks\",\n    \"state\": \"STOPPED\"\n  },\n  \"vmware-pod\": {\n    \"description\": \"VMware Pod Service.\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-vdtc\": {\n    \"description\": \"VMware vSphere Distrubuted Tracing Collector\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-vmon\": {\n    \"description\": \"VMware Service Lifecycle Manager\",\n    \"state\": \"STOPPED\"\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "service_id",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0bd9aec4-6a81-4eeb-8a8b-78742fc9e4c4",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/services/:service_id",
+      "responses": [
+        {
+          "uuid": "5f201e62-c88e-4b3a-bb32-0beebd3b42c7",
+          "body": "{\n  \"description\": \"observability.service\",\n  \"state\": \"STARTED\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "observability",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "service_id",
+              "value": "observability",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "941f0ea8-70a1-4abd-a444-70d00c0e26d9",
+          "body": "{\n  \"description\": \"VMware Service Lifecycle Manager\",\n  \"state\": \"STOPPED\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "vmware-vmon",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "service_id",
+              "value": "vmware-vmon",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "9d8e8ea1-484a-4b29-9873-e4633cfea503",
+          "body": " {\"error_type\":\"NOT_FOUND\",\"messages\":[{\"args\":[\"toto\"],\"default_message\":\"Service toto does not exist\",\"id\":\"com.vmware.appliance.service.not_found\"}]}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "not found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -189,6 +388,14 @@
     {
       "type": "route",
       "uuid": "6e938c8b-da8f-42c2-b61f-eb829f3d80ce"
+    },
+    {
+      "type": "route",
+      "uuid": "0495f13a-2bfe-4ffc-b133-8a523020192f"
+    },
+    {
+      "type": "route",
+      "uuid": "0bd9aec4-6a81-4eeb-8a8b-78742fc9e4c4"
     }
   ],
   "proxyMode": false,
