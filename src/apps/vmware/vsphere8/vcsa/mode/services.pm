@@ -168,7 +168,7 @@ one service because it will first retrieve the list of all services and then fil
 
 =item B<--exclude-id>
 
-Regular expression to exclude services to monitor by their description. Using this option is not recommended to monitor
+Regular expression to exclude services to monitor by their id. Using this option is not recommended to monitor
 one service because it will first retrieve the list of all services and then filter to get the targeted service.
 
 =item B<--include-description>
@@ -178,7 +178,7 @@ one service because it will first retrieve the list of all services and then fil
 
 =item B<--exclude-description>
 
-Regular expression to exclude services to monitor by their ID. Using this option is not recommended to monitor
+Regular expression to exclude services to monitor by their description. Using this option is not recommended to monitor
 one service because it will first retrieve the list of all services and then filter to get the targeted service.
 
 =item B<--warning-status>
