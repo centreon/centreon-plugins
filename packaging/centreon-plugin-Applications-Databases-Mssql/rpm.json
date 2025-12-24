@@ -5,7 +5,12 @@
         "perl(Time::HiRes)",
         "perl(POSIX)",
         "perl(DBD::Sybase)",
-        "freetds",
         "unixODBC"
+    ],
+    "dependencies_el8": [
+        "freetds"
+    ],
+    "dependencies_el9": [
+        "freetds-bin >= 1.4.23"
     ]
 }
