@@ -151,7 +151,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-port-name:s' => { name => 'filter_port_name' }
+        'filter-port-name:s' => { name => 'filter_port_name' },
+        'omit-phy-statistics' => { name => 'omit_phy_statistics' }
     });
 
     return $self;
@@ -171,7 +172,10 @@ sub manage_selection {
 
     my $result_ports = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/ports');
     my $result_ports_stats = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/host-port-statistics');
-    my $result_logical_interfaces = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/host-phy-statistics');
+    my $result_logical_interfaces;
+    if (!$self->{option_results}->{omit_phy_statistics}) {
+        $result_logical_interfaces = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/host-phy-statistics');
+    }
 
     my $mapping_ports = {};
 
@@ -205,15 +209,17 @@ sub manage_selection {
         
     }
 
-    foreach (@{$result_logical_interfaces->{'sas-host-phy-statistics'}}) {
-        next if (!defined($self->{ports}->{ $_->{port} }));
+    if (!$self->{option_results}->{omit_phy_statistics} && defined($result_logical_interfaces) && defined($result_logical_interfaces->{'sas-host-phy-statistics'})) {
+        foreach (@{$result_logical_interfaces->{'sas-host-phy-statistics'}}) {
+            next if (!defined($self->{ports}->{ $_->{port} }));
 
-        $self->{ports}->{ $_->{port} }->{interfaces}->{ $_->{phy} } = {
-            display => $_->{phy},
-            disparity_errors => int($_->{'disparity-errors'}),
-            invalid_dwords => int($_->{'invalid-dwords'}),
-            lost_dwords => int($_->{'lost-dwords'})
-        };
+            $self->{ports}->{ $_->{port} }->{interfaces}->{ $_->{phy} } = {
+                display => $_->{phy},
+                disparity_errors => int($_->{'disparity-errors'}),
+                invalid_dwords => int($_->{'invalid-dwords'}),
+                lost_dwords => int($_->{'lost-dwords'})
+            };
+        }
     }
 
     $self->{cache_name} = 'dell_me4_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
@@ -234,6 +240,10 @@ Check interfaces.
 =item B<--filter-port-name>
 
 Filter port name (can be a regexp).
+
+=item B<--omit-phy-statistics>
+
+Filter diagnostic information relating to SAS controller physical channels.
 
 =item B<--unknown-port-status>
 
