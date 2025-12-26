@@ -36,7 +36,7 @@ my @_options = qw/
     include_ipv4_mode exclude_ipv4_mode
     include_status exclude_status
 /;
-my @_service_keys = qw/name mac ipv4_address ipv4_mode status /;
+my @_service_keys = qw/name mac ipv4_address ipv4_mode status/;
 
 sub custom_interface_output {
     my ($self, %options) = @_;
@@ -156,8 +156,8 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(custom => $options{custom});
-    foreach my $item ( sort { $a->{id} cmp $b->{id} }
-                       values %{$self->{services}}) {
+    foreach my $item ( sort { $a->{name} cmp $b->{name} }
+                       values %{$self->{interface}}) {
         $self->{output}->add_disco_entry( map { $_ => $item->{$_} } @_service_keys );
     }
 }
