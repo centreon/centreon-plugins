@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,6 +23,7 @@ package database::mssql::mode::connectedusers;
 use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub new {
     my ($class, %options) = @_;
@@ -30,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'database-name:s'   => { name => 'database_name' },
+        'database-name:s'   => { name => 'database_name', default => '' },
         'uniq-users'        => { name => 'uniq_users' },
         'count-admin-users' => { name => 'count_admin_users' }
     });
@@ -69,8 +70,7 @@ sub manage_selection {
     foreach my $row (@$results) {
         $row->[0] = '' if (!defined($row->[0]));
 
-        next if (defined($self->{option_results}->{database_name}) && $self->{option_results}->{database_name} ne '' && 
-            $row->[0] !~ /$self->{option_results}->{database_name}/);
+        next if is_excluded($row->[0], $self->{option_results}->{database_name});
         next if (defined($self->{option_results}->{uniq_users}) && defined($logins{ $row->[1] }));
         next if (!defined($self->{option_results}->{count_admin_users}) && $row->[2] < 51);
 
