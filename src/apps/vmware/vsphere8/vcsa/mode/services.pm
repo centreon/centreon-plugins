@@ -156,8 +156,8 @@ Discover and monitor the VMware vCenter services VMs through vSphere 8 REST API.
 
 =item B<--service-id>
 
-Define the exact service ID to monitor. Using this option is recommended to monitor one service because it will
-only retrieves the data related to the targeted service.
+Define the exact ID of the service to monitor. Using this option is recommended to monitor one service because it will
+only retrieve the data related to the targeted service.
 
 Service IDs examples are: C<vmtoolsd>, C<vmware-vmon>, C<vmware-pod>...
 
@@ -168,7 +168,7 @@ one service because it will first retrieve the list of all services and then fil
 
 =item B<--exclude-id>
 
-Regular expression to exclude services to monitor by their id. Using this option is not recommended to monitor
+Regular expression to exclude services to monitor by their ID. Using this option is not recommended to monitor
 one service because it will first retrieve the list of all services and then filter to get the targeted service.
 
 =item B<--include-description>

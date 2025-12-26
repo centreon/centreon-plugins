@@ -822,6 +822,118 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "fa6d8c4d-3afb-48e2-b617-eb7e2410f4e6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/networking/interfaces/",
+      "responses": [
+        {
+          "uuid": "45447803-0fee-4298-9b3a-61a1d16d2bac",
+          "body": "[\n  {\n    \"ipv4\": {\n      \"mode\": \"STATIC\",\n      \"default_gateway\": \"172.16.12.1\",\n      \"address\": \"172.16.12.2\",\n      \"prefix\": 24,\n      \"configurable\": true\n    },\n    \"name\": \"nic0\",\n    \"mac\": \"00:0c:29:44:12:58\",\n    \"status\": \"up\"\n  },\n  {\n    \"ipv4\": {\n      \"mode\": \"STATIC\",\n      \"default_gateway\": \"172.16.12.1\",\n      \"address\": \"172.16.12.3\",\n      \"prefix\": 24,\n      \"configurable\": true\n    },\n    \"name\": \"nic1\",\n    \"mac\": \"00:0c:29:44:12:32\",\n    \"status\": \"down\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0a739ba9-b150-48ab-ba95-62f8a684ad57",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/networking/interfaces/nic0",
+      "responses": [
+        {
+          "uuid": "140a29d6-7f41-4ddd-9e7a-c491e3b7bd3e",
+          "body": "{\n  \"ipv4\": {\n    \"mode\": \"STATIC\",\n    \"default_gateway\": \"172.16.99.1\",\n    \"address\": \"172.16.99.20\",\n    \"prefix\": 24,\n    \"configurable\": true\n  },\n  \"name\": \"nic0\",\n  \"mac\": \"00:0c:29:48:ef:cc\",\n  \"status\": \"up\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -876,6 +988,14 @@
     {
       "type": "route",
       "uuid": "ca8a250c-b58b-420b-8763-9436b49f27c6"
+    },
+    {
+      "type": "route",
+      "uuid": "fa6d8c4d-3afb-48e2-b617-eb7e2410f4e6"
+    },
+    {
+      "type": "route",
+      "uuid": "0a739ba9-b150-48ab-ba95-62f8a684ad57"
     }
   ],
   "proxyMode": false,

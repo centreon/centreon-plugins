@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes}   = {
         'health'     => 'apps::vmware::vsphere8::vcsa::mode::health',
+        'interfaces' => 'apps::vmware::vsphere8::vcsa::mode::interfaces',
         'services'   => 'apps::vmware::vsphere8::vcsa::mode::services',
         'updates'    => 'apps::vmware::vsphere8::vcsa::mode::updates',
         'uptime'     => 'apps::vmware::vsphere8::vcsa::mode::uptime',
