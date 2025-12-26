@@ -11,6 +11,6 @@
         "freetds"
     ],
     "dependencies_el9": [
-        "freetds-bin >= 1.4.23"
+        "freetds >= 1.4.23"
     ]
 }
