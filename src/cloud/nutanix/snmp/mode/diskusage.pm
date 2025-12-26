@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -332,14 +332,14 @@ sub manage_selection {
     $self->{output}->option_exit(short_msg => "No ControllerVM found.")
         if keys %{$self->{controllervm}} <= 0;
 
-    my $disk_int = 0;
+    my $diskless_controller = 0;
     foreach my $controllervm (keys %{$self->{controllervm}}) {
-        $disk_int++
+        $diskless_controller++
             if keys %{$self->{controllervm}->{$controllervm}->{disk}} <= 0;
     }
     
     $self->{output}->option_exit(short_msg => "No disk found.")
-        if $disk_int eq keys %{$self->{controllervm}};
+        if $diskless_controller eq keys %{$self->{controllervm}};
 }
 
 1;
