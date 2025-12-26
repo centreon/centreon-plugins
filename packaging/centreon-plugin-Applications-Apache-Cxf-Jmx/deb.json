@@ -1,6 +1,7 @@
 {
     "dependencies": [
         "libmodule-find-perl",
+        "libsys-sigaction-perl",
         "libjmx4perl-perl"
     ]
 }
