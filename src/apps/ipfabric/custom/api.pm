@@ -32,13 +32,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'    => { name  => 'hostname' },
-            'url-path:s'    => { name  => 'url_path' },
-            'port:s'        => { name  => 'port' },
-            'proto:s'       => { name  => 'proto' },
-            'api-key:s'     => { name  => 'api_key' },
-            'timeout:s'     => { name  => 'timeout' },
-            'snapshot-id:s' => { name  => 'snapshot_id' }
+            'hostname:s'    => { name  => 'hostname', default => '' },
+            'url-path:s'    => { name  => 'url_path', default => '/api/v6.2/tables' },
+            'port:s'        => { name  => 'port', default => 443 },
+            'proto:s'       => { name  => 'proto', default => 'https' },
+            'api-key:s'     => { name  => 'api_key', default => '' },
+            'timeout:s'     => { name  => 'timeout', default => 10 },
+            'snapshot-id:s' => { name  => 'snapshot_id', default => '$last' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -60,23 +60,13 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v6.2/tables';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{api_key} = (defined($self->{option_results}->{api_key})) ? $self->{option_results}->{api_key} : '';
-    $self->{snapshot_id} = (defined($self->{option_results}->{snapshot_id})) ? $self->{option_results}->{snapshot_id} : '$last';
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/url_path timeout api_key snapshot_id/;
 
-    if ($self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to specify --hostname option.")
+        if $self->{option_results}->{hostname} eq '';
 
-    if ($self->{api_key} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-key option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to specify --api-key option.")
+        if $self->{api_key} eq '';
 
     if (!defined($self->{option_results}->{curl_opt})) {
         $self->{option_results}->{curl_opt} = ['CURLOPT_POSTREDIR => CURL_REDIR_POST_ALL'];
