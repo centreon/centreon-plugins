@@ -150,10 +150,10 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{$_} = $self->{option_results}->{$_} foreach qw(hostname port proto api_path timeout key_id key_secret );
-    my $forbidden_chars = qr([\b\f\n\r\t\"\\]);
+
     foreach (qw(key_id key_secret)) {
         $self->{output}->option_exit(short_msg => "Mandatory option '$_' is missing.") if ($self->{$_} eq '');
-        $self->{output}->option_exit(short_msg => "Option '$_' must not contain following characters '$forbidden_chars'") if ($self->{$_} =~ /$forbidden_chars/);
+        $self->{output}->option_exit(short_msg => "Option '$_' contains illegal characters '$1'") if ($self->{$_} =~ /([\b\f\n\r\t\"\\]+)/);
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
