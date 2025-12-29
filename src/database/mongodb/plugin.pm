@@ -36,7 +36,8 @@ sub new {
         'database-statistics'   => 'database::mongodb::mode::databasestatistics',
         'list-databases'        => 'database::mongodb::mode::listdatabases',
         'queries'               => 'database::mongodb::mode::queries',
-        'replication-status'    => 'database::mongodb::mode::replicationstatus'
+        'replication-status'    => 'database::mongodb::mode::replicationstatus',
+        'vulnerabilities'       => 'database::mongodb::mode::vulnerabilities'
     };
 
     $self->{custom_modes}->{driver} = 'database::mongodb::custom::driver';
