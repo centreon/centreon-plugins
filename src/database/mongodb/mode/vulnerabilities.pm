@@ -193,16 +193,6 @@ Example:
 
 =over 8
 
-=item B<--warning-mongobleed-status>
-
-Define the conditions to match for the status to be WARNING (default: '%{status} =~ /vulnerable/i').
-You can use the following variables: %{status}, %{version}, %{major}, %{minor}, %{patch}
-
-=item B<--critical-mongobleed-status>
-
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /vulnerable/i').
-You can use the following variables: %{status}, %{version}, %{major}, %{minor}, %{patch}
-
 =back
 
 =cut
