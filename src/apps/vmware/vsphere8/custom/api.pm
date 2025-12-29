@@ -27,6 +27,7 @@ use centreon::plugins::statefile;
 use JSON::XS;
 use MIME::Base64;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw/json_encode json_decode is_empty/;
 
 sub new {
     my ($class, %options) = @_;
@@ -38,8 +39,7 @@ sub new {
         exit 3;
     }
     if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
+        $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.");
     }
 
     if (!defined($options{noptions})) {
@@ -87,16 +87,13 @@ sub check_options {
     $self->{vstats_duration} = $self->{option_results}->{vstats_duration};
 
     if ($self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify --hostname option.");
     }
     if ($self->{username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify --username option.");
     }
     if ($self->{password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify --password option.");
     }
 
     $self->{token_cache}->check_options(option_results => $self->{option_results});
@@ -175,7 +172,7 @@ sub try_request_api {
     my ($self, %options) = @_;
 
     my $token = $self->get_token(%options);
-    my $method = centreon::plugins::misc::is_empty($options{method}) ? 'GET' : $options{method};
+    my $method = is_empty($options{method}) ? 'GET' : $options{method};
     my $headers = [ 'vmware-api-session-id: ' . $token ];
     if ($method =~ /^(PATCH|POST)$/) {
         push @$headers, 'content-type: application/json';
@@ -194,28 +191,25 @@ sub try_request_api {
     );
 
     if (!defined($content)) {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '"
+        $self->{output}->option_exit(short_msg => "API returns empty content [code: '"
                 . $self->{http}->get_code() . "'] [message: '"
                 . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
     }
 
     return {} if ($method eq 'PATCH' && $self->{http}->get_code() == 204
         || $method eq 'POST' && $self->{http}->get_code() == 201);
 
     return $content unless ( $content =~ /^\s*[\{\[]/ ); # do not try to decode JSON if it's obviously not JSON
-    my $decoded = centreon::plugins::misc::json_decode($content, booleans_as_strings => 1);
+    my $decoded = json_decode($content, booleans_as_strings => 1);
     if (!defined($decoded) && !$options{no_fail}) {
-        $self->{output}->add_option_msg(short_msg => "API returns empty/invalid content [code: '"
+        $self->{output}->option_exit(short_msg => "API returns empty/invalid content [code: '"
                 . $self->{http}->get_code() . "'] [message: '"
                 . $self->{http}->get_message() . "'] [content: '"
                 . $content . "']");
-        $self->{output}->option_exit();
     }
 
     if (ref($decoded) eq "HASH" && defined($decoded->{error_type})  && !$options{no_fail}) {
-        $self->{output}->add_option_msg(short_msg => "API returned an error: " . $decoded->{error_type} . " - " . $decoded->{messages}->[0]->{default_message});
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "API returned an error: " . $decoded->{error_type} . " - " . $decoded->{messages}->[0]->{default_message});
     }
 
     return $decoded;
@@ -243,8 +237,7 @@ sub request_api {
         for my $error_item (@{$api_response->{messages}}) {
             $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
         }
-        $self->{output}->add_option_msg(short_msg => "API returned an error of type " . $api_response->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message);
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "API returned an error of type " . $api_response->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message);
     }
 
 
@@ -309,8 +302,7 @@ sub compose_type_from_rsrc_id {
     if ($rsrc_id =~ /^([a-z]+)-(\d+)$/) {
         return uc($1);
     } else {
-        $self->{output}->add_option_msg(short_msg => "compose_type_from_rsrc_id: cannot extract type from '$rsrc_id'");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "compose_type_from_rsrc_id: cannot extract type from '$rsrc_id'");
     }
 }
 
@@ -335,19 +327,17 @@ sub compose_acq_specs_json_payload {
             interval   => $self->{vstats_interval}
     };
 
-    return(centreon::plugins::misc::json_encode($payload));
+    return(json_encode($payload));
 }
 
 sub create_acq_spec {
     my ($self, %options) = @_;
 
-    if (centreon::plugins::misc::is_empty($options{cid})) {
-        $self->{output}->add_option_msg(short_msg => "ERR: need a cid to create an acq_spec");
-        $self->{output}->option_exit();
+    if (is_empty($options{cid})) {
+        $self->{output}->option_exit(short_msg => "ERR: need a cid to create an acq_spec");
     }
-    if (centreon::plugins::misc::is_empty($options{rsrc_id})) {
-        $self->{output}->add_option_msg(short_msg => "ERR: need a rsrc_id to create an acq_spec");
-        $self->{output}->option_exit();
+    if (is_empty($options{rsrc_id})) {
+        $self->{output}->option_exit(short_msg => "ERR: need a rsrc_id to create an acq_spec");
     }
 
     $self->request_api(
@@ -363,18 +353,15 @@ sub create_acq_spec {
 sub extend_acq_spec {
     my ($self, %options) = @_;
 
-    if (centreon::plugins::misc::is_empty($options{cid})) {
-        $self->{output}->add_option_msg(short_msg => "ERR: need a cid to extend an acq_spec");
-        $self->{output}->option_exit();
+    if (is_empty($options{cid})) {
+        $self->{output}->option_exit(short_msg => "ERR: need a cid to extend an acq_spec");
     }
-    if (centreon::plugins::misc::is_empty($options{rsrc_id})) {
-        $self->{output}->add_option_msg(short_msg => "ERR: need a rsrc_id to extend an acq_spec");
-        $self->{output}->option_exit();
+    if (is_empty($options{rsrc_id})) {
+        $self->{output}->option_exit(short_msg => "ERR: need a rsrc_id to extend an acq_spec");
     }
 
-    if (centreon::plugins::misc::is_empty($options{acq_spec_id})) {
-        $self->{output}->add_option_msg(long_msg => "ERR: need a acq_spec_id to extend an acq_spec_id") ;
-        $self->{output}->option_exit();
+    if (is_empty($options{acq_spec_id})) {
+        $self->{output}->option_exit(long_msg => "ERR: need a acq_spec_id to extend an acq_spec_id") ;
     }
     $self->{output}->add_option_msg(long_msg => "The acq_spec entry has to be extended to get more stats for $options{rsrc_id} / $options{cid}");
 
@@ -437,19 +424,16 @@ sub check_acq_spec {
 sub get_stats {
     my ($self, %options) = @_;
 
-    if ( centreon::plugins::misc::is_empty($options{rsrc_id})) {
-        $self->{output}->add_option_msg(short_msg => "get_stats method called without rsrc_id, won't query");
-        $self->{output}->option_exit();
+    if ( is_empty($options{rsrc_id}) ) {
+        $self->{output}->option_exit(short_msg => "get_stats method called without rsrc_id, won't query");
     }
 
-    if ( centreon::plugins::misc::is_empty($options{cid}) ) {
-        $self->{output}->add_option_msg(short_msg => "get_stats method called without cid, will get all available stats for resource");
-        $self->{output}->option_exit();
+    if ( is_empty($options{cid}) ) {
+        $self->{output}->option_exit(short_msg => "get_stats method called without cid, will get all available stats for resource");
     }
 
     if ( !$self->check_acq_spec(%options) ) {
-        $self->{output}->add_option_msg(short_msg => "get_stats method failed to check_acq_spec()");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "get_stats method failed to check_acq_spec()");
     }
 
     # compose the endpoint
@@ -475,8 +459,7 @@ sub get_stats {
         #     }
         #   ]
         # }
-        $self->{output}->add_option_msg(short_msg => "No stats found. Error: " . $result->{messages}->[0]->{default_message});
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No stats found. Error: " . $result->{messages}->[0]->{default_message});
     }
 
     # return only the last value (if there are several)
