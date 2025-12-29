@@ -24,8 +24,7 @@ use base qw(apps::vmware::vsphere8::vcsa::mode);
 
 use strict;
 use warnings;
-use Date::Parse qw(&str2time);
-use centreon::plugins::misc qw(change_seconds is_empty is_excluded);
+use centreon::plugins::misc qw(is_excluded);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my @_options = qw/include_check exclude_check/;
