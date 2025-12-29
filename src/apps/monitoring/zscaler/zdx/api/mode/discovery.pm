@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use JSON::XS;
+use centreon::plugins::misc qw/json_encode/;
 
 sub new {
     my ($class, %options) = @_;
@@ -63,17 +63,7 @@ sub run {
     $disco_stats->{discovered_items} = @disco_data;
     $disco_stats->{results} = \@disco_data;
 
-    my $encoded_data;
-    eval {
-        if (defined($self->{option_results}->{prettify})) {
-            $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
-        } else {
-            $encoded_data = JSON::XS->new->utf8->encode($disco_stats);
-        }
-    };
-    if ($@) {
-        $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
-    }
+    my $encoded_data = json_encode($disco_stats, prettify => $self->{option_results}->{prettify}, output => $self->{output}, no_exit => 1);
     
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);

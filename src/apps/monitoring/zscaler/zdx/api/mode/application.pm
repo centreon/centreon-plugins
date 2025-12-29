@@ -80,7 +80,6 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::check_options(%options);
-    #$self->{output}->option_exit(short_msg => "Option application_id cannot be empty") if $self->{option_results}->{application_id} eq '';
     foreach (@_options) {
         $self->{$_} = $self->{option_results}->{$_};
     }
@@ -92,8 +91,6 @@ sub manage_selection {
 
     my $apps = $options{custom}->get_apps( map {$_ => $self->{$_}} @_options );
 
-    #$self->{output}->option_exit(short_msg => 'score not available in API response') unless defined($app->{score});
-    #$self->{output}->option_exit(short_msg => 'active_users not available in API response') unless defined($app->{stats}->{active_users});
     foreach (@$apps) {
         $self->{application}->{$_->{name}} = {
             name        => $_->{name},
