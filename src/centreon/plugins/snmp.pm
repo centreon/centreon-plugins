@@ -1204,7 +1204,7 @@ SNMP errors (by default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 
-Use SNMP getnext function in SNMP v2c and v3. This will request one OID at a
+Use SNMP get-next function in SNMP v2c and v3. This will request one OID at a
 time.
 
 =item B<--snmp-cache-file>
@@ -1214,7 +1214,7 @@ Use SNMP cache file.
 =item B<--snmp-username>
 
 SNMP v3 only:
-User name (securityName). 
+User name (C<securityName>).
 
 =item B<--authpassphrase>
 
@@ -1230,24 +1230,24 @@ Authentication protocol: MD5|SHA. Since net-snmp 5.9.1: SHA224|SHA256|SHA384|SHA
 =item B<--privpassphrase>
 
 SNMP v3 only:
-Privacy pass phrase (privPassword) to encrypt messages using the protocol
+Privacy pass phrase (C<privPassword>) to encrypt messages using the protocol
 defined in the --privprotocol option.
 
 =item B<--privprotocol>
 
 SNMP v3 only:
-Privacy protocol (privProtocol) used to encrypt messages.
+Privacy protocol (C<privProtocol>) used to encrypt messages.
 Supported protocols are: DES|AES and since net-snmp 5.9.1: AES192|AES192C|AES256|AES256C.
 
 =item B<--contextname>
 
 SNMP v3 only:
-Context name (contextName), if relevant for the monitored host.
+Context name (C<contextName>), if relevant for the monitored host.
 
 =item B<--contextengineid>
 
 SNMP v3 only:
-Context engine ID (contextEngineID), if relevant for the monitored host, given 
+Context engine ID (C<contextEngineID>), if relevant for the monitored host, given
 as a hexadecimal string.
 
 =item B<--securityengineid>
@@ -1262,7 +1262,7 @@ Possible values are warning, critical and unknown (default).
 
 =item B<--snmp-tls-transport>
 
-Transport protocol for TLS communication (can be: 'dtlsudp', 'tlstcp').
+Transport protocol for TLS communication (can be: C<dtlsudp>, C<tlstcp>).
 
 =item B<--snmp-tls-our-identity>
 
@@ -1277,7 +1277,7 @@ is already trusted by your system.
 
 =item B<--snmp-tls-their-hostname>
 
-Common Name (CN) expected in the certificate sent by the host if it differs from
+Common Name (C<CN>) expected in the certificate sent by the host if it differs from
 the value of the --hostname parameter.
 
 =item B<--snmp-tls-trust-cert>
