@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/json_encode json_decode value_of/;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,9 +33,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'keyid:s'  => { name => 'keyid' },
-        'num:s'    => { name => 'num' },
-        'texto:s'  => { name => 'texto' },
+        'keyid:s'  => { name => 'keyid',  default => '' },
+        'num:s'    => { name => 'num',    default => '' },
+        'texto:s'  => { name => 'texto',  default => '' },
         'nostop:s' => { name => 'nostop', default => '1' },
         'sandbox'  => { name => 'sandbox' }
     });
@@ -48,22 +48,15 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::init(%options);
-    if (!defined($self->{option_results}->{keyid}) || $self->{option_results}->{keyid} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Please set --keyid option');
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{num}) || $self->{option_results}->{num} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Please set --num option');
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{texto}) || $self->{option_results}->{texto} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Please set --texto option');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Please set --keyid option')
+        if $self->{option_results}->{keyid} eq '';
+    $self->{output}->option_exit(short_msg => 'Please set --num option')
+        if $self->{option_results}->{num} eq '';
+    $self->{output}->option_exit(short_msg => 'Please set --texto option')
+        if $self->{option_results}->{texto} eq '';
 
-    if (!defined($self->{option_results}->{nostop}) || $self->{option_results}->{nostop} !~ /^0|1$/) {
-        $self->{option_results}->{nostop} = 1;
-    }
+    $self->{option_results}->{nostop} = 1
+        unless $self->{option_results}->{nostop} =~ /^0|1$/;
 
     $self->{http}->set_options(%{ $self->{option_results} }, hostname => 'none');
 }
@@ -77,14 +70,12 @@ sub run {
         sms => $self->{option_results}->{texto},
         nostop => $self->{option_results}->{nostop}
     };
-    if (defined($self->{option_results}->{sandbox})) {
-        $payload->{sandbox} = 1;
-    }
-    $payload = centreon::plugins::misc::json_encode($payload);
-    unless ($payload) {
-        $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
-        $self->{output}->option_exit();
-    }
+    $payload->{sandbox} = 1
+        if defined $self->{option_results}->{sandbox};
+
+    $payload = json_encode($payload, output => $self->{output}, no_exit => 1);
+    $self->{output}->option_exit(short_msg => 'cannot encode json request')
+        unless $payload;
 
     my $response = $self->{http}->request(
         method => 'POST',
@@ -99,23 +90,14 @@ sub run {
         critical_status => ''
     );
 
-    my $json = centreon::plugins::misc::json_decode($response);
-    if (!defined($json->{etat})) {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
-            short_msg => 'wrong json format'
-        );
-    } elsif ($json->{etat}->{etat}->[0]->{code} == 0) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => $json->{etat}->{etat}->[0]->{message}
-        );
-    } else {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
-            short_msg => $json->{etat}->{etat}->[0]->{message}
-        );
-    }
+    my $json = json_decode($response, output => $self->{output}, no_exit => 1);
+    $self->{output}->output_add(
+        severity => value_of($json, "->{etat}->{etat}->[0]->{code}") eq '0' ?
+                                    'OK' :
+                                    'UNKNOWN',
+        short_msg => value_of($json, "->{etat}->{etat}->[0]->{message}",
+                                     "wrong json format")
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -145,7 +127,7 @@ Define the content of your SMS message (required).
 
 =item B<--nostop>
 
-Define if the SMS message shoud contain the stop line to unsubscribe (default: 1).
+Define if the SMS message should contain the stop line to unsubscribe (default: 1).
 
 =item B<--sandbox>
 
