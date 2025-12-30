@@ -56,15 +56,20 @@ sub manage_selection {
 
     my $results = {}; 
     foreach my $mbean (keys %$datas) {
-        my ($attribute, $bus_id, $service, $port);
+        my ($bus_id, $service, $port);
 
-        $service = $1 if ($mbean =~ /service=(.*?)(?:,|$)/);
-        $port = $1 if ($mbean =~ /port=(.*?)(?:,|$)/);
-        $attribute = $1 if ($mbean =~ /Attribute=(.*?)(?:,|$)/i);
-        $bus_id = $1 if ($mbean =~ /bus\.id=(.*?)(?:,|$)/);
-        $service =~ s/^"(.*)"$/$1/;
-        $service = $1 if ($service =~ /\{(.*)\}/);
-        $port =~ s/^"(.*)"$/$1/;
+        next unless $mbean =~ /bus\.id=(.*?)(?:,|$)/;
+        $bus_id = $1;
+
+        if ($mbean =~ /service=(.*?)(?:,|$)/) {
+            $service = $1;
+            $service =~ s/^"(.*)"$/$1/;
+            $service = $1 if $service =~ /\{(.*)\}/
+        }
+        if ($mbean =~ /port=(.*?)(?:,|$)/) {
+            $port = $1;
+            $port =~ s/^"(.*)"$/$1/
+        }
 
         $results->{$bus_id} = { service => $service, port => $port, busId => $bus_id };
     }
