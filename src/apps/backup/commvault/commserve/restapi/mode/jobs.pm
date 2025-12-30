@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -43,7 +43,11 @@ sub custom_long_output {
 sub prefix_job_output {
     my ($self, %options) = @_;
 
-    return "Job '" . $options{instance_value}->{display} . "' [type: " . $options{instance_value}->{type} . "] " ;
+
+    my $client_part = $options{instance_value}->{client_name};
+    $client_part = "client: $client_part, " if $client_part ne '' && $client_part ne 'notAvailable';
+
+    return "Job '" . $options{instance_value}->{display} . "' [" . $client_part . "type: " . $options{instance_value}->{type} . "] " ;
 }
 
 sub policy_long_output {
@@ -103,7 +107,7 @@ sub set_counters {
             warning_default => '%{status} =~ /abnormal/i',
             critical_default => '%{status} =~ /errors|failed/i',
             set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' } ],
+                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'client_name' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -112,7 +116,7 @@ sub set_counters {
         },
         { label => 'long', type => 2, set => {
                 key_values => [
-                    { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }
+                    { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'client_name' }
                 ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
@@ -179,38 +183,34 @@ sub manage_selection {
         my $dest_client_name = defined($job->{destClientName}) ? $job->{destClientName} : 'notAvailable';
         # when the job is running, end_time = 0
 
-        if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
-            $policy_name !~ /$self->{option_results}->{filter_policy_name}/) {
+        if (is_excluded($policy_name, $self->{option_results}->{filter_policy_name})) {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter.", debug => 1);
-            next;
+            next
         }
-        if (defined($self->{option_results}->{filter_policy_id}) && $self->{option_results}->{filter_policy_id} ne '' &&
-            $policy_id !~ /$self->{option_results}->{filter_policy_id}/) {
+        if (is_excluded($policy_id, $self->{option_results}->{filter_policy_id})) {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter.", debug => 1);
-            next;
+            next
         }
-        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $job->{jobType} !~ /$self->{option_results}->{filter_type}/) {
+        if (is_excluded($job->{jobType}, $self->{option_results}->{filter_type})) {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter type.", debug => 1);
-            next;
+            next
         }
-        if (defined($self->{option_results}->{filter_client_name}) && $self->{option_results}->{filter_client_name} ne '' &&
-            $dest_client_name !~ /$self->{option_results}->{filter_client_name}/) {
+        if (is_excluded($dest_client_name, $self->{option_results}->{filter_client_name})) {
             $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter type.", debug => 1);
-            next;
+            next
         }
-        if (defined($self->{option_results}->{filter_client_group}) && $self->{option_results}->{filter_client_group} ne '' && defined($job->{clientGroups}) && ref($job->{clientGroups}) eq 'ARRAY') {
+        if (defined($self->{option_results}->{filter_client_group}) && $self->{option_results}->{filter_client_group} ne '' && ref $job->{clientGroups} eq 'ARRAY') {
             my $matched = 0;
             foreach (@{$job->{clientGroups}}) {
-                if ($_->{clientGroupName} =~ /$self->{option_results}->{filter_client_group}/) {
+                if (! is_excluded($_->{clientGroupName}, $self->{option_results}->{filter_client_group})) {
                     $matched = 1;
-                    last;
+                    last
                 }
             }
 
             if ($matched == 0) {
                 $self->{output}->output_add(long_msg => "skipping job '" . $policy_name . "/" . $job->{jobId} . "': no matching filter type.", debug => 1);
-                next;
+                next
             }
         }
 
@@ -223,7 +223,8 @@ sub manage_selection {
             display => $job->{jobId},
             elapsed => $elapsed_time, 
             status => $job->{status},
-            type => $job->{jobType}
+            type => $job->{jobType},
+            client_name => $dest_client_name
         };
         $self->{global}->{total}++;
     }
@@ -266,22 +267,22 @@ Set timeframe in seconds (E.g '3600' to check last 60 minutes).
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '%{status} =~ /abnormal/i')
-You can use the following variables: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}, %{client_name}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /errors|failed/i').
-You can use the following variables: %{display}, %{status}, %{type}
+You can use the following variables: %{display}, %{status}, %{type}, %{client_name}
 
 =item B<--warning-long>
 
 Set warning threshold for long jobs.
-You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}, %{client_name}
 
 =item B<--critical-long>
 
 Set critical threshold for long jobs.
-You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}
+You can use the following variables: %{display}, %{status}, %{elapsed}, %{type}, %{client_name}
 
 =item B<--warning-jobs-total>
 

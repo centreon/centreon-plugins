@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,6 +45,8 @@ my $mapping = ['id', 'src', 'srcPorts', 'dst', 'dstPorts', 'protocol'];
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my ($indice, $limit) = (0, 1000);
+
     my $path_raw_form_post = {
         columns => [
             "id",
@@ -56,24 +58,32 @@ sub manage_selection {
         ],
         filters => {},
         pagination => {
-            limit => undef,
-            start => 0
+            limit => $limit,
+            start => $indice 
         },
         reports => "/technology/routing/path-verifications"
-    };  
-
-    my $paths = $options{custom}->request_api(
-        method => 'POST',
-        endpoint => '/networks/path-lookup-checks',
-        query_form_post => $path_raw_form_post
-    );
+    };
 
     my $results = [];
-    foreach my $path (@{$paths->{data}}) {
-        $path->{dstPorts} = (defined($path->{dstPorts})) ? $path->{dstPorts} : '-';
-        $path->{srcPorts} = (defined($path->{srcPorts})) ? $path->{srcPorts} : '-';
 
-        push @$results, $path;
+    while (1) {
+        my $paths = $options{custom}->request_api(
+            method => 'POST',
+            endpoint => '/networks/path-lookup-checks',
+            query_form_post => $path_raw_form_post
+        );
+
+        foreach my $path (@{$paths->{data}}) {
+            $path->{dstPorts} //= '-';
+            $path->{srcPorts} //= '-';
+
+            push @$results, $path;
+        }
+
+        last if scalar(@{$paths->{data}}) < $limit;
+
+        $indice += $limit;
+        $path_raw_form_post->{pagination}->{start} = $indice;
     }
 
     return $results;
