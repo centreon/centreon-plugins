@@ -93,6 +93,7 @@ failover
 fanspeed
 FCCapacity
 fibre
+FibreAlliance
 --filter-fs
 --filter-imei
 --filter-ppid
