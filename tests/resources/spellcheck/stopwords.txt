@@ -60,6 +60,7 @@ cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
 CX
+CXF
 Cyberoam
 DaemonSet
 Datacore
@@ -151,11 +152,13 @@ Iwsva
 Jasmin
 jmeter
 JMeter
+JMX
 --jobq
 JOBQ
 jobqueue
 jobqueues
 journalctl
+Jolokia
 JSONPath
 kccevent
 keepass

@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "libjson-perl",
+        "libmodule-find-perl",
+        "libsys-sigaction-perl",
+        "libjmx4perl-perl"
+    ]
+}
