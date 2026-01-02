@@ -35,11 +35,11 @@ ConnectedUsers ${tc}
 
     Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
 
-    Examples:   tc   extraoptions                             expected_regexp    --
-    ...         1    ${EMPTY}                                 OK: \\\\d+ connected user(s) | 'mssql.users.connected.count'=\\\\d+;;;0;
-    ...         2    ${EMPTY} --database-name='NoTeXiSt'      OK: 0 connected user(s) | 'mssql.users.connected.count'=0;;;0;
-    ...         3    ${EMPTY} --database-name='master'        OK: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;;0;
-    ...         4    ${EMPTY} --count-admin-users             OK: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;;0;
-    ...         5    ${EMPTY} --uniq-users                    OK: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;;0;
-    ...         6    ${EMPTY} --warning-connected-user=:0     WARNING: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;0:0;;0;
-    ...         7    ${EMPTY} --critical-connected-user=:0    CRITICAL: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;0:0;0;
+    Examples:   tc   extraoptions                       expected_regexp    --
+    ...         1    ${EMPTY}                           OK: \\\\d+ connected user(s) | 'mssql.users.connected.count'=\\\\d+;;;0;
+    ...         2    --database-name='NoTeXiSt'         OK: 0 connected user(s) | 'mssql.users.connected.count'=0;;;0;
+    ...         3    --database-name='master'           OK: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;;0;
+    ...         4    --count-admin-users                OK: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;;0;
+    ...         5    --uniq-users                       OK: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;;0;
+    ...         6    --warning-connected-user=:0        WARNING: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;0:0;;0;
+    ...         7    --critical-connected-user=:0       CRITICAL: [1-9]\\\\d* connected user(s) | 'mssql.users.connected.count'=[1-9]\\\\d*;;0:0;0;
