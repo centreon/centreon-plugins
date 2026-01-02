@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,6 +29,7 @@ use Digest::MD5 qw(md5_hex);
 use Safe;
 use File::Copy qw(copy);
 use centreon::plugins::misc qw(is_empty);
+use centreon::plugins::constants qw(:values);
 
 #########################
 # Calc functions
@@ -175,10 +176,10 @@ sub custom_cast_output {
 sub custom_cast_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
+    return NO_VALUE if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
-        return -2;
+        return BUFFER_CREATION;
     }
 
     my $cast_diff = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{cast_going} . $options{extra_options}->{cast_test} } -
@@ -321,10 +322,10 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
-    if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'}) {
+    return NO_VALUE if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
+    if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'} // '') {
         $self->{error_msg} = 'buffer creation';
-        return -2;
+        return BUFFER_CREATION;
     }
 
     my $diff_traffic = ($options{new_datas}->{ $self->{instance} . '_' . $options{extra_options}->{label_ref} } - $options{old_datas}->{ $self->{instance} . '_' . $options{extra_options}
@@ -340,7 +341,7 @@ sub custom_traffic_calc {
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{ $self->{instance} . '_display' };
 
-    if ($self->{result_values}->{traffic_prct} > 100) {
+    if ($self->{result_values}->{traffic_prct} && $self->{result_values}->{traffic_prct} > 100) {
         if ($self->{instance_mode}->{option_results}->{trace}) {
             my $time_str = time();
             # Copy statefile to a new file for debug
@@ -356,9 +357,9 @@ sub custom_traffic_calc {
         # no percentage for traffic
         $self->{result_values}->{traffic_prct} = undef;
         $self->{error_msg} = 'clear buffer';
-        return -2;
+        return CLEAR_BUFFER;
     }
-    return 0;
+    return RUN_OK;
 }
 
 ##############
@@ -459,11 +460,11 @@ sub custom_errors_output {
 sub custom_errors_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
+    return NO_VALUE if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
 
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
-        return -2;
+        return BUFFER_CREATION;
     }
 
     my $error_label = $self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2};
@@ -508,10 +509,10 @@ sub custom_errors_calc {
         }
         $self->{result_values}->{prct} = undef;
         $self->{error_msg} = "clear buffer";
-        return -2;
+        return CLEAR_BUFFER;
     }
 
-    return 0;
+    return RUN_OK;
 }
 
 sub custom_speed_calc {
@@ -519,7 +520,7 @@ sub custom_speed_calc {
 
     $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+    return RUN_OK;
 }
 
 #########################
@@ -791,7 +792,7 @@ sub set_counters {
           message_multiple =>
           'All interfaces are ok',
           skipped_code     =>
-          { -10 => 1 } },
+          { NO_VALUE => 1 } },
     ];
 
     foreach (('traffic', 'errors', 'cast', 'speed', 'volume')) {
