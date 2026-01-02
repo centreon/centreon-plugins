@@ -34,13 +34,13 @@ Avocent
 aws
 AWSCLI
 --aws-role-arn
-bootable
 Backbox
 BackupJobSession
 BAM
 base64
 BGP
 blocked-by-uf
+bootable
 BPL
 --cacert-file
 cardtemperature
@@ -205,8 +205,8 @@ MQTT
 --mqtt-ssl-key
 --mqtt-timeout
 --mqtt-username
-MTU
 MSSQL
+MTU
 multiple
 MX
 nagios
@@ -235,10 +235,10 @@ OID
 --oid-extra-display
 --oid-filter
 OIDs
-OpenStack
 okta
 oneaccess-sys-mib
 OpenMetrics
+OpenStack
 OSPF
 out-bcast
 out-fc-wait
@@ -312,8 +312,8 @@ superseed
 SureBackup
 systemd
 SysVol
-TCP
 tablespaces
+TCP
 teampass
 Teldat
 temperatureambient
@@ -350,6 +350,7 @@ v3
 vCenter
 VCENTER
 vCPU
+VCSA
 vdom
 vdomain
 VDSL2
