@@ -1,4 +1,26 @@
 #!/usr/bin/env perl
+#
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+use strict;
+use warnings;
 
 use App::FatPacker;
 use File::Copy::Recursive;
@@ -37,6 +59,13 @@ do {
     }
 };
 
+
+# Files dependencies
+my %auto_dependencies = (
+    'centreon/plugins/snmp.pm' =>              [ 'centreon/plugins/snmplogger.pm' ],
+    'snmp_standard/modes/listinterfaces.pm' => [ 'snmp_standard/mode/resources/' ]
+);
+
 chdir($packaging_dir);
 
 my @plugins = split / /, $plugins;
@@ -56,10 +85,10 @@ foreach my $plugin (@plugins) {
         my $plugin_build_dir = $build_dir . '/' . $plugin;
         File::Path::make_path($plugin_build_dir);
 
-        open($fh, '<', $package_path . '/pkg.json');
+        open(my $fh, '<', $package_path . '/pkg.json');
         my $json_content = do { local $/; <$fh> };
         close($fh);
-        $config = JSON::decode_json($json_content);
+        my $config = JSON::decode_json($json_content);
 
         # Prepare plugin layout.
         chdir($plugins_dir);
@@ -94,10 +123,14 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/templates/counter.pm',
             'centreon/plugins/templates/hardware.pm'
         );
-        if (grep 'snmp_standard/modes/listinterfaces.pm', @{$config->{files}}) {
-            my %temp_map = map {$_ => 1 } (@{$config->{files}}, "snmp_standard/mode/resources/");
-            @{$config->{files}} = sort keys %temp_map;
+
+        # Automatically include dependencies
+        while (my ($file, $dependencies) = each (%auto_dependencies)) {
+            if (grep { $_ eq $file } @{$config->{files}}) {
+                push @{$config->{files}}, @{$dependencies};
+            }
         }
+
         foreach my $file ((@common_files, @{$config->{files}})) {
             if (-f $file) {
                 File::Copy::Recursive::fcopy($file, 'lib/' . $file);
