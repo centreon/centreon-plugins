@@ -779,20 +779,15 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_init => 'skip_global' },
-        { name             =>
-          'int',
-          type             =>
-          1,
-          cb_init          =>
-          'skip_interface',
-          cb_init_counters =>
-          'skip_counters',
-          cb_prefix_output =>
-          'prefix_interface_output',
-          message_multiple =>
-          'All interfaces are ok',
-          skipped_code     =>
-          { NO_VALUE => 1 } },
+        {
+            name             => 'int',
+            type             => 1,
+            cb_init          => 'skip_interface',
+            cb_init_counters => 'skip_counters',
+            cb_prefix_output => 'prefix_interface_output',
+            message_multiple => 'All interfaces are ok',
+            skipped_code     => { NO_VALUE() => 1 }
+        },
     ];
 
     foreach (('traffic', 'errors', 'cast', 'speed', 'volume')) {
