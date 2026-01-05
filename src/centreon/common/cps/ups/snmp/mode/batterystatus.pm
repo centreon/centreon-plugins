@@ -277,7 +277,7 @@ You can use the following variables: %{status}, %{replace}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'charge-remaining' (%), 'voltage' (V), 'temperature' (C), 'timeon' (unit), battery-life-time in months.
+Can be: C<charge-remaining> (%), C<voltage> (V), C<temperature> (C), C<timeon> (unit), C<battery-life-time> in months.
 
 =item B<--unit>
 
