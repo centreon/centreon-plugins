@@ -158,8 +158,8 @@ JMX
 JOBQ
 jobqueue
 jobqueues
-journalctl
 Jolokia
+journalctl
 JSONPath
 kccevent
 keepass
@@ -286,6 +286,7 @@ RRDCached
 rsrp
 rsrq
 rssi
+RTT
 Rubrik
 µs
 Sansymphony
