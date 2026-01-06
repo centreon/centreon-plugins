@@ -1,0 +1,287 @@
+{
+  "uuid": "1288ec86-dd0a-48d0-ab7a-cfb37e9ae7d1",
+  "lastMigration": 33,
+  "name": "ZDX",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "504794f4-d7f3-49ff-92f2-a1272f37b7ae",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/oauth/token",
+      "responses": [
+        {
+          "uuid": "b38dfeec-3ad3-4040-b56b-9901a8e37a88",
+          "body": "{\n  \"token\": \"ABCDEFG1234567890\",\n  \"token_type\": \"Bearer\",\n  \"expires_in\": 3600\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Accept",
+              "value": "application/json",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "header",
+              "modifier": "Content-Type",
+              "value": "application/json",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "body",
+              "modifier": "key_id",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "body",
+              "modifier": "key_secret",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5b3bb4c2-4e49-4135-9c63-b13d88ad7fa0",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "28075cfb-d300-4c92-aa12-d12ce3d115f0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/apps",
+      "responses": [
+        {
+          "uuid": "e2548dda-c2b8-4bb5-8fbe-acd0e8871a35",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "[\n  {\n    \"id\": 18,\n    \"name\": \"appli_18\",\n    \"score\": 42,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  },\n  {\n    \"id\": 42,\n    \"name\": \"appli_42\",\n    \"score\": 12,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  }\n]"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "685706bf-25d1-4607-831c-4e731baffd89",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/apps/:appid",
+      "responses": [
+        {
+          "uuid": "ec845866-b8a4-48b3-a58c-9c7324f0fd2d",
+          "body": "{\n  \"id\": {{urlParam 'appid'}},\n  \"name\": \"appli_{{urlParam 'appid'}}\",\n  \"score\": \n{{#switch (urlParam 'appid')}}\n  {{#case '18'}}85{{/case}}\n  {{#case '42'}}39{{/case}}\n  {{#default}}50{{/default}}\n{{/switch}}\n,\n  \"most_impacted_geo\": {\n    \"id\": \"0.5332921.US\",\n    \"state\": \"California\",\n    \"country\": \"United States\",\n    \"geo_type\": \"Region\"\n  },\n  \"stats\": {\n    \"active_users\": \n{{#switch (urlParam 'appid')}}\n  {{#case '18'}}1385{{/case}}\n  {{#case '42'}}1139{{/case}}\n  {{#default}}50{{/default}}\n{{/switch}}\n    ,\n    \"active_devices\": 1503,\n    \"num_poor\": 134,\n    \"num_okay\": 234,\n    \"num_good\": 334\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "504794f4-d7f3-49ff-92f2-a1272f37b7ae"
+    },
+    {
+      "type": "route",
+      "uuid": "28075cfb-d300-4c92-aa12-d12ce3d115f0"
+    },
+    {
+      "type": "route",
+      "uuid": "685706bf-25d1-4607-831c-4e731baffd89"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
