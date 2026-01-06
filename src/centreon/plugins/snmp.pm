@@ -1,5 +1,5 @@
 #
-# Copyright 2025-Present Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -1090,6 +1090,10 @@ sub get_port {
     return $self->{snmp_params}->{RemotePort};
 }
 
+#  sampleType => { oid => '.1.1.1.1.1.1.1.1.1', map => \%map_sample_type, default => 1 }
+#  oid is the OID to use
+#  map is an optional value mapping
+#  default is the optional default value to use when the OID has no value
 sub map_instance {
     my ($self, %options) = @_;
 
@@ -1103,7 +1107,8 @@ sub map_instance {
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {
             $results->{$name} = $options{results}->{$options{mapping}->{$name}->{oid}}->{$entry};
         } else {
-            $results->{$name} = defined($options{default}) ? $options{default} : undef;
+            # Use the OID default value if defined
+            $results->{$name} = $options{mapping}->{$name}->{default} // $options{default} // undef;
         }
 
         if (defined($options{mapping}->{$name}->{map})) {
