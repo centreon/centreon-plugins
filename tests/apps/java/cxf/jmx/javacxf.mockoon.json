@@ -1,0 +1,144 @@
+{
+  "uuid": "34506476-0c2e-4640-b7a0-fdd90c382544",
+  "lastMigration": 33,
+  "name": "Java",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "5c1d44c7-13e8-426c-a043-9e144ebd48a6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "549c4afe-22c8-468f-a8a9-8ece4ad68aeb",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "192b24f9-a04b-4573-893f-d82c0dd3984b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "jolokia/read/org.apache.cxf%3AAttribute%3D*%2Cbus.id%3D*%2Cservice%3D*%2Cport%3D*%2Ctype%3DMetrics.Server/Count",
+      "responses": [
+        {
+          "uuid": "973ba81d-24e1-4ec5-a6f2-65b90bd8bdcb",
+          "body": "{\n  \"request\": {\n    \"type\": \"read\",\n    \"mbean\": \"org.apache.cxf:Attribute=*,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\",\n    \"attribute\": \"Count\"\n  },\n  \"value\": {\n    \"org.apache.cxf:Attribute=In Flight,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 8},\n    \"org.apache.cxf:Attribute=Totals,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 10},\n    \"org.apache.cxf:Attribute=Checked Application Faults,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 3},\n    \"org.apache.cxf:Attribute=UnChecked Application Faults,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 5},\n    \"org.apache.cxf:Attribute=Logical Runtime Faults,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 2},\n    \"org.apache.cxf:Attribute=Runtime Faults,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 1},\n    \"org.apache.cxf:Attribute=Totals,Operation=process,bus.id=dmt.SELECTION_PARTIN-cxf8642,port=\\\"TestJobXXXX\\\",service=\\\"{http://operation_test.dmt/}TestJobXXXX\\\",type=Metrics.Server\": {\"Count\": 1250}\n  },\n    \"timestamp\": 1701234567890,\n  \"status\": 200\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "5c1d44c7-13e8-426c-a043-9e144ebd48a6"
+    },
+    {
+      "type": "route",
+      "uuid": "192b24f9-a04b-4573-893f-d82c0dd3984b"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [],
+  "proxyResHeaders": [],
+  "data": [],
+  "callbacks": []
+}

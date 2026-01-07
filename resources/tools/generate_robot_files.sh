@@ -48,6 +48,9 @@ Test Timeout        120s
 ...         --mode=$mode
 ...         --hostname=\${HOSTNAME}
 ...         --port=\${APIPORT}
+...         --proto=http
+...         --username=1
+...         --password=1
 
 EOF
 }

@@ -40,6 +40,7 @@ our @EXPORT_OK = qw/change_seconds
                     json_encode
                     json_decode
                     slurp_file
+                    trim
                     value_of/;
 
 sub execute {

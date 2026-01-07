@@ -310,7 +310,7 @@ jobs:
           fail-on-cache-miss: true
 
       - run: |
-          .github/scripts/prepare-package-plugins.sh "plugins.json" "${{ matrix.package_extension }}"
+          .github/scripts/prepare-package-plugins.sh "plugins.json" "${{ matrix.package_extension }}" "${{ matrix.distrib }}"
         shell: bash
 
       - uses: ./.github/actions/package-nfpm
