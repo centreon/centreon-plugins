@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -323,6 +323,7 @@ sub execute_powershell {
 
     my $chunk = 8000;
     my $filename = 'C:/Windows/Temp/' . $options{label} . '-' . sprintf("%08X", rand(0xFFFFFFFF)) . '.bat';
+    my ($tmp_filename, $ps1_filename);
     my $commands = [
         {
             label => 'prev1-' . $options{label},
@@ -331,18 +332,40 @@ sub execute_powershell {
         {
             label => 'prev2-' . $options{label},
             value => '(echo @ECHO OFF) >> ' . $filename
-        },
-        {
-            label => 'prev3-' . $options{label},
-            value => 'echo|set /P="powershell -encodedcommand ">> ' . $filename
         }
     ];
-    my $i = 0;
-    foreach (unpack('(A' . $chunk . ')*', $options{content})) {
+
+    # To work around the 8191 character command line length limit when the data exceeds 8000 characters the string is
+    # split into 8000 character chunks and reassembled using a temporary file
+    if (length($options{content}) <= $chunk) {
         push @$commands, {
-            label => 'chunk-' . $i . '-' . $options{label},
-            value => 'echo|set /P="' . $_ . '">>' . $filename
-        };
+                             label => 'prev3-' . $options{label},
+                             value => 'echo|set /P="powershell -encodedcommand ">> ' . $filename
+                         },
+                         {
+                             label => 'chunk-0-' . $options{label},
+                             value => 'echo|set /P="' . unpack('A*', $options{content}) . '">>' . $filename
+                         };
+    } else {
+        my $i = 0;
+        $tmp_filename = $filename=~ s/\.bat$/\.tmp/r;
+        $ps1_filename = $filename=~ s/\.bat$/\.ps1/r;
+
+        foreach (unpack('(A' . $chunk . ')*', $options{content})) {
+            push @$commands, {
+                label => 'chunk-' . ($i++) . '-' . $options{label},
+                value => 'echo|set /P="' . $_ . '">>' . $tmp_filename
+            };
+        }
+
+        push @$commands, {
+                             label => 'post1-'. $options{label},
+                             value => "certutil --decode $tmp_filename $ps1_filename >NUL 2>&1"
+                         },
+                         {
+                             label => 'post2-' . $options{label},
+                             value => "echo powershell -File $ps1_filename >> $filename"
+                         };
     }
 
     push @$commands,
@@ -352,7 +375,7 @@ sub execute_powershell {
         },
         {
             label => 'del-' . $options{label},
-            value => 'del /f ' . $filename
+            value => 'del /f ' . join ' ', grep { $_ } ($filename, $tmp_filename, $ps1_filename)
         };
 
     return $self->execute_winshell_commands(
@@ -555,11 +578,11 @@ WSMAN global
 
 =head1 SYNOPSIS
 
-wsman class
+WSMAN class
 
 =head1 WSMAN OPTIONS
 
-Need at least openwsman-perl version >= 2.4.0
+Need at least OpenWSMAN-perl version >= 2.4.0
 
 =over 8
 
@@ -593,7 +616,7 @@ Define the HTTP transport timeout in seconds (default: 30).
 
 =item B<--wsman-auth-method>
 
-Define the authentication method. Available methods: noauth, basic (default), pass, digest, ntlm, gssnegotiate.
+Define the authentication method. Available methods: C<noauth>, C<basic> (default), C<pass>, C<digest>, C<ntlm>, C<gssnegotiate>.
 
 =item B<--wsman-proxy-url>
 
@@ -609,16 +632,16 @@ Define the password to authenticate to the proxy server.
 
 =item B<--wsman-debug>
 
-Define the openwsman log level. Available levels: error, critical, warning, message, info (default), debug.
+Define the OpenWSMAN log level. Available levels: error, critical, warning, message, info (default), debug.
 
 =item B<--wsman-errors-exit>
 
-Define the expected exit code when wsman errors occur (default: unknown).
+Define the expected exit code when WSMAN errors occur (default: unknown).
 
 =back
 
 =head1 DESCRIPTION
 
-B<wsman>.
+B<WSMAN>.
 
 =cut
