@@ -30,8 +30,9 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'events'          => 'network::aviat::snmp::mode::events',
-        'uptime'          => 'network::aviat::snmp::mode::uptime'
+        'events'   => 'network::aviat::snmp::mode::events',
+        'sensors'  => 'network::aviat::snmp::mode::sensors', 
+        'uptime'   => 'network::aviat::snmp::mode::uptime'
     };
 
     return $self;
