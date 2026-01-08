@@ -19,8 +19,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --key-id=1
 ...                 --key-secret=1
 ${EXPECTED_RESULT}  SEPARATOR=
-...                 {"discovered_items":2,"end_time":1765545358,"results":[{"id": 18, "name": "appli_18"}, {"name": \
-...                 "appli_42", "id": 42}],"duration":0,"start_time":1765545358}
+...                 {"discovered_items":2,"end_time":1765545358,"results":[{"hostname": "127.0.0.1", "id": 1, "name": \
+...                 "SharePoint Online", "score": 73.1244323342416, "total_users": 50}, {"hostname": "127.0.0.1", \
+...                 "id": 3, "name": "Outlook Online", "score": 81.551724137931, "total_users": 67}],"duration":0, \
+...                 "start_time":1765545358}
 
 
 *** Test Cases ***

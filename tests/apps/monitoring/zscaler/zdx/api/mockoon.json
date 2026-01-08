@@ -161,7 +161,7 @@
           "default": false,
           "crudKey": "id",
           "callbacks": [],
-          "body": "[\n  {\n    \"id\": 18,\n    \"name\": \"appli_18\",\n    \"score\": 42,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  },\n  {\n    \"id\": 42,\n    \"name\": \"appli_42\",\n    \"score\": 12,\n    \"most_impacted_geo\": {\n      \"id\": \"loc1\",\n      \"city\": \"Paris\",\n      \"region\": \"Europe\",\n      \"country\": \"France\",\n      \"geo_type\": \"string\"\n    }\n  }\n]"
+          "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"SharePoint Online\",\n    \"score\": 73.1244323342416,\n    \"most_impacted_region\": {\n      \"id\": \"0.5165418.US\",\n      \"state\": \"Ohio\",\n      \"country\": \"United States\"\n    },\n    \"total_users\": 50\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Outlook Online\",\n    \"score\": 81.55172413793103,\n    \"most_impacted_region\": {\n      \"id\": \"0.5165418.US\",\n      \"state\": \"Ohio\",\n      \"country\": \"United States\"\n    },\n    \"total_users\": 67\n  }\n]"
         }
       ],
       "responseMode": null,
@@ -169,15 +169,71 @@
       "streamingInterval": 0
     },
     {
-      "uuid": "685706bf-25d1-4607-831c-4e731baffd89",
+      "uuid": "d2323ee9-ec22-4224-981a-65ddfb50aba8",
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/apps/:appid",
+      "endpoint": "v1/apps/3",
       "responses": [
         {
-          "uuid": "ec845866-b8a4-48b3-a58c-9c7324f0fd2d",
-          "body": "{\n  \"id\": {{urlParam 'appid'}},\n  \"name\": \"appli_{{urlParam 'appid'}}\",\n  \"score\": \n{{#switch (urlParam 'appid')}}\n  {{#case '18'}}85{{/case}}\n  {{#case '42'}}39{{/case}}\n  {{#default}}50{{/default}}\n{{/switch}}\n,\n  \"most_impacted_geo\": {\n    \"id\": \"0.5332921.US\",\n    \"state\": \"California\",\n    \"country\": \"United States\",\n    \"geo_type\": \"Region\"\n  },\n  \"stats\": {\n    \"active_users\": \n{{#switch (urlParam 'appid')}}\n  {{#case '18'}}1385{{/case}}\n  {{#case '42'}}1139{{/case}}\n  {{#default}}50{{/default}}\n{{/switch}}\n    ,\n    \"active_devices\": 1503,\n    \"num_poor\": 134,\n    \"num_okay\": 234,\n    \"num_good\": 334\n  }\n}",
+          "uuid": "f828448e-7bbb-4966-81b0-0218d6bbac59",
+          "body": "{\n  \"id\": 3,\n  \"name\": \"Outlook Online\",\n  \"score\": 99.09,\n  \"most_impacted_region\": {\n    \"id\": \"0.0.US\",\n    \"state\": \"\",\n    \"country\": \"US\",\n    \"geo_type\": \"Country\"\n  },\n  \"stats\": {\n    \"active_users\": 55,\n    \"active_devices\": 55,\n    \"num_poor\": 7,\n    \"num_okay\": 3,\n    \"num_good\": 45,\n    \"num_na\": 0\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "7bae80cb-52c4-42b4-9d65-b10191ac2eb0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/apps/1",
+      "responses": [
+        {
+          "uuid": "28158954-8090-4f43-814f-9e57f2b9c2f2",
+          "body": "{\n  \"id\": 1,\n  \"name\": \"SharePoint Online\",\n  \"score\": 89.55,\n  \"most_impacted_region\": {\n    \"id\": \"0.0.AE\",\n    \"state\": \"\",\n    \"country\": \"AE\",\n    \"geo_type\": \"Country\"\n  },\n  \"stats\": {\n    \"active_users\": 55,\n    \"active_devices\": 55,\n    \"num_poor\": 6,\n    \"num_okay\": 5,\n    \"num_good\": 44,\n    \"num_na\": 0\n  }\n}\n",
           "latency": 0,
           "statusCode": 200,
           "label": "",
@@ -236,7 +292,11 @@
     },
     {
       "type": "route",
-      "uuid": "685706bf-25d1-4607-831c-4e731baffd89"
+      "uuid": "d2323ee9-ec22-4224-981a-65ddfb50aba8"
+    },
+    {
+      "type": "route",
+      "uuid": "7bae80cb-52c4-42b4-9d65-b10191ac2eb0"
     }
   ],
   "proxyMode": false,
