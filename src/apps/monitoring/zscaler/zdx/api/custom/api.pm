@@ -77,23 +77,31 @@ sub get_token {
                     . '_' . $self->{key_id})
     );
     # return token stored in cache if exists after checking it is still valid
-    $self->{token} = $self->{cache}->get(name => 'token') if $has_cache_file;
-    my $expiration = $self->{cache}->get(name => 'expiration') if defined($self->{token});
+    if ($has_cache_file) {
+        $self->{token}      = $self->{cache}->get(name => 'token');
+        $self->{token_type} = $self->{cache}->get(name => 'token_type');
+        my $expiration      = $self->{cache}->get(name => 'expiration');
 
-    return $self->{token} if (defined($expiration) && $expiration > time() + 60);
+        if (defined($expiration) && $expiration > time() + 60) {
+            $self->{http}->add_header(key => 'Authorization', value => $self->{token_type} . ' ' . $self->{token});
+            return $self->{token}
+        }
+    }
 
     # if we do not have a token or if it has to be renewed
     my $content = $self->{http}->request(
         method          => 'POST',
         url_path        => '/v1/oauth/token',
-        query_form_post => '{ "key_id": "' . $self->{key_id} . '", "key_secret": "' . $self->{key_secret} . '"}',
+        query_form_post => '{"key_id": "' . $self->{key_id} . '", "key_secret": "' . $self->{key_secret} . '"}',
 
     );
     my $decoded_content = json_decode($content, output => $self->{output});
 
     $self->{output}->option_exit(short_msg => "No token found in '$content'") unless ($decoded_content->{token});
     $self->{token} = $decoded_content->{token};
-    $self->{cache}->write(data => { token => $decoded_content->{token}, expiration => ($decoded_content->{expires_in} + time()) });
+    $self->{token_type} = $decoded_content->{token_type};
+    $self->{http}->add_header(key => 'Authorization', value => $self->{token_type} . ' ' . $self->{token});
+    $self->{cache}->write(data => { token => $decoded_content->{token}, token_type => $decoded_content->{token_type}, expiration => ($decoded_content->{expires_in} + time()) });
     return $self->{token};
 }
 
@@ -110,7 +118,13 @@ sub get_unique_app {
         method   => 'GET',
         url_path => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
     );
-    return json_decode($content, output => $self->{output});
+    my $app = json_decode($content, output => $self->{output});
+    return {
+        id          => $app->{id},
+        name        => $app->{name},
+        score       => $app->{score},
+        total_users => $app->{stats}->{active_users}
+    }
 }
 
 sub get_apps {
@@ -132,13 +146,18 @@ sub get_apps {
     );
     my $all_apps = json_decode($all_apps_json, output => $self->{output});
 
-    foreach my $app_obj (@$all_apps) {
+    foreach my $app (@$all_apps) {
         next if is_excluded(
-            $app_obj->{name},
+            $app->{name},
             $options{include_application_name},
             $options{exclude_application_name});
 
-        push @stats, $self->get_unique_app(application_id => $app_obj->{id});
+        push @stats, {
+            id          => $app->{id},
+            name        => $app->{name},
+            score       => $app->{score},
+            total_users => $app->{total_users}
+        };
     }
 
     return \@stats;

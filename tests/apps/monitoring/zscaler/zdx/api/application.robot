@@ -36,25 +36,25 @@ Application ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: All apps are ok | 'appli_18#application.total-users.count'=1385;;;0; 'appli_18#application.score.value'=85;;;; 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;;;
+    ...    OK: All apps are ok | 'Outlook Online#application.total-users.count'=67;;;0; 'Outlook Online#application.score.value'=81;;;; 'SharePoint Online#application.total-users.count'=50;;;0; 'SharePoint Online#application.score.value'=73;;;;
     ...    2
-    ...    --application-id=42
-    ...    OK: App "appli_42" - Users count: 1139, Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;;;
+    ...    --application-id=3
+    ...    OK: App "Outlook Online" - Users count: 55, Score: 99.09 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;;;;
     ...    3
-    ...    --application-id=42 --warning-score=1
-    ...    WARNING: App "appli_42" - Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;0:1;;;
+    ...    --application-id=3 --warning-score=1
+    ...    WARNING: App "Outlook Online" - Score: 99.09 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;0:1;;;
     ...    4
-    ...    --application-id=42 --critical-score=1
-    ...    CRITICAL: App "appli_42" - Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;0:1;;
+    ...    --application-id=3 --critical-score=1
+    ...    CRITICAL: App "Outlook Online" - Score: 99.09 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;;0:1;;
     ...    5
-    ...    --application-id=42 --warning-total-users=1
-    ...    WARNING: App "appli_42" - Users count: 1139 | 'appli_42#application.total-users.count'=1139;0:1;;0; 'appli_42#application.score.value'=39;;;;
+    ...    --application-id=3 --warning-total-users=1
+    ...    WARNING: App "Outlook Online" - Users count: 55 | 'Outlook Online#application.total-users.count'=55;0:1;;0; 'Outlook Online#application.score.value'=99;;;;
     ...    6
-    ...    --application-id=42 --critical-total-users=1
-    ...    CRITICAL: App "appli_42" - Users count: 1139 | 'appli_42#application.total-users.count'=1139;;0:1;0; 'appli_42#application.score.value'=39;;;;
+    ...    --application-id=3 --critical-total-users=1
+    ...    CRITICAL: App "Outlook Online" - Users count: 55 | 'Outlook Online#application.total-users.count'=55;;0:1;0; 'Outlook Online#application.score.value'=99;;;;
     ...    7
-    ...    --include-application-name=1
-    ...    OK: App "appli_18" - Users count: 1385, Score: 85 | 'appli_18#application.total-users.count'=1385;;;0; 'appli_18#application.score.value'=85;;;;
+    ...    --include-application-name=SharePoint
+    ...    OK: App "SharePoint Online" - Users count: 50, Score: 73.1244323342416 | 'SharePoint Online#application.total-users.count'=50;;;0; 'SharePoint Online#application.score.value'=73;;;;
     ...    8
-    ...    --exclude-application-name=1
-    ...    OK: App "appli_42" - Users count: 1139, Score: 39 | 'appli_42#application.total-users.count'=1139;;;0; 'appli_42#application.score.value'=39;;;;
+    ...    --exclude-application-name=SharePoint
+    ...    OK: App "Outlook Online" - Users count: 67, Score: 81.551724137931 | 'Outlook Online#application.total-users.count'=67;;;0; 'Outlook Online#application.score.value'=81;;;;

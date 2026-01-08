@@ -54,7 +54,13 @@ sub run {
     my $results = $options{custom}->get_apps();
 
     foreach (@$results) {
-        push @disco_data, { id => $_->{id}, name => $_->{name} };
+        push @disco_data, {
+            id          => $_->{id},
+            name        => $_->{name},
+            score       => $_->{score},
+            total_users => $_->{total_users},
+            hostname    => $self->{option_results}->{hostname} # for stupid reason host discovery can only take discovery results for the host address
+        };
     }
 
     $disco_stats->{end_time} = time();

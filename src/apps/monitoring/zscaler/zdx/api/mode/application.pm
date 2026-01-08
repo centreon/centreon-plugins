@@ -89,13 +89,13 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $apps = $options{custom}->get_apps( map {$_ => $self->{$_}} @_options );
+    my $apps = $options{custom}->get_apps( map {$_ => $self->{$_}} @_options);
 
     foreach (@$apps) {
         $self->{application}->{$_->{name}} = {
             name        => $_->{name},
             score       => $_->{score},
-            total_users => $_->{stats}->{active_users}
+            total_users => $_->{total_users}
         }
     }
     return 1;
