@@ -2,6 +2,7 @@
 
 plugins_json_file="$1"
 package_extension="$2"
+package_distrib="$3"
 
 for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plugins_json_file); do
   PACKAGE_PATH=$PLUGIN
@@ -26,8 +27,8 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   conflicts=$(jq -r '.conflicts // [] | join(",")' "$PACKAGE_FILE")
   replaces=$(jq -r '.replaces // [] | join(",")' "$PACKAGE_FILE")
   provides=$(jq -r '.provides // [] | join(",")' "$PACKAGE_FILE")
-  deb_dependencies=$(jq -r '.dependencies // [] | join(",")' "$DEB_PACKAGE_FILE")
-  rpm_dependencies=$(jq -r '.dependencies // [] | join(",")' "$RPM_PACKAGE_FILE")
+  deb_dependencies=$(jq -r '(.dependencies // []) + (.dependencies_'$package_distrib' // []) | join(",")' "$DEB_PACKAGE_FILE")
+  rpm_dependencies=$(jq -r '(.dependencies // []) + (.dependencies_'$package_distrib' // []) | join(",")' "$RPM_PACKAGE_FILE")
   deb_conflicts=$(jq -r '.conflicts // [] | join(",")' "$DEB_PACKAGE_FILE")
   rpm_conflicts=$(jq -r '.conflicts // [] | join(",")' "$RPM_PACKAGE_FILE")
   deb_replaces=$(jq -r '.replaces // [] | join(",")' "$DEB_PACKAGE_FILE")

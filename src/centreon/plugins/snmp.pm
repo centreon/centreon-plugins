@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,6 +23,7 @@ package centreon::plugins::snmp;
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use centreon::plugins::snmplogger;
 use SNMP;
 use Socket;
 use POSIX;
@@ -78,6 +79,7 @@ sub new {
 
     #####
     $self->{session} = undef;
+    $self->{snmplogger} = undef;
     $self->{output} = $options{output};
     $self->{snmp_params} = {};
 
@@ -228,6 +230,13 @@ sub autoreduce_leef {
 sub get_leef_cache {
     my ($self, %options) = @_;
 
+    if ($self->{snmplogger}) {
+        $self->{snmplogger}->start("snmpget");
+        $self->{snmplogger}->add(
+            join " ", @{$options{oids}}
+        );
+        $self->{output}->output_add(long_msg => 'snmp request: (cached) '.$self->{snmplogger}->get_log());
+    }
     my $results = {};
     foreach my $oid (@{$options{oids}}) {
         if (defined($self->{snmp_cache}->{$oid})) {
@@ -340,6 +349,18 @@ sub get_leef {
     #       ], 'SNMP::Varbind' )
     ############################
 
+    if ($self->{snmplogger}) {
+        $self->{snmplogger}->start("snmpget");
+        $self->{snmplogger}->add("-On");
+        foreach (map { @{$_} } @{$self->{array_ref_ar}}) {
+            $self->{snmplogger}->add(
+                   join " ", map { join ".", @{$_} } $_
+            );
+        }
+
+        $self->{output}->output_add(long_msg => 'snmp request: '.$self->{snmplogger}->get_log());
+    }
+
     my $total = 0;
     while (my $entry = shift(@{$self->{array_ref_ar}})) {
         my $vb = new SNMP::VarList(@{$entry});
@@ -359,7 +380,7 @@ sub get_leef {
                 ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
                 next if ($self->autoreduce_leef(current => $entry) == 0);
             }
-            my $msg = 'SNMP GET Request: ' . $self->{session}->{ErrorStr};    
+            my $msg = 'SNMP GET Request: ' . $self->{session}->{ErrorStr};
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
                 $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -513,6 +534,23 @@ sub get_multiple_table {
         $repeat_count = $self->{maxrepetitions};
     }
 
+    if ($self->{snmplogger}) {
+        my $i=1;
+        foreach my $entry (values %{$working_oids}) {
+            # Always use snmpwalk instead of snmpbulkwalk, as snmpbulkwalk does not support specifying an end OID
+            $self->{snmplogger}->start('snmpwalk');
+
+            $self->{snmplogger}->add('-On');
+            # Incrementing the OID is generally not recommended but it's the simple way to include the end OID in snmpwalk output
+            $self->{snmplogger}->add("-CE $1.".($2+1))
+                if $entry->{end} && $entry->{end} =~ /^([\d\.]+)\.(\d+)$/;
+            $self->{snmplogger}->add("$entry->{start}");
+
+            $self->{output}->output_add(long_msg => "snmp request: [$i] ".$self->{snmplogger}->get_log());
+            $i++
+        }
+    }
+
     # Quit if base not the same or 'ENDOFMIBVIEW' value. Need all oid finish otherwise we continue :)
     while (1) {
         my $current_oids = 0;
@@ -636,6 +674,13 @@ sub get_table_cache {
 
     my $branch = defined($options{start}) ? $options{start} : $options{oid};
 
+    if ($self->{snmplogger}) {
+        $self->{snmplogger}->start("snmpwalk");
+        $self->{snmplogger}->add("[start: $branch]");
+        $self->{snmplogger}->add("[end: ".$options{end}."]")
+            if $options{end};
+        $self->{output}->output_add(long_msg => 'snmp request: (cached) '.$self->{snmplogger}->get_log());
+    }
     my $results = {};
     foreach my $oid ($self->oid_lex_sort(keys %{$self->{snmp_cache}})) {
         if ($oid =~ /^$branch\./) {
@@ -712,6 +757,18 @@ sub get_table {
     } else {
         $last_oid = $options{oid};
     }
+
+    if ($self->{snmplogger}) {
+        $self->{snmplogger}->start('snmpwalk');
+
+        $self->{snmplogger}->add('-On');
+        $self->{snmplogger}->add("-CE $1.".($2+1))
+            if $options{end} && $options{end} =~ /^([\d\.]+)\.(\d+)$/;
+        $self->{snmplogger}->add($last_oid);
+
+        $self->{output}->output_add(long_msg => 'snmp request: '.$self->{snmplogger}->get_log());
+    }
+
     while ($leave) {
         $last_oid =~ /(.*)\.(\d+)([\.\s]*)$/;
         my $vb = new SNMP::VarList([$1, $2]);
@@ -774,8 +831,7 @@ sub get_table {
         $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
     }
 
-    $self->debug(results => $results) if ($self->{output}->is_debug());
-
+    $self->debug(results => $results) if $self->{output}->is_debug();
     return $results;
 }
 
@@ -979,6 +1035,8 @@ sub check_options {
             $self->{snmp_params}->{PrivProto} = $options{option_results}->{snmp_priv_protocol};
         }
     }
+
+    $self->{snmplogger} = $self->{output}->is_debug() ? centreon::plugins::snmplogger->new(params => $self->{snmp_params}) : undef;
 }
 
 sub set_snmp_connect_params {
@@ -1032,6 +1090,10 @@ sub get_port {
     return $self->{snmp_params}->{RemotePort};
 }
 
+#  sampleType => { oid => '.1.1.1.1.1.1.1.1.1', map => \%map_sample_type, default => 1 }
+#  oid is the OID to use
+#  map is an optional value mapping
+#  default is the optional default value to use when the OID has no value
 sub map_instance {
     my ($self, %options) = @_;
 
@@ -1045,7 +1107,8 @@ sub map_instance {
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {
             $results->{$name} = $options{results}->{$options{mapping}->{$name}->{oid}}->{$entry};
         } else {
-            $results->{$name} = defined($options{default}) ? $options{default} : undef;
+            # Use the OID default value if defined
+            $results->{$name} = $options{mapping}->{$name}->{default} // $options{default} // undef;
         }
 
         if (defined($options{mapping}->{$name}->{map})) {
@@ -1146,7 +1209,7 @@ SNMP errors (by default, the number is divided by 2).
 
 =item B<--snmp-force-getnext>
 
-Use SNMP getnext function in SNMP v2c and v3. This will request one OID at a
+Use SNMP get-next function in SNMP v2c and v3. This will request one OID at a
 time.
 
 =item B<--snmp-cache-file>
@@ -1156,7 +1219,7 @@ Use SNMP cache file.
 =item B<--snmp-username>
 
 SNMP v3 only:
-User name (securityName). 
+User name (C<securityName>).
 
 =item B<--authpassphrase>
 
@@ -1172,24 +1235,24 @@ Authentication protocol: MD5|SHA. Since net-snmp 5.9.1: SHA224|SHA256|SHA384|SHA
 =item B<--privpassphrase>
 
 SNMP v3 only:
-Privacy pass phrase (privPassword) to encrypt messages using the protocol
+Privacy pass phrase (C<privPassword>) to encrypt messages using the protocol
 defined in the --privprotocol option.
 
 =item B<--privprotocol>
 
 SNMP v3 only:
-Privacy protocol (privProtocol) used to encrypt messages.
+Privacy protocol (C<privProtocol>) used to encrypt messages.
 Supported protocols are: DES|AES and since net-snmp 5.9.1: AES192|AES192C|AES256|AES256C.
 
 =item B<--contextname>
 
 SNMP v3 only:
-Context name (contextName), if relevant for the monitored host.
+Context name (C<contextName>), if relevant for the monitored host.
 
 =item B<--contextengineid>
 
 SNMP v3 only:
-Context engine ID (contextEngineID), if relevant for the monitored host, given 
+Context engine ID (C<contextEngineID>), if relevant for the monitored host, given
 as a hexadecimal string.
 
 =item B<--securityengineid>
@@ -1204,7 +1267,7 @@ Possible values are warning, critical and unknown (default).
 
 =item B<--snmp-tls-transport>
 
-Transport protocol for TLS communication (can be: 'dtlsudp', 'tlstcp').
+Transport protocol for TLS communication (can be: C<dtlsudp>, C<tlstcp>).
 
 =item B<--snmp-tls-our-identity>
 
@@ -1219,7 +1282,7 @@ is already trusted by your system.
 
 =item B<--snmp-tls-their-hostname>
 
-Common Name (CN) expected in the certificate sent by the host if it differs from
+Common Name (C<CN>) expected in the certificate sent by the host if it differs from
 the value of the --hostname parameter.
 
 =item B<--snmp-tls-trust-cert>

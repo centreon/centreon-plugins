@@ -38,7 +38,7 @@ robotidy_path=$(type -p robocop) || robotidy_path=$(type -p robotidy) || fatal "
 robotidy_exe="${robotidy_path##*/}"
 info "Robot lint tool is $robotidy_exe"
 # Options depend on the use binary
-declare -A robotidy_opts=([robotidy]="-->-check --skip-keyword-call Examples:" [robocop]="check" )
+declare -A robotidy_opts=([robotidy]="-->-check --skip-keyword-call Examples:" [robocop]="check --ignore DOC02 --ignore LEN08 --ignore LEN04" )
 # Get list of committed files
 mapfile -t committed_files < <(git diff --cached --name-only --diff-filter=ACMR)
 info "Starting plugins pre-commit hooks for ${#committed_files[@]} files"

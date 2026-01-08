@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,7 +63,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(
         package => __PACKAGE__, %options, 
-        no_absent => 1, no_performance => 1, no_load_components => 1, force_new_perfdata => 1
+        no_absent => 1, no_performance => 1, force_new_perfdata => 1
     );
     bless $self, $class;
 
@@ -83,8 +83,7 @@ sub snmp_execute {
 
 =head1 MODE
 
-Check status of SAN Hardware (Following FibreAlliance MIB: MIB40)
-http://www.emc.com/microsites/fibrealliance/index.htm
+Check status of SAN Hardware (Following FibreAlliance MIB: MIB-40)
 
 =over 8
 
