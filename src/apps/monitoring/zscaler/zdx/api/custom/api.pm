@@ -111,12 +111,27 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
+sub build_location_filters {
+    my ($self, %options) = @_;
+
+    # if location id provided the filter is simple
+    return { loc => $options{location_id} } if (!is_empty($options{location_id}));
+
+    # if no location filters are given, do not return anything
+    return {} if (is_empty($options{include_location_name}) && is_empty($options{exclude_location_name}));
+    # if location filters are provided, get the list of location ids
+    my $locations = $self->get_locations(%options);
+    # $locations points to an array of {id, name}
+    return { loc => [map { $_->{id}} @$locations] };
+}
+
 sub get_unique_app {
     my ($self, %options) = @_;
 
     my $content = $self->{http}->request(
-        method   => 'GET',
-        url_path => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
+        method     => 'GET',
+        get_params => $self->{get_params},
+        url_path   => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
     );
     my $app = json_decode($content, output => $self->{output});
     return {
@@ -127,11 +142,47 @@ sub get_unique_app {
     }
 }
 
+sub get_unique_app_metrics {
+    my ($self, %options) = @_;
+
+    my $content = $self->{http}->request(
+        method     => 'GET',
+        get_params => $self->{get_params},
+        url_path   => $self->{option_results}->{api_path} . '/apps/' . $options{application_id} . '/metrics'
+    );
+
+    my $metrics = json_decode($content, output => $self->{output});
+    # Example:
+    # [
+    #   {
+    #     "metric": "pft",
+    #     "unit": "ms",
+    #     "datapoints": [
+    #       {
+    #         "timestamp": 1767964390,
+    #         "value": 1410.8
+    #       },
+    #       ...
+    #     ]
+    #   }
+    # ]
+
+    my $data = {};
+
+    foreach my $met (@$metrics) {
+        $data->{$met->{metric}} = value_of($met, '->{datapoints}->[-1]->{value}', -1);
+    }
+
+    return $data;
+}
+
 sub get_apps {
     my ($self, %options) = @_;
 
     $self->get_token();
 
+    # build the params to filter on the
+    $self->{get_params} = $self->build_location_filters(%options);
     my @stats;
     # either we have a single app to get by its id
     if (!is_empty($options{application_id})) {
@@ -142,6 +193,7 @@ sub get_apps {
     # or we have to get all apps and check which ones match the filters
     my $all_apps_json = $self->{http}->request(
         method     => 'GET',
+        get_params => $self->{get_params},
         url_path   => $self->{option_results}->{api_path} . '/apps/'
     );
     my $all_apps = json_decode($all_apps_json, output => $self->{output});
@@ -161,6 +213,35 @@ sub get_apps {
     }
 
     return \@stats;
+}
+
+sub get_locations {
+    my ($self, %options) = @_;
+
+    $self->get_token();
+
+    # or we have to get all apps and check which ones match the filters
+    my $locations_json = $self->{http}->request(
+        method     => 'GET',
+        url_path   => $self->{option_results}->{api_path} . '/administration/locations/'
+    );
+    my $locations = json_decode($locations_json, output => $self->{output});
+
+    my @result;
+    foreach my $loc (@$locations) {
+        next if ($options{location_id} && $loc->{id} ne $options{location_id});
+        next if is_excluded(
+            $loc->{name},
+            $options{include_location_name},
+            $options{exclude_location_name});
+
+        push @result, {
+            id          => $loc->{id},
+            name        => $loc->{name},
+        };
+    }
+
+    return \@result;
 }
 
 sub set_defaults {}
