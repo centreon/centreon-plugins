@@ -137,15 +137,15 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_State = $mapping->{state}->{oid};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_State, nothing_qeuit => 1);
+    my $oid_state = $mapping->{state}->{oid};
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_state, nothing_qeuit => 1);
 
     $self->{global} = { detected => 0 };
     $self->{peers} = {};
 
     foreach my $oid (keys %$snmp_result) {
         $self->{output}->option_exit(short_msg => 'unsupported address type')
-            unless $oid =~ /^$oid_State\.(([12])\.(\d+)\.(.*))$/;
+            unless $oid =~ /^$oid_state\.(([12])\.(\d+)\.(.*))$/;
 
         my ($ident, $type, $num, $remote_addr) = ($1, $2, $3, $4);
 
