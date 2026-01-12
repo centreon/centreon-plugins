@@ -322,6 +322,7 @@ scenarii
 --scope-datacenter
 SCVMM
 SFOS
+SFP
 sfp.temperature
 SHA256
 SignalR
