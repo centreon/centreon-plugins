@@ -138,7 +138,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_state = $mapping->{state}->{oid};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_state, nothing_qeuit => 1);
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_state);
 
     $self->{global} = { detected => 0 };
     $self->{peers} = {};
