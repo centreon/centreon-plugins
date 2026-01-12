@@ -295,6 +295,7 @@ scenarii
 --scope-datacenter
 SCVMM
 SFOS
+SFP
 sfp.temperature
 SignalR
 sinr
