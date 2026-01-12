@@ -324,7 +324,7 @@ You can use the following variables: %{status}, %{temp_status}, %{tx_power_statu
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: C<rx-input-power>, C<rx-input-power-dbm>, C<tx-output-power>, C<tx-output-power-dbm>, C<bias-current>, C<temperature>, C<voltage>, C<bitrate>.
+Can be: C<rx-input-power (mW)>, C<rx-input-power-dbm (dBm)>, C<tx-output-power (mW)>, C<tx-output-power-dbm (dBm)>, C<bias-current (mA)>, C<temperature (C)>, C<voltage (V)>, C<bitrate (b/s)>.
 
 =back
 
