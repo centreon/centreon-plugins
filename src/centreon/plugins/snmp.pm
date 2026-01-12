@@ -263,6 +263,7 @@ sub get_leef {
 
     my ($dont_quit) = (defined($options{dont_quit}) && $options{dont_quit} == 1) ? 1 : 0;
     my ($nothing_quit) = (defined($options{nothing_quit}) && $options{nothing_quit} == 1) ? 1 : 0;
+    my $default_value = $options{default} // undef;
     $self->set_error();
 
     if (!defined($options{oids})) {
@@ -291,7 +292,7 @@ sub get_leef {
         next if ($oid !~ /(.*)\.(\d+)([\.\s]*)$/);
         
         my ($oid, $instance) = ($1, $2);
-        $results->{$oid . "." . $instance} = undef;
+        $results->{$oid . "." . $instance} = $default_value;
         push @$subset_construct, [$oid, $instance];
         $subset_current++;
         if ($subset_current == $self->{subsetleef}) {
