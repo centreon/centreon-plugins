@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,6 +40,8 @@ our @EXPORT_OK = qw/change_seconds
                     json_encode
                     json_decode
                     slurp_file
+                    format_opt
+                    trim
                     value_of/;
 
 sub execute {
@@ -944,6 +946,12 @@ sub is_excluded($;$;$) {
     return 1;
 }
 
+# Convert underscores in option names to dash.
+# Eg: 'include_test' becomes 'include-test'
+sub format_opt($) {
+    $_[0] =~ s/_/-/gr;
+}
+
 1;
 
 __END__
@@ -1538,6 +1546,18 @@ Returns 1 if an IPv4 IP is within a local address range.
 =over 4
 
 =item * C<$ip> - IP to test.
+
+=back
+
+=head2 format_opt
+
+    my $to_print = centreon::plugins::misc::format_opt($ident);
+
+Convert underscores in option names to dash.
+
+=over 4
+
+=item * C<$ident> - name to convert.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -384,7 +384,7 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'Status : ';
-    
+
     if ($self->{result_values}->{rttMonCtrlAdminStatus} !~ /active/) {
         $msg .= 'not active (' . $self->{result_values}->{rttMonCtrlAdminStatus} . ')';
         return $msg;
@@ -773,7 +773,7 @@ my $oids_jitter_stats = {
 };
 
 my %map_admin_rtt_type = (
-    1 => 'echo1', 2 => 'pathEcho', 3 => 'fileIO', 4 => 'script', 5 => 'udpEcho', 6 => 'tcpConnect',
+    1 => 'echo', 2 => 'pathEcho', 3 => 'fileIO', 4 => 'script', 5 => 'udpEcho', 6 => 'tcpConnect',
     7 => 'http', 8 => 'dns', 9 => 'jitter', 10 => 'dlsw', 11 => 'dhcp', 12 => 'ftp',
     13 => 'voip', 14 => 'rtp', 15 => 'lspGroup', 16 => 'icmpjitter', 17 => 'lspPing',
     18 => 'lspTrace', 19 => 'ethernetPing', 20 => 'ethernetJitter',
@@ -801,12 +801,15 @@ my %map_rtt_oper_sense = (
 
 my $mapping = {
     rttMonCtrlAdminTag          => { oid => '.1.3.6.1.4.1.9.9.42.1.2.1.1.3' },
-    rttMonCtrlAdminRttType      => { oid => '.1.3.6.1.4.1.9.9.42.1.2.1.1.4', map => \%map_admin_rtt_type },
-    rttMonCtrlAdminThreshold    => { oid => '.1.3.6.1.4.1.9.9.42.1.2.1.1.5' },
+    # default value: 1 => echo
+    rttMonCtrlAdminRttType      => { oid => '.1.3.6.1.4.1.9.9.42.1.2.1.1.4', map => \%map_admin_rtt_type, default => 1 },
+    # default value: 5000 ms
+    rttMonCtrlAdminThreshold    => { oid => '.1.3.6.1.4.1.9.9.42.1.2.1.1.5', default => 5000 },
     rttMonCtrlAdminStatus       => { oid => '.1.3.6.1.4.1.9.9.42.1.2.1.1.9', map => \%map_admin_status },
 };
 my $mapping2 = {
-    rttMonEchoAdminPrecision    => { oid => '.1.3.6.1.4.1.9.9.42.1.2.2.1.37', map => \%map_admin_precision },
+    # default value: 1 => milliseconds
+    rttMonEchoAdminPrecision    => { oid => '.1.3.6.1.4.1.9.9.42.1.2.2.1.37', map => \%map_admin_precision, default => 1 },
 };
 my $mapping3 = {
     rttMonLatestRttOperCompletionTime       => { oid => '.1.3.6.1.4.1.9.9.42.1.2.10.1.1' },
@@ -869,22 +872,22 @@ sub manage_selection {
 
     $self->{tag} = {};
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rttMonCtrlAdminEntry}})) {
-        next if ($oid !~ /^$mapping->{rttMonCtrlAdminTag}->{oid}\.(.*)$/);
+        next if $oid !~ /^$mapping->{rttMonCtrlAdminTag}->{oid}\.(.*)$/;
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rttMonCtrlAdminEntry}, instance => $instance);
         $result->{rttMonCtrlAdminTag} = defined($result->{rttMonCtrlAdminTag}) && $result->{rttMonCtrlAdminTag} ne '' ? $result->{rttMonCtrlAdminTag} : $instance;
         my $tag_name = $result->{rttMonCtrlAdminTag};
         if (!defined($tag_name) || $tag_name eq '') {
-            $self->{output}->output_add(long_msg => "skipping: please set a tag name");
+            $self->{output}->output_add(long_msg => "skipping: please set a tag name", debug => 1);
             next;
         }
         if (defined($self->{tag}->{$tag_name})) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $tag_name . "': duplicate (please change the tag name).");
+            $self->{output}->output_add(long_msg => "skipping  '" . $tag_name . "': duplicate (please change the tag name).", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_tag}) && $self->{option_results}->{filter_tag} ne '' &&
             $tag_name !~ /$self->{option_results}->{filter_tag}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $tag_name . "': no matching filter.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $tag_name . "': no matching filter.", debug => 1);
             next;
         }
         $self->{tag}->{$tag_name} = { %{$result} };
@@ -917,10 +920,10 @@ sub manage_selection {
 
 sub get_severity {
     my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
+    my $status = 'UNKNOWN'; # default
+
     if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
+        foreach (@{$self->{overload_th}->{$options{section}}}) {
             if ($options{value} =~ /$_->{filter}/i) {
                 $status = $_->{status};
                 return $status;
@@ -943,7 +946,7 @@ __END__
 
 =head1 MODE
 
-Check RTT Controls (CISCO-RTT-MON)
+Check Round-Trip Time (RTT) controls (CISCO-RTT-MON)
 
 =over 8
 
@@ -956,23 +959,126 @@ Filter tag (default: '.*')
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,status,regexp).
 Example: --threshold-overload='opersense,CRITICAL,^(?!(ok)$)'
 
-=item B<--warning-*>
+=item B<--warning-AverageDelayDS>
 
-Warning threshold.
-Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
-'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
-'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
-'JitterSource2DestinationStandardDeviation', 'JitterDestination2SourceStandardDeviation'.
+Threshold in milliseconds.
 
-=item B<--critical-*>
+=item B<--critical-AverageDelayDS>
 
-Critical threshold.
-Can be: 'CompletionTime', 'NumberOverThresholds', 'AverageDelaySD', 'AverageDelayDS', 'PacketLossRatio', 
-'PercentagePacketsPositiveJitter', 'AverageJitterPerPacketPositiveJitter', 'PercentagePacketsNegativeJitter', 'AverageJitterPerPacketNegativeJitter',
-'AverageJitter', 'RTTStandardDeviation', 'DelaySource2DestinationStandardDeviation', 'DelayDestination2SourceStandardDeviation', 
-'JitterSource2DestinationStandardDeviation', 'JitterDestination2SourceStandardDeviation'.
+Threshold in milliseconds.
+
+=item B<--warning-AverageDelaySD>
+
+Threshold in milliseconds.
+
+=item B<--critical-AverageDelaySD>
+
+Threshold in milliseconds.
+
+=item B<--warning-AverageJitter>
+
+Threshold in milliseconds.
+
+=item B<--critical-AverageJitter>
+
+Threshold in milliseconds.
+
+=item B<--warning-AverageJitterPerPacketNegativeJitter>
+
+Threshold.
+
+=item B<--critical-AverageJitterPerPacketNegativeJitter>
+
+Threshold.
+
+=item B<--warning-AverageJitterPerPacketPositiveJitter>
+
+Threshold.
+
+=item B<--critical-AverageJitterPerPacketPositiveJitter>
+
+Threshold.
+
+=item B<--warning-CompletionTime>
+
+Threshold.
+
+=item B<--critical-CompletionTime>
+
+Threshold.
+
+=item B<--warning-DelayDestination2SourceStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--critical-DelayDestination2SourceStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--warning-DelaySource2DestinationStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--critical-DelaySource2DestinationStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--warning-JitterDestination2SourceStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--critical-JitterDestination2SourceStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--warning-JitterSource2DestinationStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--critical-JitterSource2DestinationStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--warning-NumberOverThresholds>
+
+Threshold.
+
+=item B<--critical-NumberOverThresholds>
+
+Threshold.
+
+=item B<--warning-PacketLossRatio>
+
+Threshold in percentage.
+
+=item B<--critical-PacketLossRatio>
+
+Threshold in percentage.
+
+=item B<--warning-PercentagePacketsNegativeJitter>
+
+Threshold.
+
+=item B<--critical-PercentagePacketsNegativeJitter>
+
+Threshold.
+
+=item B<--warning-PercentagePacketsPositiveJitter>
+
+Threshold.
+
+=item B<--critical-PercentagePacketsPositiveJitter>
+
+Threshold.
+
+=item B<--warning-RTTStandardDeviation>
+
+Threshold in milliseconds.
+
+=item B<--critical-RTTStandardDeviation>
+
+Threshold in milliseconds.
 
 =back
 
 =cut
-    

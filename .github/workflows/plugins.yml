@@ -35,6 +35,9 @@ on:
       - 'packaging/**'
       - 'tests/**'
 
+env:
+  max_parallel_jobs: 35
+
 jobs:
   get-environment:
     uses: ./.github/workflows/get-environment.yml
@@ -53,7 +56,6 @@ jobs:
       plugins_files: ${{ steps.filter.outputs.plugins_files }}
       tests_files: ${{ steps.filter.outputs.tests_files }}
     steps:
-
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
@@ -81,14 +83,13 @@ jobs:
     outputs:
       package_plugins: ${{ steps.get_plugins.outputs.package_plugins || 'false' }}
       test_plugins: ${{ steps.get_plugins.outputs.test_plugins || 'false' }}
+      index_matrix: ${{ steps.get_plugins.outputs.index_matrix }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: '3.9'
+          python-version: '3.13'
 
       - name: Get new or updated directories
         run: |
@@ -125,9 +126,11 @@ jobs:
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
         run: |
-          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py '${{ needs.changes.outputs.changes_common == 'true' }}'))
+          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_parallel_jobs }}))
           echo "package_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
           echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
+          runners_ids=( $(seq 1 ${list_plugins[2]}) )
+          echo "index_matrix=$(jq -cn '$ARGS.positional' --args "${runners_ids[@]}")" >> $GITHUB_OUTPUT
           if [ ! -s plugins.json ]; then
             echo "::notice::There are no modifications to the plugins packages"
           fi
@@ -137,6 +140,15 @@ jobs:
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
+
+      # Add to your PR the label upload-artifacts to get plugin.json as artifact
+      - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        name: Upload plugins.json artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: plugins_json
+          path: ./plugins.json
+          retention-days: 1
 
   unit-tests:
     needs: [get-environment, get-plugins]
@@ -229,7 +241,7 @@ jobs:
       - name: Run FatPacker
         run: |
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
-          perl .github/scripts/plugins-source.container.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+          perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
 
       - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
@@ -298,62 +310,7 @@ jobs:
           fail-on-cache-miss: true
 
       - run: |
-          for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json); do
-            PACKAGE_PATH=$PLUGIN
-
-            if [[ "$PLUGIN" =~ (.+)"=>"(.+) ]]; then
-                PACKAGE_PATH=$(echo ${BASH_REMATCH[1]})
-                PLUGIN=$(echo ${BASH_REMATCH[2]})
-            fi
-
-            PLUGIN_NAME_LOWER=$(echo "$PLUGIN" | tr '[:upper:]' '[:lower:]')
-
-            echo "::group::Preparing $PLUGIN_NAME_LOWER"
-
-            # Process package files
-            pkg_values=($(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.pkg_name,.plugin_name'))
-            pkg_summary=$(echo "${pkg_values[0]}")
-            plugin_name=$(echo "${pkg_values[1]}")
-            conflicts=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.conflicts // [] | join(",")')
-            replaces=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.replaces // [] | join(",")')
-            provides=$(cat "packaging/$PACKAGE_PATH/pkg.json" | jq -r '.provides // [] | join(",")')
-            deb_dependencies=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.dependencies // [] | join(",")')
-            deb_conflicts=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.conflicts // [] | join(",")')
-            deb_replaces=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.replaces // [] | join(",")')
-            deb_provides=$(cat "packaging/$PACKAGE_PATH/deb.json" | jq -r '.provides // [] | join(",")')
-            rpm_dependencies=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.dependencies // [] | join(",")')
-            rpm_conflicts=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.conflicts // [] | join(",")')
-            rpm_replaces=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.replaces // [] | join(",")')
-            rpm_provides=$(cat "packaging/$PACKAGE_PATH/rpm.json" | jq -r '.provides // [] | join(",")')
-
-            sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
-              -e "s/@SUMMARY@/$pkg_summary/g" \
-              -e "s/@CONFLICTS@/$conflicts/g" \
-              -e "s/@REPLACES@/$replaces/g" \
-              -e "s/@PROVIDES@/$provides/g" \
-              -e "s/@DEB_DEPENDENCIES@/$deb_dependencies/g" \
-              -e "s/@DEB_CONFLICTS@/$deb_conflicts/g" \
-              -e "s/@DEB_REPLACES@/$deb_replaces/g" \
-              -e "s/@DEB_PROVIDES@/$deb_provides/g" \
-              -e "s/@RPM_DEPENDENCIES@/$rpm_dependencies/g" \
-              -e "s/@RPM_CONFLICTS@/$rpm_conflicts/g" \
-              -e "s/@RPM_REPLACES@/$rpm_replaces/g" \
-              -e "s/@RPM_PROVIDES@/$rpm_provides/g" \
-              < .github/packaging/centreon-plugin.yaml.template \
-              >> .github/packaging/$PLUGIN.yaml
-
-            if [ "${{ matrix.package_extension }}" = "rpm" ]; then
-              sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
-                .github/packaging/$PLUGIN.yaml
-            else
-              sed -i "s/@PACKAGE_NAME@/$PLUGIN_NAME_LOWER/g" \
-                .github/packaging/$PLUGIN.yaml
-            fi
-
-            cat .github/packaging/$PLUGIN.yaml
-
-            echo "::endgroup::"
-          done
+          .github/scripts/prepare-package-plugins.sh "plugins.json" "${{ matrix.package_extension }}" "${{ matrix.distrib }}"
         shell: bash
 
       - uses: ./.github/actions/package-nfpm
@@ -386,67 +343,50 @@ jobs:
       matrix:
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
-          - runner_name: ubuntu-24.04
           - package_extension: rpm
             image: testing-plugins-alma8
             distrib: el8
+            arch: amd64
           - package_extension: rpm
             image: testing-plugins-alma9
             distrib: el9
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bullseye
             distrib: bullseye
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bookworm
             distrib: bookworm
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-noble
             distrib: noble
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bullseye-arm64
             distrib: bullseye
             arch: arm64
-            runner_name: ubuntu-24.04-arm
 
-    runs-on: ${{ matrix.runner_name }}
+    name: "Test plugins on ${{ matrix.distrib }} ${{ matrix.arch }}"
 
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
-
-    name: "Tests on ${{ matrix.distrib }}"
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ./plugins.json
-          key: plugins-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
-
-      - uses: ./.github/actions/test-plugins
-        with:
-          packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          get-packages: ${{ needs.get-plugins.outputs.package_plugins == 'True' }}
-          plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
-          package-extension: ${{ matrix.package_extension }}
-
-      - name: Upload logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
-        with:
-          name: test-plugins-log-${{ matrix.distrib }}-${{ matrix.runner_name }}
-          path: |
-            /var/log/test-plugins-*.log
-            reports
-          retention-days: 1
+    uses: ./.github/workflows/plugins-robot-tests.yml
+    with:
+      image: ${{ matrix.image }}
+      indexes: ${{ needs.get-plugins.outputs.index_matrix }}
+      distrib: ${{ matrix.distrib }}
+      arch: ${{ matrix.arch }}
+      get-packages: ${{ needs.get-plugins.outputs.package_plugins }}
+      package-extension: ${{ matrix.package_extension }}
+      packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+      plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
+    secrets:
+      registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+      registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]

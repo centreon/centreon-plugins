@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,8 +108,13 @@ sub new {
         });
     }
 
-    $self->{load_components} = (defined($options{no_load_components}) && $options{no_load_components} == 1) ?
+    # Use no_load_component = 1 only when all hardware components are implemented in a single Perl file containing
+    # multiple package definitions.
+    # no_load_component should not be set (or set it to 0) if components are implemented in separate files and must
+    # be automatically loaded at plugin initialization.
+    $self->{load_components} = $options{no_load_components} && $options{no_load_components} == 1 ?
         0 : 1;
+
     $self->{components} = {};
     $self->{no_components} = undef;
 
