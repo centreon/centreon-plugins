@@ -51,6 +51,8 @@ centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
+CommServe
+Commvault
 connections-dhcp
 connections-dns
 cpu
