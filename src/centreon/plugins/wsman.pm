@@ -318,6 +318,7 @@ sub execute_winshell_commands {
     return $command_result;
 }
 
+# The script provided via 'content' must be Base64 encoded using 'powershell_encoded' function
 sub execute_powershell {
     my ($self, %options) = @_;
 
@@ -383,6 +384,54 @@ sub execute_powershell {
         keep_open => 1
     );
 }
+
+# The script provided via 'content' must be Base64 encoded using 'powershell_encoded_script' function
+# This function is similar to execute_powershell but it exclusively uses PowerShell commands
+sub execute_powershell_script {
+    my ($self, %options) = @_;
+
+    my $chunk = 8000;
+    my $base = 'C:/Windows/Temp/';
+    my $ps1_filename = $base . $options{label} . '-' .$$. '-'. sprintf("%08X", rand(0xFFFFFFFF)) . '.ps1';
+    my $b64_filename = $ps1_filename =~ s/\.ps1$/\.b64/r;
+    my $commands = [
+        {
+            label => 'prev1-' . $options{label},
+            value => qq(powershell.exe -command "new-item -itemtype directory -path '$base' -force")
+        }
+    ];
+
+    # To work around the 8191 character command line length limit when the data exceeds 8000 characters the string is
+    # split into 8000 character chunks and reassembled using a temporary file
+    my $cmd_content = 'Set-Content';
+    my $i = 0;
+    foreach (unpack('(A' . $chunk . ')*', $options{content})) {
+        push @$commands, {
+            label => 'chunk-' . ($i++) . '-' . $options{label},
+            value => qq(powershell.exe -NoProfile -Command "$cmd_content -Path '$b64_filename' -Value '$_' -Encoding ASCII")
+        };
+
+        $cmd_content = 'Add-Content';
+    }
+
+    push @$commands, {
+                         label => 'convert-' . $options{label},
+                         value => qq(powershell.exe -NoProfile -Command "[IO.File]::WriteAllBytes('$ps1_filename',[Convert]::FromBase64String((Get-Content '$b64_filename' -Raw)))")
+                     },
+                     {   label => $options{label},
+                         value => qq(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$ps1_filename")
+                     },
+                     {
+                         label => 'del-' . $options{label},
+                         value => qq(powershell.exe -NoProfile -Command '$ps1_filename','$b64_filename' -Force)
+                     };
+
+    return $self->execute_winshell_commands(
+        commands => $commands,
+        keep_open => 1
+    );
+}
+
 
 sub request {
     my ($self, %options) = @_;
