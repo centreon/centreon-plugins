@@ -89,7 +89,7 @@ sub set_counters {
             set    => {
                 key_values      => [ { name => 'score' } ],
                 output_template => 'Score: %d',
-                perfdatas       => [ { template => '%d',min => 0, max => 100, label_extra_instance => 1 } ]
+                perfdatas       => [ { template => '%d', min => 0, max => 100, label_extra_instance => 1 } ]
             }
         },
         {
@@ -98,7 +98,7 @@ sub set_counters {
             set    => {
                 key_values      => [ { name => 'pft' } ],
                 output_template => 'Page fetch time: %sms',
-                perfdatas       => [ { template => '%s', min => 0, unit => 'ms',  label_extra_instance => 1 } ]
+                perfdatas       => [ { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 } ]
             }
         }
     ];

@@ -193,7 +193,7 @@ sub get_apps {
 
     $self->get_token();
 
-    # build the params to filter on the
+    # build the params to filter on the locations
     $self->{get_params} = $self->build_location_filters(%options);
     my @stats;
     # either we have a single app to get by its id
@@ -232,7 +232,7 @@ sub get_locations {
 
     $self->get_token();
 
-    # or we have to get all apps and check which ones match the filters
+    # get all locations and check which ones match the filters
     my $locations_json = $self->{http}->request(
         method     => 'GET',
         url_path   => $self->{option_results}->{api_path} . '/administration/locations/'
