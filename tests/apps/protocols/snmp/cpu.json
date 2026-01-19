@@ -18,12 +18,16 @@
     {
       "name": "cpu",
       "source": "%(snmp.tables.cpu)",
+      "warning": "%(constants.warning) ne '' && %(cpu.usage) > %(constants.warning)",
+      "critical": "%(constants.critical) ne '' && %(cpu.usage) > %(constants.critical)",
       "perfdatas": [
         {
           "nlabel": "cpu.usage.percent",
           "instances": ["%(cpu.instance)"],
           "value": "%(cpu.usage)",
           "unit": "%",
+          "warning": "%(constants.warning)",
+          "critical": "%(constants.critical)",
           "min": 0,
           "max": 100
         }
@@ -37,20 +41,5 @@
         "display_ok": true
       }
     }
-  ],
-  "global": {
-    "perfdatas": [
-      {
-        "nlabel": "total.cpu.avg.usage.percent",
-        "value": "AVG(%(cpu.usage))",
-        "unit": "%",
-        "min": 0,
-        "max": 100
-      }
-    ],
-    "formatting": {
-      "printf_msg": "%(COUNT(cpu)) CPU(s) average usage is %(AVG(cpu.usage)) %%",
-      "display_ok": true
-    }
-  }
+  ]
 }

@@ -12,7 +12,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=apps::protocols::snmp::plugin
 
 
 *** Test Cases ***
-SNMP Collection${tc}
+Collection Memory ${tc}
     [Tags]    snmp-collection
     ${command}    Catenate
     ...    ${CMD}
