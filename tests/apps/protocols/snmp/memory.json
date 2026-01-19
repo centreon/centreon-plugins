@@ -26,6 +26,8 @@
     {
       "name": "memory",
       "source": "%(snmp.tables.memory)",
+      "warning": "%(constants.warning) ne '' && %(memory.used) * 100 / %(memory.size) > %(constants.warning)",
+      "critical": "%(constants.critical) ne '' && %(memory.used) * 100 / %(memory.size) > %(constants.critical)",
       "perfdatas": [
         {
           "nlabel": "memory.usage.bytes",
@@ -48,21 +50,5 @@
         "display_ok": true
       }
     }
-  ],
-  "global": {
-    "perfdatas": [
-      {
-        "nlabel": "total.memory.usage.bytes",
-        "value": "SUM(%(memory.used))"
-      },
-      {
-        "nlabel": "total.memory.size.bytes",
-        "value": "SUM(%(memory.size))"
-      }
-    ],
-    "formatting": {
-      "printf_msg": "Total memory usage is %(SUM(memory.used)) / %(SUM(memory.size))",
-      "display_ok": true
-    }
-  }
+  ]
 }
