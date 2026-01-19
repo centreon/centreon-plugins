@@ -145,10 +145,13 @@ sub get_unique_app {
 sub get_unique_app_metrics {
     my ($self, %options) = @_;
 
+    my $get_params = { map {$_ => $self->{get_params}->{$_}} keys %{$self->{get_params}} };
+    $get_params->{from} = time() - 60 * ($options{max_metrics_age} // 20);
+
 
     my $content = $self->{http}->request(
         method     => 'GET',
-        get_params => $self->{get_params},
+        get_params => $get_params,
         url_path   => $self->{option_results}->{api_path} . '/apps/' . $options{application_id} . '/metrics'
     );
 
@@ -170,8 +173,16 @@ sub get_unique_app_metrics {
 
     my $data = {};
 
+    LOOP_METRICS:
     foreach my $met (@$metrics) {
-        $data->{$met->{metric}} = value_of($met, '->{datapoints}->[-1]->{value}', -1);
+        $data->{$met->{metric}} = -1; # -1 means no value has been recorded
+        LOOP_VALUES:
+        while ( my $dp = pop(@{$met->{datapoints}}) ) {
+            next LOOP_VALUES if $dp->{value} == -1; # skip if no value
+            # we store the first non empty value and exit the loop
+            $data->{$met->{metric}} = $dp->{value};
+            last LOOP_VALUES;
+        }
     }
 
     return $data;

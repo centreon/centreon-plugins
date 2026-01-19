@@ -79,7 +79,7 @@ sub set_counters {
             nlabel => 'application.total-users.count',
             set    => {
                 key_values      => [ { name => 'total_users' } ],
-                output_template => 'Users count: %s',
+                output_template => 'Users count: %d',
                 perfdatas       => [ { template => '%d', min => 0, label_extra_instance => 1 } ]
             }
         },
@@ -88,7 +88,7 @@ sub set_counters {
             nlabel => 'application.score.value',
             set    => {
                 key_values      => [ { name => 'score' } ],
-                output_template => 'Score: %s',
+                output_template => 'Score: %d',
                 perfdatas       => [ { template => '%d',min => 0, max => 100, label_extra_instance => 1 } ]
             }
         },
@@ -97,7 +97,7 @@ sub set_counters {
             nlabel => 'application.page-fetch-time.milliseconds',
             set    => {
                 key_values      => [ { name => 'pft' } ],
-                output_template => 'Page fetch time: %s',
+                output_template => 'Page fetch time: %sms',
                 perfdatas       => [ { template => '%s', min => 0, unit => 'ms',  label_extra_instance => 1 } ]
             }
         }
