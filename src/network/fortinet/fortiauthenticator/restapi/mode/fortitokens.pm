@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,27 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use POSIX;
+use centreon::plugins::misc qw/is_excluded/;
+use POSIX qw/floor/;
 
-sub custom_usage_perfdata {
+sub custom_output {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(
-        label => 'tokens.assigned.percentage',
-        unit => '%',
-        min => 0,
-        max => 100,
-        value => floor($self->{result_values}->{assigned_prct}),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
-    );
-}
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-
-    return sprintf("[Tokens] total:%s - assigned:%s(%.2f%%) - available:%s(%.2f%%) - pending:%s(%.2f%%)",
+    sprintf("[Tokens] total:%s - assigned:%s(%.2f%%) - available:%s(%.2f%%) - pending:%s(%.2f%%)",
                 $self->{result_values}->{total},
                 $self->{result_values}->{assigned},
                 $self->{result_values}->{assigned_prct},
@@ -52,31 +38,13 @@ sub custom_usage_output {
                 $self->{result_values}->{available_prct},
                 $self->{result_values}->{pending},
                 $self->{result_values}->{pending_prct}
-   );
+   )
 }
 
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{assigned_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-
-    return $exit;
-}
-
-sub custom_usage_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{pending} = $options{new_datas}->{$self->{instance} . '_pending'};
-    $self->{result_values}->{assigned} = $options{new_datas}->{$self->{instance} . '_assigned'};
-    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_available'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-
-    $self->{result_values}->{assigned_prct} = ($self->{result_values}->{assigned} * 100) / $self->{result_values}->{total};
-    $self->{result_values}->{available_prct} = ($self->{result_values}->{available} * 100) / $self->{result_values}->{total};
-    $self->{result_values}->{pending_prct} = ($self->{result_values}->{available} * 100) / $self->{result_values}->{total};
-
-    return 0;
-}
+my @values = ( { name => 'total' }, { name => 'pending' },
+               { name => 'assigned' }, { name => 'available' },
+               { name => 'pending_prct'}, { name => 'assigned_prct' },
+               { name => 'available_prct' } );
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -86,12 +54,57 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{fortitokens} = [
-        { label => 'assigned-prct', set => {
-                key_values => [ { name => 'assigned' }, { name => 'total' }, { name => 'pending' }, { name => 'available' }],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-		closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-		closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+        {   label => 'total', nlabel => 'tokens.total.count',
+            set => {
+                key_values => \@values,
+                threshold_use => 'total',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%s', min => 0 } ]
+            }
+        },
+        {   label => 'assigned', nlabel => 'tokens.assigned.count', display_ok => 0,
+            set => {
+                key_values => \@values,
+                threshold_use => 'pending',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%s', min => 0 } ]
+            }
+        },
+        {   label => 'pending', nlabel => 'tokens.pending.count', display_ok => 0,
+            set => {
+                key_values => \@values,
+                threshold_use => 'assigned',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%s', min => 0 } ]
+            }
+        },
+        {   label => 'available', nlabel => 'tokens.available.count', display_ok => 0,
+            set => {
+                key_values => \@values,
+                threshold_use => 'available',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%s', min => 0 } ]
+            }
+        },
+        {   label => 'assigned-prct', nlabel => 'tokens.assigned.percentage', display_ok => 0, set => {
+                key_values => \@values,
+                threshold_use => 'assigned_prct',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%.2f', min => 0, max => 100, unit => '%' } ]
+            }
+        },
+        {   label => 'pending-prct', nlabel => 'tokens.pending.percentage', display_ok => 0, set => {
+                key_values => \@values,
+                threshold_use => 'pending_prct',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%.2f', min => 0, max => 100, unit => '%' } ]
+            }
+        },
+        {   label => 'available-prct', nlabel => 'tokens.available.percentage', display_ok => 0, set => {
+                key_values => \@values,
+                threshold_use => 'available_prct',
+                closure_custom_output => $self->can('custom_output'),
+                perfdatas => [ { template => '%.2f', min => 0, max => 100, unit => '%' } ]
             }
         }
     ];
@@ -103,37 +116,37 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-    	'filter-type:s' => { name => 'filter_type' }
+        'include-type:s' => { name => 'include_type', default => '' },
+        'exclude-type:s' => { name => 'exclude_type', default => '' },
     });
 
     return $self;
 }
 
 sub manage_selection { 
-	my ($self, %options) = @_;
-	my $results = $options{custom}->fortiauthentificator_list_tokens();
-	my @list_status = ("available", "pending", "assigned");
-	
-	$self->{fortitokens}->{total} = 0;
-	$self->{fortitokens}->{available} = 0;
-	$self->{fortitokens}->{assigned} = 0;
-	$self->{fortitokens}->{pending} = 0;
+    my ($self, %options) = @_;
 
-	foreach my $token (@{$results}) {
-		next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&  $token->{type} !~ /$self->{option_results}->{filter_type}/);
-		
-		if ( $token->{serial} ne '' && $token->{status} ne '' && grep {$_ eq $token->{status} } @list_status ) {
-			$self->{fortitokens}->{total}++;
-			$self->{fortitokens}->{$token->{status}}++;
-		}	
-	}
+    my $results = $options{custom}->fortiauthentificator_list_tokens();
+    my %list_status = ("available" => 1, "pending" => 1, "assigned" => 1);
 
-	if ( $self->{fortitokens}->{total} == 0) {
-        	$self->{output}->add_option_msg(short_msg => "No tokens found.");
-        	$self->{output}->option_exit();
-    	}
-}	
+    $self->{fortitokens}->{$_} = 0
+        foreach qw/total available assigned pending/;
 
+    foreach my $token (@{$results}) {
+        next if is_excluded($token->{type}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type});
+
+        next unless $token->{serial} && $token->{status} && $token->{status} =~ /^(?:available|pending|assigned)$/;
+
+        $self->{fortitokens}->{total}++;
+        $self->{fortitokens}->{ $token->{status} }++;
+    }
+
+    $self->{output}->option_exit(short_msg => "No tokens found.")
+        unless $self->{fortitokens}->{total};
+
+    $self->{fortitokens}->{ $_.'_prct' } = $self->{fortitokens}->{ $_ } * 100 / $self->{fortitokens}->{total}
+        foreach qw/available assigned pending/;
+}
 
 1;
 
@@ -141,17 +154,75 @@ __END__
 
 =head1 MODE
 
-Check Fortitokens.
+Check FortiTokens.
 
 =over 8
 
-=item B<--warning-tokens-usage-prct>
+=item B<--include-type>
 
-Warning threshold in percent.
+Filter by token type (can be a regexp).
+Value can be C<ftk> or C<ftm>.
 
-=item B<--critical-tokens-usage-prct>
+=item B<--exclude-type>
 
-Critical threshold in percent.
+Exclude by token type (can be a regexp).
+Value can be C<ftk> or C<ftm>.
+
+=item B<--warning-assigned>
+
+Threshold.
+
+=item B<--critical-assigned>
+
+Threshold.
+
+=item B<--warning-assigned-prct>
+
+Threshold in percentage.
+
+=item B<--critical-assigned-prct>
+
+Threshold in percentage.
+
+=item B<--warning-available>
+
+Threshold.
+
+=item B<--critical-available>
+
+Threshold.
+
+=item B<--warning-available-prct>
+
+Threshold in percentage.
+
+=item B<--critical-available-prct>
+
+Threshold in percentage.
+
+=item B<--warning-pending>
+
+Threshold.
+
+=item B<--critical-pending>
+
+Threshold.
+
+=item B<--warning-pending-prct>
+
+Threshold in percentage.
+
+=item B<--critical-pending-prct>
+
+Threshold in percentage.
+
+=item B<--warning-total>
+
+Threshold.
+
+=item B<--critical-total>
+
+Threshold.
 
 =back
 

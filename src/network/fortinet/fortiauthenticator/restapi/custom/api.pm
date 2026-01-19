@@ -1,5 +1,5 @@
 #
-# Copyright 2023 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,8 +23,8 @@ package network::fortinet::fortiauthenticator::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON::XS;
-use MIME::Base64;
+use centreon::plugins::misc qw/format_opt json_decode/;
+use MIME::Base64 qw/encode_base64/;
 
 sub new {
     my ($class, %options) = @_;
@@ -35,23 +35,21 @@ sub new {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless $options{options};
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-token:s'    => { name => 'api_token' },
-            'api-username:s'        => { name => 'api_username' },
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-	    'limit:s'       	=> { name => 'limit' },
-            'timeout:s'         => { name => 'timeout' },
-            'unknown-http-status:s'  => { name => 'unknown_http_status' },
-            'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
+            'api-token:s'            => { name => 'api_token',            default => '' },
+            'api-username:s'         => { name => 'api_username',         default => '' },
+            'hostname:s'             => { name => 'hostname',             default => '' },
+            'port:s'                 => { name => 'port',                 default => 443 },
+            'proto:s'                => { name => 'proto',                default => 'https' },
+            'limit:s'                => { name => 'limit',                default => 20 },
+            'timeout:s'              => { name => 'timeout',              default => 50 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status',  default => '%{http_code} < 200 or %{http_code} >= 300' },
+            'warning-http-status:s'  => { name => 'warning_http_status',  default => '' },
+            'critical-http-status:s' => { name => 'critical_http_status', default => '' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -72,56 +70,40 @@ sub set_options {
 sub set_defaults {}
 
 sub check_options {
-	my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-	$self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-	$self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-	$self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-	$self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-	$self->{limit} = (defined($self->{option_results}->{limit})) && $self->{option_results}->{limit} =~ /(\d+)/ ? $1 : 20;
-        $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
-	$self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : '';
-	$self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-	$self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-	$self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{$_} = $self->{option_results}->{$_}
+        foreach qw/api_token api_username hostname port proto limit timeout unknown_http_status warning_http_status critical_http_status/;
 
-	if ($self->{hostname} eq '') {
-		$self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-		$self->{output}->option_exit();
-	}	
-	if ($self->{api_token} eq '') {
-		$self->{output}->add_option_msg(short_msg => "Need to specify --api-token option.");
-		$self->{output}->option_exit();
-	}	
-	if ($self->{api_username} eq '') {
-		$self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
-		$self->{output}->option_exit();
-	}
+    foreach (qw/hostname api_token api_username/) {
+        $self->{output}->option_exit(short_msg => "Need to specify --".format_opt($_)." option.")
+            if $self->{$_} eq '';
+    }
 
-	return 0;	
-}	
+    foreach (qw/limit port timeout/) {
+        $self->{output}->option_exit(short_msg => "Invalid --".format_opt($_)." option.")
+            unless $self->{$_} =~ /^\d+$/;
+    }
 
+    return 0;
+}
 
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{$_} = $self->{$_}
+        foreach (qw/hostname timeout port proto/);
 }
 
 sub settings {
     my ($self, %options) = @_;
     my $credentials = $self->{api_username}.':'.$self->{api_token};
+    $self->{token} = encode_base64($credentials, '');
 
-    $self->{token} = MIME::Base64::encode_base64($credentials, '');
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    if (defined($self->{token})) {
-    	$self->{http}->add_header(key => 'Authorization', value => 'Basic ' . $self->{token});
-    }
+    $self->{http}->add_header(key => 'Authorization', value => 'Basic ' . $self->{token})
+        if $self->{token};
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
 }
@@ -139,81 +121,59 @@ sub get_port {
 }
 
 sub request_api {
-	my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
-	$self->settings();
-	
-	$self->{output}->output_add(
-        	long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} . $options{url_path} . "'",
-        	debug => 1
-    	);
+    $self->settings();
 
-	my $response = $self->{http}->request(%options);
+    $self->{output}->output_add(
+        long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} . $options{url_path} . "'",
+        debug => 1
+    );
+    my $response = $self->{http}->request(%options);
 
+    my $decoded = json_decode($response, output => $self->{output});
+    if ($self->{http}->get_code() != 200) {
+        $self->{output}->output_add(long_msg => "Error message: " . $decoded->{message}, debug => 1)
+            if $decoded->{message};
+        $self->{output}->option_exit(short_msg => "API return error code '" . ($decoded->{code} // $self->{http}->get_code()) . "' (add --debug option for detailed message)");
+    }
 
-    	if ($self->{http}->get_code() != 200) {
-        	my $decoded;
-        	eval {
-            		$decoded = JSON::XS->new->utf8->decode($response);
-        	};
-        	if ($@) {
-            		$self->{output}->output_add(long_msg => $response, debug => 1);
-            		$self->{output}->add_option_msg(short_msg => "Cannot decode json response: $response");
-            		$self->{output}->option_exit();
-        	}
-        	if (defined($decoded->{code})) {
-            		$self->{output}->output_add(long_msg => "Error message: " . $decoded->{message}, debug => 1);
-            		$self->{output}->add_option_msg(short_msg => "API return error code '" . $decoded->{code} . "' (add --debug option for detailed message)");
-            		$self->{output}->option_exit();
-        	} else {
-            		$self->{output}->output_add(long_msg => "Error message: " . $decoded, debug => 1);
-            		$self->{output}->add_option_msg(short_msg => "API return error code '" . $self->{http}->get_code() . "' (add --debug option for detailed message)");
-            		$self->{output}->option_exit();
-        	}
-    	}
-
-    	my $decoded;
-    	eval {
-        	$decoded = JSON::XS->new->utf8->decode($response);
-    	};
-    	if ($@) {
-        	$self->{output}->output_add(long_msg => $response, debug => 1);
-        	$self->{output}->add_option_msg(short_msg => "Cannot decode json response: $response");
-        	$self->{output}->option_exit();
-    	}
-
-    	return $decoded;
-}	
+    return $decoded;
+}
 
 
 sub request_api_paginate {
     my ($self, %options) = @_;
     my @objects;
 
+    # Use custom limit on the first request only, afterward use the limit returned by the API
+    my $opt = { 'limit' => $self->{limit} };
     while (1) {
         my $response = $self->request_api(
             method => $options{method},
-            url_path => $options{url_path}
+            url_path => $options{url_path},
+            get_params => $opt
         );
+        undef $opt;
 
-        last if (!defined($response->{objects}));
+        last unless ref $response->{objects} eq 'ARRAY';
         push @objects, @{$response->{objects}};
 
-        last if (!defined($response->{meta}->{next}));
-	$options{url_path} = $response->{meta}->{next};
+        last unless $response->{meta} && $response->{meta}->{next};
+        $options{url_path} = $response->{meta}->{next};
     }
 
     return \@objects;
 }
 
 sub fortiauthentificator_list_tokens {
-	my ($self, %options) = @_;
-	my $response = $self->request_api_paginate(
-		method => 'GET',
-		url_path => '/api/v1/fortitokens/'
-	);
-	return $response;
-}	
+    my ($self, %options) = @_;
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => '/api/v1/fortitokens/'
+    );
+    return $response;
+}
 
 1;
 
@@ -221,11 +181,11 @@ __END__
 
 =head1 NAME
 
-FortiOS Rest API
+FortiAuthenticator Rest API
 
 =head1 REST API OPTIONS
 
-FortiOS Rest API
+FortiAuthenticator Rest API
 
 =over 8
 
@@ -241,9 +201,17 @@ Port used (default: 443)
 
 Specify https if needed (default: 'https')
 
-=item B<--access-token>
+=item b<--api-username>
+
+API username.
+
+=item b<--api-token>
 
 API token.
+
+=item B<--limit>
+
+Define the number of entries to retrieve for the pagination (default: 20). 
 
 =item B<--timeout>
 

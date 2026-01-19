@@ -1,0 +1,230 @@
+{
+  "uuid": "88eb7b25-0b96-4156-b1da-0c4dc40d9899",
+  "lastMigration": 33,
+  "name": "Test",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3008,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "65717d07-71fc-4501-a055-925e0152c87c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "a738be88-6810-4560-be8f-1a1ab36df3b6",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a2f3043c-824e-4b52-89ab-46b24069ac47",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/fortitokens/",
+      "responses": [
+        {
+          "uuid": "d1e25dae-1107-4093-b625-35ebdad85936",
+          "body": "{\"meta\": {\"limit\": 20, \"next\": \"/api/v1/fortitokens/?limit=20&offset=20\", \"offset\": 0, \"previous\": null, \"total_count\": 3889}, \"objects\": [{\"last_used_at\": \"2025-05-06T09:06:00\", \"license\": \"\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/3913/\", \"serial\": \"FTK2008CDSWS2LAF\", \"status\": \"assigned\", \"type\": \"ftk\"}, {\"last_used_at\": \"2025-05-06T09:34:00\", \"license\": \"\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/3915/\", \"serial\": \"FTK2008CDT4KIM24\", \"status\": \"available\", \"type\": \"ftk\"}, {\"last_used_at\": \"2025-05-06T13:54:00\", \"license\": \"\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/3914/\", \"serial\": \"FTK2008CDTQTN5C8\", \"status\": \"available\", \"type\": \"ftk\"}, {\"last_used_at\": \"2025-01-06T13:13:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/308/\", \"serial\": \"FTKMOB160025052E\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-25T13:07:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/922/\", \"serial\": \"FTKMOB160045AA0C\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-05-21T06:02:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/574/\", \"serial\": \"FTKMOB1600539647\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-12T12:32:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/408/\", \"serial\": \"FTKMOB1600C017E2\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-07T13:46:00\", \"license\": \"EFTM100130842017\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/1056/\", \"serial\": \"FTKMOB1600D71626\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-03-27T07:26:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/275/\", \"serial\": \"FTKMOB1600F96139\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-27T16:55:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/463/\", \"serial\": \"FTKMOB160111F651\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-03-25T11:34:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/277/\", \"serial\": \"FTKMOB16011F9704\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-03T19:55:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/274/\", \"serial\": \"FTKMOB160169D28F\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-06T13:18:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/782/\", \"serial\": \"FTKMOB16016F5350\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-08T11:05:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/749/\", \"serial\": \"FTKMOB16019479F5\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-06T12:47:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/24/\", \"serial\": \"FTKMOB1601B66A0B\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-17T19:31:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/699/\", \"serial\": \"FTKMOB1601BC35F9\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2024-03-06T08:14:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/242/\", \"serial\": \"FTKMOB1601CF7879\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-08T14:38:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/346/\", \"serial\": \"FTKMOB1602337B39\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-03-23T11:08:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/1002/\", \"serial\": \"FTKMOB1602A3F872\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-04-22T06:48:00\", \"license\": \"EFTM01K130842080\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/914/\", \"serial\": \"FTKMOB1602A62AB2\", \"status\": \"assigned\", \"type\": \"ftm\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic RkFLRTpGQUtF",
+              "invert": true,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "offset",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "82eb2f61-d486-4370-95a4-32c4aca7cd1f",
+          "body": "{\"meta\": {\"limit\": 20, \"next\": null, \"offset\": 3880, \"previous\": \"/api/v1/fortitokens/?limit=20&offset=3860\", \"total_count\": 3889}, \"objects\": [{\"last_used_at\": \"N/A\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/3306/\", \"serial\": \"FTKMOB4CFF4256EE\", \"status\": \"available\", \"type\": \"ftm\"}, {\"last_used_at\": \"N/A\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/2203/\", \"serial\": \"FTKMOB4CFF4293FB\", \"status\": \"available\", \"type\": \"ftm\"}, {\"last_used_at\": \"N/A\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/2962/\", \"serial\": \"FTKMOB4CFF465412\", \"status\": \"available\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-08T10:50:00\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/3622/\", \"serial\": \"FTKMOB4CFF57DE06\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-02T02:53:00\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/2966/\", \"serial\": \"FTKMOB4CFF7A356E\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-03-11T05:04:00\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/2858/\", \"serial\": \"FTKMOB4CFFB6BAC8\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-06-02T01:35:00\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/3091/\", \"serial\": \"FTKMOB4CFFB9972E\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-09T07:04:00\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/2969/\", \"serial\": \"FTKMOB4CFFEE9E8C\", \"status\": \"assigned\", \"type\": \"ftm\"}, {\"last_used_at\": \"2025-07-04T11:35:00\", \"license\": \"EFTM02K131034362\", \"locked\": false, \"resource_uri\": \"/api/v1/fortitokens/1942/\", \"serial\": \"FTKMOB4CFFF89283\", \"status\": \"assigned\", \"type\": \"ftm\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "offset",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            },
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic RkFLRTpGQUtF",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "936984a7-111a-4d59-a23c-fcf8ff5cd72f",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 401,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic RkFLRTpGQUtF",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "65717d07-71fc-4501-a055-925e0152c87c"
+    },
+    {
+      "type": "route",
+      "uuid": "a2f3043c-824e-4b52-89ab-46b24069ac47"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
