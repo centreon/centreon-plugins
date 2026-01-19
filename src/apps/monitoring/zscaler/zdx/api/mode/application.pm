@@ -124,7 +124,11 @@ sub manage_selection {
             score       => $app->{score},
             total_users => $app->{total_users}
         };
-        my $metrics = $options{custom}->get_unique_app_metrics(%options, application_id => $app->{id});
+        my $metrics = $options{custom}->get_unique_app_metrics(
+            %options,
+            application_id => $app->{id},
+            max_metrics_age => $self->{max_metrics_age}
+        );
         foreach my $metric_name (keys %$metrics) {
             if ($metrics->{$metric_name} == -1) {
                 $self->{output}->add_option_msg(long_msg => 'metric "' . $metric_name .'" is skipped for app "' . $app->{name} . '" because its value is -1');

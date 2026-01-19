@@ -87,7 +87,7 @@ __END__
 
 =head1 MODE
 
-Check storages usage.
+Discover locations.
 
 =over 8
 
