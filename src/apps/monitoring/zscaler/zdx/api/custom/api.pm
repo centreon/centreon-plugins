@@ -145,6 +145,7 @@ sub get_unique_app {
 sub get_unique_app_metrics {
     my ($self, %options) = @_;
 
+
     my $content = $self->{http}->request(
         method     => 'GET',
         get_params => $self->{get_params},

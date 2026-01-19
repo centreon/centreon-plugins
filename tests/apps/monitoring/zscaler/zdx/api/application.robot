@@ -59,14 +59,14 @@ Application ${tc}
     ...    --exclude-application-name=SharePoint
     ...    OK: App "Outlook Online" - Users count: 67, Score: 81.551724137931, Page fetch time: 148.22 | 'Outlook Online#application.total-users.count'=67;;;0; 'Outlook Online#application.score.value'=81;;;0;100 'Outlook Online#application.page-fetch-time.milliseconds'=148.22ms;;;0;
     ...    9
-    ...    --application-id=3 --add-metrics --include-location-name=Road
+    ...    --application-id=3 --include-location-name=Road
     ...    OK: App "Outlook Online" - Users count: 55, Score: 99.09, Page fetch time: 148.22 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;;;0;100 'Outlook Online#application.page-fetch-time.milliseconds'=148.22ms;;;0;
     ...    10
-    ...    --application-id=3 --add-metrics --exclude-location-name=Road
+    ...    --application-id=3 --exclude-location-name=Road
     ...    OK: App "Outlook Online" - Users count: 55, Score: 99.09 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;;;0;100
     ...    11
-    ...    --application-id=3 --add-metrics --location-id=73260557
+    ...    --application-id=3 --location-id=73260557
     ...    OK: App "Outlook Online" - Users count: 55, Score: 99.09 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;;;0;100
     ...    12
-    ...    --application-id=3 --add-metrics --location-id=4294967293
+    ...    --application-id=3 --location-id=4294967293
     ...    OK: App "Outlook Online" - Users count: 55, Score: 99.09, Page fetch time: 148.22 | 'Outlook Online#application.total-users.count'=55;;;0; 'Outlook Online#application.score.value'=99;;;0;100 'Outlook Online#application.page-fetch-time.milliseconds'=148.22ms;;;0;

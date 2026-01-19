@@ -25,7 +25,6 @@ use centreon::plugins::constants qw(:values);
 use strict;
 use warnings;
 
-# All filter parameters that can be used
 my @_options = qw/
     application_id
     include_application_name
@@ -33,7 +32,9 @@ my @_options = qw/
     location_id
     include_location_name
     exclude_location_name
+    max_metrics_age
 /;
+
 
 sub new {
     my ($class, %options) = @_;
@@ -42,8 +43,13 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        ( map { ($_ =~ s/_/-/gr).':s' => { name => $_, default => '' } } @_options ),
-        'add-metrics' =>  { name => 'add_metrics'}
+        'application-id:s'           => { name => 'application_id', default => '' },
+        'include-application-name:s' => { name => 'include_application_name', default => '' },
+        'exclude-application-name:s' => { name => 'exclude_application_name', default => '' },
+        'location-id:s'              => { name => 'location_id', default => '' },
+        'include-location-name:s'    => { name => 'include_location_name', default => '' },
+        'exclude-location-name:s'    => { name => 'exclude_location_name', default => '' },
+        'max-metrics-age:s'          => { name => 'max_metrics_age', default => '20' }
     });
 
     return $self;
@@ -201,5 +207,10 @@ Threshold in ms.
 =item B<--critical-page-fetch-time>
 
 Threshold in ms.
+
+=item B<--max-metrics-age>
+
+Define the maximum accepted age (in minutes) for the metrics. If no value is found, the metric will be ignored.
+Default: 20
 
 =cut
