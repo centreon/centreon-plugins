@@ -36,4 +36,4 @@ List-Locations ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    List apps [id: 73260557] [name: Columbus Office] [id: 4294967293] [name: Road Warrior]
+    ...    List locations [id: 73260557] [name: Columbus Office] [id: 4294967293] [name: Road Warrior]

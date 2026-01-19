@@ -145,9 +145,10 @@ sub get_unique_app {
 sub get_unique_app_metrics {
     my ($self, %options) = @_;
 
+    my $to = time();
     my $get_params = { map {$_ => $self->{get_params}->{$_}} keys %{$self->{get_params}} };
-    $get_params->{from} = time() - 60 * ($options{max_metrics_age} // 20);
-
+    $get_params->{from} = $to - 60 * ($options{max_metrics_age} // 20);
+    $get_params->{to} = $to;
 
     my $content = $self->{http}->request(
         method     => 'GET',
