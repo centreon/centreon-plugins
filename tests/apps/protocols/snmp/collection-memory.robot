@@ -21,7 +21,7 @@ Collection Memory ${tc}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=apps/protocols/snmp/memo
-    ...    --config=tests/apps/protocols/snmp/memory.json
+    ...    --config=src/contrib/collection/snmp/memory.json
     ...    --snmp-version=${snmpver}
     ...    ${extra_options}
 

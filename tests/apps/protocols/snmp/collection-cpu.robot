@@ -21,7 +21,7 @@ Collection Cpu ${tc}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=apps/protocols/snmp/cpu
-    ...    --config=tests/apps/protocols/snmp/cpu.json
+    ...    --config=src/contrib/collection/snmp/cpu.json
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
