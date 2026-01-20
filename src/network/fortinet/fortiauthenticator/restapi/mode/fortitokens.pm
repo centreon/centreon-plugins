@@ -127,7 +127,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->fortiauthentificator_list_tokens();
-    my %list_status = ("available" => 1, "pending" => 1, "assigned" => 1);
 
     $self->{fortitokens}->{$_} = 0
         foreach qw/total available assigned pending/;
