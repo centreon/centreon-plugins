@@ -78,11 +78,10 @@ sub get_token {
     );
     # return token stored in cache if exists after checking it is still valid
     if ($has_cache_file) {
-        $self->{token}      = $self->{cache}->get(name => 'token');
-        $self->{token_type} = $self->{cache}->get(name => 'token_type');
-        my $expiration      = $self->{cache}->get(name => 'expiration');
-
-        if (defined($expiration) && $expiration > time() + 60) {
+my $expiration      = $self->{cache}->get(name => 'expiration');
+if (defined($expiration) && $expiration > time() + 60) {
+    $self->{token}      = $self->{cache}->get(name => 'token');
+    $self->{token_type} = $self->{cache}->get(name => 'token_type');
             $self->{http}->add_header(key => 'Authorization', value => $self->{token_type} . ' ' . $self->{token});
             return $self->{token}
         }
@@ -146,7 +145,7 @@ sub get_unique_app_metrics {
     my ($self, %options) = @_;
 
     my $to = time();
-    my $get_params = { map {$_ => $self->{get_params}->{$_}} keys %{$self->{get_params}} };
+    my $get_params = { %{ self->{get_params}} };
     $get_params->{from} = $to - 60 * ($options{max_metrics_age} // 20);
     $get_params->{to} = $to;
 
@@ -174,7 +173,6 @@ sub get_unique_app_metrics {
 
     my $data = {};
 
-    LOOP_METRICS:
     foreach my $met (@$metrics) {
         $data->{$met->{metric}} = -1; # -1 means no value has been recorded
         LOOP_VALUES:
