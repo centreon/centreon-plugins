@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -318,6 +318,15 @@ sub execute_winshell_commands {
     return $command_result;
 }
 
+# The "execute_powershell" function is now deprecated !
+# Use "execute_powershell_script" function instead which uses exclusively PowerShell commands
+# With "execute_powershell_script" data must be encoded using "powershell_encoded_script" and not with "powershell_encoded"
+
+# The script provided via 'content' must be Base64 encoded using 'powershell_encoded' function
+# Parameters:
+# $options{label}: label to identify the command ro retrieve results
+# $options{content}: UTF16le content encoded in base64 using powershell_encoded function
+
 sub execute_powershell {
     my ($self, %options) = @_;
 
@@ -337,6 +346,9 @@ sub execute_powershell {
             value => 'echo|set /P="powershell -encodedcommand ">> ' . $filename
         }
     ];
+
+    # To work around the 8191 character command line length limit when the data exceeds 8000 characters the string is
+    # split into 8000 character chunks and reassembled using a temporary file
     my $i = 0;
     foreach (unpack('(A' . $chunk . ')*', $options{content})) {
         push @$commands, {
@@ -354,6 +366,56 @@ sub execute_powershell {
             label => 'del-' . $options{label},
             value => 'del /f ' . $filename
         };
+
+    return $self->execute_winshell_commands(
+        commands => $commands,
+        keep_open => 1
+    );
+}
+
+# The script provided via 'content' must be Base64 encoded using 'powershell_encoded_script' function
+# This function is similar to execute_powershell but it exclusively uses PowerShell commands
+# Parameters:
+# $options{label}: label to identify the command ro retrieve results
+# $options{content}: base64 encoded content using powershell_encoded_script function
+sub execute_powershell_script {
+    my ($self, %options) = @_;
+
+    my $chunk = 8000;
+    my $base = 'C:/Windows/Temp/';
+    my $ps1_filename = $base . $options{label} . '-' .$$. '-'. sprintf("%08X", rand(0xFFFFFFFF)) . '.ps1';
+    my $b64_filename = $ps1_filename =~ s/\.ps1$/\.b64/r;
+    my $commands = [
+        {
+            label => 'prev1-' . $options{label},
+            value => qq(powershell.exe -command "new-item -itemtype directory -path '$base' -force")
+        }
+    ];
+
+    # To work around the 8191 character command line length limit when the data exceeds 8000 characters the string is
+    # split into 8000 character chunks and reassembled using a temporary file
+    my $cmd_content = 'Set-Content';
+    my $i = 0;
+    foreach (unpack('(A' . $chunk . ')*', $options{content})) {
+        push @$commands, {
+            label => 'chunk-' . ($i++) . '-' . $options{label},
+            value => qq(powershell.exe -NoProfile -Command "$cmd_content -Path '$b64_filename' -Value '$_' -Encoding ASCII")
+        };
+
+        $cmd_content = 'Add-Content';
+    }
+
+    push @$commands, {
+                         label => 'convert-' . $options{label},
+                         value => qq(powershell.exe -NoProfile -Command "[IO.File]::WriteAllBytes('$ps1_filename',[Convert]::FromBase64String((Get-Content '$b64_filename' -Raw)))")
+                     },
+                     {   label => $options{label},
+                         value => qq(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$ps1_filename")
+                     },
+                     {
+                         label => 'del-' . $options{label},
+                         value => qq(powershell.exe -NoProfile -Command '$ps1_filename','$b64_filename' -Force)
+                     };
 
     return $self->execute_winshell_commands(
         commands => $commands,
@@ -555,11 +617,11 @@ WSMAN global
 
 =head1 SYNOPSIS
 
-wsman class
+WSMAN class
 
 =head1 WSMAN OPTIONS
 
-Need at least openwsman-perl version >= 2.4.0
+Need at least OpenWSMAN-perl version >= 2.4.0
 
 =over 8
 
@@ -593,7 +655,7 @@ Define the HTTP transport timeout in seconds (default: 30).
 
 =item B<--wsman-auth-method>
 
-Define the authentication method. Available methods: noauth, basic (default), pass, digest, ntlm, gssnegotiate.
+Define the authentication method. Available methods: C<noauth>, C<basic> (default), C<pass>, C<digest>, C<ntlm>, C<gssnegotiate>.
 
 =item B<--wsman-proxy-url>
 
@@ -609,16 +671,16 @@ Define the password to authenticate to the proxy server.
 
 =item B<--wsman-debug>
 
-Define the openwsman log level. Available levels: error, critical, warning, message, info (default), debug.
+Define the OpenWSMAN log level. Available levels: error, critical, warning, message, info (default), debug.
 
 =item B<--wsman-errors-exit>
 
-Define the expected exit code when wsman errors occur (default: unknown).
+Define the expected exit code when WSMAN errors occur (default: unknown).
 
 =back
 
 =head1 DESCRIPTION
 
-B<wsman>.
+B<WSMAN>.
 
 =cut

@@ -26,6 +26,7 @@ use utf8;
 use JSON::XS;
 use Safe;
 use Encode;
+use MIME::Base64;
 
 use Exporter 'import';
 use feature 'state';
@@ -390,9 +391,11 @@ sub trim {
     return $value;
 }
 
+sub powershell_encoded_script {
+    MIME::Base64::encode_base64($_[0], '');
+}
+
 sub powershell_encoded {
-    require Encode;
-    require MIME::Base64;
     my $bytes = Encode::encode('utf16LE', $_[0]);
     return MIME::Base64::encode_base64($bytes, '');
 }
@@ -1136,7 +1139,7 @@ Trims whitespace from a string.
 
     my $encoded = centreon::plugins::misc::powershell_encoded($value);
 
-Encodes a string for use in PowerShell.
+Encodes a string for use in PowerShell with -EncodedCommand.
 
 =over 4
 
@@ -1144,6 +1147,17 @@ Encodes a string for use in PowerShell.
 
 =back
 
+=head2 powershell_encoded_script
+
+    my $encoded = centreon::plugins::misc::powershell_encoded($value);
+
+Encodes a string for use in PowerShell with -File.
+
+=over 4
+
+=item * C<$value> - The string to encode.
+
+=back
 =head2 powershell_escape
 
     my $escaped = centreon::plugins::misc::powershell_escape($value);

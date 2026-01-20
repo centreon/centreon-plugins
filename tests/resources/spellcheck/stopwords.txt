@@ -246,6 +246,7 @@ okta
 oneaccess-sys-mib
 OpenMetrics
 OpenStack
+OpenWSMAN
 OSPF
 out-bcast
 out-fc-wait
