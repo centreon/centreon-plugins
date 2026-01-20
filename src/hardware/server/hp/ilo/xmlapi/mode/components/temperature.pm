@@ -67,7 +67,14 @@ sub check {
         
         next if ($result->{CURRENTREADING}->{VALUE} !~ /[0-9]/);
         my $unit = $map_unit{lc($result->{CURRENTREADING}->{UNIT})};
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{CURRENTREADING}->{VALUE});        
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{CURRENTREADING}->{VALUE});
+        $warn = ($result->{CAUTION}->{VALUE} eq 'N/A')
+           ? ''
+           : $result->{CAUTION}->{VALUE};
+        $crit = ($result->{CRITICAL}->{VALUE} eq 'N/A')
+           ? ''
+           : $result->{CRITICAL}->{VALUE};
+
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Temperature '%s' is %s %s", $result->{LABEL}->{VALUE}, $result->{CURRENTREADING}->{VALUE}, $unit));
