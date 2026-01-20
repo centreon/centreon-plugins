@@ -318,13 +318,20 @@ sub execute_winshell_commands {
     return $command_result;
 }
 
+# The "execute_powershell" function is now deprecated !
+# Use "execute_powershell_script" function instead which uses exclusively PowerShell commands
+# With "execute_powershell_script" data must be encoded using "powershell_encoded_script" and not with "powershell_encoded"
+
 # The script provided via 'content' must be Base64 encoded using 'powershell_encoded' function
+# Parameters:
+# $options{label}: label to identify the command ro retrieve results
+# $options{content}: UTF16le content encoded in base64 using powershell_encoded function
+
 sub execute_powershell {
     my ($self, %options) = @_;
 
     my $chunk = 8000;
     my $filename = 'C:/Windows/Temp/' . $options{label} . '-' . sprintf("%08X", rand(0xFFFFFFFF)) . '.bat';
-    my ($tmp_filename, $ps1_filename);
     my $commands = [
         {
             label => 'prev1-' . $options{label},
@@ -333,40 +340,21 @@ sub execute_powershell {
         {
             label => 'prev2-' . $options{label},
             value => '(echo @ECHO OFF) >> ' . $filename
+        },
+        {
+            label => 'prev3-' . $options{label},
+            value => 'echo|set /P="powershell -encodedcommand ">> ' . $filename
         }
     ];
 
     # To work around the 8191 character command line length limit when the data exceeds 8000 characters the string is
     # split into 8000 character chunks and reassembled using a temporary file
-    if (length($options{content}) <= $chunk) {
+    my $i = 0;
+    foreach (unpack('(A' . $chunk . ')*', $options{content})) {
         push @$commands, {
-                             label => 'prev3-' . $options{label},
-                             value => 'echo|set /P="powershell -encodedcommand ">> ' . $filename
-                         },
-                         {
-                             label => 'chunk-0-' . $options{label},
-                             value => 'echo|set /P="' . unpack('A*', $options{content}) . '">>' . $filename
-                         };
-    } else {
-        my $i = 0;
-        $tmp_filename = $filename=~ s/\.bat$/\.tmp/r;
-        $ps1_filename = $filename=~ s/\.bat$/\.ps1/r;
-
-        foreach (unpack('(A' . $chunk . ')*', $options{content})) {
-            push @$commands, {
-                label => 'chunk-' . ($i++) . '-' . $options{label},
-                value => 'echo|set /P="' . $_ . '">>' . $tmp_filename
-            };
-        }
-
-        push @$commands, {
-                             label => 'post1-'. $options{label},
-                             value => "certutil --decode $tmp_filename $ps1_filename >NUL 2>&1"
-                         },
-                         {
-                             label => 'post2-' . $options{label},
-                             value => "echo powershell -File $ps1_filename >> $filename"
-                         };
+            label => 'chunk-' . $i . '-' . $options{label},
+            value => 'echo|set /P="' . $_ . '">>' . $filename
+        };
     }
 
     push @$commands,
@@ -376,7 +364,7 @@ sub execute_powershell {
         },
         {
             label => 'del-' . $options{label},
-            value => 'del /f ' . join ' ', grep { $_ } ($filename, $tmp_filename, $ps1_filename)
+            value => 'del /f ' . $filename
         };
 
     return $self->execute_winshell_commands(
@@ -387,6 +375,9 @@ sub execute_powershell {
 
 # The script provided via 'content' must be Base64 encoded using 'powershell_encoded_script' function
 # This function is similar to execute_powershell but it exclusively uses PowerShell commands
+# Parameters:
+# $options{label}: label to identify the command ro retrieve results
+# $options{content}: base64 encoded content using powershell_encoded_script function
 sub execute_powershell_script {
     my ($self, %options) = @_;
 
@@ -431,7 +422,6 @@ sub execute_powershell_script {
         keep_open => 1
     );
 }
-
 
 sub request {
     my ($self, %options) = @_;
