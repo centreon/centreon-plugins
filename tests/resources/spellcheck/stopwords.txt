@@ -105,9 +105,11 @@ FibreAlliance
 --force-counters64
 --force-oid
 Forcepoint
+FortiAuthenticator
 Fortigate
 Fortinet
 FortiOS
+FortiTokens
 FQDN
 FreeBSD
 FrontDoor
