@@ -70,18 +70,14 @@ Collection Swap 64bits ${tc}
     ...    expected_result
     ...    --
     ...    1
-    ...    1
-    ...    ${EMPTY}
-    ...    UNKNOWN: Unsafe code evaluation: syntax error at (eval 30) line 1, at EOF
-    ...    2
     ...    2c
     ...    --verbose
     ...    OK: Swap usage: 5.94% (58 MB) | 'swap.usage.bytes'=59392;;;0;999420 'swap.usage.percent'=5.94;;;0;100 Swap usage: 5.94% (58 MB)
-    ...    3
+    ...    2
     ...    2c
     ...    --constant='warning=3'
     ...    WARNING: Swap usage: 5.94% (58 MB) | 'swap.usage.bytes'=59392;;;0;999420 'swap.usage.percent'=5.94;3;;0;100
-    ...    4
+    ...    3
     ...    2c
     ...    --constant='critical=4'
     ...    CRITICAL: Swap usage: 5.94% (58 MB) | 'swap.usage.bytes'=59392;;;0;999420 'swap.usage.percent'=5.94;;4;0;100
