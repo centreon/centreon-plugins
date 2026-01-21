@@ -63,7 +63,7 @@ sub custom_cpu_calc {
     }
     $self->{result_values}->{prct_used} =
         ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} -
-            $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}) / 10 * 100 /
+            $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}) * 100 /
             $self->{instance_mode}->{total_cpu};
 
     return 0;
