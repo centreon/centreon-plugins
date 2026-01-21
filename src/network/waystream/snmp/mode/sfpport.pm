@@ -30,9 +30,16 @@ sub sfp_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking sfp port '%s'%s",
+        "checking sfp port '%s'%s - Temp: %.2f C - RX: %.2f mW (%.2f dBm) - TX: %.2f mW (%.2f dBm) - Bias: %s mA - Volt: %.2f V",
         $options{instance},
-        $options{instance_value}->{serial} ne '' ? ' [serial: ' . $options{instance_value}->{serial} . ']' : ''
+        $options{instance_value}->{serial} ne '' ? ' [serial: ' . $options{instance_value}->{serial} . ']' : '',
+        $options{instance_value}->{temperature}->{temperature},
+        $options{instance_value}->{perf}->{rx_input},
+        $options{instance_value}->{perf}->{rx_input_dbm},
+        $options{instance_value}->{perf}->{tx_output},
+        $options{instance_value}->{perf}->{tx_output_dbm},
+        $options{instance_value}->{perf}->{bias_current},
+        $options{instance_value}->{voltage}->{volt},
     );
 }
 
@@ -113,7 +120,7 @@ sub set_counters {
     $self->{maps_counters}->{perf} = [
         { label => 'rx-input-power', display_ok => 0, nlabel => 'port.input.power.milliwatt', set => {
             key_values      => [ { name => 'rx_input' } ],
-            output_template => 'input power: %s mW',
+            output_template => 'input power: %.2f mW',
             perfdatas       => [
                 { template => '%.2f', unit => 'mW', label_extra_instance => 1 }
             ]
@@ -121,15 +128,15 @@ sub set_counters {
         },
         { label => 'rx-input-power-dbm', display_ok => 0, nlabel => 'port.input.power.dbm', set => {
             key_values      => [ { name => 'rx_input_dbm' } ],
-            output_template => 'input power: %s dBm',
+            output_template => 'input power: %.2f dBm',
             perfdatas       => [
-                { template => '%s', unit => 'dBm', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'dBm', label_extra_instance => 1 }
             ]
         }
         },
         { label => 'tx-output-power', display_ok => 0, nlabel => 'port.output.power.milliwatt', set => {
             key_values      => [ { name => 'tx_output' } ],
-            output_template => 'output power: %s mW',
+            output_template => 'output power: %.2f mW',
             perfdatas       => [
                 { template => '%.2f', unit => 'mW', label_extra_instance => 1 }
             ]
@@ -137,17 +144,17 @@ sub set_counters {
         },
         { label => 'tx-output-power-dbm', display_ok => 0, nlabel => 'port.output.power.dbm', set => {
             key_values      => [ { name => 'tx_output_dbm' } ],
-            output_template => 'output power: %s dBm',
+            output_template => 'output power: %.2f dBm',
             perfdatas       => [
-                { template => '%s', unit => 'dBm', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'dBm', label_extra_instance => 1 }
             ]
         }
         },
         { label => 'bias-current', display_ok => 0, nlabel => 'port.bias.current.milliampere', set => {
             key_values      => [ { name => 'bias_current' } ],
-            output_template => 'Bias Current : %s mA',
+            output_template => 'Bias Current : %.2f mA',
             perfdatas       => [
-                { template => '%s', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
+                { template => '%.2f', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
