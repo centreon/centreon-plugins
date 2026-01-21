@@ -29,27 +29,42 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => { 'add-interface-name' => { name => 'add_interface_name' } });
 
     return $self;
 }
 
+my @labels = ('number', 'serial', 'connector', 'bitrate');
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-}
 
-my @labels = ('number', 'serial', 'connector', 'bitrate');
+    if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
+        push @labels, 'interface_name';
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    my $map_connector_type = {
+        1  => 'sc',
+        6  => 'fiberJack',
+        7  => 'lc',
+        8  => 'mtrj',
+        9  => 'mu',
+        10 => 'sg',
+        11 => 'opticalPigtail',
+        32 => 'hssdcii',
+        33 => 'copperPigtail'
+    };
 
     # Select relevant oids for discovery function
     my $mapping = {
         sfpNumber       => { oid => '.1.3.6.1.4.1.9303.4.1.4.1.1' },# wsSFPIndex
         sfpSerialNumber => { oid => '.1.3.6.1.4.1.9303.4.1.4.1.53' },# wsSFPSerialNumber
-        sfpConnector    => { oid => '.1.3.6.1.4.1.9303.4.1.4.1.3' },# wsSFPConnector
+        sfpConnector    => { oid => '.1.3.6.1.4.1.9303.4.1.4.1.3', map => $map_connector_type },# wsSFPConnector
         sfpBitrate      => { oid => '.1.3.6.1.4.1.9303.4.1.4.1.6' },# wsSFPBitrate
     };
 
@@ -64,6 +79,16 @@ sub manage_selection {
     );
 
     my $results = {};
+    my $names = undef;
+    my $oid_name = '.1.3.6.1.2.1.31.1.1.1.1';
+
+    if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
+        $names = $options{snmp}->get_table(
+            oid          => $oid_name,
+            nothing_quit => 1
+        );
+    }
+
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{sfpSerialNumber}->{oid}\.(.*)$/);
 
@@ -71,10 +96,12 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         $results->{$result->{sfpNumber}} = {
-            number    => $result->{sfpNumber},
-            serial    => $result->{sfpSerialNumber},
-            connector => $result->{sfpConnector},
-            bitrate   => $result->{sfpBitrate}
+            number         => $result->{sfpNumber},
+            serial         => $result->{sfpSerialNumber},
+            connector      => $result->{sfpConnector},
+            bitrate        => $result->{sfpBitrate},
+            interface_name => defined($names->{$oid_name . '.' . $instance}) ?
+                $names->{$oid_name . '.' . $instance} : ''
         };
     }
 
