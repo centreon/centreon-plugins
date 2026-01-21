@@ -77,23 +77,30 @@ sub get_token {
                     . '_' . $self->{key_id})
     );
     # return token stored in cache if exists after checking it is still valid
-    $self->{token} = $self->{cache}->get(name => 'token') if $has_cache_file;
-    my $expiration = $self->{cache}->get(name => 'expiration') if defined($self->{token});
-
-    return $self->{token} if (defined($expiration) && $expiration > time() + 60);
+    if ($has_cache_file) {
+        my $expiration      = $self->{cache}->get(name => 'expiration');
+        if (defined($expiration) && $expiration > time() + 60) {
+            $self->{token}      = $self->{cache}->get(name => 'token');
+            $self->{token_type} = $self->{cache}->get(name => 'token_type');
+            $self->{http}->add_header(key => 'Authorization', value => $self->{token_type} . ' ' . $self->{token});
+            return $self->{token}
+        }
+    }
 
     # if we do not have a token or if it has to be renewed
     my $content = $self->{http}->request(
         method          => 'POST',
         url_path        => '/v1/oauth/token',
-        query_form_post => '{ "key_id": "' . $self->{key_id} . '", "key_secret": "' . $self->{key_secret} . '"}',
+        query_form_post => '{"key_id": "' . $self->{key_id} . '", "key_secret": "' . $self->{key_secret} . '"}',
 
     );
     my $decoded_content = json_decode($content, output => $self->{output});
 
     $self->{output}->option_exit(short_msg => "No token found in '$content'") unless ($decoded_content->{token});
     $self->{token} = $decoded_content->{token};
-    $self->{cache}->write(data => { token => $decoded_content->{token}, expiration => ($decoded_content->{expires_in} + time()) });
+    $self->{token_type} = $decoded_content->{token_type};
+    $self->{http}->add_header(key => 'Authorization', value => $self->{token_type} . ' ' . $self->{token});
+    $self->{cache}->write(data => { token => $decoded_content->{token}, token_type => $decoded_content->{token_type}, expiration => ($decoded_content->{expires_in} + time()) });
     return $self->{token};
 }
 
@@ -103,14 +110,81 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
+sub build_location_filters {
+    my ($self, %options) = @_;
+
+    # if location id provided the filter is simple
+    return { loc => $options{location_id} } if (!is_empty($options{location_id}));
+
+    # if no location filters are given, do not return anything
+    return {} if (is_empty($options{include_location_name}) && is_empty($options{exclude_location_name}));
+    # if location filters are provided, get the list of location ids
+    my $locations = $self->get_locations(%options);
+    # $locations points to an array of {id, name}
+    return { loc => [map { $_->{id}} @$locations] };
+}
+
 sub get_unique_app {
     my ($self, %options) = @_;
 
     my $content = $self->{http}->request(
-        method   => 'GET',
-        url_path => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
+        method     => 'GET',
+        get_params => $self->{get_params},
+        url_path   => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
     );
-    return json_decode($content, output => $self->{output});
+    my $app = json_decode($content, output => $self->{output});
+    return {
+        id          => $app->{id},
+        name        => $app->{name},
+        score       => $app->{score},
+        total_users => $app->{stats}->{active_users}
+    }
+}
+
+sub get_unique_app_metrics {
+    my ($self, %options) = @_;
+
+    my $to = time();
+    my $get_params = { %{ $self->{get_params}} };
+    $get_params->{from} = $to - 60 * ($options{max_metrics_age} // 20);
+    $get_params->{to} = $to;
+
+    my $content = $self->{http}->request(
+        method     => 'GET',
+        get_params => $get_params,
+        url_path   => $self->{option_results}->{api_path} . '/apps/' . $options{application_id} . '/metrics'
+    );
+
+    my $metrics = json_decode($content, output => $self->{output});
+    # Example:
+    # [
+    #   {
+    #     "metric": "pft",
+    #     "unit": "ms",
+    #     "datapoints": [
+    #       {
+    #         "timestamp": 1767964390,
+    #         "value": 1410.8
+    #       },
+    #       ...
+    #     ]
+    #   }
+    # ]
+
+    my $data = {};
+
+    foreach my $met (@$metrics) {
+        $data->{$met->{metric}} = -1; # -1 means no value has been recorded
+        LOOP_VALUES:
+        while ( my $dp = pop(@{$met->{datapoints}}) ) {
+            next LOOP_VALUES if $dp->{value} == -1; # skip if no value
+            # we store the first non empty value and exit the loop
+            $data->{$met->{metric}} = $dp->{value};
+            last LOOP_VALUES;
+        }
+    }
+
+    return $data;
 }
 
 sub get_apps {
@@ -118,6 +192,8 @@ sub get_apps {
 
     $self->get_token();
 
+    # build the params to filter on the locations
+    $self->{get_params} = $self->build_location_filters(%options);
     my @stats;
     # either we have a single app to get by its id
     if (!is_empty($options{application_id})) {
@@ -128,20 +204,55 @@ sub get_apps {
     # or we have to get all apps and check which ones match the filters
     my $all_apps_json = $self->{http}->request(
         method     => 'GET',
+        get_params => $self->{get_params},
         url_path   => $self->{option_results}->{api_path} . '/apps/'
     );
     my $all_apps = json_decode($all_apps_json, output => $self->{output});
 
-    foreach my $app_obj (@$all_apps) {
+    foreach my $app (@$all_apps) {
         next if is_excluded(
-            $app_obj->{name},
+            $app->{name},
             $options{include_application_name},
             $options{exclude_application_name});
 
-        push @stats, $self->get_unique_app(application_id => $app_obj->{id});
+        push @stats, {
+            id          => $app->{id},
+            name        => $app->{name},
+            score       => $app->{score},
+            total_users => $app->{total_users}
+        };
     }
 
     return \@stats;
+}
+
+sub get_locations {
+    my ($self, %options) = @_;
+
+    $self->get_token();
+
+    # get all locations and check which ones match the filters
+    my $locations_json = $self->{http}->request(
+        method     => 'GET',
+        url_path   => $self->{option_results}->{api_path} . '/administration/locations/'
+    );
+    my $locations = json_decode($locations_json, output => $self->{output});
+
+    my @result;
+    foreach my $loc (@$locations) {
+        next if ($options{location_id} && $loc->{id} ne $options{location_id});
+        next if is_excluded(
+            $loc->{name},
+            $options{include_location_name},
+            $options{exclude_location_name});
+
+        push @result, {
+            id          => $loc->{id},
+            name        => $loc->{name},
+        };
+    }
+
+    return \@result;
 }
 
 sub set_defaults {}
