@@ -1,0 +1,66 @@
+{
+  "snmp": {
+    "leefs": [
+      {
+        "name": "memTotalSwap",
+        "oid": ".1.3.6.1.4.1.2021.4.18.0"
+      },
+      {
+        "name": "memAvailSwap",
+        "oid": ".1.3.6.1.4.1.2021.4.19.0"
+      }
+    ]
+  },
+  "selection": [
+    {
+      "name": "swap",
+      "functions":  [
+        {
+          "type": "assign",
+          "save": "%(used)",
+          "expression": "%(snmp.leefs.memTotalSwap) - %(snmp.leefs.memAvailSwap)"
+        },
+        {
+          "type": "scale",
+          "src": "%(used)",
+          "src_unit": "kB",
+          "dst_unit": "auto",
+          "save_value": "%(usedScaled)",
+          "save_unit": "%(usedUnit)"
+        },
+        {
+          "type": "assign",
+          "save": "%(usedPrct)",
+          "expression": "sprintf(\"%.2f\", 100 * (%(snmp.leefs.memTotalSwap) - %(snmp.leefs.memAvailSwap)) / %(snmp.leefs.memTotalSwap) )"
+        }
+      ],
+      "warning": "%(constants.warning) ne '' && %(constants.warning) < %(usedPrct)",
+      "critical": "%(constants.critical) ne '' && %(constants.critical) < %(usedPrct)",
+      "perfdatas": [
+        {
+          "nlabel": "swap.usage.bytes",
+          "value": "%(used)",
+          "min": 0,
+          "max": "%(snmp.leefs.memTotalSwap)"
+        },
+        {
+          "nlabel": "swap.usage.percent",
+          "value": "%(usedPrct)",
+          "min": 0,
+          "max": "100",
+          "warning": "%(constants.warning)",
+          "critical": "%(constants.critical)"
+        }
+      ],
+      "formatting": {
+        "printf_msg": "Swap usage: %s%% (%s %s)",
+        "printf_var": [
+          "%(usedPrct)",
+          "%(usedScaled)",
+          "%(usedUnit)"
+        ],
+        "display_ok": true
+      }
+    }
+  ]
+}
