@@ -270,7 +270,7 @@ jobs:
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -288,7 +288,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact/merge@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: packages-rpm-${{ matrix.distrib }}
           pattern: packages-rpm-${{ matrix.distrib }}-*
@@ -607,7 +607,7 @@ jobs:
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
@@ -625,7 +625,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact/merge@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: packages-deb-${{ matrix.distrib }}
           pattern: packages-deb-${{ matrix.distrib }}-*
@@ -718,7 +718,7 @@ jobs:
 
       - name: Upload error log
         if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: install_error_log_${{ matrix.distrib }}-${{ matrix.arch }}
           path: install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log
