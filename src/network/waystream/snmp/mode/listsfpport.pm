@@ -29,7 +29,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 'add-interface-name' => { name => 'add_interface_name' } });
+    $options{options}->add_options(
+        arguments => {
+            'add-interface-name' => { name => 'add_interface_name' },
+            'filter-connector:s' => { name => 'filter_connector' }
+        });
 
     return $self;
 }
@@ -95,6 +99,12 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
+        if (defined($self->{option_results}->{filter_connector}) && $self->{option_results}->{filter_connector} ne '' &&
+            $result->{sfpConnector} !~ /$self->{option_results}->{filter_connector}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{sfpConnector} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $results->{$result->{sfpNumber}} = {
             number         => $result->{sfpNumber},
             serial         => $result->{sfpSerialNumber},
@@ -152,6 +162,14 @@ __END__
 List SFP ports.
 
 =over 8
+
+=item B<--add-interface-name>
+
+Add the corresponding interface name when set.
+
+=item B<--filter-connector>
+
+Filters the ports by the connector type. Can be: C<sc>, C<fiberJack>, C<lc>, C<mtrj>, C<mu>, C<sg>, C<opticalPigtail>, C<hssdcii>, C<copperPigtail>
 
 =back
 
