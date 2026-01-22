@@ -232,7 +232,7 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@f9f0bf89e0d19ddbabb2f40d43db2e944bce7d2f # v1.36.0
+        uses: shogo82148/actions-setup-perl@fa3bdcb0144a50651e317f30949bb4491e74a6e4 # v1.37.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
