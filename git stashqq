@@ -1,0 +1,30 @@
+[1mdiff --git a/.github/workflows/secu-dependency-scan.yml b/.github/workflows/secu-dependency-scan.yml[m
+[1mindex 100fe3c44..27d9dddf7 100644[m
+[1m--- a/.github/workflows/secu-dependency-scan.yml[m
+[1m+++ b/.github/workflows/secu-dependency-scan.yml[m
+[36m@@ -6,23 +6,17 @@[m [mconcurrency:[m
+ on:[m
+   pull_request:[m
+     paths:[m
+[32m+[m[32m      - '**'[m
+       - '!src/**'[m
+       - '!selinux/**'[m
+       - '!tests/**'[m
+       - '!as400/**'[m
+       - '!packaging/**'[m
+[31m-      - '!.github/workflows/plugins.yml'[m
+[31m-      - '!.github/workflows/plink.yml'[m
+[31m-      - '!.github/workflows/perl-cpan-libraries.yml'[m
+[31m-      - '!.github/workflows/spellchecker.yml'[m
+[31m-      - '!.github/scripts/plugins-source.container.pl'[m
+[31m-      - '!.github/scripts/pod_spell_check.t'[m
+[31m-      - '!.github/packaging/centreon-plugin.yaml.template'[m
+       - '!dependencies/perl-openwsman/**'[m
+       - '!dependencies/perl-keepass-reader/**'[m
+       - '!dependencies/perl-filesys-smbclient/**'[m
+       - '!dependencies/centreon-plugins-sudoers/**'[m
+[31m-      - '**'[m
+[32m+[m
+   workflow_dispatch:[m
+ [m
+ jobs:[m
