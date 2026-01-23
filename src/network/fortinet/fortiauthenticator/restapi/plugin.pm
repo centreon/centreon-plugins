@@ -18,28 +18,22 @@
 # limitations under the License.
 #
 
-package network::arista::snmp::plugin;
+package network::fortinet::fortiauthenticator::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
+    my ( $class, %options ) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'              => 'snmp_standard::mode::cpu',
-        'entity'           => 'snmp_standard::mode::entity',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::arista::snmp::mode::memory',
-        'tcpcon'           => 'snmp_standard::mode::tcpcon',
-        'uptime'           => 'snmp_standard::mode::uptime',
-        'bgp'              => 'network::arista::snmp::mode::bgp'
-    );
+    $self->{modes} = {
+        'fortitoken' => 'network::fortinet::fortiauthenticator::restapi::mode::fortitokens',
+    };
+
+    $self->{custom_modes}->{api} = 'network::fortinet::fortiauthenticator::restapi::custom::api';
 
     return $self;
 }
@@ -50,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Arista equipments in SNMP.
+Check FortiAuthenticator using Rest API.
 
 =cut

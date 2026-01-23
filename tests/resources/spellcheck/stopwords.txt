@@ -105,9 +105,11 @@ FibreAlliance
 --force-counters64
 --force-oid
 Forcepoint
+FortiAuthenticator
 Fortigate
 Fortinet
 FortiOS
+FortiTokens
 FQDN
 FreeBSD
 FrontDoor
@@ -246,6 +248,7 @@ okta
 oneaccess-sys-mib
 OpenMetrics
 OpenStack
+OpenWSMAN
 OSPF
 out-bcast
 out-fc-wait
