@@ -72,14 +72,18 @@ public class SubSystemHandler extends AbstractHandler implements ISubSystemHandl
 
         final AS400 system = this.getNewAs400();
         try {
-            ConnectorLogger.getInstance().debug("trying to connect")
+            ConnectorLogger.getInstance().debug("trying to connect");
             Subsystem[] list = Subsystem.listAllSubsystems(system);
             ConnectorLogger.getInstance().debug("got subsystem list, length=" + list.length);
             for (int i = 0; i < list.length; i++) {
                 HashMap<String, Object> attrs = new HashMap<String, Object>();
                 ConnectorLogger.getInstance().debug("trying refresh");
 
-                list[i].refresh();
+                try {
+                    list[i].refresh();
+                } catch (Exception e) {
+                    continue;
+                }
                 ConnectorLogger.getInstance().debug("refresh passed for subsystem " + list[i].getName());
                 attrs.put("name", list[i].getName());
                 attrs.put("path", list[i].getPath());
