@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,10 +20,12 @@
 
 package database::postgres::mode::querytime;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+use centreon::plugins::misc qw/is_excluded is_empty/;
 
 sub new {
     my ($class, %options) = @_;
@@ -31,31 +33,84 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'warning:s'      => { name => 'warning' },
-        'critical:s'     => { name => 'critical' },
-        'exclude:s'      => { name => 'exclude' },
-        'exclude-user:s' => { name => 'exclude_user' },
-        'idle'           => { name => 'idle' }
+        'warning:s'           => { name => 'warning' },
+        'critical:s'          => { name => 'critical' },
+        'include-database:s'  => { name => 'include_database', default => '' },
+        'exclude-database:s'  => { name => 'exclude_database', default => '' },
+        'include:s'           => { name => 'include_database' },
+        'exclude:s'           => { name => 'exclude_database' },
+        'include-user:s'      => { name => 'include_user', default => '' },
+        'exclude-user:s'      => { name => 'exclude_user', default => '' },
+        'idle'                => { name => 'idle' }
     });
 
     return $self;
+}
+
+sub custom_long_output {
+    my ($self, %options) = @_;
+
+    my @output;
+    foreach my $exit_code ('critical', 'warning', 'unknwon') {
+        next unless $self->{result_values}->{code}->{$exit_code};
+
+        my $val = $self->{result_values}->{code}->{$exit_code};
+        push @output, sprintf(
+            "%d request%s exceed %s threshold on database '%s'",
+            $val, $val == 1 ? '' : 's', $exit_code, $self->{result_values}->{database}
+        );
+    }
+
+    @output = ( sprintf("All queries time are ok on database '%s'",  $self->{result_values}->{database}) ) unless @output;
+
+    return join ', ', @output;
+}
+
+sub custom_threshold_check {
+    my ($self, %options) = @_;
+
+    foreach my $exit_code ('critical', 'warning', 'unknwon') {
+        return $exit_code if $self->{result_values}->{code}->{$exit_code};
+    }
+
+    return 'ok';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'longqueries', type => 1, message_multiple => 'All databases queries time are ok' },
+    ];
+
+    $self->{maps_counters}->{longqueries} = [
+        { label => 'total', nlabel => 'database.longqueries.count', set => {
+                key_values => [ { name => 'total' }, { name => 'database' }, {name => 'code' } ],
+                #                threshold_use => 'total',
+                closure_custom_output => $self->can('custom_long_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_check'),
+                output_template => "%s request exceed thresholds",
+                perfdatas => [
+                    { template => '%s', min => 0, unit => '', label_extra_instance => 1  },
+                ],
+            }
+        }
+    ];
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.")
+      unless $self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning});
+
+    $self->{output}->option_exit(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.")
+      unless $self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical});
 }
 
-sub run {
+
+sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
@@ -84,25 +139,22 @@ sub run {
             !defined($self->{option_results}->{idle}) ? " AND current_query NOT LIKE '<IDLE>%'" : ''
         );
     }
-
     $options{sql}->query(query => $query);
 
-    $self->{output}->output_add(
-        severity => 'OK',
-        short_msg => 'All databases queries time are ok.'
-    );
     my $dbquery = {};
     while ((my $row = $options{sql}->fetchrow_hashref())) {
-        next if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $row->{datname} =~ /$self->{option_results}->{exclude}/);
+        $row->{usename} //= '';
+        next if is_excluded($row->{datname}, $self->{option_results}->{include_database}, $self->{option_results}->{exclude_database});
+        next if is_excluded($row->{usename}, $self->{option_results}->{include_user}, $self->{option_results}->{exclude_user});
 
-        if (!defined($dbquery->{$row->{datname}})) {
-            $dbquery->{ $row->{datname} } = { total => 0, code => {} };
-        }
-        next if (!defined($row->{datid}) || $row->{datid} eq ''); # No joint
+        $dbquery->{ $row->{datname} } = { total => 0, code => {}, database => $row->{datname} }
+            unless $dbquery->{$row->{datname}};
 
-        next if (defined($self->{option_results}->{exclude_user}) && $self->{option_results}->{exclude_user} ne '' && $row->{usename} =~ /$self->{option_results}->{exclude_user}/);
+        next if is_empty($row->{datid}); # No joint
 
-        my $exit_code = $self->{perfdata}->threshold_check(value => $row->{seconds}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(value => $row->{seconds},
+                                                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 long_msg => sprintf(
@@ -118,26 +170,11 @@ sub run {
         }
     }
 
-    foreach my $dbname (keys %$dbquery) {
-        $self->{output}->perfdata_add(
-            nlabel => 'database.longqueries.count',
-            instances => $dbname,
-            value => $dbquery->{$dbname}->{total},
-            min => 0
-        );
-        foreach my $exit_code (keys %{$dbquery->{$dbname}->{code}}) {
-            $self->{output}->output_add(
-                severity => $exit_code,
-                short_msg => sprintf(
-                    "%d request exceed " . lc($exit_code) . " threshold on database '%s'",
-                    $dbquery->{$dbname}->{code}->{$exit_code}, $dbname
-                )
-            );
-        }
-    }
+    $self->{longqueries} = $dbquery;
 
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    $self->{output}->output_add(short_msg => $self->{maps_counters_type}->[0]->{message_multiple})
+        unless keys %$dbquery;
 }
 
 1;
@@ -158,13 +195,21 @@ Warning threshold in seconds.
 
 Critical threshold in seconds.
 
-=item B<--exclude>
+=item B<--include-database>
 
 Filter databases.
 
-=item B<--exclude-user>
+=item B<--exclude-database>
+
+Exclude databases.
+
+=item B<--include-user>
 
 Filter users.
+
+=item B<--exclude-user>
+
+Exclude users.
 
 =item B<--idle>
 

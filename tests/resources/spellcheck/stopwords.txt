@@ -265,6 +265,7 @@ physicaldrive
 PKCS1
 Plink
 Podman
+Postgres
 powershell
 powershell.exe
 PPID
