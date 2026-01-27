@@ -26,7 +26,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 Timesync ${tc}
     [Documentation]    Check PostgreSQL Timesync
-    [Tags]    database    postgresql   noauto
+    [Tags]    database    postgresql   notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

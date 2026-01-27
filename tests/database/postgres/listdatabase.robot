@@ -26,7 +26,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 Listdatabase ${tc}
     [Documentation]    Check PostgreSQL List Database
-    [Tags]    database    postgresql    noauto
+    [Tags]    database    postgresql    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

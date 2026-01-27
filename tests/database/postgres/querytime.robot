@@ -26,7 +26,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 Querytime ${tc}
     [Documentation]    Check PostgreSQL Querytime
-    [Tags]    database    postgresql    noauto
+    [Tags]    database    postgresql    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

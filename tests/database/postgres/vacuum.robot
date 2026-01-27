@@ -26,7 +26,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 Vacuum ${tc}
     [Documentation]    Check PostgreSQL Vacuum
-    [Tags]    database    postgresql    noauto
+    [Tags]    database    postgresql    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

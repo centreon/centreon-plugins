@@ -26,7 +26,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 Locks ${tc}
     [Documentation]    Check PostgreSQL Locks
-    [Tags]    database    postgresql    noauto
+    [Tags]    database    postgresql    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

@@ -26,7 +26,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 Hitratio ${tc}
     [Documentation]    Check PostgreSQL Backends
-    [Tags]    database    postgresql    noauto
+    [Tags]    database    postgresql    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
