@@ -79,12 +79,19 @@ sub manage_selection {
 
     $self->{global} = { requests => 0 };
     $self->{container} = {};
+
+    my $container = undef;
+    if(defined($options{custom}->{container}) && $options{custom}->{container} ne 'default') {
+	    $container = $options{custom}->{container};
+    }	
+
     my $response = $options{custom}->execute(
         params => $self->{option_results},
         command => 'stats'
     );
 
     foreach my $container_name (keys %{$response->{data}}) {
+        next if(defined($container) && $container !~ /$container_name/);
         $self->{container}->{$container_name} = {
             display => $container_name,
             requests => $response->{data}->{$container_name}->{requests}
