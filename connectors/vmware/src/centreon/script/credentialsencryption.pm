@@ -79,6 +79,11 @@ sub check_options {
             . " does not exist. Passwords won't be decrypted. Ignore this if you don't use Credentials encryption.");
         return undef;
     }
+    if ( -z $self->{config_file} ) {
+        $self->{logger}->writeLogError("The given configuration file " . $self->{config_file}
+            . " appears to be empty. Passwords won't be decrypted. Ignore this if you don't use Credentials encryption.");
+        return undef;
+    }
 
     return 1;
 }

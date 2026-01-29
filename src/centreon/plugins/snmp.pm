@@ -1,5 +1,5 @@
 #
-# Copyright 2025-Present Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -263,6 +263,7 @@ sub get_leef {
 
     my ($dont_quit) = (defined($options{dont_quit}) && $options{dont_quit} == 1) ? 1 : 0;
     my ($nothing_quit) = (defined($options{nothing_quit}) && $options{nothing_quit} == 1) ? 1 : 0;
+    my $default_value = $options{default} // undef;
     $self->set_error();
 
     if (!defined($options{oids})) {
@@ -291,7 +292,7 @@ sub get_leef {
         next if ($oid !~ /(.*)\.(\d+)([\.\s]*)$/);
         
         my ($oid, $instance) = ($1, $2);
-        $results->{$oid . "." . $instance} = undef;
+        $results->{$oid . "." . $instance} = $default_value;
         push @$subset_construct, [$oid, $instance];
         $subset_current++;
         if ($subset_current == $self->{subsetleef}) {
@@ -1090,6 +1091,10 @@ sub get_port {
     return $self->{snmp_params}->{RemotePort};
 }
 
+#  sampleType => { oid => '.1.1.1.1.1.1.1.1.1', map => \%map_sample_type, default => 1 }
+#  oid is the OID to use
+#  map is an optional value mapping
+#  default is the optional default value to use when the OID has no value
 sub map_instance {
     my ($self, %options) = @_;
 
@@ -1103,7 +1108,8 @@ sub map_instance {
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {
             $results->{$name} = $options{results}->{$options{mapping}->{$name}->{oid}}->{$entry};
         } else {
-            $results->{$name} = defined($options{default}) ? $options{default} : undef;
+            # Use the OID default value if defined
+            $results->{$name} = $options{mapping}->{$name}->{default} // $options{default} // undef;
         }
 
         if (defined($options{mapping}->{$name}->{map})) {

@@ -64,7 +64,7 @@ sub parse_params {
     my ($self, $params) = @_;
 
     $self->{global_parameters} = [];
-    push @{$self->{global_parameters}}, "-v".$params->{Version} =~ s/^2.+/2c/r;
+    push @{$self->{global_parameters}}, "-v".$params->{Version} =~ s/^2.*/2c/r;
     push @{$self->{global_parameters}}, "-c".$params->{Community}
         unless $params->{Version} =~ /3/;
     push @{$self->{global_parameters}}, "-r".$params->{Retries};

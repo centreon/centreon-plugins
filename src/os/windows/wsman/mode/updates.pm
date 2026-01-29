@@ -77,7 +77,7 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $result = $options{wsman}->execute_powershell(
+    my $result = $options{wsman}->execute_powershell_script(
         label => 'pendingupdates',
         content => $ps
     );

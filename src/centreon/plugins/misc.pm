@@ -41,6 +41,7 @@ our @EXPORT_OK = qw/change_seconds
                     json_encode
                     json_decode
                     slurp_file
+                    format_opt
                     trim
                     value_of/;
 
@@ -388,6 +389,10 @@ sub trim {
     $value =~ s/^[ \t\n]+//;
     $value =~ s/[ \t\n]+$//;
     return $value;
+}
+
+sub powershell_encoded_script {
+    MIME::Base64::encode_base64($_[0], '');
 }
 
 sub powershell_encoded {
@@ -944,6 +949,12 @@ sub is_excluded($;$;$) {
     return 1;
 }
 
+# Convert underscores in option names to dash.
+# Eg: 'include_test' becomes 'include-test'
+sub format_opt($) {
+    $_[0] =~ s/_/-/gr;
+}
+
 1;
 
 __END__
@@ -1136,6 +1147,17 @@ Encodes a string for use in PowerShell with -EncodedCommand.
 
 =back
 
+=head2 powershell_encoded_script
+
+    my $encoded = centreon::plugins::misc::powershell_encoded($value);
+
+Encodes a string for use in PowerShell with -File.
+
+=over 4
+
+=item * C<$value> - The string to encode.
+
+=back
 =head2 powershell_escape
 
     my $escaped = centreon::plugins::misc::powershell_escape($value);
@@ -1538,6 +1560,18 @@ Returns 1 if an IPv4 IP is within a local address range.
 =over 4
 
 =item * C<$ip> - IP to test.
+
+=back
+
+=head2 format_opt
+
+    my $to_print = centreon::plugins::misc::format_opt($ident);
+
+Convert underscores in option names to dash.
+
+=over 4
+
+=item * C<$ident> - name to convert.
 
 =back
 

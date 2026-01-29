@@ -17,7 +17,11 @@ on:
       - 'nrpe/packaging/**'
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
     with:
       version_file: nrpe/packaging/centreon-nrpe4-daemon.yaml
