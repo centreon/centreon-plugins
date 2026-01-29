@@ -28,10 +28,6 @@ runs:
       with:
         node-version: 20
 
-    - name: Install DayJS
-      run: npm install dayjs@1.11.18
-      shell: bash
-
     - name: Get ticket elements from context
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
@@ -41,14 +37,26 @@ runs:
         script: |
           const fs = require('fs');
           const { execSync } = require('child_process');
-          const dayjs = require('dayjs');
-          const isoWeek = require('dayjs/plugin/isoWeek');
-          dayjs.extend(isoWeek);
 
           const parent_epic_id = 206242
           const parent_epic_key = "MON-151547"
           const JSON_TEMPLATE_FILE = "./.github/actions/create-jira-ticket/nightly-ticket-template.json";
-          const date = dayjs().format('YYYY-MM-DD');
+
+          function formatDate(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          }
+
+          function getIsoWeek(date) {
+            const temp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNumber = temp.getUTCDay() || 7;
+            temp.setUTCDate(temp.getUTCDate() + 4 - dayNumber);
+            const yearStart = new Date(Date.UTC(temp.getUTCFullYear(), 0, 1));
+            return Math.ceil((((temp - yearStart) / 86400000) + 1) / 7);
+          }
+          const now = new Date();
+          const date = formatDate(now);
+          const isoWeekNumber = getIsoWeek(now);
+
           const path = './ticket-payload.json';
           let contents, data, ticket_summary, ticket_squad_id, ticket_board_id, squad_name, project_name, ticket_labels, current_sprint, ticket_data, ticket_key;
 
