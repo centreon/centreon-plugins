@@ -25,7 +25,6 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use DateTime;
-use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::misc qw(json_decode is_empty value_of is_excluded);
 
@@ -176,7 +175,7 @@ sub get_unique_app_metrics {
     foreach my $met (@$metrics) {
         $data->{$met->{metric}} = -1; # -1 means no value has been recorded
         LOOP_VALUES:
-        while ( my $dp = pop(@{$met->{datapoints}}) ) {
+        foreach my $dp (reverse @{$met->{datapoints}}) {
             next LOOP_VALUES if $dp->{value} == -1; # skip if no value
             # we store the first non empty value and exit the loop
             $data->{$met->{metric}} = $dp->{value};

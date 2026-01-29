@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "perl(DateTime)",
-        "perl(JSON)"
+        "perl(DateTime)"
     ]
 }
