@@ -18,30 +18,23 @@
 # limitations under the License.
 #
 
-package apps::backup::commvault::commserve::restapi::plugin;
+package network::fortinet::fortiauthenticator::restapi::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-
+    my ( $class, %options ) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'alerts'                => 'apps::backup::commvault::commserve::restapi::mode::alerts',
-        'jobs'                  => 'apps::backup::commvault::commserve::restapi::mode::jobs',
-        'list-media-agents'     => 'apps::backup::commvault::commserve::restapi::mode::listmediaagents',
-        'list-storage-policies' => 'apps::backup::commvault::commserve::restapi::mode::liststoragepolicies',
-        'media-agents'          => 'apps::backup::commvault::commserve::restapi::mode::mediaagents',
-        'storage-pools'         => 'apps::backup::commvault::commserve::restapi::mode::storagepools',
-        'token'                 => 'apps::backup::commvault::commserve::restapi::mode::token'
+        'fortitoken' => 'network::fortinet::fortiauthenticator::restapi::mode::fortitokens',
     };
 
-    $self->{custom_modes}->{api} = 'apps::backup::commvault::commserve::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'network::fortinet::fortiauthenticator::restapi::custom::api';
+
     return $self;
 }
 
@@ -51,10 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Commvault CommServe using Rest API.
-
-=over 8
-
-=back
+Check FortiAuthenticator using Rest API.
 
 =cut

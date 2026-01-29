@@ -106,7 +106,7 @@
           "uuid": "5972a557-81d0-4f78-b2d9-89dbd0871afa",
           "body": "{\n  \"totalRecordsWithoutPaging\": 6,\n  \"jobs\": [\n    {\n      \"jobSummary\": {\n            \"sizeOfApplication\": 1,\n            \"vsaParentJobID\": 1,\n            \"commcellId\": 2,\n            \"backupSetName\": \"defaultBackupSet\",\n            \"opType\": 59,\n            \"totalFailedFolders\": 0,\n            \"totalFailedFiles\": 0,\n            \"alertColorLevel\": 0,\n            \"jobAttributes\": 1,\n            \"jobAttributesEx\": 6,\n            \"isVisible\": true,\n            \"localizedStatus\": \"Completed\",\n            \"isAged\": false,\n            \"totalNumOfFiles\": 0,\n            \"jobId\": 1,\n            \"jobSubmitErrorCode\": 0,\n            \"sizeOfMediaOnDisk\": 3,\n            \"currentPhase\": 0,\n            \"status\": \"Completed\",\n            \"lastUpdateTime\": 1661877433,\n            \"percentSavings\": 99.99999,\n            \"localizedOperationName\": \"Snap Backup\",\n            \"statusColor\": \"black\",\n            \"pendingReason\": \"\",\n            \"errorType\": 0,\n            \"backupLevel\": 2,\n            \"jobElapsedTime\": 59,\n            \"jobStartTime\": 1661877400,\n            \"currentPhaseName\": \"\",\n            \"jobType\": \"Snap Backup\",\n            \"isPreemptable\": 0,\n            \"backupLevelName\": \"Incremental\",\n            \"attemptStartTime\": 0,\n            \"pendingReasonErrorCode\": \"\",\n            \"appTypeName\": \"Virtual Server\",\n            \"percentComplete\": 100,\n            \"averageThroughput\": 2772.637,\n            \"localizedBackupLevelName\": \"Incremental\",\n            \"currentThroughput\": 0,\n            \"subclientName\": \"default\",\n            \"destClientName\": \"XXXXXXa\",\n            \"jobEndTime\": 1661877470,\n            \"dataSource\": {\n                \"dataSourceId\": 0\n            },\n            \"subclient\": {\n                \"clientName\": \"XXXX9\",\n                \"instanceName\": \"VMInstance\",\n                \"backupsetId\": 2,\n                \"commCellName\": \"yyy-xxxx\",\n                \"instanceId\": 2,\n                \"subclientId\": 111,\n                \"clientId\": 11,\n                \"appName\": \"Virtual Server\",\n                \"backupsetName\": \"defaultBackupSet\",\n                \"applicationId\": 666,\n                \"subclientName\": \"default\"\n            },\n            \"storagePolicy\": {\n                \"storagePolicyName\": \"XXXX-Plan\",\n                \"storagePolicyId\": 1\n            },\n            \"destinationClient\": {\n                \"clientId\": 11,\n                \"clientName\": \"XXXX8\",\n                \"displayName\": \"XyXyX\"\n            },\n            \"userName\": {\n                \"userName\": \"toto\",\n                \"userId\": 1\n            },\n            \"clientGroups\": [\n                {\n                    \"clientGroupId\": 1,\n                    \"clientGroupName\": \"Laptop XXXX\"\n                },\n                {\n                    \"clientGroupId\": 2,\n                    \"clientGroupName\": \"Clients XXXXX\"\n                },\n                {\n                    \"clientGroupId\": 3,\n                    \"clientGroupName\": \"Beta YYYY\"\n                },\n                {\n                    \"clientGroupId\": 4,\n                    \"clientGroupName\": \"Test JJJJJ\"\n                }\n            ]\n      }\n    },\n    {\n      \"jobSummary\": {\n            \"sizeOfApplication\": 1,\n            \"vsaParentJobID\": 1,\n            \"commcellId\": 2,\n            \"backupSetName\": \"defaultBackupSet\",\n            \"opType\": 59,\n            \"totalFailedFolders\": 0,\n            \"totalFailedFiles\": 0,\n            \"alertColorLevel\": 0,\n            \"jobAttributes\": 1,\n            \"jobAttributesEx\": 6,\n            \"isVisible\": true,\n            \"localizedStatus\": \"Completed\",\n            \"isAged\": false,\n            \"totalNumOfFiles\": 0,\n            \"jobId\": 2,\n            \"jobSubmitErrorCode\": 0,\n            \"sizeOfMediaOnDisk\": 3,\n            \"currentPhase\": 0,\n            \"status\": \"Completed\",\n            \"lastUpdateTime\": 1661877433,\n            \"percentSavings\": 99.99999,\n            \"localizedOperationName\": \"Snap Backup\",\n            \"statusColor\": \"black\",\n            \"pendingReason\": \"\",\n            \"errorType\": 0,\n            \"backupLevel\": 2,\n            \"jobElapsedTime\": 59,\n            \"jobStartTime\": 1661877400,\n            \"currentPhaseName\": \"\",\n            \"jobType\": \"Snap Backup\",\n            \"isPreemptable\": 0,\n            \"backupLevelName\": \"Incremental\",\n            \"attemptStartTime\": 0,\n            \"pendingReasonErrorCode\": \"\",\n            \"appTypeName\": \"Virtual Server\",\n            \"percentComplete\": 100,\n            \"averageThroughput\": 2772.637,\n            \"localizedBackupLevelName\": \"Incremental\",\n            \"currentThroughput\": 0,\n            \"subclientName\": \"default\",\n            \"destClientName\": \"XXXXXXb\",\n            \"jobEndTime\": 1661877470,\n            \"dataSource\": {\n                \"dataSourceId\": 0\n            },\n            \"subclient\": {\n                \"clientName\": \"XXXX7\",\n                \"instanceName\": \"VMInstance\",\n                \"backupsetId\": 161,\n                \"commCellName\": \"yyy-xxxx\",\n                \"instanceId\": 2,\n                \"subclientId\": 111,\n                \"clientId\": 11,\n                \"appName\": \"Virtual Server\",\n                \"backupsetName\": \"defaultBackupSet\",\n                \"applicationId\": 666,\n                \"subclientName\": \"default\"\n            },\n            \"storagePolicy\": {\n                \"storagePolicyName\": \"XXXX-Plan\",\n                \"storagePolicyId\": 1\n            },\n            \"destinationClient\": {\n                \"clientId\": 11,\n                \"clientName\": \"XXXX6\",\n                \"displayName\": \"XyXyX\"\n            },\n            \"userName\": {\n                \"userName\": \"toto\",\n                \"userId\": 1\n            },\n            \"clientGroups\": [\n                {\n                    \"clientGroupId\": 1,\n                    \"clientGroupName\": \"Laptop XXXX\"\n                },\n                {\n                    \"clientGroupId\": 2,\n                    \"clientGroupName\": \"Clients XXXXX\"\n                },\n                {\n                    \"clientGroupId\": 3,\n                    \"clientGroupName\": \"Beta YYYY\"\n                },\n                {\n                    \"clientGroupId\": 4,\n                    \"clientGroupName\": \"Test JJJJJ\"\n                }\n            ]\n      }\n    },\n    {\n      \"jobSummary\": {\n            \"sizeOfApplication\": 1,\n            \"vsaParentJobID\": 1,\n            \"commcellId\": 2,\n            \"backupSetName\": \"defaultBackupSet\",\n            \"opType\": 59,\n            \"totalFailedFolders\": 0,\n            \"totalFailedFiles\": 0,\n            \"alertColorLevel\": 0,\n            \"jobAttributes\": 1,\n            \"jobAttributesEx\": 6,\n            \"isVisible\": true,\n            \"localizedStatus\": \"Completed\",\n            \"isAged\": false,\n            \"totalNumOfFiles\": 0,\n            \"jobId\": 3,\n            \"jobSubmitErrorCode\": 0,\n            \"sizeOfMediaOnDisk\": 3,\n            \"currentPhase\": 0,\n            \"status\": \"Completed\",\n            \"lastUpdateTime\": 1661877433,\n            \"percentSavings\": 99.99999,\n            \"localizedOperationName\": \"Snap Backup\",\n            \"statusColor\": \"black\",\n            \"pendingReason\": \"\",\n            \"errorType\": 0,\n            \"backupLevel\": 2,\n            \"jobElapsedTime\": 59,\n            \"jobStartTime\": 1661877400,\n            \"currentPhaseName\": \"\",\n            \"jobType\": \"Snap Backup\",\n            \"isPreemptable\": 0,\n            \"backupLevelName\": \"Incremental\",\n            \"attemptStartTime\": 0,\n            \"pendingReasonErrorCode\": \"\",\n            \"appTypeName\": \"Virtual Server\",\n            \"percentComplete\": 100,\n            \"averageThroughput\": 2772.637,\n            \"localizedBackupLevelName\": \"Incremental\",\n            \"currentThroughput\": 0,\n            \"subclientName\": \"default\",\n            \"destClientName\": \"XXXXXXc\",\n            \"jobEndTime\": 1661877470,\n            \"dataSource\": {\n                \"dataSourceId\": 0\n            },\n            \"subclient\": {\n                \"clientName\": \"XXXX5\",\n                \"instanceName\": \"VMInstance\",\n                \"backupsetId\": 2,\n                \"commCellName\": \"yyy-xxxx\",\n                \"instanceId\": 2,\n                \"subclientId\": 111,\n                \"clientId\": 11,\n                \"appName\": \"Virtual Server\",\n                \"backupsetName\": \"defaultBackupSet\",\n                \"applicationId\": 666,\n                \"subclientName\": \"default\"\n            },\n            \"storagePolicy\": {\n                \"storagePolicyName\": \"XXXX-Plan\",\n                \"storagePolicyId\": 1\n            },\n            \"destinationClient\": {\n                \"clientId\": 11,\n                \"clientName\": \"XXXXa\",\n                \"displayName\": \"XyXyX\"\n            },\n            \"userName\": {\n                \"userName\": \"toto\",\n                \"userId\": 1\n            },\n            \"clientGroups\": [\n                {\n                    \"clientGroupId\": 1,\n                    \"clientGroupName\": \"Laptop XXXX\"\n                },\n                {\n                    \"clientGroupId\": 2,\n                    \"clientGroupName\": \"Clients XXXXX\"\n                },\n                {\n                    \"clientGroupId\": 3,\n                    \"clientGroupName\": \"Beta YYYY\"\n                },\n                {\n                    \"clientGroupId\": 4,\n                    \"clientGroupName\": \"Test JJJJJ\"\n                }\n            ]\n      }\n    },\n    {\n      \"jobSummary\": {\n            \"sizeOfApplication\": 1,\n            \"vsaParentJobID\": 1,\n            \"commcellId\": 2,\n            \"backupSetName\": \"defaultBackupSet\",\n            \"opType\": 59,\n            \"totalFailedFolders\": 0,\n            \"totalFailedFiles\": 0,\n            \"alertColorLevel\": 0,\n            \"jobAttributes\": 1,\n            \"jobAttributesEx\": 6,\n            \"isVisible\": true,\n            \"localizedStatus\": \"Completed\",\n            \"isAged\": false,\n            \"totalNumOfFiles\": 0,\n            \"jobId\": 4,\n            \"jobSubmitErrorCode\": 0,\n            \"sizeOfMediaOnDisk\": 3,\n            \"currentPhase\": 0,\n            \"status\": \"Completed\",\n            \"lastUpdateTime\": 1661877433,\n            \"percentSavings\": 99.99999,\n            \"localizedOperationName\": \"Snap Backup\",\n            \"statusColor\": \"black\",\n            \"pendingReason\": \"\",\n            \"errorType\": 0,\n            \"backupLevel\": 2,\n            \"jobElapsedTime\": 59,\n            \"jobStartTime\": 1661877400,\n            \"currentPhaseName\": \"\",\n            \"jobType\": \"Snap Backup\",\n            \"isPreemptable\": 0,\n            \"backupLevelName\": \"Incremental\",\n            \"attemptStartTime\": 0,\n            \"pendingReasonErrorCode\": \"\",\n            \"appTypeName\": \"Virtual Server\",\n            \"percentComplete\": 100,\n            \"averageThroughput\": 2772.637,\n            \"localizedBackupLevelName\": \"Incremental\",\n            \"currentThroughput\": 0,\n            \"subclientName\": \"default\",\n            \"destClientName\": \"XXXXXXd\",\n            \"jobEndTime\": 1661877470,\n            \"dataSource\": {\n                \"dataSourceId\": 0\n            },\n            \"subclient\": {\n                \"clientName\": \"XXXXb\",\n                \"instanceName\": \"VMInstance\",\n                \"backupsetId\": 161,\n                \"commCellName\": \"yyy-xxxx\",\n                \"instanceId\": 2,\n                \"subclientId\": 111,\n                \"clientId\": 11,\n                \"appName\": \"Virtual Server\",\n                \"backupsetName\": \"defaultBackupSet\",\n                \"applicationId\": 666,\n                \"subclientName\": \"default\"\n            },\n            \"storagePolicy\": {\n                \"storagePolicyName\": \"XXXX-Plan\",\n                \"storagePolicyId\": 2\n            },\n            \"destinationClient\": {\n                \"clientId\": 11,\n                \"clientName\": \"XXXXc\",\n                \"displayName\": \"XyXyX\"\n            },\n            \"userName\": {\n                \"userName\": \"toto\",\n                \"userId\": 1\n            },\n            \"clientGroups\": [\n                {\n                    \"clientGroupId\": 1,\n                    \"clientGroupName\": \"Laptop XXXX\"\n                },\n                {\n                    \"clientGroupId\": 2,\n                    \"clientGroupName\": \"Clients XXXXX\"\n                },\n                {\n                    \"clientGroupId\": 3,\n                    \"clientGroupName\": \"Beta YYYY\"\n                },\n                {\n                    \"clientGroupId\": 4,\n                    \"clientGroupName\": \"Test JJJJJ\"\n                }\n            ]\n      }\n    }\n  ]\n}",
           "latency": 0,
-          "statusCode": 200,
+          "statusCode": 403,
           "label": "",
           "headers": [],
           "bodyType": "INLINE",
@@ -160,6 +160,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "971adbcf-9560-4e03-8d15-9c2aa624e3bf",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "webconsole/api/V4/AccessToken/Renew",
+      "responses": [
+        {
+          "uuid": "5e558ed1-41c4-4191-a736-ea56ec9e45da",
+          "body": "{\n  \"accessToken\":\"izuoaieujksjklxjklcjkjklsdjklsjdk\",\n  \"refreshToken\":\"sfjkdjhksdfhjksfdjhksfdhkfshjkd\",\n  \"expiresIn\":3600\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -174,6 +230,10 @@
     {
       "type": "route",
       "uuid": "c8c70d45-7e98-47df-b485-59e0fc800b22"
+    },
+    {
+      "type": "route",
+      "uuid": "971adbcf-9560-4e03-8d15-9c2aa624e3bf"
     }
   ],
   "proxyMode": false,

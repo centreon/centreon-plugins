@@ -1,3 +1,6 @@
+2026-01-21 Olivier Mercier <omercier@centreon.com> - 20260200
+ * Fix: handle empty engine-context.json file without crashing
+
 2025-12-01 Olivier Mercier <omercier@centreon.com> - 20251200
  * Enhancement: handle encrypted credentials (Centreon 25.10 feature).
 

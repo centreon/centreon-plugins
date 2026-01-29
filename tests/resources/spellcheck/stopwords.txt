@@ -51,6 +51,8 @@ centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
+CommServe
+Commvault
 connections-dhcp
 connections-dns
 cpu
@@ -105,9 +107,11 @@ FibreAlliance
 --force-counters64
 --force-oid
 Forcepoint
+FortiAuthenticator
 Fortigate
 Fortinet
 FortiOS
+FortiTokens
 FQDN
 FreeBSD
 FrontDoor
@@ -246,6 +250,7 @@ okta
 oneaccess-sys-mib
 OpenMetrics
 OpenStack
+OpenWSMAN
 OSPF
 out-bcast
 out-fc-wait

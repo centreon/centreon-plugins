@@ -8,11 +8,7 @@ on:
   pull_request:
 
 jobs:
-  dependency-scan:
-    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
-
   set-pull-request-external-label:
-    needs: [dependency-scan]
     if: |
       github.event.pull_request.head.repo.fork &&
       ! contains(github.event.pull_request.labels.*.name, 'external')

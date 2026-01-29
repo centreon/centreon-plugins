@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Fortinet-Fortiauthenticator-Restapi",
+    "pkg_summary": "Centreon Plugin Fortinet Fortiauthenticator using Rest API",
+    "plugin_name": "centreon_fortinet_fortiauthenticator_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/fortinet/fortiauthenticator/restapi/"
+    ]
+}
