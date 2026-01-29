@@ -208,11 +208,11 @@ Critical threshold. (example: "total=250,waiting=5,exclusive=20")
 
 =item B<--include-database>
 
-Filter databases.
+Filter databases using a regular expression.
 
 =item B<--exclude-database>
 
-Exclude databases.
+Exclude databases using a regular expression.
 
 =back
 

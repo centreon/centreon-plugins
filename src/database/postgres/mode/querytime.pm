@@ -197,19 +197,19 @@ Critical threshold in seconds.
 
 =item B<--include-database>
 
-Filter databases.
+Filter databases using a regular expression.
 
 =item B<--exclude-database>
 
-Exclude databases.
+Exclude databases using a regular expression.
 
 =item B<--include-user>
 
-Filter users.
+Filter users a regular expression.
 
 =item B<--exclude-user>
 
-Exclude users.
+Exclude users a regular expression.
 
 =item B<--idle>
 

@@ -189,7 +189,7 @@ sub manage_selection {
             d.datname as object_name,
             d.datconnlimit as object_limit
         FROM pg_database d
-        LEFT JOIN pg_stat_activity s ON (s.datid = d.oid $noidle)
+        LEFT JOIN pg_stat_activity s ON (s.datid = d.oid$noidle)
         GROUP BY d.datname, d.datconnlimit~;
     }
 
@@ -203,7 +203,7 @@ sub manage_selection {
             r.rolname as object_name,
             r.rolconnlimit as object_limit
         FROM pg_roles r
-        LEFT JOIN pg_stat_activity s ON (s.usename = r.rolname)
+        LEFT JOIN pg_stat_activity s ON (s.usename = r.rolname$noidle)
         GROUP BY r.rolname, r.rolconnlimit~;
     }
 
@@ -224,12 +224,9 @@ sub manage_selection {
     foreach my $row (@{$result}) {
         my ($type, $used, $tmp_max_connections, $name, $max_connections) = @$row;
 
-        warn "type=$type, used=$used, tmp_max_connections=$tmp_max_connections, name=$name, max_connections=$max_connections\n";
         if ($self->{check_database} && $type eq 'database') {
-            warn "database on add $used\n";
             $global_total_connections += $used;
         } elsif (! $self->{check_database} && $type eq 'role') {
-            warn "role on add $used\n";
             $global_total_connections += $used;
         }
         $global_max_connections = $tmp_max_connections;
@@ -290,19 +287,19 @@ Can be: 'database', 'role', 'all'.
 
 =item B<--include-database>
 
-Filter databases.
+Filter databases using a regular expression.
 
 =item B<--exclude-database>
 
-Exclude databases.
+Exclude databases using a regular expression.
 
 =item B<--include-user>
 
-Filter users.
+Filter users using a regular expression.
 
 =item B<--exclude-user>
 
-Exclude users.
+Exclude users using a regular expression.
 
 =item B<--noidle>
 

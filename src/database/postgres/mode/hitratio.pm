@@ -210,11 +210,11 @@ Threshold isn't on the percent calculated from the difference ('xxx_hitratio_now
 
 =item B<--include-database>
 
-Filter databases.
+Filter databases using a regular expression.
 
 =item B<--exclude-database>
 
-Exclude databases.
+Exclude databases using a regular expression.
 
 =back
 
