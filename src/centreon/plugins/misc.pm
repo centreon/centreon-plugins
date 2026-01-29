@@ -390,10 +390,6 @@ sub trim {
     return $value;
 }
 
-sub powershell_encoded_script {
-    MIME::Base64::encode_base64($_[0], '');
-}
-
 sub powershell_encoded {
     my $bytes = Encode::encode('utf16LE', $_[0]);
     return MIME::Base64::encode_base64($bytes, '');
@@ -1140,17 +1136,6 @@ Encodes a string for use in PowerShell with -EncodedCommand.
 
 =back
 
-=head2 powershell_encoded_script
-
-    my $encoded = centreon::plugins::misc::powershell_encoded($value);
-
-Encodes a string for use in PowerShell with -File.
-
-=over 4
-
-=item * C<$value> - The string to encode.
-
-=back
 =head2 powershell_escape
 
     my $escaped = centreon::plugins::misc::powershell_escape($value);

@@ -77,9 +77,9 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $result = $options{wsman}->execute_powershell_script(
+    my $result = $options{wsman}->execute_powershell(
         label => 'pendingupdates',
-        content => centreon::plugins::misc::powershell_encoded_script($ps)
+        content => $ps
     );
 
     if (defined($self->{option_results}->{ps_exec_only})) {
