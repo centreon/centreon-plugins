@@ -263,7 +263,7 @@ sub check_options {
 
     foreach (qw(key_id key_secret)) {
         $self->{output}->option_exit(short_msg => "Mandatory option '$_' is missing.") if ($self->{$_} eq '');
-        $self->{output}->option_exit(short_msg => "Option '$_' contains illegal characters '$1'") if ($self->{$_} =~ /([\b\f\n\r\t\"\\]+)/);
+        $self->{output}->option_exit(short_msg => "Option '$_' contains illegal characters.") if ($self->{$_} =~ /([\b\f\n\r\t\"\\]+)/);
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
