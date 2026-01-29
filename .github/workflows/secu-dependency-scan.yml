@@ -6,23 +6,25 @@ concurrency:
 on:
   pull_request:
     paths:
-      - '!src/**'
-      - '!selinux/**'
-      - '!tests/**'
-      - '!as400/**'
-      - '!packaging/**'
-      - '!.github/workflows/plugins.yml'
-      - '!.github/workflows/plink.yml'
-      - '!.github/workflows/perl-cpan-libraries.yml'
-      - '!.github/workflows/spellchecker.yml'
-      - '!.github/scripts/plugins-source.container.pl'
-      - '!.github/scripts/pod_spell_check.t'
-      - '!.github/packaging/centreon-plugin.yaml.template'
-      - '!dependencies/perl-openwsman/**'
-      - '!dependencies/perl-keepass-reader/**'
-      - '!dependencies/perl-filesys-smbclient/**'
-      - '!dependencies/centreon-plugins-sudoers/**'
       - '**'
+      - '!as400/**'
+      - '!dependencies/centreon-plugins-sudoers/**'
+      - "!.github/docker/packaging/**"
+      - "!.github/docker/testing/**"
+      - "!.github/docker/unit-tests/**"
+      - '!experimental/**'
+      - '!nrpe/packaging/**'
+      - '!dependencies/perl-filesys-smbclient/**'
+      - '!dependencies/perl-keepass-reader/**'
+      - '!dependencies/perl-openwsman/**'
+      - '!dependencies/plink/**'
+      - '!src/**'
+      - '!packaging/**'
+      - '!tests/**'
+      - '!selinux/**'
+      - '!connectors/vmware/src/**'
+      - '!connectors/vmware/packaging/**'
+
   workflow_dispatch:
 
 jobs:
