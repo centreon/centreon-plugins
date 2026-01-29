@@ -24,6 +24,19 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
+EmptyVacuum ${tc}
+    [Documentation]    Check PostgreSQL Vacuum
+    [Tags]    database    postgresql
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
+
+    Examples:   tc   extraoptions                       expected_regexp    --
+    ...         1    --help                             Plugin Description:
+
+
 Vacuum ${tc}
     [Documentation]    Check PostgreSQL Vacuum
     [Tags]    database    postgresql    notauto

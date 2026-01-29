@@ -24,6 +24,19 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
+EmptyListdatabase ${tc}
+    [Documentation]    Check PostgreSQL List Database
+    [Tags]    database    postgresql
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
+
+    Examples:   tc   extraoptions                       expected_regexp    --
+    ...         1    --help                             Plugin Description:
+
+
 Listdatabase ${tc}
     [Documentation]    Check PostgreSQL List Database
     [Tags]    database    postgresql    notauto

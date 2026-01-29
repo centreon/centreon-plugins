@@ -24,6 +24,19 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
+EmptyBackends ${tc}
+    [Documentation]    Check PostgreSQL Backends
+    [Tags]    database    postgresql
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
+
+    Examples:   tc   extraoptions                                               expected_regexp    --
+    ...         1    --help                                                     Plugin Description:
+
+ 
 Backends ${tc}
     [Documentation]    Check PostgreSQL Backends
     [Tags]    database    postgresql    notauto
@@ -40,4 +53,4 @@ Backends ${tc}
     ...         4    --check=database --include-database=template1              OK: Instance at \\\\d+.00% of client connections limit (\\\\d+ of max. 100) - Database 'template1' at 0.00% of connections limit (0 of max. 100) | 'instance.connected.count'=\\\\d+;;;0; 'instance.connected.percentage'=\\\\d+%;;;0; 'template1#database.connected.count'=0;;;0; 'template1#database.connected.percentage'=0%;;;0
     ...         5    --check=database --exclude-database=template               OK: Instance at \\\\d+.00% of client connections limit (\\\\d+ of max. 100) - Database 'postgres' at \\\\d+.00% of connections limit (\\\\d+ of max. 100) | 'instance.connected.count'=\\\\d+;;;0; 'instance.connected.percentage'=\\\\d+%;;;0; 'postgres#database.connected.count'=\\\\d+;;;0; 'postgres#database.connected.percentage'=\\\\d+%;;;0;
     ...         6    --warning=10:                                              WARNING: Instance at \\\\d+.00% of client connections limit (\\\\d+ of max. 100) | 'instance.connected.count'=\\\\d+;10:;;0; 'instance.connected.percentage'=\\\\d+%;;;0; 'postgres#database.connected.count'=\\\\d+;;;0; 'postgres#database.connected.percentage'=\\\\d+%;;;0; 'template0#database.connected.count'=0;;;0; 'template0#database.connected.percentage'=0%;;;0; 'template1#database.connected.count'=0;;;0; 'template1#database.connected.percentage'=0%;;;0;
-    ...         7    --critical=10:                                             CRITICAL: Instance at \\\\d+.00% of client connections limit (\\\\d+ of max. 100) | 'instance.connected.count'=\\\\d+;;10:;0; 'instance.connected.percentage'=2%;;;0; 'postgres#database.connected.count'=\\\\d+;;;0; 'postgres#database.connected.percentage'=\\\\d+%;;;0; 'template0#database.connected.count'=0;;;0; 'template0#database.connected.percentage'=0%;;;0; 'template1#database.connected.count'=0;;;0; 'template1#database.connected.percentage'=0%;;;0;
+    ...         7    --critical=10:                                             CRITICAL: Instance at \\\\d+.00% of client connections limit (\\\\d+ of max. 100) | 'instance.connected.count'=\\\\d+;;10:;0; 'instance.connected.percentage'=\\\\d+%;;;0; 'postgres#database.connected.count'=\\\\d+;;;0; 'postgres#database.connected.percentage'=\\\\d+%;;;0; 'template0#database.connected.count'=0;;;0; 'template0#database.connected.percentage'=0%;;;0; 'template1#database.connected.count'=0;;;0; 'template1#database.connected.percentage'=0%;;;0;

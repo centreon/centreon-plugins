@@ -24,6 +24,19 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
+EmptyQuerytime ${tc}
+    [Documentation]    Check PostgreSQL Querytime
+    [Tags]    database    postgresql
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
+
+    Examples:   tc   extraoptions                  expected_regexp    --
+    ...         1    --help                        Plugin Description:
+
+
 Querytime ${tc}
     [Documentation]    Check PostgreSQL Querytime
     [Tags]    database    postgresql    notauto
