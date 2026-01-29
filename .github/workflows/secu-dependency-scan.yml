@@ -5,26 +5,6 @@ concurrency:
 
 on:
   pull_request:
-    paths:
-      - '**'
-      - '!as400/**'
-      - '!dependencies/centreon-plugins-sudoers/**'
-      - "!.github/docker/packaging/**"
-      - "!.github/docker/testing/**"
-      - "!.github/docker/unit-tests/**"
-      - '!experimental/**'
-      - '!nrpe/packaging/**'
-      - '!dependencies/perl-filesys-smbclient/**'
-      - '!dependencies/perl-keepass-reader/**'
-      - '!dependencies/perl-openwsman/**'
-      - '!dependencies/plink/**'
-      - '!src/**'
-      - '!packaging/**'
-      - '!tests/**'
-      - '!selinux/**'
-      - '!connectors/vmware/src/**'
-      - '!connectors/vmware/packaging/**'
-
   workflow_dispatch:
 
 jobs:
