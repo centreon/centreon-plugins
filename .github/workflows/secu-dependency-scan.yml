@@ -9,28 +9,21 @@ on:
       - '**'
       - '!as400/**'
       - '!dependencies/centreon-plugins-sudoers/**'
-      - "!.github/workflows/docker-builder-packaging-plugins.yml"
-      - "!.github/docker/packaging/*"
-      - "!.github/workflows/docker-builder-testing-plugins.yml"
-      - "!.github/docker/testing/*"
-      - "!.github/workflows/docker-builder-unit-tests.yml"
-      - "!.github/docker/unit-tests/*"
+      - "!.github/docker/packaging/**"
+      - "!.github/docker/testing/**"
+      - "!.github/docker/unit-tests/**"
       - '!experimental/**'
       - '!nrpe/packaging/**'
-      - "!.github/workflows/perl-cpan-libraries.yml"
       - '!dependencies/perl-filesys-smbclient/**'
       - '!dependencies/perl-keepass-reader/**'
       - '!dependencies/perl-openwsman/**'
       - '!dependencies/plink/**'
-      - '!.github/workflows/plugins.yml'
-      - '!.github/scripts/plugins-source.container.pl'
-      - '!.github/packaging/centreon-plugin.yaml.template'
       - '!src/**'
       - '!packaging/**'
       - '!tests/**'
       - '!selinux/**'
-      - '!.github/workflows/spellchecker.yml'
-      - '!.github/scripts/pod_spell_check.t'
+      - '!connectors/vmware/src/**'
+      - '!connectors/vmware/packaging/**'
 
   workflow_dispatch:
 
