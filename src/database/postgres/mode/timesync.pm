@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,7 +20,7 @@
 
 package database::postgres::mode::timesync;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
@@ -32,28 +32,33 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' }
+        'warning:s'  => { redirect => 'warning-time-offset-seconds' },
+        'critical:s' => { redirect => 'critical-time-offset-seconds' }
     });
 
     return $self;
 }
 
-sub check_options {
+sub set_counters {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'offset', nlabel => 'time.offset.seconds', set => {
+                key_values => [ { name => 'offset' } ],
+                output_template => '%.3fs time diff between servers',
+                perfdatas => [
+                    { template => '%.3f', min => 0, unit => 's' },
+                ],
+            }
+        }
+    ];
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
@@ -63,35 +68,13 @@ sub run {
     });
 
     my ($result) = $options{sql}->fetchrow_array();
+    $self->{output}->option_exit(short_msg => "Cannot get server time.")
+        unless $result;
+
     my $ltime = Time::HiRes::time();
-    if (!defined($result)) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get server time.");
-        $self->{output}->option_exit();
-    }
-
     my $diff = $result - $ltime;
-    my $exit_code = $self->{perfdata}->threshold_check(
-        value => $diff,
-        threshold => [
-            { label => 'critical', exit_litteral => 'critical' },
-            { label => 'warning', exit_litteral => 'warning' }
-        ]
-    );
 
-    $self->{output}->output_add(
-        severity => $exit_code,
-        short_msg => sprintf("%.3fs time diff between servers", $diff)
-    );
-    $self->{output}->perfdata_add(
-        nlabel => 'time.offset.seconds',
-        unit => 's',
-        value => sprintf('%.3f', $diff),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
-    );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = { offset => $diff };
 }
 
 1;
@@ -104,13 +87,13 @@ Compares the local system time with the time reported by Postgres
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-offset>
 
-Warning threshold in seconds. (use a range. it can be -0.3s or +0.3s.)
+Warning threshold in seconds. (use a range. it can be -0.3 or +0.3)
 
-=item B<--critical>
+=item B<--critical-offset>
 
-Critical threshold in seconds. (use a range. it can be -0.3s or +0.3s.)
+Critical threshold in seconds. (use a range. it can be -0.3 or +0.3)
 
 =back
 
