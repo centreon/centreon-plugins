@@ -36,7 +36,8 @@ sub new {
             "refresh-frequency:s" => { name => 'refresh_frequency', default => 25 * 60 },
             "force-refresh"       => { name => 'force_refresh' },
             "api-token:s"         => { name => 'api_token', default => '' },
-            "refresh-token:s"     => { name => 'refresh_token', default => '' }
+            "refresh-token:s"     => { name => 'refresh_token', default => '' },
+            "status-if-unused:s"  => { name => 'status_if_unused', default => 'OK' },
         });
 
     return $self;
@@ -46,7 +47,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    $self->{output}->option_exit(short_msg => 'Cannot use --api-username/--api-password options with "token" mode')
+    $self->{output}->option_exit(exit_litteral => $self->{option_results}->{status_if_unused},
+                                 short_msg => 'Using username-based authentication')
         if $self->{option_results}->{api_username} ne '' || $self->{option_results}->{api_password} ne '';
 
     $self->{output}->option_exit(short_msg => '--api-token and --refresh-token are mandatory')
@@ -77,9 +79,9 @@ sub run {
         if ($update_time == 0 || $update_time + $self->{option_results}->{refresh_frequency} <= time() || $self->{option_results}->{force_refresh}) {
 
             if ($authent_token eq '') {
-		$authent_token = $self->{option_results}->{api_token};
-		$refresh_token = $self->{option_results}->{refresh_token};
-	    }
+                $authent_token = $self->{option_results}->{api_token};
+                $refresh_token = $self->{option_results}->{refresh_token};
+            }
             ($authent_token, $refresh_token) = $options{custom}->refresh_authent_token(
                 authentToken => $authent_token,
                 refreshToken  => $refresh_token,
@@ -135,6 +137,10 @@ Default: --refresh-token=1500 (25 minutes)
 =item B<--force-refresh>
 
 Force token renewal.
+
+=item B<--status-if-unused>
+
+Set return status if token authentication is not used (default: 'OK').
 
 =back
 
