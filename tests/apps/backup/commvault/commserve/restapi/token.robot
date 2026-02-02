@@ -33,7 +33,8 @@ token ${tc}
 
     Examples:       tc    extra_options                                                                       expected_result    --
     ...             1     ${EMPTY}                                                                            UNKNOWN: --api-token and --refresh-token are mandatory
-    ...             2     --api-username=toto --api-password=ezeez                                            UNKNOWN: Cannot use --api-username/--api-password options with "token" mode
+    ...             2     --api-username=toto --api-password=ezeez                                            OK: Using username-based authentication
     ...             3     --api-token=XXXX --refresh-token=XXX --force-refresh                                OK: Token refreshed
     ...             4     --api-token=XXXX --refresh-token=XXX --refresh-token=99999                          OK: Token available
     ...             5     --api-token=XXXX --refresh-token=XXX --refresh-token=99999 --force-refresh          OK: Token refreshed
+    ...             6     --api-username=toto --api-password=ezeez --status-if-unused='UNKNOWN'               UNKNOWN: Using username-based authentication
