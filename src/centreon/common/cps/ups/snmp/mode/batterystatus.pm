@@ -156,7 +156,7 @@ sub set_counters {
         }
         },
         { label => 'battery-life-time', nlabel => 'battery.lifetime.month', display_ok => 0, set => {
-            key_values      => [ { name => 'battery_life_time', no_value => 0 } ],
+            key_values      => [ { name => 'battery_life_time'} ],
             output_template => 'recommended battery life time: %s month',
             perfdatas       => [
                 { value => 'battery_life_time', template => '%d', unit => 'M' },
@@ -222,7 +222,8 @@ sub manage_selection {
                 $result->{upsAdvanceBatteryVoltage} * 0.1 :
                 0,
         temperature       =>
-            $result->{upsAdvanceBatteryTemperature},
+            defined($result->{upsAdvanceBatteryTemperature}) && $result->{upsAdvanceBatteryTemperature} =~ /\d/ ?
+                $result->{upsAdvanceBatteryTemperature} : undef,
         minute_remain     =>
             (defined($result->{upsAdvanceBatteryRunTimeRemaining}) && $result->{upsAdvanceBatteryRunTimeRemaining} =~ /\d/) ?
                 $result->{upsAdvanceBatteryRunTimeRemaining} / 100 :
@@ -231,8 +232,7 @@ sub manage_selection {
             (defined($result->{upsAdvanceBatteryCapacity}) && $result->{upsAdvanceBatteryCapacity} =~ /\d/) ?
                 $result->{upsAdvanceBatteryCapacity} :
                 undef,
-        status            =>
-            $result->{upsBaseBatteryStatus},
+        status            => $result->{upsBaseBatteryStatus},
         replace           =>
             (defined($result->{upsAdvanceBatteryReplaceIndicator})) ?
                 $result->{upsAdvanceBatteryReplaceIndicator} :
@@ -240,7 +240,7 @@ sub manage_selection {
         battery_life_time =>
             (defined($result->{upsAdvanceBatteryAgeRecommand}) && $result->{upsAdvanceBatteryAgeRecommand} =~ /\d/) ?
                 $result->{upsAdvanceBatteryAgeRecommand} :
-                'unknown',
+                undef,
         last_replace_date => $result->{upsBasicBatteryLastReplaceDate},
         battery_time      =>
             (defined($result->{upsBasicBatteryTimeOnBattery}) && $result->{upsBasicBatteryTimeOnBattery} =~ /\d/) ?
@@ -258,6 +258,11 @@ __END__
 Check battery status and charge remaining.
 
 =over 8
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='voltage' or --filter-counters='^(?!temperature)'
 
 =item B<--unknown-status>
 
