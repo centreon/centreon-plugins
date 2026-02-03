@@ -315,9 +315,11 @@ sub gcp_get_metrics {
         get_param => $get_param
     );
 
+
     my %aggregations = map { $_ => 1 } @{$options{aggregations}};
     my $instance_key = [split /\./, $options{instance_key}];
     my $results = {};
+    my $value;
     foreach my $timeserie (@{$response->{timeSeries}}) {
         my $instance = $self->get_instance(
             timeserie => $timeserie,
@@ -332,8 +334,10 @@ sub gcp_get_metrics {
             $results->{$instance} = {};
         }
 
-        my $metric_calc = { points => 0 };
-        my $value;
+        if (!defined($results->{$instance}->{$metric_name})) {
+            $results->{$instance}->{$metric_name} = { points => 0, unit => $response->{unit} // '' };
+        }
+        
         foreach my $point (@{$timeserie->{points}}) {
             if (defined($point->{value})) {
                 if (lc($timeserie->{valueType}) eq 'distribution') {
@@ -346,39 +350,41 @@ sub gcp_get_metrics {
                     $value = $point->{value}->{ lc($timeserie->{valueType}) . 'Value' };
                 }
                 if (defined($aggregations{average})) {
-                    $metric_calc->{average} = 0 if (!defined($metric_calc->{average}));
-                    $metric_calc->{average} += $value;
-                    $metric_calc->{points}++;
+                    $results->{$instance}->{$metric_name}->{average} = 0 if (!defined($results->{$instance}->{$metric_name}->{average}));
+                    $results->{$instance}->{$metric_name}->{average} += $value;
+                    $results->{$instance}->{$metric_name}->{points}++;
                 }
                 if (defined($aggregations{minimum})) {
-                    $metric_calc->{minimum} = $value
-                        if (!defined($metric_calc->{minimum}) || $value < $metric_calc->{minimum});
+                    $results->{$instance}->{$metric_name}->{minimum} = $value
+                        if (!defined($results->{$instance}->{$metric_name}->{minimum}) || $value < $results->{$instance}->{$metric_name}->{minimum});
                 }
                 if (defined($aggregations{maximum})) {
-                    $metric_calc->{maximum} = $value
-                        if (!defined($metric_calc->{maximum}) || $value > $metric_calc->{maximum});
+                    $results->{$instance}->{$metric_name}->{maximum} = $value
+                        if (!defined($results->{$instance}->{$metric_name}->{maximum}) || $value > $results->{$instance}->{$metric_name}->{maximum});
                 }
                 if (defined($aggregations{total})) {
-                    $metric_calc->{total} = 0 if (!defined($metric_calc->{total}));
-                    $metric_calc->{total} += $value;
-                    $metric_calc->{points}++;
+                    $results->{$instance}->{$metric_name}->{total} = 0 if (!defined($results->{$instance}->{$metric_name}->{total}));
+                    $results->{$instance}->{$metric_name}->{total} += $value;
+                    $results->{$instance}->{$metric_name}->{points}++;
                 }
             }
         }
 
-        if (defined($metric_calc->{average})) {
-            $metric_calc->{average} /= $metric_calc->{points};
-        }
-        $metric_calc->{unit} = $response->{unit} // '';
-        $results->{$instance}->{$metric_name} = $metric_calc;
         $results->{$instance}->{resource} = $timeserie->{resource};
         $results->{$instance}->{labels} = $timeserie->{metric}->{labels};
+    }
+
+    foreach my $instance_name (keys %$results) {
+        foreach my $label (keys %{$results->{$instance_name}}) {    
+            next if (!defined($results->{$instance_name}->{$label}->{average}));
+            $results->{$instance_name}->{$label}->{average} = $results->{$instance_name}->{$label}->{average} / $results->{$instance_name}->{$label}->{points};
+        }
     }
 
     if (defined($self->{option_results}->{zeroed}) && (!defined($options{dimension_operator}) || $options{dimension_operator} eq '' || $options{dimension_operator} eq 'equals')) {
         if ($options{dimension_name} eq $options{dimension_zeroed} && !defined($results->{ $options{dimension_value} })) { 
             $results->{ $options{dimension_value} } = {
-                $options{metric} => { average => 0, minimum => 0, maximum => 0, total => 0 }
+                $options{metric} => { average => 0, minimum => 0, maximum => 0, total => 0, unit => '' }
             };
         }
     }
