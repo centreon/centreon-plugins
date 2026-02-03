@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,6 +41,11 @@ sub new {
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::init(%options);
 }
 
 sub run {
@@ -92,7 +97,7 @@ sub manage_selection {
 
     my $result = $options{wsman}->execute_powershell(
         label => 'listjobs',
-        content => centreon::plugins::misc::powershell_encoded($ps)
+        content => $ps
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
