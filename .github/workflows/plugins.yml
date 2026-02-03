@@ -148,7 +148,7 @@ jobs:
       # Add to your PR the label upload-artifacts to get plugin.json as artifact
       - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
         name: Upload plugins.json artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: plugins_json
           path: ./plugins.json
@@ -210,7 +210,7 @@ jobs:
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: ./lastlog.jsonl
