@@ -173,7 +173,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -182,6 +182,9 @@ jobs:
           - package_extension: rpm
             image: unit-tests-alma9
             distrib: el9
+          - package_extension: rpm
+            image: unit-tests-alma10
+            distrib: el10
           - package_extension: deb
             image: unit-tests-bullseye
             distrib: bullseye
@@ -192,6 +195,9 @@ jobs:
           - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: unit-tests-trixie
+            distrib: trixie
           - package_extension: deb
             image: unit-tests-jammy
             distrib: jammy
@@ -284,12 +290,18 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-alma10
+            distrib: el10
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-trixie
+            distrib: trixie
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
@@ -353,7 +365,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-alma10, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-trixie, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
           - package_extension: rpm
             image: testing-plugins-alma8
@@ -363,6 +375,10 @@ jobs:
             image: testing-plugins-alma9
             distrib: el9
             arch: amd64
+          - package_extension: rpm
+            image: testing-plugins-alma10
+            distrib: el10
+            arch: amd64
           - package_extension: deb
             image: testing-plugins-bullseye
             distrib: bullseye
@@ -370,6 +386,10 @@ jobs:
           - package_extension: deb
             image: testing-plugins-bookworm
             distrib: bookworm
+            arch: amd64
+          - package_extension: deb
+            image: testing-plugins-trixie
+            distrib: trixie
             arch: amd64
           - package_extension: deb
             image: testing-plugins-jammy
@@ -420,9 +440,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb

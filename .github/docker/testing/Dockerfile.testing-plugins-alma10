@@ -1,0 +1,87 @@
+ARG REGISTRY_URL=docker.io
+
+FROM ${REGISTRY_URL}/almalinux:10
+
+ARG NODE_VERSION=24
+ARG PNPM_VERSION=10.24.0
+
+COPY .github/docker/testing/package.json .github/docker/testing/pnpm-lock.yaml /usr/local/src/
+
+RUN bash -e <<EOF
+
+useradd snmp
+mkdir -p /var/lib/snmp/cert_indexes/
+chown snmp:snmp -R /var/lib/snmp/cert_indexes/
+mkdir -p /tmp/cache/
+
+dnf install -y dnf-plugins-core epel-release zstd jq procps-ng
+dnf config-manager --set-enabled crb
+dnf clean all
+
+# Install Robotframework
+dnf install -y python3.11 python3.11-pip
+pip3.11 install robotframework robotframework-examples
+# Install snmpsim
+pip3.11 install snmpsim
+
+dnf module enable -y nodejs:24
+dnf install -y nodejs
+curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bash -
+source ~/.bashrc
+cd /usr/local/src
+pnpm install --frozen-lockfile
+echo 'export PATH="~/node_modules/.bin/:$PATH"' >> ~/.bashrc
+
+# Add Centreon plugins repositories
+echo -e '[centreon-plugins-stable]\n\
+name=centreon plugins stable x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/stable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-stable-noarch]\n\
+name=centreon plugins stable noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/stable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-testing]\n\
+name=centreon plugins testing x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/testing/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-testing-noarch]\n\
+name=centreon plugins testing noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/testing/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-unstable]\n\
+name=centreon plugins unstable x86_64\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/unstable/x86_64\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
+[centreon-plugins-unstable-noarch]\n\
+name=centreon plugins unstable noarch\n\
+baseurl=https://packages.centreon.com/rpm-plugins/el9/unstable/noarch\n\
+enabled=1\n\
+gpgcheck=1\n\
+gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n'\
+>> /etc/yum.repos.d/centreon-plugins.repo
+
+# Add Centreon plugins repositories
+dnf config-manager --add-repo https://packages.centreon.com/rpm-standard/24.10/el9/centreon-24.10.repo
+dnf install -y centreon-connector-perl centreon-clib
+
+rm -f /etc/yum.repos.d/centreon-24.10.repo
+
+mkdir -p /var/lib/centreon/centplugins/
+chmod 777 /var/lib/centreon/centplugins/
+
+dnf clean all
+
+EOF
+
+ENV PATH="/usr/local/src/node_modules/.bin/:$PATH"
