@@ -26,18 +26,36 @@ use warnings;
 use Exporter qw(import);
 
 use constant {
-    RUN_OK          =>  0,
-    BUFFER_CREATION => -1,
-    CLEAR_BUFFER    => -2,
-    NO_VALUE        => -10,
+    RUN_OK          =>  0, # value present
+    BUFFER_CREATION => -1, # cache creation, check will be done next time
+    NOT_PROCESSED   => -2, # no result processed
+    NO_VALUE        => -10, # contains no value
+
+    # Define the scope of a couunter
+    COUNTER_TYPE_GLOBAL   => 0, # global counter
+    COUNTER_TYPE_INSTANCE => 1, # counter defined per instance
+    COUNTER_TYPE_GROUP    => 2, # group of counters
+    COUNTER_TYPE_MULTIPLE => 3, # multiple group of counters
+
+    # Only used with COUNTER_TYPE_MULTIPLE counters
+    COUNTER_MULTIPLE_INSTANCE    => 0, # counter global to the instance
+    COUNTER_MULTIPLE_SUBINSTANCE => 1, # counter defined per subinstance
+
+    # Define the nature of a counter ( numeric or text )
+    COUNTER_KIND_METRIC  => 1, # numeric counter with thesholds and perfdata
+    COUNTER_KIND_TEXT    => 2, # text counter with status check and no perfdata
 
     MSG_JSON_DECODE_ERROR => 'Cannot decode response (add --debug option to display returned content)'
 };
 
 our %EXPORT_TAGS = (
-    values => [ qw(NO_VALUE BUFFER_CREATION RUN_OK CLEAR_BUFFER) ],
-    messages => [ qw(MSG_JSON_DECODE_ERROR) ]
+    values                 => [ qw(NO_VALUE BUFFER_CREATION RUN_OK NOT_PROCESSED) ],
+    counter_types          => [ qw(COUNTER_TYPE_GLOBAL COUNTER_TYPE_INSTANCE COUNTER_TYPE_GROUP COUNTER_TYPE_MULTIPLE) ],
+    counter_multiple_types => [ qw(COUNTER_MULTIPLE_INSTANCE COUNTER_MULTIPLE_SUBINSTANCE) ],
+    counter_kinds          => [ qw(COUNTER_KIND_METRIC COUNTER_KIND_TEXT) ],
+    messages               => [ qw(MSG_JSON_DECODE_ERROR) ]
 );
+$EXPORT_TAGS{counters} = [ @{$EXPORT_TAGS{counter_types}}, @{$EXPORT_TAGS{counter_multiple_types}}, @{$EXPORT_TAGS{counter_kinds}} ];
 $EXPORT_TAGS{all} = [ map { @$_ } values %EXPORT_TAGS ];
 
 our @EXPORT_OK = @{$EXPORT_TAGS{all}};
