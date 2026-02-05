@@ -234,6 +234,7 @@ NLCapacity
 --nomachineaccount
 notapplicable
 NRPE
+NSClient
 --ntlmv2
 NTLMv2
 NTP
