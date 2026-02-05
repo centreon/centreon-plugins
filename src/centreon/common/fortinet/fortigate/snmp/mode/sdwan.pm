@@ -97,7 +97,7 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
                         instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
-                        value => sprintf('%.2f', $self->{result_values}->{in}),
+                        value => $self->{result_values}->{in},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
@@ -116,7 +116,7 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
                         instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
-                        value => sprintf('%.2f', $self->{result_values}->{out}),
+                        value => $self->{result_values}->{out},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
@@ -135,7 +135,7 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
                         instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
-                        value => sprintf('%.2f', $self->{result_values}->{bi}),
+                        value => $self->{result_values}->{bi},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
