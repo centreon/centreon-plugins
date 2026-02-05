@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -87,7 +87,7 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'sdwan.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'in', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                key_values => [ { name => 'in' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -106,7 +106,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-out', nlabel => 'sdwan.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'out', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                key_values => [ { name => 'out' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -125,7 +125,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-bi', nlabel => 'sdwan.traffic.bi.bitspersecond', set => {
-                key_values => [ { name => 'bi', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                key_values => [ { name => 'bi' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'bi: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -377,11 +377,61 @@ You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName
 Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "down"').
 You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jitter>
 
-Thresholds.
-Can be: 'traffic-in', 'traffic-out', 'traffic-bi',
-'latency', 'jitter', 'packetloss'.
+Threshold.
+
+=item B<--critical-jitter>
+
+Threshold.
+
+=item B<--warning-latency>
+
+Threshold.
+
+=item B<--critical-latency>
+
+Threshold.
+
+=item B<--warning-packetloss>
+
+Threshold.
+
+=item B<--critical-packetloss>
+
+Threshold.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-traffic-bi>
+
+Threshold.
+
+=item B<--critical-traffic-bi>
+
+Threshold.
+
+=item B<--warning-traffic-in>
+
+Threshold.
+
+=item B<--critical-traffic-in>
+
+Threshold.
+
+=item B<--warning-traffic-out>
+
+Threshold.
+
+=item B<--critical-traffic-out>
+
+Threshold.
 
 =back
 
