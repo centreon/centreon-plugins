@@ -60,10 +60,10 @@ scripts:
 overrides:
   rpm:
     depends:
-      - "java-17-openjdk"
+      - "java-17-openjdk-headless"
   deb:
     depends:
-      - "openjdk-17-jre"
+      - "openjdk-17-jre-headless"
 
 rpm:
   summary: Centreon AS 400 Plugin daemon
