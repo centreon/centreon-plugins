@@ -4,7 +4,7 @@
   "name": "Centreon-DEM.mockoon",
   "endpointPrefix": "",
   "latency": 0,
-  "port": 3006,
+  "port": 3000,
   "hostname": "",
   "folders": [],
   "routes": [
@@ -674,6 +674,70 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "56368f41-55af-49d7-8497-403e6354f80f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/sites/10/user_journeys/3667/incidents",
+      "responses": [
+        {
+          "uuid": "042e0a15-1ba2-422a-963e-8377a5a41c8a",
+          "body": "{\"incidents\":[]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "authorization",
+              "value": "",
+              "invert": true,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -688,6 +752,10 @@
     {
       "type": "route",
       "uuid": "90991ab4-7439-4883-998d-aa7b06f2dff4"
+    },
+    {
+      "type": "route",
+      "uuid": "56368f41-55af-49d7-8497-403e6354f80f"
     },
     {
       "type": "route",

@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,8 +66,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'incidents-total', nlabel => 'centreon.dem.incidents.total.count', set => {
-                key_values      => [ { name => 'total' }  ],
+        {
+            label  => 'incidents-total',
+            nlabel => 'centreon.dem.incidents.total.count',
+            set    => {
+                key_values      => [ { name => 'total' } ],
                 output_template => 'total: %s',
                 perfdatas       => [ { template => '%d', min => 0 } ]
             }
@@ -75,32 +78,36 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{incidents} = [
-        { label => 'incident-status',
-            type => 2,
-            warning_default => '',
+        {
+            label            => 'incident-status',
+            type             => 2,
+            warning_default  => '',
             critical_default => '%{status} =~ "open"',
-            set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'interaction_name' } ],
-                output_template => 'status: %s',
-                closure_custom_perfdata => sub { return 0; },
+            set              => {
+                key_values                     => [ { name => 'status' }, { name => 'display' }, { name => 'interaction_name' } ],
+                output_template                => 'status: %s',
+                closure_custom_perfdata        => sub {return 0;},
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'incident-type',
-            type => 2,
-            warning_default => '',
+        {
+            label            => 'incident-type',
+            type             => 2,
+            warning_default  => '',
             critical_default => '',
-            set => {
-                key_values => [ { name => 'type' }, { name => 'display' }, { name => 'interaction_name' } ],
-                output_template => 'type: %s',
-                closure_custom_perfdata => sub { return 0; },
+            set              => {
+                key_values                     => [ { name => 'type' }, { name => 'display' }, { name => 'interaction_name' } ],
+                output_template                => 'type: %s',
+                closure_custom_perfdata        => sub {return 0;},
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'incident-duration', set => {
-                key_values => [ { name => 'duration' }, { name => 'start_time' }, { name => 'end_time' }, { name => 'status'} ],
-                closure_custom_output => $self->can('custom_duration_output'),
-		closure_custom_perfdata => sub { return 0; }
+        {
+            label => 'incident-duration',
+            set   => {
+                key_values              => [ { name => 'duration' }, { name => 'start_time' }, { name => 'end_time' }, { name => 'status' } ],
+                closure_custom_output   => $self->can('custom_duration_output'),
+                closure_custom_perfdata => sub {return 0;}
             }
         }
     ];
@@ -144,7 +151,13 @@ sub manage_selection {
         endpoint  => '/sites/' . $self->{site_id} . '/user_journeys/' . $self->{journey_id} . '/incidents',
         get_param => 'range=' . $self->{timeframe}
     );
+
+    # Make sure the incidents is an array
+    $self->{output}->option_exit(short_msg => "Couldn't get incidents for user journey id ".$self->{journey_id}." and site id ".$self->{site_id})
+        if ( ref($results->{incidents}) ne 'ARRAY' );
+
     $self->{global}->{total} = 0;
+
     foreach my $incident (@{$results->{incidents}}) {
         my $kind = $incident->{kind} =~ s/_/ /gr;
         my $end_time = $incident->{end_clock} ? $incident->{end_clock} : time();
@@ -163,8 +176,6 @@ sub manage_selection {
         $self->{global}->{total}++;
     }
 
-    $self->{output}->option_exit(short_msg => "Couldn't get incidents for user journey id ".$self->{journey_id}." and site id ".$self->{site_id})
-        if (scalar(keys %{$self->{incidents}}) <= 0);
 }
 
 1;

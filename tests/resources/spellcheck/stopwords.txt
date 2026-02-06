@@ -51,6 +51,8 @@ centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
+CommServe
+Commvault
 connections-dhcp
 connections-dns
 cpu
@@ -232,6 +234,7 @@ NLCapacity
 --nomachineaccount
 notapplicable
 NRPE
+NSClient
 --ntlmv2
 NTLMv2
 NTP
@@ -265,6 +268,7 @@ physicaldrive
 PKCS1
 Plink
 Podman
+Postgres
 powershell
 powershell.exe
 PPID
@@ -395,4 +399,6 @@ WLAN
 WLC
 WSMAN
 XPath
+ZDX
 ZFS
+Zscaler
