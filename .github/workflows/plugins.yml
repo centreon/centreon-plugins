@@ -39,7 +39,11 @@ env:
   max_parallel_jobs: 35
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
     with:
       nightly_manual_trigger: ${{ inputs.nightly_manual_trigger || false }}

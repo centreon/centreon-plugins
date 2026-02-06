@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -193,7 +193,7 @@ sub manage_selection {
 
     my $result = $options{wsman}->execute_powershell(
         label => 'licenses',
-        content => centreon::plugins::misc::powershell_encoded($ps)
+        content => $ps
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
@@ -306,10 +306,45 @@ Can used special variables like: %{to}, %{status}, %{type}.
 Select the unit for expires threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+item B<--warning-expires>
 
-Thresholds.
-Can be: 'total', 'expires', 'license-instances-usage', 'license-instances-free', 'license-instances-usage-prct'.
+Threshold.
+
+=item B<--critical-expires>
+
+Threshold.
+
+=item B<--warning-license-instances-free>
+
+Threshold.
+
+=item B<--critical-license-instances-free>
+
+Threshold.
+
+=item B<--warning-license-instances-usage>
+
+Threshold.
+
+=item B<--critical-license-instances-usage>
+
+Threshold.
+
+=item B<--warning-license-instances-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-license-instances-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-total>
+
+Threshold.
+
+=item B<--critical-total>
+
+Threshold.
 
 =back
 

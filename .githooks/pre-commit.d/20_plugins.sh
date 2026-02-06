@@ -49,7 +49,7 @@ for file in "${committed_files[@]}"; do
         pm|pl)
             # check that the perl file compiles
             info "--> Checking that file compiles"
-            PERL5LIB="$PERL5LIB:./src/" perl -c "$file" >/dev/null 2>&1 || error "File $file does not compile with perl -c"
+            perl -I ./src -I ./tests/connectors/vmware -I ./connectors/vmware/src -c "$file" >/dev/null 2>&1 || error "File $file does not compile with perl -c"
             # check the copyright year
             info "--> Checking that file copyright is OK"
             grep "Copyright 20..-Present Centreon" "$file" >/dev/null || error "Copyright in $file does not contain \"Copyright $(date +%Y)-Present Centreon\""

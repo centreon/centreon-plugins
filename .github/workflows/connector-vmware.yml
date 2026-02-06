@@ -19,7 +19,11 @@ on:
       - 'connectors/vmware/packaging/**'
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
     with:
       version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
