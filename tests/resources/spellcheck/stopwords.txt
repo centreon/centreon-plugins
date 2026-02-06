@@ -116,6 +116,7 @@ FQDN
 FreeBSD
 FrontDoor
 frsevent
+FSx
 GCP
 --get-param
 GraphQL
