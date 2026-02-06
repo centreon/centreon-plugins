@@ -283,9 +283,6 @@ jobs:
         include:
           - package_extension: rpm
             image: packaging-plugins-alma8
-            distrib: el7
-          - package_extension: rpm
-            image: packaging-plugins-alma8
             distrib: el8
           - package_extension: rpm
             image: packaging-plugins-alma9
@@ -434,8 +431,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distrib: el7
-            package_extension: rpm
           - distrib: el8
             package_extension: rpm
           - distrib: el9
