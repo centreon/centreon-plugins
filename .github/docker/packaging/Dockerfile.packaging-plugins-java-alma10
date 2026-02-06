@@ -1,0 +1,29 @@
+ARG REGISTRY_URL
+
+FROM ${REGISTRY_URL}/almalinux:10
+
+RUN bash -e <<EOF
+
+dnf install -y \
+  git \
+  java-21-openjdk-devel \
+  wget \
+  zstd
+
+cd /usr/local/src
+wget https://dlcdn.apache.org/maven/maven-3/3.8.9/binaries/apache-maven-3.8.9-bin.tar.gz
+tar zxf apache-maven-3.8.9-bin.tar.gz
+ln -s /usr/local/src/apache-maven-3.8.9/bin/mvn /usr/bin/mvn
+rm -f apache-maven-3.8.9-bin.tar.gz
+
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+dnf install -y nfpm-2.41.0
+dnf clean all
+
+EOF
+
+WORKDIR /src
