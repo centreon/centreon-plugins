@@ -41,6 +41,8 @@ jobs:
             distrib: el8
           - image: packaging-plugins-alma9
             distrib: el9
+          - image: packaging-plugins-alma10
+            distrib: el10
     name: package ${{ matrix.distrib }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -81,6 +83,8 @@ jobs:
             distrib: el8
           - image: packaging-alma9
             distrib: el9
+          - image: packaging-alma10
+            distrib: el10
     name: sign rpm ${{ matrix.distrib }}
     container:
       image: docker.centreon.com/centreon-private/rpm-signing:latest
@@ -135,6 +139,8 @@ jobs:
           - distrib: el8
             package_extension: rpm
           - distrib: el9
+            package_extension: rpm
+          - distrib: el10
             package_extension: rpm
 
     name: deliver ${{ matrix.distrib }}

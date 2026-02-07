@@ -46,6 +46,11 @@ jobs:
             package_extension: rpm
             runner: ubuntu-24.04
             arch: amd64
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
+            runner: ubuntu-24.04
+            arch: amd64
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
@@ -53,6 +58,11 @@ jobs:
             arch: amd64
           - image: packaging-plugins-bookworm
             distrib: bookworm
+            package_extension: deb
+            runner: ubuntu-24.04
+            arch: amd64
+          - image: packaging-plugins-trixie
+            distrib: trixie
             package_extension: deb
             runner: ubuntu-24.04
             arch: amd64
@@ -243,6 +253,9 @@ jobs:
           - distrib: el9
             package_extension: rpm
             arch: amd64
+          - distrib: el10
+            package_extension: rpm
+            arch: amd64
           - distrib: bullseye
             package_extension: deb
             arch: amd64
@@ -250,6 +263,9 @@ jobs:
             package_extension: deb
             arch: arm64
           - distrib: bookworm
+            package_extension: deb
+            arch: amd64
+          - distrib: trixie
             package_extension: deb
             arch: amd64
           - distrib: jammy
