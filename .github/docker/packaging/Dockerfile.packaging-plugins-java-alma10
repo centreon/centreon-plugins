@@ -6,7 +6,7 @@ RUN bash -e <<EOF
 
 dnf install -y \
   git \
-  java-21-openjdk-devel \
+  java-25-openjdk-devel \
   wget \
   zstd
 
