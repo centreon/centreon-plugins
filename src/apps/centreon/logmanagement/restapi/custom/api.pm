@@ -69,10 +69,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->{$_} = $self->{option_results}->{$_} for qw/hostname org api_path proto token timeout/;
   
-    $self->{output}->option_exit(short_msg => "Need to specify organization option.")
+    $self->{output}->option_exit(short_msg => "Need to specify --org option.")
         if $self->{org} eq '';
         
-    $self->{output}->option_exit(short_msg => "Need to specify token option.")
+    $self->{output}->option_exit(short_msg => "Need to specify --token option.")
         if $self->{token} eq '';
         
     # Replace {org} placeholder in api_path with actual organization
