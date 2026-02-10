@@ -6,7 +6,7 @@ RUN bash -e <<EOF
 
 dnf install -y \
   git \
-  java-25-openjdk-headless \
+  java-21-openjdk-headless \
   wget \
   zstd
 
