@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/json_decode/;
 use centreon::common::powershell::windows::updates;
 use JSON::XS;
 
@@ -77,9 +77,9 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $result = $options{wsman}->execute_powershell(
+    my $result = $options{wsman}->execute_powershell_script(
         label => 'pendingupdates',
-        content => centreon::plugins::misc::powershell_encoded($ps)
+        content => $ps
     );
 
     if (defined($self->{option_results}->{ps_exec_only})) {
@@ -91,14 +91,16 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($self->{output}->decode($result->{pendingupdates}->{stdout}));
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $stderr = $result->{pendingupdates}->{stderr} ?
+        $self->{output}->decode($result->{pendingupdates}->{stderr}) : '';
+
+    my $decoded = json_decode($self->{output}->decode($result->{pendingupdates}->{stdout}), no_exit => 1);
+
+    $self->{output}->option_exit(short_msg => 'Cannot decode powershell output'.($stderr ? ": $stderr" : ''))
+        unless ($decoded);
+
+    $self->{output}->output_add(long_msg => "PowerShell stderr: $stderr", debug => 1)
+        if $self->{output}->is_debug() && $stderr;
 
     #[
     #   {"isMandatory":false, "title":"Windows Malicious Software Removal Tool x64 - v5.105 (KB890830)"},
@@ -162,10 +164,13 @@ Exclude Windows updates by title (regexp can be used).
 
 Display updates in verbose output.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-updates>
 
 Thresholds.
-Can be: 'pending-updates'.
+
+=item B<--critical-updates>
+
+Thresholds.
 
 =back
 

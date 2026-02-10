@@ -44,3 +44,4 @@ jobs ${tc}
             ...      8     --warning-status='\\%\{status\} !~ /none/'                    WARNING: 6 problem(s) detected | 'jobs.total.count'=6;;;0; 'jobs.problems.current.count'=6;;;0;
             ...      9     --warning-long='\\%\{elapsed\} >10'                           WARNING: 1 problem(s) detected | 'jobs.total.count'=6;;;0; 'jobs.problems.current.count'=1;;;0;
             ...      10    --warning-status='\\%\{client_name\} =~ /XXa/' --verbose      WARNING: 1 problem(s) detected | 'jobs.total.count'=6;;;0; 'jobs.problems.current.count'=1;;;0; Checking policy 'XXXX-Plan' warning: Job '1' [client: XXXXXXa, type: Snap Backup] status: Completed Checking policy 'YYYY-Plan'
+            ...      11    --api-username='' --api-password=''                           UNKNOWN: Tokens where not found. Please use the "token" mode first

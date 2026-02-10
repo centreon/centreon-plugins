@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -37,7 +37,8 @@ sub new {
         'list-media-agents'     => 'apps::backup::commvault::commserve::restapi::mode::listmediaagents',
         'list-storage-policies' => 'apps::backup::commvault::commserve::restapi::mode::liststoragepolicies',
         'media-agents'          => 'apps::backup::commvault::commserve::restapi::mode::mediaagents',
-        'storage-pools'         => 'apps::backup::commvault::commserve::restapi::mode::storagepools'
+        'storage-pools'         => 'apps::backup::commvault::commserve::restapi::mode::storagepools',
+        'token'                 => 'apps::backup::commvault::commserve::restapi::mode::token'
     };
 
     $self->{custom_modes}->{api} = 'apps::backup::commvault::commserve::restapi::custom::api';
@@ -50,7 +51,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Commvault Commserve using Rest API.
+Check Commvault CommServe using Rest API.
 
 =over 8
 

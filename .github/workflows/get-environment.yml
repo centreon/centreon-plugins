@@ -37,11 +37,7 @@ on:
         value: ${{ jobs.get-environment.outputs.labels }}
 
 jobs:
-  dependency-scan:
-    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
-
   get-environment:
-    needs: [dependency-scan]
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.get_version.outputs.version }}

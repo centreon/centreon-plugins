@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/json_decode/;
 use centreon::common::powershell::windows::pendingreboot;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use JSON::XS;
@@ -91,9 +91,9 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $result = $options{wsman}->execute_powershell(
+    my $result = $options{wsman}->execute_powershell_script(
         label => 'pendingreboot',
-        content => centreon::plugins::misc::powershell_encoded($ps)
+        content => $ps
     );
 
     if (defined($self->{option_results}->{ps_exec_only})) {
@@ -105,14 +105,16 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($self->{output}->decode($result->{pendingreboot}->{stdout}));
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $stderr = $result->{pendingreboot}->{stderr} ?
+        $self->{output}->decode($result->{pendingreboot}->{stderr}) : '';
+
+    my $decoded = json_decode($self->{output}->decode($result->{pendingreboot}->{stdout}), no_exit => 1);
+
+    $self->{output}->option_exit(short_msg => 'Cannot decode powershell output'.($stderr ? ": $stderr" : ''))
+        unless ($decoded);
+
+    $self->{output}->output_add(long_msg => "PowerShell stderr: $stderr", debug => 1)
+        if $self->{output}->is_debug() && $stderr;
 
     #{ WindowsVersion: "Microsoft Windows 2003 Server", CBServicing: false, WindowsUpdate: false, CCMClientSDK: null, PendComputerRename: false, PendFileRename: false, PendFileRenVal: null, RebootPending: false }
     foreach (keys %$decoded) {

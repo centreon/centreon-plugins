@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,7 @@ use utf8;
 use JSON::XS;
 use Safe;
 use Encode;
+use MIME::Base64;
 
 use Exporter 'import';
 use feature 'state';
@@ -40,6 +41,7 @@ our @EXPORT_OK = qw/change_seconds
                     json_encode
                     json_decode
                     slurp_file
+                    format_opt
                     trim
                     value_of/;
 
@@ -389,9 +391,11 @@ sub trim {
     return $value;
 }
 
+sub powershell_encoded_script {
+    MIME::Base64::encode_base64($_[0], '');
+}
+
 sub powershell_encoded {
-    require Encode;
-    require MIME::Base64;
     my $bytes = Encode::encode('utf16LE', $_[0]);
     return MIME::Base64::encode_base64($bytes, '');
 }
@@ -945,6 +949,12 @@ sub is_excluded($;$;$) {
     return 1;
 }
 
+# Convert underscores in option names to dash.
+# Eg: 'include_test' becomes 'include-test'
+sub format_opt($) {
+    $_[0] =~ s/_/-/gr;
+}
+
 1;
 
 __END__
@@ -1129,7 +1139,7 @@ Trims whitespace from a string.
 
     my $encoded = centreon::plugins::misc::powershell_encoded($value);
 
-Encodes a string for use in PowerShell.
+Encodes a string for use in PowerShell with -EncodedCommand.
 
 =over 4
 
@@ -1137,6 +1147,17 @@ Encodes a string for use in PowerShell.
 
 =back
 
+=head2 powershell_encoded_script
+
+    my $encoded = centreon::plugins::misc::powershell_encoded($value);
+
+Encodes a string for use in PowerShell with -File.
+
+=over 4
+
+=item * C<$value> - The string to encode.
+
+=back
 =head2 powershell_escape
 
     my $escaped = centreon::plugins::misc::powershell_escape($value);
@@ -1539,6 +1560,18 @@ Returns 1 if an IPv4 IP is within a local address range.
 =over 4
 
 =item * C<$ip> - IP to test.
+
+=back
+
+=head2 format_opt
+
+    my $to_print = centreon::plugins::misc::format_opt($ident);
+
+Convert underscores in option names to dash.
+
+=over 4
+
+=item * C<$ident> - name to convert.
 
 =back
 
