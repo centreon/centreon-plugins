@@ -26,6 +26,7 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -120,18 +121,27 @@ sub get_connection_info {
     return $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port};
 }
 
+sub minimal_api_version {
+    my ($self, %options) = @_;
+
+    return centreon::plugins::misc::minimal_version($self->{api_version}, $options{version})
+}
+
 sub get_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $self->{cache_connect}->read(statefile => 'thales_mistral_connect_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $token = $self->{cache_connect}->get(name => 'token');
+    $self->{api_version} = $self->{cache_connect}->get(name => 'api_version');
     my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
     my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
 
     if ($has_cache_file == 0 ||
         !defined($token) ||
+        !defined($self->{api_version}) ||
         (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
         ) {
+        # Login
         my $json_request = {
             username => $self->{api_username},
             password => $self->{api_password}
@@ -161,14 +171,35 @@ sub get_token {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response (auth login)");
             $self->{output}->option_exit();
         }
 
         $token = $decoded->{access_token};
+
+        # API version
+        $content = $self->{http}->request(
+            method => 'GET',
+            url_path => '/api/version',
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response (api version)");
+            $self->{output}->option_exit();
+        }
+
+        $self->{api_version} = $decoded->{mmc};
+
         my $datas = {
             updated => time(),
             token => $token,
+            api_version => $self->{api_version},
             md5_secret => $md5_secret
         };
         $self->{cache_connect}->write(data => $datas);
