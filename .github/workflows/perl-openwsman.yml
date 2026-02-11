@@ -106,8 +106,14 @@ jobs:
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
-            wget -O - https://github.com/kkaempf/sblim-sfcc/archive/881fccbaf19e26cbef3da1bebe2b42b3a9de1147/.tar.gz|tar zxvf -
-            cd sblim-sfcc-881fccbaf19e26cbef3da1bebe2b42b3a9de1147
+            if [ "${{ matrix.distrib }}" = "bullseye" ]; then
+              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
+              mv sblim-sfcc-SFCC_2_2_8 sblim-sfcc
+            else
+              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/881fccbaf19e26cbef3da1bebe2b42b3a9de1147/.tar.gz|tar zxvf -
+              mv sblim-sfcc-881fccbaf19e26cbef3da1bebe2b42b3a9de1147 sblim-sfcc
+            fi
+            cd sblim-sfcc
             ./autoconfiscate.sh
             ./configure --prefix=/usr
             make
