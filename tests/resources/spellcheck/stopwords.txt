@@ -11,6 +11,7 @@ ACS
 --add-qos-limit
 --add-sysdesc
 ADSL
+AIX
 Alcatel
 Alertmanager
 allCapacity
