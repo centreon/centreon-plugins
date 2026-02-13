@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/connector-vmware.yml'
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
   push:
@@ -15,6 +16,7 @@ on:
       - develop
       - master
     paths:
+      - '.github/workflows/connector-vmware.yml'
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
 
