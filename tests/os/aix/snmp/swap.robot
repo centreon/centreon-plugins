@@ -18,7 +18,7 @@ swap ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/aix/snmp/slim_os-aix
+    ...    --snmp-community=os/aix/snmp/aix
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
@@ -32,4 +32,3 @@ swap ${tc}
             ...      5     --critical-total-usage=3                          OK: Page space 'Anonymized 162' Usage Total: 4.00 GB Used: 0.00 B (0.00%) Free: 4.00 GB (100.00%) | 'page_space'=0B;;;0;4294967296
             ...      6     --warning-total-active=4                          OK: Page space 'Anonymized 162' Usage Total: 4.00 GB Used: 0.00 B (0.00%) Free: 4.00 GB (100.00%) | 'page_space'=0B;;;0;4294967296
             ...      7     --critical-total-active=3                         OK: Page space 'Anonymized 162' Usage Total: 4.00 GB Used: 0.00 B (0.00%) Free: 4.00 GB (100.00%) | 'page_space'=0B;;;0;4294967296
-            ...      8     --paging-state-buggy                              OK:

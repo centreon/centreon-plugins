@@ -18,7 +18,7 @@ processcount ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/aix/snmp/slim_os-aix
+    ...    --snmp-community=os/aix/snmp/aix
     ...    --snmp-timeout=1
     ...    ${extra_options}
  

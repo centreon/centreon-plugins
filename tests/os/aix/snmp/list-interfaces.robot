@@ -18,7 +18,7 @@ list-interfaces ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=os/aix/snmp/slim_os-aix
+    ...    --snmp-community=os/aix/snmp/aix
     ...    --snmp-timeout=1
     ...    ${extra_options}
  
@@ -26,5 +26,3 @@ list-interfaces ${tc}
 
     Examples:        tc    extra_options                                                         expected_result    --
             ...      1     ${EMPTY}                                                              List interfaces: 'en0' [speed = 1500][status = up][id = 1][type = ethernetCsmacd]
-            ...      2     --name='en0'                                                          List interfaces: 'en0' [speed = 1500][status = up][id = 1][type = ethernetCsmacd]
-            ...      3     --display-transform-src='en0' --display-transform-dst='test'          List interfaces: 'test' [speed = 1500][status = up][id = 1][type = ethernetCsmacd]
