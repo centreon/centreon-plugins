@@ -1,6 +1,6 @@
 ARG REGISTRY_URL
 
-FROM ${REGISTRY_URL}/debian:bullseye
+FROM ${REGISTRY_URL}/debian:trixie
 
 RUN bash -e <<EOF
 
@@ -8,8 +8,8 @@ apt-get update
 apt-get install -y \
   ca-certificates \
   git \
-  maven=3.6.3-5 \
-  openjdk-17-jdk-headless \
+  maven=3.9.9-1 \
+  openjdk-21-jdk-headless \
   zstd
 
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
