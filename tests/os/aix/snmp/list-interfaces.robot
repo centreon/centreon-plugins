@@ -1,8 +1,8 @@
 *** Settings ***
-Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
+Resource        ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Suite Setup         Ctn Generic Suite Setup
-Test Timeout        120s
+Suite Setup     Ctn Generic Suite Setup
+Test Timeout    120s
 
 
 *** Variables ***
@@ -21,8 +21,8 @@ list-interfaces ${tc}
     ...    --snmp-community=os/aix/snmp/aix
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                                                         expected_result    --
-            ...      1     ${EMPTY}                                                              List interfaces: 'en0' [speed = 1500][status = up][id = 1][type = ethernetCsmacd]
+    Examples:    tc    extra_options    expected_result    --
+    ...    1    ${EMPTY}    List interfaces: 'en0' [speed = 1500][status = up][id = 1][type = ethernetCsmacd]
