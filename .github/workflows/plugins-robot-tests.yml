@@ -63,7 +63,9 @@ jobs:
       - name: Load image
         run: |
           docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
-          docker create docker.centreon.com/centreon/testing-plugins-noble
+          ID=$(docker create docker.centreon.com/centreon/testing-plugins-noble)
+          docker export "$ID" > /dev/null
+          docker rm "$ID"
         shell: bash
 
       - name: Check image
