@@ -95,8 +95,8 @@ jobs:
       - name: Load image
         run: |
           echo "check before load 24.04"
-          docker pull ubuntu:24.04
-          docker image inspect ubuntu:24.04 \
+          docker pull docker.centreon.com/proxy/ubuntu:noble@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b
+          docker image inspect docker.centreon.com/proxy/ubuntu:noble@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b \
           | jq -r '.[0].RootFS.Layers[0]'
           echo "check before load 22.04"
           docker pull ubuntu:22.04
