@@ -108,7 +108,7 @@ jobs:
         
       - name: Save image on disk
         run: |
-          docker save -o ./${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
+          docker save -o ./${{ inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
           ls -ltha ./
         shell: bash
 
