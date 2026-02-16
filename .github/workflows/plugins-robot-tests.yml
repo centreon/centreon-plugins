@@ -75,6 +75,8 @@ jobs:
         
       - name: Save image on disk
         run: |
+          # test
+          docker run --rm "docker.centreon.com/centreon/${{ inputs.image }}" true
           docker save -o ./${{ inputs.image }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
           ls -ltha ./
         shell: bash
