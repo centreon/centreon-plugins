@@ -103,7 +103,7 @@ jobs:
           echo "Check using buildx"
           docker buildx imagetools inspect docker.centreon.com/centreon/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
           echo "Check images"
-          docker images --digests | grep testing-plugins-noble
+          docker images --digests | grep ${{ inputs.image }}
         shell: bash
         
       - name: Save image on disk
