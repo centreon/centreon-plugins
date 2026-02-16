@@ -67,8 +67,13 @@ jobs:
 
       - name: Check image
         run: |
-          docker inspect docker.centreon.com/centreon/testing-plugins-noble \
-            --format='ID={{.Id}} Size={{.Size}} Digest={{.RepoDigests}}'
+          DIGEST=$(docker inspect "$IMAGE" --format='{{index .RepoDigests 0}}')
+          LAYERS=$(docker inspect "$IMAGE" --format='{{len .RootFS.Layers}}')
+          SIZE=$(docker inspect "$IMAGE" --format='{{.Size}}')
+          
+          echo "Digest: $DIGEST"
+          echo "Layers: $LAYERS"
+          echo "Size: $SIZE"
         shell: bash
         
       - name: Save image on disk
