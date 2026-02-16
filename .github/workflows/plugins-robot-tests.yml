@@ -67,13 +67,10 @@ jobs:
 
       - name: Check image
         run: |
-          DIGEST=$(docker inspect "$IMAGE" --format='{{index .RepoDigests 0}}')
-          LAYERS=$(docker inspect "$IMAGE" --format='{{len .RootFS.Layers}}')
-          SIZE=$(docker inspect "$IMAGE" --format='{{.Size}}')
-          
-          echo "Digest: $DIGEST"
-          echo "Layers: $LAYERS"
-          echo "Size: $SIZE"
+          echo "Check 1"
+          docker inspect docker.centreon.com/centreon/testing-plugins-noble   --format='Digest={{index .RepoDigests 0}} Size={{.Size}} Layers={{len .RootFS.Layers}}'
+          echo "Check 2"
+          docker manifest inspect docker.centreon.com/centreon/testing-plugins-noble:latest | jq '.manifests[]'
         shell: bash
         
       - name: Save image on disk
