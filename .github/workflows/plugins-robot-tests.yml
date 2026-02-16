@@ -69,16 +69,16 @@ jobs:
       - name: Check image
         run: |
           echo "Check 1"
-          docker inspect docker.centreon.com/centreon/testing-plugins-noble:latest   --format='Digest={{index .RepoDigests 0}} Size={{.Size}} Layers={{len .RootFS.Layers}}'
+          docker inspect docker.centreon.com/centreon/testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984   --format='Digest={{index .RepoDigests 0}} Size={{.Size}} Layers={{len .RootFS.Layers}}'
           echo "Check 2"
-          docker manifest inspect docker.centreon.com/centreon/testing-plugins-noble:latest | jq '.manifests[]'
+          docker manifest inspect docker.centreon.com/centreon/testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984 | jq '.manifests[]'
           echo "Check 3"
-          docker image inspect docker.centreon.com/centreon/testing-plugins-noble:latest
+          docker image inspect docker.centreon.com/centreon/testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984
         shell: bash
         
       - name: Save image on disk
         run: |
-          docker save -o ./${{inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}:latest
+          docker save -o ./testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}:latest
         shell: bash
 
       - name: Save image into cache
