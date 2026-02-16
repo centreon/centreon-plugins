@@ -94,6 +94,9 @@ jobs:
 
       - name: Load image
         run: |
+          echo "remove"
+          docker image rm -f --platform=${{ steps.resolve_image_digest.outputs.platform }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }} || true
+          echo "repull"
           docker pull --platform=${{ steps.resolve_image_digest.outputs.platform }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
           echo "test"
           docker run --rm "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}" true
