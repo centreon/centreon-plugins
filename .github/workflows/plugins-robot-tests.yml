@@ -63,7 +63,7 @@ jobs:
       - name: Load image
         run: |
           docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
-          docker create ${{inputs.image}}
+          docker create inspect docker.centreon.com/centreon/testing-plugins-noble
         shell: bash
 
       - name: Check image
