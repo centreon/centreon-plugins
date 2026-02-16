@@ -68,7 +68,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Package
         uses: ./.github/actions/package-nfpm
@@ -86,7 +86,7 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
       - name: Upload apt/dnf packages as artifacts if asked
         if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
           name: vmware-connector-daemon-${{ matrix.distrib }}
           path: centreon-plugin*
@@ -121,7 +121,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery
