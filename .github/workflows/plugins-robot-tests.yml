@@ -77,6 +77,7 @@ jobs:
       - name: Save image on disk
         run: |
           docker save -o ./testing-plugins-noble ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          ls -ltha ./
         shell: bash
 
       - name: Save image into cache
