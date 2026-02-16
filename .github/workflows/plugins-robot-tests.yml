@@ -60,27 +60,55 @@ jobs:
           username: ${{ secrets.registry_username }}
           password: ${{ secrets.registry_password }}
 
+      - name: Resolve image digest
+        id: resolve_image_digest
+        run: |
+          # Inputs
+          IMAGE="${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}"
+          PLATFORM="linux/${{ inputs.image }}"
+
+          # Deduce from inputs
+          OS="${PLATFORM%%/*}"
+          ARCH="${PLATFORM##*/}"
+
+          echo "Resolving $IMAGE for $OS/$ARCH"
+
+          DIGEST=$(
+          docker buildx imagetools inspect "$IMAGE" --raw \
+          | jq -r --arg os "$OS" --arg arch "$ARCH" '
+              .manifests[]
+              | select(.platform.os == $os and .platform.architecture == $arch)
+              | .digest' | head -n1
+          )
+
+          # Handle empty digest
+          if [ -z "$DIGEST" ]; then
+           echo "Failed to resolve platform-specific digest"
+           docker buildx imagetools inspect "$IMAGE"
+           exit 1
+          fi
+
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+        shell: bash
+
       - name: Load image
         run: |
-          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.resolve_image_digest }}
         shell: bash
 
       - name: Check image
         run: |
           echo "Check image info"
-          docker image inspect docker.centreon.com/centreon/${{ inputs.image }}
+          docker image inspect docker.centreon.com/centreon/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.resolve_image_digest }}
           echo "Check using buildx"
-          docker buildx imagetools inspect docker.centreon.com/centreon/${{ inputs.image }}
+          docker buildx imagetools inspect docker.centreon.com/centreon/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.resolve_image_digest }}
           echo "Check images"
           docker images --digests | grep testing-plugins-noble
         shell: bash
         
       - name: Save image on disk
         run: |
-          # test
-          docker run --rm "docker.centreon.com/centreon/${{ inputs.image }}" true
-          #docker save -o ./${{ inputs.image }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
-          docker save -o ./${{ inputs.image }} $(docker image inspect ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} --format '{{.Id}}')
+          docker save -o ./${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.resolve_image_digest }}
           ls -ltha ./
         shell: bash
 
