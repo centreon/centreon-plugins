@@ -62,7 +62,7 @@ jobs:
 
       - name: Load image
         run: |
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
         shell: bash
 
       - name: Check image
