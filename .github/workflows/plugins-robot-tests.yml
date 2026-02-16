@@ -62,16 +62,13 @@ jobs:
 
       - name: Load image
         run: |
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker create ${{inputs.image}}
         shell: bash
 
       - name: Check image
         run: |
-          #echo "Check 1"
-          #docker inspect docker.centreon.com/centreon/testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984   --format='Digest={{index .RepoDigests 0}} Size={{.Size}} Layers={{len .RootFS.Layers}}'
-          #echo "Check 2"
-          #docker manifest inspect docker.centreon.com/centreon/testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984 | jq '.manifests[]'
-          echo "Check 3"
+          echo "Check image info"
           docker image inspect docker.centreon.com/centreon/testing-plugins-noble
         shell: bash
         
