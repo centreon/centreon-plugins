@@ -89,11 +89,12 @@ jobs:
           fi
 
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "platform=$PLATFORM" >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: Load image
         run: |
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
+          docker pull --platform=${{ steps.resolve_image_digest.outputs.platform }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
           echo "test"
           docker run --rm "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}" true
         shell: bash
