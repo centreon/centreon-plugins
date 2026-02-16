@@ -62,15 +62,15 @@ jobs:
 
       - name: Load image
         run: |
-          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
         shell: bash
 
       - name: Check image
         run: |
           echo "Check image info"
-          docker image inspect docker.centreon.com/centreon/testing-plugins-noble
+          docker image inspect docker.centreon.com/centreon/${{ inputs.image }}
           echo "Check using buildx"
-          docker buildx imagetools inspect docker.centreon.com/centreon/testing-plugins-noble
+          docker buildx imagetools inspect docker.centreon.com/centreon/${{ inputs.image }}
         shell: bash
         
       - name: Save image on disk
