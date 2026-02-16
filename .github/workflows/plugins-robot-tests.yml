@@ -59,18 +59,13 @@ jobs:
           registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
           username: ${{ secrets.registry_username }}
           password: ${{ secrets.registry_password }}
-
-      - name: Load image
-        run: |
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
-        shell: bash
         
       - name: Resolve image digest
         id: resolve_image_digest
         run: |
           # Inputs
           IMAGE="${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}"
-          PLATFORM="linux/${{ inputs.image }}"
+          PLATFORM="linux/${{ inputs.arch }}"
 
           # Deduce from inputs
           OS="${PLATFORM%%/*}"
@@ -96,6 +91,11 @@ jobs:
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
         shell: bash
 
+      - name: Load image
+        run: |
+          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.resolve_image_digest }}
+        shell: bash
+        
       - name: Check image
         run: |
           echo "Check image info"
