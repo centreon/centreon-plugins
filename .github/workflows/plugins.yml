@@ -85,8 +85,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [get-environment, changes]
     outputs:
-      package_plugins: ${{ steps.get_plugins.outputs.package_plugins || 'false' }}
-      test_plugins: ${{ steps.get_plugins.outputs.test_plugins || 'false' }}
+      package_plugins: ${{ steps.get_plugins.outputs.package_plugins || 'true' }}
+      test_plugins: ${{ steps.get_plugins.outputs.test_plugins || 'true' }}
       index_matrix: ${{ steps.get_plugins.outputs.index_matrix }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
