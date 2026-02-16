@@ -95,18 +95,14 @@ jobs:
       - name: Load image
         run: |
           echo "check before load 24.04"
-          find /var/lib/docker -type f -name "*123a078714d5*"
           docker pull docker.centreon.com/proxy/ubuntu:noble@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b
           docker image inspect docker.centreon.com/proxy/ubuntu:noble@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b \
           | jq -r '.[0].RootFS.Layers[0]'
           echo "check before load 22.04"
           docker pull ubuntu:22.04
           echo "remove"
-          docker image rm -f --platform=${{ steps.resolve_image_digest.outputs.platform }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }} || true
-          echo "repull"
+          docker image prune -af
           docker pull --platform=${{ steps.resolve_image_digest.outputs.platform }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
-          echo "test"
-          docker run --rm "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}" true
         shell: bash
         
       - name: Check image
