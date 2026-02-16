@@ -94,6 +94,12 @@ jobs:
 
       - name: Load image
         run: |
+          echo "check before load 24.04"
+          docker pull ubuntu:24.04
+          docker image inspect ubuntu:24.04 \
+          | jq -r '.[0].RootFS.Layers[0]'
+          echo "check before load 22.04"
+          docker pull ubuntu:22.04
           echo "remove"
           docker image rm -f --platform=${{ steps.resolve_image_digest.outputs.platform }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }} || true
           echo "repull"
