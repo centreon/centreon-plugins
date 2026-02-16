@@ -68,14 +68,14 @@ jobs:
       - name: Check image
         run: |
           echo "Check 1"
-          docker inspect docker.centreon.com/centreon/testing-plugins-noble   --format='Digest={{index .RepoDigests 0}} Size={{.Size}} Layers={{len .RootFS.Layers}}'
+          docker inspect docker.centreon.com/centreon/testing-plugins-noble:latest   --format='Digest={{index .RepoDigests 0}} Size={{.Size}} Layers={{len .RootFS.Layers}}'
           echo "Check 2"
           docker manifest inspect docker.centreon.com/centreon/testing-plugins-noble:latest | jq '.manifests[]'
         shell: bash
         
       - name: Save image on disk
         run: |
-          docker save -o ./${{inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker save -o ./${{inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}:latest
         shell: bash
 
       - name: Save image into cache
