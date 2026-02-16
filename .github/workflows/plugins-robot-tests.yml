@@ -95,6 +95,8 @@ jobs:
       - name: Load image
         run: |
           echo "check before load 24.04"
+          sudo ls /var/lib/docker/containerd/daemon/io.containerd.content.v1.content/blobs/sha256/ \
+          | grep 123a078714d5
           docker pull docker.centreon.com/proxy/ubuntu:noble@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b
           docker image inspect docker.centreon.com/proxy/ubuntu:noble@sha256:cd1dba651b3080c3686ecf4e3c4220f026b521fb76978881737d24f200828b2b \
           | jq -r '.[0].RootFS.Layers[0]'
