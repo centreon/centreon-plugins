@@ -72,7 +72,7 @@ jobs:
           echo "Check 2"
           docker manifest inspect docker.centreon.com/centreon/testing-plugins-noble:latest | jq '.manifests[]'
           echo "Check 3"
-          docker image inspect --format='{{.GraphDriver.Name}}' docker.centreon.com/centreon/testing-plugins-noble:latest
+          docker image inspect docker.centreon.com/centreon/testing-plugins-noble:latest
         shell: bash
         
       - name: Save image on disk
