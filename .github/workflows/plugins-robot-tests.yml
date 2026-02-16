@@ -62,7 +62,8 @@ jobs:
 
       - name: Load image
         run: |
-          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          #docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker pull --platform=linux/amd64 ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-noble@sha256:a9a248b09ee893e1c43978c76551da25db150b1be370655b0f113b0d3f4c4984
         shell: bash
 
       - name: Check image
