@@ -60,6 +60,11 @@ jobs:
           username: ${{ secrets.registry_username }}
           password: ${{ secrets.registry_password }}
 
+      - name: Load image
+        run: |
+          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+        shell: bash
+        
       - name: Resolve image digest
         id: resolve_image_digest
         run: |
@@ -89,11 +94,6 @@ jobs:
           fi
 
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
-        shell: bash
-
-      - name: Load image
-        run: |
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.resolve_image_digest }}
         shell: bash
 
       - name: Check image
