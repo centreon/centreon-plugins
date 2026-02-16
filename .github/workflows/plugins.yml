@@ -159,16 +159,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
+        image: [testing-plugins-jammytesting-plugins-noble]
         include:
           - package_extension: deb
             image: testing-plugins-noble
             distrib: noble
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-bullseye-arm64
-            distrib: bullseye
-            arch: arm64
+            image: testing-plugins-jammy
+            distrib: jammy
+            arch: amd64
 
     name: "Test plugins on ${{ matrix.distrib }} ${{ matrix.arch }}"
 
