@@ -80,7 +80,7 @@ jobs:
           # test
           docker run --rm "docker.centreon.com/centreon/${{ inputs.image }}" true
           #docker save -o ./${{ inputs.image }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
-          docker save -o testing-plugins-noble.tar $(docker image inspect ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} --format '{{.Id}}')
+          docker save -o ./${{ inputs.image }} $(docker image inspect ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} --format '{{.Id}}')
           ls -ltha ./
         shell: bash
 
