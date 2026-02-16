@@ -1,6 +1,6 @@
 ARG REGISTRY_URL=docker.io
 
-FROM ${REGISTRY_URL}/almalinux:9
+FROM ${REGISTRY_URL}/almalinux:10
 
 RUN bash -e <<EOF
 
@@ -20,9 +20,8 @@ cpanm File::Copy::Recursive
 dnf install -y cpio libcurl-devel libssh-devel expat-devel libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
 cpanm Module::Build::Tiny
 cpanm Module::Install
-# Install fpm (ruby 3 is required)
-dnf module reset -y ruby
-dnf module enable -y ruby:3.1
+cpanm Module::CoreList
+# Install fpm
 dnf install -y ruby ruby-devel
 gem install fpm -v 1.17.0
 

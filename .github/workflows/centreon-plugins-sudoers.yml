@@ -8,12 +8,14 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
   push:
     branches:
       - develop
       - master
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
 
 env:
