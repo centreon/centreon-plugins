@@ -94,6 +94,8 @@ jobs:
       - name: Load image
         run: |
           docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
+          echo "test"
+          docker run --rm "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}" true
         shell: bash
         
       - name: Check image
@@ -110,6 +112,7 @@ jobs:
         run: |
           docker save -o ./${{ inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}@${{ steps.resolve_image_digest.outputs.digest }}
           ls -ltha ./
+          file ./${{ inputs.image }}
         shell: bash
 
       - name: Save image into cache
