@@ -111,7 +111,7 @@ sub new {
 }
 
 my %map_flags = (
-    'E' => 'enabled', 'A' => 'auto-generated', 'R' => 'reboot-required'
+    'E' => 'enabled', 'ES' => 'enabled', 'A' => 'auto-generated', 'R' => 'reboot-required'
 );
 
 my $oid_wlsxSysExtSwitchLicenseTable = '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1';
