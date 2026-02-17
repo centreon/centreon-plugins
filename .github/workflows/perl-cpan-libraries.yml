@@ -45,12 +45,14 @@ jobs:
             "Authen::SCRAM::Client",
             "BSON",
             "BSON::XS",
+            "Carp::Assert", # needed by perl-JSON-Path-1.0.6-2.el10
             "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
             "Crypt::Argon2",
             "Crypt::Blowfish_PP",
             "Crypt::OpenSSL::AES",
+            "Data::Compare", # needed by perl-Paws-0.46-2.el10
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
@@ -84,6 +86,7 @@ jobs:
             "PBKDF2::Tiny",
             "Statistics::Descriptive",
             "Statistics::Regression",
+            "Sys::SigAction", # needed by perl-jmx4perl-1.13-2.el10
             "Term::Clui",
             "Unicode::Stringprep",
             "URI::Template",
@@ -117,12 +120,16 @@ jobs:
             image: packaging-plugins-alma10
           - name: "BSON"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
+          - name: "Carp::Assert"
+            build_distribs: "el10"
           - name: "Crypt::Argon2"
             preinstall_cpanlibs: "Dist::Build"
             rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
             revision: "3"
           - name: "Crypt::OpenSSL::AES"
             build_distribs: "el8,el9"
+          - name: "Data::Compare"
+            build_distribs: "el10"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "Device::Modbus::RTU::Client"
@@ -155,6 +162,8 @@ jobs:
             build_distribs: "el9,el10"
           - name: "Statistics::Regression"
             version: "0.53"
+          - name: "Sys::SigAction"
+            build_distribs: "el10"
           - name: "URL::Encode::XS"
             build_distribs: "el9,el10"
           - name: "UUID"
@@ -376,6 +385,7 @@ jobs:
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
+            "Digest::SHA1", # needed by libjmx4perl-perl on jammy and noble
             "Email::Send::SMTP::Gmail",
             "Hash::Ordered",
             "HTTP::ProxyPAC",
@@ -443,6 +453,8 @@ jobs:
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
+          - name: "Digest::SHA1"
+            build_names: "jammy,noble"
           - name: "Hash::Ordered"
             build_names: "bullseye-amd64,bookworm,jammy"
           - name: "Libssh::Session"
