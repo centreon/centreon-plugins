@@ -1,12 +1,12 @@
 ARG REGISTRY_URL
 
-FROM ${REGISTRY_URL}/almalinux:8
+FROM ${REGISTRY_URL}/almalinux:10
 
 RUN bash -e <<EOF
 
 dnf install -y \
   git \
-  java-17-openjdk-headless \
+  java-21-openjdk-headless \
   wget \
   zstd
 

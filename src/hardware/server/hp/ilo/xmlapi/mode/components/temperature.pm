@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,8 +34,8 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'temperature'));
-    return if (!defined($self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{TEMPERATURE}->{TEMP}));
+    return if $self->check_filter(section => 'temperature');
+    return unless defined $self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{TEMPERATURE}->{TEMP};
 
     #<TEMPERATURE>
     #   <TEMP>
@@ -67,11 +67,35 @@ sub check {
         
         next if ($result->{CURRENTREADING}->{VALUE} !~ /[0-9]/);
         my $unit = $map_unit{lc($result->{CURRENTREADING}->{UNIT})};
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{CURRENTREADING}->{VALUE});        
-        if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Temperature '%s' is %s %s", $result->{LABEL}->{VALUE}, $result->{CURRENTREADING}->{VALUE}, $unit));
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{CURRENTREADING}->{VALUE});
+
+        # When no thresholds are defined by the user we add thresholds based on the CAUTION and CRITICAL fields returned by ILO
+        unless ($checked) {
+            my $add_one = 0;
+
+            foreach ( { ilo_code =>'CAUTION', centreon_code => 'warning' }, { ilo_code => 'CRITICAL', centreon_code => 'critical' } ) {
+                next if !$result->{ $_->{ilo_code} }->{VALUE} || $result->{ $_->{ilo_code} }->{VALUE} eq 'N/A';
+
+                $self->{numeric_threshold}->{temperature} = []
+                    unless $self->{numeric_threshold}->{temperature};
+
+                my $label = $_->{centreon_code}.'-temperature-'.@{$self->{numeric_threshold}->{temperature}};
+                $self->{perfdata}->threshold_validate(  label => $label,
+                                                        value => '@'.$result->{ $_->{ilo_code} }->{VALUE}.':');
+                push @{$self->{numeric_threshold}->{temperature}},
+                                    {  label => $label,
+                                       threshold => $_->{centreon_code}, instance => $instance
+                                    };
+                $add_one = 1;
+            }
+            ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{CURRENTREADING}->{VALUE}, dbg => 1)
+                if $add_one;
         }
+
+        $self->{output}->output_add(severity => $exit2,
+                                    short_msg => sprintf("Temperature '%s' is %s %s", $result->{LABEL}->{VALUE}, $result->{CURRENTREADING}->{VALUE}, $unit))
+            unless $self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1);
+
         $self->{output}->perfdata_add(
             label => 'temp', unit => $unit,
             nlabel => 'hardware.temperature.' . lc($result->{CURRENTREADING}->{UNIT}),

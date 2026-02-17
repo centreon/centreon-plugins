@@ -24,10 +24,14 @@ cpanm Module::Install
 dnf module reset -y ruby
 dnf module enable -y ruby:3.1
 dnf install -y ruby ruby-devel
-gem install fpm
+gem install fpm -v 1.17.0
 
 dnf clean all
 
 EOF
+
+COPY .github/patch/fpm-cpan.rb.diff /tmp/fpm-cpan.rb.diff
+# Patch to fix fpm MetaCpan request
+RUN patch -i /tmp/fpm-cpan.rb.diff $(find / -type f -name "cpan.rb") && /bin/rm -rf /tmp/fpm-cpan.rb.diff
 
 WORKDIR /src

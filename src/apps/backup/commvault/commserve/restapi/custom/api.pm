@@ -1,5 +1,5 @@
 #
-# Copyright 2026-Present Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,8 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use JSON::XS;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc qw/json_encode/;
 use MIME::Base64;
 
 sub new {
@@ -50,6 +50,8 @@ sub new {
             'url-path:s'     => { name => 'url_path' },
             'api-username:s' => { name => 'api_username',  default => '' },
             'api-password:s' => { name => 'api_password',  default => '' },
+            'api-token:s'    => { name => 'api_token',     default => '' },
+            'refresh-token:s'=> { name => 'refresh_token', default => '' },
             'user-domain:s'  => { name => 'user_domain' },
             'timeout:s'      => { name => 'timeout' },
             'instance:s'     => { name => 'instance', default => 'default' },
@@ -59,6 +61,8 @@ sub new {
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
+    $self->{api_token} = [ ];
+    $self->{refresh_token} = [ ];
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
@@ -85,7 +89,9 @@ sub check_options {
     $self->{api_username} = $self->{option_results}->{api_username};
     $self->{api_password} = $self->{option_results}->{api_password};
 
-    $self->{use_authent_token} = $self->{option_results}->{api_username} eq '' && $self->{option_results}->{api_password} eq '';
+    my $api_token = $self->{option_results}->{api_token};
+    my $refresh_token = $self->{option_results}->{refresh_token};
+    $self->{use_authent_token} = 1;
 
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{user_domain} = (defined($self->{option_results}->{user_domain})) ? $self->{option_results}->{user_domain} : '';
@@ -95,12 +101,23 @@ sub check_options {
     $self->{output}->option_exit(short_msg => 'Need to specify hostname option.')
         if $self->{hostname} eq '';
 
-    $self->{output}->option_exit(short_msg => "--api-username and --api-password must be set or both be unset")
-        if !$self->{use_authent_token} && ($self->{api_username} eq '' || $self->{api_password} eq '');
+    if ($api_token eq '') {
+        $self->{output}->option_exit(short_msg => "Need to specify --api-username or --api-token option.")
+            if $self->{api_username} eq '';
+        $self->{output}->option_exit(short_msg => "Need to specify --api-password option.")
+            if $self->{api_password} eq '';
+        $self->{use_authent_token} = 0;
+    } elsif ($self->{api_username} . $self->{api_password} ne '') {
+        $self->{output}->option_exit(short_msg => "Cannot use both --api-username/--api-password and --api-token options.");
+    } else {
+        $self->{output}->option_exit(short_msg => "Need to specify --refresh-token when --token is used.")
+            if $refresh_token eq '';
+
+        $self->insert_authent_token(authentToken => $api_token, refreshToken => $refresh_token );
+    }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
     $self->{cache_authent_token}->check_options(option_results => $self->{option_results});
-
     return 0;
 }
 
@@ -132,7 +149,16 @@ sub json_decode {
     my ($self, %options) = @_;
 
     $options{content} =~ s/\r//mg;
-    return centreon::plugins::misc::json_decode($options{content}, output => $self->{output}, no_exit => 1);
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($options{content});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $decoded;
 }
 
 sub build_options_for_httplib {
@@ -153,17 +179,39 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub load_authent_token {
+sub insert_authent_token {
+    my ($self, %options) = @_;
+    unshift @{$self->{api_token}}, $options{authentToken};
+    unshift @{$self->{refresh_token}}, $options{refreshToken};
+}
+
+sub get_authent_token {
+    my ($self) = @_;
+
+    return ('', '')
+        unless @{$self->{api_token}};
+    return ($self->{api_token}->[0], $self->{refresh_token}->[0]);
+}
+
+sub remove_authent_token {
+    my ($self) = @_;
+
+    shift @{$self->{api_token}};
+    shift @{$self->{refresh_token}};
+
+    return @{$self->{api_token}};
+}
+
+sub reload_authent_token {
     my ($self) = @_;
 
     my $has_cache_file = $self->{cache_authent_token}->read(statefile => 'commvault_commserve_cat_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}));
-    return (0, '', '') unless $has_cache_file;
+    return ('', '') unless $has_cache_file;
 
     my $authent_token = $self->{cache_authent_token}->get(name => 'authentToken') // '';
     my $refresh_token = $self->{cache_authent_token}->get(name => 'refreshToken') // '';
-    my $update_time = $self->{cache_authent_token}->get(name => 'update_time') // 0;
 
-    return ($update_time, $authent_token, $refresh_token);
+    return ($authent_token, $refresh_token);
 }
 
 sub refresh_authent_token
@@ -171,7 +219,11 @@ sub refresh_authent_token
     my ($self, %options) = @_;
     my $json_request = { accessToken => $options{authentToken}, refreshToken => $options{refreshToken} };
 
-    $json_request = json_encode($json_request, output => $self->{output});
+    eval {
+        $json_request = encode_json($json_request);
+    };
+    $self->{output}->option_exit(short_msg => 'cannot encode json request')
+        if $@;
 
     my $exit_on_failed = $options{exit_on_failed} // 1;
     my ($content) = $self->{http}->request(
@@ -192,9 +244,9 @@ sub refresh_authent_token
     # For some obscure reasons json flux is sometime invalid, so we have to extract values with regexp
     if ($content) {
         $accessToken = $1
-            if $content =~ /accessToken\":\s*\"([^\"]+)\"/m;
+            if $content =~ /accessToken\":\"([^\"]+)\"/;
         $refreshToken = $1
-            if $content =~ /refreshToken\":\s*\"([^\"]+)\"/m;
+            if $content =~ /refreshToken\":\"([^\"]+)\"/;
     }
 
     $self->{output}->option_exit(short_msg => "Cannot extract tokens !")
@@ -232,7 +284,14 @@ sub get_legacy_token {
         };
         $json_request->{domain} = $self->{user_domain} if ($self->{user_domain} ne '');
 
-        my $encoded = json_encode($json_request, output => $self->{output});
+        my $encoded;
+        eval {
+            $encoded = encode_json($json_request);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
+            $self->{output}->option_exit();
+        }
 
         my ($content) = $self->{http}->request(
             method => 'POST',
@@ -270,23 +329,40 @@ sub request_internal {
     my ($self, %options) = @_;
 
     $self->settings();
-    my $authent_token = '';
+    my ($authent_token, $refresh_token) = ('', '');
 
     if ($self->{use_authent_token}) {
-        (undef, $authent_token, undef) = $self->load_authent_token();
+        # If previous authent_token exist we use it in priority
+        ($authent_token, $refresh_token) = $self->reload_authent_token();
 
-	$self->{output}->option_exit(short_msg => 'Tokens where not found. Please use the "token" mode first')
-	    if $authent_token eq '';
-        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $authent_token);
-
+        $self->insert_authent_token(authentToken => $authent_token, refreshToken => $refresh_token)
+            if $authent_token ne '';
     } elsif (!defined($self->{legacy_token})) {
         $self->get_legacy_token(statefile => $self->{cache});
     }
 
     my $content;
+    # Information about the new access token authentication mode:
+    # The user creates a pair of tokens "access token" "refresh token" associated with the plugin
+    # "access token" is used to authenticate to the Commvault API. It is valid for 30 minutes, after this
+    # period it is automatically renewed by the plugin using "refresh token".
+    # When the renewal occurs, a completely new pair of "access token" "refresh token" is generated and
+    # the previous pair is revoked and can no longer be used.
+    # The plugin uses statfile to store the latest token pair to be used for authentication.
+    # Each token should be used by only one pluhin, it must not have any other use and must not be shared
+    # with other applications.
+    # The --instance parameter is used to handle cases where multiple plugins are executed on the same poller
+    # in order to identify the correct statefile to use.
+    # To authenticate using the access token, the plugin first tries the token saved in the statefile, then
+    # attempts to refresh it, next tries the token provided via the command line, and finally attempts to
+    # refresh it.
 
     # retries to handle token expiration
-    for my $retry (1..2) {
+    for my $retry (1..3) {
+        if ($self->{use_authent_token}) {
+            ($authent_token, $refresh_token) = $self->get_authent_token();
+            $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $authent_token);
+        }
         $content = $self->{http}->request(
             url_path => $self->{url_path} . $options{endpoint},
             get_param => $options{get_param},
@@ -297,13 +373,29 @@ sub request_internal {
         );
 
         last if $self->{http}->get_code() >= 200 && $self->{http}->get_code() < 300;
-        last if $self->{use_authent_token};
 
-        # legacy mode with auth token
-        # Maybe there is an issue with the token. So we retry.
-        $self->clean_legacy_token(statefile => $self->{cache});
-        $self->get_legacy_token(statefile => $self->{cache});
+        last if $retry > 1 and not $self->{use_authent_token};
+
+        if ($self->{use_authent_token}) {
+            last if $refresh_token eq '';
+
+            # If we have a refresh token, we try to refresh access token
+            my $another_token_left = $self->remove_authent_token();
+
+            ($authent_token, $refresh_token) = $self->refresh_authent_token(authentToken => $authent_token, refreshToken => $refresh_token, exit_on_failed => not $another_token_left);
+
+            if ($authent_token ne '') {
+                $self->write_authent_token(authentToken => $authent_token, refreshToken => $refresh_token);
+                $self->insert_authent_token(authentToken => $authent_token, refreshToken => $refresh_token);
+            }
+
+        } else { # legacy mode with auth token
+            # Maybe there is an issue with the token. So we retry.
+            $self->clean_legacy_token(statefile => $self->{cache});
+            $self->get_legacy_token(statefile => $self->{cache});
+        }
     }
+
     my $decoded = $self->json_decode(content => $content);
 
     $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)')
@@ -473,7 +565,19 @@ Set API password
 
 =item B<--instance>
 
-Set instance name to differentiate cache files when --api-token and 'token' authentication are used (default: 'default').
+Set instance name to differentiate cache files when --api-token is used (default: 'default').
+
+=item B<--api-token>
+
+Set API access token.
+An access token has a validity period of 30 minutes and is automatically refreshed by the plugin using the refresh token.
+After it is refreshed, the new login information is stored locally by the connector, so it is important to create a separate authentication token for each connector instance.
+Each token should be used by only one connector, it must not have any other use and must not be shared with other applications.
+
+=item B<--refresh-token>
+
+Set API refresh token associated to the access token.
+Refresh token is mandatory when --api-token is used.
 
 =item B<--timeout>
 

@@ -11,6 +11,7 @@ ACS
 --add-qos-limit
 --add-sysdesc
 ADSL
+AIX
 Alcatel
 Alertmanager
 allCapacity
@@ -116,6 +117,7 @@ FQDN
 FreeBSD
 FrontDoor
 frsevent
+FSx
 GCP
 --get-param
 GraphQL
@@ -234,6 +236,7 @@ NLCapacity
 --nomachineaccount
 notapplicable
 NRPE
+NSClient
 --ntlmv2
 NTLMv2
 NTP
