@@ -62,6 +62,7 @@ jobs:
 
       - name: Load image
         run: |
+          docker image prune -af
           docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
         shell: bash
 
