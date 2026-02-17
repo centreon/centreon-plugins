@@ -73,7 +73,7 @@ jobs:
       - name: Download nrpe sources
         run: |
           # Pinning latest known release assets here instead of using get-environment output version
-          # since NRPE versionning is not in line with standard centreon plugins versionning
+          # since NRPE versioning is not in line with standard centreon plugins versioning
           curl -sLo - "https://github.com/NagiosEnterprises/nrpe/releases/download/nrpe-${{ env.nrpe_official_version }}/nrpe-${{ env.nrpe_official_version }}.tar.gz" | tar zxpf -
           mv nrpe-${{ env.nrpe_official_version }} nrpe-src
         shell: bash
