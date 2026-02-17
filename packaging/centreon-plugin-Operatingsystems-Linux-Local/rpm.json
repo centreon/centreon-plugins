@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "centreon-plugin-Operatingsystems-Linux-Local-Process",
         "net-tools",
         "quota",
         "lsof",

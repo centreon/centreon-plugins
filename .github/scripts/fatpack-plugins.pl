@@ -124,29 +124,42 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/templates/hardware.pm'
         );
 
-        # Automatically include dependencies
-        while (my ($file, $dependencies) = each (%auto_dependencies)) {
-            if (grep { $_ eq $file } @{$config->{files}}) {
-                push @{$config->{files}}, @{$dependencies};
+        if ($config->{files} && ref $config->{files} ne 'ARRAY') {
+            # Single file
+            File::Copy::cp($config->{files}, "$plugin_build_dir/$config->{plugin_name}");
+        } else {
+            # Automatically include dependencies
+            while (my ($file, $dependencies) = each (%auto_dependencies)) {
+                if (grep { $_ eq $file } @{$config->{files}}) {
+                    push @{$config->{files}}, @{$dependencies};
+                }
             }
-        }
 
-        foreach my $file ((@common_files, @{$config->{files}})) {
-            if (-f $file) {
-                File::Copy::Recursive::fcopy($file, 'lib/' . $file);
-            } elsif (-d $file) {
-                File::Copy::Recursive::dircopy($file, 'lib/' . $file);
+            foreach my $file ((@common_files, @{$config->{files}})) {
+                if (-f $file) {
+                    File::Copy::Recursive::fcopy($file, 'lib/' . $file);
+                } elsif (-d $file) {
+                    File::Copy::Recursive::dircopy($file, 'lib/' . $file);
+                }
             }
-        }
-        # Remove __END__ for Centreon Connector Perl compatibility.
-        system 'find', 'lib', '-name', '*.pm', '-exec', 'sed', '-i', ' /__END__/d', '{}', ';';
+            if (ref $config->{exclude_files} eq 'ARRAY') {
+                # Remove excluded files from lib directory.
+                foreach (@{$config->{exclude_files}}) {
+                    next unless $_ && -f "lib/$_";
+                    unlink "lib/$_" or die "Could not delete lib/$_: $!";
+                }
+            }
+            # Remove __END__ for Centreon Connector Perl compatibility.
+            system 'find', 'lib', '-name', '*.pm', '-exec', 'sed', '-i', ' /__END__/d', '{}', ';';
 
-        # Fatpack plugin.
-        my $fatpacker = App::FatPacker->new();
-        my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
-        open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
-        print $fh $content;
-        close($fh);
+            # Fatpack plugin.
+            my $fatpacker = App::FatPacker->new();
+            my $content = $fatpacker->fatpack_file("centreon_plugins.pl");
+
+            open($fh, '>', "$plugin_build_dir/$config->{plugin_name}");
+            print $fh $content;
+            close($fh);
+        }
         chmod 0755, "$plugin_build_dir/$config->{plugin_name}"; # Add execution permission
     }
 }

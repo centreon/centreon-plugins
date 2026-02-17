@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "centreon-plugins-sudoers"
+    ]
+}
