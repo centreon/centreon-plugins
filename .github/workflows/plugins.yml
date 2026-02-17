@@ -18,7 +18,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/plugins.yml'
-      - '.github/scripts/plugins-source.container.pl'
+      - '.github/workflows/plugins-robot-tests.yml'
+      - '.github/scripts/list-plugins-to-build-and-test.py'
+      - '.github/scripts/prepare-package-plugins.sh'
+      - '.github/scripts/fatpack-plugins.pl'
+      - '.github/scripts/test-plugins.py'
       - '.github/packaging/centreon-plugin.yaml.template'
       - 'src/**'
       - 'packaging/**'
@@ -29,7 +33,11 @@ on:
       - master
     paths:
       - '.github/workflows/plugins.yml'
-      - '.github/scripts/plugins-source.container.pl'
+      - '.github/workflows/plugins-robot-tests.yml'
+      - '.github/scripts/list-plugins-to-build-and-test.py'
+      - '.github/scripts/prepare-package-plugins.sh'
+      - '.github/scripts/fatpack-plugins.pl'
+      - '.github/scripts/test-plugins.py'
       - '.github/packaging/centreon-plugin.yaml.template'
       - 'src/**'
       - 'packaging/**'

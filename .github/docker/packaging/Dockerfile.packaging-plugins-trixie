@@ -1,6 +1,6 @@
 ARG REGISTRY_URL=docker.io
 
-FROM ${REGISTRY_URL}/debian:bullseye
+FROM ${REGISTRY_URL}/debian:trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -21,6 +21,8 @@ RUN bash -e <<EOF
 
 apt-get update
 
+echo 'http://deb.debian.org/debian' | apt-get install -y pbuilder
+
 apt-get install -y \
   aptitude \
   ca-certificates \
@@ -36,6 +38,7 @@ apt-get install -y \
   git-buildpackage \
   jq \
   libapp-fatpacker-perl \
+  libcrypt-openssl-guess-perl \
   libcurl4-openssl-dev \
   libczmq-dev \
   libfile-copy-recursive-perl \
@@ -44,7 +47,6 @@ apt-get install -y \
   libmodule-install-perl \
   libssh-dev \
   lintian \
-  pbuilder \
   python3 \
   quilt \
   ruby \
