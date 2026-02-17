@@ -26,12 +26,13 @@ use warnings;
 use Exporter qw(import);
 
 use constant {
+    # Following constants must be used in skipped_code key of maps_counter_type
     RUN_OK          =>  0, # value present
     BUFFER_CREATION => -1, # cache creation, check will be done next time
     NOT_PROCESSED   => -2, # no result processed
     NO_VALUE        => -10, # contains no value
 
-    # Define the scope of a couunter
+    # Define the scope of a counter
     COUNTER_TYPE_GLOBAL   => 0, # global counter
     COUNTER_TYPE_INSTANCE => 1, # counter defined per instance
     COUNTER_TYPE_GROUP    => 2, # group of counters
@@ -61,3 +62,98 @@ $EXPORT_TAGS{all} = [ map { @$_ } values %EXPORT_TAGS ];
 our @EXPORT_OK = @{$EXPORT_TAGS{all}};
 
 1;
+
+__END__
+
+=head1 CONSTANTS
+
+=head2 Skipped codes
+
+Following constants must be used in the C<skipped_code> key of C<maps_counter_type>.
+C<NO_VALUE> and C<BUFFER_CREATION> are generated in C<centreon/plugins/values.pm>, but these values may also be generated directly within the plugin.
+
+=over 4
+
+=item B<RUN_OK (0)>
+
+The value has been successfully retrieved and processed.
+
+=item B<BUFFER_CREATION (-1)>
+
+Cache or buffer creation in progress, the check will be done during the next execution.
+
+=item B<NOT_PROCESSED (-2)>
+
+No result has been processed for this counter.
+
+=item B<NO_VALUE (-10)>
+
+The counter contains no value.
+
+=back
+
+=head2 Counter Scope (Type)
+
+Defines how a counter is applied.
+Those constants are used in C<centreon/plugins/templates/counter.pm> and in the C<maps_counter_type> structure.
+
+=over 4
+
+=item B<COUNTER_TYPE_GLOBAL (0)>
+
+A single global counter.
+
+=item B<COUNTER_TYPE_INSTANCE (1)>
+
+A counter defined per instance. Used to represent iteration over multiples objects of the same
+type (e.g. cpu in snmp_standard/mode/cpu.pm).
+
+=item B<COUNTER_TYPE_GROUP (2)>
+
+A logical group of counters.
+
+Used to represent a logical object exposing multiple related metrics (e.g. alarms in os/aix/local/mode/process.pm).
+
+=item B<COUNTER_TYPE_MULTIPLE (3)>
+
+Multiple grouped counters (multi-instance structure). Used to represent iteration over multiple logical
+objects exposing multiple related metrics (e.g. multiple volumes, each with local metrics and multiple
+associated VMs that have their own metrics in cloud/outscale/mode/volumes.pm).
+
+=back
+
+=head2 Multiple Counter Scope
+
+Only used when C<COUNTER_TYPE_MULTIPLE> is selected.
+
+=over 4
+
+=item B<COUNTER_MULTIPLE_INSTANCE (0)>
+
+Counter global to the instance.
+
+=item B<COUNTER_MULTIPLE_SUBINSTANCE (1)>
+
+Counter defined per subinstance.
+
+=back
+
+=head2 Counter Nature (Kind)
+
+Defines the nature of the counter value.
+Those constants are used in C<centreon/plugins/templates/counter.pm>.
+
+=over 4
+
+=item B<COUNTER_KIND_METRIC (1)>
+
+Numeric counter supporting thresholds and perfdata (default value if not specified).
+
+=item B<COUNTER_KIND_TEXT (2)>
+
+Text-based counter supporting status checks only.
+No performance data is generated.
+
+=back
+
+=cut
