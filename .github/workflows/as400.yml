@@ -8,12 +8,14 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/as400.yml'
       - 'as400/**'
   push:
     branches:
       - develop
       - master
     paths:
+      - '.github/workflows/as400.yml'
       - 'as400/**'
 
 jobs:

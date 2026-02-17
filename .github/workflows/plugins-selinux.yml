@@ -8,12 +8,14 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/plugins-selinux.yml'
       - 'selinux/**'
   push:
     branches:
       - develop
       - master
     paths:
+      - '.github/workflows/plugins-selinux.yml'
       - 'selinux/**'
 
 jobs:
