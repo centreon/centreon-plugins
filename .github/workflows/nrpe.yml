@@ -9,14 +9,12 @@ on:
   pull_request:
     paths:
       - 'nrpe/packaging/**'
-      - '.github/workflows/nrpe.yaml'
   push:
     branches:
       - develop
       - master
     paths:
       - 'nrpe/packaging/**'
-      - '.github/workflows/nrpe.yaml'
 
 jobs:
   dependency-scan:
