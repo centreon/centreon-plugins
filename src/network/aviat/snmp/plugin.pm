@@ -32,7 +32,11 @@ sub new {
     $self->{modes} = {
         'events'   => 'network::aviat::snmp::mode::events',
         'sensors'  => 'network::aviat::snmp::mode::sensors', 
-        'uptime'   => 'network::aviat::snmp::mode::uptime'
+        'uptime'   => 'snmp_standard::mode::uptime'
+    };
+
+    $self->{modes_options} = {
+        'uptime' => { force_new_perfdata => 1 }
     };
 
     return $self;
