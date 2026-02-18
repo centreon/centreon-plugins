@@ -75,8 +75,6 @@ Foreach ($DB in $MountedDB) {
     $item.database = $DB.Name
     $item.server = $DB.Server.Name
     $item.mounted = $DB.Mounted
-    $item.size = $DB.DatabaseSize.ToBytes().ToString()
-    $item.asize = $DB.AvailableNewMailboxSpace.ToBytes().ToString()
 ';
 
     if (defined($options{filter_database_test}) && $options{filter_database_test} ne '') {
@@ -89,6 +87,8 @@ Foreach ($DB in $MountedDB) {
     
     $ps .= '
         If ($DB.Mounted -eq $true) {
+            $item.size = $DB.DatabaseSize.ToBytes().ToString()
+            $item.asize = $DB.AvailableNewMailboxSpace.ToBytes().ToString()
 ';
 
     if ($no_mapi == 0) {
