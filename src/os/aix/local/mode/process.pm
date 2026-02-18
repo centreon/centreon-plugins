@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:values :counters);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::misc qw/trim is_excluded/;
 
@@ -43,10 +44,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'alarms', type => 2, message_multiple => '0 process problem detected', format_output => '%s process(es) problem(s) detected', 
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'alarms', type => COUNTER_TYPE_GROUP, message_multiple => '0 process problem detected', format_output => '%s process(es) problem(s) detected',
           display_counter_problem => { nlabel => 'processes.alerts.count', min => 0 },
-          group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ]
+          group => [ { name => 'alarm' } ]
         }
     ];
     

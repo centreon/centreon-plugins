@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::ssh;
+use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::misc;
 
 sub custom_status_output {
@@ -39,7 +40,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'commands', type => 1, message_separator => ' - ', display_long => 0 }
+        { name => 'commands', type => COUNTER_TYPE_INSTANCE, message_separator => ' - ', display_long => 0 }
     ];
 
     $self->{maps_counters}->{commands} = [
