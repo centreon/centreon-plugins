@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -57,7 +57,7 @@ Display system description.
 
 =item B<--force-oid>
 
-Can choose your oid (numeric format only).
+Can choose your OID (numeric format only).
 
 =item B<--check-overload>
 

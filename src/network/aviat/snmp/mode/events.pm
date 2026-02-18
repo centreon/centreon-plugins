@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_output {
     my ($self, %options) = @_;
@@ -70,10 +72,10 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'slots', type => 3, cb_prefix_output => 'prefix_slot_output', cb_long_output => 'long_slot_output',
+        { name => 'slots', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_slot_output', cb_long_output => 'long_slot_output',
           message_multiple => 'All slots are ok', indent_long_output => '    ',
             group => [
-                { name => 'events', display_long => 1, message_multiple => 'All events are ok', type => 1, skipped_code => { -1, => 1, -11 => 1 } }
+                { name => 'events', display_long => 1, message_multiple => 'All events are ok', type => COUNTER_MULTIPLE_SUBINSTANCE, skipped_code => { BUFFER_CREATION() => 1 } }
             ]
         }
     ];
@@ -81,7 +83,7 @@ sub set_counters {
     $self->{maps_counters}->{events} = [
         { 
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             unknown_default => '%{count} > 0 and %{severity} =~ /indetermined/',
             warning_default => '%{count} > 0 and %{severity} =~ /warning|minor/',
             critical_default => '%{count} > 0 and %{severity} =~ /major|critical/',
@@ -102,8 +104,8 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-event-severity:s' => { name => 'filter_event_severity', default => 'major|critical|warning|minor|indetermined|cleared' },
-        'filter-event-name:s'     => { name => 'filter_event_name' },
-        'filter-slot-name:s'      => { name => 'filter_slot_name' }
+        'filter-event-name:s'     => { name => 'filter_event_name', default => '' },
+        'filter-slot-name:s'      => { name => 'filter_slot_name', default => '' }
     });
 
     return $self;
@@ -176,14 +178,12 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_event, results => $snmp_result, instance => $slot_index . '.' . $instance);
 
-        $result->{severity} = 'unknown' if (!defined($result->{severity}));
+        $result->{severity} //= 'unknown';
+        $result->{eventName} //= '';
 
-        next if (defined($self->{option_results}->{filter_slot_name}) && $self->{option_results}->{filter_slot_name} ne '' &&
-            $slots->{$slot_index} !~ /$self->{option_results}->{filter_slot_name}/);
-        next if (defined($self->{option_results}->{filter_event_severity}) && $self->{option_results}->{filter_event_severity} ne '' &&
-            $result->{severity} !~ /$self->{option_results}->{filter_event_severity}/);
-        next if (defined($self->{option_results}->{filter_event_name}) && $self->{option_results}->{filter_event_name} ne '' &&
-            $result->{eventName} !~ /$self->{option_results}->{filter_event_name}/);
+        next if is_excluded($slots->{$slot_index}, $self->{option_results}->{filter_slot_name});
+        next if is_excluded($result->{severity}, $self->{option_results}->{filter_event_severity});
+        next if is_excluded($result->{eventName}, $self->{option_results}->{filter_event_name});
 
         if (!defined($self->{slots}->{$slot_index})) {
             $self->{slots}->{$slot_index} = {
