@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
 use Digest::MD5;
 use DateTime;
 
@@ -56,9 +57,9 @@ sub custom_long_calc {
     $self->{result_values}->{application} = $options{new_datas}->{$self->{instance} . '_application'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
 
-    return -11 if ($self->{result_values}->{status} !~ /Running/i);
+    return NOT_PROCESSED if ($self->{result_values}->{status} !~ /Running/i);
 
-    return 0;
+    return RUN_OK;
 }
 
 sub custom_success_perfdata {
@@ -97,14 +98,14 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', },
+        { name => 'jobs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 } }
     ];
     
     $self->{maps_counters}->{jobs} = [
         { 
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /Error/i',
             set => {
                 key_values => [
@@ -116,7 +117,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'long', type => 2, set => {
+        { label => 'long', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
                     { name => 'application' }, { name => 'elapsed' }
