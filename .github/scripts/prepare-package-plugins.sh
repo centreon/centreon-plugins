@@ -54,8 +54,8 @@ awk -v contents="$contents" \
   -v rpm_replaces="$rpm_replaces" \
   -v rpm_provides="$rpm_provides" \
 '{
-  gsub(/\[@PLUGIN_NAME@\]/, plugin)
-  gsub(/\[@SUMMARY@\]/, pkg_summary)
+  gsub(/@PLUGIN_NAME@/, plugin)
+  gsub(/@SUMMARY@/, pkg_summary)
   gsub(/\[@CONTENTS@\]/, contents)
   gsub(/\[@CONFLICTS@\]/, conflicts)
   gsub(/\[@REPLACES@\]/, replaces)
