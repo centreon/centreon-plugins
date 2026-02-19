@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
+        'certificates'    => 'os::windows::wsman::mode::certificates',
         'cpu'             => 'os::windows::wsman::mode::cpu',
         'eventlog'        => 'os::windows::wsman::mode::eventlog',
         'files-date'      => 'os::windows::wsman::mode::filesdate',
