@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters);
+use centreon::plugins::misc qw(is_excluded);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_output {
@@ -52,7 +54,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 1, message_multiple => 'All alarms are ok' }
+        { name => 'alarms', type => COUNTER_TYPE_INSTANCE, message_multiple => 'All alarms are ok' }
     ];
 
     $self->{maps_counters}->{alarms} = [
@@ -72,8 +74,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-instance:s' => { name => 'filter_instance' },
-        'filter-name:s'     => { name => 'filter_name' }
+        'filter-instance:s' => { name => 'filter_instance', default => '' },
+        'filter-name:s'     => { name => 'filter_name', default => '' }
     });
 
     return $self;
@@ -84,9 +86,9 @@ sub manage_selection {
 
     $self->{cache_name} = "kairos_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
-            (defined($self->{option_results}->{filter_instance}) ? $self->{option_results}->{filter_instance} : '')
+            ($self->{option_results}->{filter_counters} // '') . '_' .
+            $self->{option_results}->{filter_name} . '_' .
+            $self->{option_results}->{filter_instance}
         );
 
     my %map_name = (
@@ -144,6 +146,8 @@ sub manage_selection {
 
     my $oid_alarmTable = '.1.3.6.1.4.1.37755.51';
 
+
+
     my $snmp_result = $options{snmp}->get_table(oid => $oid_alarmTable, nothing_quit => 1);
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$oid_alarmTable\.(\d+)\.\d+$/);
@@ -151,10 +155,8 @@ sub manage_selection {
         next if ($snmp_result->{$oid} !~ /^Alarm\s+(.*?)\s+->\s+Tot:(\d+)/i);
         my ($name, $description, $count) = ($map_name{$instance}, $1, $2);
 
-        next if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
-            $instance ne /$self->{option_results}->{filter_instance}/);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/);
+        next if is_excluded($instance, $self->{option_results}->{filter_instance});
+        next if is_excluded($name, quotemeta($self->{option_results}->{filter_name}));
 
         $self->{alarms}->{$instance} = {
             instance => $instance,
@@ -183,10 +185,13 @@ Filter on alarm instance (Can be a regexp).
 
 Filter on alarm name (Can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-count>
 
 Thresholds.
-Can be: 'count'.
+
+=item B<--critical-count>
+
+Thresholds.
 
 =back
 

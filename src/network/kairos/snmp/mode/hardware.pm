@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+use centreon::plugins::constants qw(:counters);
+
 sub prefix_board_output {
     my ($self, %options) = @_;
 
@@ -35,7 +37,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'board', type => 0, cb_prefix_output => 'prefix_board_output' }
+        { name => 'board', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_board_output' }
     ];
 
     $self->{maps_counters}->{board} = [
@@ -120,9 +122,37 @@ Check hardware sensors.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-board-temperature>
 
-Thresholds: board-voltage (V), board-tx-current (A), board-temperature (C), board-tx-temperature (C)
+Threshold in C.
+
+=item B<--critical-board-temperature>
+
+Threshold in C.
+
+=item B<--warning-board-tx-current>
+
+Threshold in Amperes.
+
+=item B<--critical-board-tx-current>
+
+Threshold in Amperes.
+
+=item B<--warning-board-tx-temperature>
+
+Threshold in C.
+
+=item B<--critical-board-tx-temperature>
+
+Threshold in C.
+
+=item B<--warning-board-voltage>
+
+Threshold in Volts.
+
+=item B<--critical-board-voltage>
+
+Threshold in Volts.
 
 =back
 

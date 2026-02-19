@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,24 @@ sub new {
 
     $self->{modes} = {
         'alarms'          => 'network::kairos::snmp::mode::alarms',
-        'cpu'             => 'network::kairos::snmp::mode::cpu',
-        'cpu-detailed'    => 'network::kairos::snmp::mode::cpudetailed',
+        'cpu'             => 'snmp_standard::mode::cpu',
+        'cpu-detailed'    => 'snmp_standard::mode::cpudetailed',
         'hardware'        => 'network::kairos::snmp::mode::hardware',
-        'interfaces'      => 'network::kairos::snmp::mode::interfaces',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-alarms'     => 'network::kairos::snmp::mode::listalarms',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'load'            => 'network::kairos::snmp::mode::load',
-        'memory'          => 'network::kairos::snmp::mode::memory',
-        'uptime'          => 'network::kairos::snmp::mode::uptime'
+        'load'            => 'snmp_standard::mode::loadaverage',
+        'memory'          => 'snmp_standard::mode::memory',
+        'uptime'          => 'snmp_standard::mode::uptime'
+    };
+
+    $self->{modes_options} = {
+        'cpu'             => { force_new_perfdata => 1 },
+        'cpudetailed'     => { force_new_perfdata => 1 },
+        'interfaces'      => { force_new_perfdata => 1 },
+        'load'            => { force_new_perfdata => 1 },
+        'memory'          => { force_new_perfdata => 1 },
+        'uptime'          => { force_new_perfdata => 1 }
     };
 
     return $self;

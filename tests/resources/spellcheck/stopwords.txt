@@ -167,6 +167,7 @@ jobqueues
 Jolokia
 journalctl
 JSONPath
+Kairos
 kccevent
 keepass
 Keysight
