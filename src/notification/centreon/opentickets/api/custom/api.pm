@@ -49,7 +49,7 @@ sub new {
             'url-path:s'     => { name => 'url_path' },
             'api-username:s' => { name => 'api_username' },
             'api-password:s' => { name => 'api_password' },
-            'api-timeout:s'      => { name => 'api_timeout' }
+            'api-timeout:s'      => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
