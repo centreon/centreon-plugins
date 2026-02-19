@@ -1,0 +1,30 @@
+[
+    {
+        "subject": "CN=Expired Cert",
+        "PSParentPath": "cert:\\LocalMachine\\My",
+        "thumbprint": "AAAA000000000000000000000000000000000001",
+        "archived": false,
+        "notAfter": "1771372800"
+    },
+    {
+        "subject": "CN=Soon Expiring",
+        "PSParentPath": "cert:\\LocalMachine\\My",
+        "thumbprint": "BBBB000000000000000000000000000000000002",
+        "archived": false,
+        "notAfter": "1774051200"
+    },
+    {
+        "subject": "CN=Valid Cert",
+        "PSParentPath": "cert:\\LocalMachine\\Root",
+        "thumbprint": "CCCC000000000000000000000000000000000003",
+        "archived": false,
+        "notAfter": "1803016126"
+    },
+    {
+        "subject": "CN=Archived Cert",
+        "PSParentPath": "cert:\\LocalMachine\\My",
+        "thumbprint": "DDDD000000000000000000000000000000000004",
+        "archived": true,
+        "notAfter": "1803016126"
+    }
+]
