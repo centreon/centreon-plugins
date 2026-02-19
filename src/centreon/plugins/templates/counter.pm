@@ -189,35 +189,71 @@ sub check_options {
         my $list_counter = '';
         my $th_counter = '';
         my $counters;
-        foreach my $key (keys %{$self->{maps_counters}}) {
-            foreach (@{$self->{maps_counters}->{$key}}) {
-                $counters->{metrics}->{$_->{label}}->{nlabel} ="";
-                $counters->{metrics}->{$_->{label}}->{min}="";
-                $counters->{metrics}->{$_->{label}}->{max}="";
-                $counters->{metrics}->{$_->{label}}->{unit}="";
-                $counters->{metrics}->{$_->{label}}->{output_template}="";
-                if(defined($_->{nlabel})) {
-                    $counters->{metrics}->{$_->{label}}->{nlabel} = $_->{nlabel};
-                }
-                if(defined($_->{set}->{perfdatas}->[0]->{min})) {
-                    $counters->{metrics}->{$_->{label}}->{min} = $_->{set}->{perfdatas}->[0]->{min};
-                }
-                if(defined($_->{set}->{perfdatas}->[0]->{max})) {
-                    $counters->{metrics}->{$_->{label}}->{max} = $_->{set}->{perfdatas}->[0]->{max};
-                }
-                if(defined($_->{set}->{perfdatas}->[0]->{unit})) {
-                    $counters->{metrics}->{$_->{label}}->{unit} = $_->{set}->{perfdatas}->[0]->{unit};
-                }
-                if(defined($_->{set}->{perfdatas}->[0]->{template})) {
-                    $counters->{metrics}->{$_->{label}}->{output_template} = $_->{set}->{perfdatas}->[0]->{template};
-                }
-                my $label = $_->{label};
-                $label =~ s/-//g;
-                $list_counter .= $_->{label}." ";
-                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";
-
+        my $counter_name;
+        my $group_name;
+        foreach (@{$self->{maps_counters_type}}) {
+            $counter_name = $_->{name};
+            $counters->{counters}->{$counter_name}->{type}= $_->{type};
+            if(defined($_->{message_multiple})) {
+                $counters->{counters}->{$counter_name}->{message_multiple} = $_->{message_multiple};
+            }
+            if(defined($_->{display_short})) {
+                $counters->{counters}->{$counter_name}->{display_short} = $_->{display_short};
+            }
+            if(defined($_->{group})) {
+                foreach (@{$_->{group}}) {
+                    $group_name = $_->{name};
+                    $counters->{counters}->{$group_name}->{parent} = $counter_name;
+                    $counters->{counters}->{$group_name}->{type}= $_->{type};
+                    if(defined($_->{message_multiple})) {
+                        $counters->{counters}->{$group_name}->{message_multiple} = $_->{message_multiple};
+                    }
+                     if(defined($_->{display_short})) {
+                        $counters->{counters}->{$counter_name}->{display_short} = $_->{display_short};
+                    }
+                 }
             }
         }
+
+        foreach my $counter_key (keys %{$self->{maps_counters}}) {
+            if(defined($counters->{counters}->{$counter_key})) {
+                foreach (@{$self->{maps_counters}->{$counter_key}}) {
+                    my $label =  $_->{label};
+                    $counters->{counters}->{$counter_key}->{metrics}->{$label}->{label} = $label;
+                    if(defined($_->{nlabel})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{nlabel} = $_->{nlabel};
+                    }
+                    if(defined($_->{nlabel})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{nlabel} = $_->{nlabel};
+                    }
+                    if(defined($_->{type})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{type} = $_->{type};
+                    }
+                    if(defined($_->{filter})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{filter} = $_->{filter};
+                    }
+                    if(defined($_->{set}->{perfdatas}->[0]->{min})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{min} = $_->{set}->{perfdatas}->[0]->{min};
+                    }
+                    if(defined($_->{set}->{perfdatas}->[0]->{max})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{max} = $_->{set}->{perfdatas}->[0]->{max};
+                    }
+                    if(defined($_->{set}->{perfdatas}->[0]->{unit})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{unit} = $_->{set}->{perfdatas}->[0]->{unit};
+                    }
+                    if(defined($_->{set}->{perfdatas}->[0]->{template})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{template} = $_->{set}->{perfdatas}->[0]->{template};
+                    }
+                    if(defined($_->{set}->{output_template})) {
+                        $counters->{counters}->{$counter_key}->{metrics}->{$label}->{output_template} = $_->{set}->{output_template};
+                    }
+                    $label =~ s/-//g;
+                    $list_counter .= $_->{label}." ";
+                    $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";
+                }
+            }
+        }
+        
         $counters->{"counter list"}=$list_counter;
         $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRAOPTIONS\$";
 
