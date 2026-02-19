@@ -102,13 +102,13 @@ sub check_options {
         if $self->{hostname} eq '';
 
     if ($api_token eq '') {
-	$self->{output}->option_exit(short_msg => "Need to specify --api-username or --api-token option.")
+        $self->{output}->option_exit(short_msg => "Need to specify --api-username or --api-token option.")
             if $self->{api_username} eq '';
-	$self->{output}->option_exit(short_msg => "Need to specify --api-password option.")
-	    if $self->{api_password} eq '';
+        $self->{output}->option_exit(short_msg => "Need to specify --api-password option.")
+            if $self->{api_password} eq '';
         $self->{use_authent_token} = 0;
     } elsif ($self->{api_username} . $self->{api_password} ne '') {
-	$self->{output}->option_exit(short_msg => "Cannot use both --api-username/--api-password and --api-token options.");
+        $self->{output}->option_exit(short_msg => "Cannot use both --api-username/--api-password and --api-token options.");
     } else {
         $self->{output}->option_exit(short_msg => "Need to specify --refresh-token when --token is used.")
             if $refresh_token eq '';
@@ -533,7 +533,7 @@ Commvault API
 
 =head1 SYNOPSIS
 
-Commvault api
+Commvault API
 
 =head1 REST API OPTIONS
 

@@ -18,7 +18,11 @@ on:
       - ".github/docker/packaging/*"
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   dockerize:
@@ -37,11 +41,17 @@ jobs:
             dockerfile: packaging-plugins-alma9
             image: packaging-plugins-alma9
           - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-alma10
+            image: packaging-plugins-alma10
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma8
             image: packaging-plugins-java-alma8
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma9
             image: packaging-plugins-java-alma9
+          - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-java-alma10
+            image: packaging-plugins-java-alma10
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
@@ -52,11 +62,17 @@ jobs:
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
           - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-trixie
+            image: packaging-plugins-trixie
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bookworm
             image: packaging-plugins-java-bookworm
+          - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-java-trixie
+            image: packaging-plugins-java-trixie
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy

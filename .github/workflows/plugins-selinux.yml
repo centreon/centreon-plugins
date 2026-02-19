@@ -8,16 +8,22 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/plugins-selinux.yml'
       - 'selinux/**'
   push:
     branches:
       - develop
       - master
     paths:
+      - '.github/workflows/plugins-selinux.yml'
       - 'selinux/**'
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
     with:
       version_file: selinux/packaging/centreon-plugins-selinux.yaml

@@ -11,6 +11,7 @@ ACS
 --add-qos-limit
 --add-sysdesc
 ADSL
+AIX
 Alcatel
 Alertmanager
 allCapacity
@@ -51,6 +52,8 @@ centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
+CommServe
+Commvault
 connections-dhcp
 connections-dns
 cpu
@@ -105,13 +108,16 @@ FibreAlliance
 --force-counters64
 --force-oid
 Forcepoint
+FortiAuthenticator
 Fortigate
 Fortinet
 FortiOS
+FortiTokens
 FQDN
 FreeBSD
 FrontDoor
 frsevent
+FSx
 GCP
 --get-param
 GraphQL
@@ -230,6 +236,7 @@ NLCapacity
 --nomachineaccount
 notapplicable
 NRPE
+NSClient
 --ntlmv2
 NTLMv2
 NTP
@@ -246,6 +253,7 @@ okta
 oneaccess-sys-mib
 OpenMetrics
 OpenStack
+OpenWSMAN
 OSPF
 out-bcast
 out-fc-wait
@@ -262,6 +270,7 @@ physicaldrive
 PKCS1
 Plink
 Podman
+Postgres
 powershell
 powershell.exe
 PPID
@@ -392,4 +401,6 @@ WLAN
 WLC
 WSMAN
 XPath
+ZDX
 ZFS
+Zscaler

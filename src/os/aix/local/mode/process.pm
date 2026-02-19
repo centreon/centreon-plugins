@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::misc qw/trim is_excluded/;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -80,12 +81,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-command:s'  => { name => 'filter_command' },
-        'filter-arg:s'      => { name => 'filter_arg' },
-        'filter-state:s'    => { name => 'filter_state' },
-        'filter-ppid:s'	    => { name => 'filter_ppid' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' }
+        'filter-command:s'  => { name => 'filter_command',  default => '' },
+        'filter-arg:s'      => { name => 'filter_arg',      default => '' },
+        'filter-state:s'    => { name => 'filter_state',    default => '' },
+        'filter-ppid:s'     => { name => 'filter_ppid',     default => '' },
+        'warning-status:s'  => { name => 'warning_status',  default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
+        'show-all'          => { name => 'show_all' },
+
     });
 
     return $self;
@@ -96,6 +99,9 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
+
+    # show-all implies verbose
+    $self->{output}->{option_results}->{verbose} = 1 if $self->{option_results}->{show_all};
 }
 
 my %state_map = (
@@ -148,26 +154,27 @@ sub manage_selection {
     foreach my $line (@lines) {
         next if ($line !~ /^(.*?)===(.*?)===(.*?)===(.*?)===(.*?)===(.*)$/);
         my ($state, $elapsed, $pid, $ppid, $cmd, $args) = (
-            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3),
-            centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6)
+            trim($1), trim($2), trim($3),
+            trim($4), trim($5), trim($6)
         );
 
-        next if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
-                 $cmd !~ /$self->{option_results}->{filter_command}/);
-        next if (defined($self->{option_results}->{filter_arg}) && $self->{option_results}->{filter_arg} ne '' &&
-                 $args !~ /$self->{option_results}->{filter_arg}/);
-        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $state_map{$state} !~ /$self->{option_results}->{filter_state}/i);
-        next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
-                 $ppid !~ /$self->{option_results}->{filter_ppid}/);
+        next if is_excluded($cmd, $self->{option_results}->{filter_command});
+        next if is_excluded($args, $self->{option_results}->{filter_arg});
+        next if is_excluded($state_map{$state} || '', $self->{option_results}->{filter_state});
+        next if is_excluded($ppid, $self->{option_results}->{filter_ppid});
 
-        $self->{alarms}->{global}->{alarm}->{$pid} = {
+        my %item = (
             ppid => $ppid, 
             state => $state_map{$state},
             elapsed => $self->get_time_seconds(value => $elapsed), 
             cmd => $cmd,
             args => $args
-        };
+        );
+
+        $self->{output}->output_add(severity => 'OK', long_msg => custom_status_output({ result_values => \%item }))
+            if $self->{option_results}->{show_all};
+
+        $self->{alarms}->{global}->{alarm}->{$pid} = \%item;
     }
 
     $self->{global} = { total => scalar(keys %{$self->{alarms}->{global}->{alarm}}) };
@@ -194,13 +201,17 @@ Filter process arguments (regexp can be used).
 
 =item B<--filter-ppid>
 
-Filter process ppid (regexp can be used).
+Filter process C<ppid> (regexp can be used).
 
 =item B<--filter-state>
 
 Filter process states (regexp can be used).
 You can use: 'Canceled', 'Nonexistent', 'Active',
 'Swapped', 'Idle', 'Stopped', 'Running', 'Sleeping'.
+
+=item B<--show-all>
+
+Display all processes (not only problems). Implies --verbose.
 
 =item B<--warning-status>
 
@@ -212,10 +223,21 @@ You can use the following variables: %{ppid}, %{state}, %{elapsed}, %{cmd}, %{ar
 Define the conditions to match for the status to be CRITICAL (default: '').
 You can use the following variables: %{ppid}, %{state}, %{elapsed}, %{cmd}, %{args}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-status>
 
-Thresholds.
-Can be: 'total'.
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-total>
+
+Threshold.
+
+=item B<--critical-total>
+
+Threshold.
 
 =back
 

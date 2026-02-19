@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ sub get_metrics_mapping {
             },
             DataWriteBytes => {
                 output    => 'Data Write Bytes',
-                label     => 'data-write-ops',
+                label     => 'data-write-bytes',
                 nlabel    => {
                     absolute      => 'fsx.data.write.bytes',
                     per_second    => 'fsx.data.write.bytespersecond'
@@ -176,19 +176,51 @@ Set the instance name (required) (can be defined multiple times).
 =item B<--filter-metric>
 
 Filter on a specific metric. 
-Can be: DataReadBytes, DataWriteBytes, DataReadOperations, DataWriteOperations, MetaDataOperations
+Can be: C<DataReadBytes>, C<DataWriteBytes>, C<DataReadOperations>, C<DataWriteOperations>, C<MetaDataOperations>
 
 =item B<--statistic>
 
 Set the metric calculation method (Only Sum is relevant).
 
-=item B<--warning-$metric$>
+=item B<--warning-data-read-bytes>
 
-Warning thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
+Threshold.
 
-=item B<--critical-$metric$>
+=item B<--critical-data-read-bytes>
 
-Critical thresholds ($metric$ can be: 'data-write-ops', 'data-write-ops', 'data-read-ops', 'data-read-bytes', 'metadata-ops-bytes').
+Threshold.
+
+=item B<--warning-data-read-ops>
+
+Threshold.
+
+=item B<--critical-data-read-ops>
+
+Threshold.
+
+=item B<--warning-data-write-bytes>
+
+Threshold.
+
+=item B<--critical-data-write-bytes>
+
+Threshold.
+
+=item B<--warning-data-write-ops>
+
+Threshold.
+
+=item B<--critical-data-write-ops>
+
+Threshold.
+
+=item B<--warning-metadata-ops-bytes>
+
+Threshold.
+
+=item B<--critical-metadata-ops-bytes>
+
+Threshold.
 
 =back
 

@@ -8,18 +8,24 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
   push:
     branches:
       - develop
       - master
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
 
 env:
   module_name: centreon-plugins-sudoers
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   package:

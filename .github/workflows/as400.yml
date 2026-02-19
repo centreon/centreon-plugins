@@ -8,16 +8,22 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/as400.yml'
       - 'as400/**'
   push:
     branches:
       - develop
       - master
     paths:
+      - '.github/workflows/as400.yml'
       - 'as400/**'
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
     with:
       version_file: as400/connector.as400/pom.xml

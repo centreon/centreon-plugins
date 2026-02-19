@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/perl-keepass-reader.yml"
       - "dependencies/perl-keepass-reader/**"
   push:
     branches:
@@ -16,13 +17,18 @@ on:
       - master
       - "[2-9][0-9].[0-9][0-9].x"
     paths:
+      - ".github/workflows/perl-keepass-reader.yml"
       - "dependencies/perl-keepass-reader/**"
 
 env:
   module_name: perl-keepass-reader
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   package:
