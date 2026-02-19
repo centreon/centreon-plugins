@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw(is_excluded);
 
 sub prefix_backend_output {
     my ($self, %options) = @_;
@@ -43,13 +45,13 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'backend', type => 1, cb_prefix_output => 'prefix_backend_output', message_multiple => 'All backends are ok' }
+        { name => 'backend', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_backend_output', message_multiple => 'All backends are ok' }
     ];
     
     $self->{maps_counters}->{backend} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} !~ /UP/i',
             set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
@@ -132,19 +134,29 @@ my $mapping = {
         bytesOUT     => { oid => '.1.3.6.1.4.1.29385.106.1.1.9' },
         status       => { oid => '.1.3.6.1.4.1.29385.106.1.1.17' }
     },
-    hapee => {
+    hapee_legacy => {
         queueCur     => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.4' },
         sessionCur   => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.7' },
         sessionTotal => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.10' },
         bytesIN      => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.12' },
         bytesOUT     => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.13' },
         status       => { oid => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.20' }
+    },
+    hapee => {
+        queueCur     => { oid => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.4' },
+        sessionCur   => { oid => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.7' },
+        sessionTotal => { oid => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.10' },
+        bytesIN      => { oid => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.12' },
+        bytesOUT     => { oid => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.13' },
+        status       => { oid => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.20' }
     }
+
 };
 my $mapping_name = {
-    csv => '.1.3.6.1.4.1.29385.106.1.1.0',
-    aloha => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.3', # alBackendName
-    hapee => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.3' # lbBackendName
+    csv          => '.1.3.6.1.4.1.29385.106.1.1.0',
+    aloha        => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.3', # alBackendName
+    hapee_legacy => '.1.3.6.1.4.1.23263.4.3.1.3.3.1.3', # lbBackendName
+    hapee        => '.1.3.6.1.4.1.58750.4.3.1.3.3.1.3'  # lbBackendName
 };
 
 sub manage_selection {
@@ -156,18 +168,17 @@ sub manage_selection {
     }
 
     my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $mapping_name->{csv} },
-            { oid => $mapping_name->{aloha} },
-            { oid => $mapping_name->{hapee} }
-        ],
+        oids => [ map { { oid => $_ } } values(%$mapping_name) ],
         nothing_quit => 1
     );
     my $branch = 'aloha';
-    if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(keys %{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
+
+    if (defined($snmp_result->{ $mapping_name->{csv} }) && keys %{$snmp_result->{ $mapping_name->{csv} }}) {
         $branch = 'csv';
-    } elsif (defined($snmp_result->{ $mapping_name->{hapee} }) && scalar(keys %{$snmp_result->{ $mapping_name->{hapee} }}) > 0) {
+    } elsif (defined($snmp_result->{ $mapping_name->{hapee} }) && keys %{$snmp_result->{ $mapping_name->{hapee} }}) {
         $branch = 'hapee';
+    } elsif (defined($snmp_result->{ $mapping_name->{hapee_legacy} }) && keys %{$snmp_result->{ $mapping_name->{hapee_legacy} }}) {
+        $branch = 'hapee_legacy';
     }
 
     $self->{backend} = {};
@@ -176,8 +187,7 @@ sub manage_selection {
         my $instance = $1;
         my $name = $snmp_result->{$mapping_name->{$branch}}->{$oid};
 
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
+        if (is_excluded($name, $self->{option_results}->{filter_name})) {
             $self->{output}->output_add(long_msg => "skipping backend '" . $name . "'.", debug => 1);
             next;
         }
@@ -185,10 +195,8 @@ sub manage_selection {
         $self->{backend}->{$instance} = { display => $name };
     }
 
-    if (scalar(keys %{$self->{backend}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No backend found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No backend found.")
+        unless keys %{$self->{backend}};
 
     $options{snmp}->load(
         oids => [
@@ -242,11 +250,45 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /UP/i').
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current-queue>
 
-Thresholds.
-Can be: 'total-sessions', 'current-sessions', 'current-queue',
-'traffic-in' (b/s), 'traffic-out' (b/s).
+Threshold.
+
+=item B<--critical-current-queue>
+
+Threshold.
+
+=item B<--warning-current-sessions>
+
+Threshold.
+
+=item B<--critical-current-sessions>
+
+Threshold.
+
+=item B<--warning-total-sessions>
+
+Threshold.
+
+=item B<--critical-total-sessions>
+
+Threshold.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
 
 =back
 
