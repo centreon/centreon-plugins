@@ -33,7 +33,7 @@ jobs:
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -44,12 +44,18 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-java-alma9
             distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-java-alma10
+            distrib: el10
           - package_extension: deb
             image: packaging-plugins-java-bullseye
             distrib: bullseye
           - package_extension: deb
             image: packaging-plugins-java-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-java-trixie
+            distrib: trixie
           - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
@@ -132,9 +138,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb
