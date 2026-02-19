@@ -1,6 +1,5 @@
 {
     "dependencies": [
-        "centreon-plugin-Operatingsystems-Linux-Local-Process",
         "libdatetime-perl",
         "libxml-libxml-perl",
         "net-tools",

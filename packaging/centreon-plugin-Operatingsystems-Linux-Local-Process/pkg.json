@@ -1,6 +1,0 @@
-{
-    "pkg_name": "centreon-plugin-Operatingsystems-Linux-Local-Process",
-    "pkg_summary": "Centreon Plugin extenstion to monitor Linux process using local commands",
-    "plugin_name": "centreon_linux_local_process.pl",
-    "files": "os/linux/local/centreon_linux_local_process.pl"
-}
