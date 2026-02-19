@@ -19,6 +19,7 @@ contents:
     dst: "/usr/lib/centreon/plugins/"
     file_info:
       mode: 0775
+  [@CONTENTS@]
 
 conflicts:
   [@CONFLICTS@]

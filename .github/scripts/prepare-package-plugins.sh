@@ -24,6 +24,7 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   pkg_values=($(jq -r '.pkg_name,.plugin_name' "$PACKAGE_FILE"))
   pkg_summary=$(echo "${pkg_values[0]}")
   plugin_name=$(echo "${pkg_values[1]}")
+  contents=$(jq -r '.package_files // [] | map("- src: \"" + .src + "\"\n  dst: \"" + .dst + "\"\n  file_info:\n    mode: " + (.file_mode // "0755")) | join("\n")' "$PACKAGE_FILE")
   conflicts=$(jq -r '.conflicts // [] | join(",")' "$PACKAGE_FILE")
   replaces=$(jq -r '.replaces // [] | join(",")' "$PACKAGE_FILE")
   provides=$(jq -r '.provides // [] | join(",")' "$PACKAGE_FILE")
@@ -38,6 +39,7 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
 
   sed -e "s/@PLUGIN_NAME@/$PLUGIN/g;" \
     -e "s/@SUMMARY@/$pkg_summary/g" \
+    -e "s/@CONTENTS@/$contents/g" \
     -e "s/@CONFLICTS@/$conflicts/g" \
     -e "s/@REPLACES@/$replaces/g" \
     -e "s/@PROVIDES@/$provides/g" \
