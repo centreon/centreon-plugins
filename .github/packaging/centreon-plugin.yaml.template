@@ -19,7 +19,7 @@ contents:
     dst: "/usr/lib/centreon/plugins/"
     file_info:
       mode: 0775
-[@CONTENTS@]
+@CONTENTS@
 
 conflicts:
   [@CONFLICTS@]
@@ -56,7 +56,7 @@ overrides:
       perl(sort),
       perl(String::ShellQuote),
       tzdata,
-      [@RPM_DEPENDENCIES@]
+      @RPM_DEPENDENCIES@
     ]
     conflicts:
       [@RPM_CONFLICTS@]
@@ -85,7 +85,7 @@ overrides:
       libxml-libxml-perl,
       libstring-shellquote-perl,
       tzdata,
-      [@DEB_DEPENDENCIES@]
+      @DEB_DEPENDENCIES@
     ]
     conflicts:
       [@DEB_CONFLICTS@]

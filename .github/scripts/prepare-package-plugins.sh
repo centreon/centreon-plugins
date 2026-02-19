@@ -4,8 +4,6 @@ plugins_json_file="$1"
 package_extension="$2"
 package_distrib="$3"
 
-# centreon-plugin-operatingsystems-linux-local
-
 for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plugins_json_file); do
   PACKAGE_PATH=$PLUGIN
 
@@ -30,8 +28,8 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   conflicts=$(jq -r '.conflicts // [] | join(",")' "$PACKAGE_FILE")
   replaces=$(jq -r '.replaces // [] | join(",")' "$PACKAGE_FILE")
   provides=$(jq -r '.provides // [] | join(",")' "$PACKAGE_FILE")
-  deb_dependencies=$(jq -r '(.dependencies // []) + (.dependencies_'$package_distrib' // []) | join(",\n      ")' "$DEB_PACKAGE_FILE")
-  rpm_dependencies=$(jq -r '(.dependencies // []) + (.dependencies_'$package_distrib' // []) | join(",\n      ")' "$RPM_PACKAGE_FILE")
+  deb_dependencies=$(jq -r '(.dependencies // []) + (.dependencies_'$package_distrib' // []) | join(",")' "$DEB_PACKAGE_FILE")
+  rpm_dependencies=$(jq -r '(.dependencies // []) + (.dependencies_'$package_distrib' // []) | join(",")' "$RPM_PACKAGE_FILE")
   deb_conflicts=$(jq -r '.conflicts // [] | join(",")' "$DEB_PACKAGE_FILE")
   rpm_conflicts=$(jq -r '.conflicts // [] | join(",")' "$RPM_PACKAGE_FILE")
   deb_replaces=$(jq -r '.replaces // [] | join(",")' "$DEB_PACKAGE_FILE")
@@ -56,20 +54,20 @@ awk -v contents="$contents" \
 '{
   gsub(/@PLUGIN_NAME@/, plugin)
   gsub(/@SUMMARY@/, pkg_summary)
-  gsub(/\[@CONTENTS@\]/, contents)
-  gsub(/\[@CONFLICTS@\]/, conflicts)
-  gsub(/\[@REPLACES@\]/, replaces)
-  gsub(/\[@PROVIDES@\]/, provides)
-  gsub(/\[@DEB_DEPENDENCIES@\]/, deb_deps)
-  gsub(/\[@DEB_CONFLICTS@\]/, deb_conflicts)
-  gsub(/\[@DEB_REPLACES@\]/, deb_replaces)
-  gsub(/\[@DEB_PROVIDES@\]/, deb_provides)
-  gsub(/\[@RPM_DEPENDENCIES@\]/, rpm_deps)
-  gsub(/\[@RPM_CONFLICTS@\]/, rpm_conflicts)
-  gsub(/\[@RPM_REPLACES@\]/, rpm_replaces)
-  gsub(/\[@RPM_PROVIDES@\]/, rpm_provides)
+  gsub(/@CONTENTS@/, contents)
+  gsub(/@CONFLICTS@/, conflicts)
+  gsub(/@REPLACES@/, replaces)
+  gsub(/@PROVIDES@/, provides)
+  gsub(/@DEB_DEPENDENCIES@/, deb_deps)
+  gsub(/@DEB_CONFLICTS@/, deb_conflicts)
+  gsub(/@DEB_REPLACES@/, deb_replaces)
+  gsub(/@DEB_PROVIDES@/, deb_provides)
+  gsub(/@RPM_DEPENDENCIES@/, rpm_deps)
+  gsub(/@RPM_CONFLICTS@/, rpm_conflicts)
+  gsub(/@RPM_REPLACES@/, rpm_replaces)
+  gsub(/@RPM_PROVIDES@/, rpm_provides)
   print
-}' .github/packaging/centreon-plugin.yaml.template >> .github/packaging/$PLUGIN.yaml
+}' .github/packaging/centreon-plugin.yaml.template > .github/packaging/$PLUGIN.yaml
 
   if [ "$package_extension" = "rpm" ]; then
     sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
