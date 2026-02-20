@@ -44,11 +44,17 @@ jobs:
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
           - image: packaging-plugins-bookworm
             distrib: bookworm
+            package_extension: deb
+          - image: packaging-plugins-trixie
+            distrib: trixie
             package_extension: deb
           - image: packaging-plugins-jammy
             distrib: jammy
@@ -104,9 +110,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb

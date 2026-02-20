@@ -30,6 +30,7 @@ AppearTV
 AS400
 ASAM
 Athonet
+Aviat
 Avigilon
 Avocent
 aws
