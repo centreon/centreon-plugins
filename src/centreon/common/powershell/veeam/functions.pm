@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,23 +23,41 @@ package centreon::common::powershell::veeam::functions;
 use strict;
 use warnings;
 
+use Exporter qw(import);
+our @EXPORT_OK = qw/veeam_to_psversion veeam_to_psexec/;
+
+# Veeam version 13 and later require Powershell 7 (psw.exe, previous versions require Powershell 5
+sub veeam_to_psversion {
+    my ($veeam_version) = @_;
+
+    return $veeam_version >= 13 ? 7 : 5;
+}
+
+sub veeam_to_psexec {
+    my ($veeam_version) = @_;
+
+    return $veeam_version >= 13 ? 'pwsh.exe' : 'powershell.exe';
+}
+
 sub powershell_init {
     my (%options) = @_;
     
     my $ps = '
-$register_snaps=Get-PSSnapin -Registered
-$all_snaps=Get-PSSnapin
-$load_snaps=@("VeeamPSSnapin")
 $registered=0
-foreach ($snap_name in $load_snaps) {
-    if (@($register_snaps | Where-Object {$_.Name -Match $snap_name} ).count -gt 0) {
-        if (@($all_snaps | Where-Object {$_.Name -Match $snap_name} ).count -eq 0) {
-            Try {
-                $register_snaps | Where-Object {$_.Name -Match $snap_name} | Add-PSSnapin -ErrorAction STOP
-                $registered=1
-            } Catch {
-                Write-Host $Error[0].Exception
-                exit 1
+if (Get-Command Get-PSSnapin -ErrorAction SilentlyContinue) {
+    $register_snaps=Get-PSSnapin -Registered
+    $all_snaps=Get-PSSnapin
+    $load_snaps=@("VeeamPSSnapin")
+    foreach ($snap_name in $load_snaps) {
+        if (@($register_snaps | Where-Object {$_.Name -Match $snap_name} ).count -gt 0) {
+            if (@($all_snaps | Where-Object {$_.Name -Match $snap_name} ).count -eq 0) {
+                Try {
+                    $register_snaps | Where-Object {$_.Name -Match $snap_name} | Add-PSSnapin -ErrorAction STOP
+                    $registered=1
+                } Catch {
+                    Write-Host $Error[0].Exception
+                    exit 1
+                }
             }
         }
     }

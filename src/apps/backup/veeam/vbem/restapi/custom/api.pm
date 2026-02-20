@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -143,7 +143,7 @@ sub get_session_id {
         ) {
         my $content = $self->{http}->request(
             method => 'POST',
-            url_path => '/api/sessionMngr/',
+            url_path => '/api/sessionMngr/?v=latest',
             query_form_post => '',
             credentials => 1,
             basic => 1,
