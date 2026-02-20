@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -130,10 +130,29 @@ Check repositories.
 
 Filter repositories by name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-space-usage>
 
-Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

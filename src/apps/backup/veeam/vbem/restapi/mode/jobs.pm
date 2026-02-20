@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -374,11 +374,45 @@ You can use the following variables like: %{status}, %{jobName}
 Set critical threshold for last job execution status (default: %{status} =~ /failed/i).
 You can use the following variables: %{status}, %{jobName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-execution-status>
 
-Thresholds.
-Can be: 'jobs-executions-detected', 'job-executions-failed-prct',
-'job-execution-last', 'job-running-duration'.
+Threshold.
+
+=item B<--critical-execution-status>
+
+Threshold.
+
+=item B<--warning-job-execution-last>
+
+Threshold.
+
+=item B<--critical-job-execution-last>
+
+Threshold.
+
+=item B<--warning-job-executions-failed-prct>
+
+Threshold in percentage.
+
+=item B<--critical-job-executions-failed-prct>
+
+Threshold in percentage.
+
+=item B<--warning-job-running-duration>
+
+Threshold.
+
+=item B<--critical-job-running-duration>
+
+Threshold.
+
+=item B<--warning-jobs-executions-detected>
+
+Threshold.
+
+=item B<--critical-jobs-executions-detected>
+
+Threshold.
 
 =back
 
