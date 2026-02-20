@@ -356,10 +356,53 @@ You can use the following variables: %{to}, %{status}, %{type}.
 
 Select the time unit for the expiration thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-expires>
 
-Thresholds.
-Can be: 'total', 'expires', 'license-instances-usage', 'license-instances-free', 'license-instances-usage-prct'.
+Threshold.
+
+=item B<--critical-expires>
+
+Threshold.
+
+=item B<--warning-license-instances-free>
+
+Threshold.
+
+=item B<--critical-license-instances-free>
+
+Threshold.
+
+=item B<--warning-license-instances-usage>
+
+Threshold.
+
+=item B<--critical-license-instances-usage>
+
+Threshold.
+
+=item B<--warning-license-instances-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-license-instances-usage-prct>
+
+Threshold in percentage.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-total>
+
+Threshold.
+
+=item B<--critical-total>
+
+Threshold.
 
 =back
 
