@@ -101,17 +101,17 @@ sub manage_selection {
     my $repositories = $options{custom}->get_repository();
 
     $self->{repositories} = {};
-    foreach my $repo (@{$repositories->{Entities}->{Repositories}->{Repositories}}) {
+    foreach my $repo (@{$repositories->{entities}->{repositories}->{repositories}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $repo->{Name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{repositories}->{ $repo->{Name} } = {
-            name => $repo->{Name},
-            total => $repo->{Capacity},
-            free => $repo->{FreeSpace},
-            used => $repo->{Capacity} - $repo->{FreeSpace},
-            prct_used => 100 - ($repo->{FreeSpace} * 100 / $repo->{Capacity}),
-            prct_free => $repo->{FreeSpace} * 100 / $repo->{Capacity}
+        $self->{repositories}->{ $repo->{name} } = {
+            name => $repo->{name},
+            total => $repo->{capacity},
+            free => $repo->{freespace},
+            used => $repo->{capacity} - $repo->{freespace},
+            prct_used => 100 - ($repo->{freespace} * 100 / $repo->{capacity}),
+            prct_free => $repo->{freespace} * 100 / $repo->{capacity}
         };
     }
 }

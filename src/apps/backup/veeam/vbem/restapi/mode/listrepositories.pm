@@ -47,8 +47,8 @@ sub manage_selection {
     my $repositories = $options{custom}->get_repository(disable_cache => 1);
 
     my $results = [];
-    foreach my $repo (@{$repositories->{Entities}->{Repositories}->{Repositories}}) {
-        push @$results, { uid => $repo->{UID}, name => $repo->{Name} };
+    foreach my $repo (@{$repositories->{entities}->{repositories}->{repositories}}) {
+        push @$results, { uid => $repo->{uid}, name => $repo->{name} };
     }
 
     return $results;

@@ -53,21 +53,21 @@ sub manage_selection {
     my $jobs_exec = $options{custom}->cache_backup_job_session(timeframe => $self->{option_results}->{timeframe});
     my $jobs_replica = $options{custom}->get_replica_job_session(timeframe => $self->{option_results}->{timeframe});
 
-    foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
-        next if (defined($results->{ $job->{JobUid} }));
+    foreach my $job (@{$jobs_exec->{entities}->{backupjobsessions}->{backupjobsessions}}) {
+        next if (defined($results->{ $job->{jobuid} }));
 
-        $results->{ $job->{JobUid} } = {
-            jobName => $job->{JobName},
-            jobType => $job->{JobType}
+        $results->{ $job->{jobuid} } = {
+            jobName => $job->{jobname},
+            jobType => $job->{jobtype}
         }
     }
 
-    foreach my $job (@{$jobs_replica->{Entities}->{ReplicaJobSessions}->{ReplicaJobSessions}}) {
-        next if (defined($results->{ $job->{JobUid} }));
+    foreach my $job (@{$jobs_replica->{entities}->{replicajobsessions}->{replicajobsessions}}) {
+        next if (defined($results->{ $job->{jobuid} }));
 
-        $results->{ $job->{JobUid} } = {
-            jobName => $job->{JobName},
-            jobType => $job->{JobType}
+        $results->{ $job->{jobuid} } = {
+            jobName => $job->{jobname},
+            jobType => $job->{jobtype}
         }
     }
 
