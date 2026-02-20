@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psexec/;
 use apps::backup::veeam::local::mode::resources::types qw($repository_type $repository_status);
 use centreon::common::powershell::veeam::repositories;
 use centreon::plugins::misc;
@@ -36,12 +37,13 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'timeout:s'         => { name => 'timeout', default => 50 },
-        'command:s'         => { name => 'command' },
+        'command:s'         => { name => 'command', default => '' },
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options' },
         'no-ps'             => { name => 'no_ps' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
-        'ps-display'        => { name => 'ps_display' }
+        'ps-display'        => { name => 'ps_display' },
+        'veeam-version:s'   => { name => 'veeam_version', default => '12' }
     });
 
     return $self;
@@ -58,8 +60,8 @@ sub check_options {
         command_path => $self->{option_results}->{command_path}
     );
 
-    $self->{option_results}->{command} = 'powershell.exe'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command} = veeam_to_psexec($self->{option_results}->{veeam_version})
+        if $self->{option_results}->{command} eq '';
     $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
@@ -167,6 +169,11 @@ __END__
 List repositories.
 
 =over 8
+
+=item B<--veeam-version>
+
+The Veeam version to monitor (default: 12).
+Veeam version 13 and later require PowerShell 7 whereas earlier versions use PowerShell 5.
 
 =item B<--timeout>
 
