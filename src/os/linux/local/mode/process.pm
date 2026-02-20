@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc qw/trim is_excluded change_seconds/;
-use centreon::plugins::constants qw(:values);
+use centreon::plugins::constants qw(:values :counters);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes;
 use FindBin;
@@ -79,8 +79,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'processes', type => 1, cb_prefix_output => 'prefix_process_output', skipped_code => { NO_VALUE() => 1, BUFFER_CREATION() => 1 } },
-        { name => 'global', type => 0, skipped_code => { NO_VALUE() => 1 } }
+        { name => 'processes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_process_output', skipped_code => { NO_VALUE() => 1, BUFFER_CREATION() => 1 } },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
