@@ -9,7 +9,11 @@
         "centreon/plugins/snmp.pm",
         "os/linux/local/"
     ],
-    "exclude_files": [
-        "os/linux/local/centreon_linux_local_process.pl"
+    "package_files": [
+        {
+            "src": "../../src/os/linux/local/centreon_linux_local_process.pl",
+            "dst": "/usr/lib/centreon/plugins/",
+            "file_mode": "0755"
+        }
     ]
 }
