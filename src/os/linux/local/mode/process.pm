@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,9 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/trim is_excluded change_seconds/;
+use centreon::plugins::constants qw(:values :counters);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes;
+use FindBin;
 
 sub custom_cpu_calc {
     my ($self, %options) = @_;
@@ -63,12 +65,22 @@ sub prefix_process_output {
     );
 }
 
+sub prefix_process_open_files_output {
+    my ($self, %options) = @_;
+    return sprintf(
+        'open files: %s/%s (%.2f%%)',
+        $self->{result_values}->{open_files},
+        $self->{result_values}->{open_files_limit},
+        $self->{result_values}->{open_files_prct}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'processes', type => 1, cb_prefix_output => 'prefix_process_output', skipped_code => { -10 => 1, -1 => 1 } },
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+        { name => 'processes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_process_output', skipped_code => { NO_VALUE() => 1, BUFFER_CREATION() => 1 } },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -157,6 +169,20 @@ sub set_counters {
                 output_change_bytes => 1,
                 closure_custom_perfdata => sub { return 0; }
             }
+        },
+        {   label => 'open-files',
+            set => {
+                key_values => [ { name => 'open_files' }, { name => 'open_files_limit' }, { name => 'open_files_prct' } ],
+                closure_custom_output => $self->can('prefix_process_open_files_output'),
+                closure_custom_perfdata => sub { return 0; }
+            }
+        },
+        {   label => 'open-files-prct', display_ok => 0,
+            set => {
+                key_values => [ { name => 'open_files_prct' }, {  name => 'open_files' }, { name => 'open_files_limit' } ],
+                closure_custom_output => $self->can('prefix_process_open_files_output'),
+                closure_custom_perfdata => sub { return 0; }
+            }
         }
     ];
 }
@@ -167,17 +193,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-command:s'  => { name => 'filter_command' },
-        'exclude-command:s' => { name => 'exclude_command' },
-        'filter-arg:s'      => { name => 'filter_arg' },
-        'exclude-arg:s'     => { name => 'exclude_arg' },
-        'filter-state:s'    => { name => 'filter_state' },
-        'filter-ppid:s'	    => { name => 'filter_ppid' },
+        'filter-command:s'  => { name => 'filter_command',  default => '' },
+        'exclude-command:s' => { name => 'exclude_command', default => '' },
+        'filter-arg:s'      => { name => 'filter_arg',      default => '' },
+        'exclude-arg:s'     => { name => 'exclude_arg',     default => '' },
+        'filter-state:s'    => { name => 'filter_state',    default => '' },
+        'filter-ppid:s'     => { name => 'filter_ppid',     default => '' },
         'add-cpu'           => { name => 'add_cpu' },
         'add-memory'        => { name => 'add_memory' },
         'add-disk-io'       => { name => 'add_disk_io' },
-        'page-size:s'       => { name => 'page_size', default => 4096 },
-        'clock-ticks:s'     => { name => 'clock_ticks', default => 100 }
+        'add-open-files'    => { name => 'add_open_files' },
+        'page-size:s'       => { name => 'page_size',       default => 4096 },
+        'clock-ticks:s'     => { name => 'clock_ticks',     default => 100 }
     });
 
     return $self;
@@ -209,27 +236,14 @@ sub parse_output {
     my $line = shift(@lines);
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.{50})\s+(.*)$/);
-        my ($state, $elapsed, $pid, $ppid, $cmd, $args) = (
-            centreon::plugins::misc::trim($1),
-            centreon::plugins::misc::trim($2),
-            centreon::plugins::misc::trim($3),
-            centreon::plugins::misc::trim($4),
-            centreon::plugins::misc::trim($5),
-            centreon::plugins::misc::trim($6)
-        );
+        my ($state, $elapsed, $pid, $ppid, $cmd, $args) = map trim($_), ($1, $2, $3, $4, $5, $6);
 
-        next if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
-            $cmd !~ /$self->{option_results}->{filter_command}/);
-        next if (defined($self->{option_results}->{exclude_command}) && $self->{option_results}->{exclude_command} ne '' &&
-            $cmd =~ /$self->{option_results}->{exclude_command}/);
-        next if (defined($self->{option_results}->{filter_arg}) && $self->{option_results}->{filter_arg} ne '' &&
-            $args !~ /$self->{option_results}->{filter_arg}/);
-        next if (defined($self->{option_results}->{exclude_arg}) && $self->{option_results}->{exclude_arg} ne '' &&
-            $args =~ /$self->{option_results}->{exclude_arg}/);
-        next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-            $state_map->{$state} !~ /$self->{option_results}->{filter_state}/i);
-        next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
-            $ppid !~ /$self->{option_results}->{filter_ppid}/);
+        next if is_excluded($cmd, $self->{option_results}->{filter_command});
+        next if is_excluded($cmd, $self->{option_results}->{exclude_command});
+        next if is_excluded($args, $self->{option_results}->{filter_arg});
+        next if is_excluded($args, $self->{option_results}->{exclude_arg});
+        next if exists $state_map->{$state} && is_excluded($state_map->{$state}, $self->{option_results}->{filter_state});
+        next if is_excluded($ppid, $self->{option_results}->{filter_ppid});
 
         $args =~ s/\|//g;
         my $duration_seconds = $self->get_duration(elapsed => $elapsed);
@@ -238,7 +252,7 @@ sub parse_output {
             ppid => $ppid, 
             state => $state,
             duration_seconds => $duration_seconds,
-            duration_human => centreon::plugins::misc::change_seconds(value => $duration_seconds),
+            duration_human => change_seconds(value => $duration_seconds),
             cmd => $cmd, 
             args => $args
         };
@@ -253,20 +267,16 @@ sub get_duration {
     $options{elapsed} =~ /(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+)/;
     my ($day, $hour, $min, $sec) = ($1, $2, $3, $4);
     my $total_seconds_elapsed = $sec + ($min * 60);
-    if (defined($hour)) {
-        $total_seconds_elapsed += ($hour * 60 * 60);
-    }
-    if (defined($day)) {
-        $total_seconds_elapsed += ($day * 86400);
-    }
+    $total_seconds_elapsed += ($hour * 60 * 60)
+        if defined $hour;
+    $total_seconds_elapsed += ($day * 86400)
+        if defined $day;
 
     return $total_seconds_elapsed;
 }
 
 sub add_cpu {
     my ($self, %options) = @_;
-
-    return if (!defined($self->{option_results}->{add_cpu}));
 
     $self->{global}->{cpu_prct} = 0;
     # /stat
@@ -283,8 +293,6 @@ sub add_cpu {
 
 sub add_memory {
     my ($self, %options) = @_;
-
-    return if (!defined($self->{option_results}->{add_memory}));
 
     $self->{global}->{memory_used} = 0;
     # statm
@@ -304,8 +312,6 @@ sub add_memory {
 sub add_disk_io {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{option_results}->{add_disk_io}));
-
     $self->{global}->{disks_read} = 0;
     $self->{global}->{disks_write} = 0;
     # /io
@@ -322,46 +328,92 @@ sub add_disk_io {
     }
 }
 
+sub add_open_files {
+    my ($self, %options) = @_;
+    use Data::Dumper;
+    #die Dumper($options{content})."\n";
+    my @pids;
+    foreach my $pid (keys %{$self->{processes}}) {
+        # ==> /proc/121212/limits <==
+        # Limit                     Soft Limit           Hard Limit           Units
+        # Max cpu time              unlimited            unlimited            seconds
+        # Max file size             unlimited            unlimited            bytes
+        # Max open files            1024                 1048576              files
+        next unless $options{content} =~ /==>\s*\/proc\/$pid\/limits\s.+?Max open files\s+(\d+).+(?:==>|\Z)/ms;
+
+        $self->{processes}->{$pid}->{open_files_limit} = $1;
+        $self->{processes}->{$pid}->{open_files} = 0;
+        $self->{processes}->{$pid}->{open_files_prct} = 0;
+
+        push @pids, $pid;
+    }
+
+    return unless @pids;
+
+    # Get the path to centreon_plugin_local_process.pl from the location of plugin.pm
+    my $external_process = [ map "$FindBin::Bin/$_", grep /\/plugin.pm$/, keys %INC ];
+    $external_process = $external_process->[0] =~ s/\/plugin\.pm$/\/centreon_linux_local_process.pl/r
+        if $external_process;
+
+    $self->{output}->option_exit(short_msg => "Missing $external_process, please install the 'centreon-plugin-Operatingsystems-Linux-Local-Process' package to monitor open files usage")
+        unless $external_process && -x $external_process;
+
+    my $cmd = "$external_process ".join ' ', @pids;
+    $self->{output}->output_add(long_msg => "Launch [$cmd]", debug => 1);
+    $self->{output}->option_exit(short_msg => "Cannot launch $cmd: $!\n")
+        unless open(my $fh, "$cmd |");
+
+    while (my $response = <$fh>) {
+        next unless $response =~ /^(\d+)\s+(\d+)/;
+        $self->{processes}->{$1}->{open_files} = $2;
+
+        $self->{processes}->{$1}->{open_files_prct} = $self->{processes}->{$1}->{open_files_limit} ?
+                                                            100 * $2 / $self->{processes}->{$1}->{open_files_limit} :
+                                                            100;
+    }
+
+    close($fh);
+}
+
 sub add_extra_metrics {
     my ($self, %options) = @_;
 
     my $files = [];
-    push @$files, 'stat' if (defined($self->{option_results}->{add_cpu}));
-    push @$files, 'statm' if (defined($self->{option_results}->{add_memory}));
-    push @$files, 'io' if (defined($self->{option_results}->{add_disk_io}));
+    push @$files, 'stat' if $self->{option_results}->{add_cpu};
+    push @$files, 'statm' if $self->{option_results}->{add_memory};
+    push @$files, 'io' if $self->{option_results}->{add_disk_io};
+    push @$files, 'limits' if $self->{option_results}->{add_open_files};
 
     my ($num_files, $files_arg) = (scalar(@$files), '');
     return if ($num_files <= 0);
-    $files_arg = $files->[0] if ($num_files == 1);
-    $files_arg = '{' . join(',', @$files) . '}' if ($num_files > 1);
-    
+    $files_arg = $files->[0] if $num_files == 1;
+    $files_arg = '{' . join(',', @$files) . '}' if $num_files > 1;
     my ($num_proc, $proc_arg) = (scalar(keys %{$self->{processes}}), '');
-    return if ($num_proc <= 0);
-    $proc_arg = join(',', keys %{$self->{processes}}) if ($num_proc == 1);
-    $proc_arg = '{' . join(',', keys %{$self->{processes}}) . '}' if ($num_proc > 1);
 
+    return unless $num_proc;
+    $proc_arg = join(',', keys %{$self->{processes}}) if $num_proc == 1;
+    $proc_arg = '{' . join(',', keys %{$self->{processes}}) . '}' if $num_proc > 1;
     $self->set_timestamp(timestamp => Time::HiRes::time());
+
     my ($content) = $options{custom}->execute_command(
         command => 'bash',
         command_options => "-c 'tail -vn +1 /proc/$proc_arg/$files_arg'",
         no_quit => 1
     );
 
-    $self->add_cpu(content => $content);
-    $self->add_memory(content => $content);
-    $self->add_disk_io(content => $content);
+    $self->add_cpu(content => $content) if $self->{option_results}->{add_cpu};
+    $self->add_memory(content => $content) if $self->{option_results}->{add_memory};
+    $self->add_disk_io(content => $content) if $self->{option_results}->{add_disk_io};
+    $self->add_open_files(content => $content) if $self->{option_results}->{add_open_files};
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_command}) ? md5_hex($self->{option_results}->{filter_command}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_arg}) ? md5_hex($self->{option_results}->{filter_arg}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_state}) ? md5_hex($self->{option_results}->{filter_state}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_ppid}) ? md5_hex($self->{option_results}->{filter_ppid}) : md5_hex('all'));
+        join '_', map { md5_hex($self->{option_results}->{$_}  || 'all') } qw(filter_counters filter_command filter_arg filter_state filter_ppid);
     $self->parse_output(custom => $options{custom});
+
     $self->add_extra_metrics(custom => $options{custom});
 }
 
@@ -391,6 +443,10 @@ Monitor memory usage. It's inaccurate but it provides a trend.
 =item B<--add-disk-io>
 
 Monitor disk I/O.
+
+=item B<--add-open-files
+
+Monitor open file usage per process.
 
 =item B<--filter-command>
 
@@ -504,6 +560,22 @@ Thresholds.
 =item B<--critical-disks-write>
 
 Thresholds.
+
+=item B<--warning-open-files>
+
+Thresholds.
+
+=item B<--critical-open-files>
+
+Thresholds.
+
+=item B<--warning-open-files-prct>
+
+Thresholds in percentage.
+
+=item B<--critical-open-files-prct>
+
+Thresholds in percentage.
 
 =back
 
