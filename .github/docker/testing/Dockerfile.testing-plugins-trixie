@@ -52,16 +52,17 @@ pnpm install --frozen-lockfile
 echo 'export PATH="~/node_modules/.bin/:$PATH"' >> ~/.bashrc
 
 # Add Centreon plugins repositories
-echo "deb https://packages.centreon.com/apt-standard trixie-25.10-stable main" | tee /etc/apt/sources.list.d/centreon.list
-echo "deb https://packages.centreon.com/apt-plugins-stable/ trixie main" | tee /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/apt-plugins-testing/ trixie main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/apt-plugins-unstable/ trixie main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+#echo "deb https://packages.centreon.com/apt-standard trixie-25.10-stable main" | tee /etc/apt/sources.list.d/centreon.list
+#echo "deb https://packages.centreon.com/apt-plugins-stable/ trixie main" | tee /etc/apt/sources.list.d/centreon-plugins.list
+#echo "deb https://packages.centreon.com/apt-plugins-testing/ trixie main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+#echo "deb https://packages.centreon.com/apt-plugins-unstable/ trixie main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/apt-plugins-unstable/ trixie main" | tee a /etc/apt/sources.list.d/centreon-plugins.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 
 # Update
 apt-get update
 
-apt-get install -y centreon-clib centreon-connector-perl centreon-plugins
+#apt-get install -y centreon-clib centreon-connector-perl centreon-plugins
 
 rm -f /etc/apt/sources.list.d/centreon.list
 

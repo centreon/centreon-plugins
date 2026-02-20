@@ -11,25 +11,25 @@ dnf config-manager --set-enabled crb
 echo -e '[centreon-plugins-stable]\n\
 name=centreon plugins stable x86_64\n\
 baseurl=https://packages.centreon.com/rpm-plugins/el10/stable/x86_64\n\
-enabled=1\n\
+enabled=0\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
 [centreon-plugins-stable-noarch]\n\
 name=centreon plugins stable noarch\n\
 baseurl=https://packages.centreon.com/rpm-plugins/el10/stable/noarch\n\
-enabled=1\n\
+enabled=0\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
 [centreon-plugins-testing]\n\
 name=centreon plugins testing x86_64\n\
 baseurl=https://packages.centreon.com/rpm-plugins/el10/testing/x86_64\n\
-enabled=1\n\
+enabled=0\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
 [centreon-plugins-testing-noarch]\n\
 name=centreon plugins testing noarch\n\
 baseurl=https://packages.centreon.com/rpm-plugins/el10/testing/noarch\n\
-enabled=1\n\
+enabled=0\n\
 gpgcheck=1\n\
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES\n\
 [centreon-plugins-unstable]\n\
