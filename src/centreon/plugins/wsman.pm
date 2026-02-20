@@ -325,6 +325,12 @@ sub execute_winshell_commands {
 sub execute_powershell {
     my ($self, %options) = @_;
 
+    $options{powershell_version} ||= 5;
+
+    # Powershell 7 is called pwsh.exe, previous versions are called powershell.exe
+    # To keep compatibility we use powershell.exe by default
+    my $pwsh = $options{powershell_version} >= 7 ? 'pwsh.exe' : 'powershell.exe';
+
     $options{content} = encode_base64($options{content}, '');
 
     my $chunk = 8000;
@@ -334,7 +340,7 @@ sub execute_powershell {
     my $commands = [
         {
             label => 'prev1-' . $options{label},
-            value => qq(powershell.exe -command "new-item -itemtype directory -path '$base' -force")
+            value => qq($pwsh -command "new-item -itemtype directory -path '$base' -force")
         }
     ];
 
@@ -345,7 +351,7 @@ sub execute_powershell {
     foreach (unpack('(A' . $chunk . ')*', $options{content})) {
         push @$commands, {
             label => 'chunk-' . ($i++) . '-' . $options{label},
-            value => qq(powershell.exe -NoProfile -Command "$cmd_content -Path '$b64_filename' -Value '$_' -Encoding ASCII")
+            value => qq($pwsh -NoProfile -Command "$cmd_content -Path '$b64_filename' -Value '$_' -Encoding ASCII")
         };
 
         $cmd_content = 'Add-Content';
@@ -353,14 +359,14 @@ sub execute_powershell {
 
     push @$commands, {
                          label => 'convert-' . $options{label},
-                         value => qq(powershell.exe -NoProfile -Command "[IO.File]::WriteAllBytes('$ps1_filename',[Convert]::FromBase64String((Get-Content '$b64_filename' -Raw)))")
+                         value => qq($pwsh -NoProfile -Command "[IO.File]::WriteAllBytes('$ps1_filename',[Convert]::FromBase64String((Get-Content '$b64_filename' -Raw)))")
                      },
                      {   label => $options{label},
-                         value => qq(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$ps1_filename")
+                         value => qq($pwsh -NoProfile -ExecutionPolicy Bypass -File "$ps1_filename")
                      },
                      {
                          label => 'del-' . $options{label},
-                         value => qq(powershell.exe -NoProfile -Command "Remove-Item '$ps1_filename','$b64_filename' -Force")
+                         value => qq($pwsh -NoProfile -Command "Remove-Item '$ps1_filename','$b64_filename' -Force")
                      };
 
     return $self->execute_winshell_commands(

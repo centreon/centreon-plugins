@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psversion/;
 use centreon::common::powershell::veeam::licenses;
 use apps::backup::veeam::wsman::mode::resources::types qw($license_type $license_status);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -163,7 +164,8 @@ sub new {
         'filter-to:s'       => { name => 'filter_to' },
         'filter-type:s'     => { name => 'filter_type' },
         'filter-status:s'   => { name => 'filter_status' },
-        'unit:s'            => { name => 'unit', default => 's' }
+        'unit:s'            => { name => 'unit', default => 's' },
+        'veeam-version:s'   => { name => 'veeam_version', default => '12' }
     });
 
     return $self;
@@ -181,7 +183,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-        my $ps = centreon::common::powershell::veeam::licenses::get_powershell();
+    my $ps = centreon::common::powershell::veeam::licenses::get_powershell(veeam_version => $self->{option_results}->{veeam_version});
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
                 severity => 'OK',
@@ -190,8 +192,8 @@ sub manage_selection {
             $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
             $self->{output}->exit();
         }
-
     my $result = $options{wsman}->execute_powershell(
+        powershell_version => veeam_to_psversion($self->{option_results}->{veeam_version}),
         label => 'licenses',
         content => $ps
     );
@@ -270,6 +272,10 @@ __END__
 
 =over 8
 
+=item B<--veeam-version>
+
+The Veeam version to monitor (default: 12).
+Veeam version 13 and later require PowerShell 7 whereas earlier versions use PowerShell 5.
 
 =item B<--ps-display>
 
