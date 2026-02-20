@@ -453,6 +453,8 @@ jobs:
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
+          - name: "Digest::SHA1"
+            build_names: "jammy,noble"
           - name: "Hash::Ordered"
             build_names: "bullseye-amd64,bookworm,jammy"
           - name: "Libssh::Session"
