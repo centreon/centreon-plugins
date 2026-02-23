@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,21 +53,21 @@ sub manage_selection {
     my $jobs_exec = $options{custom}->cache_backup_job_session(timeframe => $self->{option_results}->{timeframe});
     my $jobs_replica = $options{custom}->get_replica_job_session(timeframe => $self->{option_results}->{timeframe});
 
-    foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
-        next if (defined($results->{ $job->{JobUid} }));
+    foreach my $job (@{$jobs_exec->{entities}->{backupjobsessions}->{backupjobsessions}}) {
+        next if (defined($results->{ $job->{jobuid} }));
 
-        $results->{ $job->{JobUid} } = {
-            jobName => $job->{JobName},
-            jobType => $job->{JobType}
+        $results->{ $job->{jobuid} } = {
+            jobName => $job->{jobname},
+            jobType => $job->{jobtype}
         }
     }
 
-    foreach my $job (@{$jobs_replica->{Entities}->{ReplicaJobSessions}->{ReplicaJobSessions}}) {
-        next if (defined($results->{ $job->{JobUid} }));
+    foreach my $job (@{$jobs_replica->{entities}->{replicajobsessions}->{replicajobsessions}}) {
+        next if (defined($results->{ $job->{jobuid} }));
 
-        $results->{ $job->{JobUid} } = {
-            jobName => $job->{JobName},
-            jobType => $job->{JobType}
+        $results->{ $job->{jobuid} } = {
+            jobName => $job->{jobname},
+            jobType => $job->{jobtype}
         }
     }
 

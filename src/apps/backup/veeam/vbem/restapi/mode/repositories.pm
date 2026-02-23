@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -101,17 +101,17 @@ sub manage_selection {
     my $repositories = $options{custom}->get_repository();
 
     $self->{repositories} = {};
-    foreach my $repo (@{$repositories->{Entities}->{Repositories}->{Repositories}}) {
+    foreach my $repo (@{$repositories->{entities}->{repositories}->{repositories}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $repo->{Name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{repositories}->{ $repo->{Name} } = {
-            name => $repo->{Name},
-            total => $repo->{Capacity},
-            free => $repo->{FreeSpace},
-            used => $repo->{Capacity} - $repo->{FreeSpace},
-            prct_used => 100 - ($repo->{FreeSpace} * 100 / $repo->{Capacity}),
-            prct_free => $repo->{FreeSpace} * 100 / $repo->{Capacity}
+        $self->{repositories}->{ $repo->{name} } = {
+            name => $repo->{name},
+            total => $repo->{capacity},
+            free => $repo->{freespace},
+            used => $repo->{capacity} - $repo->{freespace},
+            prct_used => 100 - ($repo->{freespace} * 100 / $repo->{capacity}),
+            prct_free => $repo->{freespace} * 100 / $repo->{capacity}
         };
     }
 }
@@ -130,10 +130,29 @@ Check repositories.
 
 Filter repositories by name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-space-usage>
 
-Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 
