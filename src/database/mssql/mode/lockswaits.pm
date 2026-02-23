@@ -20,9 +20,11 @@
 
 package database::mssql::mode::lockswaits;
 
+use base qw(centreon::plugins::templates::counter);
+
 use strict;
 use warnings;
-use base qw(centreon::plugins::templates::counter);
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -32,8 +34,8 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{lockswaits} = [
-        { label => 'lockswaits', nlabel => 'mssql.lockswaits.count', set => {
-                key_values => [ { name => 'value' } ],
+        { label => 'lockswaits', nlabel => 'mssql.lockswaits.count.persecond', set => {
+                key_values => [ { name => 'value', per_second => 1 } ],
                 output_template => '%.2f locks waits/s',
                 perfdatas => [
                     { template => '%.2f', min => 0 }
@@ -46,11 +48,11 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-database:s' => { name => 'filter_database' }
+        'filter-instance:s' => { name => 'filter_instance', default => '_Total' }
     });
 
     return $self;
@@ -67,18 +69,21 @@ sub manage_selection {
             sys.dm_os_performance_counters
         WHERE
             object_name = 'SQLServer:Locks'
-        AND
-            counter_name LIKE 'Lock Waits/sec%'
+        AND counter_name LIKE 'Lock Waits/sec%'
     });
 
     my $query_result = $options{sql}->fetchall_arrayref();
     $self->{lockswaits}->{value} = 0;
 
     foreach my $row (@{$query_result}) {
-        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne ''
-                    && $$row[0] !~ /$self->{option_results}->{filter_database}/);
+        next if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne ''
+                    && $$row[0] !~ /$self->{option_results}->{filter_instance}/);
         $self->{lockswaits}->{value} += $$row[1];
     }
+
+    $self->{cache_name} = 'mssql_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_instance}) ? md5_hex($self->{option_results}->{filter_instance}) : md5_hex('all'));
 }
 
 1;
@@ -99,9 +104,10 @@ Warning threshold number of lock-waits per second.
 
 Critical threshold number of lock-waits per second.
 
-=item B<--filter-database>
+=item B<--filter-instance>
 
-Filter the databases to monitor with a regular expression.
+Filter the sub-category inside the performance object. The instance_name represents the lock type. For example: C<_Total>, C<DATABASE>, C<OBJECT>, C<PAGE>, C<KEY>
+https://learn.microsoft.com/en-us/sql/relational-databases/performance-monitor/sql-server-locks-object?view=sql-server-ver17
 
 =back
 
