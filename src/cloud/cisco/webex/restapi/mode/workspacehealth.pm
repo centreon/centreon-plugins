@@ -276,7 +276,7 @@ C<%(health)> can have one of these values: C<info>, C<ok>, C<warning>, C<error>
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: C<temperature> (C), C<humidity> (%), C<ambient_noise> (dB), C<tvoc>.
+Can be: C<temperature> (C), C<humidity> (%), C<ambient-noise> (dB), C<tvoc>.
 
 =back
 
