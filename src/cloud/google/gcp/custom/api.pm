@@ -374,15 +374,20 @@ sub gcp_get_metrics {
         $results->{$instance}->{labels} = $timeserie->{metric}->{labels};
     }
 
+    my $undefined_metrics = 0; # GCP can return data without any metric values. In this case $results->{ $options{dimension_value} is defined and --zeroed is useless.
     foreach my $instance_name (keys %$results) {
-        foreach my $label (keys %{$results->{$instance_name}}) {    
-            next if (!defined($results->{$instance_name}->{$label}->{average}));
-            $results->{$instance_name}->{$label}->{average} = $results->{$instance_name}->{$label}->{average} / $results->{$instance_name}->{$label}->{points};
+        foreach my $label (keys %{$results->{$instance_name}}) {
+            foreach my $aggregation (@{$options{aggregations}}) {
+                $undefined_metrics = defined($results->{$instance_name}->{$label}->{$aggregation}) ? 1 : $undefined_metrics;
+                if ($aggregation eq 'average' && defined($results->{$instance_name}->{$label}->{average})) {
+                    $results->{$instance_name}->{$label}->{average} = $results->{$instance_name}->{$label}->{average} / $results->{$instance_name}->{$label}->{points};
+                }
+            }
         }
     }
 
     if (defined($self->{option_results}->{zeroed}) && (!defined($options{dimension_operator}) || $options{dimension_operator} eq '' || $options{dimension_operator} eq 'equals')) {
-        if ($options{dimension_name} eq $options{dimension_zeroed} && !defined($results->{ $options{dimension_value} })) { 
+        if ($options{dimension_name} eq $options{dimension_zeroed} && (!defined($results->{ $options{dimension_value} }) || $undefined_metrics == 0)) { 
             $results->{ $options{dimension_value} } = {
                 $options{metric} => { average => 0, minimum => 0, maximum => 0, total => 0, unit => '' }
             };
