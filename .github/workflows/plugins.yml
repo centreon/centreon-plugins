@@ -384,7 +384,7 @@ jobs:
             distrib: bullseye
             arch: arm64
 
-    name: "Test plugins on ${{ matrix.distrib }} ${{ matrix.arch }}"
+    name: "test-plugins ${{ matrix.distrib }} ${{ matrix.arch }}"
 
     uses: ./.github/workflows/plugins-robot-tests.yml
     with:

@@ -96,7 +96,7 @@ runs:
             } else if (["unit-tests", "fatpacker", "test-plugins"].includes(failed_job)) {
               ticket_squad_id = 10504
               ticket_board_id = 222
-              squad_name = "COLLECT"
+              squad_name = "CONNECTORS"
               project_name = "CTOR"
             } else {
               core.setFailed(`Not finding any squad association with job ${failed_job}.`);
