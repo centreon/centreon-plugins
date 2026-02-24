@@ -263,7 +263,7 @@ Centreon Open-Tickets API
 
 =head1 SYNOPSIS
 
-Centreon open-tickets api
+Centreon open-tickets API
 
 =head1 REST API OPTIONS
 
