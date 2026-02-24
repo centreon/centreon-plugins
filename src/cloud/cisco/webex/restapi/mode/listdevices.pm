@@ -31,9 +31,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'workspace-id:s'  => { name => 'workspace_id' },
-        'person-id:s'     => { name => 'person_id' },
-        'resource-type:s' => { name => 'resource_type' }
+        'workspace-id:s'      => { name => 'workspace_id' },
+        'person-id:s'         => { name => 'person_id' },
+        'resource-type:s'     => { name => 'resource_type', default => 'workspace' },
+        'use-id-empty-serial' => { name => 'use_id_empty_serial' }
     });
 
     return $self;
@@ -42,10 +43,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{option_results}->{resource_type} = 'workspace';
-    }
 
     if ($self->{option_results}->{resource_type} !~ /^workspace|person/) {
         $self->{output}->add_option_msg(short_msg => 'Unknown resource type. Must be "workspace" or "person"');
@@ -76,69 +73,13 @@ my @labels = (
     'serial',
     'lifecycle',
     'planned_maintenance',
-    'connection_status',
-    'error_codes'
+    'connection_status'
 );
-
-sub get_devices {
-    my ($self, %options) = @_;
-
-    my $params = {
-        endpoint  => '/v1/devices',
-        get_param => [ 'start=' . $options{start}, 'max=' . $options{max} ]
-    };
-
-    if ($self->{option_results}->{resource_type} eq 'workspace' && defined $self->{option_results}->{workspace_id}) {
-        push @{$params->{get_param}},
-            'workspaceId=' . $self->{option_results}->{workspace_id};
-    }
-
-    if ($self->{option_results}->{resource_type} eq 'person' && defined $self->{option_results}->{person_id}) {
-        push @{$params->{get_param}},
-            'personId=' . $self->{option_results}->{person_id};
-    }
-
-    my $response = $options{custom}->request_api(%$params);
-    my $results = [];
-
-    for my $item (@{$response->{items}}) {
-        push @$results, {
-            id                  => $item->{id},
-            display_name        => $item->{displayName},
-            product             => $item->{product},
-            ip                  => defined($item->{ip}) ? $item->{ip} : '',
-            type                => $item->{type},
-            serial              => $item->{serial},
-            lifecycle           => $item->{lifecycle},
-            planned_maintenance => $item->{plannedMaintenance},
-            connection_status   => $item->{connectionStatus},
-            error_codes         => join('|', @{$item->{errorCodes}})
-        };
-    }
-
-    return $results;
-}
 
 sub manage_selection {
     my ($self, %options) = @_;
-    my $disco_data = [];
 
-    my $start = 0;
-    my $max = 100;
-
-    # gets the first 100 workspaces
-    my $paged_items = $self->get_devices(custom => $options{custom}, start => $start, max => $max);
-    push @$disco_data, @{$paged_items};
-    my $item_cnt = scalar(@{$paged_items});
-    # gets the next 100 workspaces until there are no more workspaces left in the response
-    while ($item_cnt > 0) {
-        $start += 100;
-        $paged_items = $self->get_devices(custom => $options{custom}, start => $start, max => $max);
-        $item_cnt = scalar(@{$paged_items});
-        push @$disco_data, @{$paged_items};
-    }
-
-    return $disco_data;
+    return $options{custom}->get_devices_from_api();
 }
 
 sub run {
@@ -192,6 +133,10 @@ Filter devices by person id.
 =item B<--resource-type>
 
 Choose the type of resources to discover (can be: C<workspace>, C<person>). Default: C<workspace>.
+
+=item B<--use-id-empty-serial>
+
+use the last 10 characters of the id as the serial number if serial number is empty.
 
 =back
 

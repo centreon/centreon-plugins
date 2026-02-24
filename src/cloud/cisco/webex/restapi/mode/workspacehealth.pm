@@ -31,15 +31,19 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'workspace', type => 1, cb_prefix_output => 'prefix_output', skipped_code => { -10 => 1 } }
+        {
+            name             => 'workspace',
+            type             => 1,
+            cb_prefix_output => 'prefix_output',
+            skipped_code     => { -10 => 1 },
+            message_multiple => 'All workspaces are ok'
+        }
     ];
 
     $self->{maps_counters}->{workspace} = [
         {
-            label            =>
-                'status',
-            type             =>
-                2,
+            label            => 'status',
+            type             => 2,
             unknown_default  => '',
             critical_default => '',
             warning_default  => '',
@@ -61,8 +65,12 @@ sub set_counters {
             key_values      => [ { name => 'temperature' } ],
             output_template => 'Temperature: %d C',
             perfdatas       => [
-                { label  => 'temperature', value => 'temperature', template => '%d',
-                    unit => 'C' }
+                {
+                    label                => 'temperature',
+                    value                => 'temperature',
+                    template             => '%d',
+                    unit                 => 'C'
+                }
             ],
         }
         },
@@ -70,8 +78,14 @@ sub set_counters {
             key_values      => [ { name => 'humidity' } ],
             output_template => 'Humidity: %.2f%%',
             perfdatas       => [
-                { label => 'humidity', value => 'humidity', template => '%.2f',
-                    min => 0, max => 100, unit => '%' }
+                {
+                    label                => 'humidity',
+                    value                => 'humidity',
+                    template             => '%.2f',
+                    min                  => 0,
+                    max                  => 100,
+                    unit                 => '%'
+                }
             ],
         }
         },
@@ -79,7 +93,11 @@ sub set_counters {
             key_values      => [ { name => 'ambient_noise' } ],
             output_template => 'Ambient noise: %.2f dB',
             perfdatas       => [
-                { template => '%.2f', unit => 'dB', min => 0 },
+                {
+                    template             => '%.2f',
+                    unit                 => 'dB',
+                    min                  => 0
+                },
             ],
         }
         },
@@ -87,7 +105,10 @@ sub set_counters {
             key_values      => [ { name => 'tvoc' } ],
             output_template => 'TVOC: %.2f',
             perfdatas       => [
-                { template => '%.2f', min => 0 },
+                {
+                    template             => '%.2f',
+                    min                  => 0
+                },
             ],
         }
         }
@@ -102,8 +123,7 @@ sub prefix_output {
         $pref = $pref . " ($options{instance_value}->{type})";
     }
 
-    $pref = $pref . " - ";
-
+    $pref = $pref . " - " if defined($self->{option_results}->{add_metrics});
     return $pref;
 }
 
@@ -124,6 +144,7 @@ sub new {
             'timeframe:s'    => { name => 'timeframe', default => 900 },
             'aggregation:s'  => { name => 'aggregation', default => 'none' },
             'zeroed'         => { name => 'zeroed' },
+            'add-metrics'    => { name => 'add_metrics' },
         }
     );
 
@@ -187,45 +208,44 @@ sub get_metric_value {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $params = {
-        endpoint => "/v1/workspaces/$self->{option_results}->{workspace_id}"
-    };
+    if (defined($self->{option_results}->{workspace_id}) && $self->{option_results}->{workspace_id} ne '') {
+        $self->{workspace} = $options{custom}->get_workspace();
+    } else {
+        my $workspaces = $options{custom}->get_workspaces();
 
-    my $response = $options{custom}->request_api(%$params);
-    my $id = $response->{id};
-
-    $self->{workspace}->{$id} = {
-        display_name        => $response->{displayName},
-        type                => $response->{type},
-        planned_maintenance => $response->{plannedMaintenance}->{mode},
-        health              => $response->{health}->{level},
-    };
+        foreach my $workspace (@{$workspaces}) {
+            $self->{workspace}->{$workspace->{id}} = $workspace;
+        }
+    }
 
     if (scalar(keys %{$self->{workspace}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No workspace found with this --workspace-id.");
         $self->{output}->option_exit();
     }
 
-    $self->{workspace}->{$id}->{temperature} = $self->get_metric_value(
-        metric => 'temperature',
-        custom => $options{custom}
-    );
+    if (defined($self->{option_results}->{workspace_id}) && defined($self->{option_results}->{add_metrics})) {
+        foreach my $id (keys %{$self->{workspace}}) {
+            $self->{workspace}->{$id}->{temperature} = $self->get_metric_value(
+                metric => 'temperature',
+                custom => $options{custom}
+            );
 
-    $self->{workspace}->{$id}->{humidity} = $self->get_metric_value(
-        metric => 'humidity',
-        custom => $options{custom}
-    );
+            $self->{workspace}->{$id}->{humidity} = $self->get_metric_value(
+                metric => 'humidity',
+                custom => $options{custom}
+            );
 
-    $self->{workspace}->{$id}->{ambient_noise} = $self->get_metric_value(
-        metric => 'ambientNoise',
-        custom => $options{custom}
-    );
+            $self->{workspace}->{$id}->{ambient_noise} = $self->get_metric_value(
+                metric => 'ambientNoise',
+                custom => $options{custom}
+            );
 
-    $self->{workspace}->{$id}->{tvoc} = $self->get_metric_value(
-        metric => 'tvoc',
-        custom => $options{custom}
-    );
-
+            $self->{workspace}->{$id}->{tvoc} = $self->get_metric_value(
+                metric => 'tvoc',
+                custom => $options{custom}
+            );
+        }
+    }
 }
 
 1;
@@ -241,6 +261,10 @@ Check workspace status.
 =item B<--workspace-id>
 
 Filter workspace by workspace-id.
+
+=item B<--add-metrics>
+
+Requests the metric values from the API for the single workspace
 
 =item B<--timeframe>
 
@@ -276,7 +300,7 @@ C<%(health)> can have one of these values: C<info>, C<ok>, C<warning>, C<error>
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: C<temperature> (C), C<humidity> (%), C<ambient-noise> (dB), C<tvoc>.
+Can be: C<temperature> (C), C<humidity> (%), C<ambient_noise> (dB), C<tvoc>.
 
 =back
 

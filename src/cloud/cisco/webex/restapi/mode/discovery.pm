@@ -49,63 +49,13 @@ sub check_options {
     }
 }
 
-sub get_workspaces {
-    my ($self, %options) = @_;
-
-    my $params = {
-        endpoint => '/v1/workspaces',
-        get_param => [ 'start=' . $options{start}, 'max=' . $options{max} ]
-    };
-
-    if($self->{option_results}->{type}) {
-        push @{$params->{get_param}}, 'type=' . $self->{option_results}->{type};
-    }
-
-    my $response = $options{custom}->request_api(%$params);
-    my $disco_data = [];
-
-    for my $item (@{$response->{items}}) {
-        my $workspace = {
-            id   => $item->{id},
-            name => $item->{displayName},
-            type => $item->{type}
-        };
-
-        push @$disco_data, $workspace;
-    }
-
-    return $disco_data;
-}
-
-sub discovery_node {
-    my ($self, %options) = @_;
-    my $disco_data = [];
-
-    my $start = 0;
-    my $max = 100;
-
-    # gets the first 100 workspaces
-    my $paged_items = $self->get_workspaces(custom => $options{custom}, start => $start, max => $max);
-    push @$disco_data, @{$paged_items};
-    my $item_cnt = scalar(@{$paged_items});
-    # gets the next 100 workspaces until there are no more workspaces left in the response
-    while ($item_cnt > 0) {
-        $start += 100;
-        $paged_items = $self->get_workspaces(custom => $options{custom}, start => $start, max => $max);
-        $item_cnt = scalar(@{$paged_items});
-        push @$disco_data, @{$paged_items};
-    }
-
-    return $disco_data;
-}
-
 sub run {
     my ($self, %options) = @_;
 
     my $disco_stats;
     $disco_stats->{start_time} = time();
 
-    my $results = $self->discovery_node(custom => $options{custom});
+    my $results = $options{custom}->get_workspaces_from_api();
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};

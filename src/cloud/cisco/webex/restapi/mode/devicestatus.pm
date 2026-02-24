@@ -30,33 +30,41 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'device', type => 1, cb_prefix_output => 'prefix_output', skipped_code => { -10 => 1 } }
+        {
+            name             => 'devices',
+            type             => 1,
+            cb_prefix_output => 'prefix_output',
+            skipped_code     => { -10 => 1 },
+            message_multiple => 'All devices are ok'
+        }
     ];
 
-    $self->{maps_counters}->{device} = [
+    $self->{maps_counters}->{devices} = [
         {
             label            => 'status',
             type             => 2,
             unknown_default  => '',
             critical_default => '%{error_codes} =~ /accountmissing|softwareupgradekeepsfailing|wifiradioquality/i',
-            warning_default  => '%{lifecycle} =~ /END_OF_SALE|UPCOMING_END_OF_SUPPORT/i || %{connection_status} =~ /disconnected/i || %{error_codes} =~ /upcomingendofsupport|networkquality|currentnetworkquality/i',
-            set              => {
-                key_values                     => [
-                    { name => 'display_name' },
-                    { name => 'product' },
-                    { name => 'ip' },
-                    { name => 'type' },
-                    { name => 'serial' },
-                    { name => 'error_codes' },
-                    { name => 'planned_maintenance' },
-                    { name => 'lifecycle' },
-                    { name => 'connection_status' },
+            warning_default  =>
+                '%{lifecycle} =~ /END_OF_SALE|UPCOMING_END_OF_SUPPORT/i || %{connection_status} =~ /disconnected/i || %{error_codes} =~ /upcomingendofsupport|networkquality|currentnetworkquality/i',
+            set              =>
+                {
+                    key_values                     => [
+                        { name => 'display_name' },
+                        { name => 'product' },
+                        { name => 'ip' },
+                        { name => 'type' },
+                        { name => 'serial' },
+                        { name => 'error_codes' },
+                        { name => 'planned_maintenance' },
+                        { name => 'lifecycle' },
+                        { name => 'connection_status' },
 
-                ],
-                closure_custom_output          => $self->can('custom_status_output'),
-                closure_custom_perfdata        => sub {return 0;},
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
-            }
+                    ],
+                    closure_custom_output          => $self->can('custom_status_output'),
+                    closure_custom_perfdata        => sub {return 0;},
+                    closure_custom_threshold_check => \&catalog_status_threshold_ng
+                }
         }
     ];
 }
@@ -89,8 +97,10 @@ sub prefix_output {
 sub custom_status_output {
     my ($self, %options) = @_;
 
+    my $error = defined($self->{result_values}->{error_codes}) ? $self->{result_values}->{error_codes} : 'NA';
+
     if (defined($self->{result_values}->{error_codes}) && $self->{result_values}->{error_codes}) {
-        return "Error codes: $self->{result_values}->{error_codes} - Connection status: $self->{result_values}->{connection_status} - Planed maintenance: $self->{result_values}->{planned_maintenance} - Lifecycle: $self->{result_values}->{lifecycle}";
+        return "Error codes: $error - Connection status: $self->{result_values}->{connection_status} - Planed maintenance: $self->{result_values}->{planned_maintenance} - Lifecycle: $self->{result_values}->{lifecycle}";
     }
 
     return "Connection status: $self->{result_values}->{connection_status} - Planed maintenance: $self->{result_values}->{planned_maintenance} - Lifecycle: $self->{result_values}->{lifecycle}";
@@ -101,7 +111,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 'device-id:s' => { name => 'device_id' } });
+    $options{options}->add_options(arguments =>
+        {
+            'device-id:s'     => { name => 'device_id' },
+            'workspace-id:s'  => { name => 'workspace_id' },
+            'person-id:s'     => { name => 'person_id' },
+            'resource-type:s' => { name => 'resource_type', default => 'workspace' },
+        }
+    );
 
     return $self;
 }
@@ -109,29 +126,41 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{resource_type} !~ /^workspace|person/) {
+        $self->{output}->add_option_msg(short_msg => 'Unknown resource type. Must be "workspace" or "person"');
+        $self->{output}->option_exit();
+    }
+
+    if (!defined($self->{option_results}->{device_id}) && $self->{option_results}->{resource_type} eq 'workspace'
+        && (!defined($self->{option_results}->{workspace_id}) || $self->{option_results}->{workspace_id} eq '')) {
+        $self->{output}->add_option_msg(short_msg =>
+            'Need to specify --workspace-id option when using --resource-type "workspace"');
+        $self->{output}->option_exit();
+    }
+
+    if (!defined($self->{option_results}->{device_id}) && $self->{option_results}->{resource_type} eq 'person'
+        && (!defined($self->{option_results}->{person_id}) || $self->{option_results}->{person_id} eq '')) {
+        $self->{output}->add_option_msg(short_msg =>
+            'Need to specify --person-id option when using --resource-type "person"');
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $params = {
-        endpoint => "/v1/devices/$self->{option_results}->{device_id}"
-    };
+    if (defined($self->{option_results}->{device_id}) && $self->{option_results}->{device_id} ne '') {
+        $self->{devices} = $options{custom}->get_device();
+    } else {
+        my $devices = $options{custom}->get_devices();
 
-    my $response = $options{custom}->request_api(%$params);
-    $self->{device}->{$response->{id}} = {
-        display_name        => $response->{displayName},
-        product             => $response->{product},
-        ip                  => defined($response->{ip}) ? $response->{ip} : '',
-        type                => $response->{type},
-        serial              => $response->{serial},
-        lifecycle           => $response->{lifecycle},
-        connection_status   => $response->{connectionStatus},
-        planned_maintenance => $response->{plannedMaintenance},
-        error_codes         => join(';', @{$response->{errorCodes}})
-    };
+        foreach my $device (@{$devices}) {
+            $self->{devices}->{$device->{id}} = $device;
+        }
+    }
 
-    if (scalar(keys %{$self->{device}}) <= 0) {
+    if (scalar(keys %{$self->{devices}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No device found with this --device-id.");
         $self->{output}->option_exit();
     }
@@ -150,6 +179,10 @@ Check device status.
 =item B<--device-id>
 
 Filter device by device-id.
+
+=item B<--workspace-id>
+
+Filter devices by workspace id.
 
 =item B<--unknown-status>
 

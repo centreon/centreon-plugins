@@ -18,35 +18,43 @@
 # limitations under the License.
 #
 
-package cloud::cisco::webex::restapi::plugin;
+package cloud::cisco::webex::restapi::mode::cache;
+
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{modes} = {
-        'cache'            => 'cloud::cisco::webex::restapi::mode::cache',
-        'device-status'    => 'cloud::cisco::webex::restapi::mode::devicestatus',
-        'discovery'        => 'cloud::cisco::webex::restapi::mode::discovery',
-        'list-devices'     => 'cloud::cisco::webex::restapi::mode::listdevices',
-        'workspace-health' => 'cloud::cisco::webex::restapi::mode::workspacehealth'
-    };
+    $options{options}->add_options(arguments => {});
 
-    $self->{custom_modes}->{api} = 'cloud::cisco::webex::restapi::custom::api';
     return $self;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $options{custom}->cache_data();
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'Cache files created successfully'
+    );
 }
 
 1;
 
 __END__
 
-=head1 PLUGIN DESCRIPTION
+=head1 MODE
 
-Monitor cisco webex devices and workspaces.
+Create cache files (other modes could use it with --cache-use option).
+
+=over 8
+
+=back
 
 =cut
