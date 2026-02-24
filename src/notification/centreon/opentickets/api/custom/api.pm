@@ -49,7 +49,7 @@ sub new {
             'url-path:s'     => { name => 'url_path' },
             'api-username:s' => { name => 'api_username' },
             'api-password:s' => { name => 'api_password' },
-            'api-timeout:s'      => { name => 'api_timeout' }
+            'api-timeout:s'  => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -78,7 +78,6 @@ sub check_options {
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/centreon/api/';
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{api_timeout} = (defined($self->{option_results}->{api_timeout})) ? $self->{option_results}->{api_timeout} : 10;
 
     if ($self->{api_hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify api-hostname option.');
@@ -263,7 +262,7 @@ Centreon Open-Tickets API
 
 =head1 SYNOPSIS
 
-Centreon open-tickets api
+Centreon open-tickets API
 
 =head1 REST API OPTIONS
 
@@ -275,7 +274,7 @@ Centreon address.
 
 =item B<--url-path>
 
-API url path (default: '/centreon/api/')
+API url path (default: C</centreon/api/>)
 
 =item B<--api-port>
 
