@@ -275,7 +275,7 @@ Centreon address.
 
 =item B<--url-path>
 
-API url path (default: '/centreon/api/')
+API url path (default: C</centreon/api/>)
 
 =item B<--api-port>
 
