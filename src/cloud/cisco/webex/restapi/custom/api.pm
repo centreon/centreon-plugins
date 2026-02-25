@@ -59,7 +59,7 @@ sub new {
             'cache-use'              => { name => 'cache_use' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'HPE Primera API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'Webex API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
@@ -83,14 +83,22 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
+
     if (centreon::plugins::misc::is_empty($self->{option_results}->{client_id})) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --client-id option.');
         $self->{output}->option_exit();
     }
+
     if (centreon::plugins::misc::is_empty($self->{option_results}->{client_secret})) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --client-secret option.');
         $self->{output}->option_exit();
     }
+
+    if (centreon::plugins::misc::is_empty($self->{option_results}->{refresh_token})) {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --refresh-token option.');
+        $self->{output}->option_exit();
+    }
+
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
 
@@ -109,7 +117,7 @@ sub get_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $self->{cache}->read(statefile =>
-        'cloud_cisco_webexapi_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{client_id}));
+        'cisco_webexapi_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{client_id}));
     my $access_token = $self->{cache}->get(name => 'access_token');
     my $expires_on = $self->{cache}->get(name => 'expires_on');
 
@@ -472,7 +480,7 @@ __END__
 
 =head1 NAME
 
-cloud cisco webex REST API
+Cisco Webex REST API
 
 =head1 Webex API OPTIONS
 
@@ -507,10 +515,6 @@ Define the refresh token associated with the username. Used to renew the access 
 =item B<--timeout>
 
 Define the timeout in seconds for HTTP requests (default: 30).
-
-=item B<--cache-use>
-
-Use the cache file instead of requesting the API (the cache file can be created with the cache mode).
 
 =back
 

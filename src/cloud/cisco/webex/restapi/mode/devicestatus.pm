@@ -44,9 +44,9 @@ sub set_counters {
             label            => 'status',
             type             => 2,
             unknown_default  => '',
-            critical_default => '%{error_codes} =~ /accountmissing|softwareupgradekeepsfailing|wifiradioquality/i',
+            critical_default => '%{error_codes} =~ /softwareupgradekeepsfailing/i',
             warning_default  =>
-                '%{lifecycle} =~ /END_OF_SALE|UPCOMING_END_OF_SUPPORT/i || %{connection_status} =~ /disconnected/i || %{error_codes} =~ /upcomingendofsupport|networkquality|currentnetworkquality/i',
+                '%{lifecycle} =~ /UPCOMING_END_OF_SUPPORT/i || %{connection_status} =~ /disconnected/i || %{error_codes} =~ /upcomingendofsupport|networkquality|currentnetworkquality|wifiradioquality/i',
             set              =>
                 {
                     key_values                     => [
@@ -182,7 +182,11 @@ Filter device by device-id.
 
 =item B<--workspace-id>
 
-Filter devices by workspace id.
+Filter devices by workspace id. Used together with --resource-type "workspace".
+
+=item B<--person-id>
+
+Filter devices by personal id. Used together with --resource-type "person".
 
 =item B<--unknown-status>
 
@@ -191,13 +195,17 @@ Can used special variables like: %{error_codes}, %{connection_status}, %{planned
 
 =item B<--warning--status>
 
-Set warning threshold for status (Default: '%{lifecycle} =~ /END_OF_SALE|UPCOMING_END_OF_SUPPORT/i || %{connection_status} =~ /disconnected/i || %{error_codes} =~ /upcomingendofsupport|networkquality|currentnetworkquality/i')
+Set warning threshold for status (Default: '%{lifecycle} =~ /UPCOMING_END_OF_SUPPORT/i || %{connection_status} =~ /disconnected/i || %{error_codes} =~ /upcomingendofsupport|networkquality|currentnetworkquality|wifiradioquality/i')
 Can used special variables like: %{error_codes}, %{connection_status}, %{planned_maintenance}, %{lifecycle}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{error_codes} =~ /accountmissing|softwareupgradekeepsfailing|wifiradioquality|temperaturecheck/i').
+Set critical threshold for status (Default: '%{error_codes} =~ /softwareupgradekeepsfailing/i').
 Can used special variables like: %{error_codes}, %{connection_status}, %{planned_maintenance}, %{lifecycle}
+
+=item B<--cache-use>
+
+Use the cache file instead of requesting the API (the cache file can be created with the cache mode).
 
 =back
 

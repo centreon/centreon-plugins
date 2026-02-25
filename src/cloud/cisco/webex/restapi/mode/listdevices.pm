@@ -124,11 +124,11 @@ List devices.
 
 =item B<--workspace-id>
 
-Filter devices by workspace id.
+Filter devices by workspace id. Used together with --resource-type "workspace".
 
 =item B<--person-id>
 
-Filter devices by person id.
+Filter devices by person id. Used together with --resource-type "person".
 
 =item B<--resource-type>
 

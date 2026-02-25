@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Monitor cisco webex devices and workspaces.
+Monitor Cisco Webex devices and workspaces.
 
 =cut

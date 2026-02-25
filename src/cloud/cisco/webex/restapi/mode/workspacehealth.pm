@@ -66,10 +66,10 @@ sub set_counters {
             output_template => 'Temperature: %d C',
             perfdatas       => [
                 {
-                    label                => 'temperature',
-                    value                => 'temperature',
-                    template             => '%d',
-                    unit                 => 'C'
+                    label    => 'temperature',
+                    value    => 'temperature',
+                    template => '%d',
+                    unit     => 'C'
                 }
             ],
         }
@@ -79,12 +79,12 @@ sub set_counters {
             output_template => 'Humidity: %.2f%%',
             perfdatas       => [
                 {
-                    label                => 'humidity',
-                    value                => 'humidity',
-                    template             => '%.2f',
-                    min                  => 0,
-                    max                  => 100,
-                    unit                 => '%'
+                    label    => 'humidity',
+                    value    => 'humidity',
+                    template => '%.2f',
+                    min      => 0,
+                    max      => 100,
+                    unit     => '%'
                 }
             ],
         }
@@ -94,9 +94,9 @@ sub set_counters {
             output_template => 'Ambient noise: %.2f dB',
             perfdatas       => [
                 {
-                    template             => '%.2f',
-                    unit                 => 'dB',
-                    min                  => 0
+                    template => '%.2f',
+                    unit     => 'dB',
+                    min      => 0
                 },
             ],
         }
@@ -106,8 +106,8 @@ sub set_counters {
             output_template => 'TVOC: %.2f',
             perfdatas       => [
                 {
-                    template             => '%.2f',
-                    min                  => 0
+                    template => '%.2f',
+                    min      => 0
                 },
             ],
         }
@@ -195,7 +195,6 @@ sub get_metric_value {
             defined($item->{mean}) ? $item->{mean} : 0;
 
         $value_cnt++;
-
     }
 
     if ($value_cnt > 0) {
@@ -260,11 +259,11 @@ Check workspace status.
 
 =item B<--workspace-id>
 
-Filter workspace by workspace-id.
+Filter workspaces by workspace-id.
 
 =item B<--add-metrics>
 
-Requests the metric values from the API for the single workspace
+Requests the metric values from the API for the single workspace. Can be used only with --workspace-id.
 
 =item B<--timeframe>
 
@@ -276,8 +275,7 @@ Define how the data must be aggregated. Available aggregations: C<none>, C<hourl
 
 =item B<--zeroed>
 
-Set metrics value to 0 if they are missing. Useful when some metrics are
-undefined.
+Set metrics value to 0 if they are missing. Useful when some metrics are undefined.
 
 =item B<--unknown-status>
 
@@ -301,6 +299,11 @@ C<%(health)> can have one of these values: C<info>, C<ok>, C<warning>, C<error>
 
 Thresholds.
 Can be: C<temperature> (C), C<humidity> (%), C<ambient_noise> (dB), C<tvoc>.
+
+=item B<--cache-use>
+
+Use the cache file instead of requesting the API (the cache file can be created with the cache mode).
+The metrics are not get from the cache but always directly from the API.
 
 =back
 
