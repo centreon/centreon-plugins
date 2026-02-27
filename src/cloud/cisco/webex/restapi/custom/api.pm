@@ -117,7 +117,7 @@ sub get_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $self->{cache}->read(statefile =>
-        'cisco_webexapi_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{client_id}));
+        'cisco_webexapi_' . md5_hex($self->{option_results}->{client_id}));
     my $access_token = $self->{cache}->get(name => 'access_token');
     my $expires_on = $self->{cache}->get(name => 'expires_on');
 
@@ -195,7 +195,7 @@ sub request_api {
         }
 
         # Maybe token is invalid. so we retry
-        if (!defined($token) || $code =~ /400|401|403/) {
+        if (!defined($token) || $code < 200 || $code >= 300) {
             $self->clean_token();
             $token = $self->get_token();
 
@@ -232,9 +232,8 @@ sub request_api {
 sub write_cache_file {
     my ($self, %options) = @_;
 
-    my $token = $self->get_token();
     $self->{cache}->read(
-        statefile => 'cache_webexapi_' . md5_hex($token)
+        statefile => 'cache_webexapi_' . md5_hex($self->{option_results}->{client_id})
     );
     $self->{cache}->write(data => {
         update_time => time(),
@@ -245,8 +244,7 @@ sub write_cache_file {
 sub get_cache_file_response {
     my ($self, %options) = @_;
 
-    my $token = $self->get_token();
-    my $cache_filename = 'cache_webexapi_' . md5_hex($token);
+    my $cache_filename = 'cache_webexapi_' . md5_hex($self->{option_results}->{client_id});
 
     $self->{cache}->read(
         statefile => $cache_filename
@@ -338,7 +336,7 @@ sub get_max_devices {
             lifecycle           => $item->{lifecycle},
             planned_maintenance => $item->{plannedMaintenance},
             connection_status   => $item->{connectionStatus},
-            error_codes         => join('|', @{$item->{errorCodes}})
+            error_codes         => defined($item->{errorCodes}) ? join(';', @{$item->{errorCodes}}) : ''
         };
     }
 
@@ -382,7 +380,7 @@ sub get_device_from_api {
         lifecycle           => $response->{lifecycle},
         connection_status   => $response->{connectionStatus},
         planned_maintenance => $response->{plannedMaintenance},
-        error_codes         => join(';', @{$response->{errorCodes}})
+        error_codes         => defined($response->{errorCodes}) ? join(';', @{$response->{errorCodes}}) : ''
     };
 
     return $device;
@@ -465,9 +463,34 @@ sub get_max_workspaces {
 
     for my $item (@{$response->{items}}) {
         push @$results, {
+            id                    => $item->{id},
+            display_name          => $item->{displayName},
+            type                  => $item->{type},
+            workspace_location_id => $item->{workspaceLocationId}
+        };
+    }
+
+    return $results;
+}
+
+sub get_workspace_locations_from_api {
+    my ($self, %options) = @_;
+
+    my $params = {
+        endpoint => '/v1/workspaceLocations'
+    };
+
+    my $response = $self->request_api(%$params);
+    my $results = [];
+
+    for my $item (@{$response->{items}}) {
+        push @$results, {
             id           => $item->{id},
             display_name => $item->{displayName},
-            type         => $item->{type}
+            address      => $item->{address},
+            city         => $item->{cityName},
+            latitude     => $item->{latitude},
+            longitude    => $item->{longitude}
         };
     }
 

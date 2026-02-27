@@ -55,12 +55,25 @@ sub run {
     my $disco_stats;
     $disco_stats->{start_time} = time();
 
-    my $results = $options{custom}->get_workspaces_from_api();
+    my $ws_locations = $options{custom}->get_workspace_locations_from_api();
+    foreach my $ws_location (@{$ws_locations}) {
+        $self->{workspace_locations}->{$ws_location->{id}} = $ws_location;
+    }
+
+    my $workspaces = $options{custom}->get_workspaces_from_api();
+
+    foreach my $workspace (@{$workspaces}) {
+        $workspace->{location_name} = $self->{workspace_locations}->{$workspace->{workspace_location_id}}->{display_name};
+        $workspace->{longitude} = $self->{workspace_locations}->{$workspace->{workspace_location_id}}->{longitude};
+        $workspace->{latitude} = $self->{workspace_locations}->{$workspace->{workspace_location_id}}->{latitude};
+        $workspace->{address} = $self->{workspace_locations}->{$workspace->{workspace_location_id}}->{address};
+        $workspace->{city} = $self->{workspace_locations}->{$workspace->{workspace_location_id}}->{city};
+    }
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-    $disco_stats->{discovered_items} = scalar(@$results);
-    $disco_stats->{results} = $results;
+    $disco_stats->{discovered_items} = scalar(@$workspaces);
+    $disco_stats->{results} = $workspaces;
 
     my $encoded_data;
     eval {
