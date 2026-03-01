@@ -270,6 +270,26 @@ sub manage_selection {
 
     my $databases = $options{sql}->fetchall_arrayref();
 
+    $options{sql}->query(query => qq{
+        SELECT
+            [name],
+            physical_name,
+            [File_Type] = CASE type   
+                WHEN 0 THEN 'data'
+                WHEN 1 THEN 'log'
+            END,
+            [Total_Size] = [size],
+            [Used_Space] = (CAST(FILEPROPERTY([name], 'SpaceUsed') as int)),
+            [Growth_Units] = CASE [is_percent_growth]    
+                WHEN 1 THEN CAST(growth AS varchar(20)) + '%'
+                ELSE CAST(growth*8/1024 AS varchar(20)) + 'Mb'
+            END,
+            [max_size]
+        FROM sys.database_files
+    });
+
+    my $rows = $options{sql}->fetchall_arrayref();
+
     # limit can be: 'unlimited', 'overload', 'other'.
     $self->{databases} = {};
     foreach my $database (@$databases) {
@@ -278,27 +298,6 @@ sub manage_selection {
             $dbname !~ /$self->{option_results}->{filter_database}/i);
         next if (defined($self->{option_results}->{filter_database_state}) && $self->{option_results}->{filter_database_state} ne '' &&
             $database_state->{ $database->[1] } !~ /$self->{option_results}->{filter_database_state}/);
-
-        $options{sql}->query(query => qq{
-            USE [$dbname]
-            SELECT
-                [name],
-                physical_name,
-                [File_Type] = CASE type   
-                    WHEN 0 THEN 'data'
-                    WHEN 1 THEN 'log'
-                END,
-                [Total_Size] = [size],
-                [Used_Space] = (CAST(FILEPROPERTY([name], 'SpaceUsed') as int)),
-                [Growth_Units] = CASE [is_percent_growth]    
-                    WHEN 1 THEN CAST(growth AS varchar(20)) + '%'
-                    ELSE CAST(growth*8/1024 AS varchar(20)) + 'Mb'
-                END,
-                [max_size]
-            FROM sys.database_files
-        });
-
-        my $rows = $options{sql}->fetchall_arrayref();
 
         foreach my $row (@$rows) {
             next if (!defined($row->[6]));    
