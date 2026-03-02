@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::plugin;
+package network::extreme::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'cpu'             => 'network::extreme::snmp::mode::cpu',
-        'hardware'        => 'network::extreme::snmp::mode::hardware',
-        'interfaces'      => 'network::extreme::snmp::mode::interfaces',
+        'cpu'             => 'network::extreme::standard::snmp::mode::cpu',
+        'hardware'        => 'network::extreme::standard::snmp::mode::hardware',
+        'interfaces'      => 'network::extreme::standard::snmp::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::extreme::snmp::mode::memory',
-        'stack'           => 'network::extreme::snmp::mode::stack'
+        'memory'          => 'network::extreme::standard::snmp::mode::memory',
+        'stack'           => 'network::extreme::standard::snmp::mode::stack'
     };
 
     return $self;
