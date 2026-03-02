@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Windows operating systems through "WinRM" (ws-management protocol).
+Check Windows operating systems through C<WinRM> (WSMAN protocol).
 
 =cut

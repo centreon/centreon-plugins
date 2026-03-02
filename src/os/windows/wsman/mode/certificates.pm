@@ -24,7 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc qw/json_decode/;
+use centreon::plugins::misc qw/json_decode is_excluded change_seconds/;
+use centreon::plugins::constants qw/:values :counters/;
 use centreon::common::powershell::windows::certificates;
 use POSIX;
 
@@ -61,10 +62,9 @@ sub custom_expires_threshold {
 sub custom_expires_output {
     my ($self, %options) = @_;
 
-    my $msg = 'expires in ' . $self->{result_values}->{expires_human};
-    if ($self->{result_values}->{expires_seconds} == 0) {
-        $msg = 'expired';
-    }
+    my $msg = $self->{result_values}->{expires_seconds} ?
+        'expires in ' . $self->{result_values}->{expires_human} :
+        'expired';
 
     return $msg;
 }
@@ -83,8 +83,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'All certificates are ok', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'certificates', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'All certificates are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -115,12 +115,15 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'ps-exec-only'        => { name => 'ps_exec_only' },
-        'ps-display'          => { name => 'ps_display' },
-        'filter-thumbprint:s' => { name => 'filter_thumbprint' },
-        'filter-subject:s'    => { name => 'filter_subject' },
-        'filter-path:s'       => { name => 'filter_path' },
-        'unit:s'              => { name => 'unit', default => 's' }
+        'ps-exec-only'         => { name => 'ps_exec_only' },
+        'ps-display'           => { name => 'ps_display' },
+        'include-thumbprint:s' => { name => 'include_thumbprint', default => '' },
+        'exclude-thumbprint:s' => { name => 'exclude_thumbprint', default => '' },
+        'include-subject:s'    => { name => 'include_subject',    default => '' },
+        'exclude-subject:s'    => { name => 'exclude_subject',    default => '' },
+        'include-path:s'       => { name => 'include_path',       default => '' },
+        'exclude-path:s'       => { name => 'exclude_path',       default => '' },
+        'unit:s'               => { name => 'unit',               default => 's' }
     });
 
     return $self;
@@ -130,16 +133,18 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
-        $self->{option_results}->{unit} = 's';
-    }
+    $self->{option_results}->{unit} = 's'
+        if $self->{option_results}->{unit} eq '';
+
+    $self->{output}->option_exit(short_msg => "Invalid time unit '" . $self->{option_results}->{unit} . "'. Valid units are: s, m, h, d, w.")
+        unless $unitdiv->{ $self->{option_results}->{unit} };
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $ps = centreon::common::powershell::windows::certificates::get_powershell();
-    if (defined($self->{option_results}->{ps_display})) {
+    if ($self->{option_results}->{ps_display}) {
         $self->{output}->output_add(
             severity => 'OK',
             short_msg => $ps
@@ -148,12 +153,12 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $result = $options{wsman}->execute_powershell_script(
+    my $result = $options{wsman}->execute_powershell(
         label => 'certificates',
         content => $ps
     );
 
-    if (defined($self->{option_results}->{ps_exec_only})) {
+    if ($self->{option_results}->{ps_exec_only}) {
         $self->{output}->output_add(
             severity => 'OK',
             short_msg => $result->{certificates}->{stdout}
@@ -168,7 +173,7 @@ sub manage_selection {
     my $decoded = json_decode($self->{output}->decode($result->{certificates}->{stdout}), no_exit => 1);
 
     $self->{output}->option_exit(short_msg => 'Cannot decode powershell output'.($stderr ? ": $stderr" : ''))
-        unless ($decoded);
+        unless $decoded;
 
     $self->{output}->output_add(long_msg => "PowerShell stderr: $stderr", debug => 1)
         if $self->{output}->is_debug() && $stderr;
@@ -177,24 +182,21 @@ sub manage_selection {
     $self->{certificates} = {};
     my $current_time = time();
     foreach my $cert (@$decoded) {
-        next if ($cert->{archived} =~ /true|1/i);
+        next if $cert->{archived} =~ /true|1/i;
 
-        next if (defined($self->{option_results}->{filter_thumbprint}) && $self->{option_results}->{filter_thumbprint} ne '' &&
-            $cert->{thumbprint} !~ /$self->{option_results}->{filter_thumbprint}/);
-        next if (defined($self->{option_results}->{filter_subject}) && $self->{option_results}->{filter_subject} ne '' &&
-            $cert->{subject} !~ /$self->{option_results}->{filter_subject}/);
-        next if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&
-            $cert->{PSParentPath} !~ /$self->{option_results}->{filter_path}/);
+        next if is_excluded($cert->{thumbprint}, $self->{option_results}->{include_thumbprint}, $self->{option_results}->{exclude_thumbprint});
+        next if is_excluded($cert->{subject}, $self->{option_results}->{include_subject}, $self->{option_results}->{exclude_subject});
+        next if is_excluded($cert->{PSParentPath}, $self->{option_results}->{include_path}, $self->{option_results}->{exclude_path});
 
         $self->{certificates}->{ $cert->{thumbprint} } = {
             subject => $cert->{subject},
             path => $cert->{PSParentPath}
         };
-        if (defined($cert->{notAfter})) {
+        if ($cert->{notAfter}) {
             my $expires_in = $cert->{notAfter} - $current_time;
             $expires_in = 0 if ($expires_in < 0);
             $self->{certificates}->{ $cert->{thumbprint} }->{expires_seconds} = $expires_in;
-            $self->{certificates}->{ $cert->{thumbprint} }->{expires_human} = centreon::plugins::misc::change_seconds(
+            $self->{certificates}->{ $cert->{thumbprint} }->{expires_human} = change_seconds(
                 value => $expires_in
             );
         }
@@ -221,26 +223,49 @@ Display powershell script.
 
 Print powershell output.
 
-=item B<--filter-thumbprint>
+=item B<--include-thumbprint>
 
 Filter certificate by thumbprint (can be a regexp).
 
-=item B<--filter-subject>
+=item B<--exclude-thumbprint>
+
+Exclude certificate by thumbprint (can be a regexp).
+
+=item B<--include-subject>
 
 Filter certificate by subject (can be a regexp).
 
-=item B<--filter-path>
+=item B<--exclude-subject>
+
+Exclude certificate by subject (can be a regexp).
+
+=item B<--include-path>
 
 Filter certificate by path (can be a regexp).
+
+=item B<--exclude-path>
+
+Exclude certificate by path (can be a regexp).
 
 =item B<--unit>
 
 Select the time unit for the expiration thresholds. May be 's' for seconds,'m' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-certificate-expires>
 
-Thresholds.
-Can be: 'certificates-detected', 'certificate-expires'.
+Threshold.
+
+=item B<--critical-certificate-expires>
+
+Threshold.
+
+=item B<--warning-certificates-detected>
+
+Threshold.
+
+=item B<--critical-certificates-detected>
+
+Threshold.
 
 =back
 
