@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc qw/trim is_excluded change_seconds/;
+use centreon::plugins::misc qw/trim is_excluded change_seconds check_security_whitelist/;
 use centreon::plugins::constants qw(:values :counters);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes;
@@ -193,18 +193,19 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-command:s'  => { name => 'filter_command',  default => '' },
-        'exclude-command:s' => { name => 'exclude_command', default => '' },
-        'filter-arg:s'      => { name => 'filter_arg',      default => '' },
-        'exclude-arg:s'     => { name => 'exclude_arg',     default => '' },
-        'filter-state:s'    => { name => 'filter_state',    default => '' },
-        'filter-ppid:s'     => { name => 'filter_ppid',     default => '' },
-        'add-cpu'           => { name => 'add_cpu' },
-        'add-memory'        => { name => 'add_memory' },
-        'add-disk-io'       => { name => 'add_disk_io' },
-        'add-open-files'    => { name => 'add_open_files' },
-        'page-size:s'       => { name => 'page_size',       default => 4096 },
-        'clock-ticks:s'     => { name => 'clock_ticks',     default => 100 }
+        'filter-command:s'    => { name => 'filter_command',    default => '' },
+        'exclude-command:s'   => { name => 'exclude_command',   default => '' },
+        'filter-arg:s'        => { name => 'filter_arg',        default => '' },
+        'exclude-arg:s'       => { name => 'exclude_arg',       default => '' },
+        'filter-state:s'      => { name => 'filter_state',      default => '' },
+        'filter-ppid:s'       => { name => 'filter_ppid',       default => '' },
+        'add-cpu'             => { name => 'add_cpu' },
+        'add-memory'          => { name => 'add_memory' },
+        'add-disk-io'         => { name => 'add_disk_io' },
+        'add-open-files'      => { name => 'add_open_files' },
+        'page-size:s'         => { name => 'page_size',         default => 4096 },
+        'clock-ticks:s'       => { name => 'clock_ticks',       default => 100 },
+        'privileged-script-path:s' => { name => 'privileged_script_path', default => '' }
     });
 
     return $self;
@@ -236,7 +237,7 @@ sub parse_output {
     my $line = shift(@lines);
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.{50})\s+(.*)$/);
-        my ($state, $elapsed, $pid, $ppid, $cmd, $args) = map trim($_), ($1, $2, $3, $4, $5, $6);
+        my ($state, $elapsed, $pid, $ppid, $cmd, $args) = map { trim($_) } ($1, $2, $3, $4, $5, $6);
 
         next if is_excluded($cmd, $self->{option_results}->{filter_command});
         next if is_excluded($cmd, $self->{option_results}->{exclude_command});
@@ -330,8 +331,7 @@ sub add_disk_io {
 
 sub add_open_files {
     my ($self, %options) = @_;
-    use Data::Dumper;
-    #die Dumper($options{content})."\n";
+
     my @pids;
     foreach my $pid (keys %{$self->{processes}}) {
         # ==> /proc/121212/limits <==
@@ -351,17 +351,25 @@ sub add_open_files {
     return unless @pids;
 
     # Get the path to centreon_plugin_local_process.pl from the location of plugin.pm
-    my $external_process = [ map "$FindBin::Bin/$_", grep /\/plugin.pm$/, keys %INC ];
-    $external_process = $external_process->[0] =~ s/\/plugin\.pm$/\/centreon_linux_local_process.pl/r
-        if $external_process;
+    # when privileged_script_path is not set
+    my $script = '/centreon_linux_local_process.pl';
+    my $external_process_path = $self->{option_results}->{privileged_script_path};
 
-    $self->{output}->option_exit(short_msg => "Missing $external_process, please install the 'centreon-plugin-Operatingsystems-Linux-Local-Process' package to monitor open files usage")
-        unless $external_process && -x $external_process;
+    if ($external_process_path eq '') {
+        $external_process_path = [ map { "$FindBin::Bin/$_" } grep { /\/plugin.pm$/ } keys %INC ];
+        $external_process_path = $external_process_path->[0] =~ s/\/plugin\.pm$//
+            if $external_process_path;
+    } else {
+        check_security_whitelist(command => $script, command_path => $external_process_path);
+    }
 
-    my $cmd = "$external_process ".join ' ', @pids;
-    $self->{output}->output_add(long_msg => "Launch [$cmd]", debug => 1);
-    $self->{output}->option_exit(short_msg => "Cannot launch $cmd: $!\n")
-        unless open(my $fh, "$cmd |");
+    $self->{output}->option_exit(short_msg => "Missing $external_process_path$script, please install the 'centreon-plugin-Operatingsystems-Linux-Local-Process' package to monitor open files usage")
+        unless -x "$external_process_path$script";
+
+    my $dbg_cmd = "$external_process_path$script ".join ' ', @pids;
+    $self->{output}->output_add(long_msg => "Launch [$dbg_cmd]", debug => 1);
+    $self->{output}->option_exit(short_msg => "Cannot launch $dbg_cmd: $!\n")
+        unless open(my $fh, '-|', "$external_process_path$script", @pids);
 
     while (my $response = <$fh>) {
         next unless $response =~ /^(\d+)\s+(\d+)/;
@@ -480,6 +488,11 @@ Define which processes should be excluded based on the process state.
 This option will be treated as a regular expression.
 You can use: 'zombie', 'dead', 'paging', 'stopped',
 'InterrupibleSleep', 'running', 'UninterrupibleSleep'.
+
+=item B<--privileged-script-path>
+
+This parameter allows specifying a custom path to the centreon_plugin_local_process.pl script.
+If left empty (default) the script is assumed to reside in the same directory as the plugin.
 
 =item B<--warning-total>
 
