@@ -382,7 +382,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $endpoint = '/api/storage/volumes?fields=svm,name,space,metric';
+    my $endpoint = '/api/storage/volumes?fields=svm,name,state,space,metric';
     
     if (defined($self->{option_results}->{filter_volume_name}) && $self->{option_results}->{filter_volume_name} ne '' ) {
         $endpoint .= '&name=' . $self->{option_results}->{filter_volume_name};

@@ -14,7 +14,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::datadomain::snmp::plugin
 
 *** Test Cases ***
 cleaning ${tc}
-    [Tags]    snmp  storage
+    [Tags]    snmp    storage
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=cleaning
@@ -24,12 +24,11 @@ cleaning ${tc}
     ...    --snmp-community=${snmp_community}
     ...    --snmp-timeout=5
     ...    ${extra_options}
-  
+
     # first run to build cache
     Run    ${command}
     # second run to control the output
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
-    
 
     Examples:        tc    extra_options                                                                      snmp_community                                                                      expected_result    --
             ...      1     ${EMPTY}                                     storage/emc/datadomain/snmp/slim-datadomain                     OK: cleaning last execution: (\\\\d+[yY] )?(\\\\d+M )?(\\\\d+w )?(\\\\d+d )?(\\\\d+h )?(\\\\d+m )?(\\\\d+s )?\\\\| 'filesystems.cleaning.execution.last.days'=\\\\d+d;;;0;$

@@ -55,7 +55,7 @@ cpanm Module::Build::Tiny
 cpanm Module::Install
 cpanm Crypt::OpenSSL::Guess
 
-gem install fpm
+gem install fpm -v 1.17.0
 
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list
 apt-get update
@@ -66,5 +66,8 @@ apt-get clean
 EOF
 
 COPY .github/patch/fpm-deb.rb.diff /tmp/fpm-deb.rb.diff
+COPY .github/patch/fpm-cpan.rb.diff /tmp/fpm-cpan.rb.diff
 # Patch to apply fpm fix for debian package generation while waiting for the official fix to be released (https://github.com/jordansissel/fpm/pull/1947).
 RUN patch -i /tmp/fpm-deb.rb.diff $(find / -type f -name "deb.rb") && /bin/rm -rf /tmp/fpm-deb.rb.diff
+# Patch to fix fpm MetaCpan request
+RUN patch -i /tmp/fpm-cpan.rb.diff $(find / -type f -name "cpan.rb") && /bin/rm -rf /tmp/fpm-cpan.rb.diff

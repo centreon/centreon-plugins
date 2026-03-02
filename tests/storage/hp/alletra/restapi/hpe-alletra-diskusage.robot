@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-alletra.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::alletra::restapi::plugin
 ...                 --mode disk-usage
 ...                 --hostname=${HOSTNAME}
@@ -21,15 +21,15 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 DiskUsage ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
-
 
     Examples:        tc       extraoptions                                                              expected_regexp    --
             ...      1        ${EMPTY}                                                                  OK: Total Used: 28.04 TB / 41.91 TB, Total percentage used: 66.91 %, Total Free: 13.87 TB - All disks are ok | 'disks.total.space.usage.bytes'=30830348992512;;;0;46076409151488 'disks.total.space.usage.percent'=66.9113534675615;;;0;100 'disks.total.space.free.bytes'=15246060158976;;;0;46076409151488 '0#disk.space.usage.bytes'=10276782997504B;;;0;15358803050496 '0#disk.space.free.bytes'=10276782997504B;;;0;15358803050496 '0#disk.space.usage.percentage'=66.91%;;;0;100 '1#disk.space.usage.bytes'=10276782997504B;;;0;15358803050496 '1#disk.space.free.bytes'=10276782997504B;;;0;15358803050496 '1#disk.space.usage.percentage'=66.91%;;;0;100 '2#disk.space.usage.bytes'=10276782997504B;;;0;15358803050496 '2#disk.space.free.bytes'=10276782997504B;;;0;15358803050496 '2#disk.space.usage.percentage'=66.91%;;;0;100

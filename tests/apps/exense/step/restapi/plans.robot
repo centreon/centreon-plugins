@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
@@ -23,7 +22,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 plans ${tc}
-    [Tags]    apps    
+    [Tags]    apps
     ${command}    Catenate
     ...    ${cmd}
     ...    ${extraoptions}

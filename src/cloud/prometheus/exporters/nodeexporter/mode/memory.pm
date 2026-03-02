@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -225,15 +225,29 @@ Check memory usage.
 
 Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
-=item B<--warning-*>
+=item B<--warning-buffer>
 
-Warning threshold.
-Can be: 'usage', 'buffer', 'cached'.
+Threshold in bytes.
 
-=item B<--critical-*>
+=item B<--critical-buffer>
 
-Critical threshold.
-Can be: 'usage', 'buffer', 'cached'.
+Threshold in bytes.
+
+=item B<--warning-cached>
+
+Threshold in bytes.
+
+=item B<--critical-cached>
+
+Threshold in bytes.
+
+=item B<--warning-usage>
+
+Threshold.
+
+=item B<--critical-usage>
+
+Threshold.
 
 =item B<--units>
 

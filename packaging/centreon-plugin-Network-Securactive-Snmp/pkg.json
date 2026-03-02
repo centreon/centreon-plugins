@@ -5,6 +5,6 @@
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
-        "network/securactive/snmp/"
+        "network/securactive/"
     ]
 }

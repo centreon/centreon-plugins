@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}         ${CURDIR}${/}netapp.json
+${MOCKOON_JSON}     ${CURDIR}${/}netapp.json
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::netapp::ontap::restapi::plugin
@@ -23,7 +23,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 Hardware ${tc}
-    [Tags]    storage    netapp    ontapp    api    hardware    mockoon   
+    [Tags]    storage    netapp    ontapp    api    hardware    mockoon
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
@@ -36,4 +36,3 @@ Hardware ${tc}
             ...       3   --component='disk'                       OK: All 1 components are ok [1/1 disks]. | 'hardware.disk.count'=1;;;;
             ...       4   --component='fru'                        OK: All 1 components are ok [1/1 frus]. | 'hardware.fru.count'=1;;;;
             ...       5   --component='shelf'                      OK: All 1 components are ok [1/1 shelfs]. | 'hardware.shelf.count'=1;;;;
-

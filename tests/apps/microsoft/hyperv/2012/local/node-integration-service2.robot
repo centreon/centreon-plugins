@@ -3,9 +3,9 @@ Documentation       Application Microsoft HyperV 2022
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -32,4 +32,3 @@ HyperV 2022-2 ${tc}
             ...      1     ${EMPTY}        OK: All integration services are ok
             ...      2     VSERVER05       OK: VM 'VSERVER05' 0 problem(s) detected - VM 'VSERVER05' 0 problem(s) detected
             ...      3     VSERVER07       OK: VM 'VSERVER07' 0 problem(s) detected - VM 'VSERVER07' 0 problem(s) detected
-

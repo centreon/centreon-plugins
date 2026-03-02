@@ -39,6 +39,11 @@ runs:
           PACKAGE_DISTRIB_NAME="el9"
           PACKAGE_EXTENSION="rpm"
           DISTRIB_FAMILY="el"
+        elif [[ "${{ inputs.distrib }}" == "alma10" || "${{ inputs.distrib }}" == "el10" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="."
+          PACKAGE_DISTRIB_NAME="el10"
+          PACKAGE_EXTENSION="rpm"
+          DISTRIB_FAMILY="el"
         elif [[ "${{ inputs.distrib }}" == "bullseye" ]]; then
           PACKAGE_DISTRIB_SEPARATOR="+"
           PACKAGE_DISTRIB_NAME="deb11u1"
@@ -47,6 +52,11 @@ runs:
         elif [[ "${{ inputs.distrib }}" == "bookworm" ]]; then
           PACKAGE_DISTRIB_SEPARATOR="+"
           PACKAGE_DISTRIB_NAME="deb12u1"
+          PACKAGE_EXTENSION="deb"
+          DISTRIB_FAMILY="debian"
+        elif [[ "${{ inputs.distrib }}" == "trixie" ]]; then
+          PACKAGE_DISTRIB_SEPARATOR="+"
+          PACKAGE_DISTRIB_NAME="deb32u1"
           PACKAGE_EXTENSION="deb"
           DISTRIB_FAMILY="debian"
         elif [[ "${{ inputs.distrib }}" == "jammy" ]]; then

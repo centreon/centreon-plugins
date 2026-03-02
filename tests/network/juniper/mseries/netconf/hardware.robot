@@ -10,10 +10,11 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::juniper::mseries::netconf::plugin
-    ...    --mode=hardware
-    ...    --hostname=${HOSTNAME}
-    ...    --sshcli-command=get_data
-    ...    --sshcli-path=${CURDIR}
+...         --mode=hardware
+...         --hostname=${HOSTNAME}
+...         --sshcli-command=get_data
+...         --sshcli-path=${CURDIR}
+
 
 *** Test Cases ***
 Hardware ${tc}
@@ -49,4 +50,3 @@ Hardware no fan ${tc}
     Examples:      tc    extraoptions    expected_result    --
             ...    1     --component=fan --no-component=unknown
             ...    UNKNOWN: No components are checked.
-

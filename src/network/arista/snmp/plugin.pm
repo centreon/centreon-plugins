@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,6 +38,7 @@ sub new {
         'memory'           => 'network::arista::snmp::mode::memory',
         'tcpcon'           => 'snmp_standard::mode::tcpcon',
         'uptime'           => 'snmp_standard::mode::uptime',
+        'bgp'              => 'network::arista::snmp::mode::bgp'
     );
 
     return $self;

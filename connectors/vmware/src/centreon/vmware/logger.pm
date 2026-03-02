@@ -1,4 +1,4 @@
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets 
 # the needs in IT infrastructure and application monitoring for 
@@ -193,9 +193,13 @@ sub writeLog($$$%) {
     my $withdate = (defined $options{withdate}) ? $options{withdate} : 1;
     $msg = ($self->{withpid} == 1) ? "[$$] $msg " : $msg;
 
-    my $newmsg = ($withdate) 
+    my $newmsg = ($withdate)
       ? "[" . $self->get_date . "] " : '';
-    $newmsg .= "[" . $human_severities{$severity} . "] " . $msg;
+
+    my ($package, $filename, $line, $subroutine, $hasargs, $wantarray, $evaltext, $is_require, $hints, $bitmask, $hinthash) = caller(2);
+    my $caller = (defined($subroutine) && $subroutine ne '') ? '[' . $subroutine . '] ' : '';
+
+    $newmsg .= "[" . $human_severities{$severity} . "] " . $caller . $msg;
     # Bit mask: if AND gives 0 it means the log level does not require this message to be logged
 
     if ($self->{log_mode} == 0) {

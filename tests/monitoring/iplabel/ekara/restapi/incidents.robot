@@ -9,18 +9,18 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}monitoring-iplabel-ekara.json
+${MOCKOON_JSON}     ${CURDIR}${/}monitoring-iplabel-ekara.json
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::monitoring::iplabel::ekara::restapi::plugin
 ...                 --hostname=localhost
 ...                 --port='3000'
 ...                 --proto='http'
 
-*** Test Cases ***
 
+*** Test Cases ***
 incidents-username ${tc}
     [Documentation]    Check Iplabel scenarios
-    [Tags]    monitoring   iplabel    restapi
+    [Tags]    monitoring    iplabel    restapi
 
     ${command}    Catenate
     ...    ${cmd}
@@ -37,7 +37,7 @@ incidents-username ${tc}
 
 incidents-apikey ${tc}
     [Documentation]    Check Iplabel scenarios
-    [Tags]    monitoring   iplabel    restapi
+    [Tags]    monitoring    iplabel    restapi
 
     ${command}    Catenate
     ...    ${cmd}
@@ -53,7 +53,7 @@ incidents-apikey ${tc}
 
 incidents ${tc}
     [Documentation]    Check Iplabel scenarios
-    [Tags]    monitoring   iplabel    restapi
+    [Tags]    monitoring    iplabel    restapi
 
     ${command}    Catenate
     ...    ${cmd}

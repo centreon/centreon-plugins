@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}         ${CURDIR}${/}netapp.json
+${MOCKOON_JSON}     ${CURDIR}${/}netapp.json
 
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::netapp::ontap::restapi::plugin
@@ -23,7 +23,7 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 Snapmirrors ${tc}
-    [Tags]    storage    netapp    ontapp    api    snapmirrors    mockoon   
+    [Tags]    storage    netapp    ontapp    api    snapmirrors    mockoon
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

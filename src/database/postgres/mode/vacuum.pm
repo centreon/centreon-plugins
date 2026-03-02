@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,7 +20,7 @@
 
 package database::postgres::mode::vacuum;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
@@ -31,28 +31,33 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' }
+        'warning:s'  => { redirect => 'warning-vacuum-last-execution-seconds' },
+        'critical:s' => { redirect => 'critical-vacuum-last-execution-seconds' },
     });
 
     return $self;
 }
 
-sub check_options {
+sub set_counters {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'vacuum', nlabel => 'vacuum.last.execution.seconds', set => {
+                key_values => [ { name => 'vacuum' } ],
+                output_template => 'Most recent vacuum dates back from %d seconds',
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 's' },
+                ],
+            }
+        }
+    ];
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
@@ -71,28 +76,11 @@ sub run {
     );
     $options{sql}->query(query => $query);
     my $result = $options{sql}->fetchrow_array();
-    if (defined($result)) {
-        my $exit_code = $self->{perfdata}->threshold_check(value => $result, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(
-            severity => $exit_code,
-            short_msg => sprintf('Most recent vacuum dates back from %d seconds', $result)
-        );
 
-        $self->{output}->perfdata_add(
-            nlabel => 'vacuum.last_execution.seconds',
-            value => $result,
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
-        );
-    } else {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
-            short_msg => 'No vacuum performed'
-        );
-    }
+    $self->{output}->option_exit(short_msg => 'No vacuum performed')
+        unless $result;
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = { vacuum => $result };
 }
 
 1;
@@ -105,11 +93,11 @@ Check a vacuum (manual or auto) command has been performed on at least one of th
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-vacuum>
 
 Warning threshold in seconds, maximum time interval since last vacuum.
 
-=item B<--critical>
+=item B<--critical-vacuum>
 
 Critical threshold in seconds, maximum time interval since last vacuum.
 

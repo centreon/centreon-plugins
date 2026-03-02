@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -318,21 +318,133 @@ Filter on a specific CPU (must be a PromQL filter, Default: 'cpu=~".*"')
 
 Filter on a specific type (must be a PromQL filter, Default: 'mode=~".*"')
 
-=item B<--warning-*>
+=item B<--warning-cpu-idle>
 
-Warning threshold.
-Can be: 'node-idle', 'node-wait', 'node-interrupt', 'node-nice',
-'node-softirq', 'node-steal', 'node-system', 'node-user',
-'cpu-idle', 'cpu-wait', 'cpu-interrupt', 'cpu-nice', 'cpu-softirq',
-'cpu-steal', 'cpu-system', 'cpu-user'.
+Threshold in percentage.
 
-=item B<--critical-*>
+=item B<--critical-cpu-idle>
 
-Critical threshold.
-Can be: 'node-idle', 'node-wait', 'node-interrupt', 'node-nice',
-'node-softirq', 'node-steal', 'node-system', 'node-user',
-'cpu-idle', 'cpu-wait', 'cpu-interrupt', 'cpu-nice', 'cpu-softirq',
-'cpu-steal', 'cpu-system', 'cpu-user'.
+Threshold in percentage.
+
+=item B<--warning-cpu-interrupt>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-interrupt>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-nice>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-nice>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-softirq>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-softirq>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-steal>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-steal>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-system>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-system>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-user>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-user>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-wait>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-wait>
+
+Threshold in percentage.
+
+=item B<--warning-node-idle>
+
+Threshold in percentage.
+
+=item B<--critical-node-idle>
+
+Threshold in percentage.
+
+=item B<--warning-node-interrupt>
+
+Threshold in percentage.
+
+=item B<--critical-node-interrupt>
+
+Threshold in percentage.
+
+=item B<--warning-node-nice>
+
+Threshold in percentage.
+
+=item B<--critical-node-nice>
+
+Threshold in percentage.
+
+=item B<--warning-node-softirq>
+
+Threshold in percentage.
+
+=item B<--critical-node-softirq>
+
+Threshold in percentage.
+
+=item B<--warning-node-steal>
+
+Threshold in percentage.
+
+=item B<--critical-node-steal>
+
+Threshold in percentage.
+
+=item B<--warning-node-system>
+
+Threshold in percentage.
+
+=item B<--critical-node-system>
+
+Threshold in percentage.
+
+=item B<--warning-node-user>
+
+Threshold in percentage.
+
+=item B<--critical-node-user>
+
+Threshold in percentage.
+
+=item B<--warning-node-wait>
+
+Threshold in percentage.
+
+=item B<--critical-node-wait>
+
+Threshold in percentage.
 
 =item B<--extra-filter>
 

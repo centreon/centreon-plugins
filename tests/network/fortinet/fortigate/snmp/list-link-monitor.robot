@@ -3,13 +3,14 @@ Documentation       Network Fortinet Fortigate SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::fortinet::fortigate::snmp::plugin
+
 
 *** Test Cases ***
 Network Fortinet Fortigate SNMP list link monitor ${tc}
@@ -29,7 +30,7 @@ Network Fortinet Fortigate SNMP list link monitor ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  filterstate          filtername         filtervdom        expected_result    --
-            ...       1   ${EMPTY}             ${EMPTY}           ${EMPTY}          List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive]\n[Name = MonitorWAN3] [Vdom = root] [State = dead] 
+            ...       1   ${EMPTY}             ${EMPTY}           ${EMPTY}          List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive]\n[Name = MonitorWAN3] [Vdom = root] [State = dead]
             ...       2   ${EMPTY}             'MonitorWAN1'      ${EMPTY}          List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]
-            ...       3   'alive'              ${EMPTY}           ${EMPTY}          List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive] 
-            ...       4   ${EMPTY}             ${EMPTY}           'root'            List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive]\n[Name = MonitorWAN3] [Vdom = root] [State = dead] 
+            ...       3   'alive'              ${EMPTY}           ${EMPTY}          List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive]
+            ...       4   ${EMPTY}             ${EMPTY}           'root'            List link monitors: \n[Name = MonitorWAN1] [Vdom = root] [State = alive]\n[Name = MonitorWAN2] [Vdom = root] [State = alive]\n[Name = MonitorWAN3] [Vdom = root] [State = dead]

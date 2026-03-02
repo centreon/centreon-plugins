@@ -1,11 +1,10 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -19,9 +18,10 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vm::plu
 ...                 --port=3000
 ...                 --vm-id=vm-22
 
+
 *** Test Cases ***
 Memory ${tc}
-    [Tags]    apps    api    vmware   vsphere8    vm
+    [Tags]    apps    api    vmware    vsphere8    vm
     ${command}    Catenate    ${CMD}    ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

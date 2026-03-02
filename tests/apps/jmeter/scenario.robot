@@ -3,13 +3,14 @@ Documentation       Apache Jmeter scenario
 
 Resource            ${CURDIR}${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=apps::jmeter::plugin
+
 
 *** Test Cases ***
 Scenario ${tc}

@@ -1,5 +1,4 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Ctn Generic Suite Setup
@@ -8,7 +7,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::f5::bigip::snmp::plugin
+
 
 *** Test Cases ***
 trunks ${tc}

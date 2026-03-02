@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}velocloud.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=cloud::vmware::velocloud::restapi::plugin
 ...                 --mode list-edges
 ...                 --hostname=${HOSTNAME}
@@ -22,9 +22,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --custommode=api
 
+
 *** Test Cases ***
 List Edges ${tc}
-    [Tags]    cloud     api    vmware    discovery
+    [Tags]    cloud    api    vmware    discovery
     ${command}    Catenate    ${CMD}    ${extraoptions}    | wc -l
     ${output}    Run    ${command}
 
@@ -35,7 +36,6 @@ List Edges ${tc}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-
 
     Examples:    tc        extraoptions                  expected_result   --
         ...      1        ${EMPTY}                       9

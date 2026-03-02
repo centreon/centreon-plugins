@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -184,15 +184,21 @@ Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"
 
 Filter on a specific CPU (must be a PromQL filter, Default: 'cpu=~".*"')
 
-=item B<--warning-*>
+=item B<--warning-cpu-usage>
 
-Warning threshold.
-Can be: 'node-usage', 'cpu-usage'.
+Threshold in percentage.
 
-=item B<--critical-*>
+=item B<--critical-cpu-usage>
 
-Critical threshold.
-Can be: 'node-usage', 'cpu-usage'.
+Threshold in percentage.
+
+=item B<--warning-node-usage>
+
+Threshold in percentage.
+
+=item B<--critical-node-usage>
+
+Threshold in percentage.
 
 =item B<--extra-filter>
 

@@ -10,9 +10,9 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-primera.mockoon.json
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
-${CMD}              ${CENTREON_PLUGINS} 
+${HOSTNAME}         127.0.0.1
+${APIPORT}          3000
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::primera::restapi::plugin
 ...                 --mode=capacity
 ...                 --hostname=${HOSTNAME}
@@ -22,9 +22,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --custommode=api
 
+
 *** Test Cases ***
 Capacity ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${output}    Run    ${CMD} ${extraoptions}
 
     ${output}    Strip String    ${output}
@@ -34,7 +35,6 @@ Capacity ${tc}
     ...    Wrong output result for command:\n${CMD} ${extraoptions}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-
 
     Examples:    tc        extraoptions                                              expected_result   --
         ...      1        --filter-type=allCapacity                                  OK: storage 'allCapacity' space usage total: 378.60 TB used: 127.11 TB (33.57%) free: 251.50 TB (66.43%), unavailable: 0.00 B, failed: 0.00 B - compaction: 1.66, deduplication: 1.02, compression: 1.37, data reduction: 1.37, overprovisioning: 0.45 | 'allCapacity#storage.space.usage.bytes'=139755014586368B;;;0;416278967746560 'allCapacity#storage.space.free.bytes'=276523953160192B;;;0;416278967746560 'allCapacity#storage.space.usage.percentage'=33.57%;;;0;100 'allCapacity#storage.space.unavailable.bytes'=0B;;;0; 'allCapacity#storage.space.failed.bytes'=0B;;;0; 'allCapacity#storage.space.compaction.ratio.count'=1.66;;;0; 'allCapacity#storage.space.deduplication.ratio.count'=1.02;;;0; 'allCapacity#storage.space.compression.ratio.count'=1.37;;;0; 'allCapacity#storage.space.data_reduction.ratio.count'=1.37;;;0; 'allCapacity#storage.space.overprovisioning.ratio.count'=0.45;;;0;

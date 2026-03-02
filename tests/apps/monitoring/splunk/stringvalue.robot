@@ -21,9 +21,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --mode=string-value
 
+
 *** Test Cases ***
 StringValue ${tc}
-    [Tags]   splunk    api
+    [Tags]    splunk    api
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

@@ -163,7 +163,7 @@ sub manage_selection {
                 my $event_id = $record->{fieldsMap}->{event_id} = $record->{fieldsMap}->{event_id} // "UNK".$gen_id++;
 
                 # There are four filters that can be used multiple times to filter the data:
-                # --include and --exclude can containt complex expressions, for exemple: %{event_type} =~ /Security/
+                # --include and --exclude can containt complex expressions, for example: %{event_type} =~ /Security/
                 # --include-status and --exclude-status filter on the value of the 'status' variable
                 # When an include filter is defined the returned data must match at least one of them
                 # When an exclude filter is defined the returned data must not match any of them
@@ -293,12 +293,12 @@ Default value: C<Closed>
 =item B<--include>
 
 Filter events using a complex expression based on returned fields values.
-Exemple: --include='%{event_type} =~ /Security/ && %{severity} =~ /High/'
+Example: --include='%{event_type} =~ /Security/ && %{severity} =~ /High/'
 
 =item B<--exclude>
 
 Exclude events using a complex expression based on returned fields values.
-Exemple: --exclude='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
+Example: --exclude='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
 
 =back
 
@@ -318,13 +318,13 @@ Number of matching events.
 
 Define the conditions to match for the status to be WARNING.
 A expression using field values to define the warning threshold.
-Exemple: --warning-event='%{event_type} =~ /Security/ && %{status} =~ /Closed/'
+Example: --warning-event='%{event_type} =~ /Security/ && %{status} =~ /Closed/'
 
 =item B<--critical-event>
 
 Define the conditions to match for the status to be CRITICAL.
 A expression using field values to define the critical threshold.
-Exemple: --critical-event='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
+Example: --critical-event='%{event_type} =~ /Security/ && %{status} !~ /Closed/'
 
 =back
 

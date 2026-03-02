@@ -36,7 +36,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'topic:s'            => { name => 'topic' },
-        'format-custom'      => { name => 'format_custom' },
+        'format-custom:s'    => { name => 'format_custom' },
 
         'warning-regexp:s'   => { name => 'warning_regexp' },
         'critical-regexp:s'  => { name => 'critical_regexp' },

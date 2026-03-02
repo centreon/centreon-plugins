@@ -1,0 +1,125 @@
+{
+  "uuid": "894ad186-d95f-44f6-b6cc-5b2126bef8a5",
+  "lastMigration": 32,
+  "name": "Azure Servicebus",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3010,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "0f3d5b0f-966c-41d0-b0da-a9b75e7ec543",
+      "type": "http",
+      "documentation": "List By Resource Group Reference (reduced reponse info)",
+      "method": "get",
+      "endpoint": "subscriptions/:subscriptionId/resourcegroups/:resourceGroup/providers/Microsoft.ServiceBus/namespaces/:namesSpaces/providers/Microsoft.Insights/metrics",
+      "responses": [
+        {
+          "uuid": "180162d2-d8ea-4ce9-b949-0c105adcfb45",
+          "body": "{\r\n  \"cost\": 28,\r\n  \"timespan\": \"2025-08-08T07:22:47Z/2025-08-08T07:37:47Z\",\r\n  \"interval\": \"PT5M\",\r\n  \"value\": [\r\n    {\r\n      \"id\": \"/subscriptions/subId/resourceGroups/rgId/providers/Microsoft.ServiceBus/namespaces/namespacesName/providers/Microsoft.Insights/metrics/NamespaceCpuUsage\",\r\n      \"type\": \"Microsoft.Insights/metrics\",\r\n      \"name\": {\r\n        \"value\": \"NamespaceCpuUsage\",\r\n        \"localizedValue\": \"Namespace Cpu Usage.\"\r\n      },\r\n      \"displayDescription\": \"Service bus premium namespace CPU usage metric.\",\r\n      \"unit\": \"Percent\",\r\n      \"timeseries\": [\r\n        {\r\n          \"metadatavalues\": [],\r\n          \"data\": [\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:22:00Z\",\r\n              \"maximum\": 56\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:27:00Z\",\r\n              \"maximum\": 45\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:32:00Z\",\r\n              \"maximum\": 75\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"errorCode\": \"Success\"\r\n    },\r\n    {\r\n      \"id\": \"/subscriptions/subId/resourceGroups/rgId/providers/Microsoft.ServiceBus/namespaces/namespacesName/providers/Microsoft.Insights/metrics/NamespaceMemoryUsage\",\r\n      \"type\": \"Microsoft.Insights/metrics\",\r\n      \"name\": {\r\n        \"value\": \"NamespaceMemoryUsage\",\r\n        \"localizedValue\": \"Namespace Memory Usage.\"\r\n      },\r\n      \"displayDescription\": \"Service bus premium namespace memory usage metric.\",\r\n      \"unit\": \"Percent\",\r\n      \"timeseries\": [\r\n        {\r\n          \"metadatavalues\": [],\r\n          \"data\": [\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:22:00Z\",\r\n              \"maximum\": 70\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:27:00Z\",\r\n              \"maximum\": 72\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:32:00Z\",\r\n              \"maximum\": 75\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"errorCode\": \"Success\"\r\n    },\r\n    {\r\n      \"id\": \"/subscriptions/subId/resourceGroups/rgId/providers/Microsoft.ServiceBus/namespaces/namespacesName/providers/Microsoft.Insights/metrics/IncomingBytes\",\r\n      \"type\": \"Microsoft.Insights/metrics\",\r\n      \"name\": {\r\n        \"value\": \"IncomingBytes\",\r\n        \"localizedValue\": \"Incoming Bytes.\"\r\n      },\r\n      \"displayDescription\": \"Incoming Bytes for Microsoft.ServiceBus.\",\r\n      \"unit\": \"Bytes\",\r\n      \"timeseries\": [\r\n        {\r\n          \"metadatavalues\": [],\r\n          \"data\": [\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:22:00Z\",\r\n              \"maximum\": 635147\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:27:00Z\",\r\n              \"maximum\": 653085\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:32:00Z\",\r\n              \"maximum\": 660558\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"errorCode\": \"Success\"\r\n    },\r\n    {\r\n      \"id\": \"/subscriptions/subId/resourceGroups/rgId/providers/Microsoft.ServiceBus/namespaces/namespacesName/providers/Microsoft.Insights/metrics/OutgoingBytes\",\r\n      \"type\": \"Microsoft.Insights/metrics\",\r\n      \"name\": {\r\n        \"value\": \"OutgoingBytes\",\r\n        \"localizedValue\": \"Outgoing Bytes.\"\r\n      },\r\n      \"displayDescription\": \"Outgoing Bytes for Microsoft.ServiceBus.\",\r\n      \"unit\": \"Bytes\",\r\n      \"timeseries\": [\r\n        {\r\n          \"metadatavalues\": [],\r\n          \"data\": [\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:22:00Z\",\r\n              \"maximum\": 614699\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:27:00Z\",\r\n              \"maximum\": 653085\r\n            },\r\n            {\r\n              \"timeStamp\": \"2025-08-08T07:32:00Z\",\r\n              \"maximum\": 660558\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"errorCode\": \"Success\"\r\n    }\r\n  ],\r\n  \"namespace\": \"Microsoft.ServiceBus/namespaces\",\r\n  \"resourceregion\": \"westeurope\"\r\n}\r\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    },
+    {
+      "uuid": "d3f886dc-3180-4b06-9da8-ff95b7000929",
+      "type": "http",
+      "documentation": "Azure login",
+      "method": "post",
+      "endpoint": "login/:tenant/oauth2/token",
+      "responses": [
+        {
+          "uuid": "2cc27ac6-22f9-4f62-813a-63f1accbf90e",
+          "body": "{\n  \"access_token\": \"token\",\n  \"expires_on\": \"{{ faker 'string.numeric' 10 }}\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "0f3d5b0f-966c-41d0-b0da-a9b75e7ec543"
+    },
+    {
+      "type": "route",
+      "uuid": "d3f886dc-3180-4b06-9da8-ff95b7000929"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

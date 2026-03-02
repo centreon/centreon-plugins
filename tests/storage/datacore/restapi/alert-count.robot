@@ -19,13 +19,13 @@ Datacore check alert count ${tc}
     [Documentation]    Check Datacore pool usage
     [Tags]    storage    api
     ${command}    Catenate
-    ...    ${CMD} 
-    ...    --mode=alerts 
-    ...    --warning-error=${warning-error} 
-    ...    --critical-error=${critical-error} 
-    ...    --warning-warning=${warning-warning} 
+    ...    ${CMD}
+    ...    --mode=alerts
+    ...    --warning-error=${warning-error}
+    ...    --critical-error=${critical-error}
+    ...    --warning-warning=${warning-warning}
     ...    --critical-warning=${critical-warning}
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:    tc      warning-error    critical-error    warning-warning    critical-warning    expected_result   --

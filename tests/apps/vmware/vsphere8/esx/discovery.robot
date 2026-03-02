@@ -1,6 +1,4 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
@@ -19,11 +17,12 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::pl
 ...                 --proto=http
 ...                 --port=3000
 
+
 *** Test Cases ***
 Discovery ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx    discovery
+    [Tags]    apps    api    vmware    vsphere8    esx    discovery
     ${command}    Catenate    ${CMD} --http-backend=${http_backend}
-    
+
     # We sort the host names and keep only the last one and make sure it is the expected one
     ${output}    Run    ${command} | jq -r '.results | .[].host_name' | sort | tail -1
 
@@ -34,9 +33,7 @@ Discovery ${tc}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-    
-    
+
     Examples:    tc    http_backend     expected_result   --
         ...      1     curl             esx3.acme.com
         ...      2     lwp              esx3.acme.com
-

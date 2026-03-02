@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -208,6 +208,7 @@ sub request_api {
     my $decoded;
     eval {
         $decoded = JSON::XS->new->decode($content);
+        $decoded = $self->lowercase_keys(content => $decoded);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
@@ -215,6 +216,25 @@ sub request_api {
     }
 
     return $decoded;
+}
+
+sub lowercase_keys {
+    my ($self, %options) = @_;
+    my $ref = $options{content};
+
+    if (ref $ref eq 'HASH') {
+        my %new;
+        for my $key (keys %$ref) {
+            $new{ lc $key } = $self->lowercase_keys(content => $ref->{$key});
+        }
+        return \%new;
+    }
+    elsif (ref $ref eq 'ARRAY') {
+        return [ map { $self->lowercase_keys(content => $_) } @$ref ];
+    }
+    else {
+        return $ref;
+    }
 }
 
 sub write_cache_file {

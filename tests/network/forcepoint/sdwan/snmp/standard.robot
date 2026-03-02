@@ -9,11 +9,12 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::forcepoint::sdwan::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::forcepoint::sdwan::snmp::plugin
+
 
 *** Test Cases ***
 Standard ${tc} - ${mode}
-    [Tags]    network    forcepoint    sdwan     snmp
+    [Tags]    network    forcepoint    sdwan    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=${mode}
@@ -33,4 +34,3 @@ Standard ${tc} - ${mode}
             ...      7     storage                        ^Plugin Description:
             ...      8     swap                           ^Plugin Description:
             ...      9     uptime                         ^Plugin Description:
-

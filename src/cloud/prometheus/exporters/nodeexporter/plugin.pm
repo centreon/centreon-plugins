@@ -32,9 +32,11 @@ sub new {
     $self->{modes} = {
         'cpu'          => 'cloud::prometheus::exporters::nodeexporter::mode::cpu',
         'cpu-detailed' => 'cloud::prometheus::exporters::nodeexporter::mode::cpudetailed',
+        'interfaces'   => 'cloud::prometheus::exporters::nodeexporter::mode::interfaces',
         'load'         => 'cloud::prometheus::exporters::nodeexporter::mode::load',
         'memory'       => 'cloud::prometheus::exporters::nodeexporter::mode::memory',
-        'storage'      => 'cloud::prometheus::exporters::nodeexporter::mode::storage'
+        'storage'      => 'cloud::prometheus::exporters::nodeexporter::mode::storage',
+        'uptime'       => 'cloud::prometheus::exporters::nodeexporter::mode::uptime'
     };
 
     $self->{custom_modes}->{api} = 'cloud::prometheus::restapi::custom::api';

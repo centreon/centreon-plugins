@@ -23,7 +23,7 @@ equipment ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=hardware/server/cisco/ucs/snmp/slim-ucs-equipment
     ...    ${extra_options}
- 
+
     Ctn Verify Command Without Connector Output    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                                expected_result    --

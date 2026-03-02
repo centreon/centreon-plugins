@@ -1,14 +1,15 @@
 *** Settings ***
-Documentation     Huawei Management Module SNMP
+Documentation       Huawei Management Module SNMP
 
-Resource          ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Suite Setup       Ctn Generic Suite Setup
-Test Timeout      120s
+Suite Setup         Ctn Generic Suite Setup
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=hardware::server::huawei::hmm::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::server::huawei::hmm::snmp::plugin
+
 
 *** Test Cases ***
 blade ${tc}
@@ -22,7 +23,7 @@ blade ${tc}
     ...    --blade-id=1
     ...    --snmp-community=hardware/server/huawei/hmm/snmp/huawei
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                               expected_result    --

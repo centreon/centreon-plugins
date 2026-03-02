@@ -20,10 +20,11 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --mode=discovery
 
+
 *** Test Cases ***
 Discovery ${tc}
     [Tags]    apps    automation    ansible    api
-    
+
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extraoptions}

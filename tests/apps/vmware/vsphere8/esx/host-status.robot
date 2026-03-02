@@ -1,11 +1,10 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -18,16 +17,16 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::esx::pl
 ...                 --proto=http
 ...                 --port=3000
 
+
 *** Test Cases ***
 Host-Status ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware    vsphere8    esx
     ${command}    Catenate    ${CMD} ${filter_host} ${extraoptions}
     ${command_curl}    Catenate    ${command} --http-backend=curl
-    ${command_lwp}     Catenate    ${command} --http-backend=lwp  
+    ${command_lwp}    Catenate    ${command} --http-backend=lwp
     Ctn Run Command And Check Result As Strings    ${command_curl}    ${expected_result}
-    Ctn Run Command And Check Result As Strings    ${command_lwp}     ${expected_result}
-    
-    
+    Ctn Run Command And Check Result As Strings    ${command_lwp}    ${expected_result}
+
     Examples:    tc     filter_host                 extraoptions                        expected_result   --
         ...      1      --esx-name=esx1.acme.com    ${EMPTY}                            OK: Host 'esx1.acme.com', id: 'host-22': power state is POWERED_ON, connection state is CONNECTED
         ...      2      --esx-name=esx2.acme.com    ${EMPTY}                            CRITICAL: Host 'esx2.acme.com', id: 'host-28': power state is POWERED_OFF

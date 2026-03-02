@@ -19,7 +19,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 *** Test Cases ***
 Windows Services EN ${tc}
     [Documentation]    Full ASCII
-    [Tags]    os    Windows    local
+    [Tags]    os    windows    local
     ${command}    Catenate
     ...    ${CMD}
     ...    --snmp-community=os/windows/snmp/services-en

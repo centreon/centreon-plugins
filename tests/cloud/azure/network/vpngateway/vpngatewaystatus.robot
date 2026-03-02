@@ -34,5 +34,3 @@ VPN Gateway status ${tc}
             ...       4   --filter-name='gateway1'                                                                 OK: VPN Gateway 'gateway1' Provisioning State 'Succeeded' [Gateway type: ExpressRoute] [VPN type: RouteBased]
             ...       5   --filter-name='gateway1' --warning-status='\\%\{provisioning_state\} eq "Succeeded"'     WARNING: VPN Gateway 'gateway1' Provisioning State 'Succeeded' [Gateway type: ExpressRoute] [VPN type: RouteBased]
             ...       6   --filter-name='gateway1' --critical-status='\\%\{provisioning_state\} eq "Succeeded"'    CRITICAL: VPN Gateway 'gateway1' Provisioning State 'Succeeded' [Gateway type: ExpressRoute] [VPN type: RouteBased]
-
-                                                     

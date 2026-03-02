@@ -11,6 +11,7 @@ Test Timeout        120s
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
 
+
 *** Test Cases ***
 cpu ${tc}
     [Tags]    os    linux
@@ -22,8 +23,8 @@ cpu ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=os/linux/snmp/network-interfaces
     ...    --snmp-timeout=1
-    ...    ${extra_options}       
- 
+    ...    ${extra_options}
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                   expected_result    --

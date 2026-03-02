@@ -50,7 +50,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Commvault Commserve using Rest API.
+Check Commvault CommServe using Rest API.
 
 =over 8
 

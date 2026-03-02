@@ -21,9 +21,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --mode=numeric-value
 
+
 *** Test Cases ***
 NumericValue ${tc}
-    [Tags]   splunk    api
+    [Tags]    splunk    api
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}

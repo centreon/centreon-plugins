@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-alletra.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::alletra::restapi::plugin
 ...                 --mode volume-status
 ...                 --hostname=${HOSTNAME}
@@ -21,15 +21,15 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 VolumeStatus ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings   ${command}    ${expected_string}
-
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_string}
 
     Examples:        tc       extraoptions                                                                                                                   expected_string    --
             ...      1        ${EMPTY}                                                                                                                       CRITICAL: Volume #2 (mtest) uuid: AEZDSSFDDSD (readonly: 0, compression: NA, provisioning: FULL) WARNING: Volume #1 (stest) uuid: SFFDSDDSDSD (readonly: 0, compression: NA, provisioning: FULL) | 'volumes.total.count'=3;;;0; 'volumes.normal.count'=1;;;0;3 'volumes.degraded.count'=1;;;0;3 'volumes.failed.count'=1;;;0;3 'volumes.unknown.count'=0;;;0;3

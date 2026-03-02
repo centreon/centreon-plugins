@@ -9,11 +9,12 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                          ${CENTREON_PLUGINS} --plugin=network::forcepoint::sdwan::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::forcepoint::sdwan::snmp::plugin
+
 
 *** Test Cases ***
 Connections ${tc}
-    [Tags]    network    forcepoint    sdwan     snmp
+    [Tags]    network    forcepoint    sdwan    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=connections
@@ -22,7 +23,7 @@ Connections ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=network/forcepoint/sdwan/snmp/forcepoint
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                    expected_result    --

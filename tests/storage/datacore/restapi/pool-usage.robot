@@ -19,12 +19,12 @@ Datacore check pool usage ${tc}
     [Documentation]    Check Datacore pool usage
     [Tags]    storage    api
     ${command}    Catenate
-    ...    ${CMD} 
-    ...    --mode=pool-usage 
-    ...    --critical-oversubscribed=${critical-oversubscribed} 
-    ...    --warning-oversubscribed=${warning-oversubscribed} 
-    ...    --warning-bytesallocatedpercentage=${warning-bytesallocatedpercentage} 
-    ...    --critical-bytesallocatedpercentage=${critical-bytesallocatedpercentage} 
+    ...    ${CMD}
+    ...    --mode=pool-usage
+    ...    --critical-oversubscribed=${critical-oversubscribed}
+    ...    --warning-oversubscribed=${warning-oversubscribed}
+    ...    --warning-bytesallocatedpercentage=${warning-bytesallocatedpercentage}
+    ...    --critical-bytesallocatedpercentage=${critical-bytesallocatedpercentage}
     ...    --pool-id=B5C140F5-6B13-4CAD-AF9D-F7C4172B3A1D:{4dec1b5a-2577-11e5-80c3-00155d651622}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}

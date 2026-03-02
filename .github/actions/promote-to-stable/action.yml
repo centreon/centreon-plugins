@@ -56,7 +56,7 @@ runs:
             echo "[DEBUG] - Downloading $ARTIFACT from TESTING."
             jf rt download $ARTIFACT --flat
           done
-          for ARTIFACT_DL in $(dir|grep -E "*.rpm"); do
+          for ARTIFACT_DL in $(find . -maxdepth 1 -type f -name '*.rpm' -printf '%f\n'); do
             echo "[DEBUG] - Promoting (upload) $ARTIFACT_DL to stable $TARGET_PATH."
             jf rt upload "$ARTIFACT_DL" "$TARGET_PATH" --flat
           done
@@ -101,7 +101,7 @@ runs:
           jf rt download $ARTIFACT --flat
         done
 
-        for ARTIFACT_DL in $(dir -1|grep -E ".+${{ steps.parse-distrib.outputs.package_distrib_name }}.+\.deb"); do
+        for ARTIFACT_DL in $(find . -maxdepth 1 -type f -name '*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb' -printf '%f\n'); do
           ARCH=$(echo $ARTIFACT_DL | cut -d '_' -f3 | cut -d '.' -f1)
           echo "[DEBUG] - Promoting (upload) $ARTIFACT_DL to stable $TARGET_PATH."
           jf rt upload "$ARTIFACT_DL" "$TARGET_PATH" --deb "${{ inputs.distrib }}/main/$ARCH"

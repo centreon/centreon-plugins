@@ -1,10 +1,9 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -18,11 +17,10 @@ ${CMD}      ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 Hardware ${tc}
-    [Tags]    storage    qnap    hardware    
+    [Tags]    storage    qnap    hardware
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
-
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 

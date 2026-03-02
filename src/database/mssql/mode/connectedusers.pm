@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,13 +23,18 @@ package database::mssql::mode::connectedusers;
 use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {});
+
+    $options{options}->add_options(arguments => {
+        'database-name:s'   => { name => 'database_name', default => '' },
+        'uniq-users'        => { name => 'uniq_users' },
+        'count-admin-users' => { name => 'count_admin_users' }
+    });
 
     return $self;
 }
@@ -44,12 +49,12 @@ sub set_counters {
     $self->{maps_counters}->{connected_user} = [
         { label => 'connected-user', nlabel => 'mssql.users.connected.count', set => {
                 key_values => [ { name => 'value' } ],
-                output_template => '%i connected user(s)',
+                output_template => '%s connected user(s)',
                 perfdatas => [
-                    { template => '%i', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -57,11 +62,21 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => q{SELECT count(*) FROM master..sysprocesses WHERE spid >= '51'});
+    $options{sql}->query(query => q{SELECT DB_NAME(dbid) as dbname, loginame, spid FROM master..sysprocesses});
+    my $results = $options{sql}->fetchall_arrayref();
 
-    my $connected_count = $options{sql}->fetchrow_array();
-    $self->{connected_user}->{value} = $connected_count;
+    $self->{connected_user} = { value => 0 };
+    my %logins = ();
+    foreach my $row (@$results) {
+        $row->[0] = '' if (!defined($row->[0]));
 
+        next if is_excluded($row->[0], $self->{option_results}->{database_name});
+        next if (defined($self->{option_results}->{uniq_users}) && defined($logins{ $row->[1] }));
+        next if (!defined($self->{option_results}->{count_admin_users}) && $row->[2] < 51);
+
+        $logins{ $row->[1] } = 1;
+        $self->{connected_user}->{value}++;
+    }
 }
 
 1;
@@ -73,6 +88,18 @@ __END__
 Check MSSQL connected users.
 
 =over 8
+
+=item B<--database-name>
+
+Filter connected users by database name (can be a regexp).
+
+=item B<--uniq-users>
+
+Count users with the same login name once.
+
+=item B<--count-admin-users>
+
+Count admin users (otherwise it's ignored).
 
 =item B<--warning-connected-user>
 

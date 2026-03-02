@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,6 +46,8 @@ sub new {
     );
     $self->{version} = '1.0';
     $self->{modes} = {};
+    # modes_options can contain options that will be passed to the module during initialization (e.g. force_new_perfdata)
+    $self->{modes_options} = {};
     $self->{sql_modes} = { 'dbi' => 'centreon::plugins::dbi' };
     $self->{default} = undef;
     $self->{sqldefault} = {};
@@ -113,11 +115,14 @@ sub init {
         $self->is_mode(mode => $self->{mode_name});
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{modes}{$self->{mode_name}}, 
                                                error_msg => "Cannot load module --mode.");
-        $self->{mode} = $self->{modes}{$self->{mode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name});
+        $self->{mode} = $self->{modes}{$self->{mode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name},
+                                                                %{$self->{modes_options}->{$self->{mode_name}} // {}} );
     } elsif (defined($self->{dynmode_name}) && $self->{dynmode_name} ne '') {
         (undef, $self->{dynmode_name}) = centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
                                                                                 error_msg => "Cannot load module --dyn-mode.");
-        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name});
+        my $short_name = $self->{dynmode_name} =~ /([^:\/\.]+)(?:\.pm)?$/ ? $1 : $self->{dynmode_name};
+        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name},
+                                                                %{$self->{modes_options}->{$short_name} // {}} );
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--mode' or '--dyn-mode' option.");
         $self->{output}->option_exit();
@@ -290,12 +295,12 @@ Return the version of the plugin.
 
 =item B<--sqlmode>
 
-This plugin offers several ways to query the database (default: dbi).
+This plugin offers several ways to query the database (default: DBI).
 See --list-sqlmode.
 
 =item B<--list-sqlmode>
 
-List all available sql modes.
+List all available SQL modes.
 
 =item B<--multiple>
 

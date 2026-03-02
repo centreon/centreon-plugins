@@ -3,9 +3,9 @@ Documentation       Hardware UPS Socomec Netvision SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -21,10 +21,9 @@ Battery ${tc}
     ...    --hostname=${HOSTNAME}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-port=${SNMPPORT}
-    ...    --snmp-community=hardware/ups/socomec/netvision/snmp/netvision5    #netvision5 has no current(A) values
+    ...    --snmp-community=hardware/ups/socomec/netvision/snmp/netvision5    # netvision5 has no current(A) values
     ...    ${extra_options}
 
-   
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                                           expected_result    --

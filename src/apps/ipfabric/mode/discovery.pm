@@ -49,6 +49,7 @@ sub manage_selection {
     my $disco_stats;
 
     $disco_stats->{start_time} = time();
+    my ($indice, $limit) = (0, 1000);
 
     my $disco_raw_form_post = {
         "columns" => [
@@ -62,31 +63,39 @@ sub manage_selection {
         ],
         "filters" => {},
         "pagination" => {
-            "limit" => undef,
-            "start" => 0
+            "limit" => $limit,
+            "start" => $indice
         },
         "reports" => "/inventory/devices"
     };
 
-    my $disco_api_results = $options{custom}->request_api(
-        method => 'POST',
-        endpoint => '/inventory/devices',
-        query_form_post => $disco_raw_form_post
-    );
+    while (1) {
+        my $disco_api_results = $options{custom}->request_api(
+            method => 'POST',
+            endpoint => '/inventory/devices',
+            query_form_post => $disco_raw_form_post
+        );
 
-    foreach my $host (@{$disco_api_results->{data}}) {
-        my %device;
-        $device{id} = $host->{id};
-        $device{hostname} = $host->{hostname};
-        $device{loginIp} = $host->{loginIp};
-        $device{siteName} = $host->{siteName};
-        $device{vendor} = $host->{vendor};
-        $device{family} = $host->{family};
-        $device{platform} = $host->{platform};
-        $device{snmp_community} = undef;
-        push @disco_data, \%device;
+        foreach my $host (@{$disco_api_results->{data}}) {
+            my %device;
+            $device{id} = $host->{id};
+            $device{hostname} = $host->{hostname};
+            $device{loginIp} = $host->{loginIp};
+            $device{siteName} = $host->{siteName};
+            $device{vendor} = $host->{vendor};
+            $device{family} = $host->{family};
+            $device{platform} = $host->{platform};
+            $device{snmp_community} = undef;
+            push @disco_data, \%device;
+        }
+
+        last if scalar(@{$disco_api_results->{data}}) < $limit;
+
+        $indice += $limit;
+        $disco_raw_form_post->{pagination}->{start} = $indice;
     }
 
+    $indice = 0;
     my $snmp_req_data_raw = {
         columns => [
             'id',
@@ -95,22 +104,33 @@ sub manage_selection {
         ],
         filters => {},
         pagination => {
-            limit => undef,
-            start => 0
+            limit => $limit,
+            start => $indice
         }
     }; 
 
-    my $snmp_community_api_results = $options{custom}->request_api(
-        endpoint => '/management/snmp/communities',
-        query_form_post => $snmp_req_data_raw
-    );
+    my @disco_snmp_communities;
 
-    foreach my $snmp_device (@{$snmp_community_api_results->{data}}) {
+    while (1) {
+        my $snmp_community_api_results = $options{custom}->request_api(
+            endpoint => '/management/snmp/communities',
+            query_form_post => $snmp_req_data_raw
+        );
+
+        push @disco_snmp_communities, @{$snmp_community_api_results->{data}};
+
+        last if scalar(@{$snmp_community_api_results->{data}}) < $limit;
+        $indice += $limit;
+        $snmp_req_data_raw->{pagination}->{start} = $indice;
+
+    }
+
+    foreach my $snmp_device (@disco_snmp_communities) {
         for my $index (0 .. $#disco_data){
-            next if (!defined($disco_data[$index]->{hostname}));
-            if ($snmp_device->{hostname} eq $disco_data[$index]->{hostname}){
-                $disco_data[$index]->{snmp_community} = $snmp_device->{name};
-            }
+            next unless defined $disco_data[$index]->{hostname};
+
+            $disco_data[$index]->{snmp_community} = $snmp_device->{name}
+                if $snmp_device->{hostname} eq $disco_data[$index]->{hostname};
         }
     }
 

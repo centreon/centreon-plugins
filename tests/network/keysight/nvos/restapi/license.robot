@@ -35,5 +35,5 @@ license ${tc}
     Examples:         tc    extraoptions                                            expected_result    --
             ...       1     --verbose                                               OK: status : skipped (no value(s))
             ...       2     --unknown-status=\\\%{status}                           OK: status : skipped (no value(s))
-            ...       3     --warning-status='\\\%{status} =~ /MINOR/i'             OK: status : skipped (no value(s))                                           
+            ...       3     --warning-status='\\\%{status} =~ /MINOR/i'             OK: status : skipped (no value(s))
             ...       4     --critical-status='\\\%{status} =~ /MAJOR|CRITICAL/i'   OK: status : skipped (no value(s))

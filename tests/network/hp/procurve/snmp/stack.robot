@@ -3,12 +3,14 @@ Documentation       Check stack members.
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
+
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=network::hp::procurve::snmp::plugin
+
 
 *** Test Cases ***
 stack ${tc}
@@ -22,7 +24,7 @@ stack ${tc}
     ...    --snmp-community=network/hp/procurve/snmp/slim_procurve_stack
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     # first run to build cache
     Run    ${command}
     # second run to control the output

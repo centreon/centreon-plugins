@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,9 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON;
+use MIME::Base64;
 use URI::Encode;
+use centreon::plugins::misc qw(is_empty);
 
 sub new {
     my ($class, %options) = @_;
@@ -58,11 +60,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Please set command option');
-        $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{legacy_password}) &&  $self->{option_results}->{legacy_password} ne '') {
+    $self->{output}->option_exit(short_msg => 'Please set command option')
+        if is_empty($self->{option_results}->{command});
+
+    if (!is_empty($self->{option_results}->{username}) && !is_empty($self->{option_results}->{password})) {
+        $self->{http}->add_header(key => 'Authorization', value => "Basic " . MIME::Base64::encode_base64($self->{option_results}->{username} . ':' . $self->{option_results}->{password}));
+    } elsif (!is_empty($self->{option_results}->{legacy_password})) {
         $self->{http}->add_header(key => 'password', value => $self->{option_results}->{legacy_password});
     }
     $self->{http}->set_options(%{$self->{option_results}});
@@ -236,7 +239,7 @@ Specify this option if you are accessing a web page using hidden basic authentic
 
 =item B<--legacy-password>
 
-Specify password for old authentification system.
+Specify password for old authentication system.
 
 =item B<--timeout>
 

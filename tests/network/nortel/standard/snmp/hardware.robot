@@ -1,6 +1,6 @@
 *** Settings ***
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
@@ -12,8 +12,8 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=network::nortel::standard::snmp::plugin
 
 *** Test Cases ***
 hardware-4950gts ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=hardware
@@ -35,8 +35,8 @@ hardware-4950gts ${tc}
             ...      7     temperature      ${EMPTY}          OK: All 1 components are ok [1/1 temperatures]. | '5.10.0#hardware.temperature.celsius'=43.50C;;;; 'hardware.temperature.count'=1;;;;
 
 hardware-5520-24t ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=hardware
@@ -58,8 +58,8 @@ hardware-5520-24t ${tc}
             ...      7     temperature      ${EMPTY}          OK: All 7 components are ok [7/7 temperatures]. | 'CPU#hardware.temperature.celsius'=40C;;;; 'MAC#hardware.temperature.celsius'=38C;;;; 'INTERNAL MAC#hardware.temperature.celsius'=49C;;;; 'PHY1#hardware.temperature.celsius'=32C;;;; 'PHY2#hardware.temperature.celsius'=33C;;;; 'PHY3#hardware.temperature.celsius'=34C;;;; 'OPTIC#hardware.temperature.celsius'=0C;;;; 'hardware.temperature.count'=7;;;;
 
 hardware-7520-48y-8c ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=hardware
@@ -81,8 +81,8 @@ hardware-7520-48y-8c ${tc}
             ...      7     temperature      ${EMPTY}          OK: All 10 components are ok [10/10 temperatures]. | 'Ambient 0#hardware.temperature.celsius'=29C;;;; 'Ambient 1#hardware.temperature.celsius'=30C;;;; 'Ambient 2#hardware.temperature.celsius'=21C;;;; 'Ambient 3#hardware.temperature.celsius'=27C;;;; 'Ambient 4#hardware.temperature.celsius'=28C;;;; 'Ambient 5#hardware.temperature.celsius'=28C;;;; 'Ambient 6#hardware.temperature.celsius'=26C;;;; 'CPU#hardware.temperature.celsius'=34C;;;; 'INTERNAL MAC#hardware.temperature.celsius'=37C;;;; 'SODIMM#hardware.temperature.celsius'=31C;;;; 'hardware.temperature.count'=10;;;;
 
 hardware-7520-48ye-8ce ${tc}
-    [Tags]    network    snmp
     [Documentation]    Ethernet Routing Switch 4950GTS-PWR+
+    [Tags]    network    snmp
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=hardware

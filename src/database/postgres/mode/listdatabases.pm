@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,13 +25,18 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
+use centreon::plugins::misc qw/is_excluded/;
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "exclude:s" => { name => 'exclude', },
+        "include-database:s" => { name => 'include_database', default => '' },
+        "exclude-database:s" => { name => 'exclude_database', default => '' },
+        "include:s" => { name => 'include_database' },
+        "exclude:s" => { name => 'exclude_database' }
     });
 
     return $self;
@@ -53,9 +58,9 @@ sub manage_selection {
     );
     $self->{list_db} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $row->{datname} =~ /$self->{option_results}->{exclude}/) {
-            $self->{output}->output_add(long_msg => "Skipping database '" . $row->{datname} . "': no matching filter name");
-            next;
+        if (is_excluded($row->{datname}, $self->{option_results}->{include_database}, $self->{option_results}->{exclude_database})) {
+            $self->{output}->output_add(long_msg => "Skipping database '" . $row->{datname} . "' due to filter rules", debug => 1);
+            next
         }
         push @{$self->{list_db}}, $row->{datname};
     }
@@ -104,9 +109,13 @@ Display databases
 
 =over 8
 
-=item B<--exclude>
+=item B<--include-database>
 
-Filter databases.
+Filter databases using a regular expression.
+
+=item B<--exclude-database>
+
+Exclude databases using a regular expression.
 
 =back
 

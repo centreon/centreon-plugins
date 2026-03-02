@@ -35,11 +35,11 @@ sub custom_requests_perfdata {
         $nlabel =~ s/persecond/perminute/;
     }
     $self->{output}->perfdata_add(
-        nlabel => $nlabel,
-        value => sprintf('%.2f', $self->{result_values}->{value}),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        nlabel   => $nlabel,
+        value    => sprintf('%.2f', $self->{result_values}->{value}),
+        warning  => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
+        min      => 0
     );
 }
 
@@ -76,41 +76,41 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'connections-accepted', nlabel => 'server.connections.accepted.persecond', set => {
-                key_values => [ { name => 'accepts', diff => 1 }  ],
-                closure_custom_calc => $self->can('custom_requests_calc'),
-                closure_custom_calc_extra_options => { metric => 'accepts', output_str => 'connections accepted: %.2f' },
-                output_template => '%s',
-                output_use => 'output_str', threshold_use => 'value',
-                closure_custom_perfdata => $self->can('custom_requests_perfdata')
-            }
+            key_values                        => [ { name => 'accepts', diff => 1 } ],
+            closure_custom_calc               => $self->can('custom_requests_calc'),
+            closure_custom_calc_extra_options => { metric => 'accepts', output_str => 'connections accepted: %.2f' },
+            output_template                   => '%s',
+            output_use                        => 'output_str', threshold_use => 'value',
+            closure_custom_perfdata           => $self->can('custom_requests_perfdata')
+        }
         },
         { label => 'connections-handled', nlabel => 'server.connections.handled.persecond', set => {
-                key_values => [ { name => 'handled', diff => 1 }  ],
-                closure_custom_calc => $self->can('custom_requests_calc'),
-                closure_custom_calc_extra_options => { metric => 'handled', output_str => 'connections handled: %.2f' },
-                output_template => '%s',
-                output_use => 'output_str', threshold_use => 'value',
-                closure_custom_perfdata => $self->can('custom_requests_perfdata')
-            }
+            key_values                        => [ { name => 'handled', diff => 1 } ],
+            closure_custom_calc               => $self->can('custom_requests_calc'),
+            closure_custom_calc_extra_options => { metric => 'handled', output_str => 'connections handled: %.2f' },
+            output_template                   => '%s',
+            output_use                        => 'output_str', threshold_use => 'value',
+            closure_custom_perfdata           => $self->can('custom_requests_perfdata')
+        }
         },
         { label => 'connections-dropped', nlabel => 'server.connections.dropped.count', set => {
-                key_values => [ { name => 'accepts', diff => 1 }, { name => 'handled', diff => 1 } ],
-                closure_custom_calc => $self->can('custom_dropped_calc'),
-                output_template => 'connections dropped: %d',
-                output_use => 'dropped', threshold_use => 'dropped',
-                perfdatas => [
-                    { value => 'dropped', template => '%d', min => 0 }
-                ]
-            }
+            key_values          => [ { name => 'accepts', diff => 1 }, { name => 'handled', diff => 1 } ],
+            closure_custom_calc => $self->can('custom_dropped_calc'),
+            output_template     => 'connections dropped: %d',
+            output_use          => 'dropped', threshold_use => 'dropped',
+            perfdatas           => [
+                { value => 'dropped', template => '%d', min => 0 }
+            ]
+        }
         },
         { label => 'requests', nlabel => 'server.requests.persecond', set => {
-                key_values => [ { name => 'requests', diff => 1 } ],
-                closure_custom_calc => $self->can('custom_requests_calc'),
-                closure_custom_calc_extra_options => { metric => 'requests', output_str => 'requests: %.2f' },
-                output_template => '%s',
-                output_use => 'output_str', threshold_use => 'value',
-                closure_custom_perfdata => $self->can('custom_requests_perfdata')
-            }
+            key_values                        => [ { name => 'requests', diff => 1 } ],
+            closure_custom_calc               => $self->can('custom_requests_calc'),
+            closure_custom_calc_extra_options => { metric => 'requests', output_str => 'requests: %.2f' },
+            output_template                   => '%s',
+            output_use                        => 'output_str', threshold_use => 'value',
+            closure_custom_perfdata           => $self->can('custom_requests_perfdata')
+        }
         }
     ];
 }
@@ -121,7 +121,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'per-minute'  => { name => 'per_minute' }
+        'per-minute' => { name => 'per_minute' }
     });
 
     return $self;
@@ -143,13 +143,13 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     $self->{global} = {
-        accepts => $1,
-        handled => $2,
+        accepts  => $1,
+        handled  => $2,
         requests => $3
     };
 
     $self->{cache_name} = 'nginx_' . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+                          (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -158,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check Nginx request statistics.
+Check NGINX request statistics.
 
 =over 8
 

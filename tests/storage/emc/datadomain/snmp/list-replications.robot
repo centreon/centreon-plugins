@@ -14,7 +14,7 @@ ${CMD}      ${CENTREON_PLUGINS} --plugin=storage::emc::datadomain::snmp::plugin
 
 *** Test Cases ***
 list-replications ${tc}
-    [Tags]    snmp  storage
+    [Tags]    snmp    storage
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=list-replications
@@ -24,7 +24,7 @@ list-replications ${tc}
     ...    --snmp-community=storage/emc/datadomain/snmp/slim-datadomain
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options           expected_result    --

@@ -3,9 +3,9 @@ Documentation       load mode
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
@@ -22,6 +22,7 @@ Load
     ...    ${output}
     ...    OK: Load average: 0.04, 0.10, 0.15 | 'load1'=0.04;;;0; 'load5'=0.10;;;0; 'load15'=0.15;;;0;
     ...    Wrong output result for command:{\n}${output}{\n}{\n}{\n}
+
 
 *** Keywords ***
 Run Avocent 8000 Plugin

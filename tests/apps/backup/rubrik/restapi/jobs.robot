@@ -9,24 +9,25 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}applications-rubrik-restapi.json
-${cmd}              ${CENTREON_PLUGINS} 
-...                 --plugin=apps::backup::rubrik::restapi::plugin 
+${MOCKOON_JSON}     ${CURDIR}${/}applications-rubrik-restapi.json
+${cmd}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::backup::rubrik::restapi::plugin
 ...                 --hostname=${HOSTNAME}
-...                 --api-username='username' 
-...                 --api-password='password' 
+...                 --api-username='username'
+...                 --api-password='password'
 ...                 --proto='http'
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 jobs ${tc}/11
-    [Tags]    apps    backup   rubrik    restapi    jobs
-    
-   ${command}    Catenate
+    [Tags]    apps    backup    rubrik    restapi    jobs
+
+    ${command}    Catenate
     ...    ${cmd}
     ...    --mode=jobs
     ...    ${extraoptions}
-    
+
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:    tc     extraoptions            expected_result   --

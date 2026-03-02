@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -160,7 +160,7 @@ sub manage_selection {
 
     my $result = $options{wsman}->execute_powershell(
         label => 'repositories',
-        content => centreon::plugins::misc::powershell_encoded($ps)
+        content => $ps
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
@@ -260,10 +260,29 @@ Can used special variables like: %{status}, %{name}, %{type}.
 Set critical threshold for status (Default: 'not %{status} =~ /ordinal|maintenance/i').
 Can used special variables like: %{status}, %{name}, %{type}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-space-usage>
 
-Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

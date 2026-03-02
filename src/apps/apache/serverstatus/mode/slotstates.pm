@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::http;
+use centreon::plugins::constants qw/:values :counters/;
 
 sub custom_value_threshold {
     my ($self, %options) = @_;
@@ -79,7 +80,7 @@ sub custom_value_calc {
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
     if ($self->{result_values}->{total} == 0) {
         $self->{error_msg} = "skipped";
-        return -2;
+        return NOT_PROCESSED;
     }
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};    
     $self->{result_values}->{prct} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -92,7 +93,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -2 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', skipped_code => { NOT_PROCESSED() => 1 } }
     ];
     
     $self->{maps_counters}->{global} = [

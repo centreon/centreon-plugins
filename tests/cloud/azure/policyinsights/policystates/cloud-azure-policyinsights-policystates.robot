@@ -24,7 +24,7 @@ Azure PolicyInsights PolicyStates compliance ${tc}
     ...    ${CMD}
     ...    --mode=compliance
     ...    --management-endpoint=${endpoint}
-       
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  endpoint                     policyname                                resourcelocation    resourcetype    expected_result    --

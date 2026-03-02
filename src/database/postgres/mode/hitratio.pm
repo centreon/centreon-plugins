@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,49 +20,143 @@
 
 package database::postgres::mode::hitratio;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
+use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::constants qw(:values);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' },
-        'lookback'   => { name => 'lookback' },
-        'exclude:s'  => { name => 'exclude' }
+    $options{options}->add_options(arguments => {
+        'warning:s'           => { name => 'warning' },
+        'critical:s'          => { name => 'critical' },
+        'lookback'            => { name => 'lookback' },
+        'include-database:s'  => { name => 'include_database', default => '' },
+        'exclude-database:s'  => { name => 'exclude_database', default => '' },
+        'include:s'           => { name => 'include_database' },
+        'exclude:s'           => { name => 'exclude_database' }
     });
-
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
 
-sub check_options {
+sub custom_hitratio_prefix_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-
-    $self->{statefile_cache}->check_options(%options);
+    return "Database '" . $options{instance} . "' ";
 }
 
-sub run {
+sub custom_delta_calc {
+    my ($self, %options) = @_;
+
+    unless (defined $options{old_datas}->{$self->{instance} . '_blks_hit'}) {
+        $self->{error_msg} = "Buffer creation...";
+        return BUFFER_CREATION
+    }
+
+    my ($new_blks_hit, $new_blks_read) = ($options{new_datas}->{$self->{instance} . '_blks_hit'},
+                                          $options{new_datas}->{$self->{instance} . '_blks_read'});
+
+    $self->{result_values} = { hitratio => $new_blks_hit + $new_blks_read ?
+                                    $new_blks_hit * 100 / ($new_blks_hit + $new_blks_read) :
+                                    100,
+                             };
+    return 0;
+}
+
+sub custom_average_calc {
+    my ($self, %options) = @_;
+
+    unless (defined $options{old_datas}->{$self->{instance} . '_blks_hit'}) {
+        $self->{error_msg} = "Buffer creation...";
+        return BUFFER_CREATION
+    }
+
+    my ($old_blks_hit, $old_blks_read) = ( $options{old_datas}->{$self->{instance} . '_blks_hit'},
+                                           $options{old_datas}->{$self->{instance} . '_blks_read'} );
+    my ($new_blks_hit, $new_blks_read) = ( $options{new_datas}->{$self->{instance} . '_blks_hit'},
+                                           $options{new_datas}->{$self->{instance} . '_blks_read'} );
+
+    $old_blks_hit = 0 if $new_blks_hit < $old_blks_hit;
+    $old_blks_read = 0 if $new_blks_read < $old_blks_read;
+
+    my $total_read_requests = $new_blks_hit - $old_blks_hit;
+    my $total_read_disk = $new_blks_read - $old_blks_read;
+
+    $self->{result_values} = { hitratio_now => $total_read_requests + $total_read_disk ?
+                                   $total_read_requests * 100 / ($total_read_requests + $total_read_disk) :
+                                   100,
+                             };
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'hitratio', type => 1, message_multiple => 'All databases hitratio are ok', cb_prefix_output => 'custom_hitratio_prefix_output', cb_init_count => 'init_counter' },
+    ];
+
+    $self->{maps_counters}->{hitratio} = [
+        { label => 'delta', nlabel => 'database.hitratio.delta.percentage', set => {
+                key_values => [ { name => 'hitratio' }, { name => 'blks_hit' }, { name => 'blks_read' } ],
+                output_template =>  'hitratio at %.2f%%',
+                closure_custom_calc => $self->can('custom_delta_calc'),
+                perfdatas => [
+                    { value => 'hitratio', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'average', nlabel => 'database.hitratio.average.percentage', set => {
+                key_values => [ { name => 'hitratio_now' }, { name => 'blks_hit' }, { name => 'blks_read' } ],
+                output_template =>  'hitratio at %.2f%%',
+                closure_custom_calc => $self->can('custom_average_calc'),
+                perfdatas => [
+                    { value => 'hitratio_now', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 },
+                ],
+            }
+        }
+    ];
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    # To keep compatibility, depending on 'lookback' parameter we display either 'delta' or 'average' value and the warning/critical thresholds
+    # refer to the corresponding value
+    my $redirect;
+    if ($options{option_results}->{lookback}) {
+        $self->{maps_counters}->{hitratio}->[0]->{display_ok} = 0;
+        $self->{maps_counters}->{hitratio}->[1]->{display_ok} = 1;
+        $redirect = '-instance-database-hitratio-average-percentage';
+    } else {
+        $self->{maps_counters}->{hitratio}->[0]->{display_ok} = 1;
+        $self->{maps_counters}->{hitratio}->[1]->{display_ok} = 0;
+        $redirect = '-instance-database-hitratio-delta-percentage';
+    }
+
+    foreach my $label ('unknown', 'warning', 'critical') {
+        $options{option_results}->{"$label$redirect"} //= '';
+        $options{option_results}->{$label} //= '';
+        $options{option_results}->{"$label$redirect"} =$options{option_results}->{$label}
+            if $options{option_results}->{$label} ne '' && $options{option_results}->{"$label$redirect"} eq '';
+    }
+
+    $self->SUPER::check_options(%options);
+}
+
+sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
+
+    $self->{cache_name} = 'postgres_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save();
+    $self->{hitratio} = {};
 
     $options{sql}->query(query => q{
         SELECT sd.blks_hit, sd.blks_read, d.datname
@@ -70,93 +164,26 @@ sub run {
         WHERE d.oid=sd.datid
     });
 
-    $self->{statefile_cache}->read(statefile => 'postgres_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save());
-    my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-
-    my $database_check = 0;
-    my $new_datas = {};
-    $new_datas->{last_timestamp} = time();
     my $result = $options{sql}->fetchall_arrayref();
 
-    $self->{output}->output_add(
-        severity => 'OK',
-        short_msg => "All databases hitratio are ok"
-    );
-
     foreach my $row (@{$result}) {
-        $new_datas->{$row->[2] . '_blks_hit'} = $row->[0];
-        $new_datas->{$row->[2] . '_blks_read'} = $row->[1];
+        my ($blks_hit, $blks_read, $datname) = @$row;
+        $datname //= '';
 
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $row->[2] =~ /$self->{option_results}->{exclude}/) {
-            $self->{output}->output_add(long_msg => "Skipping database '" . $row->[2] . '"');
-            next;
+        if (is_excluded($row->[2], $self->{option_results}->{include_database}, $self->{option_results}->{exclude_database})) {
+            $self->{output}->output_add(long_msg => "Skipping database '" . $row->[2] . '" due to filter rules', debug => 1);
+            next
         }
 
-        my $old_blks_hit = $self->{statefile_cache}->get(name => $row->[2] . '_blks_hit');
-        my $old_blks_read = $self->{statefile_cache}->get(name => $row->[2] . '_blks_read');
-
-        next if (!defined($old_blks_hit) || !defined($old_blks_read));
-        $old_blks_hit = 0 if ($row->[0] < $old_blks_hit);
-        $old_blks_read = 0 if ($row->[1] < $old_blks_read);
-
-        $database_check++;
-        my %prcts = ();
-        my $total_read_requests = $new_datas->{$row->[2] . '_blks_hit'} - $old_blks_hit;
-        my $total_read_disk = $new_datas->{$row->[2] . '_blks_read'} - $old_blks_read;
-        $prcts{hitratio_now} = (($total_read_requests + $total_read_disk) == 0) ? 100 : $total_read_requests * 100 / ($total_read_requests + $total_read_disk);
-        $prcts{hitratio} = (($new_datas->{$row->[2] . '_blks_hit'} + + $new_datas->{$row->[2] . '_blks_read'}) == 0) ? 100 : $new_datas->{$row->[2] . '_blks_hit'} * 100 / ($new_datas->{$$row[2] . '_blks_hit'} + $new_datas->{$row->[2] . '_blks_read'});
-
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now' )}, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(
-            long_msg => sprintf(
-                "Database '%s' hitratio at %.2f%%", 
-                $row->[2], $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}
-            )
-        );
-
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(
-                severity => $exit_code,
-                short_msg => sprintf(
-                    "Database '%s' hitratio at %.2f%%", 
-                    $row->[2], $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')})
-            );
-        }
-        $self->{output}->perfdata_add(
-            nlabel => 'database.hitratio' . ((defined($self->{option_results}->{lookback})) ? '.delta' : '.average') . '.percentage',
-            unit => '%',
-            instances => $row->[2],
-            value => sprintf('%.2f', $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '' : '_now')}),
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-            min => 0, max => 100
-        );
-        $self->{output}->perfdata_add(
-            nlabel => 'database.hitratio' . ((defined($self->{option_results}->{lookback})) ? '.average' : '.delta') . '.percentage',
-            unit => '%',
-            instances => $row->[2],
-            value => sprintf('%.2f', $prcts{'hitratio' . ((defined($self->{option_results}->{lookback})) ? '_now' : '')}),
-            min => 0, max => 100
-        );
+        $self->{hitratio}->{$datname} = { delta => 0,
+                                          average => 0,
+                                          blks_hit => $blks_hit,
+                                          blks_read => $blks_read,
+                                          hitratio => 0,
+                                          hitratio_now => 0,
+                                          database => $datname
+                                        };
     }
-
-    $self->{statefile_cache}->write(data => $new_datas); 
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => "Buffer creation..."
-        );
-    }
-
-    if (defined($old_timestamp) && $database_check == 0) {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
-            short_msg => 'No database checked (permission or a wrong exclude filter)'
-        );
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -181,9 +208,13 @@ Critical threshold.
 
 Threshold isn't on the percent calculated from the difference ('xxx_hitratio_now').
 
-=item B<--exclude>
+=item B<--include-database>
 
-Filter databases.
+Filter databases using a regular expression.
+
+=item B<--exclude-database>
+
+Exclude databases using a regular expression.
 
 =back
 

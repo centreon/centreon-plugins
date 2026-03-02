@@ -11,9 +11,10 @@ Test Timeout        120s
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS}
 
+
 *** Test Cases ***
 uptime ${tc}
-    [Tags]    os    Windows
+    [Tags]    os    windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --plugin=os::windows::snmp::plugin
@@ -25,12 +26,10 @@ uptime ${tc}
     ...    --snmp-timeout=1
     ...    ${extra_options}
 
- 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-
     Examples:        tc    extra_options                   expected_result    --
-            ...      1     --warning-uptime='2'            WARNING: System uptime is: 18m 37s | 'uptime'=1117.00s;0:2;;0; 
+            ...      1     --warning-uptime='2'            WARNING: System uptime is: 18m 37s | 'uptime'=1117.00s;0:2;;0;
             ...      2     --warning-uptime='1'            WARNING: System uptime is: 18m 37s | 'uptime'=1117.00s;0:1;;0;
             ...      3     --critical-uptime='2'           CRITICAL: System uptime is: 18m 37s | 'uptime'=1117.00s;;0:2;0;
             ...      4     --add-sysdesc                   OK: System uptime is: 18m 37s, - | 'uptime'=1117.00s;;;0;

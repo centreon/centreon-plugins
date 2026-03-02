@@ -12,13 +12,14 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}office365.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=cloud::microsoft::office365::management::plugin
 ...                 --tenant='our-tenant'
 ...                 --client-id=our-client-id
 ...                 --client-secret=client-secret
 ...                 --login-endpoint=http://${HOSTNAME}:${APIPORT}
 ...                 --graph-endpoint=http://${HOSTNAME}:${APIPORT}
+
 
 *** Test Cases ***
 ServiceStatus ${tc}

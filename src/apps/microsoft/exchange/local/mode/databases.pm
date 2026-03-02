@@ -72,13 +72,13 @@ sub custom_space_available_perfdata {
 sub custom_mapi_output {
     my ($self, %options) = @_;
 
-    return 'mapi test connectivity is ' . $self->{result_values}->{mapi_result};
+    return 'MAPI test connectivity is ' . $self->{result_values}->{mapi_result};
 }
 
 sub custom_mailflow_output {
     my ($self, %options) = @_;
 
-    return 'mapi test result is ' . $self->{result_values}->{mailflow_result};
+    return 'mail flow test result is ' . $self->{result_values}->{mailflow_result};
 }
 
 sub custom_copystatus_output {
@@ -189,7 +189,7 @@ sub set_counters {
                 key_values => [ { name => 'asize' }, { name => 'database' }, { name => 'server' } ],
                 output_template => 'space available: %s %s',
                 output_change_bytes => 1,
-                closure_custom_perfdata => $self->can('custom_space_asize_perfdata')
+                closure_custom_perfdata => $self->can('custom_space_size_perfdata')
             }
         }
     ];
@@ -375,7 +375,7 @@ __END__
 
 =head1 MODE
 
-Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working and CopyStatus.
+Check: Exchange Databases are Mounted, Mapi/Mailflow Connectivity to all databases are working and Copy Status.
 
 =over 8
 
@@ -393,11 +393,11 @@ Open a session to the remote-host with authentication. This also needs --remote-
 
 =item B<--no-mailflow>
 
-Don't check mailflow connectivity.
+Don't check mail flow connectivity.
 
 =item B<--no-mapi>
 
-Don't check mapi connectivity.
+Don't check MAPI connectivity.
 
 =item B<--no-copystatus>
 
@@ -438,11 +438,11 @@ Filter mailboxes by database server name (regexp can be used. In Powershell).
 
 =item B<--ps-database-filter>
 
-Filter database (only wilcard '*' can be used. In Powershell).
+Filter database (only wildcard '*' can be used. In Powershell).
 
 =item B<--ps-database-test-filter>
 
-Skip mapi/mailflow test (regexp can be used. In Powershell).
+Filter tests at the Powershell level using a regular expression to select only MAPI or mail flow tests.
 
 =item B<--warning-status>
 

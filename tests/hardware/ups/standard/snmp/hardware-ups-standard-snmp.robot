@@ -3,13 +3,14 @@ Documentation       Hardware UPS standard SNMP plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
-Test Timeout        120s
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                              ${CENTREON_PLUGINS} --plugin=hardware::ups::standard::rfc1628::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=hardware::ups::standard::rfc1628::snmp::plugin
+
 
 *** Test Cases ***
 Hardware UPS Standard SNMP input lines ${tc}
@@ -26,7 +27,7 @@ Hardware UPS Standard SNMP input lines ${tc}
     ...    --warning-voltage=${warningvoltage}
     ...    --warning-frequence=${warningfrequence}
     ...    --exclude-id=${excludeid}
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  snmpcommunity                                         warningpower    criticalcurrent     warningvoltage    warningfrequence    excludeid    expected_result    --

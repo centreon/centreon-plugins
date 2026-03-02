@@ -1,11 +1,10 @@
 *** Settings ***
-
-
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup         Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
+
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
@@ -18,16 +17,16 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::vmware::vsphere8::vcenter
 ...                 --proto=http
 ...                 --port=3000
 
+
 *** Test Cases ***
 Vm-Count ${tc}
-    [Tags]    apps    api    vmware   vsphere8    esx
+    [Tags]    apps    api    vmware    vsphere8    esx
     ${command_curl}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
-    ${command_lwp}     Catenate    ${CMD} --http-backend=lwp ${extraoptions}
+    ${command_lwp}    Catenate    ${CMD} --http-backend=lwp ${extraoptions}
 
     Ctn Run Command And Check Result As Strings    ${command_curl}    ${expected_result}
-    Ctn Run Command And Check Result As Strings    ${command_lwp}     ${expected_result}
-    
-    
+    Ctn Run Command And Check Result As Strings    ${command_lwp}    ${expected_result}
+
     Examples:    tc     extraoptions                                    expected_result   --
         ...      1      ${EMPTY}                                        OK: 1 VM(s) powered on, 1 VM(s) powered off, 1 VM(s) suspended, 3 VM(s) in total | 'vm.poweredon.count'=1;;;0;3 'vm.poweredoff.count'=1;;;0;3 'vm.suspended.count'=1;;;0;3 'vm.total.count'=3;1:;;0;
         ...      2      --include-name=toto                             WARNING: 0 VM(s) in total | 'vm.poweredon.count'=0;;;0;0 'vm.poweredoff.count'=0;;;0;0 'vm.suspended.count'=0;;;0;0 'vm.total.count'=0;1:;;0;

@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 ${cmd}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::haproxy::web::plugin
 ...                 --mode=frontend-usage
@@ -22,12 +22,12 @@ ${cmd}              ${CENTREON_PLUGINS}
 
 *** Test Cases ***
 frontend-usage ${tc}
-    [Tags]    mockoon    restapi    
+    [Tags]    mockoon    restapi
     ${command}    Catenate
     ...    ${CMD}
     ...    --filter-name='${filter_name}'
     ...    ${extra_options}
-    
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    filter_name          extra_options                                           expected_result    --
@@ -42,9 +42,3 @@ frontend-usage ${tc}
             ...      9      hafrontend          --critical-frontend-current-sessions=0:0                CRITICAL: Frontend 'hafrontend' frontend current sessions: 10 | 'hafrontend#frontend.session.current.rate.countpersecond'=1;;;0; 'hafrontend#frontend.session.max.rate.countpersecond'=6;;;0; 'hafrontend#frontend.sessions.current.count'=10;;0:0;0; 'hafrontend#frontend.sessions.total.count'=3980;;;0; 'hafrontend#frontend.sessions.maximum.count'=16;;;0; 'hafrontend#frontend.traffic.in.bitpersecond'=0.00b/s;;;0; 'hafrontend#frontend.traffic.out.bitpersecond'=0.00b/s;;;0; 'hafrontend#frontend.requests.denied.count'=0;;;0; 'hafrontend#frontend.responses.denied.count'=0;;;0; 'hafrontend#frontend.requests.error.count'=42;;;0;
             ...      10     hafrontend          --warning-frontend-total-sessions=0:0                   WARNING: Frontend 'hafrontend' frontend total sessions: 3980 | 'hafrontend#frontend.session.current.rate.countpersecond'=1;;;0; 'hafrontend#frontend.session.max.rate.countpersecond'=6;;;0; 'hafrontend#frontend.sessions.current.count'=10;;;0; 'hafrontend#frontend.sessions.total.count'=3980;0:0;;0; 'hafrontend#frontend.sessions.maximum.count'=16;;;0; 'hafrontend#frontend.traffic.in.bitpersecond'=0.00b/s;;;0; 'hafrontend#frontend.traffic.out.bitpersecond'=0.00b/s;;;0; 'hafrontend#frontend.requests.denied.count'=0;;;0; 'hafrontend#frontend.responses.denied.count'=0;;;0; 'hafrontend#frontend.requests.error.count'=42;;;0;
             ...      11     hafrontend          --critical-frontend-total-sessions=0:0                  CRITICAL: Frontend 'hafrontend' frontend total sessions: 3980 | 'hafrontend#frontend.session.current.rate.countpersecond'=1;;;0; 'hafrontend#frontend.session.max.rate.countpersecond'=6;;;0; 'hafrontend#frontend.sessions.current.count'=10;;;0; 'hafrontend#frontend.sessions.total.count'=3980;;0:0;0; 'hafrontend#frontend.sessions.maximum.count'=16;;;0; 'hafrontend#frontend.traffic.in.bitpersecond'=0.00b/s;;;0; 'hafrontend#frontend.traffic.out.bitpersecond'=0.00b/s;;;0; 'hafrontend#frontend.requests.denied.count'=0;;;0; 'hafrontend#frontend.responses.denied.count'=0;;;0; 'hafrontend#frontend.requests.error.count'=42;;;0;
-
-
-
-
-
-

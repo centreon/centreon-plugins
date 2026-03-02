@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/trim/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my %state_map_ntpq = (
@@ -222,7 +222,7 @@ sub get_ntp_modes {
 
     my $modes = {
         ntpq => {
-            regexp => '^(\+|\*|\.|\-|\#|x|\<sp\>|o)(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)',
+            regexp => '^(\+|\*|\.|\-|\#|x|\<sp\>|\s|o)(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)',
             command => 'ntpq',
             command_options => '-p -n 2>&1',
             type => 'ntpq'
@@ -392,10 +392,8 @@ sub manage_selection {
             # timedatectl differs from other modes so it is handled in its own function
             my $error = $self->manage_timedatectl( custom => $options{custom} );
 
-            if ($no_quit == 0 && $error) {
-                $self->{output}->add_option_msg(short_msg => $error);
-                $self->{output}->option_exit();
-            }
+            $self->{output}->option_exit(short_msg => $error)
+                if $no_quit == 0 && $error;
             next
         }
 
@@ -407,39 +405,42 @@ sub manage_selection {
 
         my @lines = split /\n/, $stdout;
         foreach my $line (@lines) {
-            if ($no_quit == 0 && $line =~ /Connection refused/) {
-                $self->{output}->add_option_msg(short_msg => "check ntp.conf and ntp daemon" );
-                $self->{output}->option_exit();
-            }
+            $self->{output}->option_exit(short_msg => "check ntp.conf and ntp daemon" )
+                if $no_quit == 0 && $line =~ /Connection refused/;
             next if $line !~ /$mode->{regexp}/;
 
             my $entry = {};
-            my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
+            my ($remote_peer, $peer_fate);
             if ($mode->{type} eq 'chronyc') {
-                $remote_peer = centreon::plugins::misc::trim($3);
-                $peer_fate = centreon::plugins::misc::trim($2);
                 my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $9);
+                $peer_fate = trim($2);
+                $remote_peer = trim($3);
+
                 $entry = {
                     display  => $remote_peer,
                     rawstate => $peer_fate,
                     state    => $state_map_chronyc{$peer_fate},
-                    stratum  => centreon::plugins::misc::trim($stratum),
-                    rawtype  => centreon::plugins::misc::trim($type),
-                    type     => $type_map_chronyc{centreon::plugins::misc::trim($type)},
-                    reach    => centreon::plugins::misc::trim($reach),
-                    offset   => centreon::plugins::misc::trim($offset) * $unit_map_chronyc{centreon::plugins::misc::trim($10)},
+                    stratum  => trim($stratum),
+                    rawtype  => trim($type),
+                    type     => $type_map_chronyc{trim($type)},
+                    reach    => trim($reach),
+                    offset   => trim($offset) * $unit_map_chronyc{trim($10)},
                 };
             } else {
                 my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
+                $peer_fate = $1;
+                $peer_fate='<sp>' if $peer_fate eq ' '; # <sp> means space in our ntpq output
+                $remote_peer = trim($2);
+
                 $entry = {
                     display  => $remote_peer,
                     rawstate => $peer_fate,
                     state    => $state_map_ntpq{$peer_fate},
-                    stratum  => centreon::plugins::misc::trim($stratum),
-                    rawtype  => centreon::plugins::misc::trim($type),
-                    type     => $type_map_ntpq{centreon::plugins::misc::trim($type)},
-                    reach    => centreon::plugins::misc::trim($reach),
-                    offset   => centreon::plugins::misc::trim($offset)
+                    stratum  => trim($stratum),
+                    rawtype  => trim($type),
+                    type     => $type_map_ntpq{trim($type)},
+                    reach    => trim($reach),
+                    offset   => trim($offset)
                 };
             }
 

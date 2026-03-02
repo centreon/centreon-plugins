@@ -11,9 +11,10 @@ Test Timeout        120s
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS}
 
+
 *** Test Cases ***
 memory ${tc}
-    [Tags]    os    Windows
+    [Tags]    os    windows
     ${command}    Catenate
     ...    ${CMD}
     ...    --plugin=os::windows::snmp::plugin
@@ -24,9 +25,9 @@ memory ${tc}
     ...    --snmp-community=os/windows/snmp/windows_anon
     ...    --snmp-timeout=1
     ...    ${extra_options}
- 
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
-    
+
     Examples:        tc    extra_options                                              expected_result    --
             ...      1     --verbose                                                  OK: Ram Total: 4.00GB Used: 557.94MB (13.62%) Free: 3.45GB (86.38%) | 'used'=585039872B;;;0;4294377472
             ...      2     --warning-memory='80'                                      OK: Ram Total: 4.00GB Used: 557.94MB (13.62%) Free: 3.45GB (86.38%) | 'used'=585039872B;0:3435501977;;0;4294377472

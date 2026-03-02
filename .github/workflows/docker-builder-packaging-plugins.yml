@@ -18,7 +18,11 @@ on:
       - ".github/docker/packaging/*"
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   dockerize:
@@ -37,11 +41,17 @@ jobs:
             dockerfile: packaging-plugins-alma9
             image: packaging-plugins-alma9
           - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-alma10
+            image: packaging-plugins-alma10
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma8
             image: packaging-plugins-java-alma8
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma9
             image: packaging-plugins-java-alma9
+          - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-java-alma10
+            image: packaging-plugins-java-alma10
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
@@ -52,11 +62,17 @@ jobs:
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
           - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-trixie
+            image: packaging-plugins-trixie
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bookworm
             image: packaging-plugins-java-bookworm
+          - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-java-trixie
+            image: packaging-plugins-java-trixie
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy
@@ -74,17 +90,17 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Login to Registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
       - name: Login to proxy registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}

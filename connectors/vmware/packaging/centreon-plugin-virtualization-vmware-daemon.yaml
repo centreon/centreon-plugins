@@ -53,6 +53,20 @@ contents:
     dst: "/usr/share/perl5/centreon/script/centreonvault.pm"
     packager: deb
 
+  - src: "../src/centreon/script/centreonsecrets.pm"
+    dst: "/usr/share/perl5/vendor_perl/centreon/script/centreonsecrets.pm"
+    packager: rpm
+  - src: "../src/centreon/script/centreonsecrets.pm"
+    dst: "/usr/share/perl5/centreon/script/centreonsecrets.pm"
+    packager: deb
+
+  - src: "../src/centreon/script/credentialsencryption.pm"
+    dst: "/usr/share/perl5/vendor_perl/centreon/script/credentialsencryption.pm"
+    packager: rpm
+  - src: "../src/centreon/script/credentialsencryption.pm"
+    dst: "/usr/share/perl5/centreon/script/credentialsencryption.pm"
+    packager: deb
+
   - src: "../src/centreon/script/centreon_vmware_convert_config_file"
     dst: "/usr/bin/centreon_vmware_convert_config_file"
     file_info:

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -88,8 +88,8 @@ Check hardware.
 =item B<--component>
 
 Define a regular expression to select which components to check (default: '.*').
-Can be: 'fan', 'temperature', 'vrm', 'psu', 'cpu', 'memory', 'nic', 'battery', 'ctrl',
-'driveencl', 'pdrive', 'ldrive', 'bios'.
+Can be: C<fan>, C<temperature>, C<vrm>, C<psu>, C<cpu>, C<memory>, C<nic>, C<battery>, C<ctrl>,
+C<driveencl>, C<pdrive>, C<ldrive>, C<bios>.
 
 =item B<--filter>
 
@@ -114,11 +114,13 @@ Example: --threshold-overload='fan,OK,degraded'
 
 Define the warning threshold for 'temperature', 'fan'. Syntax: type,regexp,threshold.
 Example: --warning='temperature,.*,30'
+When not specified on the command line the warning threshold for the 'temperature' entity is automatically defined based on the CAUTION field returned by ILO.
 
 =item B<--critical>
 
 Define the critical threshold for 'temperature', 'fan'. Syntax: type,regexp,threshold.
 Example: --critical='temperature,.*,50'
+When not specified on the command line the critical threshold for the 'temperature' entity is automatically defined based on the CRITICAL field returned by ILO.
 
 =back
 

@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-alletra.mockoon.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
-${CMD}              ${CENTREON_PLUGINS} 
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::alletra::restapi::plugin
 ...                 --mode licenses
 ...                 --hostname=${HOSTNAME}
@@ -21,15 +21,15 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 
+
 *** Test Cases ***
 Licenses ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
-
 
     Examples:        tc       extraoptions                                                expected_regexp    --
             ...      1        ${EMPTY}                                                    CRITICAL: Number of expired licenses: 1 | 'licenses.total.count'=9;;0:;0; 'licenses.expired.count'=1;;0:0;0;1 'LICENSE 2#license.expiration.seconds'=0s;;;0; 'LICENSE 3#license.expiration.seconds'=(\\\\d+)s;;;0; 'LICENSE 5#license.expiration.seconds'=(\\\\d+)s;;;0; 'LICENSE 6#license.expiration.seconds'=(\\\\d+)s;;;0; 'LICENSE 8#license.expiration.seconds'=(\\\\d+)s;;;0; 'LICENSE 9#license.expiration.seconds'=(\\\\d+)s;;;0;

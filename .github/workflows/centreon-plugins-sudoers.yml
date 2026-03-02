@@ -8,18 +8,24 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
   push:
     branches:
       - develop
       - master
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
 
 env:
   module_name: centreon-plugins-sudoers
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   package:
@@ -38,11 +44,17 @@ jobs:
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
           - image: packaging-plugins-bookworm
             distrib: bookworm
+            package_extension: deb
+          - image: packaging-plugins-trixie
+            distrib: trixie
             package_extension: deb
           - image: packaging-plugins-jammy
             distrib: jammy
@@ -63,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Package
         uses: ./.github/actions/package-nfpm
@@ -84,7 +96,11 @@ jobs:
   deliver-packages:
     needs: [get-environment, package]
     if: |
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch'))
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -94,9 +110,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb
@@ -106,7 +126,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Delivery
         uses: ./.github/actions/package-delivery

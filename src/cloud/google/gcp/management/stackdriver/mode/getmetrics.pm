@@ -35,7 +35,8 @@ sub custom_metric_perfdata {
         instances =>  $self->{result_values}->{aggregation},
         value => $self->{result_values}->{value},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric')
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
+        unit => $self->{result_values}->{unit} // ''
     );
 }
 
@@ -69,7 +70,7 @@ sub set_counters {
         { label => 'metric', set => {
                 key_values => [
                     { name => 'label' }, { name => 'value' },
-                    { name => 'aggregation' }, { name => 'display' }
+                    { name => 'aggregation' }, { name => 'display' }, { name => 'unit' }
                 ],
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
@@ -93,7 +94,8 @@ sub new {
         'api:s'                => { name => 'api' },
         'extra-filter:s@'      => { name => 'extra_filter' },
         'timeframe:s'          => { name => 'timeframe' },
-        'aggregation:s@'       => { name => 'aggregation' }
+        'aggregation:s@'       => { name => 'aggregation' },
+        'distribution-value:s'   => { name => 'distribution_value', default => 'mean' }
     });
 
     return $self;
@@ -128,6 +130,7 @@ sub check_options {
     $self->{gcp_metric} = $self->{option_results}->{metric};
     $self->{gcp_api} = $self->{option_results}->{api};
     $self->{gcp_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
+    $self->{distribution_value} = $self->{option_results}->{distribution_value};
 
     if (defined($self->{option_results}->{extra_filter})) {
         $self->{gcp_extra_filters} = [];
@@ -164,7 +167,8 @@ sub manage_selection {
         api => $self->{gcp_api},
         extra_filters => $self->{gcp_extra_filters},
         aggregations => $self->{gcp_aggregations},
-        timeframe => $self->{gcp_timeframe}
+        timeframe => $self->{gcp_timeframe},
+        distribution_value => $self->{distribution_value}
     );
 
     $self->{metrics} = {};
@@ -177,7 +181,8 @@ sub manage_selection {
                     display => $instance_name,
                     label => $label,
                     aggregation => $aggregation,
-                    value => $results->{$instance_name}->{$label}->{$aggregation}
+                    value => $results->{$instance_name}->{$label}->{$aggregation},
+                    unit => $results->{$instance_name}->{$label}->{unit}
                 };
             }
         }
@@ -207,7 +212,7 @@ Set GCP API (required).
 
 =item B<--metric>
 
-Set stackdriver metric (required).
+Set Stackdriver metric (required).
 
 =item B<--dimension-name>
 
@@ -215,7 +220,8 @@ Set dimension name (required).
 
 =item B<--dimension-operator>
 
-Set dimension operator (default: 'equals'. Can also be: 'regexp', 'starts').
+Set dimension operator (default: 'equals')
+Can be: 'equal', 'regexp', 'starts'.
 
 =item B<--dimension-value>
 
@@ -235,6 +241,11 @@ Define how the data must be aggregated. Available aggregations: 'minimum', 'maxi
 and 'count'.
 Can be called multiple times.
 
+=item B<--distribution-value>
+
+Set the distribution field to compute the metric value (default: 'mean').
+Can be: 'mean', 'count'.
+
 =item B<--warning-metric>
 
 Warning threshold.
@@ -247,7 +258,7 @@ Critical threshold.
 
 Set extra filters (can be defined multiple times).
 
-Example: --extra-filter='metric.labels.mylabel = "LABELBLEUE"'
+Example: --extra-filter='metric.labels.mylabel = "LABEL"'
 
 =back
 

@@ -329,7 +329,7 @@ sub manage_selection {
               t.status "Status",
               t.contents "Type",
               t.extent_management "Extent Mgmt",
-              tum.used_space*t.block_size bytes,
+              GREATEST(tum.used_space*t.block_size,0) bytes,
               tum.tablespace_size*t.block_size bytes_max
              FROM
               DBA_TABLESPACE_USAGE_METRICS tum
@@ -639,7 +639,7 @@ Critical threshold.
 
 =item B<--filter-tablespace>
 
-Filter tablespace by name. Can be a regex
+Filter tablespaces by name. Can be a regex
 
 =item B<--units>
 
