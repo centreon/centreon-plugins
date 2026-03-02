@@ -360,7 +360,7 @@ sub execute_powershell {
                      },
                      {
                          label => 'del-' . $options{label},
-                         value => qq(powershell.exe -NoProfile -Command '$ps1_filename','$b64_filename' -Force)
+                         value => qq(powershell.exe -NoProfile -Command "Remove-Item '$ps1_filename','$b64_filename' -Force")
                      };
 
     return $self->execute_winshell_commands(

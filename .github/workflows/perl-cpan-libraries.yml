@@ -35,8 +35,9 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
+      max-parallel: 25
       matrix:
-        distrib: [el8, el9]
+        distrib: [el8, el9, el10]
         name:
           [
             "ARGV::Struct",
@@ -44,12 +45,14 @@ jobs:
             "Authen::SCRAM::Client",
             "BSON",
             "BSON::XS",
+            "Carp::Assert", # needed by perl-JSON-Path-1.0.6-2.el10
             "Config::AWS",
             "Convert::Binary::C",
             "Convert::EBCDIC",
             "Crypt::Argon2",
             "Crypt::Blowfish_PP",
             "Crypt::OpenSSL::AES",
+            "Data::Compare", # needed by perl-Paws-0.46-2.el10
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
@@ -83,6 +86,7 @@ jobs:
             "PBKDF2::Tiny",
             "Statistics::Descriptive",
             "Statistics::Regression",
+            "Sys::SigAction", # needed by perl-jmx4perl-1.13-2.el10
             "Term::Clui",
             "Unicode::Stringprep",
             "URI::Template",
@@ -97,7 +101,7 @@ jobs:
             "ZMQ::LibZMQ4"
           ]
         include:
-          - build_distribs: "el8,el9"
+          - build_distribs: "el8,el9,el10"
           - rpm_dependencies: ""
           - rpm_provides: ""
           - version: ""
@@ -111,12 +115,21 @@ jobs:
           - distrib: el9
             package_extension: rpm
             image: packaging-plugins-alma9
+          - distrib: el10
+            package_extension: rpm
+            image: packaging-plugins-alma10
           - name: "BSON"
             rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
+          - name: "Carp::Assert"
+            build_distribs: "el10"
           - name: "Crypt::Argon2"
             preinstall_cpanlibs: "Dist::Build"
             rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
             revision: "3"
+          - name: "Crypt::OpenSSL::AES"
+            build_distribs: "el8,el9"
+          - name: "Data::Compare"
+            build_distribs: "el10"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
           - name: "Device::Modbus::RTU::Client"
@@ -144,24 +157,26 @@ jobs:
           - name: "Net::DHCP"
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
-            build_distribs: el9
+            build_distribs: "el9,el10"
           - name: "Statistics::Descriptive"
-            build_distribs: el9
+            build_distribs: "el9,el10"
           - name: "Statistics::Regression"
             version: "0.53"
+          - name: "Sys::SigAction"
+            build_distribs: "el10"
           - name: "URL::Encode::XS"
-            build_distribs: el9
+            build_distribs: "el9,el10"
           - name: "UUID"
             version: "0.31"
           - name: "ZMQ::Constants"
-            build_distribs: "el9"
+            build_distribs: "el9,el10"
           - name: "ZMQ::FFI"
             rpm_dependencies: "zeromq"
           - name: "ZMQ::LibZMQ4"
             version: "0.01"
             rpm_dependencies: "zeromq"
 
-    name: package ${{ matrix.distrib }} ${{ matrix.name }}
+    name: Package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
@@ -288,7 +303,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [el8, el9]
+        distrib: [el8, el9, el10]
 
     steps:
       - name: Merge Artifacts
@@ -314,7 +329,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [el8, el9]
+        distrib: [el8, el9, el10]
     name: sign rpm ${{ matrix.distrib }}
     container:
       image: docker.centreon.com/centreon-private/rpm-signing:latest
@@ -354,8 +369,9 @@ jobs:
     runs-on: ${{ matrix.runner_name }}
     strategy:
       fail-fast: false
+      max-parallel: 25
       matrix:
-        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64]
+        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-trixie, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64]
         name:
           [
             "ARGV::Struct",
@@ -369,7 +385,7 @@ jobs:
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
-            "Digest::SHA1",
+            "Digest::SHA1", # needed by libjmx4perl-perl on jammy and noble
             "Email::Send::SMTP::Gmail",
             "Hash::Ordered",
             "HTTP::ProxyPAC",
@@ -390,7 +406,7 @@ jobs:
         include:
           - runner_name: ubuntu-24.04
           - arch: amd64
-          - build_names: "bullseye-amd64,bookworm,jammy,noble"
+          - build_names: "bullseye-amd64,bookworm,trixie,jammy,noble"
           - deb_dependencies: ""
           - deb_provides: ""
           - version: ""
@@ -406,6 +422,10 @@ jobs:
             distrib: bookworm
             package_extension: deb
             image: packaging-plugins-bookworm
+          - build_name: trixie
+            distrib: trixie
+            package_extension: deb
+            image: packaging-plugins-trixie
           - build_name: jammy
             distrib: jammy
             package_extension: deb
@@ -432,23 +452,23 @@ jobs:
             use_dh_make_perl: "false"
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
           - name: "Digest::SHA1"
             build_names: "jammy,noble"
           - name: "Hash::Ordered"
             build_names: "bullseye-amd64,bookworm,jammy"
           - name: "Libssh::Session"
             use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
             deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
             revision: "2"
           - name: "Net::Amazon::Signature::V4"
-            build_names: "bullseye-amd64,jammy"
+            build_names: "bullseye-amd64,jammy,trixie"
           - name: "Net::Curl"
             use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
             no-auto-depends: "true"
             deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
             deb_provides: "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl"
@@ -467,7 +487,7 @@ jobs:
             use_dh_make_perl: "false"
             version: "0.01"
             deb_dependencies: "libzmq5"
-            build_names: "bullseye-amd64,bookworm,jammy,noble,bullseye-arm64"
+            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
@@ -590,6 +610,7 @@ jobs:
             cpanm $CPANLIB_PREINSTALL
           done
           temp_file=$(mktemp)
+          echo "default.local" | tee /etc/mailname
           created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }} --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
@@ -625,7 +646,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy, noble]
+        distrib: [bullseye, bookworm, trixie, jammy, noble]
 
     steps:
       - name: Merge Artifacts
@@ -650,7 +671,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, jammy, noble]
+        distrib: [bullseye, bookworm, trixie, jammy, noble]
     steps:
       - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
         with:
@@ -678,6 +699,11 @@ jobs:
             distrib: el9
             arch: amd64
             runner_name: ubuntu-24.04
+          - package_extension: rpm
+            image: almalinux:10
+            distrib: el10
+            arch: amd64
+            runner_name: ubuntu-24.04
           - package_extension: deb
             image: debian:bullseye
             distrib: bullseye
@@ -686,6 +712,11 @@ jobs:
           - package_extension: deb
             image: debian:bookworm
             distrib: bookworm
+            arch: amd64
+            runner_name: ubuntu-24.04
+          - package_extension: deb
+            image: debian:trixie
+            distrib: trixie
             arch: amd64
             runner_name: ubuntu-24.04
           - package_extension: deb
@@ -744,9 +775,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb

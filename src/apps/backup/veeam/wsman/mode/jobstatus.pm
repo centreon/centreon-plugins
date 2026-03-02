@@ -27,6 +27,7 @@ use warnings;
 use centreon::common::powershell::veeam::jobstatus;
 use apps::backup::veeam::wsman::mode::resources::types qw($job_type $job_result);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::constants qw(:values :counters);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -52,17 +53,17 @@ sub custom_long_calc {
     $self->{result_values}->{is_running} = $options{new_datas}->{$self->{instance} . '_is_running'};
     $self->{result_values}->{is_continuous} = $options{new_datas}->{$self->{instance} . '_is_continuous'};
 
-    return -11 if ($self->{result_values}->{is_running} != 1);
+    return NOT_PROCESSED if ($self->{result_values}->{is_running} != 1);
 
-    return 0;
+    return RUN_OK;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -11 => 1, -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'job', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [

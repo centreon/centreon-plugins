@@ -27,6 +27,7 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -70,22 +71,22 @@ sub custom_long_calc {
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
 
-    return -11 if ($self->{result_values}->{status} !~ /running|queued|waiting/i);
+    return NOT_PROCESSED if ($self->{result_values}->{status} !~ /running|queued|waiting/i);
 
-    return 0;
+    return RUN_OK;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'policy', type => 2,
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'policy', type => COUNTER_TYPE_GROUP,
           cb_prefix_output        => 'prefix_policy_output', 
           cb_long_output          => 'policy_long_output',
           display_counter_problem => { nlabel => 'jobs.problems.current.count', min => 0 },
           message_multiple        => 'All policies are ok',
-          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ]
+          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { NOT_PROCESSED() => 1 } } ]
         }
     ];
 
@@ -103,7 +104,7 @@ sub set_counters {
     $self->{maps_counters}->{job} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{status} =~ /abnormal/i',
             critical_default => '%{status} =~ /errors|failed/i',
             set => {
@@ -114,7 +115,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'long', type => 2, set => {
+        { label => 'long', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'client_name' }
                 ],
