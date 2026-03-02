@@ -277,7 +277,7 @@ sub cloudwatchlogs_describe_log_groups {
         my $cw = $self->{paws}->service('CloudWatchLogs', region => $self->{option_results}->{region});
         my %cw_options = ();
         while ((my $list_log_groups = $cw->DescribeLogGroups(%cw_options))) {
-            foreach (@{$list_log_groups->{logGroups}}) {
+            foreach (@{$list_log_groups->{LogGroups}}) {
                 push @$log_groups_results, $_;
             }
 
@@ -302,6 +302,7 @@ sub cloudwatchlogs_filter_log_events {
         my %cw_options = ();
         $cw_options{StartTime} = $options{start_time} if (defined($options{start_time}));
         $cw_options{LogStreamNames} = [@{$options{LogStreamNames}}] if (defined($options{LogStreamNames}));
+        $cw_options{LogGroupName} = $options{group_name};
         while ((my $list_log_groups = $cw->FilterLogEvents(%cw_options))) {
             foreach (@{$list_log_groups->{logGroups}}) {
                 push @$log_groups_results, $_;
