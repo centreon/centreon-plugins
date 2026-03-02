@@ -30,26 +30,26 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'certificates'    => 'os::windows::wsman::mode::certificates',
-        'cpu'             => 'os::windows::wsman::mode::cpu',
-        'eventlog'        => 'os::windows::wsman::mode::eventlog',
-        'files-date'      => 'os::windows::wsman::mode::filesdate',
-        'files-size'      => 'os::windows::wsman::mode::filessize',
-        'interfaces'      => 'os::windows::wsman::mode::interfaces',
-        'list-interfaces' => 'os::windows::wsman::mode::listinterfaces',
-        'list-processes'  => 'os::windows::wsman::mode::listprocesses',
-        'list-services'   => 'os::windows::wsman::mode::listservices',
-        'list-storages'   => 'os::windows::wsman::mode::liststorages',
-        'memory'          => 'os::windows::wsman::mode::memory',
-        'pages'           => 'os::windows::wsman::mode::pages',
-        'pending-reboot'  => 'os::windows::wsman::mode::pendingreboot',
-        'processes'       => 'os::windows::wsman::mode::processes',
-        'services'        => 'os::windows::wsman::mode::services',
-        'storages'        => 'os::windows::wsman::mode::storages',
-        'sessions'        => 'os::windows::wsman::mode::sessions',
-        'time'            => 'os::windows::wsman::mode::time',
-        'updates'         => 'os::windows::wsman::mode::updates',
-        'uptime'          => 'os::windows::wsman::mode::uptime'
+        'certificates'      => 'os::windows::wsman::mode::certificates',
+        'cpu'               => 'os::windows::wsman::mode::cpu',
+        'eventlog'          => 'os::windows::wsman::mode::eventlog',
+        'files-date'        => 'os::windows::wsman::mode::filesdate',
+        'files-size'        => 'os::windows::wsman::mode::filessize',
+        'interfaces'        => 'os::windows::wsman::mode::interfaces',
+        'list-interfaces'   => 'os::windows::wsman::mode::listinterfaces',
+        'list-processes'    => 'os::windows::wsman::mode::listprocesses',
+        'list-services'     => 'os::windows::wsman::mode::listservices',
+        'list-storages'     => 'os::windows::wsman::mode::liststorages',
+        'memory'            => 'os::windows::wsman::mode::memory',
+        'pages'             => 'os::windows::wsman::mode::pages',
+        'pending-reboot'    => 'os::windows::wsman::mode::pendingreboot',
+        'processes'         => 'os::windows::wsman::mode::processes',
+        'services'          => 'os::windows::wsman::mode::services',
+        'storages'          => 'os::windows::wsman::mode::storages',
+        'sessions'          => 'os::windows::wsman::mode::sessions',
+        'time'              => 'os::windows::wsman::mode::time',
+        'updates'           => 'os::windows::wsman::mode::updates',
+        'uptime'            => 'os::windows::wsman::mode::uptime'
     };
 
     return $self;

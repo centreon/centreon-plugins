@@ -182,7 +182,7 @@ sub manage_selection {
     $self->{certificates} = {};
     my $current_time = time();
     foreach my $cert (@$decoded) {
-        next if $cert->{archived} =~ /true|1/i;
+        next if $cert->{archived} =~ /true|1/i and !$options{keep_archived};
 
         next if is_excluded($cert->{thumbprint}, $self->{option_results}->{include_thumbprint}, $self->{option_results}->{exclude_thumbprint});
         next if is_excluded($cert->{subject}, $self->{option_results}->{include_subject}, $self->{option_results}->{exclude_subject});
@@ -190,7 +190,8 @@ sub manage_selection {
 
         $self->{certificates}->{ $cert->{thumbprint} } = {
             subject => $cert->{subject},
-            path => $cert->{PSParentPath}
+            path => $cert->{PSParentPath},
+            archived => $cert->{archived}
         };
         if ($cert->{notAfter}) {
             my $expires_in = $cert->{notAfter} - $current_time;
@@ -202,6 +203,27 @@ sub manage_selection {
         }
 
         $self->{global}->{detected}++;
+    }
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['subject', 'path', 'thumbprint', 'archived']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(wsman => $options{wsman}, keep_archived => 1);
+    foreach ( sort keys %{ $self->{certificates} }) {
+        my $cert = $self->{certificates}->{$_};
+        $self->{output}->add_disco_entry(
+            subject => $cert->{subject},
+            path => $cert->{path},
+            thumbprint => $_,
+            archived => $cert->{archived} =~ /true|1/i ? 1 : 0
+        );
     }
 }
 
