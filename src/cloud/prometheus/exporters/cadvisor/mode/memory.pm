@@ -205,6 +205,7 @@ sub check_options {
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
         $self->{metrics}->{$1} = $2 if (defined($self->{metrics}->{$1}));
+        use Data::Dumper; print Dumper($self->{metrics});
     }
 
     $self->{labels} = {};
@@ -231,7 +232,7 @@ sub manage_selection {
                 $self->{option_results}->{container} . ',' .
                 $self->{option_results}->{pod} .
                 $self->{extra_filter} . '}, "__name__", "usage", "", "")',
-            'label_replace({__name__=~"' . $self->{metrics}->{limits} . '",' .
+            'label_replace(' . $self->{metrics}->{limits} . '",' .
                 $self->{option_results}->{container} . ',' .
                 $self->{option_results}->{pod} .
                 $self->{extra_filter} . '}, "__name__", "limits", "", "")',
