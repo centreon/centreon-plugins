@@ -44,7 +44,8 @@ on:
       - 'tests/**'
 
 env:
-  max_parallel_jobs: 35
+  max_parallel_jobs: 5
+  max_testing_jobs: 25
 
 jobs:
   dependency-scan:
@@ -138,7 +139,7 @@ jobs:
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
         run: |
-          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_parallel_jobs }}))
+          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_testing_jobs }}))
           echo "package_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
           echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
           runners_ids=( $(seq 1 ${list_plugins[2]}) )
@@ -172,6 +173,7 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
+      max-parallel: ${{ env.max_parallel_jobs }}
       matrix:
         image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
         include:
@@ -273,6 +275,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: ${{ env.max_parallel_jobs }}
       matrix:
         include:
           - package_extension: rpm
@@ -352,6 +355,7 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
+      max-parallel: ${{ env.max_parallel_jobs }}
       matrix:
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
@@ -396,6 +400,7 @@ jobs:
       package-extension: ${{ matrix.package_extension }}
       packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
+      max_parallel_jobs: ${{ env.max_parallel_jobs }}
     secrets:
       registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
       registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
@@ -412,6 +417,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
+      max-parallel: ${{ env.max_parallel_jobs }}
       matrix:
         include:
           - distrib: el7
