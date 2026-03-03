@@ -301,17 +301,17 @@ Filter jobs by type (can be a regexp).
 
 =item B<--unknown-job-status>
 
-Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown/').
+Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
 You can use the following variables: %{status}, %{name}, %{type}
 
 =item B<--warning-job-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{state} =~ /warning/').
+Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/').
 You can use the following variables: %{status}, %{name}, %{type}
 
 =item B<--critical-job-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /failed/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/').
 You can use the following variables: %{status}, %{name}, %{type}
 
 =item B<--warning-job-last-duration>
