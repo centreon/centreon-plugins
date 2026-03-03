@@ -33,10 +33,6 @@ on:
         description: "The cache key for plugin's json"
         required: true
         type: string
-      max_parallel_jobs:
-        description: "The maximum number of parallels jobs running"
-        required: true
-        type: string
     secrets:
       registry_username:
         required: true

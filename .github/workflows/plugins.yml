@@ -44,7 +44,6 @@ on:
       - 'tests/**'
 
 env:
-  max_parallel_jobs: 5
   max_testing_jobs: 25
 
 jobs:
@@ -281,7 +280,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: 5
       matrix:
         include:
           - package_extension: rpm
@@ -361,7 +359,6 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
-      max-parallel: 5
       matrix:
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
@@ -406,7 +403,6 @@ jobs:
       package-extension: ${{ matrix.package_extension }}
       packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
-      max_parallel_jobs: ${{ needs.get-plugins.outputs.max_parallel_jobs }}
     secrets:
       registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
       registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
@@ -423,7 +419,6 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      max-parallel: 5
       matrix:
         include:
           - distrib: el7
