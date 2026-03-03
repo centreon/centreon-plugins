@@ -9,35 +9,17 @@ Test Timeout        120s
 
 
 *** Variables ***
+${INJECT_PERL}      -Mfakewsman -I${CURDIR}
 ${CMD}              ${CENTREON_PLUGINS}
 ...         --plugin=os::windows::wsman::plugin
 ...         --mode=certificates
 ...         --hostname=${HOSTNAME}
 ...         --wsman-username=XXXXX --wsman-password=XXXXX
 
-*** Test Cases ***
-EmptyCerticicates ${tc}
-   [Documentation]    Check PostgreSQL Backends
-   [Tags]    os    windows    wsman
-   ${command}    Catenate
-   ...    ${CMD}
-   ...    ${extra_options}
-
-   Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
-
-   Examples:
-   ...    tc
-   ...    extraoptions
-   ...    expected_regexp
-   ...    --
-   ...    1
-   ...    --help
-   ...    ^Plugin Description:
-
 
 *** Test Cases ***
 Certificates ${tc}
-    [Tags]    os    windows    wsman notauto
+    [Tags]    os    windows    wsman    notauto
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
@@ -76,3 +58,29 @@ Certificates ${tc}
     ...    9
     ...    --critical-certificates-detected=1
     ...    CRITICAL:
+
+
+*** Test Cases ***
+EmptyCerticicates ${tc}
+   [Tags]    os    windows    wsman
+
+   ${OLD_PERL5OPT}=    Get Environment Variable     PERL5OPT   default=
+   Set Environment Variable    PERL5OPT    ${INJECT_PERL} ${OLD_PERL5OPT}
+
+   ${command}    Catenate
+   ...    ${CMD}
+   ...    ${extra_options}
+
+   Ctn Run Command Without Connector And Check Result As Regexp   ${command}    ${expected_regexp}
+
+   Examples:
+   ...    tc
+   ...    extraoptions
+   ...    expected_regexp
+   ...    --
+   ...    1
+   ...    --help
+   ...    ^Plugin Description:
+   ...    2
+   ...    --disco-format
+   ...    xml version
