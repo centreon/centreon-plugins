@@ -179,7 +179,7 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
-      max-parallel: ${{ needs.get-plugins.outputs.max_parallel_jobs }}
+      max-parallel: ${{ fromJson(needs.get-plugins.outputs.max_parallel_jobs) }}
       matrix:
         image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
         include:
@@ -281,7 +281,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: ${{ needs.get-plugins.outputs.max_parallel_jobs }}
+      max-parallel: ${{ fromJson(needs.get-plugins.outputs.max_parallel_jobs) }}
       matrix:
         include:
           - package_extension: rpm
@@ -361,7 +361,7 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
-      max-parallel: ${{ needs.get-plugins.outputs.max_parallel_jobs }}
+      max-parallel: ${{ fromJson(needs.get-plugins.outputs.max_parallel_jobs) }}
       matrix:
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
@@ -423,7 +423,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      max-parallel: ${{ needs.get-plugins.outputs.max_parallel_jobs }}
+      max-parallel: ${{ fromJson(needs.get-plugins.outputs.max_parallel_jobs) }}
       matrix:
         include:
           - distrib: el7

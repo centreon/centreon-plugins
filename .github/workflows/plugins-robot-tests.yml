@@ -87,7 +87,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      max-parallel: ${{ inputs.max_parallel_jobs }}
+      max-parallel: ${{ fromJson(inputs.max_parallel_jobs) }}
       matrix:
         index: ${{ fromJson(inputs.indexes) }}
 
