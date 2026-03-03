@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,8 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use JSON::XS;
+use centreon::plugins::misc qw/json_decode is_empty/;
+use centreon::plugins::constants qw(:messages);
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -36,25 +37,23 @@ sub new {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless $options{options};
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'         => { name => 'api_username', default => '' },
-            'api-password:s'         => { name => 'api_password', default => '' },
-            'hostname:s'             => { name => 'hostname', default => '' },
-            'port:s'                 => { name => 'port' },
-            'proto:s'                => { name => 'proto' },
-            'timeout:s'              => { name => 'timeout' },
-            'api-path:s'             => { name => 'api_path' },
-            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'api-username:s'         => { name => 'api_username',   default => '' },
+            'api-password:s'         => { name => 'api_password',   default => '' },
+            'hostname:s'             => { name => 'hostname',       default => '' },
+            'port:s'                 => { name => 'port',           default => 1239 },
+            'proto:s'                => { name => 'proto',          default => 'https' },
+            'timeout:s'              => { name => 'timeout',        default => 50 },
+            'api-path:s'             => { name => 'api_path',       default => '/api/v2.2' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' },
             'cache-use'              => { name => 'cache_use' },
-            'cache-lifetime:s'       => { name => 'cache_lifetime', default => '' }
+            'cache-lifetime:s'       => { name => 'cache_lifetime', default => 1800 }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -78,29 +77,14 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 1239;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 50;
-    $self->{api_path} = (defined($self->{option_results}->{api_path})) && $self->{option_results}->{api_path} ne '' ? $self->{option_results}->{api_path} : '/api/v2.2';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-    $self->{api_username} = $self->{option_results}->{api_username};
-    $self->{api_password} = $self->{option_results}->{api_password};
-    $self->{cache_lifetime} = $self->{option_results}->{cache_lifetime} =~ /(\d+)/ ? $1 : 1800;
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/api_path unknown_http_status warning_http_status critical_http_status api_username api_password cache_lifetime/;
 
-    if ($self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to specify --hostname option.")
+        if $self->{option_results}->{hostname} eq '';
+    $self->{output}->option_exit(short_msg => "Need to specify --api-username option.")
+        if $self->{api_username} eq '';
+    $self->{output}->option_exit(short_msg => "Need to specify --api-password option.")
+        if $self->{api_password} eq '';
 
     $self->{cache_connect}->check_options(option_results => $self->{option_results});
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -117,7 +101,7 @@ sub get_connection_info {
 sub settings {
     my ($self, %options) = @_;
 
-    return if (defined($self->{settings_done}));
+    return if $self->{settings_done};
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
 }
@@ -150,20 +134,13 @@ sub get_access_token {
             critical_status => $self->{critical_http_status}
         );
 
-        my $decoded;
-        eval {
-            $decoded = JSON::XS->new->utf8->decode($content);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-            $self->{output}->option_exit();
-        }
+        my $decoded = json_decode($content, output => $self->{output});
+
+        $self->{output}->option_exit(short_msg => "Cannot find access token")
+            unless ref $decoded eq 'HASH' && $decoded->{access_token};
 
         $token = $decoded->{access_token};
-        if (!defined($token)) {
-            $self->{output}->add_option_msg(short_msg => "Cannot find access token");
-            $self->{output}->option_exit();
-        }
+
         my $datas = {
             updated => time(),
             token => $token,
@@ -210,19 +187,12 @@ sub request_api {
         );
     }
 
-    if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']")
+        if is_empty($content);
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
+    my $decoded = json_decode($content, output => $self->{output}, no_exit => 1);
+    $self->{output}->option_exit(short_msg => MSG_JSON_DECODE_ERROR)
+        unless $decoded;
 
     return $decoded;
 }
@@ -242,16 +212,12 @@ sub get_cache_file_response {
 
     $self->{cache}->read(statefile => 'cache_vone_' . $options{statefile} . '_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $response = $self->{cache}->get(name => 'response');
-    if (!defined($response)) {
-        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Cache file missing')
+        unless $response;
 
     my $update_time = $self->{cache}->get(name => 'update_time');
-    if ((time() - $self->{cache_lifetime}) > $update_time) {
-        $self->{output}->add_option_msg(short_msg => 'Cache file expired');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Cache file expired')
+        if (time() - $self->{cache_lifetime}) > $update_time;
 
     return $response;
 }
@@ -332,7 +298,7 @@ sub get_backup_job_session {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'backup_job_session')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/api/query',
@@ -348,7 +314,7 @@ sub get_repositories {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'repositories')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/vbr/repositories',
@@ -360,7 +326,7 @@ sub get_proxies {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'proxies')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/vbr/backupProxies',
@@ -372,7 +338,7 @@ sub get_license {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'license')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/license/currentUsage',
@@ -384,7 +350,7 @@ sub get_vm_replication_jobs {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'vm_replication_jobs')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/vbrJobs/vmReplicationJobs',
@@ -396,7 +362,7 @@ sub get_vm_backup_jobs {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'vm_backup_jobs')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/vbrJobs/vmBackupJobs',
@@ -408,7 +374,7 @@ sub get_backup_copy_jobs {
     my ($self, %options) = @_;
 
     return $self->get_cache_file_response(statefile => 'backup_copy_jobs')
-        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
 
     return $self->request_api(
         endpoint => '/vbrJobs/backupCopyJobs',
@@ -452,7 +418,7 @@ Set password.
 
 =item B<--api-path>
 
-Define api path (default: '/api/v2.2')
+Define API path (default: '/api/v2.2')
 
 =item B<--timeout>
 
