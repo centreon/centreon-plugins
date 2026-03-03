@@ -364,8 +364,8 @@ sub manage_selection {
             mailflow => $db,
             copystatus => $db
         };
-        $self->{global}->{size} += $db->{size};
-        $self->{global}->{asize} += $db->{asize};
+        $self->{global}->{size} += $db->{size} if defined($db->{size});
+        $self->{global}->{asize} += $db->{asize} if defined($db->{asize});
     }
 }
 
