@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_license_unit_output {
     my ($self, %options) = @_;
@@ -52,7 +54,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'license', type => 1, cb_prefix_output => 'prefix_license_output', message_multiple => 'All license units are ok' }
+        { name => 'license', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_license_output', message_multiple => 'All license units are ok' }
     ];
 
     $self->{maps_counters}->{license} = [
@@ -126,10 +128,30 @@ Check license units.
 Only display some counters (regexp can be used).
 Example: --filter-counters='license-unit-usage-prct'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-license-unit-free>
 
-Thresholds.
-Can be: 'license-unit-usage', 'license-unit-free', 'license-unit-usage-prct'.
+Threshold.
+
+=item B<--critical-license-unit-free>
+
+Threshold.
+
+=item B<--warning-license-unit-usage>
+
+Threshold.
+
+=item B<--critical-license-unit-usage>
+
+Threshold.
+
+=item B<--warning-license-unit-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-license-unit-usage-prct>
+
+Threshold in percentage.
+
 =back
 
 =cut

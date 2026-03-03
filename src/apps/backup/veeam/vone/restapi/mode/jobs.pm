@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_excluded change_seconds/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $map_job_status_numeric = {
@@ -91,12 +92,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'jobs', type => 3, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
+            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
             group => [
-                { name => 'status', type => 0 },
-                { name => 'metrics', type => 0, skipped_code => { -10 => 1 } }
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE },
+                { name => 'metrics', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -115,10 +116,10 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'job-status',
-            type => 2,
-            unknown_default => '%{status} =~ /unknown/i',
-            warning_default => '%{status} =~ /warning/i',
-            critical_default => '%{status} =~ /failed/i',
+            type => COUNTER_KIND_TEXT,
+            unknown_default => '%{status} =~ /unknown/',
+            warning_default => '%{status} =~ /warning/',
+            critical_default => '%{status} =~ /failed/',
             set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'type' }
@@ -147,9 +148,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-uid:s'            => { name => 'filter_uid' },
-        'filter-name:s'           => { name => 'filter_name' },
-        'filter-type:s'           => { name => 'filter_type' },
+        'filter-uid:s'            => { name => 'filter_uid', default => '' },
+        'filter-name:s'           => { name => 'filter_name', default => '' },
+        'filter-type:s'           => { name => 'filter_type', default => '' },
         'add-vm-replication-jobs' => { name => 'add_vm_replication_jobs' },
         'add-vm-backup-jobs'      => { name => 'add_vm_backup_jobs' },
         'add-backup-copy-jobs'    => { name => 'add_backup_copy_jobs' }
@@ -162,10 +163,17 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{add_vm_replication_jobs}) &&
-        !defined($self->{option_results}->{add_vm_backup_jobs}) &&
-        !defined($self->{option_results}->{add_backup_copy_jobs})) {
-        $self->{option_results}->{add_vm_replication_jobs} = 1;
+    if ($self->{output}->{option_results}->{disco_show}) {
+        # By default all jobs are displayed in discovery mode
+        unless ($self->{option_results}->{add_vm_backup_jobs} || $self->{option_results}->{add_backup_copy_jobs} || $self->{option_results}->{add_vm_replication_jobs}) {
+            $self->{option_results}->{add_vm_replication_jobs} = 1;
+            $self->{option_results}->{add_vm_backup_jobs} = 1;
+            $self->{option_results}->{add_backup_copy_jobs} = 1;
+        }
+    } else {
+        # By default only vm replication jobs are displayed in non-discovery mode
+        $self->{option_results}->{add_vm_replication_jobs} = 1
+            unless $self->{option_results}->{add_vm_backup_jobs} || $self->{option_results}->{add_backup_copy_jobs};
     }
 }
 
@@ -173,18 +181,17 @@ sub add_jobs {
     my ($self, %options) = @_;
 
     foreach my $job (@{$options{jobs}->{items}}) {
-         next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' &&
-            $job->{ $options{uid} } !~ /$self->{option_results}->{filter_uid}/);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $job->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if is_excluded($job->{ $options{uid} }, $self->{option_results}->{filter_uid});
+        next if is_excluded($job->{name}, $self->{option_results}->{filter_name});
 
         $self->{jobs}->{ $options{type} . '-' . $job->{name} } = {
             name => $job->{name},
             type => $options{type},
+            uid => $job->{ $options{uid} },
             status => {
                 name => $job->{name},
                 type => $options{type},
-                status => lcfirst($job->{status})
+                status => lc $job->{status}
             },
             metrics => {
                 name => $job->{name},
@@ -193,7 +200,7 @@ sub add_jobs {
         };
         if (defined($job->{lastRunDurationSec}) && $job->{lastRunDurationSec} =~ /[0-9]+/) {
             $self->{jobs}->{ $options{type} . '-' . $job->{name} }->{metrics}->{duration_seconds} = $job->{lastRunDurationSec};
-            $self->{jobs}->{ $options{type} . '-' . $job->{name} }->{metrics}->{duration_human} = centreon::plugins::misc::change_seconds(
+            $self->{jobs}->{ $options{type} . '-' . $job->{name} }->{metrics}->{duration_human} = change_seconds(
                 value => $job->{lastRunDurationSec}
             );
         }
@@ -205,9 +212,8 @@ sub add_jobs {
 sub add_vm_replication_jobs {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{option_results}->{add_vm_replication_jobs}));
-    return if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && 
-        $options{type} !~ /$self->{option_results}->{filter_type}/);
+    return unless $self->{option_results}->{add_vm_replication_jobs};
+    return if is_excluded($options{type}, $self->{option_results}->{filter_type});
 
     my $jobs = $options{custom}->get_vm_replication_jobs();
     $self->add_jobs(jobs => $jobs, uid => 'vmReplicationJobUid', type => $options{type});
@@ -216,9 +222,8 @@ sub add_vm_replication_jobs {
 sub add_vm_backup_jobs {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{option_results}->{add_vm_backup_jobs}));
-    return if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && 
-        $options{type} !~ /$self->{option_results}->{filter_type}/);
+    return unless $self->{option_results}->{add_vm_backup_jobs};
+    return if is_excluded($options{type}, $self->{option_results}->{filter_type});
 
     my $jobs = $options{custom}->get_vm_backup_jobs();
     $self->add_jobs(jobs => $jobs, uid => 'vmBackupJobUid', type => $options{type});
@@ -227,9 +232,8 @@ sub add_vm_backup_jobs {
 sub add_backup_copy_jobs {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{option_results}->{add_backup_copy_jobs}));
-    return if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && 
-        $options{type} !~ /$self->{option_results}->{filter_type}/);
+    return unless $self->{option_results}->{add_backup_copy_jobs};
+    return if is_excluded($options{type}, $self->{option_results}->{filter_type});
 
     my $jobs = $options{custom}->get_backup_copy_jobs();
     $self->add_jobs(jobs => $jobs, uid => 'backupCopyJobUid', type => $options{type});
@@ -240,9 +244,25 @@ sub manage_selection {
 
     $self->{global} = { detected => 0 };
     $self->{jobs} = {};
+
     $self->add_backup_copy_jobs(custom => $options{custom}, type => 'backupCopy');
     $self->add_vm_backup_jobs(custom => $options{custom}, type => 'vmBackup');
     $self->add_vm_replication_jobs(custom => $options{custom}, type => 'vmReplication');
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'type', 'status']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(custom => $options{custom});
+    foreach (sort { $a->{uid} cmp $b->{uid} || $a->{name} cmp $b->{name} } values %{ $self->{jobs} }) {
+        $self->{output}->add_disco_entry(uid => $_->{uid}, name => $_->{name}, type => $_->{type}, status => $_->{status}->{status});
+    }
 }
 
 1;
@@ -254,6 +274,18 @@ __END__
 Check backup jobs.
 
 =over 8
+
+=item B<--add-vm-replication-jobs>
+
+Include VM replication jobs when defined. This is the default option if no additional options are used.
+
+=item B<--add-vm-backup-jobs>
+
+Include VM backup jobs when defined.
+
+=item B<--add-backup-copy-jobs>
+
+Include backup copy jobs when defined.
 
 =item B<--filter-uid>
 
@@ -269,23 +301,34 @@ Filter jobs by type (can be a regexp).
 
 =item B<--unknown-job-status>
 
-Define the conditions to match for the status to be UNKOWN (default: '%{state} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown/').
 You can use the following variables: %{status}, %{name}, %{type}
 
 =item B<--warning-job-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{state} =~ /warning/i').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /warning/').
 You can use the following variables: %{status}, %{name}, %{type}
 
 =item B<--critical-job-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /failed/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /failed/').
 You can use the following variables: %{status}, %{name}, %{type}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-job-last-duration>
 
-Thresholds.
-Can be: 'jobs-detected', 'job-last-duration'.
+Threshold.
+
+=item B<--critical-job-last-duration>
+
+Threshold.
+
+=item B<--warning-jobs-detected>
+
+Threshold.
+
+=item B<--critical-jobs-detected>
+
+Threshold.
 
 =back
 

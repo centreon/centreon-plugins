@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $map_repository_state_numeric = {
@@ -90,12 +92,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'repositories', type => 3, cb_prefix_output => 'prefix_repository_output', cb_long_output => 'repository_long_output', indent_long_output => '    ', message_multiple => 'All repositories are ok',
+            name => 'repositories', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_repository_output', cb_long_output => 'repository_long_output', indent_long_output => '    ', message_multiple => 'All repositories are ok',
             group => [
-                { name => 'status', type => 0 },
-                { name => 'space', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE  },
+                { name => 'space', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
             ]
         }
     ];
@@ -141,10 +143,10 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'repository-status',
-            type => 2,
-            unknown_default => '%{state} =~ /unknown/i',
-            warning_default => '%{state} =~ /warning|outOfDate/i',
-            critical_default => '%{state} =~ /inaccessible|disconnected/i',
+            type => COUNTER_KIND_TEXT,
+            unknown_default => '%{state} =~ /unknown/',
+            warning_default => '%{state} =~ /warning|outofdate/',
+            critical_default => '%{state} =~ /inaccessible|disconnected/',
             set => {
                 key_values => [
                     { name => 'state' }, { name => 'name' }, { name => 'type' }
@@ -163,8 +165,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-uid:s'  => { name => 'filter_uid' },
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-uid:s'  => { name => 'filter_uid', default => '' },
+        'filter-name:s' => { name => 'filter_name', default => '' }
     });
 
     return $self;
@@ -177,15 +179,17 @@ sub manage_selection {
 
     $self->{global} = { detected => 0 };
     $self->{repositories} = {};
+
+    #    use Data::Dumper;
+    #    die Dumper($repositories);
     foreach my $repo (@{$repositories->{items}}) {
-         next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' &&
-            $repo->{repositoryUidInVbr} !~ /$self->{option_results}->{filter_uid}/);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $repo->{name} !~ /$self->{option_results}->{filter_name}/);
+        next if is_excluded($repo->{repositoryUidInVbr}, $self->{option_results}->{filter_uid});
+        next if is_excluded($repo->{name}, $self->{option_results}->{filter_name});
 
         $self->{repositories}->{ $repo->{name} } = {
             name => $repo->{name},
             type => $repo->{type},
+            uid => $repo->{repositoryUidInVbr},
             space => {
                 name => $repo->{name},
                 total => $repo->{capacityBytes},
@@ -197,10 +201,25 @@ sub manage_selection {
             status => {
                 name => $repo->{name},
                 type => $repo->{type},
-                state => lcfirst($repo->{state})
+                state => lc $repo->{state}
             }
         };
         $self->{global}->{detected}++;
+    }
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'type', 'state']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    my $repos = $self->manage_selection(custom => $options{custom});
+    foreach (values %{$self->{repositories}}) {
+        $self->{output}->add_disco_entry(uid => $_->{uid}, name => $_->{name}, type => $_->{type}, state => $_->{status}->{state});
     }
 }
 
@@ -224,23 +243,50 @@ Filter repositories by name (can be a regexp).
 
 =item B<--unknown-repository-status>
 
-Define the conditions to match for the status to be UNKOWN (default: '%{state} =~ /unknown/i').
+Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown/').
 You can use the following variables: %{state}, %{name}, %{type}
 
 =item B<--warning-repository-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{state} =~ /inaccessible|disconnected/i').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /inaccessible|disconnected/').
 You can use the following variables: %{state}, %{name}, %{type}
 
 =item B<--critical-repository-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /warning|outOfDate/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /warning|outofdate/').
 You can use the following variables: %{state}, %{name}, %{type}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-repositories-detected>
 
-Thresholds.
-Can be: 'repositories-detected', 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Threshold.
+
+=item B<--critical-repositories-detected>
+
+Threshold.
+
+=item B<--warning-space-usage>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

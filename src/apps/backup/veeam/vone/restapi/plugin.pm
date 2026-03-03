@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,9 +33,6 @@ sub new {
         'cache'             => 'apps::backup::veeam::vone::restapi::mode::cache',
         'jobs'              => 'apps::backup::veeam::vone::restapi::mode::jobs',
         'license'           => 'apps::backup::veeam::vone::restapi::mode::license',
-        'list-jobs'         => 'apps::backup::veeam::vone::restapi::mode::listjobs',
-        'list-proxies'      => 'apps::backup::veeam::vone::restapi::mode::listproxies',
-        'list-repositories' => 'apps::backup::veeam::vone::restapi::mode::listrepositories',
         'proxies'           => 'apps::backup::veeam::vone::restapi::mode::proxies',
         'repositories'      => 'apps::backup::veeam::vone::restapi::mode::repositories'
     };
