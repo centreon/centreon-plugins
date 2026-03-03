@@ -357,7 +357,7 @@ Threshold.
 
 Threshold.
 
-=item B<--critical-job-failedg>
+=item B<--critical-job-failed>
 
 Threshold.
 

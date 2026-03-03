@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/connector-vmware.yml'
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
   push:
@@ -15,6 +16,7 @@ on:
       - develop
       - master
     paths:
+      - '.github/workflows/connector-vmware.yml'
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
 
@@ -33,7 +35,7 @@ jobs:
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
@@ -43,12 +45,18 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-alma10
+            distrib: el10
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-trixie
+            distrib: trixie
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
@@ -84,7 +92,11 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
       - name: Upload apt/dnf packages as artifacts if asked
         if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+<<<<<<< merge-2026-02-dependabot-gha-updates
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+=======
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+>>>>>>> merge-2026-03-dependabot-gha-updates
         with:
           name: vmware-connector-daemon-${{ matrix.distrib }}
           path: centreon-plugin*
@@ -107,9 +119,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb

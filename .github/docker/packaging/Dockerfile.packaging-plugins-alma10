@@ -1,0 +1,36 @@
+ARG REGISTRY_URL=docker.io
+
+FROM ${REGISTRY_URL}/almalinux:10
+
+RUN bash -e <<EOF
+
+echo '[goreleaser]
+name=GoReleaser
+baseurl=https://repo.goreleaser.com/yum/
+enabled=1
+gpgcheck=0' | tee /etc/yum.repos.d/goreleaser.repo
+
+dnf -y install gcc git gettext rpm-build dos2unix python3 epel-release nfpm-2.41.0 openssl-devel jq zstd selinux-policy-devel yum-utils
+dnf  config-manager --set-enabled crb
+dnf -y install perl-App-cpanminus perl-JSON
+cpanm App::FatPacker
+cpanm File::Copy::Recursive
+
+# For cpan libs
+dnf install -y cpio libcurl-devel libssh-devel expat-devel libuuid-devel zeromq-devel libxml2-devel libffi-devel perl-DBI perl-Net-Pcap freetds freetds-devel perl-Module-Build-Tiny
+cpanm Module::Build::Tiny
+cpanm Module::Install
+cpanm Module::CoreList
+# Install fpm
+dnf install -y ruby ruby-devel
+gem install fpm -v 1.17.0
+
+dnf clean all
+
+EOF
+
+COPY .github/patch/fpm-cpan.rb.diff /tmp/fpm-cpan.rb.diff
+# Patch to fix fpm MetaCpan request
+RUN patch -i /tmp/fpm-cpan.rb.diff $(find / -type f -name "cpan.rb") && /bin/rm -rf /tmp/fpm-cpan.rb.diff
+
+WORKDIR /src

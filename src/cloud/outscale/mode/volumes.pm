@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
 
 sub volume_long_output {
     my ($self, %options) = @_;
@@ -60,12 +61,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'volumes', type => 3, cb_prefix_output => 'prefix_volume_output', cb_long_output => 'volume_long_output', indent_long_output => '    ', message_multiple => 'All volumes are ok',
+            name => 'volumes', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_volume_output', cb_long_output => 'volume_long_output', indent_long_output => '    ', message_multiple => 'All volumes are ok',
             group => [
-                { name => 'status', type => 0 },
-                { name => 'vms', display_long => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'all virtual machines are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE },
+                { name => 'vms', display_long => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_vm_output', message_multiple => 'all virtual machines are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -86,7 +87,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'volume-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'state' }, { name => 'volumeId' } ],
                 output_template => 'state: %s',
@@ -99,7 +100,7 @@ sub set_counters {
     $self->{maps_counters}->{vms} = [
         {
             label => 'vm-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'state' }, { name => 'vmName' } ],
                 output_template => 'volume state: %s',

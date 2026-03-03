@@ -41,11 +41,17 @@ jobs:
             dockerfile: packaging-plugins-alma9
             image: packaging-plugins-alma9
           - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-alma10
+            image: packaging-plugins-alma10
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma8
             image: packaging-plugins-java-alma8
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma9
             image: packaging-plugins-java-alma9
+          - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-java-alma10
+            image: packaging-plugins-java-alma10
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bullseye
             image: packaging-plugins-bullseye
@@ -56,11 +62,17 @@ jobs:
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
           - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-trixie
+            image: packaging-plugins-trixie
+          - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bookworm
             image: packaging-plugins-java-bookworm
+          - runner: ubuntu-24.04
+            dockerfile: packaging-plugins-java-trixie
+            image: packaging-plugins-java-trixie
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-jammy
             image: packaging-plugins-jammy
@@ -96,7 +108,7 @@ jobs:
 
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
 
-      - uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
         with:
           file: .github/docker/packaging/Dockerfile.${{ matrix.dockerfile }}
           context: .

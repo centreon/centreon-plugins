@@ -18,7 +18,11 @@ on:
   pull_request:
     paths:
       - '.github/workflows/plugins.yml'
-      - '.github/scripts/plugins-source.container.pl'
+      - '.github/workflows/plugins-robot-tests.yml'
+      - '.github/scripts/list-plugins-to-build-and-test.py'
+      - '.github/scripts/prepare-package-plugins.sh'
+      - '.github/scripts/fatpack-plugins.pl'
+      - '.github/scripts/test-plugins.py'
       - '.github/packaging/centreon-plugin.yaml.template'
       - 'src/**'
       - 'packaging/**'
@@ -29,7 +33,11 @@ on:
       - master
     paths:
       - '.github/workflows/plugins.yml'
-      - '.github/scripts/plugins-source.container.pl'
+      - '.github/workflows/plugins-robot-tests.yml'
+      - '.github/scripts/list-plugins-to-build-and-test.py'
+      - '.github/scripts/prepare-package-plugins.sh'
+      - '.github/scripts/fatpack-plugins.pl'
+      - '.github/scripts/test-plugins.py'
       - '.github/packaging/centreon-plugin.yaml.template'
       - 'src/**'
       - 'packaging/**'
@@ -148,7 +156,11 @@ jobs:
       # Add to your PR the label upload-artifacts to get plugin.json as artifact
       - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
         name: Upload plugins.json artifacts
+<<<<<<< merge-2026-02-dependabot-gha-updates
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+=======
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+>>>>>>> merge-2026-03-dependabot-gha-updates
         with:
           name: plugins_json
           path: ./plugins.json
@@ -210,7 +222,11 @@ jobs:
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
+<<<<<<< merge-2026-02-dependabot-gha-updates
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+=======
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+>>>>>>> merge-2026-03-dependabot-gha-updates
         with:
           name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: ./lastlog.jsonl
@@ -236,7 +252,11 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Prepare FatPacker
+<<<<<<< merge-2026-02-dependabot-gha-updates
         uses: shogo82148/actions-setup-perl@fa3bdcb0144a50651e317f30949bb4491e74a6e4 # v1.37.0
+=======
+        uses: shogo82148/actions-setup-perl@b6cfc127f1b0a63ac98797800f641494d80f42f8 # v1.37.1
+>>>>>>> merge-2026-03-dependabot-gha-updates
         with:
           perl-version: '5.34'
           install-modules-with: cpm

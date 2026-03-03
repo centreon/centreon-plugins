@@ -32,7 +32,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
         'warning:s'           => { redirect => 'warning-instance-connected-count' },
         'critical:s'          => { redirect => 'critical-instance-connected-count' },
         'include-database:s'  => { name => 'include_database', default => '' },
@@ -293,13 +293,13 @@ Filter databases using a regular expression.
 
 Exclude databases using a regular expression.
 
-=item B<--include-user>
+=item B<--include-role>
 
-Filter users using a regular expression.
+Filter roles using a regular expression.
 
-=item B<--exclude-user>
+=item B<--exclude-role>
 
-Exclude users using a regular expression.
+Exclude roles using a regular expression.
 
 =item B<--noidle>
 
