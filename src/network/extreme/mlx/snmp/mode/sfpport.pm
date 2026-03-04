@@ -42,10 +42,12 @@ sub sfp_long_output {
 sub prefix_sfp_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "sfp port '%s' ",
-        $options{instance}
-    );
+    my $output = sprintf("sfp port '%s' - ", $options{instance});
+    if (defined($options{instance_value}->{interface}) && $options{instance_value}->{interface} ne '') {
+        $output .= "$options{instance_value}->{interface} - ";
+    }
+
+    return $output;
 }
 
 sub custom_status_output {
@@ -150,7 +152,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 'filter-port:s' => { name => 'filter_port' } });
+    $options{options}->add_options(
+        arguments => {
+            'filter-port:s'      => { name => 'filter_port' },
+            'add-interface-name' => { name => 'add_interface_name' },
+        }
+    );
 
     return $self;
 }
@@ -179,8 +186,19 @@ sub manage_selection {
             next;
         }
 
+        my $interface_name = undef;
+        if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
+            my $interface_oid = '.1.3.6.1.2.1.31.1.1.1.1' . '.' . $instance;
+            my $temp_snmp_result = $options{snmp}->get_leef(
+                oids         => [ $interface_oid ],
+                nothing_quit => 1
+            );
+            $interface_name = $temp_snmp_result->{$interface_oid};
+        }
+
         $self->{sfp}->{$instance} = {
             instance    => $instance,
+            interface   => $interface_name,
             status      => { port => $instance },
             perf        => {},
             temperature => {}
@@ -248,6 +266,10 @@ Check SFP port.
 =item B<--filter-port>
 
 Filter ports by index (can be a regexp).
+
+=item B<--add-interface-name>
+
+Add the corresponding interface name when set. Used for the instance name in perf data, too.
 
 =item B<--unknown-status>
 
