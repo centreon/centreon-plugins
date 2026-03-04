@@ -31,11 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'cpu'              => 'network::brocade::snmp::mode::cpu',
-        'hardware'         => 'network::brocade::snmp::mode::hardware',
-        'interfaces'       => 'network::brocade::snmp::mode::interfaces',
-        'list-interfaces'  => 'network::brocade::snmp::mode::listinterfaces',
-        'memory'           => 'network::brocade::snmp::mode::memory'
+        'cpu'             => 'network::brocade::snmp::mode::cpu',
+        'hardware'        => 'network::brocade::snmp::mode::hardware',
+        'interfaces'      => 'network::brocade::snmp::mode::interfaces',
+        'list-interfaces' => 'network::brocade::snmp::mode::listinterfaces',
+        'list-sfp-ports'  => 'network::brocade::snmp::mode::listsfpports',
+        'memory'          => 'network::brocade::snmp::mode::memory',
+        'sfp-port'        => 'network::brocade::snmp::mode::sfpport',
+        'tcp-con'         => 'snmp_standard::mode::tcpcon',
+        'udp-con'         => 'snmp_standard::mode::udpcon',
+        'uptime'          => 'snmp_standard::mode::uptime'
     };
 
     return $self;
