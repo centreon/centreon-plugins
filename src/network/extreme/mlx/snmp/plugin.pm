@@ -37,6 +37,7 @@ sub new {
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'list-sfp-ports'  => 'network::extreme::mlx::snmp::mode::listsfpports',
         'memory'          => 'network::extreme::mlx::snmp::mode::memory',
+        'sfp-port'        => 'network::extreme::mlx::snmp::mode::sfpport',
         'tcp-con'         => 'snmp_standard::mode::tcpcon',
         'udp-con'         => 'snmp_standard::mode::udpcon',
         'uptime'          => 'snmp_standard::mode::uptime',

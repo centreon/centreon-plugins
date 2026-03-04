@@ -267,7 +267,7 @@ You can use the following variables: %{temp_status}, %{tx_power_status}, %{rx_po
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: C<rx-input-power (mW)>, C<rx-input-power-dbm (dBm)>,  C<tx-output-power-dbm (dBm)>, C<bias-current (mA)>, C<temperature (C)>.
+Can be: C<rx-input-power-dbm (dBm)>,  C<tx-output-power-dbm (dBm)>, C<bias-current (mA)>, C<temperature (C)>.
 
 =back
 
