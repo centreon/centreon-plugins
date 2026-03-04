@@ -37,7 +37,7 @@ sub new {
     return $self;
 }
 
-my @labels = ('instance','number');
+my @labels = ('instance', 'number', 'tx_power_status', 'rx_power_status');
 
 sub check_options {
     my ($self, %options) = @_;
@@ -48,15 +48,29 @@ sub check_options {
     }
 }
 
+my $map_gen_status = {
+    1 => 'notSupported',
+    2 => 'notApplicable',
+    3 => 'highAlarm',
+    4 => 'highWarn',
+    5 => 'normal',
+    6 => 'lowWarn',
+    7 => 'lowAlarm'
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     # Select relevant oids for discovery function
     my $mapping = {
-        sfpTemperature       => { oid => '.1.3.6.1.4.1.1588.3.1.8.1.1.1.2' },
+        sfpTemperature   => { oid => '.1.3.6.1.4.1.1588.3.1.8.1.1.1.2' },
+        sfpTxPowerStatus =>
+            { oid => '.1.3.6.1.4.1.1588.3.1.8.1.1.1.3', map => $map_gen_status },
+        sfpRxPowerStatus =>
+            { oid => '.1.3.6.1.4.1.1588.3.1.8.1.1.1.6', map => $map_gen_status },# bcsiOptMonLaneRxPowerStatus
     };
 
-    my  $oid_bcsiOptMonLaneEntry = '.1.3.6.1.4.1.1588.3.1.8.1.1.1';
+    my $oid_bcsiOptMonLaneEntry = '.1.3.6.1.4.1.1588.3.1.8.1.1.1';
 
     my $snmp_result = $options{snmp}->get_table(
         oid   => $oid_bcsiOptMonLaneEntry,
@@ -83,10 +97,12 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         $results->{$instance} = {
-            instance       => $instance,
-            number         => $port,
-            interface_name => defined($names->{$oid_name . '.' . $index}) ?
-                $names->{$oid_name . '.' . $index} : ''
+            instance        => $instance,
+            number          => $port,
+            interface_name  => defined($names->{$oid_name . '.' . $index}) ?
+                $names->{$oid_name . '.' . $index} : '',
+            tx_power_status => $result->{sfpTxPowerStatus},
+            rx_power_status => $result->{sfpRxPowerStatus}
         };
     }
 
