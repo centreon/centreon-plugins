@@ -328,6 +328,7 @@ You can use the following variables: %{tx_power_status}, %{rx_power_status}
 
 Define the conditions to match for the status to be CRITICAL (default: '%{tx_power_status} =~ /alarm/ || %{rx_power_status} =~ /alarm/').
 You can use the following variables: %{tx_power_status}, %{rx_power_status}
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
