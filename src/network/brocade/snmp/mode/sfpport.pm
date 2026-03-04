@@ -207,16 +207,6 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $names = undef;
-    my $oid_name = '.1.3.6.1.2.1.31.1.1.1.1';
-
-    if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
-        $names = $options{snmp}->get_table(
-            oid          => $oid_name,
-            nothing_quit => 1
-        );
-    }
-
     my $oid_port = '.1.3.6.1.4.1.1588.3.1.8.1.1.1';# bcsiOptMonLaneEntry
     my $snmp_result = $options{snmp}->get_table(oid => $oid_port, nothing_quit => 1);
 
@@ -265,8 +255,17 @@ sub manage_selection {
         }
 
         my ($index, $port) = $filtered_ports->{$_}->{instance} =~ /^(\d+)(?:\.(\d+))?$/;
-        my $interface_name = defined($names->{$oid_name . '.' . $index}) ?
-            $names->{$oid_name . '.' . $index} : undef;
+
+        my $interface_name = undef;
+        if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
+            my $oid = '.1.3.6.1.2.1.31.1.1.1.1' . '.' . $index;
+            my $temp_snmp_result = $options{snmp}->get_leef(
+                oids          => [ $oid ],
+                nothing_quit => 1
+            );
+            $interface_name = $temp_snmp_result->{$oid};
+        }
+
         my $instance = defined($interface_name) ? $interface_name . '.' . $port : $filtered_ports->{$_}->{instance};
 
         $self->{sfp}->{$instance} = {
