@@ -56,9 +56,11 @@ jobs:
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
             "DBD::Sybase",
+            "DBD::ODBC",
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
+            "Digest::MD5::File",
             "Email::Send::SMTP::Gmail",
             "Exporter::Tiny", # Required by JSON::Path: the version available in the official repositories doesn't work with the last version of JSON::Path
             "FFI::CheckLib",
@@ -67,8 +69,10 @@ jobs:
             "HTTP::ProxyPAC",
             "JMX::Jmx4Perl",
             "JSON::Path",
+            "JSON::WebToken",
             "Libssh::Session",
             "LV",
+            "Mail::IMAPClient",
             "Mojo::IOLoop::Signal",
             "MongoDB",
             "MooseX::ClassAttribute",
@@ -81,6 +85,7 @@ jobs:
             "Net::SMTPS",
             "Net::SMTP_auth",
             "Net::Subnet",
+            "Net::Telnet",
             "Net::TFTP",
             "Paws",
             "PBKDF2::Tiny",
@@ -132,20 +137,28 @@ jobs:
             build_distribs: "el10"
           - name: "DateTime::Format::Duration::ISO8601"
             rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
+          - name: "DBD::ODBC"
+            build_distribs: "el10"
           - name: "Device::Modbus::RTU::Client"
             version: "0.022"
           - name: "Device::Modbus::TCP::Client"
             version: "0.026"
+          - name: "Digest::MD5::File"
+            build_distribs: "el10"
           - name: "FFI::CheckLib"
             rpm_dependencies: "perl(Env)"
           - name: "FFI::Platypus"
             rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
             rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
             no-auto-depends: "true"
+          - name: "JSON::WebToken"
+            build_distribs: "el10"
           - name: "Libssh::Session"
             rpm_dependencies: "libssh"
             rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
             revision: "3"
+          - name: "Mail::IMAPClient"
+            build_distribs: "el10"
           - name: "Mojo::IOLoop::Signal"
             rpm_dependencies: "perl-Mojolicious"
             rpm_provides: "perl(Mojo::IOLoop::Signal)"
@@ -158,6 +171,8 @@ jobs:
             rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
           - name: "Net::SMTPS"
             build_distribs: "el9,el10"
+          - name: "Net::Telnet"
+            build_distribs: "el10"
           - name: "Statistics::Descriptive"
             build_distribs: "el9,el10"
           - name: "Statistics::Regression"
@@ -382,6 +397,7 @@ jobs:
             "Crypt::OpenSSL::AES",
             "DataStruct::Flat",
             "DateTime::Format::Duration::ISO8601",
+            "DBD::ODBC",
             "Device::Modbus",
             "Device::Modbus::RTU::Client",
             "Device::Modbus::TCP::Client",
@@ -453,6 +469,8 @@ jobs:
             deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
             no-auto-depends: "true"
             build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
+          - name: "DBD::ODBC"
+            build_names: "trixie"
           - name: "Digest::SHA1"
             build_names: "jammy,noble"
           - name: "Hash::Ordered"
