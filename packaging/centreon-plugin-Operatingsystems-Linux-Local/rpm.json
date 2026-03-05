@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "centreon-plugins-Operatingsystems-Linux-sudoers",
         "net-tools",
         "quota",
         "lsof",

@@ -18,7 +18,7 @@ process-openfiles auto ${tc}
     ${command}    Catenate
     ...    ${CMD}
     ...    --mode=process
-    ...    --privileged-script-path=/usr/lib/centreon/plugins/
+    ...    --privileged-script-path=${CURDIR}/openfile/
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}

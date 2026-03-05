@@ -28,7 +28,6 @@ use centreon::plugins::misc qw/trim is_excluded change_seconds check_security_wh
 use centreon::plugins::constants qw(:values :counters);
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes;
-use FindBin;
 
 sub custom_cpu_calc {
     my ($self, %options) = @_;
@@ -205,7 +204,7 @@ sub new {
         'add-open-files'      => { name => 'add_open_files' },
         'page-size:s'         => { name => 'page_size',         default => 4096 },
         'clock-ticks:s'       => { name => 'clock_ticks',       default => 100 },
-        'privileged-script-path:s' => { name => 'privileged_script_path', default => '' }
+        'privileged-script-path:s' => { name => 'privileged_script_path', default => '/usr/lib/centreon/plugins/' }
     });
 
     return $self;
@@ -350,37 +349,26 @@ sub add_open_files {
 
     return unless @pids;
 
-    # Get the path to centreon_plugin_local_process.pl from the location of plugin.pm
-    # when privileged_script_path is not set
-    my $script = '/centreon_linux_local_process.pl';
+    # The centreon_linux_local_process.pl script must be installed on the host and be authorized in the sudoers file
+    my $script = 'centreon_linux_local_process.pl';
     my $external_process_path = $self->{option_results}->{privileged_script_path};
 
-    if ($external_process_path eq '') {
-        $external_process_path = [ map { "$FindBin::Bin/$_" } grep { /\/plugin.pm$/ } keys %INC ];
-        $external_process_path = $external_process_path->[0] =~ s/\/plugin\.pm$//
-            if $external_process_path;
-    } else {
-        check_security_whitelist(command => $script, command_path => $external_process_path);
-    }
+    check_security_whitelist(command => $script, command_path => $external_process_path);
 
-    $self->{output}->option_exit(short_msg => "Missing $external_process_path$script, please install the 'centreon-plugin-Operatingsystems-Linux-Local-Process' package to monitor open files usage")
-        unless -x "$external_process_path$script";
+    my ($stdout) = $options{custom}->execute_command(
+        command => $script,
+        command_path => $external_process_path,
+        command_options => join ' ', @pids,
+    );
 
-    my $dbg_cmd = "$external_process_path$script ".join ' ', @pids;
-    $self->{output}->output_add(long_msg => "Launch [$dbg_cmd]", debug => 1);
-    $self->{output}->option_exit(short_msg => "Cannot launch $dbg_cmd: $!\n")
-        unless open(my $fh, '-|', "$external_process_path$script", @pids);
-
-    while (my $response = <$fh>) {
-        next unless $response =~ /^(\d+)\s+(\d+)/;
+    foreach (split /\r?\n/, $stdout) {
+        next unless /^(\d+)\s+(\d+)/;
         $self->{processes}->{$1}->{open_files} = $2;
 
         $self->{processes}->{$1}->{open_files_prct} = $self->{processes}->{$1}->{open_files_limit} ?
                                                             100 * $2 / $self->{processes}->{$1}->{open_files_limit} :
                                                             100;
     }
-
-    close($fh);
 }
 
 sub add_extra_metrics {
@@ -412,7 +400,7 @@ sub add_extra_metrics {
     $self->add_cpu(content => $content) if $self->{option_results}->{add_cpu};
     $self->add_memory(content => $content) if $self->{option_results}->{add_memory};
     $self->add_disk_io(content => $content) if $self->{option_results}->{add_disk_io};
-    $self->add_open_files(content => $content) if $self->{option_results}->{add_open_files};
+    $self->add_open_files(content => $content, custom => $options{custom}) if $self->{option_results}->{add_open_files};
 }
 
 sub manage_selection {
@@ -455,6 +443,9 @@ Monitor disk I/O.
 =item B<--add-open-files
 
 Monitor open file usage per process.
+This functionality requires that the centreon_linux_local_process.pl script be installed
+on the monitored host and configured in the sudoers file.
+Please refer to the Centreon documentation for more details.
 
 =item B<--filter-command>
 
@@ -491,8 +482,8 @@ You can use: 'zombie', 'dead', 'paging', 'stopped',
 
 =item B<--privileged-script-path>
 
-This parameter allows specifying a custom path to the centreon_plugin_local_process.pl script.
-If left empty (default) the script is assumed to reside in the same directory as the plugin.
+This parameter allows specifying a custom path to the centreon_plugin_local_process.pl script used for monitoring open file usage per process
+(default: '/usr/lib/centreon/plugins').
 
 =item B<--warning-total>
 

@@ -326,6 +326,7 @@ standAlone
 statefile
 --statefile-concat-cwd
 Stormshield
+sudoers
 superseed
 SureBackup
 systemd
