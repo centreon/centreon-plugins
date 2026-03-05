@@ -44,7 +44,7 @@ on:
       - 'tests/**'
 
 env:
-  max_parallel_jobs: 35
+  max_testing_jobs: 25
 
 jobs:
   dependency-scan:
@@ -138,7 +138,7 @@ jobs:
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
         run: |
-          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_parallel_jobs }}))
+          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_testing_jobs }}))
           echo "package_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
           echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
           runners_ids=( $(seq 1 ${list_plugins[2]}) )
@@ -172,6 +172,7 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
         image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
         include:
@@ -273,6 +274,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         include:
           - package_extension: rpm
