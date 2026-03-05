@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,7 +31,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-media-agent-name:s' => { name => 'filter_media_agent_name' }
+       'api-token:s'               => { name => 'api_token', default => '' },
+       'refresh-token:s'           => { name => 'refresh_token', default => '' },
+       'filter-media-agent-name:s' => { name => 'filter_media_agent_name' }
     });
 
     return $self;
@@ -116,4 +118,3 @@ Filter media agents by name (can be a regexp).
 =back
 
 =cut
-    

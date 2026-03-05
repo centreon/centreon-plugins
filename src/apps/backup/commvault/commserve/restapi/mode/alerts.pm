@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,6 +28,7 @@ use Digest::MD5 qw(md5_hex);
 use POSIX;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
+use centreon::plugins::constants qw(:counters);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -53,9 +54,9 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'alarms', type => 2, message_multiple => '0 alert(s) detected', display_counter_problem => { nlabel => 'alerts.problems.current.count', min => 0 },
-          group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', },
+        { name => 'alarms', type => COUNTER_TYPE_GROUP, message_multiple => '0 alert(s) detected', display_counter_problem => { nlabel => 'alerts.problems.current.count', min => 0 },
+          group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ]
         }
     ];
 
@@ -85,7 +86,7 @@ sub set_counters {
     $self->{maps_counters}->{alarm} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{severity} =~ /warning/',
             critical_default => '%{severity} =~ /critical/',
             set => {
@@ -108,9 +109,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-alert-name:s' => { name => 'filter_alert_name' },
-        'filter-alert-type:s' => { name => 'filter_alert_type' },
-        'memory'              => { name => 'memory' }
+       'api-token:s'         => { name => 'api_token', default => '' },
+       'refresh-token:s'     => { name => 'refresh_token', default => '' },
+       'filter-alert-name:s' => { name => 'filter_alert_name' },
+       'filter-alert-type:s' => { name => 'filter_alert_type' },
+       'memory'              => { name => 'memory' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -121,9 +124,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{memory})) {
-        $self->{statefile_cache}->check_options(%options);
-    }
+    $self->{statefile_cache}->check_options(%options)
+        if $self->{option_results}->{memory};
 }
 
 my $map_severity = {
