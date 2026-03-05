@@ -120,6 +120,11 @@ sub get_token {
         'cisco_webexapi_' . md5_hex($self->{option_results}->{client_id}));
     my $access_token = $self->{cache}->get(name => 'access_token');
     my $expires_on = $self->{cache}->get(name => 'expires_on');
+    my $created_token_cnt = $self->{cache}->get(name => 'created_token_cnt');
+
+    if (!defined($created_token_cnt)) {
+        $created_token_cnt = 0;
+    }
 
     if ($has_cache_file == 0 || !defined($access_token) || $access_token eq '' || (($expires_on - time()) < 60)) {
         my $post_data = 'client_id=' . $self->{option_results}->{client_id} .
@@ -145,12 +150,14 @@ sub get_token {
             $self->{output}->option_exit();
         }
 
+        $created_token_cnt += 1;
         $access_token = $decoded->{access_token};
         my $data = {
-            updated      => time(),
-            access_token => $decoded->{access_token},
-            expires_in   => $decoded->{expires_in},
-            expires_on   => time() + $decoded->{expires_in}
+            updated           => time(),
+            access_token      => $decoded->{access_token},
+            expires_in        => $decoded->{expires_in},
+            expires_on        => time() + $decoded->{expires_in},
+            created_token_cnt => $created_token_cnt
         };
         $self->{cache}->write(data => $data);
     }
@@ -176,6 +183,7 @@ sub request_api {
     my $token = $self->get_token();
 
     while (1) {
+        # call the API without status code check to avoid token expiration problems
         my ($content) = $self->{http}->request(
             url_path        => $options{endpoint},
             get_param       => $get_param,
@@ -195,10 +203,19 @@ sub request_api {
         }
 
         # Maybe token is invalid. so we retry
-        if (!defined($token) || $code < 200 || $code >= 300) {
-            $self->clean_token();
+        if (!defined($token) || $code =~ /401|403/) {
+            $self->clean_token() if (defined($token));
             $token = $self->get_token();
 
+            $content = $self->{http}->request(
+                url_path        => $options{endpoint},
+                get_param       => $get_param,
+                header          => [ 'Authorization: Bearer ' . $token ],
+                unknown_status  => $self->{unknown_http_status},
+                warning_status  => $self->{warning_http_status},
+                critical_status => $self->{critical_http_status}
+            );
+        } elsif ($code < 200 || $code >= 300) {# in this case we retry with the same token but with status code check
             $content = $self->{http}->request(
                 url_path        => $options{endpoint},
                 get_param       => $get_param,
