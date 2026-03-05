@@ -98,10 +98,6 @@ jobs:
       index_matrix: ${{ steps.get_plugins.outputs.index_matrix }}
       max_parallel_jobs: ${{ steps.config.outputs.max_parallel_jobs }}
     steps:
-      - name: Set parallel jobs config
-        id: config
-        run: echo "max_parallel_jobs=${{ env.max_parallel_jobs }}" >> $GITHUB_OUTPUT
-        shell: bash
 
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
