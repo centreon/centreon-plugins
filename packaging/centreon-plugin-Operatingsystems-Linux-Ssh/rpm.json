@@ -1,6 +1,6 @@
 {
     "dependencies": [
-        "centreon-plugins-Operatingsystems-Linux-sudoers",
+        "centreon-plugin-Operatingsystems-Linux-sudoers",
         "plink",
         "perl(Libssh::Session)"
     ]
