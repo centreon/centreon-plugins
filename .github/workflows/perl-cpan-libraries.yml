@@ -26,8 +26,22 @@ jobs:
     needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
-  package-rpm:
+  generate-matrices:
     needs: [get-environment]
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix_rpm: ${{ steps.generate.outputs.matrix_rpm }}
+      matrix_deb: ${{ steps.generate.outputs.matrix_deb }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Generate RPM and DEB matrices
+        id: generate
+        run: python3 .github/scripts/generate-cpan-matrix.py .github/packaging/cpan-libraries.json
+        shell: bash
+
+  package-rpm:
+    needs: [get-environment, generate-matrices]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
@@ -35,161 +49,8 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      max-parallel: 25
-      matrix:
-        distrib: [el8, el9, el10]
-        name:
-          [
-            "ARGV::Struct",
-            "Authen::SASL::SASLprep",
-            "Authen::SCRAM::Client",
-            "BSON",
-            "BSON::XS",
-            "Carp::Assert", # needed by perl-JSON-Path-1.0.6-2.el10
-            "Config::AWS",
-            "Convert::Binary::C",
-            "Convert::EBCDIC",
-            "Crypt::Argon2",
-            "Crypt::Blowfish_PP",
-            "Crypt::OpenSSL::AES",
-            "Data::Compare", # needed by perl-Paws-0.46-2.el10
-            "DataStruct::Flat",
-            "DateTime::Format::Duration::ISO8601",
-            "DBD::Sybase",
-            "DBD::ODBC",
-            "Device::Modbus",
-            "Device::Modbus::RTU::Client",
-            "Device::Modbus::TCP::Client",
-            "Digest::MD5::File",
-            "Email::Send::SMTP::Gmail",
-            "Exporter::Tiny", # Required by JSON::Path: the version available in the official repositories doesn't work with the last version of JSON::Path
-            "FFI::CheckLib",
-            "FFI::Platypus",
-            "File::SearchPath",
-            "HTTP::ProxyPAC",
-            "JMX::Jmx4Perl",
-            "JSON::Path",
-            "JSON::WebToken",
-            "Libssh::Session",
-            "LV",
-            "Mail::IMAPClient",
-            "Mojo::IOLoop::Signal",
-            "MongoDB",
-            "MooseX::ClassAttribute",
-            "Net::Amazon::Signature::V4",
-            "Net::Curl",
-            "Net::DHCP",
-            "Net::FTPSSL",
-            "Net::HTTPTunnel",
-            "Net::NTP",
-            "Net::SMTPS",
-            "Net::SMTP_auth",
-            "Net::Subnet",
-            "Net::Telnet",
-            "Net::TFTP",
-            "Paws",
-            "PBKDF2::Tiny",
-            "Statistics::Descriptive",
-            "Statistics::Regression",
-            "Sys::SigAction", # needed by perl-jmx4perl-1.13-2.el10
-            "Term::Clui",
-            "Unicode::Stringprep",
-            "URI::Template",
-            "URL::Encode",
-            "URL::Encode::XS",
-            "UUID",
-            "UUID::URandom",
-            "WWW::Selenium",
-            "XML::LibXML::Simple",
-            "ZMQ::Constants",
-            "ZMQ::FFI",
-            "ZMQ::LibZMQ4"
-          ]
-        include:
-          - build_distribs: "el8,el9,el10"
-          - rpm_dependencies: ""
-          - rpm_provides: ""
-          - version: ""
-          - spec_file: ""
-          - no-auto-depends: "false"
-          - preinstall_cpanlibs: ""
-          - revision: "2"
-          - distrib: el8
-            package_extension: rpm
-            image: packaging-plugins-alma8
-          - distrib: el9
-            package_extension: rpm
-            image: packaging-plugins-alma9
-          - distrib: el10
-            package_extension: rpm
-            image: packaging-plugins-alma10
-          - name: "BSON"
-            rpm_provides: "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
-          - name: "Carp::Assert"
-            build_distribs: "el10"
-          - name: "Crypt::Argon2"
-            preinstall_cpanlibs: "Dist::Build"
-            rpm_provides: "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)"
-            revision: "3"
-          - name: "Crypt::OpenSSL::AES"
-            build_distribs: "el8,el9"
-          - name: "Data::Compare"
-            build_distribs: "el10"
-          - name: "DateTime::Format::Duration::ISO8601"
-            rpm_provides: "perl(DateTime-Format-Duration-ISO8601)"
-          - name: "DBD::ODBC"
-            build_distribs: "el10"
-          - name: "Device::Modbus::RTU::Client"
-            version: "0.022"
-          - name: "Device::Modbus::TCP::Client"
-            version: "0.026"
-          - name: "Digest::MD5::File"
-            build_distribs: "el10"
-          - name: "FFI::CheckLib"
-            rpm_dependencies: "perl(Env)"
-          - name: "FFI::Platypus"
-            rpm_provides: "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)"
-            rpm_dependencies: "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)"
-            no-auto-depends: "true"
-          - name: "JSON::WebToken"
-            build_distribs: "el10"
-          - name: "Libssh::Session"
-            rpm_dependencies: "libssh"
-            rpm_provides: "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)"
-            revision: "3"
-          - name: "Mail::IMAPClient"
-            build_distribs: "el10"
-          - name: "Mojo::IOLoop::Signal"
-            rpm_dependencies: "perl-Mojolicious"
-            rpm_provides: "perl(Mojo::IOLoop::Signal)"
-            no-auto-depends: "true"
-          - name: "Net::Curl"
-            rpm_dependencies: "libcurl"
-            rpm_provides: "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)"
-            revision: "3"
-          - name: "Net::DHCP"
-            rpm_provides: "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
-          - name: "Net::SMTPS"
-            build_distribs: "el9,el10"
-          - name: "Net::Telnet"
-            build_distribs: "el10"
-          - name: "Statistics::Descriptive"
-            build_distribs: "el9,el10"
-          - name: "Statistics::Regression"
-            version: "0.53"
-          - name: "Sys::SigAction"
-            build_distribs: "el10"
-          - name: "URL::Encode::XS"
-            build_distribs: "el9,el10"
-          - name: "UUID"
-            version: "0.31"
-          - name: "ZMQ::Constants"
-            build_distribs: "el9,el10"
-          - name: "ZMQ::FFI"
-            rpm_dependencies: "zeromq"
-          - name: "ZMQ::LibZMQ4"
-            version: "0.01"
-            rpm_dependencies: "zeromq"
+      max-parallel: 20
+      matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix_rpm) }}
 
     name: Package ${{ matrix.distrib }} ${{ matrix.name }}
     container:
@@ -376,7 +237,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
   package-deb:
-    needs: [get-environment]
+    needs: [get-environment, generate-matrices]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
@@ -384,128 +245,8 @@ jobs:
     runs-on: ${{ matrix.runner_name }}
     strategy:
       fail-fast: false
-      max-parallel: 25
-      matrix:
-        image: [packaging-plugins-bullseye, packaging-plugins-bookworm, packaging-plugins-trixie, packaging-plugins-jammy, packaging-plugins-noble, packaging-plugins-bullseye-arm64]
-        name:
-          [
-            "ARGV::Struct",
-            "Config::AWS",
-            "Convert::EBCDIC",
-            "Crypt::Argon2",
-            "Crypt::Blowfish_PP",
-            "Crypt::OpenSSL::AES",
-            "DataStruct::Flat",
-            "DateTime::Format::Duration::ISO8601",
-            "DBD::ODBC",
-            "Device::Modbus",
-            "Device::Modbus::RTU::Client",
-            "Device::Modbus::TCP::Client",
-            "Digest::SHA1", # needed by libjmx4perl-perl on jammy and noble
-            "Email::Send::SMTP::Gmail",
-            "Hash::Ordered",
-            "HTTP::ProxyPAC",
-            "JMX::Jmx4Perl",
-            "Libssh::Session",
-            "Mojo::IOLoop::Signal",
-            "Net::Amazon::Signature::V4",
-            "Net::Curl",
-            "Net::FTPSSL",
-            "Net::HTTPTunnel",
-            "Net::MQTT::Simple",
-            "Paws",
-            "Statistics::Regression",
-            "XS::Loader",
-            "ZMQ::Constants",
-            "ZMQ::LibZMQ4"
-          ]
-        include:
-          - runner_name: ubuntu-24.04
-          - arch: amd64
-          - build_names: "bullseye-amd64,bookworm,trixie,jammy,noble"
-          - deb_dependencies: ""
-          - deb_provides: ""
-          - version: ""
-          - use_dh_make_perl: "true"
-          - no-auto-depends: "false"
-          - preinstall_cpanlibs: ""
-          - revision: "1"
-          - build_name: bullseye-amd64
-            distrib: bullseye
-            package_extension: deb
-            image: packaging-plugins-bullseye
-          - build_name: bookworm
-            distrib: bookworm
-            package_extension: deb
-            image: packaging-plugins-bookworm
-          - build_name: trixie
-            distrib: trixie
-            package_extension: deb
-            image: packaging-plugins-trixie
-          - build_name: jammy
-            distrib: jammy
-            package_extension: deb
-            image: packaging-plugins-jammy
-          - build_name: noble
-            distrib: noble
-            package_extension: deb
-            image: packaging-plugins-noble
-          - build_name: bullseye-arm64
-            distrib: bullseye
-            package_extension: deb
-            image: packaging-plugins-bullseye-arm64
-            arch: arm64
-            runner_name: ubuntu-24.04-arm
-          - name: "Crypt::Argon2"
-            build_names: "bullseye-amd64,jammy,bullseye-arm64"
-            preinstall_cpanlibs: "Dist::Build"
-            use_dh_make_perl: "false"
-            no-auto-depends: "true"
-            deb_dependencies: "libexporter-tiny-perl libtime-hires-perl libxsloader-perl"
-            deb_provides: "libcrypt-argon2-perl-dbgsym"
-            revision: "2"
-          - name: "Crypt::OpenSSL::AES"
-            use_dh_make_perl: "false"
-            deb_dependencies: "libexporter-tiny-perl libxs-install-perl"
-            no-auto-depends: "true"
-            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
-          - name: "DBD::ODBC"
-            build_names: "trixie"
-          - name: "Digest::SHA1"
-            build_names: "jammy,noble"
-          - name: "Hash::Ordered"
-            build_names: "bullseye-amd64,bookworm,jammy"
-          - name: "Libssh::Session"
-            use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
-            no-auto-depends: "true"
-            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6"
-            deb_provides: "libssh-session-perl-dbgsym libssh-session-sftp"
-            revision: "2"
-          - name: "Net::Amazon::Signature::V4"
-            build_names: "bullseye-amd64,jammy,trixie"
-          - name: "Net::Curl"
-            use_dh_make_perl: "false"
-            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
-            no-auto-depends: "true"
-            deb_dependencies: "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4"
-            deb_provides: "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl"
-            revision: "2"
-          - name: "Net::MQTT::Simple"
-            version: "1.29"
-            build_names: "bullseye-amd64,bookworm,jammy"
-          - name: "Paws"
-            use_dh_make_perl: "false"
-            deb_dependencies: "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
-            no-auto-depends: "true"
-          - name: "Statistics::Regression"
-            build_names: "bullseye-amd64"
-            version: "0.53"
-          - name: "ZMQ::LibZMQ4"
-            use_dh_make_perl: "false"
-            version: "0.01"
-            deb_dependencies: "libzmq5"
-            build_names: "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64"
+      max-parallel: 20
+      matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix_deb) }}
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
