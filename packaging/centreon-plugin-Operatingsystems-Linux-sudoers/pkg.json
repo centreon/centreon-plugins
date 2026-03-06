@@ -15,6 +15,5 @@
             "dst": "/etc/sudoers.d/",
             "file_mode": "0600"
         }
-
     ]
 }

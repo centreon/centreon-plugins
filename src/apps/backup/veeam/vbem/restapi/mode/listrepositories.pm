@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,8 +47,8 @@ sub manage_selection {
     my $repositories = $options{custom}->get_repository(disable_cache => 1);
 
     my $results = [];
-    foreach my $repo (@{$repositories->{Entities}->{Repositories}->{Repositories}}) {
-        push @$results, { uid => $repo->{UID}, name => $repo->{Name} };
+    foreach my $repo (@{$repositories->{entities}->{repositories}->{repositories}}) {
+        push @$results, { uid => $repo->{uid}, name => $repo->{name} };
     }
 
     return $results;

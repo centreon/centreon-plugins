@@ -58,6 +58,14 @@ def install_plugin(plugin, archi, build, logs_dir):
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            if output_status != 0:
+                # Retry once after refreshing package metadata (handles transient mirror failures)
+                outfile.write("apt-get update (retry after failed install)\n")
+                subprocess.run("apt-get update", shell=True, check=False,
+                               stderr=subprocess.STDOUT, stdout=outfile)
+                outfile.write(command + " (retry)\n")
+                output_status = (subprocess.run(command, shell=True, check=False,
+                                 stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
             if build:
                 install_name = f"./{plugin}*.rpm"

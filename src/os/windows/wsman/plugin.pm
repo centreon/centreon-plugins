@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,25 +30,26 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'             => 'os::windows::wsman::mode::cpu',
-        'eventlog'        => 'os::windows::wsman::mode::eventlog',
-        'files-date'      => 'os::windows::wsman::mode::filesdate',
-        'files-size'      => 'os::windows::wsman::mode::filessize',
-        'interfaces'      => 'os::windows::wsman::mode::interfaces',
-        'list-interfaces' => 'os::windows::wsman::mode::listinterfaces',
-        'list-processes'  => 'os::windows::wsman::mode::listprocesses',
-        'list-services'   => 'os::windows::wsman::mode::listservices',
-        'list-storages'   => 'os::windows::wsman::mode::liststorages',
-        'memory'          => 'os::windows::wsman::mode::memory',
-        'pages'           => 'os::windows::wsman::mode::pages',
-        'pending-reboot'  => 'os::windows::wsman::mode::pendingreboot',
-        'processes'       => 'os::windows::wsman::mode::processes',
-        'services'        => 'os::windows::wsman::mode::services',
-        'storages'        => 'os::windows::wsman::mode::storages',
-        'sessions'        => 'os::windows::wsman::mode::sessions',
-        'time'            => 'os::windows::wsman::mode::time',
-        'updates'         => 'os::windows::wsman::mode::updates',
-        'uptime'          => 'os::windows::wsman::mode::uptime'
+        'certificates'      => 'os::windows::wsman::mode::certificates',
+        'cpu'               => 'os::windows::wsman::mode::cpu',
+        'eventlog'          => 'os::windows::wsman::mode::eventlog',
+        'files-date'        => 'os::windows::wsman::mode::filesdate',
+        'files-size'        => 'os::windows::wsman::mode::filessize',
+        'interfaces'        => 'os::windows::wsman::mode::interfaces',
+        'list-interfaces'   => 'os::windows::wsman::mode::listinterfaces',
+        'list-processes'    => 'os::windows::wsman::mode::listprocesses',
+        'list-services'     => 'os::windows::wsman::mode::listservices',
+        'list-storages'     => 'os::windows::wsman::mode::liststorages',
+        'memory'            => 'os::windows::wsman::mode::memory',
+        'pages'             => 'os::windows::wsman::mode::pages',
+        'pending-reboot'    => 'os::windows::wsman::mode::pendingreboot',
+        'processes'         => 'os::windows::wsman::mode::processes',
+        'services'          => 'os::windows::wsman::mode::services',
+        'storages'          => 'os::windows::wsman::mode::storages',
+        'sessions'          => 'os::windows::wsman::mode::sessions',
+        'time'              => 'os::windows::wsman::mode::time',
+        'updates'           => 'os::windows::wsman::mode::updates',
+        'uptime'            => 'os::windows::wsman::mode::uptime'
     };
 
     return $self;
@@ -60,6 +61,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Windows operating systems through "WinRM" (ws-management protocol).
+Check Windows operating systems through C<WinRM> (WSMAN protocol).
 
 =cut
