@@ -33,7 +33,7 @@ jobs:
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
@@ -43,6 +43,9 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-alma10
+            distrib: el10
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -94,6 +97,8 @@ jobs:
           - distrib: el8
             package_extension: rpm
           - distrib: el9
+            package_extension: rpm
+          - distrib: el10
             package_extension: rpm
 
     name: deliver ${{ matrix.distrib }}

@@ -14,7 +14,7 @@ homepage: "http://www.sblim.org"
 license: "EPL-1.0"
 
 contents:
-  - src: "/tmp/sblim-sfcc-SFCC_2_2_8/.libs/lib*.so*"
+  - src: "/tmp/sblim-sfcc/.libs/lib*.so*"
     dst: "/usr/lib/"
     file_info:
       mode: 0644
