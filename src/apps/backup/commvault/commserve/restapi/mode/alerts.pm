@@ -109,8 +109,6 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-       'api-token:s'         => { name => 'api_token', default => '' },
-       'refresh-token:s'     => { name => 'refresh_token', default => '' },
        'filter-alert-name:s' => { name => 'filter_alert_name' },
        'filter-alert-type:s' => { name => 'filter_alert_type' },
        'memory'              => { name => 'memory' }

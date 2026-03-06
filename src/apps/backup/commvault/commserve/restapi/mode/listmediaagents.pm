@@ -31,8 +31,6 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-       'api-token:s'               => { name => 'api_token', default => '' },
-       'refresh-token:s'           => { name => 'refresh_token', default => '' },
        'filter-media-agent-name:s' => { name => 'filter_media_agent_name' }
     });
 
