@@ -116,8 +116,12 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile =>
-        'cisco_webexapi_' . md5_hex($self->{option_results}->{client_id}));
+    my $has_cache_file = $self->{cache}->read(
+        statefile =>
+            'cisco_webexapi_' . md5_hex($self->{option_results}->{client_id})
+                . '_' . md5_hex($self->{option_results}->{refresh_token})
+                . '_' . md5_hex($self->{option_results}->{client_secret})
+    );
     my $access_token = $self->{cache}->get(name => 'access_token');
     my $expires_on = $self->{cache}->get(name => 'expires_on');
     my $created_token_cnt = $self->{cache}->get(name => 'created_token_cnt');
