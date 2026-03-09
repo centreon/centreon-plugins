@@ -36,6 +36,7 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   rpm_replaces=$(jq -r '.replaces // [] | join(",")' "$RPM_PACKAGE_FILE")
   deb_provides=$(jq -r '.provides // [] | join(",")' "$DEB_PACKAGE_FILE")
   rpm_provides=$(jq -r '.provides // [] | join(",")' "$RPM_PACKAGE_FILE")
+  skip_default_dependencies=$(jq -r '.skip_default_dependencies // false' "$PACKAGE_FILE")
 
 awk -v contents="$contents" \
   -v pkg_summary="$pkg_summary" \
@@ -68,6 +69,24 @@ awk -v contents="$contents" \
   gsub(/@RPM_PROVIDES@/, rpm_provides)
   print
 }' .github/packaging/centreon-plugin.yaml.template > .github/packaging/$PLUGIN.yaml
+
+  if [ "$skip_default_dependencies" = "true" ]; then
+    # Remove default dependencies
+    # First dependencies block is for rpm, second for deb
+    awk -v rpm_deps="$rpm_dependencies" \
+        -v deb_deps="$deb_dependencies" '
+/^[[:space:]]*depends:[[:space:]]*\[/ {
+  count++
+  if (count == 1) { print "depends: [" rpm_deps "]"; skip=1; next }
+  if (count == 2) { print "depends: [" deb_deps "]"; skip=1; next }
+}
+skip && /^[[:space:]]*]/ {
+  skip=0
+  next
+}
+!skip
+' .github/packaging/$PLUGIN.yaml > .github/packaging/$PLUGIN.yaml.tmp && mv .github/packaging/$PLUGIN.yaml.tmp .github/packaging/$PLUGIN.yaml
+  fi
 
   if [ "$package_extension" = "rpm" ]; then
     sed -i "s/@PACKAGE_NAME@/$PLUGIN/g" \
