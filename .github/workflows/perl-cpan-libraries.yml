@@ -26,19 +26,101 @@ jobs:
     needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
-  generate-matrices:
+  check-official-repos:
     needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distrib: el8
+            image: almalinux:8
+          - distrib: el9
+            image: almalinux:9
+          - distrib: el10
+            image: almalinux:10
+          - distrib: bullseye
+            image: debian:bullseye
+          - distrib: bookworm
+            image: debian:bookworm
+          - distrib: trixie
+            image: debian:trixie
+          - distrib: jammy
+            image: ubuntu:jammy
+          - distrib: noble
+            image: ubuntu:noble
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup RPM environment
+        if: ${{ contains(fromJson('["el8","el9","el10"]'), matrix.distrib) }}
+        run: |
+          dnf install -y 'dnf-command(config-manager)' epel-release
+          if [ "${{ matrix.distrib }}" = "el8" ]; then
+            dnf config-manager --set-enabled powertools
+          else
+            dnf config-manager --set-enabled crb
+          fi
+          dnf install -y python3 perl-App-cpanminus
+        shell: bash
+
+      - name: Setup DEB environment
+        if: ${{ !contains(fromJson('["el8","el9","el10"]'), matrix.distrib) }}
+        run: |
+          apt-get update -qq
+          apt-get install -y python3 cpanminus
+        shell: bash
+
+      - name: Check official repos for ${{ matrix.distrib }}
+        run: |
+          python3 .github/scripts/generate-cpan-matrix.py \
+            --check-distrib ${{ matrix.distrib }} \
+            --output official-repos/partial-matrix-${{ matrix.distrib }}.json \
+            .github/packaging/cpan-libraries.json
+        shell: bash
+
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: partial-matrix-${{ matrix.distrib }}
+          path: official-repos/partial-matrix-${{ matrix.distrib }}.json
+          retention-days: 1
+
+  generate-matrices:
+    needs: [get-environment, check-official-repos]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
     runs-on: ubuntu-24.04
     outputs:
       matrix_rpm: ${{ steps.generate.outputs.matrix_rpm }}
       matrix_deb: ${{ steps.generate.outputs.matrix_deb }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Generate RPM and DEB matrices
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          pattern: partial-matrix-*
+          path: official-repos/
+          merge-multiple: true
+
+      - name: Merge partial matrices into RPM and DEB matrices
         id: generate
-        run: python3 .github/scripts/generate-cpan-matrix.py .github/packaging/cpan-libraries.json
+        run: |
+          python3 .github/scripts/generate-cpan-matrix.py \
+            --partial-matrices-dir official-repos \
+            .github/packaging/cpan-libraries.json
         shell: bash
+
+      - name: Delete partial matrix artifacts
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: partial-matrix-*
+          failOnError: false
 
   package-rpm:
     needs: [get-environment, generate-matrices]
@@ -60,52 +142,11 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        name: Get package infos
-        id: package-infos
+      - if: ${{ matrix.spec_file == '' }}
         run: |
-          cpan_info=$(cpanm --info ${{ matrix.name }})
-          if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[v0-9]+\.[0-9]+ ]]; then
-              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
-              exit 1
-            fi
-            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
-          else
-            PACKAGE_VERSION="${{ matrix.version }}"
-          fi
-          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
-          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g')
-          PACKAGE_NAME="perl-$CPAN_PACKAGE_NAME"
-          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        name: Check if package already exists
-        id: check-package-existence
-        run: |
-          package_info=$(dnf provides 'perl(${{ matrix.name }})' 2>&1 | tr '[:upper:]' '[:lower:]' || true)
-          do_not_build="false"
-          if [[ ! $package_info =~ "no matches found" ]]; then
-            package_version=$(echo $package_info | grep -oP "perl\($(echo ${{ matrix.name }} | tr '[:upper:]' '[:lower:]')\) = \K[0-9]+\.[0-9]+")
-            if [[ "$package_version" == "${{ steps.package-infos.outputs.package_version }}" || "v$package_version" == "${{ steps.package-infos.outputs.package_version }}" ]]; then
-              echo "::warning::Package ${{ matrix.name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
-              do_not_build="true"
-            else
-              echo "::warning::Package ${{ matrix.name }} exists in the official ${{ matrix.distrib }} repository with a different version."
-              do_not_build="false"
-            fi
-          fi
-          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file == '' }}
-        run: |
-          PACKAGE_VERSION=" -v ${{ steps.package-infos.outputs.package_version }}"
+          [ -n "${{ matrix.version }}" ] && PACKAGE_VERSION=" -v ${{ matrix.version }}" || PACKAGE_VERSION=""
 
           if [ -z "${{ matrix.rpm_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -145,7 +186,7 @@ jobs:
           rpm2cpio $created_package | cpio -t
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) && matrix.spec_file != '' }}
+      - if: ${{ matrix.spec_file != '' }}
         run: |
           mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
@@ -154,18 +195,15 @@ jobs:
           cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
-        name: Replace '::' with - in the feature path
+      - name: Replace '::' with - in the feature path
         id: package-name
         run: |
           name="${{ matrix.name }}"
           name_with_dash="${name//::/-}"
-          echo "Modified Name: $name_with_dash"
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -255,68 +293,15 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
-      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        name: Parse distrib name
+      - name: Parse distrib name
         id: parse-distrib
         uses: ./.github/actions/parse-distrib
         with:
           distrib: ${{ matrix.distrib }}
 
-      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        name: Get package infos
-        id: package-infos
-        run: |
-          apt-get update
-          cpan_info=$(cpanm --info ${{ matrix.name }})
-          if [ -z "${{ matrix.version }}" ]; then
-            CPAN_PACKAGE_VERSION=$(echo $cpan_info | sed 's/\.tar\.gz$//' | sed 's/.*\-//')
-            if [[ ! $CPAN_PACKAGE_VERSION =~ ^[v0-9]+\.[0-9]+ ]]; then
-              echo "::error::Invalid version number: ${CPAN_PACKAGE_VERSION}"
-              exit 1
-            fi
-            PACKAGE_VERSION="${CPAN_PACKAGE_VERSION}"
-          else
-            PACKAGE_VERSION="${{ matrix.version }}"
-          fi
-          echo "package_version=$(echo $PACKAGE_VERSION)" >> $GITHUB_OUTPUT
-          CPAN_PACKAGE_NAME=$(echo $cpan_info | sed 's/.*\///g' | sed 's/-[0-9\.]*\.tar\.gz//g' | tr '[:upper:]' '[:lower:]')
-
-          # Handle specific cases of libssh-session
-          if [[ "$CPAN_PACKAGE_NAME" == "lib"* ]];then
-            PACKAGE_NAME="$CPAN_PACKAGE_NAME-perl"
-          else
-            PACKAGE_NAME="lib$CPAN_PACKAGE_NAME-perl"
-          fi
-
-          echo "package_name=$(echo $PACKAGE_NAME)" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        name: Check if package already exists
-        id: check-package-existence
-        run: |
-          package_info=$(apt-cache policy ${{ steps.package-infos.outputs.package_name }})
-          if [[ -n $package_info && "${{ steps.package-infos.outputs.package_name }}" =~ "_" ]]; then
-            package_info=$(apt-cache policy $(echo ${{ steps.package-infos.outputs.package_name }} | sed 's/_//g'))
-          fi
-          do_not_build="false"
-          if [[ -n $package_info ]]; then
-            candidate_version=$(echo "$package_info" | grep 'Candidate:' | awk '{print $2}')
-            if [[ "$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* || "v$candidate_version" == "${{ steps.package-infos.outputs.package_version }}"* ]]; then
-              echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} already exists in the official ${{ matrix.distrib }} repository with the same version."
-              do_not_build="true"
-            else
-              echo "::warning::Package ${{ steps.package-infos.outputs.package_name }} exists in the official ${{ matrix.distrib }} repository with a different version."
-              do_not_build="false"
-            fi
-          fi
-          echo "do_not_build=$do_not_build" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'false' }}
+      - if: ${{ matrix.use_dh_make_perl == 'false' }}
         run: |
           # Install needed cpan libs
           for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
@@ -344,11 +329,13 @@ jobs:
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
 
+          [ -n "${{ matrix.version }}" ] && VERSION_FLAG="-v ${{ matrix.version }}" || VERSION_FLAG=""
+
           # Handle specific case for libssh-session
           if [[ "${{ matrix.name }}" == "Libssh::Session" ]]; then
-            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} --name ssh-session ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES $VERSION_FLAG --name ssh-session ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
           else
-            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES -v ${{ steps.package-infos.outputs.package_version }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
+            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES $VERSION_FLAG ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
           fi
 
           # Check package name
@@ -362,15 +349,16 @@ jobs:
 
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) && matrix.use_dh_make_perl == 'true' }}
+      - if: ${{ matrix.use_dh_make_perl == 'true' }}
         run: |
           # Install needed cpan libs
           for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
             cpanm $CPANLIB_PREINSTALL
           done
+          [ -n "${{ matrix.version }}" ] && VERSION_FLAG="--version ${{ matrix.version }}" || VERSION_FLAG=""
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
-          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build --version ${{ steps.package-infos.outputs.package_version }} --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
+          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build $VERSION_FLAG --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
           # Check package name
           if [ -z "$created_package" ]; then
             echo "Error: dh-make-perl command failed"
@@ -380,18 +368,15 @@ jobs:
           dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
-        name: Replace '::' with - in the feature path
+      - name: Replace '::' with - in the feature path
         id: package-name
         run: |
           name="${{ matrix.name }}"
           name_with_dash="${name//::/-}"
-          echo "Modified Name: $name_with_dash"
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
-      - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
