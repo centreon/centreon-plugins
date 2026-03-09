@@ -76,9 +76,11 @@ awk -v contents="$contents" \
     awk -v rpm_deps="$rpm_dependencies" \
         -v deb_deps="$deb_dependencies" '
 /^[[:space:]]*depends:[[:space:]]*\[/ {
+  match($0,/^[[:space:]]*/)
+  nb_space=substr($0,1,RLENGTH)
   count++
-  if (count == 1) { print "depends: [" rpm_deps "]"; skip=1; next }
-  if (count == 2) { print "depends: [" deb_deps "]"; skip=1; next }
+  if (count == 1) { print nb_space "depends: [" rpm_deps "]"; skip=1; next }
+  if (count == 2) { print nb_space "depends: [" deb_deps "]"; skip=1; next }
 }
 skip && /^[[:space:]]*]/ {
   skip=0
