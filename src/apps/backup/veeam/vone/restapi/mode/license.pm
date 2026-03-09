@@ -107,8 +107,8 @@ sub manage_selection {
             total => $lic->{licensed},
             free => $lic->{available},
             used => $lic->{used},
-            prct_used => $lic->{used} * 100 / $lic->{licensed},
-            prct_free => $lic->{available} * 100 / $lic->{licensed}
+            prct_used => $lic->{licensed} ? $lic->{used} * 100 / $lic->{licensed} : 100,
+            prct_free => $lic->{licensed} ? $lic->{available} * 100 / $lic->{licensed} : 0
         };
     }
 }
