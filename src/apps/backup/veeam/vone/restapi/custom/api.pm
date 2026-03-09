@@ -273,7 +273,7 @@ sub cache_repositories {
 sub cache_proxies {
     my ($self, %options) = @_;
 
-    my $datas = $self->get_repositories(disable_cache => 1);
+    my $datas = $self->get_proxies(disable_cache => 1);
     $self->write_cache_file(
         statefile => 'proxies',
         response => $datas
