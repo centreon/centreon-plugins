@@ -185,7 +185,7 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - if: ${{ contains(matrix.build_distribs, matrix.distrib) }}
         name: Get package infos
@@ -289,7 +289,7 @@ jobs:
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_distribs, matrix.distrib) }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ steps.package-name.outputs.name_with_dash }}
           path: ./*.${{ matrix.package_extension }}
@@ -307,7 +307,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact/merge@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: packages-rpm-${{ matrix.distrib }}
           pattern: packages-rpm-${{ matrix.distrib }}-*
@@ -342,9 +342,9 @@ jobs:
       - run: apt-get install -y zstd
         shell: bash
 
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: packages-rpm-${{ matrix.distrib }}
           path: ./
@@ -355,7 +355,7 @@ jobs:
       - run: rpmsign --addsign ./*.rpm
         shell: bash
 
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./*.rpm
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
@@ -497,7 +497,7 @@ jobs:
 
     steps:
       - if: ${{ contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - if: ${{ contains(matrix.build_names, matrix.build_name) }}
         name: Parse distrib name
@@ -632,7 +632,7 @@ jobs:
         shell: bash
 
       - if: ${{ steps.check-package-existence.outputs.do_not_build == 'false' && contains(matrix.build_names, matrix.build_name) }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: packages-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}-${{ steps.package-name.outputs.name_with_dash}}
           path: ./*.${{ matrix.package_extension }}
@@ -650,7 +650,7 @@ jobs:
 
     steps:
       - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact/merge@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: packages-deb-${{ matrix.distrib }}
           pattern: packages-deb-${{ matrix.distrib }}-*
@@ -673,12 +673,12 @@ jobs:
       matrix:
         distrib: [bullseye, bookworm, trixie, jammy, noble]
     steps:
-      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+      - uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
         with:
           name: packages-deb-${{ matrix.distrib }}
           path: ./
 
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./*.deb
           key: ${{ github.sha }}-${{ github.run_id }}-deb-${{ matrix.distrib }}
@@ -742,7 +742,7 @@ jobs:
     name: Test perl CPAN libs packages on ${{ matrix.package_extension }} ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
 
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Test packaged libs
         uses: ./.github/actions/test-cpan-libs
@@ -753,7 +753,7 @@ jobs:
 
       - name: Upload error log
         if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: install_error_log_${{ matrix.distrib }}-${{ matrix.arch }}
           path: install_error_${{ matrix.distrib }}_${{ matrix.arch }}.log
@@ -791,7 +791,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery
