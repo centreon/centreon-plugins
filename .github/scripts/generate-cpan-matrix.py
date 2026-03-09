@@ -27,6 +27,7 @@ Two modes
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 
@@ -181,8 +182,8 @@ def dist_to_deb_package(dist_name, fallback_module_name=""):
 def _run_bash(script):
     """Run a bash one-liner and return stdout."""
     return subprocess.run(
-        ["bash", "-c", script], capture_output=True, text=True
-    ).stdout
+        ["bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    ).stdout.decode("utf-8", errors="replace")
 
 
 def _parse_found_lines(stdout):
@@ -219,7 +220,7 @@ def check_deb(lib_to_pkg):
     """
     if not lib_to_pkg:
         return {}
-    subprocess.run(["apt-get", "update", "-qq"], capture_output=True)
+    subprocess.run(["apt-get", "update", "-qq"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     checks = []
     for lib, pkg in lib_to_pkg.items():
         pkg_clean = pkg.replace("_", "")
@@ -249,9 +250,9 @@ def versions_match(found_version, required_version):
 
 
 def detect_package_manager():
-    if subprocess.run(["which", "dnf"],     capture_output=True).returncode == 0:
+    if shutil.which("dnf"):
         return "rpm"
-    if subprocess.run(["which", "apt-get"], capture_output=True).returncode == 0:
+    if shutil.which("apt-get"):
         return "deb"
     return None
 
@@ -296,7 +297,8 @@ def run_check(args, libraries):
                     print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
                     continue
             names.append(name)
-            lib_includes.append({"name": name, **rpm})
+            lib_includes.append({"name": name, **rpm,
+                                  "cpan_version": cpanm_infos.get(name, ("", ""))[1]})
 
         result = {
             "distrib": check_distrib,
@@ -346,7 +348,8 @@ def run_check(args, libraries):
                     print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
                     continue
             names.append(name)
-            lib_includes.append({"name": name, **deb})
+            lib_includes.append({"name": name, **deb,
+                                  "cpan_version": cpanm_infos.get(name, ("", ""))[1]})
 
         result = {
             "distrib": check_distrib,
@@ -392,6 +395,16 @@ def merge_matrices(partial_matrices_dir, libraries):
 
     have_partials = bool(rpm_partials or deb_partials)
 
+    # Build cpan_version lookups from partial lib_includes
+    rpm_cpan_versions = {  # distrib → {name → cpan_version}
+        distrib: {item["name"]: item.get("cpan_version", "") for item in data.get("lib_includes", [])}
+        for distrib, data in rpm_partials.items()
+    }
+    deb_cpan_versions = {  # check_distrib → {name → cpan_version}
+        distrib: {item["name"]: item.get("cpan_version", "") for item in data.get("lib_includes", [])}
+        for distrib, data in deb_partials.items()
+    }
+
     # ── RPM matrix ────────────────────────────────────────────────────────────
     rpm_includes = []
     for lib in libraries:
@@ -415,7 +428,9 @@ def merge_matrices(partial_matrices_dir, libraries):
                         continue
                 else:
                     print(f"  WARNING: no partial for RPM {distrib}, including {name}", file=sys.stderr)
+            cpan_version = rpm_cpan_versions.get(distrib, {}).get(name, "")
             rpm_includes.append({**RPM_DEFAULTS, **distrib_entry, "name": name,
+                                  "cpan_version": cpan_version,
                                   **{k: v for k, v in rpm.items() if k != "build_distribs"}})
 
     rpm_matrix = {"include": rpm_includes}
@@ -444,7 +459,9 @@ def merge_matrices(partial_matrices_dir, libraries):
                         continue
                 else:
                     print(f"  WARNING: no partial for DEB {check_distrib}, including {name}/{build_name}", file=sys.stderr)
+            cpan_version = deb_cpan_versions.get(check_distrib, {}).get(name, "")
             deb_includes.append({**DEB_DEFAULTS, **bn_entry, "name": name,
+                                  "cpan_version": cpan_version,
                                   **{k: v for k, v in deb.items() if k != "build_names"}})
 
     deb_matrix = {"include": deb_includes}

@@ -146,7 +146,9 @@ jobs:
 
       - if: ${{ matrix.spec_file == '' }}
         run: |
-          [ -n "${{ matrix.version }}" ] && PACKAGE_VERSION=" -v ${{ matrix.version }}" || PACKAGE_VERSION=""
+          VERSION="${{ matrix.version }}"
+          [ -z "$VERSION" ] && VERSION="${{ matrix.cpan_version }}"
+          [ -n "$VERSION" ] && PACKAGE_VERSION=" -v $VERSION" || PACKAGE_VERSION=""
 
           if [ -z "${{ matrix.rpm_dependencies }}" ]; then
             PACKAGE_DEPENDENCIES=""
@@ -329,7 +331,9 @@ jobs:
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
 
-          [ -n "${{ matrix.version }}" ] && VERSION_FLAG="-v ${{ matrix.version }}" || VERSION_FLAG=""
+          VERSION="${{ matrix.version }}"
+          [ -z "$VERSION" ] && VERSION="${{ matrix.cpan_version }}"
+          [ -n "$VERSION" ] && VERSION_FLAG="-v $VERSION" || VERSION_FLAG=""
 
           # Handle specific case for libssh-session
           if [[ "${{ matrix.name }}" == "Libssh::Session" ]]; then
@@ -355,7 +359,9 @@ jobs:
           for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
             cpanm $CPANLIB_PREINSTALL
           done
-          [ -n "${{ matrix.version }}" ] && VERSION_FLAG="--version ${{ matrix.version }}" || VERSION_FLAG=""
+          VERSION="${{ matrix.version }}"
+          [ -z "$VERSION" ] && VERSION="${{ matrix.cpan_version }}"
+          [ -n "$VERSION" ] && VERSION_FLAG="--version $VERSION" || VERSION_FLAG=""
           temp_file=$(mktemp)
           echo "default.local" | tee /etc/mailname
           created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build $VERSION_FLAG --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
