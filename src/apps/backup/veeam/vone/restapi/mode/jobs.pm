@@ -103,7 +103,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'jobs-detected', display_ok => 0, nlabel => 'jobs.detected.count', set => {
+        {   label => 'jobs-detected', display_ok => 0, nlabel => 'jobs.detected.count',
+            unknown_default => '@0',
+            set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
                 perfdatas => [

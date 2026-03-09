@@ -73,7 +73,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'proxies-detected', display_ok => 0, nlabel => 'proxies.detected.count', set => {
+        {   label => 'proxies-detected', display_ok => 0, nlabel => 'proxies.detected.count',
+            unknown_default => '@0',
+            set => {
                 key_values => [ { name => 'detected' } ],
                 output_template => 'detected: %s',
                 perfdatas => [
@@ -179,12 +181,12 @@ You can use the following variables: %{state}, %{name}, %{type}
 
 =item B<--warning-proxy-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{state} =~ /inaccessible|disconnected/').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /warning|outofdate/').
 You can use the following variables: %{state}, %{name}, %{type}
 
 =item B<--critical-proxy-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /warning|outofdate/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /inaccessible|disconnected/').
 You can use the following variables: %{state}, %{name}, %{type}
 
 =item B<--warning-proxies-detected>
