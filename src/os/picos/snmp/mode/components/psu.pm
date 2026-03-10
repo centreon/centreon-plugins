@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,7 +60,7 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        my $celsius_fan_temp = $result->{temperature} =~ s/\s\C.*//r;
+        my $celsius_fan_temp = $result->{temperature} =~ s/([\d\.]+).*/$1/r;
 
         $self->{output}->output_add(
             long_msg => sprintf(
