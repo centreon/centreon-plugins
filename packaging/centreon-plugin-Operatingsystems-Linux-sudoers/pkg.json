@@ -15,5 +15,6 @@
             "dst": "/etc/sudoers.d/",
             "file_mode": "0600"
         }
-    ]
+    ],
+    "skip_default_dependencies": true
 }
