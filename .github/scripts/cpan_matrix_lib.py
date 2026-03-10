@@ -25,6 +25,7 @@ RPM_DEFAULTS = {
     "spec_file": "",
     "no-auto-depends": "false",
     "preinstall_cpanlibs": "",
+    "preinstall_packages": "",
     "revision": "2",
 }
 
@@ -37,6 +38,7 @@ DEB_DEFAULTS = {
     "use_dh_make_perl": "true",
     "no-auto-depends": "false",
     "preinstall_cpanlibs": "",
+    "preinstall_packages": "",
     "revision": "1",
 }
 

@@ -11,10 +11,15 @@
 #   RPM_PROVIDES         Space-separated list of --provides values
 #   NO_AUTO_DEPENDS      "true" to add --no-auto-depends
 #   PREINSTALL_CPANLIBS  Space-separated CPAN libs to install before packaging
+#   PREINSTALL_PACKAGES  Space-separated system packages to install before packaging
 set -e
 
 export SYBASE="/usr"
 echo "default.local" | tee /etc/mailname
+
+for PKG in $PREINSTALL_PACKAGES; do
+  dnf install -y "$PKG"
+done
 
 for CPANLIB in $PREINSTALL_CPANLIBS; do
   cpanm "$CPANLIB"

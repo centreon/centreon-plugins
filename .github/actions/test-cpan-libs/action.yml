@@ -83,14 +83,16 @@ runs:
               continue
             else
               echo "Check dependency: $dependency"
-              # Update the dependency name to match the package name
-              dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
             fi
-            # If the dependency has been built in the same workflow, install it
-            if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.rpm") ]]; then
-              echo "Installing dependency: $dependency"
-              error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
-            fi
+            # If the dependency is provided by a locally-built package, install it
+            # Use rpm --provides to match correctly when the distribution name differs from the module name
+            for dep_file in ./*.rpm; do
+              [[ "$dep_file" == "$package" ]] && continue
+              if rpm -qp --provides "$dep_file" 2>/dev/null | grep -qF "$dependency"; then
+                echo "Installing dependency: $dep_file"
+                error_output=$(dnf install -y "$dep_file" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              fi
+            done
           done
           # Install package, then uninstall it with all his dependencies
           echo "Package installation..."

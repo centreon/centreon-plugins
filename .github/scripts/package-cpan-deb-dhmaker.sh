@@ -9,9 +9,14 @@
 #   DISTRIB_SUFFIX       Distribution suffix in package name (e.g. deb12u1)
 #   VERSION              Version to build (empty = latest)
 #   PREINSTALL_CPANLIBS  Space-separated CPAN libs to install before packaging
+#   PREINSTALL_PACKAGES  Space-separated system packages to install before packaging
 set -e
 
 echo "default.local" | tee /etc/mailname
+
+for PKG in $PREINSTALL_PACKAGES; do
+  apt-get install -y "$PKG"
+done
 
 for CPANLIB in $PREINSTALL_CPANLIBS; do
   cpanm "$CPANLIB"

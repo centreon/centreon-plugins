@@ -214,6 +214,7 @@ jobs:
           RPM_PROVIDES: ${{ matrix.rpm_provides }}
           NO_AUTO_DEPENDS: ${{ matrix.no-auto-depends }}
           PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
+          PREINSTALL_PACKAGES: ${{ matrix.preinstall_packages }}
           PKG_NAME: ${{ matrix.name }}
           PKG_EXT: ${{ matrix.package_extension }}
           DISTRIB: ${{ matrix.distrib }}
@@ -223,7 +224,7 @@ jobs:
             -v "$(pwd):/work" \
             --workdir /work \
             -e VERSION -e RPM_DEPENDENCIES -e RPM_PROVIDES \
-            -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS \
+            -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
             "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
             bash .github/scripts/package-cpan-rpm.sh
@@ -361,6 +362,7 @@ jobs:
           DEB_PROVIDES: ${{ matrix.deb_provides }}
           NO_AUTO_DEPENDS: ${{ matrix.no-auto-depends }}
           PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
+          PREINSTALL_PACKAGES: ${{ matrix.preinstall_packages }}
           PKG_NAME: ${{ matrix.name }}
           PKG_EXT: ${{ matrix.package_extension }}
           DISTRIB: ${{ matrix.distrib }}
@@ -372,7 +374,7 @@ jobs:
             -v "$(pwd):/work" \
             --workdir /work \
             -e VERSION -e DEB_DEPENDENCIES -e DEB_PROVIDES \
-            -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS \
+            -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
             -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
             "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
@@ -383,6 +385,7 @@ jobs:
         env:
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
+          PREINSTALL_PACKAGES: ${{ matrix.preinstall_packages }}
           PKG_NAME: ${{ matrix.name }}
           DISTRIB: ${{ matrix.distrib }}
           REVISION: ${{ matrix.revision }}
@@ -392,7 +395,7 @@ jobs:
           docker run --rm \
             -v "$(pwd):/work" \
             --workdir /work \
-            -e VERSION -e PREINSTALL_CPANLIBS \
+            -e VERSION -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e DISTRIB -e REVISION \
             -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
             "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \

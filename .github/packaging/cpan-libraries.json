@@ -100,7 +100,8 @@
     {
       "name": "DBD::ODBC",
       "rpm": {
-        "build_distribs": "el10"
+        "build_distribs": "el10",
+        "preinstall_packages": "unixODBC-devel"
       },
       "deb": {
         "build_names": "trixie"
