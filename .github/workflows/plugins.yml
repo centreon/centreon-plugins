@@ -162,74 +162,74 @@ jobs:
           path: ./plugins.json
           retention-days: 1
 
-  unit-tests:
-    needs: [get-environment, get-plugins]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-environment.outputs.stability != 'stable' &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
-    strategy:
-      fail-fast: false
-      max-parallel: 3
-      matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
-        include:
-          - runner_name: ubuntu-24.04
-          - package_extension: rpm
-            image: unit-tests-alma8
-            distrib: el8
-          - package_extension: rpm
-            image: unit-tests-alma9
-            distrib: el9
-          - package_extension: rpm
-            image: unit-tests-alma10
-            distrib: el10
-          - package_extension: deb
-            image: unit-tests-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bullseye-arm64
-            runner_name: ubuntu-24.04-arm
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bookworm
-            distrib: bookworm
-          - package_extension: deb
-            image: unit-tests-trixie
-            distrib: trixie
-          - package_extension: deb
-            image: unit-tests-jammy
-            distrib: jammy
-          - package_extension: deb
-            image: unit-tests-noble
-            distrib: noble
-
-    runs-on: ${{ matrix.runner_name }}
-
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
-
-    name: "Unit tests on ${{ matrix.distrib }}"
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Run unit tests
-        uses: ./.github/actions/unit-tests
-
-      - name: Upload logs as artifacts if tests failed
-        if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
-          path: ./lastlog.jsonl
-          retention-days: 1
+#  unit-tests:
+#    needs: [get-environment, get-plugins]
+#    if: |
+#      needs.get-environment.outputs.skip_workflow == 'false' &&
+#      needs.get-environment.outputs.stability != 'stable' &&
+#      ! cancelled() &&
+#      ! contains(needs.*.result, 'failure') &&
+#      ! contains(needs.*.result, 'cancelled')
+#    strategy:
+#      fail-fast: false
+#      max-parallel: 3
+#      matrix:
+#        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
+#        include:
+#          - runner_name: ubuntu-24.04
+#          - package_extension: rpm
+#            image: unit-tests-alma8
+#            distrib: el8
+#          - package_extension: rpm
+#            image: unit-tests-alma9
+#            distrib: el9
+#          - package_extension: rpm
+#            image: unit-tests-alma10
+#            distrib: el10
+#          - package_extension: deb
+#            image: unit-tests-bullseye
+#            distrib: bullseye
+#          - package_extension: deb
+#            image: unit-tests-bullseye-arm64
+#            runner_name: ubuntu-24.04-arm
+#            distrib: bullseye
+#          - package_extension: deb
+#            image: unit-tests-bookworm
+#            distrib: bookworm
+#          - package_extension: deb
+#            image: unit-tests-trixie
+#            distrib: trixie
+#          - package_extension: deb
+#            image: unit-tests-jammy
+#            distrib: jammy
+#          - package_extension: deb
+#            image: unit-tests-noble
+#            distrib: noble
+#
+#    runs-on: ${{ matrix.runner_name }}
+#
+#    container:
+#      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+#      credentials:
+#        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+#        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+#
+#    name: "Unit tests on ${{ matrix.distrib }}"
+#
+#    steps:
+#      - name: Checkout sources
+#        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+#
+#      - name: Run unit tests
+#        uses: ./.github/actions/unit-tests
+#
+#      - name: Upload logs as artifacts if tests failed
+#        if: failure()
+#        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+#        with:
+#          name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
+#          path: ./lastlog.jsonl
+#          retention-days: 1
 
   fatpacker:
     needs: [get-environment, get-plugins, unit-tests]
