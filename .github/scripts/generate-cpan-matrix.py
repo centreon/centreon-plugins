@@ -87,40 +87,22 @@ DEB_BUILD_NAME_INCLUDES = [
     },
 ]
 
-RPM_DISTRIBS = ["el8", "el9", "el10"]
+# ── Derived constants (single source of truth: the include lists above) ────────
 
-DEB_IMAGES = [
-    "packaging-plugins-bullseye",
-    "packaging-plugins-bookworm",
-    "packaging-plugins-trixie",
-    "packaging-plugins-jammy",
-    "packaging-plugins-noble",
-    "packaging-plugins-bullseye-arm64",
-]
+RPM_DISTRIBS = [e["distrib"] for e in RPM_DISTRIB_INCLUDES]
 
-# check_distrib → build_names it covers (same official repos, different arches)
-DEB_CHECK_DISTRIB_TO_BUILD_NAMES = {
-    "bullseye": ["bullseye-amd64", "bullseye-arm64"],
-    "bookworm": ["bookworm"],
-    "trixie":   ["trixie"],
-    "jammy":    ["jammy"],
-    "noble":    ["noble"],
-}
+# image → check_distrib  (bullseye-arm64 → "bullseye": same official repos, different arch)
+DEB_IMAGE_TO_CHECK_DISTRIB = {e["image"]: e["distrib"] for e in DEB_BUILD_NAME_INCLUDES}
 
-# image → check_distrib (for merge step)
-DEB_IMAGE_TO_CHECK_DISTRIB = {
-    "packaging-plugins-bullseye":       "bullseye",
-    "packaging-plugins-bookworm":       "bookworm",
-    "packaging-plugins-trixie":         "trixie",
-    "packaging-plugins-jammy":          "jammy",
-    "packaging-plugins-noble":          "noble",
-    "packaging-plugins-bullseye-arm64": "bullseye",
-}
+# check_distrib → build_names it covers  (e.g. "bullseye" → ["bullseye-amd64", "bullseye-arm64"])
+DEB_CHECK_DISTRIB_TO_BUILD_NAMES: dict = {}
+for _e in DEB_BUILD_NAME_INCLUDES:
+    DEB_CHECK_DISTRIB_TO_BUILD_NAMES.setdefault(_e["distrib"], []).append(_e["build_name"])
 
 # ── Centreon stable repository ─────────────────────────────────────────────────
 
-CPAN_MODULE_NAME   = "perl-cpan-libraries"
-UBUNTU_DISTRIBS    = frozenset({"jammy", "noble"})
+CPAN_MODULE_NAME  = "perl-cpan-libraries"
+UBUNTU_DISTRIBS   = frozenset({"jammy", "noble"})
 
 # Suffix appended to the package version in DEB filenames (from parse-distrib action)
 # e.g. libjson-path-perl_1.0.6+deb12u1_amd64.deb  →  distrib suffix = "deb12u1"
@@ -134,6 +116,63 @@ DEB_DISTRIB_SUFFIX = {
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# SHARED HELPERS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _csv(s):
+    """Split a comma-separated string into a stripped, non-empty list."""
+    return [v.strip() for v in s.split(",") if v.strip()]
+
+
+def _run_bash(script):
+    """Run a bash one-liner and return stdout."""
+    return subprocess.run(
+        ["bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    ).stdout.decode("utf-8", errors="replace")
+
+
+def _parse_found_lines(stdout):
+    """Parse 'FOUND:<lib>:<version>' lines produced by bash snippets."""
+    found = {}
+    for line in stdout.splitlines():
+        if line.startswith("FOUND:"):
+            parts = line.split(":", 2)
+            if len(parts) == 3:
+                found[parts[1]] = parts[2]
+    return found
+
+
+def versions_match(found_version, required_version):
+    """True when *found_version* satisfies *required_version*.
+
+    Handles 'v' prefix and Debian revision suffix (e.g. '0.04-1' → '0.04').
+    """
+    if not required_version:
+        return True
+    found_clean = found_version.split("-")[0] if found_version else ""
+    return (
+        found_clean == required_version
+        or f"v{found_clean}" == required_version
+        or found_version == required_version
+        or f"v{found_version}" == required_version
+    )
+
+
+def _extras_from_partials(partials):
+    """Build {distrib: {name: {cpan_version, cpan_dist_name}}} from loaded partial JSONs."""
+    return {
+        distrib: {
+            item["name"]: {
+                "cpan_version":   item.get("cpan_version",   ""),
+                "cpan_dist_name": item.get("cpan_dist_name", ""),
+            }
+            for item in data.get("lib_includes", [])
+        }
+        for distrib, data in partials.items()
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # CHECK MODE – runs inside a distribution container
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -141,9 +180,26 @@ def cpan_to_deb_package(module_name):
     """Fallback: derive deb package name from CPAN module name.
 
     ARGV::Struct → libargv-struct-perl,  Libssh::Session → libssh-session-perl.
-    Used only when cpanm is unavailable; prefer get_cpanm_deb_infos().
+    Used only when cpanm is unavailable; prefer dist_to_deb_package().
     """
     name = module_name.replace("::", "-").lower()
+    if name.startswith("lib"):
+        return f"{name}-perl"
+    return f"lib{name}-perl"
+
+
+def dist_to_deb_package(dist_name, fallback_module_name=""):
+    """Convert CPAN distribution name to deb package name.
+
+    "Jmx4Perl"      → "libjmx4perl-perl"
+    "Net-Curl"       → "libnet-curl-perl"
+    "Libssh-Session" → "libssh-session-perl"
+
+    Falls back to cpan_to_deb_package(fallback_module_name) when dist_name is empty.
+    """
+    if not dist_name:
+        return cpan_to_deb_package(fallback_module_name) if fallback_module_name else ""
+    name = dist_name.lower()
     if name.startswith("lib"):
         return f"{name}-perl"
     return f"lib{name}-perl"
@@ -179,41 +235,6 @@ def get_cpanm_infos(lib_names):
             if len(parts) == 4:
                 result[parts[1]] = (parts[2], parts[3])
     return result
-
-
-def dist_to_deb_package(dist_name, fallback_module_name=""):
-    """Convert CPAN distribution name to deb package name.
-
-    "Jmx4Perl"      → "libjmx4perl-perl"
-    "Net-Curl"       → "libnet-curl-perl"
-    "Libssh-Session" → "libssh-session-perl"
-
-    Falls back to cpan_to_deb_package(fallback_module_name) when dist_name is empty.
-    """
-    if not dist_name:
-        return cpan_to_deb_package(fallback_module_name) if fallback_module_name else ""
-    name = dist_name.lower()
-    if name.startswith("lib"):
-        return f"{name}-perl"
-    return f"lib{name}-perl"
-
-
-def _run_bash(script):
-    """Run a bash one-liner and return stdout."""
-    return subprocess.run(
-        ["bash", "-c", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    ).stdout.decode("utf-8", errors="replace")
-
-
-def _parse_found_lines(stdout):
-    """Parse 'FOUND:<lib>:<version>' lines produced by bash snippets."""
-    found = {}
-    for line in stdout.splitlines():
-        if line.startswith("FOUND:"):
-            parts = line.split(":", 2)
-            if len(parts) == 3:
-                found[parts[1]] = parts[2]
-    return found
 
 
 def check_rpm(lib_names):
@@ -252,28 +273,91 @@ def check_deb(lib_to_pkg):
     return _parse_found_lines(_run_bash("; ".join(checks)))
 
 
-def versions_match(found_version, required_version):
-    """True when *found_version* satisfies *required_version*.
-
-    Handles 'v' prefix and Debian revision suffix (e.g. '0.04-1' → '0.04').
-    """
-    if not required_version:
-        return True
-    found_clean = found_version.split("-")[0] if found_version else ""
-    return (
-        found_clean == required_version
-        or f"v{found_clean}" == required_version
-        or found_version == required_version
-        or f"v{found_version}" == required_version
-    )
-
-
 def detect_package_manager():
     if shutil.which("dnf"):
         return "rpm"
     if shutil.which("apt-get"):
         return "deb"
     return None
+
+
+def _filter_to_includes(libs, pkg_key, cpanm_infos, available):
+    """Filter libs against available versions, return (names, lib_includes).
+
+    Skips any lib already in *available* at the expected version.
+    Each kept entry is enriched with cpan_dist_name and cpan_version.
+    """
+    names, includes = [], []
+    for lib in libs:
+        name          = lib["name"]
+        pkg_config    = lib[pkg_key]
+        dist_name, version = cpanm_infos.get(name, ("", ""))
+        found = available.get(name)
+        if found is not None:
+            required = pkg_config.get("version", "") or version
+            if versions_match(found, required):
+                print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
+                continue
+        names.append(name)
+        includes.append({
+            "name": name, **pkg_config,
+            "cpan_dist_name": dist_name,
+            "cpan_version":   version,
+        })
+    return names, includes
+
+
+def run_check(args, libraries):
+    """Check mode: query the local package manager and write a partial-matrix JSON."""
+    pkg_manager = detect_package_manager()
+    if pkg_manager is None:
+        print("ERROR: neither dnf nor apt-get found", file=sys.stderr)
+        sys.exit(1)
+
+    check_distrib = args.check_distrib
+    print(f"Distrib: {check_distrib} | package manager: {pkg_manager}", file=sys.stderr)
+
+    if pkg_manager == "rpm":
+        libs_for_distrib = [
+            lib for lib in libraries
+            if "rpm" in lib
+            and check_distrib in _csv(lib["rpm"].get("build_distribs", RPM_DEFAULT_BUILD_DISTRIBS))
+        ]
+        lib_names = [lib["name"] for lib in libs_for_distrib]
+        print(f"Fetching CPAN info for {len(lib_names)} libs…", file=sys.stderr)
+        cpanm_infos = get_cpanm_infos(lib_names)
+        print(f"Checking {len(lib_names)} libs in official RPM repo ({check_distrib})…", file=sys.stderr)
+        available = check_rpm(lib_names)
+    else:
+        covered = DEB_CHECK_DISTRIB_TO_BUILD_NAMES.get(check_distrib, [check_distrib])
+        libs_for_distrib = [
+            lib for lib in libraries
+            if "deb" in lib
+            and any(bn in covered for bn in _csv(lib["deb"].get("build_names", DEB_DEFAULT_BUILD_NAMES)))
+        ]
+        lib_names = [lib["name"] for lib in libs_for_distrib]
+        print(f"Fetching CPAN info for {len(lib_names)} libs…", file=sys.stderr)
+        cpanm_infos = get_cpanm_infos(lib_names)
+        lib_to_pkg = {
+            name: dist_to_deb_package(cpanm_infos.get(name, ("", ""))[0], name)
+            for name in lib_names
+        }
+        print(f"Checking {len(lib_to_pkg)} libs in official DEB repo ({check_distrib})…", file=sys.stderr)
+        available = check_deb(lib_to_pkg)
+
+    names, lib_includes = _filter_to_includes(libs_for_distrib, pkg_manager, cpanm_infos, available)
+
+    result = {
+        "distrib": check_distrib,
+        "type":    pkg_manager,
+        "names":   names,
+        "lib_includes": lib_includes,
+    }
+    print(f"→ {len(names)} libs to package for {check_distrib}", file=sys.stderr)
+    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+    with open(args.output, "w") as f:
+        json.dump(result, f, indent=2)
+    print(f"Results written to {args.output}", file=sys.stderr)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -306,13 +390,12 @@ def get_stable_rpm_packages(base_url, distrib):
     Example filename: perl-JSON-Path-1.0.6-2.el9.noarch.rpm
       → cpan_dist_name = "JSON-Path", version = "1.0.6"
     """
-    path  = f"rpm-plugins/{distrib}/stable/noarch/RPMS/{CPAN_MODULE_NAME}"
-    files = _artifactory_list_folder(base_url, path)
+    files = _artifactory_list_folder(
+        base_url, f"rpm-plugins/{distrib}/stable/noarch/RPMS/{CPAN_MODULE_NAME}"
+    )
     result = {}
     for fname in files:
-        m = re.match(
-            r"^perl-(.+?)-([0-9v][0-9.]*)-\d+\.\w+\.(noarch|x86_64)\.rpm$", fname
-        )
+        m = re.match(r"^perl-(.+?)-([0-9v][0-9.]*)-\d+\.\w+\.(noarch|x86_64)\.rpm$", fname)
         if m:
             result[m.group(1)] = m.group(2)
     return result
@@ -333,10 +416,9 @@ def get_stable_deb_packages(base_url, distrib, arch="amd64"):
         _deb_pool_cache[repo] = _artifactory_list_folder(
             base_url, f"{repo}/pool/{CPAN_MODULE_NAME}"
         )
-    files  = _deb_pool_cache[repo]
     suffix = DEB_DISTRIB_SUFFIX.get(distrib, "")
     result = {}
-    for fname in files:
+    for fname in _deb_pool_cache[repo]:
         if not fname.endswith(f"_{arch}.deb"):
             continue
         if suffix and suffix not in fname:
@@ -346,118 +428,6 @@ def get_stable_deb_packages(base_url, distrib, arch="amd64"):
         if m:
             result[m.group(1)] = m.group(2)
     return result
-
-
-def run_check(args, libraries):
-    """Check mode: query the local package manager and write a partial-matrix JSON."""
-    pkg_manager = detect_package_manager()
-    if pkg_manager is None:
-        print("ERROR: neither dnf nor apt-get found", file=sys.stderr)
-        sys.exit(1)
-
-    check_distrib = args.check_distrib
-    print(f"Distrib: {check_distrib} | package manager: {pkg_manager}", file=sys.stderr)
-
-    if pkg_manager == "rpm":
-        # Filter libs that target this RPM distrib
-        libs_for_distrib = [
-            lib for lib in libraries
-            if "rpm" in lib and check_distrib in [
-                d.strip()
-                for d in lib["rpm"].get("build_distribs", RPM_DEFAULT_BUILD_DISTRIBS).split(",")
-                if d.strip()
-            ]
-        ]
-        lib_names = [lib["name"] for lib in libs_for_distrib]
-        print(f"Fetching CPAN info for {len(lib_names)} libs…", file=sys.stderr)
-        cpanm_infos = get_cpanm_infos(lib_names)  # {name: (dist_name, version)}
-
-        print(f"Checking {len(lib_names)} libs in official RPM repo ({check_distrib})…", file=sys.stderr)
-        available = check_rpm(lib_names)
-
-        names = []
-        lib_includes = []
-        for lib in libs_for_distrib:
-            name = lib["name"]
-            rpm = lib["rpm"]
-            found = available.get(name)
-            if found is not None:
-                cpan_version = cpanm_infos.get(name, ("", ""))[1]
-                required_version = rpm.get("version", "") or cpan_version
-                if versions_match(found, required_version):
-                    print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
-                    continue
-            names.append(name)
-            cpan_info = cpanm_infos.get(name, ("", ""))
-            lib_includes.append({"name": name, **rpm,
-                                  "cpan_dist_name": cpan_info[0],
-                                  "cpan_version":   cpan_info[1]})
-
-        result = {
-            "distrib": check_distrib,
-            "type": "rpm",
-            "names": names,
-            "lib_includes": lib_includes,
-        }
-
-    else:  # deb
-        covered_build_names = DEB_CHECK_DISTRIB_TO_BUILD_NAMES.get(check_distrib, [check_distrib])
-
-        # Filter libs that target at least one build_name covered by this check_distrib
-        libs_for_distrib = [
-            lib for lib in libraries
-            if "deb" in lib and any(
-                bn in covered_build_names
-                for bn in [
-                    b.strip()
-                    for b in lib["deb"].get("build_names", DEB_DEFAULT_BUILD_NAMES).split(",")
-                    if b.strip()
-                ]
-            )
-        ]
-        lib_names = [lib["name"] for lib in libs_for_distrib]
-        print(f"Fetching CPAN info for {len(lib_names)} libs…", file=sys.stderr)
-        cpanm_infos = get_cpanm_infos(lib_names)  # {name: (dist_name, version)}
-
-        lib_to_pkg = {
-            name: dist_to_deb_package(cpanm_infos.get(name, ("", ""))[0], name)
-            for name in lib_names
-        }
-        print(f"Checking {len(lib_to_pkg)} libs in official DEB repo ({check_distrib})…", file=sys.stderr)
-        available = check_deb(lib_to_pkg)
-
-        names = []
-        lib_includes = []
-        for lib in libs_for_distrib:
-            name = lib["name"]
-            deb = lib["deb"]
-            found = available.get(name)
-            if found is not None:
-                # Use the version pinned in cpan-libraries.json if set,
-                # otherwise compare against the current CPAN version.
-                cpan_version = cpanm_infos.get(name, ("", ""))[1]
-                required_version = deb.get("version", "") or cpan_version
-                if versions_match(found, required_version):
-                    print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
-                    continue
-            names.append(name)
-            cpan_info = cpanm_infos.get(name, ("", ""))
-            lib_includes.append({"name": name, **deb,
-                                  "cpan_dist_name": cpan_info[0],
-                                  "cpan_version":   cpan_info[1]})
-
-        result = {
-            "distrib": check_distrib,
-            "type": "deb",
-            "names": names,
-            "lib_includes": lib_includes,
-        }
-
-    print(f"→ {len(names)} libs to package for {check_distrib}", file=sys.stderr)
-    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
-    with open(args.output, "w") as f:
-        json.dump(result, f, indent=2)
-    print(f"Results written to {args.output}", file=sys.stderr)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -491,23 +461,9 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
                 deb_partials[distrib] = data
                 print(f"  Loaded DEB partial for {distrib}: {len(data.get('names', []))} libs to build", file=sys.stderr)
 
-    have_partials = bool(rpm_partials or deb_partials)
-
-    # Build per-lib extras lookup (cpan_version + cpan_dist_name) from partial lib_includes
-    def _build_extras(partials):
-        return {
-            distrib: {
-                item["name"]: {
-                    "cpan_version":   item.get("cpan_version",   ""),
-                    "cpan_dist_name": item.get("cpan_dist_name", ""),
-                }
-                for item in data.get("lib_includes", [])
-            }
-            for distrib, data in partials.items()
-        }
-
-    rpm_lib_extras = _build_extras(rpm_partials)  # distrib      → {name → extras}
-    deb_lib_extras = _build_extras(deb_partials)  # check_distrib → {name → extras}
+    have_partials  = bool(rpm_partials or deb_partials)
+    rpm_lib_extras = _extras_from_partials(rpm_partials)  # distrib      → {name → extras}
+    deb_lib_extras = _extras_from_partials(deb_partials)  # check_distrib → {name → extras}
 
     # Optionally query Centreon stable repository
     rpm_stable: dict = {}  # distrib → {cpan_dist_name: version}
@@ -516,15 +472,14 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
         print("Checking Centreon stable repository…", file=sys.stderr)
         for distrib in RPM_DISTRIBS:
             rpm_stable[distrib] = get_stable_rpm_packages(artifactory_url, distrib)
-            print(f"  RPM {distrib}: {len(rpm_stable[distrib])} packages in stable",
-                  file=sys.stderr)
-        seen_deb_keys: set = set()
+            print(f"  RPM {distrib}: {len(rpm_stable[distrib])} packages in stable", file=sys.stderr)
+        seen: set = set()
         for bn_entry in DEB_BUILD_NAME_INCLUDES:
             check_distrib = DEB_IMAGE_TO_CHECK_DISTRIB[bn_entry["image"]]
             arch          = bn_entry.get("arch", "amd64")
             key           = (check_distrib, arch)
-            if key not in seen_deb_keys:
-                seen_deb_keys.add(key)
+            if key not in seen:
+                seen.add(key)
                 deb_stable[key] = get_stable_deb_packages(artifactory_url, check_distrib, arch)
                 print(f"  DEB {check_distrib} {arch}: {len(deb_stable[key])} packages in stable",
                       file=sys.stderr)
@@ -536,11 +491,7 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
             continue
         name = lib["name"]
         rpm  = lib["rpm"]
-        build_distribs = [
-            d.strip()
-            for d in rpm.get("build_distribs", RPM_DEFAULT_BUILD_DISTRIBS).split(",")
-            if d.strip()
-        ]
+        build_distribs = _csv(rpm.get("build_distribs", RPM_DEFAULT_BUILD_DISTRIBS))
         for distrib_entry in RPM_DISTRIB_INCLUDES:
             distrib = distrib_entry["distrib"]
             if distrib not in build_distribs:
@@ -567,8 +518,6 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
                                   "cpan_version": cpan_version,
                                   **{k: v for k, v in rpm.items() if k != "build_distribs"}})
 
-    rpm_matrix = {"include": rpm_includes}
-
     # ── DEB matrix ────────────────────────────────────────────────────────────
     deb_includes = []
     for lib in libraries:
@@ -576,11 +525,7 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
             continue
         name = lib["name"]
         deb  = lib["deb"]
-        build_names = [
-            b.strip()
-            for b in deb.get("build_names", DEB_DEFAULT_BUILD_NAMES).split(",")
-            if b.strip()
-        ]
+        build_names = _csv(deb.get("build_names", DEB_DEFAULT_BUILD_NAMES))
         for bn_entry in DEB_BUILD_NAME_INCLUDES:
             build_name    = bn_entry["build_name"]
             check_distrib = DEB_IMAGE_TO_CHECK_DISTRIB.get(bn_entry["image"], "")
@@ -610,9 +555,7 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
                                   "cpan_version": cpan_version,
                                   **{k: v for k, v in deb.items() if k != "build_names"}})
 
-    deb_matrix = {"include": deb_includes}
-
-    return rpm_matrix, deb_matrix
+    return {"include": rpm_includes}, {"include": deb_includes}
 
 
 # ── Entry point ────────────────────────────────────────────────────────────────

@@ -123,8 +123,63 @@ jobs:
           name: partial-matrix-*
           failOnError: false
 
+  get-packaging-images:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: packaging-plugins-alma8
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-alma9
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-alma10
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-bullseye
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-bookworm
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-trixie
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-jammy
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-noble
+            runner_name: ubuntu-24.04
+          - image: packaging-plugins-bullseye-arm64
+            runner_name: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner_name }}
+    steps:
+      - name: Login to Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
+          username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+          password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
+      - name: Login to Proxy Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
+          username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+          password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
+      - name: Pull and save image
+        run: |
+          docker image prune -af
+          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+          docker save -o ./${{ matrix.image }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+        shell: bash
+
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./${{ matrix.image }}
+          key: ${{ matrix.image }}-${{ github.sha }}-${{ github.run_id }}
+
   package-rpm:
-    needs: [get-environment, generate-matrices]
+    needs: [get-environment, generate-matrices, get-packaging-images]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
@@ -136,66 +191,54 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix_rpm) }}
 
     name: Package ${{ matrix.distrib }} ${{ matrix.name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Restore packaging image from cache
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./${{ matrix.image }}
+          key: ${{ matrix.image }}-${{ github.sha }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+
+      - name: Load packaging image
+        run: docker load --input ./${{ matrix.image }}
+        shell: bash
+
       - if: ${{ matrix.spec_file == '' }}
+        env:
+          VERSION: ${{ matrix.version || matrix.cpan_version }}
+          RPM_DEPENDENCIES: ${{ matrix.rpm_dependencies }}
+          RPM_PROVIDES: ${{ matrix.rpm_provides }}
+          NO_AUTO_DEPENDS: ${{ matrix.no-auto-depends }}
+          PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
+          PKG_NAME: ${{ matrix.name }}
+          PKG_EXT: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+          REVISION: ${{ matrix.revision }}
         run: |
-          VERSION="${{ matrix.version }}"
-          [ -z "$VERSION" ] && VERSION="${{ matrix.cpan_version }}"
-          [ -n "$VERSION" ] && PACKAGE_VERSION=" -v $VERSION" || PACKAGE_VERSION=""
-
-          if [ -z "${{ matrix.rpm_dependencies }}" ]; then
-            PACKAGE_DEPENDENCIES=""
-          else
-            for PACKAGE_DEPENDENCY in `echo "${{ matrix.rpm_dependencies }}"`; do
-              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends "$PACKAGE_DEPENDENCY""
-            done
-          fi
-
-          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
-            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
-          fi
-
-          if [ -z "${{ matrix.rpm_provides }}" ]; then
-            PACKAGE_PROVIDES=""
-          else
-            for PACKAGE_PROVIDE in `echo "${{ matrix.rpm_provides }}"`; do
-              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
-            done
-          fi
-
-          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
-            cpanm $CPANLIB_PREINSTALL
-          done
-
-          export SYBASE="/usr"
-
-          temp_file=$(mktemp)
-          echo "default.local" | tee /etc/mailname
-          created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --rpm-dist ${{ matrix.distrib }} --rpm-digest sha256 --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES$PACKAGE_VERSION --iteration ${{ matrix.revision }} ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')
-          # Check package name
-          if [ -z "$created_package" ]; then
-            echo "Error: fpm command failed"
-            exit 1
-          fi
-          # Check rpm
-          rpm2cpio $created_package | cpio -t
+          docker run --rm \
+            -v "$(pwd):/work" \
+            --workdir /work \
+            -e VERSION -e RPM_DEPENDENCIES -e RPM_PROVIDES \
+            -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS \
+            -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
+            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            bash .github/scripts/package-cpan-rpm.sh
         shell: bash
 
       - if: ${{ matrix.spec_file != '' }}
         run: |
-          mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-
-          rpmbuild --undefine=_disable_source_fetch -ba ${{ matrix.spec_file }}
-
-          cp -r ~/rpmbuild/RPMS/noarch/*.rpm .
+          docker run --rm \
+            -v "$(pwd):/work" \
+            --workdir /work \
+            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            bash -c "
+              mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+              rpmbuild --undefine=_disable_source_fetch -ba ${{ matrix.spec_file }}
+              cp -r ~/rpmbuild/RPMS/noarch/*.rpm /work/
+            "
         shell: bash
 
       - name: Replace '::' with - in the feature path
@@ -278,7 +321,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-rpm-${{ matrix.distrib }}
 
   package-deb:
-    needs: [get-environment, generate-matrices]
+    needs: [get-environment, generate-matrices, get-packaging-images]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
@@ -289,14 +332,20 @@ jobs:
       max-parallel: 20
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix_deb) }}
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
-    container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Restore packaging image from cache
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./${{ matrix.image }}
+          key: ${{ matrix.image }}-${{ github.sha }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+
+      - name: Load packaging image
+        run: docker load --input ./${{ matrix.image }}
+        shell: bash
 
       - name: Parse distrib name
         id: parse-distrib
@@ -305,74 +354,48 @@ jobs:
           distrib: ${{ matrix.distrib }}
 
       - if: ${{ matrix.use_dh_make_perl == 'false' }}
+        env:
+          VERSION: ${{ matrix.version || matrix.cpan_version }}
+          DEB_DEPENDENCIES: ${{ matrix.deb_dependencies }}
+          DEB_PROVIDES: ${{ matrix.deb_provides }}
+          NO_AUTO_DEPENDS: ${{ matrix.no-auto-depends }}
+          PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
+          PKG_NAME: ${{ matrix.name }}
+          PKG_EXT: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+          REVISION: ${{ matrix.revision }}
+          DISTRIB_SEPARATOR: ${{ steps.parse-distrib.outputs.package_distrib_separator }}
+          DISTRIB_SUFFIX: ${{ steps.parse-distrib.outputs.package_distrib_name }}
         run: |
-          # Install needed cpan libs
-          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
-            cpanm $CPANLIB_PREINSTALL
-          done
-          if [ -z "${{ matrix.deb_dependencies }}" ]; then
-            PACKAGE_DEPENDENCIES=""
-          else
-            for PACKAGE_DEPENDENCY in `echo ${{ matrix.deb_dependencies }}`; do
-              PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --depends $PACKAGE_DEPENDENCY"
-            done
-          fi
-          if [ "${{ matrix.no-auto-depends }}" == "true" ]; then
-            PACKAGE_DEPENDENCIES="$PACKAGE_DEPENDENCIES --no-auto-depends"
-          fi
-
-          if [ -z "${{ matrix.deb_provides }}" ]; then
-            PACKAGE_PROVIDES=""
-          else
-            for PACKAGE_PROVIDE in `echo "${{ matrix.deb_provides }}"`; do
-              PACKAGE_PROVIDES="$PACKAGE_PROVIDES --provides $PACKAGE_PROVIDE"
-            done
-          fi
-
-          temp_file=$(mktemp)
-          echo "default.local" | tee /etc/mailname
-
-          VERSION="${{ matrix.version }}"
-          [ -z "$VERSION" ] && VERSION="${{ matrix.cpan_version }}"
-          [ -n "$VERSION" ] && VERSION_FLAG="-v $VERSION" || VERSION_FLAG=""
-
-          # Handle specific case for libssh-session
-          if [[ "${{ matrix.name }}" == "Libssh::Session" ]]; then
-            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES $VERSION_FLAG --name ssh-session ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
-          else
-            created_package=$(fpm -s cpan -t ${{ matrix.package_extension }} --deb-dist ${{ matrix.distrib }} --iteration ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --verbose --cpan-verbose --no-cpan-test$PACKAGE_DEPENDENCIES$PACKAGE_PROVIDES $VERSION_FLAG ${{ matrix.name }} | tee "$temp_file" | grep "Created package" | grep -oP '(?<=:path=>").*?(?=")')  || { echo "Error: fpm command failed"; exit 1; }
-          fi
-
-          # Check package name
-          if [ -z "$created_package" ]; then
-            echo "Error: fpm command failed"
-            exit 1
-          fi
-
-          # Check deb
-          dpkg-deb --verbose --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
-
+          docker run --rm \
+            -v "$(pwd):/work" \
+            --workdir /work \
+            -e VERSION -e DEB_DEPENDENCIES -e DEB_PROVIDES \
+            -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS \
+            -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
+            -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
+            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            bash .github/scripts/package-cpan-deb-fpm.sh
         shell: bash
 
       - if: ${{ matrix.use_dh_make_perl == 'true' }}
+        env:
+          VERSION: ${{ matrix.version || matrix.cpan_version }}
+          PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
+          PKG_NAME: ${{ matrix.name }}
+          DISTRIB: ${{ matrix.distrib }}
+          REVISION: ${{ matrix.revision }}
+          DISTRIB_SEPARATOR: ${{ steps.parse-distrib.outputs.package_distrib_separator }}
+          DISTRIB_SUFFIX: ${{ steps.parse-distrib.outputs.package_distrib_name }}
         run: |
-          # Install needed cpan libs
-          for CPANLIB_PREINSTALL in `echo "${{ matrix.preinstall_cpanlibs }}"`; do
-            cpanm $CPANLIB_PREINSTALL
-          done
-          VERSION="${{ matrix.version }}"
-          [ -z "$VERSION" ] && VERSION="${{ matrix.cpan_version }}"
-          [ -n "$VERSION" ] && VERSION_FLAG="--version $VERSION" || VERSION_FLAG=""
-          temp_file=$(mktemp)
-          echo "default.local" | tee /etc/mailname
-          created_package=$(DEB_BUILD_OPTIONS="nocheck nodocs notest" dh-make-perl make --dist ${{ matrix.distrib }} --build $VERSION_FLAG --revision ${{ matrix.revision }}${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }} --cpan ${{ matrix.name }} | tee "$temp_file" | grep "building package" | grep -oP "(?<=in '..\/).*.deb(?=')") || { echo "Error: dh-make-perl command failed"; exit 1; }
-          # Check package name
-          if [ -z "$created_package" ]; then
-            echo "Error: dh-make-perl command failed"
-            exit 1
-          fi
-          # Check deb
-          dpkg-deb --contents $created_package || { echo "Error: dpkg-deb failed for package $created_package"; exit 1; }
+          docker run --rm \
+            -v "$(pwd):/work" \
+            --workdir /work \
+            -e VERSION -e PREINSTALL_CPANLIBS \
+            -e PKG_NAME -e DISTRIB -e REVISION \
+            -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
+            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            bash .github/scripts/package-cpan-deb-dhmaker.sh
         shell: bash
 
       - name: Replace '::' with - in the feature path
