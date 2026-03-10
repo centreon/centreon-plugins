@@ -18,18 +18,22 @@ Two modes
 
        python3 generate-cpan-matrix.py \\
            --partial-matrices-dir official-repos/ \\
+           --artifactory-url https://packages.centreon.com \\
            .github/packaging/cpan-libraries.json
 
    Without --partial-matrices-dir the matrices are generated without
    filtering (useful for local debugging).
+   Without --artifactory-url the Centreon stable repo check is skipped.
 """
 
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+import urllib.request
 
 
 # ── Matrix defaults ────────────────────────────────────────────────────────────
@@ -111,6 +115,21 @@ DEB_IMAGE_TO_CHECK_DISTRIB = {
     "packaging-plugins-jammy":          "jammy",
     "packaging-plugins-noble":          "noble",
     "packaging-plugins-bullseye-arm64": "bullseye",
+}
+
+# ── Centreon stable repository ─────────────────────────────────────────────────
+
+CPAN_MODULE_NAME   = "perl-cpan-libraries"
+UBUNTU_DISTRIBS    = frozenset({"jammy", "noble"})
+
+# Suffix appended to the package version in DEB filenames (from parse-distrib action)
+# e.g. libjson-path-perl_1.0.6+deb12u1_amd64.deb  →  distrib suffix = "deb12u1"
+DEB_DISTRIB_SUFFIX = {
+    "bullseye": "deb11u1",
+    "bookworm":  "deb12u1",
+    "trixie":    "deb32u1",
+    "jammy":     "0ubuntu.22.04",
+    "noble":     "0ubuntu.24.04",
 }
 
 
@@ -257,6 +276,78 @@ def detect_package_manager():
     return None
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# CENTREON STABLE REPO CHECK – queries the public Artifactory instance
+# ══════════════════════════════════════════════════════════════════════════════
+
+def _artifactory_list_folder(base_url, repo_path):
+    """Return list of filenames in an Artifactory folder (public API, no auth).
+
+    Uses the Artifactory storage API:  GET {base_url}/artifactory/api/storage/{repo_path}
+    Returns an empty list on any error (network, 404, unexpected format, etc.).
+    """
+    url = f"{base_url}/artifactory/api/storage/{repo_path}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        return [c["uri"].lstrip("/") for c in data.get("children", []) if not c.get("folder")]
+    except Exception as exc:
+        print(f"  WARNING: could not list {url}: {exc}", file=sys.stderr)
+        return []
+
+
+_deb_pool_cache: dict = {}
+
+
+def get_stable_rpm_packages(base_url, distrib):
+    """Return {cpan_dist_name: version} for packages already in the Centreon stable RPM repo.
+
+    Example filename: perl-JSON-Path-1.0.6-2.el9.noarch.rpm
+      → cpan_dist_name = "JSON-Path", version = "1.0.6"
+    """
+    path  = f"rpm-plugins/{distrib}/stable/noarch/RPMS/{CPAN_MODULE_NAME}"
+    files = _artifactory_list_folder(base_url, path)
+    result = {}
+    for fname in files:
+        m = re.match(
+            r"^perl-(.+?)-([0-9v][0-9.]*)-\d+\.\w+\.(noarch|x86_64)\.rpm$", fname
+        )
+        if m:
+            result[m.group(1)] = m.group(2)
+    return result
+
+
+def get_stable_deb_packages(base_url, distrib, arch="amd64"):
+    """Return {pkg_name: version} for packages already in the Centreon stable DEB repo.
+
+    All distribs of the same family (debian / ubuntu) share the same pool folder;
+    files are distinguished by the distrib suffix in their version string and the
+    arch in their filename.
+
+    Example filename: libjson-path-perl_1.0.6+deb12u1_amd64.deb
+      → pkg_name = "libjson-path-perl", version = "1.0.6"
+    """
+    repo = "ubuntu-plugins-stable" if distrib in UBUNTU_DISTRIBS else "apt-plugins-stable"
+    if repo not in _deb_pool_cache:
+        _deb_pool_cache[repo] = _artifactory_list_folder(
+            base_url, f"{repo}/pool/{CPAN_MODULE_NAME}"
+        )
+    files  = _deb_pool_cache[repo]
+    suffix = DEB_DISTRIB_SUFFIX.get(distrib, "")
+    result = {}
+    for fname in files:
+        if not fname.endswith(f"_{arch}.deb"):
+            continue
+        if suffix and suffix not in fname:
+            continue
+        # Parse: {pkg_name}_{version}+{suffix}_{arch}.deb  or  ..._{version}-{suffix}_...
+        m = re.match(r"^(.+?)_([0-9v][0-9.]*)[+\-].+_[^_]+\.deb$", fname)
+        if m:
+            result[m.group(1)] = m.group(2)
+    return result
+
+
 def run_check(args, libraries):
     """Check mode: query the local package manager and write a partial-matrix JSON."""
     pkg_manager = detect_package_manager()
@@ -297,8 +388,10 @@ def run_check(args, libraries):
                     print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
                     continue
             names.append(name)
+            cpan_info = cpanm_infos.get(name, ("", ""))
             lib_includes.append({"name": name, **rpm,
-                                  "cpan_version": cpanm_infos.get(name, ("", ""))[1]})
+                                  "cpan_dist_name": cpan_info[0],
+                                  "cpan_version":   cpan_info[1]})
 
         result = {
             "distrib": check_distrib,
@@ -348,8 +441,10 @@ def run_check(args, libraries):
                     print(f"  Skip {name}: official repo has v{found}", file=sys.stderr)
                     continue
             names.append(name)
+            cpan_info = cpanm_infos.get(name, ("", ""))
             lib_includes.append({"name": name, **deb,
-                                  "cpan_version": cpanm_infos.get(name, ("", ""))[1]})
+                                  "cpan_dist_name": cpan_info[0],
+                                  "cpan_version":   cpan_info[1]})
 
         result = {
             "distrib": check_distrib,
@@ -369,11 +464,14 @@ def run_check(args, libraries):
 # MERGE MODE – runs on the CI runner after all check jobs
 # ══════════════════════════════════════════════════════════════════════════════
 
-def merge_matrices(partial_matrices_dir, libraries):
+def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
     """Merge partial matrices from check jobs into final RPM and DEB matrices.
 
     Generates flat include-only matrices: one entry per (lib, distrib/build_name)
     combination that actually needs to be built. No 2D cross-product, no excludes.
+
+    When artifactory_url is provided, packages already present in the Centreon
+    stable repository at the expected version are also filtered out.
     """
     rpm_partials = {}  # distrib → partial matrix data
     deb_partials = {}  # check_distrib → partial matrix data
@@ -395,15 +493,41 @@ def merge_matrices(partial_matrices_dir, libraries):
 
     have_partials = bool(rpm_partials or deb_partials)
 
-    # Build cpan_version lookups from partial lib_includes
-    rpm_cpan_versions = {  # distrib → {name → cpan_version}
-        distrib: {item["name"]: item.get("cpan_version", "") for item in data.get("lib_includes", [])}
-        for distrib, data in rpm_partials.items()
-    }
-    deb_cpan_versions = {  # check_distrib → {name → cpan_version}
-        distrib: {item["name"]: item.get("cpan_version", "") for item in data.get("lib_includes", [])}
-        for distrib, data in deb_partials.items()
-    }
+    # Build per-lib extras lookup (cpan_version + cpan_dist_name) from partial lib_includes
+    def _build_extras(partials):
+        return {
+            distrib: {
+                item["name"]: {
+                    "cpan_version":   item.get("cpan_version",   ""),
+                    "cpan_dist_name": item.get("cpan_dist_name", ""),
+                }
+                for item in data.get("lib_includes", [])
+            }
+            for distrib, data in partials.items()
+        }
+
+    rpm_lib_extras = _build_extras(rpm_partials)  # distrib      → {name → extras}
+    deb_lib_extras = _build_extras(deb_partials)  # check_distrib → {name → extras}
+
+    # Optionally query Centreon stable repository
+    rpm_stable: dict = {}  # distrib → {cpan_dist_name: version}
+    deb_stable: dict = {}  # (check_distrib, arch) → {pkg_name: version}
+    if artifactory_url:
+        print("Checking Centreon stable repository…", file=sys.stderr)
+        for distrib in RPM_DISTRIBS:
+            rpm_stable[distrib] = get_stable_rpm_packages(artifactory_url, distrib)
+            print(f"  RPM {distrib}: {len(rpm_stable[distrib])} packages in stable",
+                  file=sys.stderr)
+        seen_deb_keys: set = set()
+        for bn_entry in DEB_BUILD_NAME_INCLUDES:
+            check_distrib = DEB_IMAGE_TO_CHECK_DISTRIB[bn_entry["image"]]
+            arch          = bn_entry.get("arch", "amd64")
+            key           = (check_distrib, arch)
+            if key not in seen_deb_keys:
+                seen_deb_keys.add(key)
+                deb_stable[key] = get_stable_deb_packages(artifactory_url, check_distrib, arch)
+                print(f"  DEB {check_distrib} {arch}: {len(deb_stable[key])} packages in stable",
+                      file=sys.stderr)
 
     # ── RPM matrix ────────────────────────────────────────────────────────────
     rpm_includes = []
@@ -428,7 +552,17 @@ def merge_matrices(partial_matrices_dir, libraries):
                         continue
                 else:
                     print(f"  WARNING: no partial for RPM {distrib}, including {name}", file=sys.stderr)
-            cpan_version = rpm_cpan_versions.get(distrib, {}).get(name, "")
+            extras         = rpm_lib_extras.get(distrib, {}).get(name, {})
+            cpan_version   = extras.get("cpan_version",   "")
+            cpan_dist_name = extras.get("cpan_dist_name", "")
+            if artifactory_url and cpan_dist_name:
+                stable_version = rpm_stable.get(distrib, {}).get(cpan_dist_name)
+                if stable_version is not None:
+                    required = rpm.get("version", "") or cpan_version
+                    if versions_match(stable_version, required):
+                        print(f"  Skip RPM {name}/{distrib}: Centreon stable has v{stable_version}",
+                              file=sys.stderr)
+                        continue
             rpm_includes.append({**RPM_DEFAULTS, **distrib_entry, "name": name,
                                   "cpan_version": cpan_version,
                                   **{k: v for k, v in rpm.items() if k != "build_distribs"}})
@@ -459,7 +593,19 @@ def merge_matrices(partial_matrices_dir, libraries):
                         continue
                 else:
                     print(f"  WARNING: no partial for DEB {check_distrib}, including {name}/{build_name}", file=sys.stderr)
-            cpan_version = deb_cpan_versions.get(check_distrib, {}).get(name, "")
+            extras         = deb_lib_extras.get(check_distrib, {}).get(name, {})
+            cpan_version   = extras.get("cpan_version",   "")
+            cpan_dist_name = extras.get("cpan_dist_name", "")
+            if artifactory_url and cpan_dist_name:
+                arch           = bn_entry.get("arch", "amd64")
+                pkg_name       = dist_to_deb_package(cpan_dist_name)
+                stable_version = deb_stable.get((check_distrib, arch), {}).get(pkg_name)
+                if stable_version is not None:
+                    required = deb.get("version", "") or cpan_version
+                    if versions_match(stable_version, required):
+                        print(f"  Skip DEB {name}/{build_name}: Centreon stable has v{stable_version}",
+                              file=sys.stderr)
+                        continue
             deb_includes.append({**DEB_DEFAULTS, **bn_entry, "name": name,
                                   "cpan_version": cpan_version,
                                   **{k: v for k, v in deb.items() if k != "build_names"}})
@@ -495,6 +641,14 @@ def main():
              "by --check-distrib runs. When absent, matrices are generated without "
              "official-repo filtering (useful for local debugging).",
     )
+    parser.add_argument(
+        "--artifactory-url", metavar="URL",
+        help="[Merge mode] Base URL of the public Artifactory instance "
+             "(e.g. https://packages.centreon.com). When provided, packages already "
+             "present in the Centreon stable repository at the expected version are "
+             "skipped (not rebuilt). Requires partial-matrix JSON files that contain "
+             "cpan_dist_name (produced by recent check-distrib runs).",
+    )
 
     args = parser.parse_args()
 
@@ -509,7 +663,10 @@ def main():
         return
 
     # ── Merge mode ─────────────────────────────────────────────────────────────
-    rpm_matrix, deb_matrix = merge_matrices(args.partial_matrices_dir, libraries)
+    rpm_matrix, deb_matrix = merge_matrices(
+        args.partial_matrices_dir, libraries,
+        artifactory_url=args.artifactory_url,
+    )
 
     github_output = os.environ.get("GITHUB_OUTPUT", "")
     if github_output:
