@@ -76,10 +76,19 @@ jobs:
           apt-get install -y python3 cpanminus
         shell: bash
 
+      - name: Parse distrib name
+        id: parse-distrib
+        uses: ./.github/actions/parse-distrib
+        with:
+          distrib: ${{ matrix.distrib }}
+
       - name: Check official repos for ${{ matrix.distrib }}
         run: |
-          python3 .github/scripts/generate-cpan-matrix.py \
-            --check-distrib ${{ matrix.distrib }} \
+          python3 .github/scripts/check-official-repos.py \
+            --distrib ${{ matrix.distrib }} \
+            --separator "${{ steps.parse-distrib.outputs.package_distrib_separator }}" \
+            --suffix "${{ steps.parse-distrib.outputs.package_distrib_name }}" \
+            --family "${{ steps.parse-distrib.outputs.distrib_family }}" \
             --output official-repos/partial-matrix-${{ matrix.distrib }}.json \
             .github/packaging/cpan-libraries.json
         shell: bash
@@ -111,7 +120,7 @@ jobs:
       - name: Merge partial matrices into RPM and DEB matrices
         id: generate
         run: |
-          python3 .github/scripts/generate-cpan-matrix.py \
+          python3 .github/scripts/generate-matrices.py \
             --partial-matrices-dir official-repos \
             --artifactory-url https://packages.centreon.com \
             .github/packaging/cpan-libraries.json
@@ -130,28 +139,19 @@ jobs:
       needs.get-environment.outputs.stability != 'stable'
     strategy:
       fail-fast: false
-      max-parallel: 5
+      max-parallel: 4
       matrix:
         include:
           - image: packaging-plugins-alma8
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-alma9
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-alma10
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-bullseye
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-bookworm
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-trixie
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-jammy
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-noble
-            runner_name: ubuntu-24.04
           - image: packaging-plugins-bullseye-arm64
-            runner_name: ubuntu-24.04-arm
-    runs-on: ${{ matrix.runner_name }}
+    runs-on: ${{ contains(matrix.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     steps:
       - name: Login to Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
