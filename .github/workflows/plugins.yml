@@ -232,7 +232,7 @@ jobs:
 #          retention-days: 1
 
   fatpacker:
-    needs: [get-environment, get-plugins, unit-tests]
+    needs: [get-environment, get-plugins] #, unit-tests]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.package_plugins == 'True' &&
