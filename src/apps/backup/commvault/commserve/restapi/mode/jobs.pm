@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,9 +25,9 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::misc qw/is_excluded change_seconds/;
+use centreon::plugins::constants qw(:counters);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::constants qw(:values :counters);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -38,7 +38,7 @@ sub custom_status_output {
 sub custom_long_output {
     my ($self, %options) = @_;
     
-    return 'started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
+    return 'started since: ' . change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub prefix_job_output {
@@ -71,9 +71,9 @@ sub custom_long_calc {
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
 
-    return NOT_PROCESSED if ($self->{result_values}->{status} !~ /running|queued|waiting/i);
+    return -11 if ($self->{result_values}->{status} !~ /running|queued|waiting/i);
 
-    return RUN_OK;
+    return 0;
 }
 
 sub set_counters {
@@ -86,7 +86,7 @@ sub set_counters {
           cb_long_output          => 'policy_long_output',
           display_counter_problem => { nlabel => 'jobs.problems.current.count', min => 0 },
           message_multiple        => 'All policies are ok',
-          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { NOT_PROCESSED() => 1 } } ]
+          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ]
         }
     ];
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_device_status_output {
@@ -53,8 +54,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'medias', type => 1, cb_prefix_output => 'prefix_media_output', message_multiple => 'All media agents are ok' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'medias', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_media_output', message_multiple => 'All media agents are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -87,7 +88,7 @@ sub set_counters {
     $self->{maps_counters}->{medias} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{is_maintenance} eq "no" and %{status} eq "offline"',
             set => {
                 key_values => [
@@ -108,8 +109,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-media-agent-id:s'   => { name => 'filter_media_agent_id' },
-        'filter-media-agent-name:s' => { name => 'filter_media_agent_name' }
+       'filter-media-agent-id:s'   => { name => 'filter_media_agent_id' },
+       'filter-media-agent-name:s' => { name => 'filter_media_agent_name' }
     });
 
     return $self;

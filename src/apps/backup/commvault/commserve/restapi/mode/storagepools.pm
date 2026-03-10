@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -56,11 +57,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'sp', type => 1, cb_prefix_output => 'prefix_sp_output', message_multiple => 'All storage pools are ok', skipped_code => { -10 => 1 } },
+        { name => 'sp', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_sp_output', message_multiple => 'All storage pools are ok', skipped_code => { NO_VALUE() => 1 } },
     ];
     
     $self->{maps_counters}->{sp} = [
-        { label => 'status', type => 2, critical_default => '%{status} !~ /online/i', set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} !~ /online/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -101,7 +102,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' }
+       'filter-name:s'   => { name => 'filter_name' }
     });
     
     return $self;
