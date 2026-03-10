@@ -190,14 +190,6 @@ sub refresh_authent_token
 
     my $code = $self->{http}->get_code();
 
-    {
-        my $fdbg;
-        open($fdbg, ">>/tmp/debug_commvault_api.log");
-        print $fdbg localtime(). " - Refresh token request ($code): " . $json_request . "\n";
-        print $fdbg "Response: $content\nMessage: " . $self->{http}->get_message()."\n";
-        close($fdbg);
-    }
-
     if ($code != 200) {
         $self->{cache_authent_token}->remove_file() if $code == 450 || $code == 500;
         return ('', '') unless $exit_on_failed;
@@ -316,12 +308,6 @@ sub request_internal {
             unknown_status => '',
             critical_status => ''
         );
-        {
-            my $fdbg;
-            open($fdbg, ">>/tmp/debug_commvault_api.log");
-            print $fdbg localtime(). " - Mode request ".$self->{url_path} . $options{endpoint}." token: $authent_token  code:".$self->{http}->get_code()."\n";
-            close $fdbg;
-        }
 
         last if $self->{http}->get_code() >= 200 && $self->{http}->get_code() < 300;
         last if $self->{use_authent_token};
