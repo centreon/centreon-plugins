@@ -130,6 +130,7 @@ jobs:
       needs.get-environment.outputs.stability != 'stable'
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         include:
           - image: packaging-plugins-alma8

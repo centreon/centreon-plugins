@@ -21,8 +21,9 @@ done
 
 ITERATION="${REVISION}${DISTRIB_SEPARATOR}${DISTRIB_SUFFIX}"
 
-# Run from a build subdirectory so dh-make-perl places the .deb at ../
-# which resolves to the mounted workspace root /work (accessible on the runner).
+# Run from a build subdirectory: dh-make-perl creates a source dir inside
+# the current directory and places the .deb one level up (i.e. in the current
+# directory).  We then move the .deb to /work so the runner can upload it.
 mkdir -p /work/build
 cd /work/build
 
@@ -39,4 +40,5 @@ if [ -z "$created_package" ]; then
   exit 1
 fi
 
-dpkg-deb --contents "../$created_package" || { echo "Error: dpkg-deb failed for $created_package"; exit 1; }
+dpkg-deb --contents "$created_package" || { echo "Error: dpkg-deb failed for $created_package"; exit 1; }
+mv "$created_package" /work/

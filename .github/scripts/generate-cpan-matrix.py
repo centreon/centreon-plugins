@@ -176,18 +176,6 @@ def _extras_from_partials(partials):
 # CHECK MODE – runs inside a distribution container
 # ══════════════════════════════════════════════════════════════════════════════
 
-def cpan_to_deb_package(module_name):
-    """Fallback: derive deb package name from CPAN module name.
-
-    ARGV::Struct → libargv-struct-perl,  Libssh::Session → libssh-session-perl.
-    Used only when cpanm is unavailable; prefer dist_to_deb_package().
-    """
-    name = module_name.replace("::", "-").lower()
-    if name.startswith("lib"):
-        return f"{name}-perl"
-    return f"lib{name}-perl"
-
-
 def dist_to_deb_package(dist_name, fallback_module_name=""):
     """Convert CPAN distribution name to deb package name.
 
@@ -195,14 +183,13 @@ def dist_to_deb_package(dist_name, fallback_module_name=""):
     "Net-Curl"       → "libnet-curl-perl"
     "Libssh-Session" → "libssh-session-perl"
 
-    Falls back to cpan_to_deb_package(fallback_module_name) when dist_name is empty.
+    Falls back to deriving from fallback_module_name (CPAN module name) when dist_name is empty.
+    "ARGV::Struct" → "libargv-struct-perl",  "Libssh::Session" → "libssh-session-perl"
     """
-    if not dist_name:
-        return cpan_to_deb_package(fallback_module_name) if fallback_module_name else ""
-    name = dist_name.lower()
-    if name.startswith("lib"):
-        return f"{name}-perl"
-    return f"lib{name}-perl"
+    name = (dist_name or fallback_module_name.replace("::", "-")).lower()
+    if not name:
+        return ""
+    return f"{name}-perl" if name.startswith("lib") else f"lib{name}-perl"
 
 
 def get_cpanm_infos(lib_names):
@@ -383,6 +370,9 @@ def _artifactory_list_folder(base_url, repo_path):
 
 _deb_pool_cache: dict = {}
 
+_RPM_PKG_RE = re.compile(r"^perl-(.+?)-([0-9v][0-9.]*)-\d+\.\w+\.(noarch|x86_64)\.rpm$")
+_DEB_PKG_RE = re.compile(r"^(.+?)_([0-9v][0-9.]*)[+\-].+_[^_]+\.deb$")
+
 
 def get_stable_rpm_packages(base_url, distrib):
     """Return {cpan_dist_name: version} for packages already in the Centreon stable RPM repo.
@@ -395,7 +385,7 @@ def get_stable_rpm_packages(base_url, distrib):
     )
     result = {}
     for fname in files:
-        m = re.match(r"^perl-(.+?)-([0-9v][0-9.]*)-\d+\.\w+\.(noarch|x86_64)\.rpm$", fname)
+        m = _RPM_PKG_RE.match(fname)
         if m:
             result[m.group(1)] = m.group(2)
     return result
@@ -423,8 +413,7 @@ def get_stable_deb_packages(base_url, distrib, arch="amd64"):
             continue
         if suffix and suffix not in fname:
             continue
-        # Parse: {pkg_name}_{version}+{suffix}_{arch}.deb  or  ..._{version}-{suffix}_...
-        m = re.match(r"^(.+?)_([0-9v][0-9.]*)[+\-].+_[^_]+\.deb$", fname)
+        m = _DEB_PKG_RE.match(fname)
         if m:
             result[m.group(1)] = m.group(2)
     return result
@@ -464,6 +453,9 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
     have_partials  = bool(rpm_partials or deb_partials)
     rpm_lib_extras = _extras_from_partials(rpm_partials)  # distrib      → {name → extras}
     deb_lib_extras = _extras_from_partials(deb_partials)  # check_distrib → {name → extras}
+    # Pre-compute name sets for O(1) membership tests in the matrix loops below
+    rpm_names_by_distrib = {d: set(data.get("names", [])) for d, data in rpm_partials.items()}
+    deb_names_by_distrib = {d: set(data.get("names", [])) for d, data in deb_partials.items()}
 
     # Optionally query Centreon stable repository
     rpm_stable: dict = {}  # distrib → {cpan_dist_name: version}
@@ -497,8 +489,8 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
             if distrib not in build_distribs:
                 continue
             if have_partials:
-                if distrib in rpm_partials:
-                    if name not in set(rpm_partials[distrib].get("names", [])):
+                if distrib in rpm_names_by_distrib:
+                    if name not in rpm_names_by_distrib[distrib]:
                         print(f"  Skip RPM {name}/{distrib}: already in official repo", file=sys.stderr)
                         continue
                 else:
@@ -532,8 +524,8 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
             if build_name not in build_names:
                 continue
             if have_partials:
-                if check_distrib in deb_partials:
-                    if name not in set(deb_partials[check_distrib].get("names", [])):
+                if check_distrib in deb_names_by_distrib:
+                    if name not in deb_names_by_distrib[check_distrib]:
                         print(f"  Skip DEB {name}/{build_name}: already in official repo", file=sys.stderr)
                         continue
                 else:
