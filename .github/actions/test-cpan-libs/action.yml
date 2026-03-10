@@ -76,7 +76,7 @@ runs:
         for package in ./*.rpm; do
           echo "Installing package: $package"
           # List dependencies, and remove version and comparison operators
-          dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g')
+          dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g') || true
           for dependency in $dependencies; do
             # Skip non-perl dependencies
             if [[ $dependency != perl* ]]; then
@@ -130,7 +130,7 @@ runs:
           echo "Installing package: $package"
           # List dependencies (grep returning 1 = no Depends field = valid, not an error)
           dpkg_info=$(dpkg-deb -I $package 2>&1) || { echo "Error: dpkg-deb failed for $package" >> $error_log; true; }
-          dependencies=$(echo "$dpkg_info" | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/ ([^)]*)//g')
+          dependencies=$(echo "$dpkg_info" | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/ ([^)]*)//g') || true
           for dependency in $dependencies; do
             # If the dependency exists in the Debian repository, don't check the local dependencies
             dependency_info=$(apt-cache policy $dependency)
