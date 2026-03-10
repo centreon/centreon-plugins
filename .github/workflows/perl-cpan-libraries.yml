@@ -188,7 +188,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      max-parallel: 20
+      max-parallel: 50
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix_rpm) }}
 
     name: Package ${{ matrix.distrib }} ${{ matrix.name }}
@@ -330,7 +330,7 @@ jobs:
     runs-on: ${{ matrix.runner_name }}
     strategy:
       fail-fast: false
-      max-parallel: 20
+      max-parallel: 50
       matrix: ${{ fromJson(needs.generate-matrices.outputs.matrix_deb) }}
     name: package ${{ matrix.distrib }} ${{ matrix.arch }} ${{ matrix.name }}
 

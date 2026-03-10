@@ -25,6 +25,22 @@ runs:
         GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
         curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
         rpm --import RPM-GPG-KEY-CES
+        # Add Centreon stable repository so that pre-existing packaged dependencies are available
+        {
+          echo '[centreon-plugins-stable]'
+          echo 'name=centreon plugins stable x86_64'
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${{ inputs.distrib }}/stable/x86_64"
+          echo 'enabled=1'
+          echo 'gpgcheck=1'
+          echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
+          echo ''
+          echo '[centreon-plugins-stable-noarch]'
+          echo 'name=centreon plugins stable noarch'
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${{ inputs.distrib }}/stable/noarch"
+          echo 'enabled=1'
+          echo 'gpgcheck=1'
+          echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
+        } > /etc/yum.repos.d/centreon-plugins-stable.repo
       shell: bash
 
     - if: ${{ inputs.package_extension == 'deb' }}
@@ -34,6 +50,13 @@ runs:
         apt-get update
         apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
         wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+        # Add Centreon stable repository so that pre-existing packaged dependencies are available
+        if [[ "${{ inputs.distrib }}" == "jammy" || "${{ inputs.distrib }}" == "noble" ]]; then
+          repo="ubuntu-plugins-stable"
+        else
+          repo="apt-plugins-stable"
+        fi
+        echo "deb https://packages.centreon.com/$repo/ ${{ inputs.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
         # Avoid apt to clean packages cache directory
         rm -f /etc/apt/apt.conf.d/docker-clean
         apt-get update
@@ -82,7 +105,8 @@ runs:
               echo "No test script found for the package $package"
           fi
           echo "Package uninstallation..."
-          error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+          pkg_name=$(rpm -qp --queryformat "%{NAME}" "$package" 2>/dev/null)
+          error_output=$(dnf autoremove --setopt=keepcache=True -y "$pkg_name" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           echo "Package uninstallation done."
         done
         # If the file error_log exists and is not empty, the workflow is in error
@@ -102,8 +126,9 @@ runs:
             continue
           fi
           echo "Installing package: $package"
-          # List dependencies
-          dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
+          # List dependencies (grep returning 1 = no Depends field = valid, not an error)
+          dpkg_info=$(dpkg-deb -I $package 2>&1) || { echo "Error: dpkg-deb failed for $package" >> $error_log; true; }
+          dependencies=$(echo "$dpkg_info" | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/ ([^)]*)//g')
           for dependency in $dependencies; do
             # If the dependency exists in the Debian repository, don't check the local dependencies
             dependency_info=$(apt-cache policy $dependency)
@@ -113,7 +138,7 @@ runs:
               # If the dependency has been built in the same workflow, install it
               for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ inputs.arch }}\.deb"); do
                 echo "Installing dependency: $dependency_package"
-                error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+                error_output=$(apt-get install -y "$dependency_package" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               done
             fi
           done
