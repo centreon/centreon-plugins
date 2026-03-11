@@ -56,7 +56,7 @@ runs:
           DISTRIB_FAMILY="debian"
         elif [[ "${{ inputs.distrib }}" == "trixie" ]]; then
           PACKAGE_DISTRIB_SEPARATOR="+"
-          PACKAGE_DISTRIB_NAME="deb32u1"
+          PACKAGE_DISTRIB_NAME="deb13u1"
           PACKAGE_EXTENSION="deb"
           DISTRIB_FAMILY="debian"
         elif [[ "${{ inputs.distrib }}" == "jammy" ]]; then

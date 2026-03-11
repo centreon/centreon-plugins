@@ -1,0 +1,424 @@
+{
+  "libraries": [
+    {
+      "name": "ARGV::Struct",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Authen::SASL::SASLprep",
+      "rpm": {}
+    },
+    {
+      "name": "Authen::SCRAM::Client",
+      "rpm": {}
+    },
+    {
+      "name": "BSON",
+      "rpm": {
+        "rpm_provides": "perl(BSON::Bytes) perl(BSON::Code) perl(BSON::DBRef) perl(BSON::OID) perl(BSON::Raw) perl(BSON::Regex) perl(BSON::Time) perl(BSON::Timestamp) perl(BSON::Types) perl(BSON)"
+      }
+    },
+    {
+      "name": "BSON::XS",
+      "rpm": {}
+    },
+    {
+      "name": "Carp::Assert",
+      "comment": "needed by perl-JSON-Path-1.0.6-2.el10",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "Config::AWS",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Convert::Binary::C",
+      "rpm": {}
+    },
+    {
+      "name": "Convert::EBCDIC",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Crypt::Argon2",
+      "rpm": {
+        "preinstall_cpanlibs": "Dist::Build",
+        "rpm_provides": "perl-Crypt-Argon2-debuginfo perl(Crypt::Argon2)",
+        "revision": "3"
+      },
+      "deb": {
+        "build_names": "bullseye-amd64,jammy,bullseye-arm64",
+        "preinstall_cpanlibs": "Dist::Build",
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libexporter-tiny-perl libtime-hires-perl libxsloader-perl",
+        "deb_provides": "libcrypt-argon2-perl-dbgsym",
+        "revision": "2"
+      }
+    },
+    {
+      "name": "Crypt::Blowfish_PP",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Crypt::OpenSSL::AES",
+      "rpm": {
+        "build_distribs": "el8,el9"
+      },
+      "deb": {
+        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64",
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libexporter-tiny-perl libxs-install-perl"
+      }
+    },
+    {
+      "name": "Data::Compare",
+      "comment": "needed by perl-Paws-0.46-2.el10",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "DataStruct::Flat",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "DateTime::Format::Duration::ISO8601",
+      "rpm": {
+        "rpm_provides": "perl(DateTime-Format-Duration-ISO8601)"
+      },
+      "deb": {}
+    },
+    {
+      "name": "DBD::ODBC",
+      "rpm": {
+        "build_distribs": "el10",
+        "preinstall_packages": "unixODBC-devel"
+      },
+      "deb": {
+        "build_names": "trixie"
+      }
+    },
+    {
+      "name": "DBD::Sybase",
+      "rpm": {}
+    },
+    {
+      "name": "Device::Modbus",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Device::Modbus::RTU::Client",
+      "rpm": {
+        "version": "0.022"
+      },
+      "deb": {}
+    },
+    {
+      "name": "Device::Modbus::TCP::Client",
+      "rpm": {
+        "version": "0.026"
+      },
+      "deb": {}
+    },
+    {
+      "name": "Digest::MD5::File",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "Digest::SHA1",
+      "comment": "needed by libjmx4perl-perl on jammy and noble",
+      "deb": {
+        "build_names": "jammy,noble"
+      }
+    },
+    {
+      "name": "Email::Send::SMTP::Gmail",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Exporter::Tiny",
+      "comment": "Required by JSON::Path: the version available in the official repositories doesn't work with the last version of JSON::Path",
+      "rpm": {}
+    },
+    {
+      "name": "FFI::CheckLib",
+      "rpm": {
+        "rpm_dependencies": "perl(Env)"
+      }
+    },
+    {
+      "name": "FFI::Platypus",
+      "rpm": {
+        "rpm_provides": "perl(FFI::Platypus::Buffer) perl(FFI::Platypus::Memory)",
+        "rpm_dependencies": "perl(Capture::Tiny) perl(FFI::CheckLib) perl(File::Spec::Functions) perl(IPC::Cmd) perl(JSON::PP) perl(List::Util) perl(autodie) perl(constant) perl(parent)",
+        "no-auto-depends": "true"
+      }
+    },
+    {
+      "name": "File::SearchPath",
+      "rpm": {}
+    },
+    {
+      "name": "Hash::Ordered",
+      "deb": {
+        "build_names": "bullseye-amd64,bookworm,jammy"
+      }
+    },
+    {
+      "name": "HTTP::ProxyPAC",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "JMX::Jmx4Perl",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "JSON::Path",
+      "rpm": {}
+    },
+    {
+      "name": "JSON::WebToken",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "Libssh::Session",
+      "rpm": {
+        "rpm_dependencies": "libssh",
+        "rpm_provides": "perl-Libssh-Session-debuginfo perl(Libssh::Session) perl(Libssh::Sftp)",
+        "revision": "3"
+      },
+      "deb": {
+        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64",
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6",
+        "deb_provides": "libssh-session-perl-dbgsym libssh-session-sftp",
+        "revision": "2"
+      }
+    },
+    {
+      "name": "LV",
+      "rpm": {}
+    },
+    {
+      "name": "Mail::IMAPClient",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "Mojo::IOLoop::Signal",
+      "rpm": {
+        "rpm_dependencies": "perl-Mojolicious",
+        "rpm_provides": "perl(Mojo::IOLoop::Signal)",
+        "no-auto-depends": "true"
+      },
+      "deb": {}
+    },
+    {
+      "name": "MongoDB",
+      "rpm": {}
+    },
+    {
+      "name": "MooseX::ClassAttribute",
+      "rpm": {}
+    },
+    {
+      "name": "Net::Amazon::Signature::V4",
+      "rpm": {},
+      "deb": {
+        "build_names": "bullseye-amd64,jammy,trixie"
+      }
+    },
+    {
+      "name": "Net::Curl",
+      "rpm": {
+        "rpm_dependencies": "libcurl",
+        "rpm_provides": "perl-Net-Curl-debuginfo perl(Net::Curl) perl(Net::Curl::Compat) perl(Net::Curl::Easy) perl(Net::Curl::Form) perl(Net::Curl::Multi) perl(Net::Curl::Share)",
+        "revision": "3"
+      },
+      "deb": {
+        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64",
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4",
+        "deb_provides": "libnet-curl-perl-dbgsym libnet-curl-compat-perl libnet-curl-easy-perl libnet-curl-form-perl libnet-curl-share-perl libnet-curl-multi-perl",
+        "revision": "2"
+      }
+    },
+    {
+      "name": "Net::DHCP",
+      "rpm": {
+        "rpm_provides": "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
+      }
+    },
+    {
+      "name": "Net::FTPSSL",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Net::HTTPTunnel",
+      "rpm": {},
+      "deb": {}
+    },
+    {
+      "name": "Net::MQTT::Simple",
+      "deb": {
+        "version": "1.29",
+        "build_names": "bullseye-amd64,bookworm,jammy"
+      }
+    },
+    {
+      "name": "Net::NTP",
+      "rpm": {}
+    },
+    {
+      "name": "Net::SMTPS",
+      "rpm": {
+        "build_distribs": "el9,el10"
+      }
+    },
+    {
+      "name": "Net::SMTP_auth",
+      "rpm": {}
+    },
+    {
+      "name": "Net::Subnet",
+      "rpm": {}
+    },
+    {
+      "name": "Net::Telnet",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "Net::TFTP",
+      "rpm": {}
+    },
+    {
+      "name": "Paws",
+      "rpm": {},
+      "deb": {
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libmoose-perl libmoosex-classattribute-perl libjson-maybexs-perl liburl-encode-perl libargv-struct-perl libmoo-perl libtype-tiny-perl libdatastruct-flat-perl libmodule-find-perl libthrowable-perl liburi-template-perl libnet-amazon-signature-v4-perl"
+      }
+    },
+    {
+      "name": "PBKDF2::Tiny",
+      "rpm": {}
+    },
+    {
+      "name": "Statistics::Descriptive",
+      "rpm": {
+        "build_distribs": "el9,el10"
+      }
+    },
+    {
+      "name": "Statistics::Regression",
+      "rpm": {
+        "version": "0.53"
+      },
+      "deb": {
+        "build_names": "bullseye-amd64",
+        "version": "0.53"
+      }
+    },
+    {
+      "name": "Sys::SigAction",
+      "comment": "needed by perl-jmx4perl-1.13-2.el10",
+      "rpm": {
+        "build_distribs": "el10"
+      }
+    },
+    {
+      "name": "Term::Clui",
+      "rpm": {}
+    },
+    {
+      "name": "Unicode::Stringprep",
+      "rpm": {}
+    },
+    {
+      "name": "URI::Template",
+      "rpm": {}
+    },
+    {
+      "name": "URL::Encode",
+      "rpm": {}
+    },
+    {
+      "name": "URL::Encode::XS",
+      "rpm": {
+        "build_distribs": "el9,el10"
+      }
+    },
+    {
+      "name": "UUID",
+      "rpm": {
+        "version": "0.31"
+      }
+    },
+    {
+      "name": "UUID::URandom",
+      "rpm": {}
+    },
+    {
+      "name": "WWW::Selenium",
+      "rpm": {}
+    },
+    {
+      "name": "XML::LibXML::Simple",
+      "rpm": {}
+    },
+    {
+      "name": "XS::Loader",
+      "deb": {}
+    },
+    {
+      "name": "ZMQ::Constants",
+      "rpm": {
+        "build_distribs": "el9,el10"
+      },
+      "deb": {}
+    },
+    {
+      "name": "ZMQ::FFI",
+      "rpm": {
+        "rpm_dependencies": "zeromq"
+      }
+    },
+    {
+      "name": "ZMQ::LibZMQ4",
+      "rpm": {
+        "version": "0.01",
+        "rpm_dependencies": "zeromq"
+      },
+      "deb": {
+        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64",
+        "use_dh_make_perl": "false",
+        "version": "0.01",
+        "deb_dependencies": "libzmq5"
+      }
+    }
+  ]
+}

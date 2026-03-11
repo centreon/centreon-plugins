@@ -37,7 +37,7 @@ jobs:
           script: |
             await exec.exec("sleep 20s");
 
-            for (let i = 0; i < 120; i++) {
+            for (let i = 0; i < 240; i++) {
               const failure = [];
               const cancelled = [];
               const pending = [];
