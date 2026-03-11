@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import sys
+import urllib.parse
 import urllib.request
 
 
@@ -273,6 +274,9 @@ _DEB_PKG_RE = re.compile(r"^(.+?)_([0-9v][0-9.]*)[+\-].+_[^_]+\.deb$")
 _deb_pool_cache: dict = {}
 
 
+_ALLOWED_ARTIFACTORY_HOSTS = {"packages.centreon.com"}
+
+
 def _artifactory_list_folder(base_url, repo_path):
     """Return list of filenames in an Artifactory folder (public API, no auth).
 
@@ -280,9 +284,11 @@ def _artifactory_list_folder(base_url, repo_path):
     Returns an empty list on any error (network, 404, unexpected format, etc.).
     """
     url = f"{base_url}/artifactory/api/storage/{repo_path}"
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or parsed.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
+        print(f"  WARNING: {url} is not an allowed Artifactory URL, skipping.", file=sys.stderr)
+        return []
     try:
-        if not url.startswith("https://") and not url.startswith("http://"):
-            raise ValueError(f"URL must start with http:// or https://, got: {url}")
         req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
