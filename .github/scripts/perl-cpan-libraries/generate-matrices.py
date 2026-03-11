@@ -58,7 +58,11 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
         for fname in sorted(os.listdir(partial_matrices_dir)):
             if not fname.endswith(".json"):
                 continue
-            with open(os.path.join(partial_matrices_dir, fname)) as f:
+            base_real = os.path.realpath(partial_matrices_dir)
+            target_real = os.path.realpath(os.path.join(partial_matrices_dir, fname))
+            if os.path.commonpath([base_real, target_real]) != base_real:
+                raise Exception("Invalid file path")
+            with open(target_real) as f:
                 data = json.load(f)
             ptype   = data.get("type", "")
             distrib = data.get("distrib", "")

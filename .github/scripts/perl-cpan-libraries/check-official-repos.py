@@ -80,6 +80,8 @@ def run_check(distrib, output_path, libraries, separator="", suffix="", family="
     }
     print(f"→ {len(names)} libs to package for {distrib}", file=sys.stderr)
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+    if ".." in output_path:
+        raise Exception("Invalid file path")
     with open(output_path, "w") as f:
         json.dump(result, f, indent=2)
     print(f"Results written to {output_path}", file=sys.stderr)

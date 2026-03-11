@@ -281,6 +281,8 @@ def _artifactory_list_folder(base_url, repo_path):
     """
     url = f"{base_url}/artifactory/api/storage/{repo_path}"
     try:
+        if not url.startswith("https://") and not url.startswith("http://"):
+            raise ValueError(f"URL must start with http:// or https://, got: {url}")
         req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
