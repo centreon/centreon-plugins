@@ -43,6 +43,13 @@ def add_package_info(packaging_file, build=True, test=True):
                             if line.startswith("package "):
                                 plugin_package_name = line.split()[1].replace(";", "")
                                 break
+        packaging_dir = Path(packaging_file).parent
+        test_dependencies = []
+        rpm_file = f'{packaging_dir}/rpm.json'
+        if rpm_file.exists():
+            with open(rpm_file) as rf:
+                rpm_data = json.load(rf)
+                test_dependencies = [dependency for dependency in rpm_data.get('dependencies', []) if dependency.lower().startswith('centreon-plugin-')]
         if packaging['pkg_name'] not in list_plugins:
             list_plugins[packaging['pkg_name']] = {
                 "perl_package": plugin_package_name,
@@ -50,7 +57,8 @@ def add_package_info(packaging_file, build=True, test=True):
                 "paths": plugin_paths,
                 "build": build,
                 "test": test,
-                "runner_id": runner_id
+                "runner_id": runner_id,
+                "test_dependencies": test_dependencies
             }
             if runner_id == max_runners:
                 runner_id = 1
