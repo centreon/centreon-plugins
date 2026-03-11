@@ -41,6 +41,9 @@ jobs:
             dockerfile: alma9
             image: alma9
           - runner: ubuntu-24.04
+            dockerfile: alma10
+            image: alma10
+          - runner: ubuntu-24.04
             dockerfile: bullseye
             image: bullseye
           - runner: ubuntu-24.04-arm
@@ -49,6 +52,9 @@ jobs:
           - runner: ubuntu-24.04
             dockerfile: bookworm
             image: bookworm
+          - runner: ubuntu-24.04
+            dockerfile: trixie
+            image: trixie
           - runner: ubuntu-24.04
             dockerfile: jammy
             image: jammy
