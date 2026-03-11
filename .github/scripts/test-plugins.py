@@ -99,12 +99,12 @@ def get_plugin_modes(plugin_command):
                     break
     return modes
 
-def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir):
+def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir, skip_robot_tests):
     tests_path = []
     for path in plugin_paths:
         if os.path.exists(f"tests/{path}"):
             tests_path.append(f"tests/{path}")
-    if len(tests_path) == 0:
+    if len(tests_path) == 0 or skip_robot_tests:
         output_status = 3
         with open(f'{logs_dir}/test-plugins-help.log', "a") as outfile:
             print(
@@ -177,11 +177,13 @@ if __name__ == '__main__':
     parser.add_argument('--runner-id', type=int, help='ID du runner pour le test des plugins')
     parser.add_argument('--logs-dir', type=str, help='Répertoire des logs', default='/var/log')
     parser.add_argument('--reports-dir', type=str, help='Répertoire des rapports', default='reports')
+    parser.add_argument('--skip-robot-tests', type=bool, help='True to skip robot tests, default value: False', default=False)
     args = parser.parse_args()
 
     launch_snmp_sim()
     archi = args.extension  # expected either deb or rpm.
     logs_dir = args.logs_dir
+    skip_robot_tests = args.skip_robot_tests
     if args.runner_id:
         logs_dir = os.path.join(logs_dir, f"runner-{args.runner_id}")
     os.makedirs(logs_dir, exist_ok=True)
@@ -217,7 +219,7 @@ if __name__ == '__main__':
                 list_plugin_error.add(plugin)
             else:
                 if plugins[plugin]["test"]:
-                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir)
+                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir, skip_robot_tests)
                     if tmp > 0:
                         error_tests += 1
                         list_plugin_error.add(plugin)

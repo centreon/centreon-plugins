@@ -367,6 +367,7 @@ jobs:
         #image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-alma10, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-trixie, testing-plugins-noble, testing-plugins-bullseye-arm64]
         image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
+          - skip_robot_tests: false
           - package_extension: rpm
             image: testing-plugins-alma8
             distrib: el8
@@ -375,10 +376,11 @@ jobs:
             image: testing-plugins-alma9
             distrib: el9
             arch: amd64
-#          - package_extension: rpm
-#            image: testing-plugins-alma10
-#            distrib: el10
-#            arch: amd64
+          - package_extension: rpm
+            image: testing-plugins-alma10
+            distrib: el10
+            arch: amd64
+            skip_robot_tests: true
           - package_extension: deb
             image: testing-plugins-bullseye
             distrib: bullseye
@@ -387,10 +389,11 @@ jobs:
             image: testing-plugins-bookworm
             distrib: bookworm
             arch: amd64
-#          - package_extension: deb
-#            image: testing-plugins-trixie
-#            distrib: trixie
-#            arch: amd64
+          - package_extension: deb
+            image: testing-plugins-trixie
+            distrib: trixie
+            arch: amd64
+            skip_robot_tests: true
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
