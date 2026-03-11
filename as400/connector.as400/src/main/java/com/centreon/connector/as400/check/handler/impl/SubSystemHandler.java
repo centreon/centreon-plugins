@@ -76,7 +76,11 @@ public class SubSystemHandler extends AbstractHandler implements ISubSystemHandl
             for (int i = 0; i < list.length; i++) {
                 HashMap<String, Object> attrs = new HashMap<String, Object>();
 
-                list[i].refresh();
+                try {
+                    list[i].refresh();
+                } catch (Exception e) {
+                    continue;
+                }
                 attrs.put("name", list[i].getName());
                 attrs.put("path", list[i].getPath());
                 attrs.put("library", list[i].getLibrary());
