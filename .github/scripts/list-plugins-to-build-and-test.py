@@ -45,7 +45,7 @@ def add_package_info(packaging_file, build=True, test=True):
                                 break
         packaging_dir = Path(packaging_file).parent
         test_dependencies = []
-        rpm_file = f'{packaging_dir}/rpm.json'
+        rpm_file = packaging_dir / 'rpm.json'
         if rpm_file.exists():
             with open(rpm_file) as rf:
                 rpm_data = json.load(rf)
