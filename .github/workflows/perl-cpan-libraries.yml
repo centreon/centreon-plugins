@@ -84,7 +84,7 @@ jobs:
 
       - name: Check official repos for ${{ matrix.distrib }}
         run: |
-          python3 .github/scripts/check-official-repos.py \
+          python3 .github/scripts/perl-cpan-libraries/check-official-repos.py \
             --distrib ${{ matrix.distrib }} \
             --separator "${{ steps.parse-distrib.outputs.package_distrib_separator }}" \
             --suffix "${{ steps.parse-distrib.outputs.package_distrib_name }}" \
@@ -120,7 +120,7 @@ jobs:
       - name: Merge partial matrices into RPM and DEB matrices
         id: generate
         run: |
-          python3 .github/scripts/generate-matrices.py \
+          python3 .github/scripts/perl-cpan-libraries/generate-matrices.py \
             --partial-matrices-dir official-repos \
             --artifactory-url https://packages.centreon.com \
             .github/packaging/cpan-libraries.json
@@ -227,7 +227,7 @@ jobs:
             -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
             "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
-            bash .github/scripts/package-cpan-rpm.sh
+            bash .github/scripts/perl-cpan-libraries/package-cpan-rpm.sh
         shell: bash
 
       - if: ${{ matrix.spec_file != '' }}
@@ -290,6 +290,7 @@ jobs:
 
     runs-on: ubuntu-24.04
     strategy:
+      max-parallel: 1
       matrix:
         distrib: [el8, el9, el10]
     name: sign rpm ${{ matrix.distrib }}
@@ -378,7 +379,7 @@ jobs:
             -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
             -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
             "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
-            bash .github/scripts/package-cpan-deb-fpm.sh
+            bash .github/scripts/perl-cpan-libraries/package-cpan-deb-fpm.sh
         shell: bash
 
       - if: ${{ matrix.use_dh_make_perl == 'true' }}
@@ -399,7 +400,7 @@ jobs:
             -e PKG_NAME -e DISTRIB -e REVISION \
             -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
             "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
-            bash .github/scripts/package-cpan-deb-dhmaker.sh
+            bash .github/scripts/perl-cpan-libraries/package-cpan-deb-dhmaker.sh
         shell: bash
 
       - name: Replace '::' with - in the feature path
