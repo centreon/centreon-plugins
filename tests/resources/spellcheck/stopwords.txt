@@ -4,6 +4,7 @@
 --3cx-version
 7210SAS
 7750SR
+Accedian
 ACS
 --add-cpu
 --add-disk-io
@@ -284,6 +285,7 @@ proto
 Proxmox
 --proxyurl
 psu
+PVX
 QoS
 Qtree
 queue-messages-inflighted
