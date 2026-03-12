@@ -24,12 +24,7 @@ runs:
     - name: Parse distrib
       id: parse-distrib
       run: |
-        if [[ "${{ inputs.distrib }}" == "centos7" || "${{ inputs.distrib }}" == "el7" ]]; then
-          PACKAGE_DISTRIB_SEPARATOR="."
-          PACKAGE_DISTRIB_NAME="el7"
-          PACKAGE_EXTENSION="rpm"
-          DISTRIB_FAMILY="el"
-        elif [[ "${{ inputs.distrib }}" == "alma8" || "${{ inputs.distrib }}" == "el8" ]]; then
+        if [[ "${{ inputs.distrib }}" == "alma8" || "${{ inputs.distrib }}" == "el8" ]]; then
           PACKAGE_DISTRIB_SEPARATOR="."
           PACKAGE_DISTRIB_NAME="el8"
           PACKAGE_EXTENSION="rpm"

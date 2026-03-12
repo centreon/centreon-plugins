@@ -53,6 +53,8 @@ dnf install -y make cpan perl-Test2-Suite.noarch 'perl(Authen::Radius)' 'perl(Co
 dnf -y install 'perl(Crypt::OpenSSL::AES)' 'perl-Net-Curl' 'perl(YAML::XS)' 'perl(Hash::Merge)' 'perl(Clone)' 'perl(CryptX)' 'perl(JSON::XS)' 'perl(JSON::PP)' 'perl(Digest::MD5::File)'
 dnf -y install 'perl(ZMQ::FFI)'  'perl(EV)' 'perl(RRDs)' 'perl(DBI)' 'perl(DBD::SQLite)' 'perl(HTTP::Daemon)' 'perl(HTTP::Daemon::SSL)' 'perl(NetAddr::IP)' 'perl(Mojolicious)' 'perl(Mojo::IOLoop::Signal)' 'perl(Net::Curl)'
 dnf -y install git mariadb
+# Replace libcurl-minimal with the full libcurl to enable NTLM support (removed from minimal build in RHEL 10)
+dnf -y install --allowerasing libcurl
 
 dnf clean all
 mkdir -p /var/lib/centreon/centplugins/
