@@ -473,19 +473,30 @@ sub parse_structure {
             if ($ref eq 'HASH') {
 
                 if (!defined($value->{ $_->{id} })) {
-                    # Check and assume in case of hash reference first part is the hash ref and second the hash key
-                    if($_->{id} =~ /^(.+?)\.(.*)$/){
-                        if (!defined($value->{$1}->{$2})) {
+                    # Traverse dotted path to reach nested hash values
+                    my @keys = split(/\./, $_->{id});
+                    if (scalar(@keys) > 1) {
+                        my $current = $value;
+                        my $found = 1;
+                        foreach my $key (@keys) {
+                            if (ref($current) eq 'HASH' && defined($current->{$key})) {
+                                $current = $current->{$key};
+                            } else {
+                                $found = 0;
+                                last;
+                            }
+                        }
+                        if ($found) {
+                            $entry->{ $_->{id} } = $current;
+                        } else {
                             $entry->{ $_->{id} } = '';
                             next;
-                        }else{
-                            $entry->{ $_->{id} } = $value->{$1}->{$2};
                         }
-                    }else {
+                    } else {
                         $entry->{ $_->{id} } = '';
                         next;
                     }
-                }else {
+                } else {
                     $entry->{ $_->{id} } = $value->{ $_->{id} };
                 }
             } elsif (ref($value) eq 'ARRAY') {
