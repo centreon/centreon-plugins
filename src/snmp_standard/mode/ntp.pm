@@ -173,7 +173,7 @@ sub manage_selection {
         $ref_time = time();
     }
 
-    my $offset = $distant_time - $ref_time;
+    my $offset = abs( $distant_time - $ref_time);
     my $remote_date_formated = sprintf(
         'Local Time : %02d-%02d-%02dT%02d:%02d:%02d (%s)',
         $remote_date->[0], $remote_date->[1], $remote_date->[2],
