@@ -1,0 +1,89 @@
+{
+  "constants": {
+    "protocol": "http",
+    "port": "3000",
+    "hostname": "127.0.0.1"
+  },
+  "http": {
+    "requests": [
+      {
+        "name": "itemsRequest",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.protocol)",
+        "port": "%(constants.port)",
+        "endpoint": "/api/items",
+        "method": "GET",
+        "headers": [
+          "Accept:application/json"
+        ],
+        "timeout": 30,
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "entries",
+            "type": "body",
+            "path": "$.items[*]",
+            "entries": [
+              {
+                "id": "name"
+              },
+              {
+                "id": "location.datacenter"
+              },
+              {
+                "id": "location.rack.row"
+              },
+              {
+                "id": "location.rack.position.slot"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "selection_loop": [
+    {
+      "name": "ItemsLoop",
+      "source": "%(http.tables.itemsRequestEntries)",
+      "warning": "1",
+      "formatting": {
+        "display_ok": true,
+        "printf_msg": "%s: dc=%s, row=%s, slot=%s",
+        "printf_var": [
+          "%(itemsRequestEntries.name)",
+          "%(itemsRequestEntries.location.datacenter)",
+          "%(itemsRequestEntries.location.rack.row)",
+          "%(itemsRequestEntries.location.rack.position.slot)"
+        ]
+      }
+    }
+  ],
+  "selection": [
+    {
+      "name": "totalSelection",
+      "functions": [
+        {
+          "type": "count",
+          "src": "%(http.tables.itemsRequestEntries)",
+          "save": "%(itemsCount)"
+        }
+      ],
+      "perfdatas": [
+        {
+          "nlabel": "items.count",
+          "value": "%(itemsCount)",
+          "min": 0
+        }
+      ],
+      "formatting": {
+        "printf_msg": "Items: %s",
+        "printf_var": [
+          "%(itemsCount)"
+        ],
+        "display_ok": false
+      }
+    }
+  ]
+}
