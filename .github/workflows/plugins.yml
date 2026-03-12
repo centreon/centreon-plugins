@@ -104,9 +104,13 @@ jobs:
           python-version: '3.13'
 
       - name: Get new or updated directories
+        env:
+          PACKAGES_FILES: ${{ needs.changes.outputs.packages_files }}
+          PLUGINS_FILES: ${{ needs.changes.outputs.plugins_files }}
+          TESTS_FILES: ${{ needs.changes.outputs.tests_files }}
         run: |
           packages_folders=()
-          for package_file in ${{ needs.changes.outputs.packages_files }}; do
+          for package_file in $PACKAGES_FILES; do
             echo "Adding $(dirname $package_file) to packages_folders"
             packages_folders+=($(dirname $package_file))
           done
@@ -114,7 +118,7 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_packages_folders[@]} > packages_directories.json
 
           plugins_folders=()
-          for plugin_file in ${{ needs.changes.outputs.plugins_files }}; do
+          for plugin_file in $PLUGINS_FILES; do
               echo "Adding $plugin_file to plugins_folders"
               plugin_folder=$(dirname $plugin_file)
               while [[ $plugin_folder =~ /(components|conf|custom|lib|mode|templates)$ ]]; do
@@ -126,7 +130,7 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_plugins_folders[@]} > plugins_directories.json
 
           tests_folders=()
-          for test_file in ${{ needs.changes.outputs.tests_files }}; do
+          for test_file in $TESTS_FILES; do
               echo "Adding $test_file to tests_folders"
               tests_folders+=($(dirname $test_file))
           done
@@ -137,8 +141,11 @@ jobs:
       - name: Get plugins to build and/or test
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
+        env:
+          CHANGES_COMMON: ${{ needs.changes.outputs.changes_common == 'true' }}
+          MAX_RUNNERS: ${{ env.max_testing_jobs }}
         run: |
-          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_testing_jobs }}))
+          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common="$CHANGES_COMMON" --max_runners="$MAX_RUNNERS"))
           echo "package_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
           echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
           runners_ids=( $(seq 1 ${list_plugins[2]}) )
@@ -258,9 +265,11 @@ jobs:
           install-modules: App::FatPacker File::Copy::Recursive JSON
 
       - name: Run FatPacker
+        env:
+          VERSION: ${{ needs.get-environment.outputs.version }}
         run: |
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
-          perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+          perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "$VERSION ($COMMIT)"
 
       - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
@@ -506,8 +515,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Push git release tag
+        env:
+          VERSION: ${{ needs.get-environment.outputs.version }}
         run: |
-          RELEASE=plugins-${{ needs.get-environment.outputs.version }}
+          RELEASE="plugins-${VERSION}"
 
           EXISTING_TAG=$(git tag --list "$RELEASE" | head -n 1)
 

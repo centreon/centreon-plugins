@@ -59,9 +59,11 @@ jobs:
 
       - name: Setup RPM environment
         if: ${{ contains(fromJson('["el8","el9","el10"]'), matrix.distrib) }}
+        env:
+          DISTRIB: ${{ matrix.distrib }}
         run: |
           dnf install -y 'dnf-command(config-manager)' epel-release
-          if [ "${{ matrix.distrib }}" = "el8" ]; then
+          if [ "$DISTRIB" = "el8" ]; then
             dnf config-manager --set-enabled powertools
           else
             dnf config-manager --set-enabled crb
@@ -83,13 +85,18 @@ jobs:
           distrib: ${{ matrix.distrib }}
 
       - name: Check official repos for ${{ matrix.distrib }}
+        env:
+          DISTRIB: ${{ matrix.distrib }}
+          PKG_DISTRIB_SEPARATOR: ${{ steps.parse-distrib.outputs.package_distrib_separator }}
+          PKG_DISTRIB_NAME: ${{ steps.parse-distrib.outputs.package_distrib_name }}
+          DISTRIB_FAMILY: ${{ steps.parse-distrib.outputs.distrib_family }}
         run: |
           python3 .github/scripts/perl-cpan-libraries/check-official-repos.py \
-            --distrib ${{ matrix.distrib }} \
-            --separator "${{ steps.parse-distrib.outputs.package_distrib_separator }}" \
-            --suffix "${{ steps.parse-distrib.outputs.package_distrib_name }}" \
-            --family "${{ steps.parse-distrib.outputs.distrib_family }}" \
-            --output official-repos/partial-matrix-${{ matrix.distrib }}.json \
+            --distrib "$DISTRIB" \
+            --separator "$PKG_DISTRIB_SEPARATOR" \
+            --suffix "$PKG_DISTRIB_NAME" \
+            --family "$DISTRIB_FAMILY" \
+            --output "official-repos/partial-matrix-${DISTRIB}.json" \
             .github/packaging/cpan-libraries.json
         shell: bash
 
@@ -168,10 +175,13 @@ jobs:
           password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
       - name: Pull and save image
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+          IMAGE_NAME: ${{ matrix.image }}
         run: |
           docker image prune -af
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
-          docker save -o ./${{ matrix.image }} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
+          docker pull "${DOCKER_IMAGE}:latest"
+          docker save -o "./${IMAGE_NAME}" "${DOCKER_IMAGE}:latest"
         shell: bash
 
       - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
@@ -204,11 +214,14 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Load packaging image
-        run: docker load --input ./${{ matrix.image }}
+        env:
+          IMAGE_NAME: ${{ matrix.image }}
+        run: docker load --input "./${IMAGE_NAME}"
         shell: bash
 
       - if: ${{ matrix.spec_file == '' }}
         env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           RPM_DEPENDENCIES: ${{ matrix.rpm_dependencies }}
           RPM_PROVIDES: ${{ matrix.rpm_provides }}
@@ -226,28 +239,33 @@ jobs:
             -e VERSION -e RPM_DEPENDENCIES -e RPM_PROVIDES \
             -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
-            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            "${DOCKER_IMAGE}:latest" \
             bash .github/scripts/perl-cpan-libraries/package-cpan-rpm.sh
         shell: bash
 
       - if: ${{ matrix.spec_file != '' }}
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+          SPEC_FILE: ${{ matrix.spec_file }}
         run: |
           docker run --rm \
             -v "$(pwd):/work" \
             --workdir /work \
-            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
-            bash -c "
+            -e SPEC_FILE \
+            "${DOCKER_IMAGE}:latest" \
+            bash -c '
               mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-              rpmbuild --undefine=_disable_source_fetch -ba ${{ matrix.spec_file }}
+              rpmbuild --undefine=_disable_source_fetch -ba "$SPEC_FILE"
               cp -r ~/rpmbuild/RPMS/noarch/*.rpm /work/
-            "
+            '
         shell: bash
 
       - name: Replace '::' with - in the feature path
         id: package-name
+        env:
+          PKG_NAME: ${{ matrix.name }}
         run: |
-          name="${{ matrix.name }}"
-          name_with_dash="${name//::/-}"
+          name_with_dash="${PKG_NAME//::/-}"
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
@@ -347,7 +365,9 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Load packaging image
-        run: docker load --input ./${{ matrix.image }}
+        env:
+          IMAGE_NAME: ${{ matrix.image }}
+        run: docker load --input "./${IMAGE_NAME}"
         shell: bash
 
       - name: Parse distrib name
@@ -358,6 +378,7 @@ jobs:
 
       - if: ${{ matrix.use_dh_make_perl == 'false' }}
         env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           DEB_DEPENDENCIES: ${{ matrix.deb_dependencies }}
           DEB_PROVIDES: ${{ matrix.deb_provides }}
@@ -378,12 +399,13 @@ jobs:
             -e NO_AUTO_DEPENDS -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e PKG_EXT -e DISTRIB -e REVISION \
             -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
-            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            "${DOCKER_IMAGE}:latest" \
             bash .github/scripts/perl-cpan-libraries/package-cpan-deb-fpm.sh
         shell: bash
 
       - if: ${{ matrix.use_dh_make_perl == 'true' }}
         env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
           PREINSTALL_PACKAGES: ${{ matrix.preinstall_packages }}
@@ -399,15 +421,16 @@ jobs:
             -e VERSION -e PREINSTALL_CPANLIBS -e PREINSTALL_PACKAGES \
             -e PKG_NAME -e DISTRIB -e REVISION \
             -e DISTRIB_SEPARATOR -e DISTRIB_SUFFIX \
-            "${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest" \
+            "${DOCKER_IMAGE}:latest" \
             bash .github/scripts/perl-cpan-libraries/package-cpan-deb-dhmaker.sh
         shell: bash
 
       - name: Replace '::' with - in the feature path
         id: package-name
+        env:
+          PKG_NAME: ${{ matrix.name }}
         run: |
-          name="${{ matrix.name }}"
-          name_with_dash="${name//::/-}"
+          name_with_dash="${PKG_NAME//::/-}"
           echo "name_with_dash=$name_with_dash" >> $GITHUB_OUTPUT
         shell: bash
 
