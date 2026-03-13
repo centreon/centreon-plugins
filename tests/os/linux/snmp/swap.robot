@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_CMD}      ${CENTREON_GENERIC_SNMP} -j tests/os/linux/snmp/generic-snmp/swap.json
 
 
 *** Test Cases ***
@@ -23,7 +24,6 @@ swap ${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=os/linux/snmp/swap
     ...    --snmp-timeout=1
-    ...    --no-swap=${no-swap}
     ...    --warning-usage=${warning-usage}
     ...    --warning-usage-free=${warning-usage-free}
     ...    --warning-usage-prct=${warning-usage-prct}
@@ -35,7 +35,6 @@ swap ${tc}
 
     Examples:
     ...    tc
-    ...    no-swap
     ...    warning-usage
     ...    warning-usage-free
     ...    warning-usage-prct
@@ -48,44 +47,83 @@ swap ${tc}
     ...    ${EMPTY}
     ...    ${EMPTY}
     ...    ${EMPTY}
-    ...    '10'
     ...    ${EMPTY}
     ...    ${EMPTY}
-    ...    '30'
-    ...    OK: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;;;0;1023406080 'used_prct'=0.00%;0:10;0:30;0;100
+    ...    ${EMPTY}
+    ...    OK: Swap Total: 976.00 MB Used: 487.71 MB (49.97%) Free: 488.28 MB (50.03%) | 'used'=511406080B;;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;;;0;100
     ...    2
-    ...    ''
+    ...    '10'
     ...    ${EMPTY}
     ...    ${EMPTY}
     ...    ${EMPTY}
     ...    ${EMPTY}
     ...    ${EMPTY}
-    ...    ${EMPTY}
-    ...    OK: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;;;0;1023406080 'used_prct'=0.00%;;;0;100
+    ...    WARNING: Swap Total: 976.00 MB Used: 487.71 MB (49.97%) Free: 488.28 MB (50.03%) | 'used'=511406080B;0:10;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;;;0;100
     ...    3
-    ...    ${EMPTY}
-    ...    ${EMPTY}
     ...    '10'
     ...    ${EMPTY}
     ...    ${EMPTY}
     ...    '30'
     ...    ${EMPTY}
-    ...    CRITICAL: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;0:10;0:30;0;1023406080 'used_prct'=0.00%;;;0;100
+    ...    ${EMPTY}
+    ...    CRITICAL: Swap Total: 976.00 MB Used: 487.71 MB (49.97%) Free: 488.28 MB (50.03%) | 'used'=511406080B;0:10;0:30;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;;;0;100
     ...    4
     ...    ${EMPTY}
-    ...    '100'
+    ...    '10'
     ...    ${EMPTY}
     ...    ${EMPTY}
-    ...    '100'
     ...    ${EMPTY}
     ...    ${EMPTY}
-    ...    OK: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;0:100;0:100;0;1023406080 'free'=1023406080B;;;0;1023406080 'used_prct'=0.00%;;;0;100
+    ...    WARNING: Swap Total: 976.00 MB Used: 487.71 MB (49.97%) Free: 488.28 MB (50.03%) | 'used'=511406080B;;;0;1023406080 'free'=512000000B;0:10;;0;1023406080 'used_prct'=49.97%;;;0;100
     ...    5
     ...    ${EMPTY}
-    ...    ${EMPTY}
-    ...    '100'
-    ...    ${EMPTY}
+    ...    '10'
     ...    ${EMPTY}
     ...    ${EMPTY}
+    ...    '30'
     ...    ${EMPTY}
-    ...    WARNING: Swap Total: 976.00 MB Used: 0.00 B (0.00%) Free: 976.00 MB (100.00%) | 'used'=0B;;;0;1023406080 'free'=1023406080B;0:100;;0;1023406080 'used_prct'=0.00%;;;0;100
+    ...    CRITICAL: Swap Total: 976.00 MB Used: 487.71 MB (49.97%) Free: 488.28 MB (50.03%) | 'used'=511406080B;;;0;1023406080 'free'=512000000B;0:10;0:30;0;1023406080 'used_prct'=49.97%;;;0;100
+    ...    6
+    ...    ${EMPTY}
+    ...    ${EMPTY}
+    ...    '10'
+    ...    ${EMPTY}
+    ...    ${EMPTY}
+    ...    ${EMPTY}
+    ...    WARNING: Used : 49.97 % | 'used'=511406080B;;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;0:10;;0;100
+    ...    7
+    ...    ${EMPTY}
+    ...    ${EMPTY}
+    ...    '10'
+    ...    ${EMPTY}
+    ...    ${EMPTY}
+    ...    '30'
+    ...    CRITICAL: Used : 49.97 % | 'used'=511406080B;;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;0:10;0:30;0;100
+
+
+cgs-swap ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
+    ${command}    Catenate
+    ...    ${CGS_CMD}
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/swap
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    Everything is OK | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    2
+    ...    --warning-swap=0.1
+    ...    WARNING: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;0.1;;0;100
+    ...    3
+    ...    --critical-swap=0.1
+    ...    CRITICAL: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;0.1;0;100
