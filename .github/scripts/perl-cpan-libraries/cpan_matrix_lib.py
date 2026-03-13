@@ -283,11 +283,12 @@ def _artifactory_list_folder(base_url, repo_path):
     Uses the Artifactory storage API:  GET {base_url}/artifactory/api/storage/{repo_path}
     Returns an empty list on any error (network, 404, unexpected format, etc.).
     """
-    url = f"{base_url}/artifactory/api/storage/{repo_path}"
-    parsed = urllib.parse.urlparse(url)
-    if parsed.scheme != "https" or parsed.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
-        print(f"  WARNING: {url} is not an allowed Artifactory URL, skipping.", file=sys.stderr)
+    # Validate base_url before constructing the full URL (SSRF prevention).
+    parsed_base = urllib.parse.urlparse(base_url)
+    if parsed_base.scheme != "https" or parsed_base.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
+        print(f"  WARNING: {base_url} is not an allowed Artifactory base URL, skipping.", file=sys.stderr)
         return []
+    url = f"{base_url}/artifactory/api/storage/{repo_path}"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
