@@ -49,9 +49,11 @@ jobs:
 
       - name: Run spell check
         id: run_check
+        env:
+          PLUGINS_FILES: ${{ steps.filter.outputs.plugins_files }}
         run: |
           set +e
-          for f in ${{ steps.filter.outputs.plugins_files }}; do
+          for f in $PLUGINS_FILES; do
             echo "perl .github/scripts/pod_spell_check.t $f"
             output=$(perl .github/scripts/pod_spell_check.t $f)
           done

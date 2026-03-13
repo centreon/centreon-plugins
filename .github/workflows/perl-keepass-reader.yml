@@ -81,8 +81,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Build library
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "rpm" ]]; then
             dnf install -y make perl
           else
             apt-get update
@@ -96,17 +98,20 @@ jobs:
         shell: bash
 
       - name: Set package name and paths according to distrib
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
         run: |
           PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
 
           echo "Perl version is $PERL_VERSION"
 
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             NAME="libkeepass-reader-perl"
             PERL_VENDORLIB="/usr/share/perl5"
           else
             NAME="perl-KeePass-Reader"
-            if [[ "${{ matrix.distrib }}" == "el8" ]]; then
+            if [[ "$DISTRIB" == "el8" ]]; then
               PERL_VENDORLIB="/usr/local/share/perl5"
             else
               PERL_VENDORLIB="/usr/local/share/perl5/$PERL_VERSION"

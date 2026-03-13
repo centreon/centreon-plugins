@@ -17,6 +17,8 @@ runs:
 
     - if: ${{ inputs.package_extension == 'rpm' }}
       name: Install zstd, perl and Centreon repositories
+      env:
+        DISTRIB: ${{ inputs.distrib }}
       run: |
         dnf install -y zstd perl epel-release 'dnf-command(config-manager)' perl-App-cpanminus
         dnf config-manager --set-enabled powertools || true # alma 8
@@ -29,14 +31,14 @@ runs:
         {
           echo '[centreon-plugins-stable]'
           echo 'name=centreon plugins stable x86_64'
-          echo "baseurl=https://packages.centreon.com/rpm-plugins/${{ inputs.distrib }}/stable/x86_64"
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/stable/x86_64"
           echo 'enabled=1'
           echo 'gpgcheck=1'
           echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
           echo ''
           echo '[centreon-plugins-stable-noarch]'
           echo 'name=centreon plugins stable noarch'
-          echo "baseurl=https://packages.centreon.com/rpm-plugins/${{ inputs.distrib }}/stable/noarch"
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/stable/noarch"
           echo 'enabled=1'
           echo 'gpgcheck=1'
           echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
@@ -45,18 +47,20 @@ runs:
 
     - if: ${{ inputs.package_extension == 'deb' }}
       name: Install zstd, perl and Centreon repositories
+      env:
+        DISTRIB: ${{ inputs.distrib }}
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
         wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
         # Add Centreon stable repository so that pre-existing packaged dependencies are available
-        if [[ "${{ inputs.distrib }}" == "jammy" || "${{ inputs.distrib }}" == "noble" ]]; then
+        if [[ "$DISTRIB" == "jammy" || "$DISTRIB" == "noble" ]]; then
           repo="ubuntu-plugins-stable"
         else
           repo="apt-plugins-stable"
         fi
-        echo "deb https://packages.centreon.com/$repo/ ${{ inputs.distrib }} main" | tee /etc/apt/sources.list.d/centreon-plugins.list
+        echo "deb https://packages.centreon.com/$repo/ $DISTRIB main" | tee /etc/apt/sources.list.d/centreon-plugins.list
         # Avoid apt to clean packages cache directory
         rm -f /etc/apt/apt.conf.d/docker-clean
         apt-get update
@@ -71,8 +75,11 @@ runs:
 
     - if: ${{ inputs.package_extension == 'rpm' }}
       name: Check packages installation / uninstallation
+      env:
+        DISTRIB: ${{ inputs.distrib }}
+        ARCH: ${{ inputs.arch }}
       run: |
-        error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
+        error_log="install_error_${DISTRIB}_${ARCH}.log"
         for package in ./*.rpm; do
           echo "Installing package: $package"
           # List dependencies, and remove version and comparison operators
@@ -120,11 +127,14 @@ runs:
 
     - if: ${{ inputs.package_extension == 'deb' }}
       name: Check packages installation / uninstallation
+      env:
+        DISTRIB: ${{ inputs.distrib }}
+        ARCH: ${{ inputs.arch }}
       run: |
-        error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
+        error_log="install_error_${DISTRIB}_${ARCH}.log"
         for package in ./*.deb; do
           # If the debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
-          if [[ $package == *amd64.deb && ${{ inputs.arch }} != "amd64" || $package == *arm64.deb && ${{ inputs.arch }} != "arm64" ]]; then
+          if [[ $package == *amd64.deb && $ARCH != "amd64" || $package == *arm64.deb && $ARCH != "arm64" ]]; then
             continue
           fi
           echo "Installing package: $package"
@@ -138,7 +148,7 @@ runs:
               echo "Dependency $dependency exists in debian repository."
             else
               # If the dependency has been built in the same workflow, install it
-              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ inputs.arch }}\.deb"); do
+              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${ARCH}\.deb"); do
                 echo "Installing dependency: $dependency_package"
                 error_output=$(apt-get install -y "$dependency_package" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               done
