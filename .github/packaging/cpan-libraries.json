@@ -186,7 +186,9 @@
       "name": "JMX::Jmx4Perl",
       "rpm": {},
       "deb": {
-        "use_dh_make_perl": "false"
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libmodule-find-perl"
       }
     },
     {
