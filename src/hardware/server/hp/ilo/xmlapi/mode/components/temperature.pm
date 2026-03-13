@@ -72,19 +72,18 @@ sub check {
         # When no thresholds are defined by the user we add thresholds based on the CAUTION and CRITICAL fields returned by ILO
         unless ($checked) {
             my $add_one = 0;
-
             foreach ( { ilo_code =>'CAUTION', centreon_code => 'warning' }, { ilo_code => 'CRITICAL', centreon_code => 'critical' } ) {
                 next if !$result->{ $_->{ilo_code} }->{VALUE} || $result->{ $_->{ilo_code} }->{VALUE} eq 'N/A';
-
                 $self->{numeric_threshold}->{temperature} = []
                     unless $self->{numeric_threshold}->{temperature};
 
                 my $label = $_->{centreon_code}.'-temperature-'.@{$self->{numeric_threshold}->{temperature}};
                 $self->{perfdata}->threshold_validate(  label => $label,
                                                         value => '@'.$result->{ $_->{ilo_code} }->{VALUE}.':');
+                # We escape the instance name to prevent these thresholds from applying to other instances
                 push @{$self->{numeric_threshold}->{temperature}},
                                     {  label => $label,
-                                       threshold => $_->{centreon_code}, instance => $instance
+                                       threshold => $_->{centreon_code}, instance => '^'.quotemeta($instance).'$'
                                     };
                 $add_one = 1;
             }
