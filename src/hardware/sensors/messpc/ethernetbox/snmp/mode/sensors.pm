@@ -219,6 +219,7 @@ sub set_counters {
                     value                => 'smoke',
                     template             => '%d',
                     min                  => 0,
+                    max                  => 1,
                     label_extra_instance => 1,
                     instance_use         => 'display'
                 },

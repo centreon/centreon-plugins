@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check MessPC EthernetBox sensors in SNMP.
+Check C<MessPC EthernetBox> sensors in SNMP.
 
 =cut

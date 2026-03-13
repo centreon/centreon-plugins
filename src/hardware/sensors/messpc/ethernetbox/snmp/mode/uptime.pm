@@ -36,6 +36,8 @@ sub new {
     return $self;
 }
 
+# override base manage_selection method from snmp_standard mode uptime to add custom system description
+# and parse custom system uptime
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -51,7 +53,7 @@ sub manage_selection {
 
     $result = $options{snmp}->get_leef(oids => [ @oids, $oid_sysUpTime ], nothing_quit => 1);
     $value = $result->{$oid_sysUpTime};
-    $value =~ /\((\d+)\)/;
+    $value =~ /\((\d+)\)/; # the value is like "1695 hours 23 minutes 27.54 seconds (610340754)"
 
     $value = $self->check_overload(timeticks => $value, snmp => $options{snmp});
     $value = floor($value / 100);
