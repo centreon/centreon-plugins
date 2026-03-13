@@ -341,8 +341,11 @@ jobs:
           key: plugins-${{ github.sha }}-${{ github.run_id }}
           fail-on-cache-miss: true
 
-      - run: |
-          .github/scripts/prepare-package-plugins.sh "plugins.json" "${{ matrix.package_extension }}" "${{ matrix.distrib }}"
+      - env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+        run: |
+          .github/scripts/prepare-package-plugins.sh "plugins.json" "$PACKAGE_EXTENSION" "$DISTRIB"
         shell: bash
 
       - uses: ./.github/actions/package-nfpm

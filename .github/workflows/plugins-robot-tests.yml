@@ -65,14 +65,19 @@ jobs:
           password: ${{ secrets.registry_password }}
 
       - name: Load image
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
         run: |
           docker image prune -af
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker pull $DOCKER_IMAGE
         shell: bash
 
       - name: Save image on disk
+        env:
+          IMAGE_NAME: ${{ inputs.image }}
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
         run: |
-          docker save -o ./${{inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker save -o ./$IMAGE_NAME $DOCKER_IMAGE
         shell: bash
 
       - name: Save image into cache
@@ -120,7 +125,9 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Load image
-        run: docker load --input ./${{ inputs.image }}
+        env:
+          IMAGE_NAME: ${{ inputs.image }}
+        run: docker load --input ./$IMAGE_NAME
 
       - name: Install, test and remove plugin
         shell: bash
