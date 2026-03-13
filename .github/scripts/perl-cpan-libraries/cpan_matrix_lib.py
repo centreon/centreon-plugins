@@ -294,6 +294,7 @@ def _artifactory_list_folder(base_url, repo_path):
     if parsed_url.scheme != "https" or parsed_url.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
         print(f"  WARNING: {url} is not an allowed Artifactory URL, skipping.", file=sys.stderr)
         return []
+    url = f"{base_url}/artifactory/api/storage/{repo_path}"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
