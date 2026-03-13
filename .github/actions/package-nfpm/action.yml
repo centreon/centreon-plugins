@@ -64,29 +64,38 @@ runs:
       env:
         RPM_GPG_SIGNING_KEY_ID: ${{ inputs.rpm_gpg_signing_key_id }}
         RPM_GPG_SIGNING_PASSPHRASE: ${{ inputs.rpm_gpg_signing_passphrase }}
+        INPUT_VERSION: ${{ inputs.version }}
+        MAJOR_VERSION: ${{ inputs.major_version }}
+        MINOR_VERSION: ${{ inputs.minor_version }}
+        INPUT_RELEASE: ${{ inputs.release }}
+        ARCH: ${{ inputs.arch }}
+        PACKAGE_EXTENSION: ${{ inputs.package_extension }}
+        DISTRIB: ${{ inputs.distrib }}
+        STABILITY: ${{ inputs.stability }}
+        PKG_DISTRIB_SEPARATOR: ${{ steps.parse-distrib.outputs.package_distrib_separator }}
+        PKG_DISTRIB_NAME: ${{ steps.parse-distrib.outputs.package_distrib_name }}
+        NFPM_FILE_PATTERN: ${{ inputs.nfpm_file_pattern }}
+        COMMIT_HASH: ${{ inputs.commit_hash }}
       run: |
-        if [ -z ${{ inputs.version }} ]; then
-          export VERSION="${{ inputs.major_version }}.${{ inputs.minor_version }}"
-          export MAJOR_VERSION="${{ inputs.major_version }}"
-          export MINOR_VERSION="${{ inputs.minor_version }}"
-        elif [ -z ${{ inputs.major_version }} ]; then
-          export VERSION="${{ inputs.version }}"
+        if [ -z $INPUT_VERSION ]; then
+          export VERSION="${MAJOR_VERSION}.${MINOR_VERSION}"
+        elif [ -z $MAJOR_VERSION ]; then
+          export VERSION="${INPUT_VERSION}"
           export MAJOR_VERSION=$( echo $VERSION | cut -d "-" -f1 )
           export MINOR_VERSION=$( echo $VERSION | cut -d "-" -f2 )
         fi
-        export RELEASE="${{ inputs.release }}"
-        export ARCH="${{ inputs.arch }}"
+        export RELEASE="${INPUT_RELEASE}"
 
-        if  [ "${{ inputs.package_extension }}" = "rpm" ]; then
-          export DIST=".${{ inputs.distrib }}"
+        if  [ "$PACKAGE_EXTENSION" = "rpm" ]; then
+          export DIST=".$DISTRIB"
           export APACHE_USER="apache"
           export APACHE_GROUP="apache"
         else
           export DIST=""
-          if [ "${{ inputs.stability }}" == "unstable" ] || [ "${{ inputs.stability }}" == "canary" ]; then
-            export RELEASE="$RELEASE${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }}"
+          if [ "$STABILITY" == "unstable" ] || [ "$STABILITY" == "canary" ]; then
+            export RELEASE="$RELEASE${PKG_DISTRIB_SEPARATOR}${PKG_DISTRIB_NAME}"
           else
-            export RELEASE="1${{ steps.parse-distrib.outputs.package_distrib_separator }}${{ steps.parse-distrib.outputs.package_distrib_name }}"
+            export RELEASE="1${PKG_DISTRIB_SEPARATOR}${PKG_DISTRIB_NAME}"
           fi
           export APACHE_USER="www-data"
           export APACHE_GROUP="www-data"
@@ -109,16 +118,16 @@ runs:
         export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"
         export NFPM_RPM_PASSPHRASE="$RPM_GPG_SIGNING_PASSPHRASE"
 
-        for FILE in ${{ inputs.nfpm_file_pattern }}; do
+        for FILE in $NFPM_FILE_PATTERN; do
           DIRNAME=$(dirname $FILE)
           BASENAME=$(basename $FILE)
           cd $DIRNAME
           sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
           sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
-          sed -i "s/@COMMIT_HASH@/${{ inputs.commit_hash }}/g" $BASENAME
-          nfpm package --config $BASENAME --packager ${{ inputs.package_extension }}
+          sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" $BASENAME
+          nfpm package --config $BASENAME --packager $PACKAGE_EXTENSION
           cd -
-          mv $DIRNAME/*.${{ inputs.package_extension }} ./
+          mv $DIRNAME/*.$PACKAGE_EXTENSION ./
         done
       shell: bash
 
