@@ -4,6 +4,7 @@
     "plugin_name": "centreon_commvault_commserve_restapi.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "centreon/plugins/lockfile.pm",
         "apps/backup/commvault/commserve/restapi/"
     ]
 }

@@ -17,6 +17,8 @@ runs:
 
     - if: ${{ inputs.package_extension == 'rpm' }}
       name: Install zstd, perl and Centreon repositories
+      env:
+        DISTRIB: ${{ inputs.distrib }}
       run: |
         dnf install -y zstd perl epel-release 'dnf-command(config-manager)' perl-App-cpanminus
         dnf config-manager --set-enabled powertools || true # alma 8
@@ -25,22 +27,47 @@ runs:
         GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
         curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
         rpm --import RPM-GPG-KEY-CES
+        # Add Centreon stable repository so that pre-existing packaged dependencies are available
+        {
+          echo '[centreon-plugins-stable]'
+          echo 'name=centreon plugins stable x86_64'
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/stable/x86_64"
+          echo 'enabled=1'
+          echo 'gpgcheck=1'
+          echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
+          echo ''
+          echo '[centreon-plugins-stable-noarch]'
+          echo 'name=centreon plugins stable noarch'
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/stable/noarch"
+          echo 'enabled=1'
+          echo 'gpgcheck=1'
+          echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
+        } > /etc/yum.repos.d/centreon-plugins-stable.repo
       shell: bash
 
     - if: ${{ inputs.package_extension == 'deb' }}
       name: Install zstd, perl and Centreon repositories
+      env:
+        DISTRIB: ${{ inputs.distrib }}
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
         wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+        # Add Centreon stable repository so that pre-existing packaged dependencies are available
+        if [[ "$DISTRIB" == "jammy" || "$DISTRIB" == "noble" ]]; then
+          repo="ubuntu-plugins-stable"
+        else
+          repo="apt-plugins-stable"
+        fi
+        echo "deb https://packages.centreon.com/$repo/ $DISTRIB main" | tee /etc/apt/sources.list.d/centreon-plugins.list
         # Avoid apt to clean packages cache directory
         rm -f /etc/apt/apt.conf.d/docker-clean
         apt-get update
       shell: bash
 
     - name: Restore packages from cache
-      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
       with:
         path: ./*.${{ inputs.package_extension }}
         key: ${{ github.sha }}-${{ github.run_id }}-${{ inputs.package_extension }}-${{ inputs.distrib }}
@@ -48,26 +75,31 @@ runs:
 
     - if: ${{ inputs.package_extension == 'rpm' }}
       name: Check packages installation / uninstallation
+      env:
+        DISTRIB: ${{ inputs.distrib }}
+        ARCH: ${{ inputs.arch }}
       run: |
-        error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
+        error_log="install_error_${DISTRIB}_${ARCH}.log"
         for package in ./*.rpm; do
           echo "Installing package: $package"
           # List dependencies, and remove version and comparison operators
-          dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g')
+          dependencies=$(rpm -qpR $package | sed 's/ [0-9.-]*\(\s\|$\)/ /g' | sed 's/ [<>!=]*\(\s\|$\)/ /g') || true
           for dependency in $dependencies; do
             # Skip non-perl dependencies
             if [[ $dependency != perl* ]]; then
               continue
             else
               echo "Check dependency: $dependency"
-              # Update the dependency name to match the package name
-              dependency=$(echo $dependency | sed 's/(/-/g' | sed 's/)//g' | sed 's/::/-/g')
             fi
-            # If the dependency has been built in the same workflow, install it
-            if [[ -n $(find . -maxdepth 1 -regex "\.\/$dependency-[0-9v].*\.rpm") ]]; then
-              echo "Installing dependency: $dependency"
-              error_output=$(dnf install -y ./$dependency*.rpm 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
-            fi
+            # If the dependency is provided by a locally-built package, install it
+            # Use rpm --provides to match correctly when the distribution name differs from the module name
+            for dep_file in ./*.rpm; do
+              [[ "$dep_file" == "$package" ]] && continue
+              if rpm -qp --provides "$dep_file" 2>/dev/null | grep -qF "$dependency"; then
+                echo "Installing dependency: $dep_file"
+                error_output=$(dnf install -y "$dep_file" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+              fi
+            done
           done
           # Install package, then uninstall it with all his dependencies
           echo "Package installation..."
@@ -82,7 +114,8 @@ runs:
               echo "No test script found for the package $package"
           fi
           echo "Package uninstallation..."
-          error_output=$(dnf autoremove --setopt=keepcache=True -y $(echo $package | sed 's/_[0-9].*\.rpm//' | sed 's/.\///') 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
+          pkg_name=$(rpm -qp --queryformat "%{NAME}" "$package" 2>/dev/null)
+          error_output=$(dnf autoremove --setopt=keepcache=True -y "$pkg_name" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during autoremove of the package $package" >> $error_log; true; }
           echo "Package uninstallation done."
         done
         # If the file error_log exists and is not empty, the workflow is in error
@@ -94,16 +127,20 @@ runs:
 
     - if: ${{ inputs.package_extension == 'deb' }}
       name: Check packages installation / uninstallation
+      env:
+        DISTRIB: ${{ inputs.distrib }}
+        ARCH: ${{ inputs.arch }}
       run: |
-        error_log="install_error_${{ inputs.distrib }}_${{ inputs.arch }}.log"
+        error_log="install_error_${DISTRIB}_${ARCH}.log"
         for package in ./*.deb; do
           # If the debian package name ends with amd64 or arm64, we only install it if the tested architecture is the same, otherwise we skip it
-          if [[ $package == *amd64.deb && ${{ inputs.arch }} != "amd64" || $package == *arm64.deb && ${{ inputs.arch }} != "arm64" ]]; then
+          if [[ $package == *amd64.deb && $ARCH != "amd64" || $package == *arm64.deb && $ARCH != "arm64" ]]; then
             continue
           fi
           echo "Installing package: $package"
-          # List dependencies
-          dependencies=$(dpkg-deb -I $package | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/(\(.*\)//g') || { echo "$error_output" >> $error_log; echo "Error while listing dependencies of the package $package" >> $error_log; true; }
+          # List dependencies (grep returning 1 = no Depends field = valid, not an error)
+          dpkg_info=$(dpkg-deb -I $package 2>&1) || { echo "Error: dpkg-deb failed for $package" >> $error_log; true; }
+          dependencies=$(echo "$dpkg_info" | grep Depends | sed 's/Depends: //' | sed 's/,//g' | sed 's/ ([^)]*)//g') || true
           for dependency in $dependencies; do
             # If the dependency exists in the Debian repository, don't check the local dependencies
             dependency_info=$(apt-cache policy $dependency)
@@ -111,9 +148,9 @@ runs:
               echo "Dependency $dependency exists in debian repository."
             else
               # If the dependency has been built in the same workflow, install it
-              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${{ inputs.arch }}\.deb"); do
+              for dependency_package in $(find . -maxdepth 1 -regex "\.\/${dependency}_[0-9].*all\.deb" -o -regex "\.\/${dependency}_[0-9].*${ARCH}\.deb"); do
                 echo "Installing dependency: $dependency_package"
-                error_output=$(apt-get install -y ./$dependency_package 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
+                error_output=$(apt-get install -y "$dependency_package" 2>&1) || { echo "$error_output" >> $error_log; echo "Error during installation of the dependency $dependency" >> $error_log; true; }
               done
             fi
           done

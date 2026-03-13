@@ -1,0 +1,20 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-Linux-sudoers",
+    "pkg_summary": "Centreon script that require sudoers configuration to monitor Linux server/equipment",
+    "plugin_name": "centreon_linux_sudoers.pl",
+    "files": [
+    ],
+    "package_files": [
+        {
+            "src": "../../src/os/linux/sudoers/centreon_linux_local_process.pl",
+            "dst": "/usr/lib/centreon/plugins/",
+            "file_mode": "0755"
+        },
+        {
+            "src": "../../src/os/linux/sudoers/sudoersCentreonLinuxPlugins",
+            "dst": "/etc/sudoers.d/",
+            "file_mode": "0600"
+        }
+    ],
+    "skip_default_dependencies": true
+}

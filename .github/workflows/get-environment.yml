@@ -82,7 +82,7 @@ jobs:
             return hasSkipLabel;
 
       - name: Checkout sources (current branch)
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: ${{ steps.has_skip_label.outputs.result == 'true' && 100 || 1 }}
 
@@ -141,7 +141,7 @@ jobs:
       - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
         name: Get push changes
         id: get_push_changes
-        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
+        uses: tj-actions/changed-files@7dee1b0c1557f278e5c7dc244927139d78c0e22a # v47.0.4
         with:
           since_last_remote_commit: true
           json: true
@@ -350,8 +350,10 @@ jobs:
 
       - name: "Get release type: hotfix, release or not defined if not a release"
         id: get_release_type
+        env:
+          HEAD_REF: ${{ github.head_ref || github.ref_name }}
         run: |
-          RELEASE_TYPE=$(echo "${{ github.head_ref || github.ref_name }}" | cut -d '-' -f 1)
+          RELEASE_TYPE=$(echo "$HEAD_REF" | cut -d '-' -f 1)
           if [[ "$RELEASE_TYPE" == "hotfix" || "$RELEASE_TYPE" == "release" ]]; then
             echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
           fi

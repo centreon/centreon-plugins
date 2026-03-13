@@ -21,11 +21,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "current rest api rate usage:"
-          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq .rate
+          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/rate_limit | jq .rate
           echo ""
           echo ""
           echo "current graphql rate usage:"
-          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/rate_limit | jq .resources.graphql
+          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/rate_limit | jq .resources.graphql
           echo ""
           echo ""
 
@@ -37,7 +37,7 @@ jobs:
           script: |
             await exec.exec("sleep 20s");
 
-            for (let i = 0; i < 120; i++) {
+            for (let i = 0; i < 240; i++) {
               const failure = [];
               const cancelled = [];
               const pending = [];

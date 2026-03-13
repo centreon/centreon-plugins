@@ -46,6 +46,11 @@ jobs:
             package_extension: rpm
             runner: ubuntu-24.04
             arch: amd64
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
+            runner: ubuntu-24.04
+            arch: amd64
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
@@ -53,6 +58,11 @@ jobs:
             arch: amd64
           - image: packaging-plugins-bookworm
             distrib: bookworm
+            package_extension: deb
+            runner: ubuntu-24.04
+            arch: amd64
+          - image: packaging-plugins-trixie
+            distrib: trixie
             package_extension: deb
             runner: ubuntu-24.04
             arch: amd64
@@ -88,23 +98,32 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install locally sblim-sfcc
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
-            wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
-            cd sblim-sfcc-SFCC_2_2_8
+            if [ "$DISTRIB" = "bullseye" ]; then
+              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
+              mv sblim-sfcc-SFCC_2_2_8 sblim-sfcc
+            else
+              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/881fccbaf19e26cbef3da1bebe2b42b3a9de1147/.tar.gz|tar zxvf -
+              mv sblim-sfcc-881fccbaf19e26cbef3da1bebe2b42b3a9de1147 sblim-sfcc
+            fi
+            cd sblim-sfcc
             ./autoconfiscate.sh
             ./configure --prefix=/usr
             make
             make install
           else
             dnf install -y 'dnf-command(config-manager)'
-            if [ "${{ matrix.distrib }}" = "el8" ]; then
+            if [ "$DISTRIB" = "el8" ]; then
               dnf config-manager --set-enabled powertools
             else
               dnf config-manager --set-enabled crb
@@ -114,16 +133,19 @@ jobs:
         shell: bash
 
       - name: Build openwsman
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          OPENWSMAN_VERSION: ${{ env.version }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get install -y cmake libssl-dev libpam-dev swig libxml2-dev
           else
             dnf install -y wget cmake gcc-c++ libcurl-devel pam-devel swig libxml2-devel openssl-devel
           fi
 
           cd /tmp
-          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${{ env.version }}.tar.gz|tar zxvf -
-          cd openwsman-${{ env.version }}/
+          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${OPENWSMAN_VERSION}.tar.gz|tar zxvf -
+          cd openwsman-${OPENWSMAN_VERSION}/
           mkdir build
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
@@ -131,8 +153,12 @@ jobs:
         shell: bash
 
       - name: Set package name and paths according to distrib
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+          ARCH: ${{ matrix.arch }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get install -y perl
           else
             dnf install -y perl
@@ -142,10 +168,10 @@ jobs:
 
           echo "Perl version is $PERL_VERSION"
 
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             NAME_PERL="libopenwsman-perl"
             USRLIB="/usr/lib/"
-            if [ "${{ matrix.arch }}" = "amd64" ]; then
+            if [ "$ARCH" = "amd64" ]; then
               PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl/$PERL_VERSION"
             else
               PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl/$PERL_VERSION"
@@ -153,7 +179,7 @@ jobs:
           else
             NAME_PERL="openwsman-perl"
             USRLIB="/usr/lib64/"
-            if [ "${{ matrix.distrib }}" = "el8" ]; then
+            if [ "$DISTRIB" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
               PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"
@@ -219,7 +245,7 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./*.${{ matrix.package_extension }}
           key: cache-${{ github.sha }}-${{ matrix.package_extension }}-wsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
@@ -243,6 +269,9 @@ jobs:
           - distrib: el9
             package_extension: rpm
             arch: amd64
+          - distrib: el10
+            package_extension: rpm
+            arch: amd64
           - distrib: bullseye
             package_extension: deb
             arch: amd64
@@ -250,6 +279,9 @@ jobs:
             package_extension: deb
             arch: arm64
           - distrib: bookworm
+            package_extension: deb
+            arch: amd64
+          - distrib: trixie
             package_extension: deb
             arch: amd64
           - distrib: jammy
@@ -263,7 +295,7 @@ jobs:
     name: deliver ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery

@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::misc qw/is_excluded change_seconds/;
+use centreon::plugins::constants qw(:counters);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -37,7 +38,7 @@ sub custom_status_output {
 sub custom_long_output {
     my ($self, %options) = @_;
     
-    return 'started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
+    return 'started since: ' . change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub prefix_job_output {
@@ -79,8 +80,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'policy', type => 2,
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'policy', type => COUNTER_TYPE_GROUP,
           cb_prefix_output        => 'prefix_policy_output', 
           cb_long_output          => 'policy_long_output',
           display_counter_problem => { nlabel => 'jobs.problems.current.count', min => 0 },
@@ -103,7 +104,7 @@ sub set_counters {
     $self->{maps_counters}->{job} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{status} =~ /abnormal/i',
             critical_default => '%{status} =~ /errors|failed/i',
             set => {
@@ -114,7 +115,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'long', type => 2, set => {
+        { label => 'long', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'client_name' }
                 ],

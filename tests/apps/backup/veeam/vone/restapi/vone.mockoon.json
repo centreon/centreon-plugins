@@ -1,0 +1,479 @@
+{
+  "uuid": "4dc6675d-457a-4fc2-aa5a-ab1efb11a922",
+  "lastMigration": 33,
+  "name": "Vone.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "a0ba4f91-5f00-4712-9032-52f79ede199e",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/token",
+      "responses": [
+        {
+          "uuid": "05f66bdc-15b8-4733-b590-f6c34afebd06",
+          "body": "{\r\n  \"access_token\": \"abcdefghiJKLMNOPR1234567FAKE\",\r\n  \"refresh_token\": \"787454545IIIIIGGGHQSGSQgghqgjsgqjgdsjgdsgZYAZYAYZATZTTZATZAZATUFAKE\",\r\n  \"token_type\": \"Bearer\",\r\n  \"expires_in\": 121,\r\n  \"user\": \"FAKE-VEEAMONE-01\\\\Veeam-Supervision\",\r\n  \"user_role\": \"PowerUser\"\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "19c41137-d4b8-4963-ba35-1a6332429865",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2.2/license/currentUsage",
+      "responses": [
+        {
+          "uuid": "f2e73cf6-e977-4c41-a96c-a662d3183b63",
+          "body": "{\"units\":[{\"licenseUnit\":\"Instances\",\"used\":\"132\",\"available\":\"0\",\"licensed\":\"120\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "90ff23df-f816-4f2f-90e8-bc283f6bbbc1",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2.2/vbrJobs/vmReplicationJobs",
+      "responses": [
+        {
+          "uuid": "021cced0-27d5-4619-9cb0-953fecf58bdc",
+          "body": "{\r\n    \"items\": [\r\n        {\r\n            \"vmReplicationJobUid\": \"azazaza-ZAZAZZ-21212121-ANOANO\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_EEEEEEE\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 15:53.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T12:30:17.87Z\",\r\n            \"lastRunDurationSec\": 9213,\r\n            \"avgDurationSec\": 8921,\r\n            \"lastTransferredDataBytes\": 12345\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"9889898-28281-Z1221ZAZA-ANOANO\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_RRRRRRR\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 13:42.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T11:30:03.78Z\",\r\n            \"lastRunDurationSec\": 7445,\r\n            \"avgDurationSec\": 8345,\r\n            \"lastTransferredDataBytes\": 12345\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"9889898-28281-Z1221ZAKKL-ANOANO\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_LLLLLLLL\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 20:56.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T18:00:21.303Z\",\r\n            \"lastRunDurationSec\": 8166,\r\n            \"avgDurationSec\": 9943,\r\n            \"lastTransferredDataBytes\": 12345\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"9889898-21121-Z1221ZAZA-ANOANO\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_FFFFFFF\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 19:21.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T10:55:00.78Z\",\r\n            \"lastRunDurationSec\": 1780,\r\n            \"avgDurationSec\": 10963,\r\n            \"lastTransferredDataBytes\": 12345\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"9889898-28281-Z1211212A-ANOANO\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_WWWWWWW\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 10:48.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T10:25:23.233Z\",\r\n            \"lastRunDurationSec\": 4038,\r\n            \"avgDurationSec\": 3931,\r\n            \"lastTransferredDataBytes\": 56789\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"9889898-ZAZAZA-FAKE-ANOANO\",\r\n            \"backupServerId\": 3,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job-QQQQQQ\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 11:59.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T10:40:21.24Z\",\r\n            \"lastRunDurationSec\": 3123,\r\n            \"avgDurationSec\": 3411,\r\n            \"lastTransferredDataBytes\": 56789\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"9889898-28281-ANOANO\",\r\n            \"backupServerId\": 3,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_ZZZZZZ-Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 11:04.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T10:20:08.217Z\",\r\n            \"lastRunDurationSec\": 6327,\r\n            \"avgDurationSec\": 11617,\r\n            \"lastTransferredDataBytes\": 56789\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"00000-1111116-33333-ANONO\",\r\n            \"backupServerId\": 3,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job_XXXXX-Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 15/04/2024 16:42.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T10:11:40.69Z\",\r\n            \"lastRunDurationSec\": 5292,\r\n            \"avgDurationSec\": 14723,\r\n            \"lastTransferredDataBytes\": 56789\r\n        },\r\n        {\r\n            \"vmReplicationJobUid\": \"00000-1111116-22222-ANONO\",\r\n            \"backupServerId\": 3,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"Replication-Job-YYYYY-Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 15/04/2024 17:16.\",\r\n            \"platform\": \"ATARI\",\r\n            \"lastRun\": \"1979-12-17T10:00:01.17Z\",\r\n            \"lastRunDurationSec\": 1677,\r\n            \"avgDurationSec\": 6431,\r\n            \"lastTransferredDataBytes\": 56789\r\n        }\r\n    ],\r\n    \"totalCount\": 9\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3743b8ea-e99d-4546-b171-b116ff20ec52",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2.2/vbrJobs/backupCopyJobs",
+      "responses": [
+        {
+          "uuid": "470e6bac-5df2-457c-92c0-4e7072a782c4",
+          "body": "{\r\n    \"items\": [\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-12221\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_OOOOO_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 13:22.\",\r\n            \"lastRun\": \"1979-12-17T01:00:17.687Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-121112\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_LLLLLLLL_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 12:30.\",\r\n            \"lastRun\": \"1979-12-17T03:01:14.777Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-12233\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_HHHHHHHH_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 15:22.\",\r\n            \"lastRun\": \"1979-12-17T08:20:17.157Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-323321\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_NNNNNNN_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 11:15.\",\r\n            \"lastRun\": \"1979-12-17T08:10:18.173Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-4421\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_BBBBBBB_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 14:19.\",\r\n            \"lastRun\": \"1979-12-17T17:01:13.967Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-167676\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_VVVVVVV_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 10:28.\",\r\n            \"lastRun\": \"1979-12-16T11:00:55.523Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-54321\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_CCCCCCC_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 14:28.\",\r\n            \"lastRun\": \"1979-12-16T12:00:55.303Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-123450\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_WWWWWW_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 15:32.\",\r\n            \"lastRun\": \"1979-12-17T06:10:59.333Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-177662\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_XXXXXX_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 13:32.\",\r\n            \"lastRun\": \"1979-12-17T06:20:58.567Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-4321\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_AZERTY_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 19:26.\",\r\n            \"lastRun\": \"1979-12-16T11:55:24.67Z\"\r\n        },\r\n        {\r\n            \"backupCopyJobUid\": \"ABCDF-FAKE-12778\",\r\n            \"backupServerId\": 3,\r\n            \"status\": \"Success\",\r\n            \"details\": [],\r\n            \"name\": \"BackupCopy-Job_QQQQQQ_Daily\",\r\n            \"description\": \"Created by SVS-VEEAM-DC\\\\Administrator at 18/08/1979 17:30.\",\r\n            \"lastRun\": \"1979-12-17T17:11:13.73Z\"\r\n        }\r\n    ],\r\n    \"totalCount\": 11\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "07e3ddf2-6ddd-4003-9359-c295f8dfc021",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2.2/vbrJobs/vmBackupJobs",
+      "responses": [
+        {
+          "uuid": "e826897c-771f-449b-9d6d-377733623997",
+          "body": "{\r\n    \"items\": [\r\n        {\r\n            \"vmBackupJobUid\": \"abcdefgh-yuiopp-012345\",\r\n            \"backupServerId\": 1,\r\n            \"status\": \"Warning\",\r\n            \"details\": [\r\n                \"Failed to index [/] except ['/tutu', '/tata'], ignoring.\",\r\n                \"Processing finished with warnings at 11/12/1979 11:38:06\",\r\n                \"Processing AAAAAA\",\r\n                \"Job finished with warning at 12/12/1979 09:10:14 \"\r\n            ],\r\n            \"name\": \"Backup-Job_AZERTY_Daily\",\r\n            \"description\": \"Job de sauvegarde journaliere ZZZZZZZZZ sauvegard\\u00e9 sur le repository FAKE2\",\r\n            \"platform\": \"CPC\",\r\n            \"lastRun\": \"1979-12-17T14:30:14.713Z\",\r\n            \"lastRunDurationSec\": 41791,\r\n            \"avgDurationSec\": 50381,\r\n            \"lastTransferredDataBytes\": 982332\r\n        },\r\n        {\r\n            \"vmBackupJobUid\": \"abcdefgh-yuiopp-987654\",\r\n            \"backupServerId\": 2,\r\n            \"status\": \"Warning\",\r\n            \"details\": [\r\n                \"Unable to perform AAAAAAAAAA operation. \",\r\n                \"XXX: Backup job failed.\\r\\nCannot notify XXXXXX event. Error code: [0x12345678].\",\r\n                \"Processing finished with warnings at 11/10/1979 10:45:38\",\r\n                \"Processing XXXXX1\",\r\n                \"Processing XXXXX2\",\r\n                \"Job finished with warning at 11/10/1979 10:55:05 \"\r\n            ],\r\n            \"name\": \"Backup-Job_QWERTY_Daily\",\r\n            \"description\": \"Job de sauvegarde journalier XXXXXXXXX sauvegard\\u00e9s sur le repository FAKE\",\r\n            \"platform\": \"CPC\",\r\n            \"lastRun\": \"1979-12-16T13:30:20.97Z\",\r\n            \"lastRunDurationSec\": 122184,\r\n            \"avgDurationSec\": 94240,\r\n            \"lastTransferredDataBytes\": 111193\r\n        }\r\n    ],\r\n    \"totalCount\": 2\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "30e8eed4-1d7e-4b24-b2be-f690d1474b53",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2.2/vbr/repositories",
+      "responses": [
+        {
+          "uuid": "ea611ce3-9816-4798-946c-6dbed1a1d494",
+          "body": "{\r\n    \"items\": [\r\n        {\r\n            \"repositoryId\": 1,\r\n            \"repositoryUidInVbr\": \"1234567-1234567\",\r\n            \"backupServerId\": 1,\r\n            \"name\": \"fake-01\",\r\n            \"type\": \"LinuxHardened\",\r\n            \"capacityBytes\": 12345,\r\n            \"freeSpaceBytes\": 12214242,\r\n            \"runningTasks\": 0,\r\n            \"maxConcurrentTasks\": 8,\r\n            \"upgradeRequired\": false,\r\n            \"outOfSpaceInDays\": 136,\r\n            \"state\": \"Ok\",\r\n            \"path\": \"/tmp/tutu\",\r\n            \"oneBackupFilePerVm\": true,\r\n            \"isReFs\": false,\r\n            \"isImmutable\": true,\r\n            \"immutabilityIntervalDays\": 7\r\n        },\r\n        {\r\n            \"repositoryId\": 2,\r\n            \"repositoryUidInVbr\": \"7890-123456\",\r\n            \"backupServerId\": 2,\r\n            \"name\": \"fake-02\",\r\n            \"type\": \"MicrosoftWindows\",\r\n            \"capacityBytes\": 123434,\r\n            \"freeSpaceBytes\": 122121,\r\n            \"runningTasks\": 0,\r\n            \"maxConcurrentTasks\": 4,\r\n            \"upgradeRequired\": false,\r\n            \"outOfSpaceInDays\": 1591,\r\n            \"state\": \"Ok\",\r\n            \"path\": \"C:\\\\toto\",\r\n            \"oneBackupFilePerVm\": true,\r\n            \"isReFs\": true,\r\n            \"isImmutable\": false,\r\n            \"immutabilityIntervalDays\": null\r\n        },\r\n        {\r\n            \"repositoryId\": 3,\r\n            \"repositoryUidInVbr\": \"7654322-788999\",\r\n            \"backupServerId\": 3,\r\n            \"name\": \"fake-03\",\r\n            \"type\": \"LinuxHardened\",\r\n            \"capacityBytes\": 123456,\r\n            \"freeSpaceBytes\": 12345,\r\n            \"runningTasks\": 0,\r\n            \"maxConcurrentTasks\": 8,\r\n            \"upgradeRequired\": false,\r\n            \"outOfSpaceInDays\": 295,\r\n            \"state\": \"Ok\",\r\n            \"path\": \"/tmp/toto\",\r\n            \"oneBackupFilePerVm\": true,\r\n            \"isReFs\": false,\r\n            \"isImmutable\": true,\r\n            \"immutabilityIntervalDays\": 7\r\n        }\r\n    ],\r\n    \"totalCount\": 3\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "949c9bb2-e8f3-4dec-a851-58c6429ca2b2",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2.2/vbr/backupProxies",
+      "responses": [
+        {
+          "uuid": "e1a1d5a5-0dbe-44c0-bbcd-a19f543be57b",
+          "body": "{\r\n    \"items\": [\r\n        {\r\n            \"backupProxyId\": 1,\r\n            \"proxyUidInVbr\": \"12345-6789-18\",\r\n            \"backupServerId\": 2,\r\n            \"name\": \"fake-01\",\r\n            \"enabled\": true,\r\n            \"version\": \"1.2.3.4\",\r\n            \"type\": \"Vmware\",\r\n            \"state\": \"Ok\",\r\n            \"runningTasks\": 0,\r\n            \"maxConcurrentTasks\": 8,\r\n            \"upgradeRequired\": false,\r\n            \"transportMode\": \"HotAddProxy\",\r\n            \"throttlingEnabled\": false\r\n        },\r\n        {\r\n            \"backupProxyId\": 3,\r\n            \"proxyUidInVbr\": \"abvcd-6788-sdsdf\",\r\n            \"backupServerId\": 4,\r\n            \"name\": \"fake-02\",\r\n            \"enabled\": true,\r\n            \"version\": \"1.2.3.4\",\r\n            \"type\": \"Vmware\",\r\n            \"state\": \"Ok\",\r\n            \"runningTasks\": 0,\r\n            \"maxConcurrentTasks\": 8,\r\n            \"upgradeRequired\": false,\r\n            \"transportMode\": \"NetworkProxy\",\r\n            \"throttlingEnabled\": false\r\n        }\r\n    ],\r\n    \"totalCount\": 2\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "a0ba4f91-5f00-4712-9032-52f79ede199e"
+    },
+    {
+      "type": "route",
+      "uuid": "19c41137-d4b8-4963-ba35-1a6332429865"
+    },
+    {
+      "type": "route",
+      "uuid": "90ff23df-f816-4f2f-90e8-bc283f6bbbc1"
+    },
+    {
+      "type": "route",
+      "uuid": "3743b8ea-e99d-4546-b171-b116ff20ec52"
+    },
+    {
+      "type": "route",
+      "uuid": "07e3ddf2-6ddd-4003-9359-c295f8dfc021"
+    },
+    {
+      "type": "route",
+      "uuid": "30e8eed4-1d7e-4b24-b2be-f690d1474b53"
+    },
+    {
+      "type": "route",
+      "uuid": "949c9bb2-e8f3-4dec-a851-58c6429ca2b2"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

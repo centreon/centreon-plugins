@@ -131,6 +131,7 @@ sub check_options {
     $self->{gcp_api} = $self->{option_results}->{api};
     $self->{gcp_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{distribution_value} = $self->{option_results}->{distribution_value};
+    $self->{gcp_dimension_zeroed} = $self->{option_results}->{dimension_name};
 
     if (defined($self->{option_results}->{extra_filter})) {
         $self->{gcp_extra_filters} = [];
@@ -168,7 +169,8 @@ sub manage_selection {
         extra_filters => $self->{gcp_extra_filters},
         aggregations => $self->{gcp_aggregations},
         timeframe => $self->{gcp_timeframe},
-        distribution_value => $self->{distribution_value}
+        distribution_value => $self->{distribution_value},
+        dimension_zeroed => $self->{gcp_dimension_zeroed}
     );
 
     $self->{metrics} = {};
@@ -186,6 +188,11 @@ sub manage_selection {
                 };
             }
         }
+    }
+
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No metrics. Check your options or check GCP API distribution metrics' time series points returns the mean or count values.");
+        $self->{output}->option_exit();
     }
 }
 

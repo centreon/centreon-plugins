@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Download actionlint
         id: get_actionlint
@@ -27,8 +27,10 @@ jobs:
         shell: bash
 
       - name: Check workflow files
+        env:
+          ACTIONLINT: ${{ steps.get_actionlint.outputs.executable }}
         run: |
-          ${{ steps.get_actionlint.outputs.executable }} \
+          $ACTIONLINT \
           -ignore 'label "centreon-(common|collect-arm64)" is unknown' \
           -ignore 'label "ubuntu-(24.04|24.04-arm)" is unknown' \
           -ignore '"github.head_ref" is potentially untrusted' \
@@ -47,7 +49,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install Yaml
         run: |

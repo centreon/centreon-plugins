@@ -33,7 +33,7 @@ jobs:
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -44,12 +44,18 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-java-alma9
             distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-java-alma10
+            distrib: el10
           - package_extension: deb
             image: packaging-plugins-java-bullseye
             distrib: bullseye
           - package_extension: deb
             image: packaging-plugins-java-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-java-trixie
+            distrib: trixie
           - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
@@ -67,15 +73,17 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Prepare files for packaging
+        env:
+          VERSION: ${{ needs.get-environment.outputs.version }}
         run: |
           find .     \
           -type f \
           -exec grep -E '(@CONNECTOR_VERSION@)|(@CONNECTOR_HOME@)|(@CONNECTOR_ETC@)|(@CONNECTOR_LOG@)|(@CONNECTOR_USER@)|(@JAVA_BIN@)' {} ';'   \
           -exec sed -i \
-          -e 's|@CONNECTOR_VERSION@|'"${{ needs.get-environment.outputs.version }}"'|g' \
+          -e 's|@CONNECTOR_VERSION@|'"$VERSION"'|g' \
           -e 's|@CONNECTOR_HOME@|'"/usr/share/centreon-as400"'|g' \
           -e 's|@CONNECTOR_ETC@|'"/etc/centreon-as400/"'|g' \
           -e 's|@CONNECTOR_LOG@|'"/var/log/centreon-as400/"'|g' \
@@ -110,7 +118,7 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Save to cache
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
@@ -132,9 +140,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb
@@ -144,7 +156,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery

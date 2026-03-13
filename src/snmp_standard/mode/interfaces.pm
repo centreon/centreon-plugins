@@ -357,7 +357,7 @@ sub custom_traffic_calc {
         # no percentage for traffic
         $self->{result_values}->{traffic_prct} = undef;
         $self->{error_msg} = 'clear buffer';
-        return CLEAR_BUFFER;
+        return NOT_PROCESSED;
     }
     return RUN_OK;
 }
@@ -509,7 +509,7 @@ sub custom_errors_calc {
         }
         $self->{result_values}->{prct} = undef;
         $self->{error_msg} = "clear buffer";
-        return CLEAR_BUFFER;
+        return NOT_PROCESSED;
     }
 
     return RUN_OK;
