@@ -256,6 +256,7 @@ pub fn snmp_bulk_walk<'a>(
 ) -> SnmpResult {
     let oid_init = oid
         .split('.')
+        .skip_while(|d| d.is_empty()) // OIDs are generally given starting with a '.' so the first digit may be empty
         .map(|x| x.parse::<u32>().unwrap())
         .collect::<Vec<u32>>();
     let mut oid_tab = &oid_init;
