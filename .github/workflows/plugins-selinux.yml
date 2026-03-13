@@ -60,9 +60,11 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Generate selinux binary
+        env:
+          VERSION: ${{ needs.get-environment.outputs.version }}
         run: |
           cd selinux/src
-          sed -i "s/@VERSION@/${{ needs.get-environment.outputs.version }}/g" centreon-plugins.te
+          sed -i "s/@VERSION@/$VERSION/g" centreon-plugins.te
           make -f /usr/share/selinux/devel/Makefile
         shell: bash
 

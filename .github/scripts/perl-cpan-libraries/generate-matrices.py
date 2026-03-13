@@ -22,6 +22,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import shutil
 import sys
 
@@ -56,13 +57,14 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
 
     if partial_matrices_dir and os.path.isdir(partial_matrices_dir):
         for fname in sorted(os.listdir(partial_matrices_dir)):
-            if not fname.endswith(".json"):
+            if not re.match(r'^partial-matrix-[\w-]+\.json$', fname):
                 continue
             base_real = os.path.realpath(partial_matrices_dir)
             target_real = os.path.realpath(os.path.join(partial_matrices_dir, fname))
             if os.path.commonpath([base_real, target_real]) != base_real:
                 raise Exception("Invalid file path")
-            with open(target_real) as f:
+            fd = os.open(target_real, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(fd) as f:
                 data = json.load(f)
             ptype   = data.get("type", "")
             distrib = data.get("distrib", "")

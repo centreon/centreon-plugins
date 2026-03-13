@@ -101,12 +101,15 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install locally sblim-sfcc
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
-            if [ "${{ matrix.distrib }}" = "bullseye" ]; then
+            if [ "$DISTRIB" = "bullseye" ]; then
               wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
               mv sblim-sfcc-SFCC_2_2_8 sblim-sfcc
             else
@@ -120,7 +123,7 @@ jobs:
             make install
           else
             dnf install -y 'dnf-command(config-manager)'
-            if [ "${{ matrix.distrib }}" = "el8" ]; then
+            if [ "$DISTRIB" = "el8" ]; then
               dnf config-manager --set-enabled powertools
             else
               dnf config-manager --set-enabled crb
@@ -130,16 +133,19 @@ jobs:
         shell: bash
 
       - name: Build openwsman
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          OPENWSMAN_VERSION: ${{ env.version }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get install -y cmake libssl-dev libpam-dev swig libxml2-dev
           else
             dnf install -y wget cmake gcc-c++ libcurl-devel pam-devel swig libxml2-devel openssl-devel
           fi
 
           cd /tmp
-          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${{ env.version }}.tar.gz|tar zxvf -
-          cd openwsman-${{ env.version }}/
+          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${OPENWSMAN_VERSION}.tar.gz|tar zxvf -
+          cd openwsman-${OPENWSMAN_VERSION}/
           mkdir build
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
@@ -147,8 +153,12 @@ jobs:
         shell: bash
 
       - name: Set package name and paths according to distrib
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+          ARCH: ${{ matrix.arch }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get install -y perl
           else
             dnf install -y perl
@@ -158,10 +168,10 @@ jobs:
 
           echo "Perl version is $PERL_VERSION"
 
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             NAME_PERL="libopenwsman-perl"
             USRLIB="/usr/lib/"
-            if [ "${{ matrix.arch }}" = "amd64" ]; then
+            if [ "$ARCH" = "amd64" ]; then
               PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl/$PERL_VERSION"
             else
               PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl/$PERL_VERSION"
@@ -169,7 +179,7 @@ jobs:
           else
             NAME_PERL="openwsman-perl"
             USRLIB="/usr/lib64/"
-            if [ "${{ matrix.distrib }}" = "el8" ]; then
+            if [ "$DISTRIB" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
               PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"

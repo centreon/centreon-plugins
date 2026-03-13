@@ -65,14 +65,19 @@ jobs:
           password: ${{ secrets.registry_password }}
 
       - name: Load image
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
         run: |
           docker image prune -af
-          docker pull ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker pull $DOCKER_IMAGE
         shell: bash
 
       - name: Save image on disk
+        env:
+          IMAGE_NAME: ${{ inputs.image }}
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
         run: |
-          docker save -o ./${{inputs.image}} ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{inputs.image}}
+          docker save -o ./$IMAGE_NAME $DOCKER_IMAGE
         shell: bash
 
       - name: Save image into cache
@@ -120,19 +125,28 @@ jobs:
           fail-on-cache-miss: true
 
       - name: Load image
-        run: docker load --input ./${{ inputs.image }}
+        env:
+          IMAGE_NAME: ${{ inputs.image }}
+        run: docker load --input ./$IMAGE_NAME
 
       - name: Install, test and remove plugin
         shell: bash
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+          PACKAGE_EXTENSION: ${{ inputs.package-extension }}
+          RUNNER_ID: ${{ matrix.index }}
+          SKIP_ROBOT_TESTS: ${{ inputs.skip-robot-tests }}
         run: |
           mkdir -p reports
           mkdir -p logs
           docker run --rm \
-          -v $(pwd):/test_plugins  \
+          -v "$(pwd):/test_plugins" \
           --workdir /test_plugins \
-          ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }} \
-          bash -c "if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; \
-          python3 .github/scripts/test-plugins.py --extension=${{ inputs.package-extension }} --runner-id=${{ matrix.index }} --logs-dir=./logs --reports-dir=./reports --skip-robot-tests=${{ inputs.skip-robot-tests }}"
+          -e PACKAGE_EXTENSION \
+          -e RUNNER_ID \
+          -e SKIP_ROBOT_TESTS \
+          "${DOCKER_IMAGE}" \
+          bash -c 'if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; python3 .github/scripts/test-plugins.py --extension="$PACKAGE_EXTENSION" --runner-id="$RUNNER_ID" --logs-dir=./logs --reports-dir=./reports --skip-robot-tests="$SKIP_ROBOT_TESTS"'
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
