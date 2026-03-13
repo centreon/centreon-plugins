@@ -63,7 +63,8 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
             target_real = os.path.realpath(os.path.join(partial_matrices_dir, fname))
             if os.path.commonpath([base_real, target_real]) != base_real:
                 raise Exception("Invalid file path")
-            with open(target_real) as f:
+            fd = os.open(target_real, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(fd) as f:
                 data = json.load(f)
             ptype   = data.get("type", "")
             distrib = data.get("distrib", "")

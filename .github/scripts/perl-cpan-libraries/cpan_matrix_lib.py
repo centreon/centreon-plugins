@@ -289,6 +289,11 @@ def _artifactory_list_folder(base_url, repo_path):
         print(f"  WARNING: {base_url} is not an allowed Artifactory base URL, skipping.", file=sys.stderr)
         return []
     url = f"{base_url}/artifactory/api/storage/{repo_path}"
+    # Re-validate the full URL after concatenation to catch any injection via repo_path.
+    parsed_url = urllib.parse.urlparse(url)
+    if parsed_url.scheme != "https" or parsed_url.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
+        print(f"  WARNING: {url} is not an allowed Artifactory URL, skipping.", file=sys.stderr)
+        return []
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
         with urllib.request.urlopen(req, timeout=15) as resp:
