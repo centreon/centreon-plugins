@@ -185,7 +185,9 @@
     {
       "name": "JMX::Jmx4Perl",
       "rpm": {},
-      "deb": {}
+      "deb": {
+        "use_dh_make_perl": "false"
+      }
     },
     {
       "name": "JSON::Path",
