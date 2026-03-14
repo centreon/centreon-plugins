@@ -32,27 +32,27 @@ sub custom_status_perfdata {
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.desired.count',
         value => $self->{result_values}->{desired},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.current.count',
         value => $self->{result_values}->{current},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.available.count',
         value => $self->{result_values}->{available},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.ready.count',
         value => $self->{result_values}->{ready},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.uptodate.count',
         value => $self->{result_values}->{up_to_date},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
 }
 
@@ -72,7 +72,7 @@ sub custom_status_output {
 sub prefix_deployment_output {
     my ($self, %options) = @_;
 
-    return "Deployment '" . $options{instance_value}->{name} . "' ";
+    return "Deployment '" . $options{instance_value}->{namespace} . "/" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
@@ -107,7 +107,8 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s'      => { name => 'filter_name' },
-        'filter-namespace:s' => { name => 'filter_namespace' }
+        'filter-namespace:s' => { name => 'filter_namespace' },
+        'filter-label:s'     => { name => 'filter_label' }
     });
    
     return $self;
@@ -130,7 +131,37 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
-
+        if (defined($self->{option_results}->{filter_label}) && $self->{option_results}->{filter_label} ne '') {
+            my $filter = $self->{option_results}->{filter_label};
+            my ($filter_key, $filter_value);
+            if ($filter =~ /(.*?)=(.*)/) {
+                $filter_key = $1;
+                $filter_value = $2;
+            }
+            my @label_sets = (
+                $deployment->{metadata}->{labels} // {},
+                $deployment->{metadata}->{annotations} // {},
+                ($deployment->{spec}->{template}->{metadata}->{labels} // {}),
+                ($deployment->{spec}->{template}->{metadata}->{annotations} // {})
+            );
+            my $found = 0;
+            foreach my $set (@label_sets) {
+                foreach my $key (keys %{$set}) {
+                    my $val = defined($set->{$key}) ? $set->{$key} : '';
+                    if (defined($filter_key)) {
+                        # Use m{} to avoid issues with '/' in label keys (e.g. 'app.kubernetes.io/name')
+                        if ($key =~ m{$filter_key} && $val =~ m{$filter_value}) { $found = 1; last; }
+                    } else {
+                        if ($key =~ m{$filter} || $val =~ m{$filter}) { $found = 1; last; }
+                    }
+                }
+                last if ($found);
+            }
+            if (!$found) {
+                $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter label/annotation.", debug => 1);
+                next;
+            }
+        }
         $self->{deployments}->{ $deployment->{metadata}->{uid} } = {
             name => $deployment->{metadata}->{name},
             namespace => $deployment->{metadata}->{namespace},
@@ -169,6 +200,10 @@ Filter deployment name (can be a regexp).
 =item B<--filter-namespace>
 
 Filter deployment namespace (can be a regexp).
+
+=item B<--filter-label>
+
+Filter deployment by labels or annotations (can be a regexp). You can also use KEY=VALUE form (both can be regex) to match label/annotation key and value. Search is done on deployment metadata and pod template metadata.
 
 =item B<--warning-status>
 
