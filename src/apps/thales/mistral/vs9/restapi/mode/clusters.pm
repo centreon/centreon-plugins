@@ -231,11 +231,18 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_cluster_name}) && $self->{option_results}->{filter_cluster_name} ne '' &&
             $cluster->{name} !~ /$self->{option_results}->{filter_cluster_name}/);
 
+        my $virtualIp = '-';
+        if (defined($cluster->{virtualIp})) {
+            $virtualIp = $cluster->{virtualIp} . '/' . $cluster->{virtualNetmask};
+        } elsif (defined($cluster->{carpMasterIp})) {
+            $virtualIp = $cluster->{carpMasterIp}->{address} . '/' . $cluster->{carpMasterIp}->{netmask};
+        }
+
         $self->{global}->{detected}++;
         $self->{clusters}->{ $cluster->{name} } = {
             clusterName => $cluster->{name},
             information => {
-                virtualIp => $cluster->{virtualIp} . '/' . $cluster->{virtualNetmask},
+                virtualIp => $virtualIp,
                 timeToSwitch => $cluster->{timeToSwitch}
             },
             status => {
@@ -247,14 +254,19 @@ sub manage_selection {
         };
 
         foreach ('master', 'backup') {
+            my $connectedStatus = 'unknown';
+            if (defined($cluster->{$_ . 'OriginStatus'})) {
+                $connectedStatus = lc($cluster->{$_ . 'OriginStatus'}->{connectedStatus});
+            }
+
             $self->{clusters}->{ $cluster->{name} }->{members}->{ $cluster->{$_ . 'Origin'}->{name} } = {
                 clusterName => $cluster->{name},
                 memberName => $cluster->{$_ . 'Origin'}->{name},
-                connectedStatus => lc($cluster->{$_ . 'OriginStatus'}->{connectedStatus}),
+                connectedStatus => $connectedStatus,
                 role => $_
             };
 
-            if ($cluster->{$_ . 'OriginStatus'}->{lastCheck} =~ /^\s*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+([+-].*)$/) {
+            if (defined($cluster->{$_ . 'OriginStatus'}) && defined($cluster->{$_ . 'OriginStatus'}->{lastCheck}) && $cluster->{$_ . 'OriginStatus'}->{lastCheck} =~ /^\s*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+([+-].*)$/) {
                 my $dt = DateTime->new(
                     year       => $1,
                     month      => $2,
