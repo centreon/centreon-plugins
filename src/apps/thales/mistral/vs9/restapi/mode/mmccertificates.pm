@@ -189,11 +189,14 @@ sub add_certificate {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $certificates = $options{custom}->get_certificates_ca_with_signed_certificates();
+    my $response = $options{custom}->get_certificates_ca_with_signed_certificates();
+    my $certificates = $response;
+    if (defined($response->{content})) {
+        $certificates = $response->{content};
+    }
 
-    use Data::Dumper; print Data::Dumper::Dumper($certificates);
     $self->{certificates} = {};
-    foreach my $cert (@{$certificates->{content}}) {
+    foreach my $cert (@$certificates) {
         $self->add_certificate(cert => $cert);
         foreach my $mmc (@{$cert->{certificatesMmc}}) {
             $self->add_certificate(cert => $mmc);
