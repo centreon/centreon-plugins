@@ -120,10 +120,17 @@ cgs-swap ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    Everything is OK | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
     ...    2
-    ...    --warning-swap=0.1
-    ...    WARNING: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;0.1;;0;100
+    ...    --warning-swap-bytes=0.1
+    ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
     ...    3
-    ...    --critical-swap=0.1
-    ...    CRITICAL: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;0.1;0;100
+    ...    --critical-swap-bytes=0.1
+    ...    CRITICAL: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;;0.1;0; swap.usage.percent=49.97%;;;0;100
+    ...    4
+    ...    --warning-swap-prct=0.1
+    ...    WARNING: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
+    ...    5
+    ...    --critical-swap-prct=0.1
+    ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
+

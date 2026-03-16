@@ -286,7 +286,9 @@ impl Command {
                     };
                     for (i, item) in v.iter().enumerate() {
                         let name = match &prefix_str {
-                            ExprResult::StrVector(v) => format!("{:?}#{}", v[i], metric.name),
+                            ExprResult::StrVector(v) => {
+                                format!("{:?}#{}", v[i], metric.name)
+                            }
                             ExprResult::Empty => {
                                 let res = format!("{}#{}", idx, metric.name);
                                 idx += 1;

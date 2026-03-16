@@ -8,6 +8,8 @@ use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_snmp::v2::BulkPdu;
 use rasn_snmp::v2::GetBulkRequest;
+use rasn_snmp::v2::GetRequest;
+use rasn_snmp::v2::Pdu;
 use rasn_snmp::v2::Pdus;
 use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
@@ -177,7 +179,9 @@ pub fn snmp_bulk_get<'a>(
         .iter()
         .map(|x| {
             x.split('.')
+                .skip_while(|d| d.is_empty()) // OIDs are generally given starting with a '.' so the first digit may be empty
                 .map(|x| x.parse::<u32>().unwrap())
+                .filter(|x| *x != 0) // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first OID we are trying to get will never be requested
                 .collect::<Vec<u32>>()
         })
         .collect::<Vec<Vec<u32>>>();
@@ -203,9 +207,9 @@ pub fn snmp_bulk_get<'a>(
 
     let pdu = BulkPdu {
         request_id,
+        variable_bindings,
         non_repeaters,
         max_repetitions,
-        variable_bindings,
     };
 
     let get_request: GetBulkRequest = GetBulkRequest(pdu);
