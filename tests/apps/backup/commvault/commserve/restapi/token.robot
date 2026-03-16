@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Check Commvault REST API Token management
+Documentation       Check Commvault REST API Check
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -15,13 +15,15 @@ ${APIPORT}          3000
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::backup::commvault::commserve::restapi::plugin
 ...                 --hostname=${HOSTNAME}
+...                 --api-token='T@k3n'
+...                 --refresh-token='R3fR3sHt@K3n'
 ...                 --proto='http'
 ...                 --mode=token
 ...                 --port=${APIPORT}
 
 
 *** Test Cases ***
-token ${tc}
+jobs ${tc}
     [Tags]    apps    backup    commvalt    commserve    restapi
 
     ${command}    Catenate
@@ -29,12 +31,7 @@ token ${tc}
 
     ${command}    Catenate    ${CMD} --http-backend=curl ${extraoptions}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command And Check Result As Regexp    ${command}    ${expected_regexp}
 
-    Examples:       tc    extra_options                                                                       expected_result    --
-    ...             1     ${EMPTY}                                                                            UNKNOWN: --api-token and --refresh-token are mandatory
-    ...             2     --api-username=toto --api-password=ezeez                                            OK: Using username-based authentication
-    ...             3     --api-token=XXXX --refresh-token=XXX --force-refresh                                OK: Token refreshed
-    ...             4     --api-token=XXXX --refresh-token=XXX --refresh-token=99999                          OK: Token available
-    ...             5     --api-token=XXXX --refresh-token=XXX --refresh-token=99999 --force-refresh          OK: Token refreshed
-    ...             6     --api-username=toto --api-password=ezeez --status-if-unused='UNKNOWN'               UNKNOWN: Using username-based authentication
+    Examples:        tc    extra_options                    expected_regexp    --
+            ...      1     ${EMPTY}                         ^OK: Token

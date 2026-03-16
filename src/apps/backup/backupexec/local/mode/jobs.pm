@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,7 @@ use warnings;
 use centreon::common::powershell::backupexec::jobs;
 use apps::backup::backupexec::local::mode::resources::types qw($job_status $job_substatus $job_type);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -57,9 +58,9 @@ sub custom_long_calc {
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{isActive} = $options{new_datas}->{$self->{instance} . '_isActive'};
 
-    return -11 if ($self->{result_values}->{isActive} != 1);
+    return NOT_PROCESSED if ($self->{result_values}->{isActive} != 1);
 
-    return 0;
+    return RUN_OK;
 }
 
 sub prefix_job_output {
@@ -72,8 +73,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -11 => 1, -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'jobs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -88,7 +89,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{jobs} = [
-        { label => 'status', type => 2, critical_default => 'not %{status} =~ /succeeded/i', set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, critical_default => 'not %{status} =~ /succeeded/i', set => {
                 key_values => [
                     { name => 'name' }, { name => 'type' },
                     { name => 'status' }, { name => 'subStatus' },
@@ -99,7 +100,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'long', type => 2, set => {
+        { label => 'long', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'name' }, { name => 'type' },
                     { name => 'status' }, { name => 'subStatus' },

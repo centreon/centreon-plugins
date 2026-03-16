@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -74,7 +74,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_leef(oids => $oids, nothing_quit => 1);
 
     $self->{global} = { prct_used => $snmp_result->{$oid_cpuUsage},
-                        temperature => $snmp_result->{$oid_cpuTemperature} =~ s/\s\C.*//r
+                        temperature => $snmp_result->{$oid_cpuTemperature} =~ s/([\d\.]+).*/$1/r
     };
 }
 
@@ -98,11 +98,11 @@ Critical threshold for CPU usage in percentage.
 
 =item B<--warning-temperature>
 
-Warning threshold in celsius degrees for CPU.
+Warning threshold in Celsius degrees for CPU.
 
 =item B<--critical-temperature>
 
-Critical threshold in celsius degrees for CPU.
+Critical threshold in Celsius degrees for CPU.
 
 =back
 

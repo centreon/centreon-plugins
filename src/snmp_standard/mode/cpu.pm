@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package snmp_standard::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 
+use centreon::plugins::constants qw(:counters);
 use strict;
 use warnings;
 
@@ -44,8 +45,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
-        { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_core_output' }
+        { name => 'cpu_avg', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_cpu_avg_output' },
+        { name => 'cpu_core', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_cpu_core_output' }
     ];
 
     $self->{maps_counters}->{cpu_avg} = [

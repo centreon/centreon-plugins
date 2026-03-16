@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use centreon::plugins::lockfile;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::misc qw/json_encode/;
 use MIME::Base64;
@@ -63,6 +64,7 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
     $self->{cache_authent_token} = centreon::plugins::statefile->new(%options);
+    $self->{lock} = centreon::plugins::lockfile->new(%options);
 
     return $self;
 }
@@ -100,6 +102,9 @@ sub check_options {
 
     $self->{cache}->check_options(option_results => $self->{option_results});
     $self->{cache_authent_token}->check_options(option_results => $self->{option_results});
+    $self->{lock}->check_options(option_results => { %{$self->{option_results}},
+                                                     lockfile => 'commvault_commserve_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}) . '.lock',
+                                                     lock_expiration_timeout => 3600 });
 
     return 0;
 }
@@ -154,7 +159,7 @@ sub settings {
 }
 
 sub load_authent_token {
-    my ($self) = @_;
+    my ($self, %options) = @_;
 
     my $has_cache_file = $self->{cache_authent_token}->read(statefile => 'commvault_commserve_cat_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}));
     return (0, '', '') unless $has_cache_file;
@@ -183,7 +188,10 @@ sub refresh_authent_token
         critical_status => ''
     );
 
-    if ($self->{http}->get_code() != 200) {
+    my $code = $self->{http}->get_code();
+
+    if ($code != 200) {
+        $self->{cache_authent_token}->remove_file() if $code == 450 || $code == 500;
         return ('', '') unless $exit_on_failed;
         my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
         $self->{output}->option_exit(short_msg => "Cannot refresh token [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
@@ -273,10 +281,15 @@ sub request_internal {
     my $authent_token = '';
 
     if ($self->{use_authent_token}) {
+
+        $self->{output}->option_exit(exit_literal => 'unknown', short_msg => 'Unable to acquire lock: will retry on next run')
+            unless $self->{lock}->lock_file();
+
         (undef, $authent_token, undef) = $self->load_authent_token();
 
-	$self->{output}->option_exit(short_msg => 'Tokens where not found. Please use the "token" mode first')
-	    if $authent_token eq '';
+        $self->{output}->option_exit(short_msg => 'Tokens where not found. Please use the "token" mode first')
+            if $authent_token eq '';
+
         $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $authent_token);
 
     } elsif (!defined($self->{legacy_token})) {
@@ -304,6 +317,10 @@ sub request_internal {
         $self->clean_legacy_token(statefile => $self->{cache});
         $self->get_legacy_token(statefile => $self->{cache});
     }
+
+    $self->{lock}->unlock()
+        if $self->{lock}->is_locked();
+
     my $decoded = $self->json_decode(content => $content);
 
     $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)')

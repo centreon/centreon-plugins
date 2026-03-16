@@ -47,7 +47,18 @@ def refresh_packet_manager(archi, logs_dir):
 
 
 # Install plugin, from local file if build is true, from repository if false.
-def install_plugin(plugin, archi, build, logs_dir):
+def install_plugin(plugin, archi, build, logs_dir, dependencies=None):
+    if dependencies:
+        for dep in dependencies:
+            if archi == "deb":
+                local_exists = len(glob.glob(f"./{dep.lower()}*.deb")) > 0
+            else:
+                local_exists = len(glob.glob(f"./{dep}*.rpm")) > 0
+            if local_exists:
+                print(f"Installing test dependency {dep} for {plugin}")
+                dep_status = install_plugin(dep, archi, True, logs_dir)
+                if dep_status != 0:
+                    print(f"Warning: failed to install test dependency {dep} for {plugin}")
     with open(f'{logs_dir}/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             if build:
@@ -58,6 +69,14 @@ def install_plugin(plugin, archi, build, logs_dir):
             outfile.write(command + "\n")
             output_status = (subprocess.run(command, shell=True, check=False,
                              stderr=subprocess.STDOUT, stdout=outfile)).returncode
+            if output_status != 0:
+                # Retry once after refreshing package metadata (handles transient mirror failures)
+                outfile.write("apt-get update (retry after failed install)\n")
+                subprocess.run("apt-get update", shell=True, check=False,
+                               stderr=subprocess.STDOUT, stdout=outfile)
+                outfile.write(command + " (retry)\n")
+                output_status = (subprocess.run(command, shell=True, check=False,
+                                 stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
             if build:
                 install_name = f"./{plugin}*.rpm"
@@ -91,12 +110,12 @@ def get_plugin_modes(plugin_command):
                     break
     return modes
 
-def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir):
+def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir, skip_robot_tests):
     tests_path = []
     for path in plugin_paths:
         if os.path.exists(f"tests/{path}"):
             tests_path.append(f"tests/{path}")
-    if len(tests_path) == 0:
+    if len(tests_path) == 0 or skip_robot_tests:
         output_status = 3
         with open(f'{logs_dir}/test-plugins-help.log', "a") as outfile:
             print(
@@ -169,11 +188,13 @@ if __name__ == '__main__':
     parser.add_argument('--runner-id', type=int, help='ID du runner pour le test des plugins')
     parser.add_argument('--logs-dir', type=str, help='Répertoire des logs', default='/var/log')
     parser.add_argument('--reports-dir', type=str, help='Répertoire des rapports', default='reports')
+    parser.add_argument('--skip-robot-tests', type=str, help='True to skip robot tests, default value: False', default='false')
     args = parser.parse_args()
 
     launch_snmp_sim()
     archi = args.extension  # expected either deb or rpm.
     logs_dir = args.logs_dir
+    skip_robot_tests = args.skip_robot_tests.lower() == 'true'
     if args.runner_id:
         logs_dir = os.path.join(logs_dir, f"runner-{args.runner_id}")
     os.makedirs(logs_dir, exist_ok=True)
@@ -203,13 +224,15 @@ if __name__ == '__main__':
             print("Testing plugin : ", plugin)
 
             nb_plugins += 1
-            tmp = install_plugin(plugin, archi, plugins[plugin]["build"], logs_dir)
+
+            test_deps = plugins[plugin].get("test_dependencies", [])
+            tmp = install_plugin(plugin, archi, plugins[plugin]["build"], logs_dir, test_deps)
             if tmp > 0:
                 error_install += 1
                 list_plugin_error.add(plugin)
             else:
                 if plugins[plugin]["test"]:
-                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir)
+                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir, skip_robot_tests)
                     if tmp > 0:
                         error_tests += 1
                         list_plugin_error.add(plugin)
