@@ -27,15 +27,6 @@ use base qw(centreon::plugins::mode);
 
 use centreon::plugins::misc;
 
-my %map_state = (
-    1 => 'online',
-    2 => 'offline',
-);
-
-my $mapping = {
-    hrstorageMount => { oid => '.1.3.6.1.2.1.25.3.8.1.2' },
-};
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -55,14 +46,35 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $self->{snmp}->get_table(
-        oid => $mapping->{hrstorageMount}->{oid},
-        dont_quit => 1
-    );
-    $self->{disks} = {};
+    my $mapping = {
+        name  => { oid => '.1.3.6.1.4.1.47565.1.1.1.11.3.1.2' },# fwPartitionDevName
+        total => { oid => '.1.3.6.1.4.1.47565.1.1.1.11.3.1.4' }# fwPartitionSize
+    };
+    my $oid_fwDiskStatsEntry = '.1.3.6.1.4.1.47565.1.1.1.11.3.1';
 
-    while (my ($oid, $value) = each %{$snmp_result}) {
-        $self->{disks}->{ $oid } = { name => $value };
+    my $snmp_result = $self->{snmp}->get_multiple_table(
+        oids         => [
+            { oid => $oid_fwDiskStatsEntry, start => $mapping->{name}->{oid}, end => $mapping->{total}->{oid} },
+            { oid => $mapping->{name}->{oid} }
+        ],
+        return_type  => 1,
+        nothing_quit => 1
+    );
+
+    $self->{disks} = {};
+    foreach my $oid (sort keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{name}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        # Filter disks by partition dev name
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{name} !~ /$self->{option_results}->{filter_name}/);
+
+        $self->{disks}->{ $oid } = {
+            name  => $result->{name},
+            total => $result->{total}
+        };
     }
 }
 
@@ -86,7 +98,7 @@ sub run {
     }
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List disks:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -96,7 +108,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => [ 'name', 'total' ]);
 }
 
 sub disco_show {
@@ -106,7 +118,8 @@ sub disco_show {
     $self->manage_selection();
     foreach my $oid ($self->_sort_output(%{$self->{disks}})) {
         $self->{output}->add_disco_entry(
-            name => $self->{disks}->{$oid}->{name},
+            name  => $self->{disks}->{$oid}->{name},
+            total => $self->{disks}->{$oid}->{total},
         );
     }
 }

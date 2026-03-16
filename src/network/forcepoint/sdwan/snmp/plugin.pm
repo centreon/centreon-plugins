@@ -40,6 +40,7 @@ sub new {
         'dropped-packets'  => 'network::forcepoint::sdwan::snmp::mode::droppedpackets',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-disks'       => 'network::forcepoint::sdwan::snmp::mode::listdisks',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'load'             => 'snmp_standard::mode::loadaverage',
         'memory'           => 'snmp_standard::mode::memory',
