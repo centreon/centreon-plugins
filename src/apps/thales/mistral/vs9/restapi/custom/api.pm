@@ -124,7 +124,7 @@ sub get_connection_info {
 sub minimal_api_version {
     my ($self, %options) = @_;
 
-    return centreon::plugins::misc::minimal_version($self->{api_version}, $options{version})
+    return centreon::plugins::misc::minimal_version($self->{api_version}, $options{version});
 }
 
 sub get_token {
@@ -260,6 +260,23 @@ sub request_api {
     return $decoded;
 }
 
+sub get_certificates_ca_with_signed_certificates {
+    my ($self, %options) = @_;
+
+    # need to connect first to have the version
+    $self->settings();
+    $self->get_token();
+
+    if ($self->minimal_api_version(version => '9.2.4.18')) {
+        return $self->request_api(endpoint => '/certificates/ca');
+    }
+    
+    return $self->request_api(
+        endpoint => '/certificateCas',
+        get_param => ['projection=withSignedCertificates']
+    );
+}
+
 sub get_clusters {
     my ($self, %options) = @_;
 
@@ -308,6 +325,8 @@ sub get_gateway_inventory {
         for (my $i = 0; $i < scalar(@$inventory); $i++) {
             $inventory->[$i]->{certificates} = [];
             foreach my $cert (@{$result->{content}}) {
+                next if (!defined($cert->{ssIpsecGwHw}));
+
                 if ($inventory->[$i]->{serialNumber} eq $cert->{ssIpsecGwHw}->{serialNumber}) {
                     push @{$inventory->[$i]->{certificates}}, $cert;
                     last;

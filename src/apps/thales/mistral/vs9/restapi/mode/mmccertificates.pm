@@ -189,10 +189,7 @@ sub add_certificate {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $certificates = $options{custom}->request_api(
-        endpoint => '/certificateCas',
-        get_param => ['projection=withSignedCertificates']
-    );
+    my $certificates = $options{custom}->get_certificates_ca_with_signed_certificates();
 
     $self->{certificates} = {};
     foreach my $cert (@{$certificates->{content}}) {
