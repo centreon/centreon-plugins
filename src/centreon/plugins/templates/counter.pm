@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
+use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::misc qw/is_empty/;
 use JSON::XS;
 
@@ -43,10 +44,10 @@ sub set_counters {
     
     $self->{maps_counters_type} = [];
     
-    # 0 = mode total
-    # 1 = mode instances
+    # COUNTER_TYPE_GLOBAL (0) = mode total
+    # COUNTER_TYPE_INSTANCE (1) = mode instances
     #push @{$self->{maps_counters_type}}, { 
-    #    name => 'global', type => 0, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
+    #    name => 'global', type => COUNTER_TYPE_GLOBAL, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
     #};
 
     #$self->{maps_counters}->{global} = [
@@ -63,7 +64,7 @@ sub set_counters {
     
     # Example for instances
     #push @{$self->{maps_counters_type}}, { 
-    #    name => 'cpu', type => 1, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
+    #    name => 'cpu', type => COUNTER_KIND_METRIC, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
     #    message_multiple => 'All CPU usages are ok',
     #};    
 }
@@ -97,15 +98,15 @@ sub get_threshold_prefix {
     my $prefix = '';
     END_LOOP: foreach (@{$self->{maps_counters_type}}) {
         if ($_->{name} eq $options{name}) {
-            $prefix = 'instance-' if ($_->{type} == 1);
+            $prefix = 'instance-' if $_->{type} == COUNTER_TYPE_INSTANCE;
             last;
         }
         
-        if ($_->{type} == 3) {
+        if ($_->{type} == COUNTER_TYPE_MULTIPLE) {
             foreach (@{$_->{group}}) {
                 if ($_->{name} eq $options{name}) {
-                    $prefix = 'instance-' if ($_->{type} == 0);
-                    $prefix = 'subinstance-' if ($_->{type} == 1);
+                    $prefix = 'instance-' if $_->{type} == COUNTER_MULTIPLE_INSTANCE;
+                    $prefix = 'subinstance-' if $_->{type} == COUNTER_MULTIPLE_SUBINSTANCE;
                     last END_LOOP;
                 }
             }
@@ -239,9 +240,9 @@ sub check_options {
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
             push @$change_macros_opt, 'unknown-' . $_->{label}, 'warning-' . $_->{label}, 'critical-' . $_->{label}
-                if (defined($_->{type}) && $_->{type} == 2);
+                if $_->{type} && $_->{type} == COUNTER_KIND_TEXT;
             $_->{obj}->{instance_mode} = $self;
-            $_->{obj}->init(option_results => $self->{option_results}) if (!defined($_->{type}) || $_->{type} != 2);
+            $_->{obj}->init(option_results => $self->{option_results}) if !defined($_->{type}) || $_->{type} != COUNTER_KIND_TEXT;
         }
     }
 
@@ -727,9 +728,9 @@ sub run_multiple {
             next if (!defined($self->{$options{config}->{name}}->{$instance}->{$group->{name}}));
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$instance}->{$group->{name}};
 
-            if ($group->{type} == 1) {
+            if ($group->{type} == COUNTER_MULTIPLE_SUBINSTANCE) {
                 $self->run_multiple_instances(config => $group, multiple_parent => $multiple, instance_parent => $instance, indent_long_output => $indent_long_output);
-            } elsif ($group->{type} == 0) {
+            } elsif ($group->{type} == COUNTER_MULTIPLE_INSTANCE) {
                 $self->run_global(
                     config => $group,
                     multiple_parent => $multiple,
@@ -768,13 +769,13 @@ sub run {
     }
 
     foreach my $entry (@{$self->{maps_counters_type}}) {
-        if ($entry->{type} == 0) {
+        if ($entry->{type} == COUNTER_TYPE_GLOBAL) {
             $self->run_global(config => $entry);
-        } elsif ($entry->{type} == 1) {
+        } elsif ($entry->{type} == COUNTER_TYPE_INSTANCE) {
             $self->run_instances(config => $entry);
-        } elsif ($entry->{type} == 2) {
+        } elsif ($entry->{type} == COUNTER_TYPE_GROUP) {
             $self->run_group(config => $entry);
-        } elsif ($entry->{type} == 3) {
+        } elsif ($entry->{type} == COUNTER_TYPE_MULTIPLE) {
             $self->run_multiple(config => $entry);
         }
     }

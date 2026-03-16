@@ -91,7 +91,7 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    my $result = $options{wsman}->execute_powershell_script(
+    my $result = $options{wsman}->execute_powershell(
         label => 'pendingreboot',
         content => $ps
     );

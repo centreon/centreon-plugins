@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::powershell::veeam::tapejobs;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psversion/;
 use apps::backup::veeam::wsman::mode::resources::types qw($job_tape_type $job_tape_result $job_tape_state);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc;
@@ -91,7 +92,8 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
         'exclude-name:s'    => { name => 'exclude_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-type:s'     => { name => 'filter_type' },
+        'veeam-version:s'   => { name => 'veeam_version', default => '12' }
     });
 
     return $self;
@@ -101,7 +103,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $ps = centreon::common::powershell::veeam::tapejobs::get_powershell();
+    my $ps = centreon::common::powershell::veeam::tapejobs::get_powershell(veeam_version => $self->{option_results}->{veeam_version});
     if (defined($self->{option_results}->{ps_display})) {
         $self->{output}->output_add(
             severity => 'OK',
@@ -112,6 +114,7 @@ sub manage_selection {
     }
 
     my $result = $options{wsman}->execute_powershell(
+        powershell_version => veeam_to_psversion($self->{option_results}->{veeam_version}),
         label => 'tapejobs',
         content => $ps
     );
@@ -183,6 +186,10 @@ __END__
 
 =over 8
 
+=item B<--veeam-version>
+
+The Veeam version to monitor (default: 12).
+Veeam version 13 and later require PowerShell 7 whereas earlier versions use PowerShell 5.
 
 =item B<--ps-display>
 

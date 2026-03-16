@@ -32,6 +32,7 @@ use Exporter 'import';
 use feature 'state';
 
 our @EXPORT_OK = qw/change_seconds
+                    check_security_whitelist
                     flatten_arrays
                     flatten_to_hash
                     graphql_escape

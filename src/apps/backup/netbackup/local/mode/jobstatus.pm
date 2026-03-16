@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -49,9 +50,9 @@ sub custom_long_calc {
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
 
-    return -11 if ($self->{result_values}->{state} !~ /queued|active/);
+    return NOT_PROCESSED if ($self->{result_values}->{state} !~ /queued|active/);
 
-    return 0;
+    return RUN_OK;
 }
 
 sub custom_frozen_threshold {
@@ -110,10 +111,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'policy', type => 2, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'policy', type => COUNTER_TYPE_GROUP, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output',
           message_multiple => 'All policies are ok',
-          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ] 
+          group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { NOT_PROCESSED() => 1 } } ]
         }
     ];
 
@@ -138,7 +139,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'long', type => 2, set => {
+        { label => 'long', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' },
                     { name => 'state' }
@@ -149,7 +150,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'frozen', type => 2, critical_default => '%{state} =~ /active|queue/ && %{kb} == 0', set => {
+        { label => 'frozen', type => COUNTER_KIND_TEXT, critical_default => '%{state} =~ /active|queue/ && %{kb} == 0', set => {
                 key_values => [
                     { name => 'kb', diff => 1 }, { name => 'status' }, 
                     { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'state' },

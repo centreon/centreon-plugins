@@ -6,7 +6,7 @@ RUN bash -e <<EOF
 
 dnf install -y \
   git \
-  java-17-openjdk-devel \
+  java-17-openjdk-headless \
   wget \
   zstd
 

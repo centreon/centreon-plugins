@@ -32,13 +32,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-        $options{options}->add_options(arguments => {
-            "refresh-frequency:s" => { name => 'refresh_frequency', default => 25 * 60 },
-            "force-refresh"       => { name => 'force_refresh' },
-            "api-token:s"         => { name => 'api_token', default => '' },
-            "refresh-token:s"     => { name => 'refresh_token', default => '' },
-            "status-if-unused:s"  => { name => 'status_if_unused', default => 'OK' },
-        });
+    $options{options}->add_options(arguments => {
+        "refresh-frequency:s" => { name => 'refresh_frequency', default => 25 * 60 },
+        "force-refresh"       => { name => 'force_refresh' },
+        "api-token:s"         => { name => 'api_token', default => '' },
+        "refresh-token:s"     => { name => 'refresh_token', default => '' },
+        "status-if-unused:s"  => { name => 'status_if_unused', default => 'OK' },
+    });
 
     return $self;
 }
@@ -47,12 +47,16 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    $self->{output}->option_exit(short_msg => "Invalid status-if-unused value '" . $self->{option_results}->{status_if_unused} . "'. Valid values are: OK, WARNING, CRITICAL, UNKNOWN")
+        unless $self->{option_results}->{status_if_unused}=~/^(?:OK|WARNING|CRITICAL|UNKNOWN)$/i;
+
     $self->{output}->option_exit(exit_litteral => $self->{option_results}->{status_if_unused},
                                  short_msg => 'Using username-based authentication')
         if $self->{option_results}->{api_username} ne '' || $self->{option_results}->{api_password} ne '';
 
     $self->{output}->option_exit(short_msg => '--api-token and --refresh-token are mandatory')
         if $self->{option_results}->{api_token} eq '' || $self->{option_results}->{refresh_token} eq '';
+
 }
 
 # Information about the new access token authentication mode:
@@ -71,17 +75,21 @@ sub run {
     my ($self, %options) = @_;
 
     $options{custom}->settings(%{$self->{option_results}});
+
+    $self->{output}->option_exit(exit_literal => 'unknown', short_msg => 'Unable to acquire lock: will retry on next run')
+        unless $options{custom}->{lock}->lock_file();
+
     my ($update_time, $authent_token, $refresh_token) = $options{custom}->load_authent_token();
 
     my $msg = 'Token available';
     my $severity = 'OK';
     if ($self->{option_results}->{api_token} ne '') {
         if ($update_time == 0 || $update_time + $self->{option_results}->{refresh_frequency} <= time() || $self->{option_results}->{force_refresh}) {
-
             if ($authent_token eq '') {
                 $authent_token = $self->{option_results}->{api_token};
                 $refresh_token = $self->{option_results}->{refresh_token};
             }
+
             ($authent_token, $refresh_token) = $options{custom}->refresh_authent_token(
                 authentToken => $authent_token,
                 refreshToken  => $refresh_token,
@@ -101,6 +109,8 @@ sub run {
     } else {
         $msg = 'Using session authentication';
     }
+
+    $options{custom}->{lock}->unlock();
 
     $self->{output}->output_add(severity => $severity,
                                 short_msg => $msg);
