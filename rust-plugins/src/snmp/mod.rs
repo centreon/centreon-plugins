@@ -1,3 +1,8 @@
+//! SNMP protocol communication using SNMPv2c bulk get/walk operations.
+//!
+//! Provides functions to query SNMP agents via UDP, parse responses,
+//! and store results as vectors or scalars for metric computation.
+
 extern crate log;
 extern crate rasn;
 extern crate rasn_smi;
@@ -16,22 +21,34 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 use std::net::UdpSocket;
 
+/// The SNMP value type for an OID response.
 #[derive(Debug)]
 pub enum ValueType {
+    /// No value present.
     None(()),
+    /// A 32-bit signed integer.
     Integer(i64),
+    /// A floating-point value (not a standard SNMP type, for internal use).
     Float(f64),
+    /// A string value (OCTET STRING).
     String(String),
+    /// A 64-bit unsigned counter.
     Counter64(u64),
 }
 
+/// Result of an SNMP query operation.
+///
+/// Stores collected values keyed by OID name, and tracks the last OID
+/// for walk-based operations.
 #[derive(Debug)]
 pub struct SnmpResult {
+    /// Collected values from this SNMP query, indexed by OID name.
     pub items: HashMap<String, ExprResult>,
     last_oid: Vec<u32>,
 }
 
 impl SnmpResult {
+    /// Creates a new `SnmpResult` with the given items map.
     pub fn new(items: HashMap<String, ExprResult>) -> SnmpResult {
         SnmpResult {
             items,
@@ -150,22 +167,19 @@ impl SnmpResult {
 //    retval
 //}
 
-///
-/// Bulk get
-/// This function is similar to the get function but it uses the GetBulkRequest PDU
-/// to retrieve multiple values at once.
+/// Retrieves values for multiple OIDs in a single bulk request.
 ///
 /// # Arguments
-/// * `target` - The target IP address and port
-/// * `oid` - The OID to walk
-/// # Returns
-/// An SnmpResult structure containing the variables
+/// * `target` - Target address in "host:port" format
+/// * `_version` - SNMP version (e.g., "2c")
+/// * `community` - SNMP community string
+/// * `non_repeaters` - Number of non-repeating OIDs (typically 0 or 1)
+/// * `max_repetitions` - Maximum repetitions per OID
+/// * `oid` - Vector of OID strings to query
+/// * `names` - Vector of logical names (one per OID)
 ///
-/// # Example
-/// ```
-/// use snmp_rust::r_snmp_bulk_get;
-/// let result = snmp_bulk_get("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
-/// ```
+/// # Returns
+/// An [`SnmpResult`] containing the retrieved values indexed by name
 pub fn snmp_bulk_get<'a>(
     target: &str,
     _version: &str,
@@ -235,22 +249,20 @@ pub fn snmp_bulk_get<'a>(
     retval
 }
 
+/// Walks a subtree of OIDs using repeated bulk requests until the subtree is exhausted.
 ///
-/// Bulk walk
-/// This function is similar to the walk function but it uses the GetBulkRequest PDU
-/// to retrieve multiple values at once.
+/// Continues retrieving values until an OID outside the subtree is encountered
+/// or a timeout occurs.
 ///
 /// # Arguments
-/// * `target` - The target IP address and port
-/// * `oid` - The OID to walk
-/// # Returns
-/// An SnmpResult structure containing the variables
+/// * `target` - Target address in "host:port" format
+/// * `_version` - SNMP version (e.g., "2c")
+/// * `community` - SNMP community string
+/// * `oid` - The base OID to walk
+/// * `snmp_name` - Logical name for collected values
 ///
-/// # Example
-/// ```
-/// use snmp_rust::snmp_bulk_walk;
-/// let result = snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
-/// ```
+/// # Returns
+/// An [`SnmpResult`] containing all values under the specified OID
 pub fn snmp_bulk_walk<'a>(
     target: &str,
     _version: &str,
@@ -317,6 +329,21 @@ pub fn snmp_bulk_walk<'a>(
     retval
 }
 
+/// Walks a subtree and organizes results by label matches.
+///
+/// Used for tabular SNMP data where the last segment of an OID identifies
+/// the column (labeled in the `labels` map), and values are organized per label.
+///
+/// # Arguments
+/// * `target` - Target address in "host:port" format
+/// * `_version` - SNMP version (e.g., "2c")
+/// * `community` - SNMP community string
+/// * `oid` - The base OID to walk
+/// * `snmp_name` - Logical name prefix for collected values
+/// * `labels` - Map of label identifiers to logical names
+///
+/// # Returns
+/// An [`SnmpResult`] with values organized by label as separate vectors
 pub fn snmp_bulk_walk_with_labels<'a>(
     target: &str,
     _version: &str,
@@ -384,6 +411,17 @@ pub fn snmp_bulk_walk_with_labels<'a>(
 }
 
 impl SnmpResult {
+    /// Parses an SNMP response and organizes values by label.
+    ///
+    /// # Arguments
+    /// * `decoded` - The decoded SNMP response message
+    /// * `oid` - The base OID (for walk termination detection)
+    /// * `snmp_name` - Prefix for result keys
+    /// * `labels` - Label map for splitting results
+    /// * `walk` - If true, returns true when subtree is exhausted
+    ///
+    /// # Returns
+    /// `true` if the walk should terminate (for walk operations)
     fn build_response_with_labels<'a>(
         &mut self,
         decoded: Message<Pdus>,
@@ -504,6 +542,16 @@ impl SnmpResult {
         completed
     }
 
+    /// Parses an SNMP response from a get request using provided names.
+    ///
+    /// # Arguments
+    /// * `decoded` - The decoded SNMP response message
+    /// * `oid` - The base OID (for walk termination detection)
+    /// * `names` - Names for each OID result
+    /// * `walk` - If true, returns true when subtree is exhausted
+    ///
+    /// # Returns
+    /// `true` if the walk should terminate (for walk operations)
     fn build_response_with_names<'a>(
         &mut self,
         decoded: Message<Pdus>,
@@ -631,6 +679,16 @@ impl SnmpResult {
         }
         completed
     }
+    /// Parses an SNMP response and stores values under a single logical name.
+    ///
+    /// # Arguments
+    /// * `decoded` - The decoded SNMP response message
+    /// * `oid` - The base OID (for walk termination detection)
+    /// * `snmp_name` - Logical name for collected values
+    /// * `walk` - If true, returns true when subtree is exhausted
+    ///
+    /// # Returns
+    /// `true` if the walk should terminate (for walk operations)
     fn build_response<'a>(
         &mut self,
         decoded: Message<Pdus>,

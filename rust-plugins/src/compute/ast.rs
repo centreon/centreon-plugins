@@ -1,31 +1,51 @@
+//! Abstract syntax tree and expression evaluation.
+
 use crate::snmp::SnmpResult;
 use log::{info, warn};
 use std::str;
 
+/// An expression node in the AST.
 #[derive(Debug)]
 pub enum Expr<'input> {
+    /// A variable identifier (e.g., parsed from `{varname}`).
     Id(&'input [u8]),
+    /// A numeric constant.
     Number(f64),
+    /// Addition of two expressions.
     OpPlus(Box<Expr<'input>>, Box<Expr<'input>>),
+    /// Subtraction of two expressions.
     OpMinus(Box<Expr<'input>>, Box<Expr<'input>>),
+    /// Multiplication of two expressions.
     OpStar(Box<Expr<'input>>, Box<Expr<'input>>),
+    /// Division of two expressions.
     OpSlash(Box<Expr<'input>>, Box<Expr<'input>>),
+    /// A function call (e.g., `Average()`, `Min()`, `Max()`).
     Fn(Func, Box<Expr<'input>>),
 }
 
+/// Aggregation functions for collapsing vectors to scalars.
 #[derive(Debug)]
 pub enum Func {
+    /// Compute the arithmetic mean, skipping NaN values.
     Average,
+    /// Compute the minimum value.
     Min,
+    /// Compute the maximum value.
     Max,
 }
 
+/// Result of evaluating an expression: either a numeric value/vector or a string.
 #[derive(Debug)]
 pub enum ExprResult {
+    /// A vector of floating-point values.
     Vector(Vec<f64>),
+    /// A single floating-point scalar.
     Number(f64),
+    /// A vector of strings.
     StrVector(Vec<String>),
+    /// A single string.
     Str(String),
+    /// No value (used as a sentinel during expression building).
     Empty,
 }
 
@@ -254,6 +274,11 @@ impl std::ops::Div for ExprResult {
 }
 
 impl ExprResult {
+    /// Concatenates `other` into `self` for string interpolation.
+    ///
+    /// When `self` is a string vector and `other` is a numeric vector, converts
+    /// the numbers to strings before concatenation, padding to match lengths
+    /// where necessary.
     pub fn join(&mut self, other: &ExprResult) {
         match self {
             ExprResult::Empty => match other {
@@ -328,6 +353,10 @@ impl ExprResult {
 }
 
 impl<'input> Expr<'input> {
+    /// Recursively evaluates this expression against the collected SNMP results.
+    ///
+    /// Resolves identifiers by searching through the `collect` vector, applies
+    /// operators element-wise for vectors, and evaluates functions.
     pub fn eval(&self, collect: &Vec<SnmpResult>) -> ExprResult {
         match self {
             Expr::Number(n) => ExprResult::Number(*n),
@@ -399,6 +428,7 @@ impl<'input> Expr<'input> {
         }
     }
 
+    /// Returns the byte representation of an identifier expression, or a default error message.
     pub fn eval_as_str(&self) -> &[u8] {
         if let Expr::Id(id) = self {
             return id;

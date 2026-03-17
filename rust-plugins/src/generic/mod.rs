@@ -1,3 +1,10 @@
+//! Core plugin logic: command definition, SNMP collection, metric evaluation, and status reporting.
+//!
+//! A [`Command`] is deserialized from JSON and describes what to collect via SNMP
+//! and how to compute metrics from the collected values.  Calling [`Command::execute`]
+//! performs the full pipeline and returns a [`CmdResult`] containing the Nagios-style
+//! output string and the overall [`Status`].
+
 extern crate regex;
 extern crate serde;
 extern crate serde_json;
@@ -15,6 +22,10 @@ use std::collections::HashMap;
 
 use crate::snmp::SnmpResult;
 
+/// A single metric data point, ready to be included in plugin output.
+///
+/// The `name` identifies the metric instance (e.g. `"0#memory_used"`).
+/// `uom` is the unit of measurement string (e.g. `"B"`, `"%"`).
 #[derive(Debug)]
 pub struct Perfdata<'p> {
     pub name: String,
@@ -27,6 +38,10 @@ pub struct Perfdata<'p> {
     pub status: Option<Status>,
 }
 
+/// Nagios-compatible plugin exit status.
+///
+/// The numeric values match the Nagios/Centreon convention:
+/// `0 = OK`, `1 = WARNING`, `2 = CRITICAL`, `3 = UNKNOWN`.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Status {
     Ok = 0,
@@ -45,6 +60,9 @@ impl Status {
         }
     }
 
+    /// Returns `true` if `self` is at least as severe as `other`.
+    ///
+    /// Severity order: `Ok < Warning < Unknown < Critical`.
     pub fn is_worse_than(&self, other: Status) -> bool {
         let self_int = match self {
             Status::Ok => 0,
@@ -82,25 +100,38 @@ fn worst(a: Status, b: Status) -> Status {
     }
 }
 
+/// Type of SNMP query to perform for a given OID.
 #[derive(Deserialize, Debug)]
 enum QueryType {
+    /// Retrieve a single leaf OID value (`GetBulkRequest` with one OID).
     Get,
+    /// Walk a subtree using repeated `GetBulkRequest` calls.
     Walk,
 }
 
+/// Description of a single SNMP collection entry as read from the JSON config.
 #[derive(Deserialize, Debug)]
 pub struct Snmp {
+    /// Logical name used to reference collected values in compute expressions.
     name: String,
+    /// The OID to query (may start with a leading `.`).
     oid: String,
     query: QueryType,
+    /// Optional label map used by [`snmp_bulk_walk_with_labels`] to split
+    /// a subtree walk into named sub-vectors.
     labels: Option<HashMap<String, String>>,
 }
 
+/// Groups all SNMP queries that must be executed before computing metrics.
 #[derive(Deserialize, Debug)]
 pub struct Collect {
     snmp: Vec<Snmp>,
 }
 
+/// Top-level plugin command deserialized from the JSON configuration file.
+///
+/// A `Command` ties together SNMP collection, metric computation, and output
+/// formatting.  Use [`Command::execute`] to run the full pipeline.
 #[derive(Deserialize, Debug)]
 pub struct Command {
     collect: Collect,
@@ -113,9 +144,12 @@ fn default_output() -> Output {
     Output::new()
 }
 
+/// Result of executing a [`Command`].
 #[derive(Debug)]
 pub struct CmdResult {
+    /// Overall plugin status (worst status across all metrics).
     pub status: Status,
+    /// Nagios-compatible output string ready to be printed to stdout.
     pub output: String,
 }
 
@@ -136,6 +170,8 @@ fn compute_status(value: &f64, warn: &Option<String>, crit: &Option<String>) -> 
 }
 
 impl Command {
+    /// Sets the warning threshold for the metric identified by `name`
+    /// (matched against `threshold_suffix` in the compute config).
     pub fn add_warning(&mut self, name: &str, value: String) {
         if let Some(metric) =
             self.compute
@@ -163,6 +199,8 @@ impl Command {
         }
     }
 
+    /// Sets the critical threshold for the metric identified by `name`
+    /// (matched against `threshold_suffix` in the compute config).
     pub fn add_critical(&mut self, name: &str, value: String) {
         if let Some(metric) =
             self.compute
@@ -190,6 +228,7 @@ impl Command {
         }
     }
 
+    /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
     fn execute_snmp_collect(
         &self,
         target: &str,
@@ -226,6 +265,17 @@ impl Command {
         collect
     }
 
+    /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
+    ///
+    /// # Arguments
+    /// * `target` - The target address in "host:port" format
+    /// * `version` - SNMP version string (e.g., "2c")
+    /// * `community` - SNMP community string
+    /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
+    /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
+    ///
+    /// # Returns
+    /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
     pub fn execute(
         &self,
         target: &str,

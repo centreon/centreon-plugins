@@ -1,3 +1,14 @@
+//! Entry point for the Centreon SNMP plugin.
+//!
+//! Parses CLI arguments (hostname, port, SNMP credentials, filters, thresholds),
+//! loads a JSON command definition, runs the SNMP collection and metric computation,
+//! and prints Nagios-compatible output to stdout.
+//!
+//! # Usage
+//! ```text
+//! plugin -H <host> -p <port> -j <config.json> [--warning-<metric> <value>] [--critical-<metric> <value>]
+//! ```
+
 extern crate env_logger;
 extern crate lalrpop_util;
 extern crate lexopt;
@@ -25,6 +36,10 @@ use std::fs;
 
 lalrpop_mod!(grammar);
 
+/// Reads a JSON file and deserializes it into a [`Command`].
+///
+/// # Errors
+/// Returns an error if the file cannot be read or if the JSON is malformed.
 fn json_to_command(file_name: &str) -> Result<Command, Error> {
     // Transform content of the file into a string
     let configuration = fs::read_to_string(file_name)?;

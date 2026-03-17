@@ -1,3 +1,9 @@
+//! Expression parsing and evaluation for computing metrics from SNMP results.
+//!
+//! This module provides a parser that evaluates mathematical expressions over
+//! SNMP-collected values, including support for arithmetic operations, functions
+//! (Average, Min, Max), and threshold parsing for alert conditions.
+
 pub mod ast;
 pub mod lexer;
 pub mod threshold;
@@ -12,20 +18,36 @@ use serde::Deserialize;
 
 lalrpop_mod!(grammar);
 
+/// Definition of a single metric to compute and report.
+///
+/// The `value` expression is evaluated against collected SNMP data to produce
+/// a scalar or vector result. Optionally, min/max bounds and alert thresholds
+/// can be specified.
 #[derive(Deserialize, Debug)]
 pub struct Metric {
+    /// The name of the metric (appears in output).
     pub name: String,
+    /// Optional expression to generate a label/prefix for each element (used in vector metrics).
     pub prefix: Option<String>,
+    /// The expression to evaluate (e.g., `"{snmp_oid} * 100"` or `"Average({vector})"`).
     pub value: String,
+    /// Unit of measurement (e.g., `"B"`, `"%"`, `"ms"`).
     #[serde(default = "empty_string")]
     pub uom: String,
+    /// Optional expression for the minimum bound.
     pub min_expr: Option<String>,
+    /// Optional static minimum value.
     pub min: Option<f64>,
+    /// Optional expression for the maximum bound.
     pub max_expr: Option<String>,
+    /// Optional static maximum value.
     pub max: Option<f64>,
+    /// Identifier used with `--warning-<suffix>` and `--critical-<suffix>` CLI flags.
     #[serde(rename = "threshold-suffix")]
     pub threshold_suffix: Option<String>,
+    /// Warning threshold in Nagios format (e.g., `"10:20"`, `"@5:10"`).
     pub warning: Option<String>,
+    /// Critical threshold in Nagios format.
     pub critical: Option<String>,
 }
 
@@ -33,18 +55,26 @@ fn empty_string() -> String {
     "".to_string()
 }
 
+/// Describes all metrics and aggregations to compute from collected SNMP data.
 #[derive(Deserialize, Debug)]
 pub struct Compute {
+    /// The primary metrics, typically one per collected OID.
     pub metrics: Vec<Metric>,
+    /// Optional second-pass metrics computed from the results of `metrics`.
     pub aggregations: Option<Vec<Metric>>,
 }
 
+/// Parser for evaluating expressions against SNMP result data.
+///
+/// Evaluates mathematical expressions (e.g., `"{ifSpeed} / 1000000"`) and string
+/// interpolations (e.g., `"Interface {ifDescr}"`).
 pub struct Parser<'a> {
     collect: &'a Vec<SnmpResult>,
     parser: grammar::ExprParser,
 }
 
 impl<'a> Parser<'a> {
+    /// Creates a new parser over the given SNMP results.
     pub fn new(collect: &'a Vec<SnmpResult>) -> Parser<'a> {
         Parser {
             collect,
@@ -52,6 +82,10 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Evaluates a mathematical expression and returns the result.
+    ///
+    /// Supports arithmetic operations, identifiers in braces (e.g., `{metric_name}`),
+    /// and functions like `Average()`, `Min()`, `Max()`.
     pub fn eval(
         &self,
         expr: &'a str,
@@ -68,6 +102,10 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Evaluates a string template with embedded identifiers (e.g., `"Interface {name}"`).
+    ///
+    /// Replaces `{identifier}` with values from SNMP results, handling both
+    /// scalar and vector values appropriately.
     pub fn eval_str(
         &self,
         expr: &'a str,

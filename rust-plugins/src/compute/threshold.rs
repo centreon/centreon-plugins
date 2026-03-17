@@ -1,6 +1,12 @@
+//! Threshold parsing and alert detection using Nagios threshold syntax.
+//!
+//! Supports range-based thresholds (e.g., `"10:20"`) and negation (`"@10:20"`),
+//! following the [Nagios plugin guidelines](https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT).
+
 use crate::generic::error::Error;
 use std::f64::INFINITY;
 
+/// Represents an alert threshold range and its alert condition.
 pub struct Threshold {
     start: f64,
     end: f64,
@@ -8,6 +14,17 @@ pub struct Threshold {
 }
 
 impl Threshold {
+    /// Parses a Nagios threshold string and returns a `Threshold`.
+    ///
+    /// Syntax:
+    /// - `"value"` – simple threshold, alerts if value > value (interpreted as `"0:value"`)
+    /// - `"start:end"` – range, alerts if value < start OR value > end
+    /// - `"~:end"` – alerts if value > end (no lower bound)
+    /// - `"start:"` – alerts if value < start (no upper bound)
+    /// - `"@start:end"` – inverted; alerts if value is inside range
+    ///
+    /// # Errors
+    /// Returns an error if the syntax is invalid or if start > end in a range.
     pub fn parse(expr: &str) -> Result<Threshold, Error> {
         // https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
         let mut start: usize = 0;
@@ -99,6 +116,7 @@ impl Threshold {
         }
     }
 
+    /// Returns `true` if the given value triggers an alert.
     pub fn in_alert(&self, value: f64) -> bool {
         if value < self.start || value > self.end {
             if self.negation {

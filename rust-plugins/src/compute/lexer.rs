@@ -1,29 +1,46 @@
+//! Lexical analyzer for tokenizing mathematical expressions.
+
 use log::{error, trace};
 use std::str;
 
+/// Type alias for LALRPOP's expected token type with location and error information.
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
+/// Token types recognized by the expression lexer.
 #[derive(Debug, PartialEq, Clone)]
 pub enum Tok<'input> {
+    /// A numeric literal.
     Num(f64),
+    /// An identifier (variable name).
     Id(&'input [u8]),
+    /// Multiplication operator `*`.
     OpStar,
+    /// Division operator `/`.
     OpSlash,
+    /// Addition operator `+`.
     OpPlus,
+    /// Subtraction operator `-`.
     OpMinus,
+    /// Left parenthesis `(`.
     LParen,
+    /// Right parenthesis `)`.
     RParen,
+    /// Left brace `{`.
     LBrace,
+    /// Right brace `}`.
     RBrace,
 }
 
+/// Errors that can occur during lexical analysis.
 #[derive(Debug, PartialEq)]
 pub enum LexicalError {
+    /// A character that cannot be tokenized was encountered.
     NotPossible,
+    /// A brace was not properly matched (currently unused).
     UnmatchedBrace,
-    // Not possible
 }
 
+/// Tokenizes an expression string into a sequence of tokens.
 #[derive(Debug)]
 pub struct Lexer<'input> {
     chars: &'input str,
@@ -31,6 +48,7 @@ pub struct Lexer<'input> {
 }
 
 impl<'input> Lexer<'input> {
+    /// Creates a new lexer for the given input string.
     pub fn new(input: &'input str) -> Self {
         Lexer {
             chars: input,

@@ -1,3 +1,7 @@
+//! Formatting plugin output in Nagios/Centreon-compatible format.
+//!
+//! Produces output like: `STATUS message | metric1=value1;warn;crit;min;max metric2=...`
+
 use crate::compute::Parser;
 use crate::compute::ast::ExprResult;
 use crate::generic::{Perfdata, Status};
@@ -5,26 +9,37 @@ use crate::snmp::SnmpResult;
 use log::error;
 use serde::Deserialize;
 
+/// Configurable status messages and separators for plugin output.
 #[derive(Deserialize, Debug)]
 pub struct Output {
+    /// Message template for OK status.
     #[serde(default = "default_ok")]
     pub ok: String,
+    /// If true, include affected metrics in the OK message.
     #[serde(default = "default_bool_false")]
     detail_ok: bool,
+    /// Message prefix for WARNING status.
     #[serde(default = "default_warning")]
     pub warning: String,
+    /// If true, include affected metrics in the WARNING message.
     #[serde(default = "default_bool_true")]
     detail_warning: bool,
+    /// Message prefix for CRITICAL status.
     #[serde(default = "default_critical")]
     pub critical: String,
+    /// If true, include affected metrics in the CRITICAL message.
     #[serde(default = "default_bool_true")]
     detail_critical: bool,
+    /// Message prefix for UNKNOWN status.
     #[serde(default = "default_unknown")]
     pub unknown: String,
+    /// If true, include affected metrics in the UNKNOWN message.
     #[serde(default = "default_bool_true")]
     detail_unknown: bool,
+    /// String used to separate metric instances in the detail message.
     #[serde(default = "default_instance_separator")]
     instance_separator: String,
+    /// String used to separate individual metrics in perfdata.
     #[serde(default = "default_metric_separator")]
     metric_separator: String,
 }
@@ -55,6 +70,7 @@ fn default_bool_true() -> bool {
 }
 
 impl Output {
+    /// Creates an `Output` with default Nagios-compatible messages and separators.
     pub fn new() -> Output {
         Output {
             ok: default_ok(),
@@ -71,6 +87,7 @@ impl Output {
     }
 }
 
+/// Formats plugin results into Nagios-compatible output string.
 pub struct OutputFormatter<'a> {
     status: Status,
     collect: &'a Vec<SnmpResult>,
@@ -79,6 +96,7 @@ pub struct OutputFormatter<'a> {
 }
 
 impl<'a> OutputFormatter<'a> {
+    /// Creates a new formatter with the given status, metrics, and output configuration.
     pub fn new(
         status: Status,
         collect: &'a Vec<SnmpResult>,
@@ -93,6 +111,7 @@ impl<'a> OutputFormatter<'a> {
         }
     }
 
+    /// Generates the complete Nagios-compatible output string.
     pub fn to_string(&self) -> String {
         let metrics = self
             .metrics
@@ -182,6 +201,8 @@ impl<'a> OutputFormatter<'a> {
         }
     }
 
+    /// Builds a detailed message string including the prefix and metrics that
+    /// triggered the current status.
     fn build_detail(&self, prefix: &str) -> String {
         let mut v = Vec::new();
         for m in self.metrics.iter() {
