@@ -195,7 +195,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->{metrics} = {
-        'limits' => "^container_spec_memory_limit_bytes.*",
+        'limits' => 'kube_pod_container_resource_limits{resource="memory"',
         'usage' => "^container_memory_usage_bytes.*",
         'working' => "^container_memory_working_set_bytes.*",
         'cache' => "^container_memory_cache.*",
@@ -232,7 +232,7 @@ sub manage_selection {
                 $self->{option_results}->{container} . ',' .
                 $self->{option_results}->{pod} .
                 $self->{extra_filter} . '}, "__name__", "usage", "", "")',
-            'label_replace(' . $self->{metrics}->{limits} . '",' .
+            'label_replace(' . $self->{metrics}->{limits} . ',' .
                 $self->{option_results}->{container} . ',' .
                 $self->{option_results}->{pod} .
                 $self->{extra_filter} . '}, "__name__", "limits", "", "")',
