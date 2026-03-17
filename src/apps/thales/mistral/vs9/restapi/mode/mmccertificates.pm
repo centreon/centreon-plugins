@@ -191,15 +191,17 @@ sub manage_selection {
 
     my $response = $options{custom}->get_certificates_ca_with_signed_certificates();
     my $certificates = $response;
-    if (defined($response->{content})) {
+    if (ref($response) eq 'HASH' && defined($response->{content})) {
         $certificates = $response->{content};
     }
 
     $self->{certificates} = {};
-    foreach my $cert (@$certificates) {
-        $self->add_certificate(cert => $cert);
-        foreach my $mmc (@{$cert->{certificatesMmc}}) {
-            $self->add_certificate(cert => $mmc);
+    if (ref($certificates) eq 'ARRAY') {
+        foreach my $cert (@$certificates) {
+            $self->add_certificate(cert => $cert);
+            foreach my $mmc (@{$cert->{certificatesMmc}}) {
+                $self->add_certificate(cert => $mmc);
+            }
         }
     }
 }
