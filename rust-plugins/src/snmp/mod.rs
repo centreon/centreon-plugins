@@ -8,8 +8,6 @@ use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_snmp::v2::BulkPdu;
 use rasn_snmp::v2::GetBulkRequest;
-use rasn_snmp::v2::GetRequest;
-use rasn_snmp::v2::Pdu;
 use rasn_snmp::v2::Pdus;
 use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
@@ -18,11 +16,13 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 use std::net::UdpSocket;
 
+#[derive(Debug)]
 pub enum ValueType {
     None(()),
     Integer(i64),
     Float(f64),
     String(String),
+    Counter64(u64),
 }
 
 #[derive(Debug)]
@@ -473,6 +473,7 @@ impl SnmpResult {
                                         panic!("Value should be a float");
                                     }
                                     ValueType::Integer(i) => *i as f64,
+                                    ValueType::Counter64(i) => *i as f64,
                                 }),
                                 ExprResult::StrVector(v) => v.push(match &typ {
                                     ValueType::Float(_) => {
@@ -482,9 +483,8 @@ impl SnmpResult {
                                         panic!("Should not arrive");
                                     }
                                     ValueType::String(s) => s.to_string(),
-                                    ValueType::Integer(_) => {
-                                        panic!("Value should be a string");
-                                    }
+                                    ValueType::Integer(_) => panic!("Value should be a string"),
+                                    ValueType::Counter64(_) => panic!("Value should be a string"),
                                 }),
                                 ExprResult::Empty => {
                                     panic!("Value from SNMP query cannot be empty");
@@ -492,11 +492,10 @@ impl SnmpResult {
                             })
                             .or_insert(match typ {
                                 ValueType::Float(f) => ExprResult::Vector(vec![f]),
-                                ValueType::None(()) => {
-                                    panic!("Should not arrive");
-                                }
+                                ValueType::None(()) => panic!("Should not arrive"),
                                 ValueType::String(s) => ExprResult::StrVector(vec![s]),
                                 ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
+                                ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
                             });
                     }
                 }
@@ -568,6 +567,19 @@ impl SnmpResult {
                                     }
                                 }
                             }
+                            rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
+                                info!("ApplicationWide {:?}", value);
+                                match value {
+                                    rasn_smi::v2::ApplicationSyntax::Address(ip_address) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Counter(counter) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Ticks(time_ticks) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Arbitrary(opaque) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::BigCounter(counter64) => {
+                                        typ = ValueType::Counter64(counter64.0);
+                                    }
+                                    rasn_smi::v2::ApplicationSyntax::Unsigned(gauge) => todo!(),
+                                }
+                            }
                             _ => {
                                 info!("other");
                             }
@@ -588,6 +600,7 @@ impl SnmpResult {
                                 panic!("Value should be a float");
                             }
                             ValueType::Integer(i) => *i as f64,
+                            ValueType::Counter64(i) => *i as f64,
                         }),
                         ExprResult::Str(_) => panic!("Should not arrive"),
                         ExprResult::StrVector(v) => v.push(match &typ {
@@ -601,6 +614,7 @@ impl SnmpResult {
                             ValueType::Integer(_) => {
                                 panic!("Value should be a string");
                             }
+                            ValueType::Counter64(_) => panic!("Value should be a string"),
                         }),
                         ExprResult::Empty => {
                             panic!("Value should not be empty");
@@ -608,11 +622,10 @@ impl SnmpResult {
                     })
                     .or_insert(match typ {
                         ValueType::Float(f) => ExprResult::Vector(vec![f]),
-                        ValueType::None(()) => {
-                            panic!("Should not arrive");
-                        }
+                        ValueType::None(()) => panic!("Should not arrive"),
                         ValueType::String(s) => ExprResult::StrVector(vec![s]),
                         ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
+                        ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
                     });
             }
         }
@@ -735,6 +748,7 @@ impl SnmpResult {
                                 panic!("Value should be a float");
                             }
                             ValueType::Integer(i) => *i as f64,
+                            ValueType::Counter64(i) => *i as f64,
                         }),
                         ExprResult::Str(_) => panic!("Should not arrive"),
                         ExprResult::StrVector(v) => v.push(match &typ {
@@ -745,7 +759,7 @@ impl SnmpResult {
                                 panic!("Should not arrive");
                             }
                             ValueType::String(s) => s.to_string(),
-                            ValueType::Integer(_) => {
+                            ValueType::Integer(_) | ValueType::Counter64(_) => {
                                 panic!("Value should be a string");
                             }
                         }),
@@ -760,6 +774,7 @@ impl SnmpResult {
                         }
                         ValueType::String(s) => ExprResult::StrVector(vec![s]),
                         ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
+                        ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
                     });
             }
         }

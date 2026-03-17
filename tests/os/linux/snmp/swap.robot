@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP} -j tests/os/linux/snmp/generic-snmp/swap.json
+${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
 
 
 *** Test Cases ***
@@ -105,6 +105,42 @@ cgs-swap ${tc}
     [Tags]    os    linux    centreon-generic-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
+    ...    -j tests/os/linux/snmp/generic-snmp/swap.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/swap
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    2
+    ...    --warning-swap-bytes=0.1
+    ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
+    ...    3
+    ...    --critical-swap-bytes=0.1
+    ...    CRITICAL: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;;0.1;0; swap.usage.percent=49.97%;;;0;100
+    ...    4
+    ...    --warning-swap-prct=0.1
+    ...    WARNING: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
+    ...    5
+    ...    --critical-swap-prct=0.1
+    ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
+
+
+cgs-swap-64 ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
+    ${command}    Catenate
+    ...    ${CGS_CMD}
+    ...    -j tests/os/linux/snmp/generic-snmp/swap-64.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
