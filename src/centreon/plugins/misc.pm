@@ -858,7 +858,7 @@ sub json_decode {
         }
     }
 
-    my $object = eval { $decoder->decode($content) };
+    my $object = eval { $decoder->allow_nonref($options{allow_nonref} // 0)->decode($content) };
 
     if ($@) {
         # To keep compatibilty with old json_decode:
@@ -1535,6 +1535,8 @@ JSON:::PP::Boolean values. C<1> => strings, C<0> => booleans.
 =item * C<no_exit> - Do not exit if there is an error and C<output> is defined.
 
 =item * C<silence> - Do not print error on STDERR if C<output> is not defined.
+
+=item * C<allow_nonref> - Allow JSON string to be a non-reference value (a string, a number ...). By default, JSON string must be an array or an object.
 
 =back
 
