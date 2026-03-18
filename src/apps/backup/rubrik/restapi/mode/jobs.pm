@@ -136,7 +136,7 @@ sub set_counters {
             group => [
                 { name => 'failed', type => COUNTER_MULTIPLE_INSTANCE },
                 { name => 'timers', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
-                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, skipped_code => { -10 => 1 } },
+                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
             ]
         }
     ];
