@@ -8,13 +8,13 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - 'experimental/**'
+      - 'rust-plugins/**'
   push:
     branches:
       - develop
       - master
     paths:
-      - 'experimental/**'
+      - 'rust-plugins/**'
 
 jobs:
   dependency-scan:
@@ -24,7 +24,7 @@ jobs:
     needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
     with:
-      version_file: experimental/Cargo.toml
+      version_file: rust-plugins/Cargo.toml
 
   package:
     needs: [get-environment]
@@ -75,20 +75,20 @@ jobs:
 
       - name: Unit tests
         run: |
-          cd experimental
+          cd rust-plugins
           cargo test --release
         shell: bash
 
       - name: Building generic plugins using Cargo
         run: |
-          cd experimental
+          cd rust-plugins
           cargo build --release
         shell: bash
 
       - name: Package
         uses: ./.github/actions/package-nfpm
         with:
-          nfpm_file_pattern: "experimental/packaging/centreon-generic-plugins.yaml"
+          nfpm_file_pattern: "rust-plugins/packaging/centreon-generic-plugins.yaml"
           distrib: ${{ matrix.distrib }}
           package_extension: ${{ matrix.package_extension }}
           version: ${{ needs.get-environment.outputs.version }}
