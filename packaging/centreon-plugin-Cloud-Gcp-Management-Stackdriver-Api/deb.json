@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "libjson-perl",
         "libdatetime-perl",
         "libjson-webtoken-perl",
         "libcrypt-openssl-rsa-perl"

@@ -44,7 +44,7 @@ on:
       - 'tests/**'
 
 env:
-  max_parallel_jobs: 35
+  max_testing_jobs: 25
 
 jobs:
   dependency-scan:
@@ -68,7 +68,7 @@ jobs:
       plugins_files: ${{ steps.filter.outputs.plugins_files }}
       tests_files: ${{ steps.filter.outputs.tests_files }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
@@ -97,16 +97,20 @@ jobs:
       test_plugins: ${{ steps.get_plugins.outputs.test_plugins || 'false' }}
       index_matrix: ${{ steps.get_plugins.outputs.index_matrix }}
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: '3.13'
 
       - name: Get new or updated directories
+        env:
+          PACKAGES_FILES: ${{ needs.changes.outputs.packages_files }}
+          PLUGINS_FILES: ${{ needs.changes.outputs.plugins_files }}
+          TESTS_FILES: ${{ needs.changes.outputs.tests_files }}
         run: |
           packages_folders=()
-          for package_file in ${{ needs.changes.outputs.packages_files }}; do
+          for package_file in $PACKAGES_FILES; do
             echo "Adding $(dirname $package_file) to packages_folders"
             packages_folders+=($(dirname $package_file))
           done
@@ -114,7 +118,7 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_packages_folders[@]} > packages_directories.json
 
           plugins_folders=()
-          for plugin_file in ${{ needs.changes.outputs.plugins_files }}; do
+          for plugin_file in $PLUGINS_FILES; do
               echo "Adding $plugin_file to plugins_folders"
               plugin_folder=$(dirname $plugin_file)
               while [[ $plugin_folder =~ /(components|conf|custom|lib|mode|templates)$ ]]; do
@@ -126,7 +130,7 @@ jobs:
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_plugins_folders[@]} > plugins_directories.json
 
           tests_folders=()
-          for test_file in ${{ needs.changes.outputs.tests_files }}; do
+          for test_file in $TESTS_FILES; do
               echo "Adding $test_file to tests_folders"
               tests_folders+=($(dirname $test_file))
           done
@@ -137,8 +141,11 @@ jobs:
       - name: Get plugins to build and/or test
         id: get_plugins
         if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
+        env:
+          CHANGES_COMMON: ${{ needs.changes.outputs.changes_common == 'true' }}
+          MAX_RUNNERS: ${{ env.max_testing_jobs }}
         run: |
-          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common='${{ needs.changes.outputs.changes_common == 'true' }}' --max_runners=${{ env.max_parallel_jobs }}))
+          list_plugins=($(python3 .github/scripts/list-plugins-to-build-and-test.py --common="$CHANGES_COMMON" --max_runners="$MAX_RUNNERS"))
           echo "package_plugins=$(echo ${list_plugins[0]})" >> $GITHUB_OUTPUT
           echo "test_plugins=$(echo ${list_plugins[1]})" >> $GITHUB_OUTPUT
           runners_ids=( $(seq 1 ${list_plugins[2]}) )
@@ -148,7 +155,7 @@ jobs:
           fi
         shell: bash
 
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
@@ -156,7 +163,7 @@ jobs:
       # Add to your PR the label upload-artifacts to get plugin.json as artifact
       - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
         name: Upload plugins.json artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: plugins_json
           path: ./plugins.json
@@ -172,8 +179,9 @@ jobs:
       ! contains(needs.*.result, 'cancelled')
     strategy:
       fail-fast: false
+      max-parallel: 3
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-jammy, unit-tests-noble]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -182,6 +190,9 @@ jobs:
           - package_extension: rpm
             image: unit-tests-alma9
             distrib: el9
+          - package_extension: rpm
+            image: unit-tests-alma10
+            distrib: el10
           - package_extension: deb
             image: unit-tests-bullseye
             distrib: bullseye
@@ -192,6 +203,9 @@ jobs:
           - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: unit-tests-trixie
+            distrib: trixie
           - package_extension: deb
             image: unit-tests-jammy
             distrib: jammy
@@ -211,14 +225,14 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run unit tests
         uses: ./.github/actions/unit-tests
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: plugin-installation-${{ matrix.distrib }}-${{ matrix.runner_name }}
           path: ./lastlog.jsonl
@@ -235,9 +249,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
@@ -251,11 +265,13 @@ jobs:
           install-modules: App::FatPacker File::Copy::Recursive JSON
 
       - name: Run FatPacker
+        env:
+          VERSION: ${{ needs.get-environment.outputs.version }}
         run: |
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
-          perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "${{ needs.get-environment.outputs.version }} ($COMMIT)"
+          perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "$VERSION ($COMMIT)"
 
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -273,23 +289,27 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         include:
-          - package_extension: rpm
-            image: packaging-plugins-alma8
-            distrib: el7
           - package_extension: rpm
             image: packaging-plugins-alma8
             distrib: el8
           - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
+          - package_extension: rpm
+            image: packaging-plugins-alma10
+            distrib: el10
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
+          - package_extension: deb
+            image: packaging-plugins-trixie
+            distrib: trixie
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
@@ -307,22 +327,25 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
           fail-on-cache-miss: true
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
           fail-on-cache-miss: true
 
-      - run: |
-          .github/scripts/prepare-package-plugins.sh "plugins.json" "${{ matrix.package_extension }}" "${{ matrix.distrib }}"
+      - env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+        run: |
+          .github/scripts/prepare-package-plugins.sh "plugins.json" "$PACKAGE_EXTENSION" "$DISTRIB"
         shell: bash
 
       - uses: ./.github/actions/package-nfpm
@@ -353,8 +376,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-noble, testing-plugins-bullseye-arm64]
+        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-alma10, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-trixie, testing-plugins-noble, testing-plugins-bullseye-arm64]
         include:
+          - skip_robot_tests: false
           - package_extension: rpm
             image: testing-plugins-alma8
             distrib: el8
@@ -363,6 +387,11 @@ jobs:
             image: testing-plugins-alma9
             distrib: el9
             arch: amd64
+          - package_extension: rpm
+            image: testing-plugins-alma10
+            distrib: el10
+            arch: amd64
+            skip_robot_tests: true
           - package_extension: deb
             image: testing-plugins-bullseye
             distrib: bullseye
@@ -371,6 +400,11 @@ jobs:
             image: testing-plugins-bookworm
             distrib: bookworm
             arch: amd64
+          - package_extension: deb
+            image: testing-plugins-trixie
+            distrib: trixie
+            arch: amd64
+            skip_robot_tests: true
           - package_extension: deb
             image: testing-plugins-jammy
             distrib: jammy
@@ -384,7 +418,7 @@ jobs:
             distrib: bullseye
             arch: arm64
 
-    name: "Test plugins on ${{ matrix.distrib }} ${{ matrix.arch }}"
+    name: "test-plugins ${{ matrix.distrib }} ${{ matrix.arch }}"
 
     uses: ./.github/workflows/plugins-robot-tests.yml
     with:
@@ -396,6 +430,7 @@ jobs:
       package-extension: ${{ matrix.package_extension }}
       packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
+      skip-robot-tests: ${{ matrix.skip_robot_tests }}
     secrets:
       registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
       registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
@@ -414,15 +449,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distrib: el7
-            package_extension: rpm
           - distrib: el8
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb
@@ -432,7 +469,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery
@@ -453,9 +490,9 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -478,11 +515,13 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Push git release tag
+        env:
+          VERSION: ${{ needs.get-environment.outputs.version }}
         run: |
-          RELEASE=plugins-${{ needs.get-environment.outputs.version }}
+          RELEASE="plugins-${VERSION}"
 
           EXISTING_TAG=$(git tag --list "$RELEASE" | head -n 1)
 
@@ -517,7 +556,7 @@ jobs:
       (failure() || cancelled() || contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled'))
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Create Jira ticket based on nightly build failure
         uses: ./.github/actions/create-jira-ticket

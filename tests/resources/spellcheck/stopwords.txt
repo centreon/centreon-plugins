@@ -168,6 +168,7 @@ jobqueues
 Jolokia
 journalctl
 JSONPath
+Kairos
 kccevent
 keepass
 Keysight
@@ -326,6 +327,7 @@ standAlone
 statefile
 --statefile-concat-cwd
 Stormshield
+sudoers
 superseed
 SureBackup
 systemd
