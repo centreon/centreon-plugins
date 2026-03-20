@@ -7,6 +7,7 @@
         "centreon/plugins/wsman.pm",
         "os/windows/wsman/",
         "centreon/common/powershell/functions.pm",
+        "centreon/common/powershell/windows/certificates.pm",
         "centreon/common/powershell/windows/pendingreboot.pm",
         "centreon/common/powershell/windows/updates.pm"
     ]
