@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,8 @@
 package cloud::aws::apigateway::mode::latency;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 
 use strict;
 use warnings;
@@ -64,11 +66,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
           message_multiple => 'All API latency metrics are ok', indent_long_output => '    ',
             group => [
                 { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+                  message_multiple => 'All metrics are ok', type => COUNTER_MULTIPLE_SUBINSTANCE, skipped_code => { NO_VALUE() => 1 } },
             ]
         }        
     ];
@@ -96,9 +98,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'api-name:s@'        => { redirect => 'dimension_value' },
         'api-gateway-type:s' => { name => 'api_gateway_type', default => 'REST' },
-        'dimension-value:s@'   => { name => 'dimension_value' },
-        'filter-metric:s' => { name => 'filter_metric' },
+        'dimension-value:s@' => { name => 'dimension_value' },
+        'filter-metric:s'    => { name => 'filter_metric',    default => '' },
     });
     
     return $self;
@@ -108,10 +111,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if ($self->{option_results}->{api_gateway_type} !~ /^(REST|HTTP|WebSocket)$/) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported --api-gateway-type option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Unsupported --api-gateway-type option.")
+        unless $self->{option_results}->{api_gateway_type} =~ /^(REST|HTTP|WebSocket)$/;
 
     foreach my $instance (@{$self->{option_results}->{dimension_value}}) {
         if ($instance ne '') {
@@ -133,8 +134,7 @@ sub check_options {
     }
 
     foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
+        next if is_excluded($metric, $self->{option_results}->{filter_metric});
 
         push @{$self->{aws_metrics}}, $metric;
     }
@@ -170,10 +170,8 @@ sub manage_selection {
         }
     }
 
-    if (scalar(keys %{$self->{metrics}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values')
+        unless keys %{$self->{metrics}};
 }
 
 1;
@@ -182,28 +180,39 @@ __END__
 
 =head1 MODE
 
-Check metrics related to ApiGateway latencies
-Default statistic: 'sum'
+Check metrics related to C<ApiGateway> latencies
+Default statistic: C<sum>
 
 =over 8
 
 =item B<--api-gateway-type>
 
-The type of the api gateway. Default 'REST'
-(Can be: 'REST', 'HTTP', 'WebSocket'). Used to set the correct dimension instance (ApiName or ApiId)
+The type of the API gateway. Default C<REST>
+(Can be: C<REST>, C<HTTP>, C<WebSocket>). Used to set the correct dimension instance (C<ApiName> or C<ApiId>)
 
 =item B<--dimension-value>
 
-Can be the APIName or the ApiId value (Required) depending by the --api-gateway-type (can be defined multiple times).
+Can be the C<APIName> or the C<ApiId> value (Required) depending by the --api-gateway-type (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Latency', 'IntegrationLatency') 
+Filter metrics (can be: C<Latency>, C<IntegrationLatency>)
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-backend-latency>
 
-Thresholds warning
-star substitution possibilities: client-latency, backend-latency
+Threshold.
+
+=item B<--critical-backend-latency>
+
+Threshold.
+
+=item B<--warning-client-latency>
+
+Threshold.
+
+=item B<--critical-client-latency>
+
+Threshold.
 
 =back
 

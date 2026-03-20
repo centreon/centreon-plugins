@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,7 +21,8 @@
 package cloud::aws::apigateway::mode::requests;
 
 use base qw(centreon::plugins::templates::counter);
-
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 use strict;
 use warnings;
 
@@ -67,7 +68,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name               => 'metrics',
-            type               => 3,
+            type               => COUNTER_TYPE_MULTIPLE,
             cb_prefix_output   => 'prefix_metric_output',
             cb_long_output     => 'long_output',
             message_multiple   => 'All requests metrics are ok',
@@ -78,8 +79,8 @@ sub set_counters {
                         display_long     => 1,
                         cb_prefix_output => 'prefix_statistics_output',
                         message_multiple => 'All requests are ok',
-                        type             => 1,
-                        skipped_code     => { -10 => 1 } },
+                        type             => COUNTER_MULTIPLE_SUBINSTANCE,
+                        skipped_code     => { NO_VALUE() => 1 } },
                 ]
         }
     ];
@@ -107,9 +108,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'api-name:s@'        => { redirect => 'dimension_value' },
         'api-gateway-type:s' => { name => 'api_gateway_type', default => 'REST' },
         'dimension-value:s@' => { name => 'dimension_value' },
-        'filter-metric:s'    => { name => 'filter_metric' },
+        'filter-metric:s'    => { name => 'filter_metric',    default => '' },
     });
 
     return $self;
@@ -119,10 +121,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if ($self->{option_results}->{api_gateway_type} !~ /^(REST|HTTP|WebSocket)$/) {
-        $self->{output}->add_option_msg(short_msg => "Unsupported --api-gateway-type option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Unsupported --api-gateway-type option.")
+        unless $self->{option_results}->{api_gateway_type} =~ /^(REST|HTTP|WebSocket)$/;
 
     foreach my $instance (@{$self->{option_results}->{dimension_value}}) {
         if ($instance ne '') {
@@ -144,8 +144,7 @@ sub check_options {
     }
 
     foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
+        next if is_excluded($metric, $self->{option_results}->{filter_metric});
 
         push @{$self->{aws_metrics}}, $metric;
     }
@@ -194,29 +193,47 @@ __END__
 
 =head1 MODE
 
-Check metrics related to ApiGateway requests
-Default statistic: 'sum'
+Check metrics related to C<ApiGateway> requests
+Default statistic: C<sum>
 
 =over 8
 
 =item B<--api-gateway-type>
 
-The type of the api gateway. Default 'REST'
-(Can be: 'REST', 'HTTP', 'WebSocket'). Used to set the correct dimension instance (ApiName or ApiId)
+The type of the API gateway. Default C<REST>
+(Can be: C<REST>, C<HTTP>, C<WebSocket>). Used to set the correct dimension instance (C<ApiName> or C<ApiId>)
 
 =item B<--dimension-value>
 
-Can be the APIName or the ApiId value (Required) depending by the --api-gateway-type (can be defined multiple times).
+Can be the C<APIName> or the C<ApiId> value (Required) depending by the --api-gateway-type (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Count', '4XXError', '5XXError') 
+Filter metrics (can be: C<Count>, C<4XXError>, C<5XXError>)
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-requests-client>
 
-Thresholds warning 
-star substitusion possibilities: requests-client,
-requests-errors-4xx, requests-errors-5xx
+Threshold.
+
+=item B<--critical-requests-client>
+
+Threshold.
+
+=item B<--warning-requests-errors-4xx>
+
+Threshold.
+
+=item B<--critical-requests-errors-4xx>
+
+Threshold.
+
+=item B<--warning-requests-errors-5xx>
+
+Threshold.
+
+=item B<--critical-requests-errors-5xx>
+
+Threshold.
 
 =back
 
