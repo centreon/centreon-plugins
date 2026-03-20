@@ -152,7 +152,7 @@ jobs:
           -e SKIP_ROBOT_TESTS \
           -e STABILITY \
           "${DOCKER_IMAGE}" \
-          bash -c 'if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; echo "deb https://packages.centreon.com/apt-plugins-${STABILITY}/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list ; python3 .github/scripts/test-plugins.py --extension="$PACKAGE_EXTENSION" --runner-id="$RUNNER_ID" --logs-dir=./logs --reports-dir=./reports --skip-robot-tests="$SKIP_ROBOT_TESTS"'
+          bash -c 'if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; echo "deb https://packages.centreon.com/apt-plugins-${STABILITY/canary/unstable}/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list ; python3 .github/scripts/test-plugins.py --extension="$PACKAGE_EXTENSION" --runner-id="$RUNNER_ID" --logs-dir=./logs --reports-dir=./reports --skip-robot-tests="$SKIP_ROBOT_TESTS"'
 
       - name: Upload logs as artifacts if tests failed
         if: failure()
