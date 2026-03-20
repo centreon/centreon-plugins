@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -127,17 +127,17 @@ __END__
 
 =head1 MODE
 
-List cloudwatch metrics.
+List CloudWatch metrics.
 
 =over 8
 
 =item B<--namespace>
 
-Set cloudwatch namespace.
+Set CloudWatch namespace.
 
 =item B<--metric>
 
-Set cloudwatch metric.
+Set CloudWatch metric.
 
 =back
 
