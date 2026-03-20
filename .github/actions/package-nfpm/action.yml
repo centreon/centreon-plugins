@@ -42,7 +42,7 @@ inputs:
     required: true
   stability:
     description: "Branch stability (stable, testing, unstable, canary)"
-    required: true
+    required: false
 
 runs:
   using: composite
