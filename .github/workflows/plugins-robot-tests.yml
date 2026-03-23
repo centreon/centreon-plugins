@@ -151,7 +151,7 @@ jobs:
             deb_repo_type=ubuntu
           fi
 
-          deb_apt_line="deb https://packages.centreon.com/${deb_repo_type}-plugins-${STABILITY} ${DISTRIB} main"
+          deb_apt_line="deb https://packages.centreon.com/${deb_repo_type}-plugins-${STABILITY/canary/unstable} ${DISTRIB} main"
           docker run --rm \
           -v "$(pwd):/test_plugins" \
           --workdir /test_plugins \
