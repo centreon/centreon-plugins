@@ -148,6 +148,49 @@ jobs:
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
+  test-generic-plugins:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled()
+    runs-on: ubuntu-24.04
+
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-bookworm
+      credentials:
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
+    name: "test-generic-plugins"
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Compile generic plugins
+        run: |
+          cd rust-plugins
+          cargo build --release
+        shell: bash
+
+      - name: Setup SNMP simulator and run robot tests
+        run: |
+          mkdir -p /var/lib/snmp/cert_indexes/
+          useradd snmp || true
+          snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &
+          sleep 2
+          robot --include centreon-generic-snmp --exclude notauto --outputdir /tmp/robot-tests ./tests/os/linux/snmp/
+        shell: bash
+
+      - name: Upload logs as artifacts if tests failed
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: test-generic-plugins-log
+          path: /tmp/robot-tests
+          retention-days: 1
+
   set-skip-label:
     needs: [get-environment, deliver-packages]
     if: |
