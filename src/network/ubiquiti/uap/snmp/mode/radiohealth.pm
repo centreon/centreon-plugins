@@ -74,7 +74,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'packets-in', nlabel => 'radio.packets.in.count', set => {
+        { label => 'packets-in', nlabel => 'radio.packets.in.count', display_ok => 0, set => {
             key_values      => [ { name => 'packets_in' }, { name => 'display' } ],
             output_template => 'radio packets in: %s',
             perfdatas       => [
@@ -82,7 +82,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'packets-out', nlabel => 'radio.packets.out.count', set => {
+        { label => 'packets-out', nlabel => 'radio.packets.out.count', display_ok => 0, set => {
             key_values      => [ { name => 'packets_out' }, { name => 'display' } ],
             output_template => 'radio packets in: %s',
             perfdatas       => [
@@ -90,7 +90,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'self-channel-in', nlabel => 'radio.self.channel.in.count', set => {
+        { label => 'self-channel-in', nlabel => 'radio.self.channel.in.count', display_ok => 0, set => {
             key_values      => [ { name => 'self_channel_in' }, { name => 'display' } ],
             output_template => 'radio self channel in: %s',
             perfdatas       => [
@@ -98,7 +98,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'self-channel-out', nlabel => 'radio.self.channel.out.count', set => {
+        { label => 'self-channel-out', nlabel => 'radio.self.channel.out.count', display_ok => 0, set => {
             key_values      => [ { name => 'self_channel_out' }, { name => 'display' } ],
             output_template => 'radio self channel out: %s',
             perfdatas       => [
@@ -106,7 +106,7 @@ sub set_counters {
             ]
         }
         },
-        { label => 'other-bss-channel', nlabel => 'radio.other.bss.channel.count', set => {
+        { label => 'other-bss-channel', nlabel => 'radio.other.bss.channel.count', display_ok => 0, set => {
             key_values      => [ { name => 'other_bss_channel' }, { name => 'display' } ],
             output_template => 'radio other bss channel: %s',
             perfdatas       => [

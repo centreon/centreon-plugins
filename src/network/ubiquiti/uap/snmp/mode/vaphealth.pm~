@@ -46,7 +46,7 @@ sub ap_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'virtual access point %s - BSS ID %s - ESS ID %s ',
+        'access point %s - BSS ID %s - ESS ID %s ',
         $options{instance_value}->{display},
         $options{instance_value}->{bss_id},
         $options{instance_value}->{ess_id}

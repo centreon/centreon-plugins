@@ -34,6 +34,8 @@ sub new {
         'cpu'               => 'snmp_standard::mode::cpu',
         'interfaces'        => 'snmp_standard::mode::interfaces',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'list-radios'       => 'network::ubiquiti::uap::snmp::mode::listradios',
+        'list-virtual-aps'  => 'network::ubiquiti::uap::snmp::mode::listvaps',
         'load'              => 'snmp_standard::mode::loadaverage',
         'memory'            => 'snmp_standard::mode::memory',
         'radio-health'      => 'network::ubiquiti::uap::snmp::mode::radiohealth',
