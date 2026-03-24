@@ -370,7 +370,7 @@ sub request_api {
     );
 
     # Maybe token is invalid. so we retry
-    if (defined($self->{token}) && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if ((!is_empty($self->{token}) || ($self->{service_account} ne '' && $self->{api_username} ne '')) && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
         $self->clean_token();
         $creds = $self->credentials();
         $creds->{unknown_status} = $self->{unknown_http_status};
