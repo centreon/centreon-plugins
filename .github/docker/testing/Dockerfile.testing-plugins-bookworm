@@ -3,6 +3,9 @@ ARG REGISTRY_URL=docker.io
 FROM ${REGISTRY_URL}/debian:bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV RUSTUP_HOME=/opt/rustup
+ENV CARGO_HOME=/opt/cargo
+ENV PATH="$CARGO_HOME/bin:$PATH"
 
 ARG NODE_VERSION=24
 ARG PNPM_VERSION=10.24.0
@@ -66,6 +69,9 @@ mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
 
 apt-get clean
+
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 EOF
 
