@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Network-Paloalto-Api",
+    "pkg_summary": "Centreon Plugin to monitor Palo Alto Networks firewalls using API XML",
+    "plugin_name": "centreon_paloalto_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "network/paloalto/api/"
+    ]
+}

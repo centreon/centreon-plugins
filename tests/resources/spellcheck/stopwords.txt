@@ -18,6 +18,7 @@ Alertmanager
 allCapacity
 Alletra
 allsteps
+Alto
 Ansible
 --api-filter-orgs
 api.ip-label.net
@@ -266,6 +267,7 @@ out-mcast
 out-ucast
 overprovisioning
 packetloss
+Palo
 partiallyActive
 passthrough
 --patch-redhat
@@ -407,6 +409,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+WildFire
 WLAN
 WLC
 WSMAN
