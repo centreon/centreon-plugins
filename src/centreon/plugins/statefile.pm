@@ -356,6 +356,7 @@ sub get {
     if (defined($self->{datas}->{ $options{name} })) {
         return $self->{datas}->{ $options{name} };
     }
+    return $options{default} if exists $options{default};
     return undef;
 }
 
@@ -570,6 +571,8 @@ Retrieves a value from the state file data.
 =over 8
 
 =item * C<name> - The key name of the value to retrieve.
+
+=item * C<default> - Default value to return if value does not exist or is undef.
 
 =back
 
