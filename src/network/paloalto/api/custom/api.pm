@@ -193,10 +193,10 @@ sub _http_request {
 
     return $self->{http}->request(
         url_path  => '/api/',
-        get_param => [
-            'type=' . $options{type},
-            'cmd='  . $options{cmd}
-        ],
+        get_params => {
+            'type' => $options{type},
+            'cmd' => $options{cmd}
+        },
         header => [
             $self->_build_auth_header(),
             'Accept: application/xml'
