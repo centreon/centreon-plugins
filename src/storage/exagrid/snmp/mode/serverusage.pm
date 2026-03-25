@@ -216,14 +216,6 @@ Threshold.
 
 Threshold.
 
-=item B<--warning-status>
-
-Threshold.
-
-=item B<--critical-status>
-
-Threshold.
-
 =back
 
 =cut
