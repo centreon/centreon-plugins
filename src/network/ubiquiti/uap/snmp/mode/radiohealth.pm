@@ -284,11 +284,11 @@ Critical thresholds for self transmit channel utilization.
 
 =item B<--warning-other-bss-channel>
 
-Warning thresholds for other BSS channel utilization.
+Warning thresholds for other C<BSS> channel utilization.
 
 =item B<--critical-other-bss-channel>
 
-Critical thresholds for other BSS channel utilization.
+Critical thresholds for other C<BSS> channel utilization.
 
 =back
 

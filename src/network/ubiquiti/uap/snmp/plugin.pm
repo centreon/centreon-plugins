@@ -52,6 +52,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Ubiquiti UAP in SNMP.
+Check Ubiquiti C<UAP> in SNMP.
 
 =cut
