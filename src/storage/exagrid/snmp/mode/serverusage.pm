@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -94,13 +95,13 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'server', type => 0, message_separator => ' - ' }
+        { name => 'server', type => COUNTER_TYPE_GLOBAL, message_separator => ' - ' }
     ];
     
     $self->{maps_counters}->{server} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{status} =~ /warning/i',
             critical_default => '%{status} =~ /error/i',
             set => {
@@ -147,10 +148,10 @@ my $map_status = {
 };
 
 my $mapping = {
-    egLandingSpaceConfiguredWholeGigabytes      => { oid => '.1.3.6.1.4.1.14941.4.1.1' },
-    egLandingSpaceAvailableWholeGigabytes       => { oid => '.1.3.6.1.4.1.14941.4.1.3' },
-    egRetentionSpaceConfiguredWholeGigabytes    => { oid => '.1.3.6.1.4.1.14941.4.2.1' },
-    egRetentionSpaceAvailableWholeGigabytes     => { oid => '.1.3.6.1.4.1.14941.4.2.3' },
+    egLandingSpaceConfiguredWholeGigabytes      => { oid => '.1.3.6.1.4.1.14941.4.1.1', default => 0 },
+    egLandingSpaceAvailableWholeGigabytes       => { oid => '.1.3.6.1.4.1.14941.4.1.3', default => 0 },
+    egRetentionSpaceConfiguredWholeGigabytes    => { oid => '.1.3.6.1.4.1.14941.4.2.1', default => 0 },
+    egRetentionSpaceAvailableWholeGigabytes     => { oid => '.1.3.6.1.4.1.14941.4.2.3', default => 0 },
     egServerAlarmState                          => { oid => '.1.3.6.1.4.1.14941.4.6.1', map => $map_status }
 };
 my $oid_exagridServerData = '.1.3.6.1.4.1.14941.4';
@@ -163,14 +164,14 @@ sub manage_selection {
         nothing_quit => 1
     );   
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
+    my $landing_used = $result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000;
+    $landing_used = 0 if $landing_used < 0;
     $self->{server} = { 
         status => $result->{egServerAlarmState},
         retention_total => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
         retention_used => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egRetentionSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000,
         landing_total => $result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
-        landing_used => (($result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000) < 0
-            ? 0
-            : ($result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000))
+        landing_used => $landing_used
     };
 }
 
@@ -199,10 +200,29 @@ You can use the following variables: %{status}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /error/i').
 You can use the following variables: %{status}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-landing-usage>
 
-Thresholds.
-Can be: 'retention-usage' (%), 'landing-usage' (%).
+Threshold.
+
+=item B<--critical-landing-usage>
+
+Threshold.
+
+=item B<--warning-retention-usage>
+
+Threshold.
+
+=item B<--critical-retention-usage>
+
+Threshold.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
 
 =back
 
