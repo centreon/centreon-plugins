@@ -9,7 +9,6 @@ Test Timeout        120s
 
 
 *** Variables ***
-${INJECT_PERL}     -Mfixed_date -I${CURDIR}
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon-paloalto-api.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
@@ -23,9 +22,6 @@ ${CMD}              ${CENTREON_PLUGINS}
 *** Test Cases ***
 paloalto-system ${tc}
     [Tags]    network    paloalto    api    system
-
-    ${OLD_PERL5OPT}=    Get Environment Variable     PERL5OPT   default=
-    Set Environment Variable    PERL5OPT    ${INJECT_PERL} ${OLD_PERL5OPT}
 
     ${command}    Catenate
     ...    ${CMD}

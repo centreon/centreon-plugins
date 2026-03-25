@@ -33,7 +33,7 @@ paloalto-licenses ${tc}
     ...    --api-key=D@pAs$W@rD
     ...    ${extra_options}
 
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                                   expected_result    --
             ...      1     ${EMPTY}                                                                        CRITICAL: license 'Standard' expired: yes, 0 days left | 'licenses.count'=13;;;0; 'Advanced DNS Security#license.empiration.days'=185d;;@0:0;-1; 'Advanced Threat Prevention#license.empiration.days'=185d;;@0:0;-1; 'Advanced URL Filtering#license.empiration.days'=185d;;@0:0;-1; 'Advanced WildFire License#license.empiration.days'=185d;;@0:0;-1; 'DNS Security#license.empiration.days'=185d;;@0:0;-1; 'GlobalProtect Gateway#license.empiration.days'=185d;;@0:0;-1; 'GlobalProtect Portal#license.empiration.days'=-1d;;@0:0;-1; 'Logging Service#license.empiration.days'=1180d;;@0:0;-1; 'PAN-DB URL Filtering#license.empiration.days'=185d;;@0:0;-1; 'SD WAN#license.empiration.days'=185d;;@0:0;-1; 'Standard#license.empiration.days'=0d;;@0:0;-1; 'Threat Prevention#license.empiration.days'=185d;;@0:0;-1; 'WildFire License#license.empiration.days'=185d;;@0:0;-1;
