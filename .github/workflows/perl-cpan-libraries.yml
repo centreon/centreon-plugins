@@ -194,13 +194,6 @@ jobs:
           path: ./${{ matrix.image }}
           key: ${{ matrix.image }}-${{ github.sha }}-${{ github.run_id }}
 
-      - name: Restore packaging image from cache
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: ./${{ matrix.image }}
-          key: ${{ matrix.image }}-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
-
   package-rpm:
     needs: [get-environment, generate-matrices, get-packaging-images]
     if: |
