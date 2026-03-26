@@ -471,16 +471,7 @@ sub parse_structure {
 
             my $ref = ref($value);
             if ($ref eq 'HASH') {
-                if (!defined($value->{ $_->{id} })) {
-                    if ($_->{id} =~ /\./) {
-                        $entry->{ $_->{id} } = $self->traverse_hash($_->{id}, $value);
-                    } else {
-                        $entry->{ $_->{id} } = '';
-                        next;
-                    }
-                } else {
-                    $entry->{ $_->{id} } = $value->{ $_->{id} };
-                }
+                $entry->{ $_->{id} } = $self->traverse_hash($_->{id}, $value);
             } elsif (ref($value) eq 'ARRAY') {
                 next;
             } elsif ($ref eq '' || $ref eq 'JSON::PP::Boolean') {
@@ -2036,24 +2027,18 @@ sub traverse_hash {
     my ($self, $search, $data) = @_;
     if ($search !~ /\./) {
         # last run or found nothing
-        if (defined($data->{$search})) {
-            return $data->{$search};
-        }
-        else {
-            return "";
-        }
+        return $data->{$search} // "";
     }
 
     my @parts = split(/\./, $search);
     my $key   = shift(@parts);
-    if (ref($data->{$key}) eq "HASH") {
-        # need to go deeper
-        return $self->traverse_hash(join(".", @parts), $data->{$key});
-    }
-    else {
-        # array case not handled (yet)
-        return "";
-    }
+
+    # need to go deeper
+    return $self->traverse_hash(join(".", @parts), $data->{$key})
+        if (ref($data->{$key}) eq "HASH");
+
+    # array case not handled (yet)
+    return "";
 }
 
 1;
