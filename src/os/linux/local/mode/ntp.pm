@@ -508,11 +508,11 @@ Critical threshold minimum amount of NTP-Server
 
 =item B<--warning-offset>
 
-Warning threshold offset deviation value in milliseconds
+Time warning threshold range (in milliseconds), in the format -n:n (e.g., -5:5). Returns WARNING when the offset is less than -n seconds or greater than n seconds.
 
 =item B<--critical-offset>
 
-Critical threshold offset deviation value in milliseconds
+Time critical threshold range (in milliseconds), in the format -n:n (e.g., -5:5). Returns CRITICAL when the offset is less than -n seconds or greater than n seconds.
 
 =item B<--warning-stratum>
 
