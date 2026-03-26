@@ -2025,19 +2025,18 @@ sub manage_selection {
 
 sub traverse_hash {
     my ($self, $search, $data) = @_;
-    if ($search !~ /\./) {
-        # last run or found nothing
-        return $data->{$search} // "";
-    }
 
+    # if $search is not nested, return the found value or ""
+    return $data->{$search} // "" unless $search =~ /\./;
+
+    # if $search is still nested dive one level deeper
     my @parts = split(/\./, $search);
-    my $key   = shift(@parts);
+    my $key = shift(@parts);
+    my $remaining = join(".", @parts);
 
-    # need to go deeper
-    return $self->traverse_hash(join(".", @parts), $data->{$key})
-        if (ref($data->{$key}) eq "HASH");
+    return $self->traverse_hash($remaining, $data->{$key})
+        if ref($data->{$key}) eq "HASH";
 
-    # array case not handled (yet)
     return "";
 }
 
@@ -2067,5 +2066,21 @@ Add a constant.
 Example: --constant='warning=30' --constant='critical=45'
 
 =back
+
+=cut
+
+=head1 traverse_hash
+
+Recursively traverse a nested hash structure using dot-notation paths.
+
+Parameters:
+  - C<$search>: dot-separated path to traverse (e.g., 'response.data.status')
+  - C<$data>: hash reference to traverse
+
+Returns the value at the specified path, or an empty string if the path
+does not exist or is not a hash reference.
+
+Example:
+  my $status = $self->traverse_hash('api.response.status', $hash_ref);
 
 =cut
