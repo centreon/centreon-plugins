@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -210,10 +210,10 @@ sub manage_selection {
                 write_iops    => $cluster->{metric}->{iops}->{write},
                 other_iops     => $cluster->{metric}->{iops}->{other},
                 total_iops    => $cluster->{metric}->{iops}->{total},
-                read_latency  => $cluster->{metric}->{latency}->{read},
-                write_latency => $cluster->{metric}->{latency}->{write},
-                other_latency  => $cluster->{metric}->{latency}->{other},
-                total_latency => $cluster->{metric}->{latency}->{total}
+                read_latency  => $cluster->{metric}->{latency}->{read} ? $cluster->{metric}->{latency}->{read} / 1_000 : undef,
+                write_latency => $cluster->{metric}->{latency}->{write} ? $cluster->{metric}->{latency}->{write} / 1_000 : undef,
+                other_latency  => $cluster->{metric}->{latency}->{other} ? $cluster->{metric}->{latency}->{other} / 1_000 : undef,
+                total_latency => $cluster->{metric}->{latency}->{total} ? $cluster->{metric}->{latency}->{total} / 1_000 : undef
             },
             nodes => {}
         }
@@ -262,12 +262,110 @@ You can use the following variables: %{state}, %{link_status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "online"').
 You can use the following variables: %{state}, %{link_status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-cpu-utilization>
+
+Thresholds in %.
+
+=item B<--critical-cpu-utilization>
+
+Thresholds in %.
+
+=item B<--warning-read>
+
+Thresholds in B/s.
+
+=item B<--critical-read>
+
+Thresholds in B/s.
+
+=item B<--warning-write>
+
+Thresholds in B/s.
+
+=item B<--critical-write>
+
+Thresholds in B/s.
+
+=item B<--warning-read-iops>
 
 Thresholds.
-Can be: C<cpu-utilization> (%), C<read> (B/s), C<write> (B/s), C<read-iops>, C<write-iops>,
-C<read-latency> (ms), C<write-latency> (ms), C<other-latency> (ms), C<total-latency> (ms),
-C<other> (B/s), C<total> (B/s), C<other-iops>, C<total-iops>.
+
+=item B<--critical-read-iops>
+
+Thresholds.
+
+=item B<--warning-write-iops>
+
+Thresholds.
+
+=item B<--critical-write-iops>
+
+Thresholds.
+
+=item B<--warning-read-latency>
+
+Thresholds in ms.
+
+=item B<--critical-read-latency>
+
+Thresholds in ms.
+
+=item B<--warning-write-latency>
+
+Thresholds in ms.
+
+=item B<--critical-write-latency>
+
+Thresholds in ms.
+
+=item B<--warning-other-latency>
+
+Thresholds in ms.
+
+=item B<--critical-other-latency>
+
+Thresholds in ms.
+
+=item B<--warning-total-latency>
+
+Thresholds in ms.
+
+=item B<--critical-total-latency>
+
+Thresholds in ms.
+
+=item B<--warning-other>
+
+Thresholds in B/s.
+
+=item B<--critical-other>
+
+Thresholds in B/s.
+
+=item B<--warning-total>
+
+Thresholds in B/s.
+
+=item B<--critical-total>
+
+Thresholds in B/s.
+
+=item B<--warning-other-iops>
+
+Thresholds.
+
+=item B<--critical-other-iops>
+
+Thresholds.
+
+=item B<--warning-total-iops>
+
+Thresholds.
+
+=item B<--critical-total-iops>
+
+Thresholds.
+
 
 =back
 
