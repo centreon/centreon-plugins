@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -471,27 +471,9 @@ sub parse_structure {
 
             my $ref = ref($value);
             if ($ref eq 'HASH') {
-
                 if (!defined($value->{ $_->{id} })) {
-                    # Traverse dotted path to reach nested hash values
-                    my @keys = split(/\./, $_->{id});
-                    if (scalar(@keys) > 1) {
-                        my $current = $value;
-                        my $found = 1;
-                        foreach my $key (@keys) {
-                            if (ref($current) eq 'HASH' && defined($current->{$key})) {
-                                $current = $current->{$key};
-                            } else {
-                                $found = 0;
-                                last;
-                            }
-                        }
-                        if ($found) {
-                            $entry->{ $_->{id} } = $current;
-                        } else {
-                            $entry->{ $_->{id} } = '';
-                            next;
-                        }
+                    if ($_->{id} =~ /\./) {
+                        $entry->{ $_->{id} } = $self->traverse_hash($_->{id}, $value);
                     } else {
                         $entry->{ $_->{id} } = '';
                         next;
@@ -866,7 +848,7 @@ sub get_local_variable {
     if (defined( $self->{expand}->{ $options{name} })) {
         return $self->{expand}->{ $options{name} };
     } else {
-        $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", keys(%{$self->{expand}})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", sort keys(%{$self->{expand}})) . "')", debug => 1);
         return undef;
     }
 
@@ -891,7 +873,7 @@ sub get_table {
     my ($self, %options) = @_;
 
     if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", sort keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
         return undef;
     }
     return $self->{http_collected}->{tables}->{ $options{table} };
@@ -901,11 +883,11 @@ sub get_table_instance {
     my ($self, %options) = @_;
 
     if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", sort keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
         return undef;
     }
     if (!defined($self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", sort keys(%{$self->{http_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
         return undef;
     }
     return $self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} };
@@ -2048,6 +2030,30 @@ sub manage_selection {
     $self->add_selection();
     $self->add_selection_loop();
     $self->set_formatting();
+}
+
+sub traverse_hash {
+    my ($self, $search, $data) = @_;
+    if ($search !~ /\./) {
+        # last run or found nothing
+        if (defined($data->{$search})) {
+            return $data->{$search};
+        }
+        else {
+            return "";
+        }
+    }
+
+    my @parts = split(/\./, $search);
+    my $key   = shift(@parts);
+    if (ref($data->{$key}) eq "HASH") {
+        # need to go deeper
+        return $self->traverse_hash(join(".", @parts), $data->{$key});
+    }
+    else {
+        # array case not handled (yet)
+        return "";
+    }
 }
 
 1;
