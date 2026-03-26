@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,12 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5;
+use Digest::SHA qw/sha256_hex/;
 use DateTime;
 use POSIX;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/change_seconds/;
 use centreon::plugins::statefile;
+use centreon::plugins::constants qw/:counters :values/;
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
@@ -129,13 +130,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'jobs', type => 3, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
+            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
             group => [
-                { name => 'failed', type => 0 },
-                { name => 'timers', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'executions', type => 1, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, skipped_code => { -10 => 1 } },
+                { name => 'failed', type => COUNTER_MULTIPLE_INSTANCE },
+                { name => 'timers', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
             ]
         }
     ];
@@ -195,7 +196,7 @@ sub set_counters {
     $self->{maps_counters}->{executions} = [
         {
             label => 'execution-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /failure/i',
             set => {
                 key_values => [
@@ -255,7 +256,7 @@ sub manage_selection {
     my $jobs_exec = $options{custom}->get_jobs_monitoring(get_param => $get_param);
 
     $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' .
-        Digest::MD5::md5_hex(
+        sha256_hex(
             $options{custom}->get_connection_info() . '_' .
             (defined($self->{option_results}->{filter_job_id}) ? $self->{option_results}->{filter_job_id} : '') . '_' .
             (defined($self->{option_results}->{filter_job_name}) ? $self->{option_results}->{filter_job_name} : '') . '_' .
@@ -281,7 +282,7 @@ sub manage_selection {
             $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
 
         $self->{global}->{detected}++;
-        $jobs_detected{$job_exec->{objectName}} = 1;
+        $jobs_detected{$job_exec->{locationName}.'##'.$job_exec->{objectName}} = 1;
         $job_exec->{jobType} = lc($job_exec->{jobType});
 
         if (!defined($self->{jobs}->{ $job_exec->{objectId} })) {
@@ -344,7 +345,7 @@ sub manage_selection {
             lastExecHuman => 'never'
         };
         if (defined($last_exec_times->{ $job_exec->{objectId} })) {
-            $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{lastExecHuman} = centreon::plugins::misc::change_seconds(value => $ctime - $last_exec_times->{ $job_exec->{objectId} }->{epoch});
+            $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{lastExecHuman} = change_seconds(value => $ctime - $last_exec_times->{ $job_exec->{objectId} }->{epoch});
         }
 
         if (defined($older_running_exec)) {
@@ -352,7 +353,7 @@ sub manage_selection {
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
             my $duration = $ctime - $dt->epoch();
             $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{durationSeconds} = $duration;
-            $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+            $self->{jobs}->{ $job_exec->{objectId} }->{timers}->{durationHuman} = change_seconds(value => $duration);
         }
     }
 
@@ -368,17 +369,16 @@ sub manage_selection {
                 jobName => $last_exec_times->{$objectId}->{jobName},
                 jobType => $last_exec_times->{$objectId}->{jobType},
                 lastExecSeconds => $ctime - $last_exec_times->{$objectId}->{epoch},
-                lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $last_exec_times->{$objectId}->{epoch})
+                lastExecHuman => change_seconds(value => $ctime - $last_exec_times->{$objectId}->{epoch})
             }
         };
     }
 
-    if ($self->{global}->{detected} == 0 && defined($self->{option_results}->{check_retention})) {
+    if ($self->{option_results}->{check_retention}) {
             my $jobs_last_detected = $self->{cache_exec}->get(name => 'jobs');
-            foreach my $job_id (keys %{$jobs_last_detected}) {
-                if (!defined($jobs_detected{$jobs_last_detected->{$job_id}->{jobName}})) {
-                    $self->{global}->{detected}++;
-                }
+            foreach my $job (values %{$jobs_last_detected}) {
+                $self->{global}->{detected}++
+                    unless $jobs_detected{$job->{locationName}.'##'.$job->{jobName}};
             }
     }
 
@@ -444,11 +444,37 @@ You can use the following variables: %{status}, %{jobName}
 Set critical threshold for last job execution status (default: %{status} =~ /Failure/i).
 You can use the following variables: %{status}, %{jobName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-job-execution-last>
 
-Thresholds.
-Can be: 'jobs-executions-detected', 'job-executions-failed-prct',
-'job-execution-last', 'job-running-duration'.
+Threshold.
+
+=item B<--critical-job-execution-last>
+
+Threshold.
+
+=item B<--warning-job-executions-failed-prct>
+
+Threshold.
+
+=item B<--critical-job-executions-failed-prct>
+
+Threshold.
+
+=item B<--warning-job-running-duration>
+
+Threshold.
+
+=item B<--critical-job-running-duration>
+
+Threshold.
+
+=item B<--warning-jobs-executions-detected>
+
+Threshold.
+
+=item B<--critical-jobs-executions-detected>
+
+Threshold.
 
 =back
 
