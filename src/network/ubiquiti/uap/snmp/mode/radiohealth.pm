@@ -236,7 +236,7 @@ Check AP health.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^traffic-in$'
+Example: --filter-counters='^channel$'
 
 =item B<--filter-name>
 
