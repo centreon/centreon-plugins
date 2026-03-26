@@ -13,7 +13,7 @@
         {
             "src": "../../src/os/linux/sudoers/sudoersCentreonLinuxPlugins",
             "dst": "/etc/sudoers.d/",
-            "file_mode": "0600"
+            "file_mode": "0440"
         }
     ],
     "skip_default_dependencies": true
