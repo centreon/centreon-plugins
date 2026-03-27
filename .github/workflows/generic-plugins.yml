@@ -108,7 +108,7 @@ jobs:
         username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
-    name: package ${{ matrix.distrib }}
+    name: Package ${{ matrix.distrib }}
 
     steps:
       - name: Checkout sources
@@ -121,7 +121,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
           fail-on-cache-miss: true
 
-      - name: Package
+      - name: Build package
         uses: ./.github/actions/package-nfpm
         with:
           nfpm_file_pattern: "rust-plugins/packaging/centreon-generic-plugins.yaml"
@@ -157,7 +157,7 @@ jobs:
         username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
-    name: "test-generic-plugins"
+    name: Run robot tests
 
     steps:
       - name: Checkout sources
