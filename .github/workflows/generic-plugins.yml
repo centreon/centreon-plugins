@@ -34,25 +34,19 @@ jobs:
       ! cancelled()
     runs-on: ubuntu-24.04
 
-    name: "build-generic-plugins"
+    name: "Build the generic plugins"
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: cargo check
-        run: |
-          cd rust-plugins
-          cargo check
-        shell: bash
-
-      - name: cargo test
+      - name: Unit tests
         run: |
           cd rust-plugins
           cargo test
         shell: bash
 
-      - name: cargo build --release
+      - name: Build optimized binary
         run: |
           cd rust-plugins
           cargo build --release
