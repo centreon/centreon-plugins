@@ -179,6 +179,7 @@ ldap
 LDP
 --legacy-api-beta
 libSSH
+Libvirt
 license-instances-usage-prct
 Loggly
 LSP
@@ -296,6 +297,7 @@ RFC1628
 RRDCached
 rsrp
 rsrq
+RSS
 rssi
 RTT
 Rubrik
@@ -370,6 +372,7 @@ v3
 vCenter
 VCENTER
 vCPU
+vCPUs
 VCSA
 vdom
 vdomain
@@ -378,6 +381,7 @@ VE
 Veeam
 VeloCloud
 vhost
+VIRSHCLI
 VM
 VMs
 VMware
