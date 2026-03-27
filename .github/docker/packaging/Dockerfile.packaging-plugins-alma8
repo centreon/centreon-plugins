@@ -2,9 +2,6 @@ ARG REGISTRY_URL=docker.io
 
 FROM ${REGISTRY_URL}/almalinux:8
 
-ENV RUSTUP_HOME=/opt/rustup
-ENV CARGO_HOME=/opt/cargo
-ENV PATH="$CARGO_HOME/bin:$PATH"
 RUN bash -e <<EOF
 
 echo '[goreleaser]
@@ -30,9 +27,6 @@ dnf install -y ruby ruby-devel
 gem install fpm -v 1.17.0
 
 dnf clean all
-
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 EOF
 

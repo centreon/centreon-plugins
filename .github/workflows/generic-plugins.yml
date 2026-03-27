@@ -26,12 +26,51 @@ jobs:
     with:
       version_file: rust-plugins/Cargo.toml
 
-  package:
+  build:
     needs: [get-environment]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-environment.outputs.stability != 'stable'
-    runs-on: ubuntu-22.04
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled()
+    runs-on: ubuntu-24.04
+
+    name: "build-generic-plugins"
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: cargo check
+        run: |
+          cd rust-plugins
+          cargo check
+        shell: bash
+
+      - name: cargo test
+        run: |
+          cd rust-plugins
+          cargo test
+        shell: bash
+
+      - name: cargo build --release
+        run: |
+          cd rust-plugins
+          cargo build --release
+        shell: bash
+
+      - name: Save binary to cache
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: rust-plugins/target/release/
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
+
+  package:
+    needs: [get-environment, build]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled()
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -81,17 +120,12 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-      - name: Unit tests
-        run: |
-          cd rust-plugins
-          cargo test --release
-        shell: bash
-
-      - name: Building generic plugins using Cargo
-        run: |
-          cd rust-plugins
-          cargo build --release
-        shell: bash
+      - name: Restore binary from cache
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: rust-plugins/target/release/
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
+          fail-on-cache-miss: true
 
       - name: Package
         uses: ./.github/actions/package-nfpm
@@ -116,7 +150,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
 
   test-generic-plugins:
-    needs: [get-environment]
+    needs: [get-environment, build]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable' &&
@@ -135,11 +169,12 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Compile generic plugins
-        run: |
-          cd rust-plugins
-          cargo build --release
-        shell: bash
+      - name: Restore binary from cache
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: rust-plugins/target/release/
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
+          fail-on-cache-miss: true
 
       - name: Setup SNMP simulator and run robot tests
         run: |
@@ -159,7 +194,7 @@ jobs:
           retention-days: 1
 
   deliver-packages:
-    needs: [get-environment, package, test-generic-plugins]
+    needs: [get-environment, build, package, test-generic-plugins]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
