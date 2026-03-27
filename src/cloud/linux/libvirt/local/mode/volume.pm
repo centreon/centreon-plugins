@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw(is_excluded convert_bytes);
+use centreon::plugins::misc qw(is_excluded convert_bytes trim);
 
 my @_volume_keys = qw(name capacity_bytes allocation_bytes usage_prct);
 
@@ -76,7 +76,9 @@ sub set_counters {
 sub prefix_volume_output {
     my ($self, %options) = @_;
 
-    return "Volume '" . $options{instance_value}->{name} . "' ";
+    my $str = "Volume '" . $options{instance_value}->{name} . "' ";
+    $str .= "path: '" . $options{instance_value}->{path} . "', " if $self->{output}->is_verbose();
+    return $str;
 }
 
 sub new {
@@ -90,7 +92,9 @@ sub new {
         'include-pool:s'   => { name => 'include_pool',   default => '' },
         'exclude-pool:s'   => { name => 'exclude_pool',   default => '' },
         'include-volume:s' => { name => 'include_volume', default => '' },
-        'exclude-volume:s' => { name => 'exclude_volume', default => '' }
+        'exclude-volume:s' => { name => 'exclude_volume', default => '' },
+        'include-path:s'   => { name => 'include_path',   default => '' },
+        'exclude-path:s'   => { name => 'exclude_path',   default => '' }
     });
 
     return $self;
@@ -136,14 +140,17 @@ sub manage_selection {
         foreach (split(/\n/, $stdout)) {
             next if /^\s*(Name\s+Path)\s*/i; # header
             # name  path  type  capacity_val capacity_unit  alloc_val alloc_unit
-            next unless /^\s*(\S+)\s+\S+\s+\S+\s+([\d.,]+)\s+(\S+)\s+([\d.,]+)\s+(\S+)\s*$/;
-            my ($vol_name, $cap_val, $cap_unit, $alloc_val, $alloc_unit) = ($1, $2, $3, $4, $5);
+            next unless /^\s*(\S+)\s+(.+)\s+\S+\s+([\d.,]+)\s+(\S+)\s+([\d.,]+)\s+(\S+)\s*$/;
+            my ($vol_name, $path, $cap_val, $cap_unit, $alloc_val, $alloc_unit) = ($1, $2, $3, $4, $5, $6);
+            $path = trim($path);
 
             if ($self->{option_results}->{volume_name} ne '') {
                 next unless $vol_name eq $self->{option_results}->{volume_name};
             } else {
                 next if is_excluded($vol_name, $self->{option_results}->{include_volume}, $self->{option_results}->{exclude_volume});
             }
+            next if is_excluded($path, $self->{option_results}->{include_path}, $self->{option_results}->{exclude_path});
+
 
             ($cap_val   = $cap_val)   =~ s/,/./g;
             ($alloc_val = $alloc_val) =~ s/,/./g;
@@ -153,6 +160,7 @@ sub manage_selection {
 
             $self->{volumes}->{$key} = {
                 name             => $key,
+                path             => $path,
                 capacity_bytes   => $cap_bytes,
                 allocation_bytes => $alloc_bytes,
                 usage_prct       => $cap_bytes > 0 ? $alloc_bytes / $cap_bytes * 100 : 0
@@ -214,6 +222,14 @@ Filter volumes by name (regexp).
 =item B<--exclude-volume>
 
 Exclude volumes whose name matches this regexp.
+
+=item B<--include-path>
+
+Filter volumes by path (regexp).
+
+=item B<--exclude-path>
+
+Exclude volumes whose path matches this regexp.
 
 =item B<--warning-allocation>
 
