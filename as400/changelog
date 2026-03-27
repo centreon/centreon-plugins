@@ -1,3 +1,6 @@
+2026-03-27 Sylvain Cresto <scresto@centreon.com> - 2.0.8
+ * Improved privilege management
+
 2026-01-29 Olivier Mercier <omercier@centreon.com> - 2.0.7
  * Use io.undertow 2.3.20
 
