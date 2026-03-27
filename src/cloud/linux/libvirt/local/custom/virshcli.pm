@@ -80,7 +80,8 @@ sub execute_command {
         command         => 'virsh',
         command_path    => $self->{virsh_path},
         command_options => '--connect ' . $self->{connect_uri} . ' ' . $options{virsh_args},
-        no_quit         => $options{no_quit}
+        no_quit         => $options{no_quit},
+        no_shell_interpretation => 1
     );
 
     $self->{output}->output_add(long_msg => "virsh response: $stdout", debug => 1);
