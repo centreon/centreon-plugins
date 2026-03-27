@@ -138,7 +138,7 @@ sub set_counters {
         },
         { label => 'read-latency', nlabel => 'cluster.io.read.latency.milliseconds', set => {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
-                output_template => 'read latency: %s ms',
+                output_template => 'read latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0 }
                 ]
@@ -146,7 +146,7 @@ sub set_counters {
         },
         { label => 'write-latency', nlabel => 'cluster.io.write.latency.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
-                output_template => 'write latency: %s ms',
+                output_template => 'write latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
@@ -154,7 +154,7 @@ sub set_counters {
         },
         { label => 'other-latency', nlabel => 'cluster.io.other.latency.milliseconds', set => {
                 key_values => [ { name => 'other_latency' }, { name => 'display' } ],
-                output_template => 'other latency: %s ms',
+                output_template => 'other latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0 }
                 ]
@@ -162,7 +162,7 @@ sub set_counters {
         },
         { label => 'total-latency', nlabel => 'cluster.io.total.latency.milliseconds', set => {
                 key_values => [ { name => 'total_latency' }, { name => 'display' } ],
-                output_template => 'total latency: %s ms',
+                output_template => 'total latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
