@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -187,7 +187,11 @@ sub set_method {
     }
 
     if ($options{request}->{method} eq 'POST') {
-        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POST'), parameter => 1);
+        if ((defined $options{request}->{post_params}) || (defined $options{request}->{query_form_post})) {
+            $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POST'), parameter => 1);
+        } else {
+            $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => 'POST');
+        }
         $self->{curl_log}->log('-X', $options{request}->{method}) unless $skip_log_post;
         return;
     }

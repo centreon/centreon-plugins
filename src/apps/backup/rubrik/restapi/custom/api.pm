@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,39 +24,38 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw/json_encode json_decode/;
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
 
-    if (!defined($options{output})) {
+    unless ($options{output}) {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless $options{options};
     
-    if (!defined($options{noptions})) {
+    unless ($options{noptions}) {
         $options{options}->add_options(arguments => {
-            'api-username:s'    => { name => 'api_username' },
-            'api-password:s'    => { name => 'api_password' },
-            'service-account:s' => { name => 'service_account' },
-            'secret:s'          => { name => 'secret' },
-            'organization-id:s' => { name => 'organization_id' },
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'timeout:s'         => { name => 'timeout' },
-            'unknown-http-status:s'  => { name => 'unknown_http_status' },
-            'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' },
+            'api-username:s'         => { name => 'api_username',         default => '' },
+            'api-password:s'         => { name => 'api_password',         default => '' },
+            'service-account:s'      => { name => 'service_account',      default => '' },
+            'secret:s'               => { name => 'secret',               default => '' },
+            'organization-id:s'      => { name => 'organization_id',      default => '' },
+            'hostname:s'             => { name => 'hostname',             default => '' },
+            'port:s'                 => { name => 'port',                 default => 443 },
+            'proto:s'                => { name => 'proto',                default => 'https' },
+            'timeout:s'              => { name => 'timeout',              default => 30 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status',  default => '%{http_code} < 200 or %{http_code} >= 300' },
+            'warning-http-status:s'  => { name => 'warning_http_status',  default => '' },
+            'critical-http-status:s' => { name => 'critical_http_status', default => '' },
             'token:s'                => { name => 'token' },
-            'cache-use'              => { name => 'cache_use' }
+            'cache-use'              => { name => 'cache_use' },
+            'use-cdm-authent'        => { name => 'use_cdm_authent' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -80,47 +79,32 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{service_account} = (defined($self->{option_results}->{service_account})) ? $self->{option_results}->{service_account} : '';
-    $self->{secret} = (defined($self->{option_results}->{secret})) ? $self->{option_results}->{secret} : '';
-    $self->{organization_id} = (defined($self->{option_results}->{organization_id})) ? $self->{option_results}->{organization_id} : '';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-    $self->{token} = $self->{option_results}->{token};
+    $self->{$_} = $self->{option_results}->{$_}
+        foreach qw/api_username api_password service_account secret organization_id unknown_http_status warning_http_status critical_http_status token use_cdm_authent/;
 
     $self->{cache}->check_options(option_results => $self->{option_results});
 
-    if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Need to specify --hostname option.')
+        if $self->{option_results}->{hostname} eq '';
+
     if (defined($self->{token})) {
         $self->{cache_connect}->check_options(option_results => $self->{option_results});
-        return 0 if ($self->{token} ne '');
+        return 0 if $self->{token} ne '';
     }
 
     if ($self->{service_account} ne '') {
-        if ($self->{secret} eq '') {
-            $self->{output}->add_option_msg(short_msg => 'Need to specify --secret option.');
-            $self->{output}->option_exit();
-        }
+        $self->{output}->option_exit(short_msg => 'Need to specify --secret option.')
+            if $self->{secret} eq '';
+
         $self->{cache_connect}->check_options(option_results => $self->{option_results});
         return 0;
     }
 
-    if ($self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Need to specify either --service-account or --api-username/--api-password or --token option.')
+        if $self->{api_username} eq '';
+
+    $self->{output}->option_exit(short_msg => 'Need to specify --api-password option.')
+        if $self->{api_password} eq '';
 
     return 0;
 }
@@ -128,9 +112,14 @@ sub check_options {
 sub settings {
     my ($self, %options) = @_;
 
-    return if (defined($self->{settings_done}));
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
+    unless($options{skip_content_type}) {
+        $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
+    } else {
+        $self->{http}->remove_header(key => 'Content-Type');
+    }
+
+    return if (defined($self->{settings_done}));
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{settings_done} = 1;
 }
@@ -144,15 +133,16 @@ sub get_connection_info {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{api_username}));
-    my $token = $self->{cache_connect}->get(name => 'token');
-    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
-    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{api_username}));
+    my $token = $self->{cache_connect}->get(name => 'token', default => '');
+    my $sha_secret_cache = $self->{cache_connect}->get(name => 'sha_secret', default => '');
+    my $sha_secret = sha256_hex($self->{api_username} .'##'. $self->{api_password});
 
     if ($has_cache_file == 0 ||
-        !defined($token) ||
-        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        $token eq '' ||
+        $sha_secret_cache ne $sha_secret
         ) {
+
         $self->settings();
         my $content = $self->{http}->request(
             method => 'POST',
@@ -166,20 +156,13 @@ sub get_token {
             critical_status => $self->{critical_http_status}
         );
 
-        my $decoded;
-        eval {
-            $decoded = JSON::XS->new->utf8->decode($content);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-            $self->{output}->option_exit();
-        }
+        my $decoded = json_decode($content, output => $self->{output});
 
         $token = $decoded->{token};
         my $datas = {
             updated => time(),
             token => $decoded->{token},
-            md5_secret => $md5_secret
+            sha_secret => $sha_secret
         };
         $self->{cache_connect}->write(data => $datas);
     }
@@ -187,17 +170,17 @@ sub get_token {
     return $token;
 }
 
-sub get_service_account_token {
+sub get_deprecated_service_account_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . md5_hex($self->{option_results}->{hostname} . '_' . $self->{service_account}));
-    my $token = $self->{cache_connect}->get(name => 'token');
-    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
-    my $md5_secret = md5_hex($self->{service_account} . $self->{secret});
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{service_account}));
+    my $token = $self->{cache_connect}->get(name => 'token', default => '');
+    my $sha_secret_cache = $self->{cache_connect}->get(name => 'sha_secret', default => '');
+    my $sha_secret = sha256_hex($self->{service_account} . '##'. $self->{secret});
 
     if ($has_cache_file == 0 ||
-        !defined($token) ||
-        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        $token eq '' ||
+        $sha_secret_cache ne $sha_secret
         ) {
         my $json_request = {
             serviceAccountId => $self->{service_account},
@@ -205,16 +188,9 @@ sub get_service_account_token {
         };
         $json_request->{organizationId} = $self->{organization_id} if ($self->{organization_id} ne '');
 
-        my $encoded;
-        eval {
-            $encoded = encode_json($json_request);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
-            $self->{output}->option_exit();
-        }
+        my $encoded = json_encode($json_request, output => $self->{output});
 
-        $self->settings();
+        $self->settings(content_type => 'application/x-www-form-urlencoded');
         my $content = $self->{http}->request(
             method => 'POST',
             url_path => '/api/v1/service_account/session',
@@ -224,20 +200,54 @@ sub get_service_account_token {
             critical_status => $self->{critical_http_status}
         );
 
-        my $decoded;
-        eval {
-            $decoded = JSON::XS->new->utf8->decode($content);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-            $self->{output}->option_exit();
-        }
+        my $decoded = json_decode($content, output => $self->{output});
 
         $token = $decoded->{token};
         my $datas = {
             updated => time(),
             token => $decoded->{token},
-            md5_secret => $md5_secret
+            sha_secret => $sha_secret
+        };
+        $self->{cache_connect}->write(data => $datas);
+    }
+
+    return $token;
+}
+
+sub get_rsc_token {
+    my ($self, %options) = @_;
+
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'rubrik_api_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{service_account}));
+    my $token = $self->{cache_connect}->get(name => 'access_token', default => '');
+    my $expires_at = $self->{cache_connect}->get(name => 'expires_at');
+    my $sha_secret_cache = $self->{cache_connect}->get(name => 'sha_secret', default => '');
+    my $sha_secret = sha256_hex($self->{service_account} . $self->{secret});
+
+    if ($has_cache_file == 0 ||
+        $token eq '' ||
+        (defined($expires_at) && $expires_at < time() + 60) ||
+        $sha_secret_cache ne $sha_secret
+        ) {
+
+        $self->settings(skip_content_type => 1);
+        my $content = $self->{http}->request(
+            method => 'POST',
+            url_path => '/api/client_token',
+            post_params => { 'client_id' => $self->{service_account}, 'client_secret' => $self->{secret}, 'grant_type' => 'client_credentials' }, 
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+
+        my $decoded = json_decode($content, output => $self->{output});
+
+        $token = $decoded->{access_token};
+        my $expires_in = $decoded->{expires_in} // 43200; # 12h by default
+        my $datas = {
+            updated   => time(),
+            access_token => $token,
+            expires_at   => time() + $expires_in,
+            sha_secret   => $sha_secret
         };
         $self->{cache_connect}->write(data => $datas);
     }
@@ -255,21 +265,27 @@ sub clean_token {
 sub credentials {
     my ($self, %options) = @_;
 
-    my $token = $self->{token};
-    if (defined($self->{token}) && $self->{token} eq '') {
-        $token = $self->get_token();
-    }
+    my $token;
 
     my $creds = {};
     if ($self->{service_account} ne '') {
-        $token = $self->get_service_account_token();
+        unless ($self->{use_cdm_authent}) {
+            $token = $self->get_rsc_token();
+        } else {
+            # No longer supported since Rubrik 9.4
+            $token = $self->get_deprecated_service_account_token();
+        }
         $creds = {
             header => ['Authorization: Bearer ' . $token],
             unknown_status => '',
             warning_status => '',
             critical_status => ''
         };
-    } elsif (defined($self->{token})) {
+    } elsif (defined $self->{token}) {
+        $token = $self->{token};
+        $token = $self->get_token()
+            if $token eq '';
+
         $creds = {
             header => ['Authorization: Bearer ' . $token],
             unknown_status => '',
@@ -322,14 +338,7 @@ sub request_api_paginate {
             return
         }
 
-        my $decoded;
-        eval {
-            $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-            $self->{output}->option_exit();
-        }
+        my $decoded = json_decode($content, allow_nonref => 1, output => $self->{output});
 
         return $decoded if (ref($decoded) ne 'HASH');
 
@@ -365,7 +374,7 @@ sub request_api {
     );
 
     # Maybe token is invalid. so we retry
-    if (defined($self->{token}) && $self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
+    if (((defined $self->{token}) || $self->{service_account} ne '') && ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300)) {
         $self->clean_token();
         $creds = $self->credentials();
         $creds->{unknown_status} = $self->{unknown_http_status};
@@ -391,7 +400,7 @@ sub request_api {
 sub write_cache_file {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_rubrik_' . $options{statefile} . '_' . md5_hex($self->get_connection_info()));
+    $self->{cache}->read(statefile => 'cache_rubrik_' . $options{statefile} . '_' . sha256_hex($self->get_connection_info()));
     $self->{cache}->write(data => {
         update_time => time(),
         response => $options{response}
@@ -401,7 +410,7 @@ sub write_cache_file {
 sub get_cache_file_response {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_rubrik_' . $options{statefile} . '_' . md5_hex($self->get_connection_info()));
+    $self->{cache}->read(statefile => 'cache_rubrik_' . $options{statefile} . '_' . sha256_hex($self->get_connection_info()));
     my $response = $self->{cache}->get(name => 'response');
     if (!defined($response)) {
         $self->{output}->add_option_msg(short_msg => 'Cache file missing');
@@ -465,10 +474,17 @@ Specify https if needed (default: 'https')
 =item B<--service-account>
 
 Service account ID (with --secret and --organization-id options).
+For C<RSC> (Rubrik Security Cloud) client credentials, use the client_id (format: client|...).
 
 =item B<--secret>
 
 Service account secret (with --service-account and --organization-id options).
+For C<RSC>, use the client_secret.
+
+=item B<--use-cdm-authent>
+
+Use C<CDM> authentication for service account. This method is no longer supported since Rubrik 9.4.
+If option is set, token is created with the old API endpoint (/api/v1/service_account/session) instead of the new one (/api/client_token).
 
 =item B<--organization-id>
 
@@ -485,6 +501,7 @@ API password.
 =item B<--token>
 
 Use token authentication. If option is empty, token is created.
+This method is no longer supported since Rubrik 9.4.
 
 =item B<--timeout>
 
