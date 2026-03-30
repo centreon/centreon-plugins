@@ -124,35 +124,35 @@ Check CPU utilization.
 
 =item B<--warning-sys>
 
-Warning threshold for System CPU utilization
+Warning threshold for system CPU utilization
 
 =item B<--critical-sys>
 
-Critical threshold for System CPU utilization
+Critical threshold for system CPU utilization
 
 =item B<--warning-user>
 
-Warning threshold for User CPU utilization
+Warning threshold for user CPU utilization
 
 =item B<--critical-user>
 
-Critical threshold for User CPU utilization
+Critical threshold for user CPU utilization
 
 =item B<--warning-sys-children>
 
-Warning threshold for System Children CPU utilization
+Warning threshold for system children CPU utilization
 
 =item B<--critical-sys-children>
 
-Critical threshold for System Children CPU utilization
+Critical threshold for system children CPU utilization
 
 =item B<--warning-user-children>
 
-Warning threshold for User Children CPU utilization
+Warning threshold for user children CPU utilization
 
 =item B<--critical-user-children>
 
-Critical threshold for User Children CPU utilization
+Critical threshold for user children CPU utilization
 
 =back
 

@@ -110,15 +110,15 @@ sub get_connection_info {
     my ($self, %options) = @_;
 
     my $id = $self->{ssh_hostname};
-    $id.='-' if $id ne '';
+    $id .= '-' if $id ne '';
     if ($self->{server} ne '') {
-        $id = $self->{server} . ':' . $self->{port};
+        $id. = $self->{server} . ':' . $self->{port};
     } else {
         foreach (@{$self->{sentinel}}) {
             $id .= $_ . '-';
         }
     }
-    $id.='-'.$options{suffix} if $options{suffix};
+    $id .= '-'.$options{suffix} if $options{suffix};
     return sha256_hex($id);
 }
 
