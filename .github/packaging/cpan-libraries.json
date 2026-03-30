@@ -188,7 +188,8 @@
       "deb": {
         "use_dh_make_perl": "false",
         "no-auto-depends": "true",
-        "deb_dependencies": "libmodule-find-perl"
+        "deb_dependencies": "libmodule-find-perl",
+        "revision": "2"
       }
     },
     {

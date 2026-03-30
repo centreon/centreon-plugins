@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/perl-cpan-libraries.yml"
+      - ".github/packaging/cpan-libraries.json"
   push:
     branches:
       - develop
@@ -17,6 +18,7 @@ on:
       - "[2-9][0-9].[0-9][0-9].x"
     paths:
       - ".github/workflows/perl-cpan-libraries.yml"
+      - ".github/packaging/cpan-libraries.json"
 
 jobs:
   dependency-scan:
@@ -613,4 +615,3 @@ jobs:
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/set-pull-request-skip-label.yml
-
