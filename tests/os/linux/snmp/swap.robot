@@ -105,7 +105,7 @@ cgs-swap ${tc}
     [Tags]    os    linux    centreon-generic-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
-    ...    -j tests/os/linux/snmp/generic-snmp/swap.json
+    ...    -j ${CURDIR}/generic-snmp/swap.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -140,7 +140,7 @@ cgs-swap-64 ${tc}
     [Tags]    os    linux    centreon-generic-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
-    ...    -j tests/os/linux/snmp/generic-snmp/swap-64.json
+    ...    -j ${CURDIR}/generic-snmp/swap-64.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}

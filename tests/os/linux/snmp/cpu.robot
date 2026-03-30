@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP} -j tests/os/linux/snmp/generic-snmp/cpu.json
+${CGS_CMD}      ${CENTREON_GENERIC_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
 
 
 *** Test Cases ***
