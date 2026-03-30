@@ -112,7 +112,7 @@ sub get_connection_info {
     my $id = $self->{ssh_hostname};
     $id .= '-' if $id ne '';
     if ($self->{server} ne '') {
-        $id. = $self->{server} . ':' . $self->{port};
+        $id .= $self->{server} . ':' . $self->{port};
     } else {
         foreach (@{$self->{sentinel}}) {
             $id .= $_ . '-';
