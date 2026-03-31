@@ -33,4 +33,4 @@ processcount ${tc}
             ...      3     --top-num                                           OK: Number of current processes running: 84 | 'nbproc'=84;;;0;
             ...      4     --top-size                                          OK: Number of current processes running: 84 | 'nbproc'=84;;;0;
             ...      5     --process-status='running|runnable|unHandle'                                     OK: Number of current processes running: 86 | 'nbproc'=86;;;0;
-            ...      6     --process-status='unHandled#-2' --process-name='Anonymized 228' --verbose        OK: Number of current processes running: 1 | 'nbproc'=1;;;0; Process '3534' [status: unHandled#-2] [name: Anonymized 228]
+            ...      6     --process-status='unHandled#-2' --process-name='Anonymized 228' --verbose        OK: Number of current processes running: 1 | 'nbproc'=1;;;0; Process '3534' [name: Anonymized 228] [status: unHandled#-2]
