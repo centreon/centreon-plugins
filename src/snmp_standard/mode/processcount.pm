@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 my %map_process_status = (
     1 => 'running', 
@@ -197,7 +197,8 @@ sub run {
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{snmp_response}->{$oid_hrSWRunStatus}})) {
         $key =~ /\.([0-9]+)$/;
         my $pid = $1;
-        $self->{results}->{$pid}->{status} = $map_process_status{$self->{snmp_response}->{$oid_hrSWRunStatus}->{$oid_hrSWRunStatus . '.' . $pid}};
+        my $value = $self->{snmp_response}->{$oid_hrSWRunStatus}->{$oid_hrSWRunStatus . '.' . $pid};
+        $self->{results}->{$pid}->{status} = $map_process_status{$value} // "unHandled#$value";
 
         foreach my $filter (keys %$filters) {
             next if !defined($self->{results}->{$pid}) || $filters->{$filter}->{value} eq '' || $filters->{$filter}->{default} == 0;
@@ -290,7 +291,7 @@ sub run {
         $datas->{last_timestamp} = time();
 
         $self->{statefile_cache}->read(statefile => "snmpstandard_" . $self->{snmp}->get_hostname() . '_' . 
-                                        $self->{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex($self->{filter4md5}));
+                                        $self->{snmp}->get_port() . '_' . $self->{mode} . '_' . sha256_hex($self->{filter4md5}));
         my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
         
         my $total_cpu = 0;
@@ -362,6 +363,7 @@ Can also check memory usage and CPU usage.
 
 Filter process status. Can be a regexp. 
 (default: 'running|runnable').
+The handled statuses are C<running>, C<runnable>, C<notRunnable>, and C<invalid>. For any unhandled status the label C<unHandle#status> is used (e.g. unHandle#-1 for an unknown status of -1).
 
 =item B<--process-name>
 
