@@ -67,7 +67,6 @@ chmod 777 /var/lib/centreon/centplugins/
 
 apt-get clean
 
-# Install Rust
 
 EOF
 
