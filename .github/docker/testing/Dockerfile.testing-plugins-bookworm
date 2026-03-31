@@ -67,6 +67,7 @@ chmod 777 /var/lib/centreon/centplugins/
 
 apt-get clean
 
+
 EOF
 
 ENV PATH="/usr/local/src/node_modules/.bin/:$PATH"

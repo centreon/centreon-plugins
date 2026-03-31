@@ -5,16 +5,18 @@ Library             Process
 
 
 *** Variables ***
-${CENTREON_PLUGINS}     perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_PLUGINS}         perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
+${CENTREON_GENERIC_SNMP}    ${CURDIR}${/}..${/}..${/}rust-plugins/target/release/centreon-generic-snmp
+
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
-${SNMPPORT}             2024
-${SNMPVERSION}          2c
-${PERCENT}              %
-${MOCKOON_LOG_FILE}     /tmp/mockoon.log
-${TIMEOUT}              30
+${HOSTNAME}                 127.0.0.1
+${APIPORT}                  3000
+${SNMPPORT}                 2024
+${SNMPVERSION}              2c
+${PERCENT}                  %
+${MOCKOON_LOG_FILE}         /tmp/mockoon.log
+${TIMEOUT}                  30
 
 
 *** Keywords ***
@@ -24,8 +26,8 @@ Start Mockoon
     Remove File    ${MOCKOON_LOG_FILE}
 
     # Thoses variables are accessible in Mockoon templates with {{ getEnvVar 'MOCKOON_HOSTNAME' }} and {{ getEnvVar 'MOCKOON_APIPORT' }}
-    Set Environment Variable    MOCKOON_HOSTNAME     ${HOSTNAME}
-    Set Environment Variable    MOCKOON_APIPORT      ${APIPORT}
+    Set Environment Variable    MOCKOON_HOSTNAME    ${HOSTNAME}
+    Set Environment Variable    MOCKOON_APIPORT    ${APIPORT}
 
     ${time_start}    Get Time    str=epoch
 
