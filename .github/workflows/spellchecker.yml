@@ -34,7 +34,7 @@ jobs:
               - added|modified: 'src/**/*.pm'
 
       - name: Install CPAN Libraries
-        uses: shogo82148/actions-setup-perl@b6cfc127f1b0a63ac98797800f641494d80f42f8 # v1.37.1
+        uses: shogo82148/actions-setup-perl@dea55ec1f85d42d13106b8e8263b9b7199eaef09 # v1.39.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
