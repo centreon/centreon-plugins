@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:counters/;
 
 sub prefix_connections_output {
     my ($self, %options) = @_;
@@ -42,8 +42,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'connections', type => 0, cb_prefix_output => 'prefix_connections_output' },
-        { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output' }
+        { name => 'connections', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_connections_output' },
+        { name => 'traffic', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_traffic_output' }
     ];
     
     $self->{maps_counters}->{connections} = [
@@ -100,8 +100,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info(suffix => $self->{option_results}->{filter_counters} // 'all');
 
     my $results = $options{custom}->get_info();
     $self->{connections} = { 
@@ -154,7 +153,7 @@ Warning threshold for outbound traffic (b/s)
 
 =item B<--critical-traffic-out>
 
-Critical thresholdfor outbound traffic (b/s)
+Critical threshold for outbound traffic (b/s)
 
 =back
 

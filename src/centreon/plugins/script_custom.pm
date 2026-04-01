@@ -155,12 +155,26 @@ sub init {
     $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     push @{$self->{custommode_stored}}, $self->{custommode_current};
-    $self->{custommode_current}->set_options(option_results => $self->{option_results});
-    $self->{custommode_current}->set_defaults(default => $self->{customdefault});
+
+    # Call custom mode set_options if it's defined, otherwise set option_results directly
+    if ($self->{custommode_current}->can('set_options')) {
+        $self->{custommode_current}->set_options(option_results => $self->{option_results});
+    } else {
+        $self->{custommode_current}->{option_results} = $self->{option_results};
+    }
+
+    # Call set_defaults only if it's defined in the custom mode
+    $self->{custommode_current}->set_defaults(default => $self->{customdefault})
+        if $self->{custommode_current}->can('set_defaults');
 
     while ($self->{custommode_current}->check_options()) {
         $self->{custommode_current} = $self->{custom_modes}->{$self->{custommode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
-        $self->{custommode_current}->set_options(option_results => $self->{option_results});
+        # Call custom mode set_options if it's defined, otherwise set option_results directly
+        if ($self->{custommode_current}->can('set_options')) {
+            $self->{custommode_current}->set_options(option_results => $self->{option_results});
+        } else {
+            $self->{custommode_current}->{option_results} = $self->{option_results};
+        }
         push @{$self->{custommode_stored}}, $self->{custommode_current};
     }
     $self->{mode}->check_options(

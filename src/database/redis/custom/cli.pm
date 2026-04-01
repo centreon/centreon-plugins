@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,8 +23,8 @@ package database::redis::custom::cli;
 use strict;
 use warnings;
 use centreon::plugins::ssh;
-use centreon::plugins::misc;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw/is_empty/;
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -42,20 +42,20 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'ssh-hostname:s'  => { name => 'ssh_hostname' },                
-            'server:s'        => { name => 'server' },
-            'port:s'          => { name => 'port' },
-            'username:s'      => { name => 'username' },
-            'password:s'      => { name => 'password' },
+            'ssh-hostname:s'  => { name => 'ssh_hostname',  default => '' },
+            'server:s'        => { name => 'server',        default => '' },
+            'port:s'          => { name => 'port',          default => 6379 },
+            'username:s'      => { name => 'username',      default => '' },
+            'password:s'      => { name => 'password',      default => '' },
             'sentinel:s@'     => { name => 'sentinel' },
-            'sentinel-port:s' => { name => 'sentinel_port' },
-            'service:s'       => { name => 'service' },
+            'sentinel-port:s' => { name => 'sentinel_port', default => 26379 },
+            'service:s'       => { name => 'service',       default => '' },
             'tls'             => { name => 'tls' },
-            'cacert:s'        => { name => 'cacert' },
-            'cert:s'          => { name => 'cert' },
-            'key:s'           => { name => 'key' },
+            'cacert:s'        => { name => 'cacert',        default => '' },
+            'cert:s'          => { name => 'cert',          default => '' },
+            'key:s'           => { name => 'key',           default => '' },
             'insecure'        => { name => 'insecure' },
-            'timeout:s'       => { name => 'timeout' }
+            'timeout:s'       => { name => 'timeout',       default => 10 }
         });
     }
 
@@ -78,45 +78,30 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{ssh_hostname} = $self->{option_results}->{ssh_hostname} // '';
-    $self->{server} = $self->{option_results}->{server} // '';
-    $self->{port} = $self->{option_results}->{port} || 6379;
-    $self->{sentinel_port} = $self->{option_results}->{sentinel_port} && $self->{option_results}->{sentinel_port} =~ /(\d+)/ ? $1 : 26379;
-    $self->{username} = $self->{option_results}->{username} // '';
-    $self->{password} = $self->{option_results}->{password} // '';
-    $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
-    $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
-    $self->{cacert} = $self->{option_results}->{cacert} // '';
-    $self->{cert} = $self->{option_results}->{cert} // '';
-    $self->{key} = $self->{option_results}->{key} // '';
+    $self->{$_} = $self->{option_results}->{$_}
+        foreach qw/ssh_hostname server port sentinel_port username password timeout cacert cert key service/;
+    $self->{insecure} = $self->{option_results}->{insecure} ? 1 : 0;
     # --tls is implied by --key and --cert
-    $self->{tls} = ($self->{cert} ne '' || $self->{key} ne '' || defined($self->{option_results}->{tls})) ? 1 : 0;
+    $self->{tls} = ($self->{cert} ne '' || $self->{key} ne '' || $self->{option_results}->{tls}) ? 1 : 0;
     $self->{sentinel} = [];
-    if (defined($self->{option_results}->{sentinel})) {
+    if ($self->{option_results}->{sentinel}) {
         foreach my $addr (@{$self->{option_results}->{sentinel}}) {
             next if ($addr eq '');
 
             push @{$self->{sentinel}}, $addr . ':' . $self->{sentinel_port};
         }
     }
-    $self->{service} = $self->{option_results}->{service} // '';
 
-    if ($self->{server} eq '' && not @{$self->{sentinel}}) {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --server or --sentinel option.');
-        $self->{output}->option_exit();
-    }
-    if (@{$self->{sentinel}} && $self->{service} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --service option.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Need to specify --server or --sentinel option.')
+        if $self->{server} eq '' && not @{$self->{sentinel}};
+    $self->{output}->option_exit(short_msg => 'Need to specify --service option.')
+        if @{$self->{sentinel}} && $self->{service} eq '';
     if ($self->{ssh_hostname} ne '') {
         $self->{option_results}->{hostname} = $self->{ssh_hostname};
         $self->{ssh}->check_options(option_results => $self->{option_results});
     }
-    if ($self->{username} ne '' && $self->{option_results}->{password} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --password option.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Need to specify --password option.')
+        if $self->{username} ne '' && $self->{option_results}->{password} eq '';
 
     return 0;
 }
@@ -124,24 +109,23 @@ sub check_options {
 sub get_connection_info {
     my ($self, %options) = @_;
 
-    my $id = '';
+    my $id = $self->{ssh_hostname};
+    $id .= '-' if $id ne '';
     if ($self->{server} ne '') {
-        $id = $self->{server} . ':' . $self->{port};
+        $id .= $self->{server} . ':' . $self->{port};
     } else {
         foreach (@{$self->{sentinel}}) {
             $id .= $_ . '-';
         }
     }
-    return md5_hex($id);
+    $id .= '-'.$options{suffix} if $options{suffix};
+    return sha256_hex($id);
 }
 
 sub execute_command {
     my ($self, %options) = @_;
 
-    my $timeout = $self->{timeout};
-    if (!defined($timeout)) {
-        $timeout = defined($options{timeout}) ? $options{timeout} : 10;
-    }
+    my $timeout = $self->{timeout} // $options{timeout} // 10;
 
     my ($stdout, $exit_code);
     if ($self->{ssh_hostname} ne '') {
@@ -191,7 +175,7 @@ sub sentinels_get_master {
     my ($host, $port);
     foreach my $addr (@{$self->{sentinel}}) {
         my ($sentinel_host, $sentinel_port) = split(/:/, $addr);
-        my $command_options = "-h '" . $sentinel_host . "' -p " . (defined($sentinel_port) ? $sentinel_port : 26379);
+        my $command_options = "-h '" . $sentinel_host . "' -p " . ($sentinel_port // 26379);
         $command_options .= $self->get_extra_options();
         $command_options .= ' --no-raw';
         $command_options .= ' sentinel get-master-addr-by-name ' . $self->{service};
@@ -206,10 +190,8 @@ sub sentinels_get_master {
         last if (defined($port));
     }
 
-    if (!defined($port)) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot find redis master (sentinels)');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Cannot find redis master (sentinels)')
+        unless $port;
     return ($host, $port);
 }
 
@@ -231,10 +213,8 @@ sub get_info {
         command_options => $command_options
     );
 
-    if ($stdout =~ /^NOPERM/m) {
-        $self->{output}->add_option_msg(short_msg => 'Permissions issue');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Permissions issue')
+        if $stdout =~ /^NOPERM/m;
 
     my $items = {};
     foreach my $line (split /\n/, $stdout) {

@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
 use Digest::SHA qw(sha256_hex);
 use DateTime;
 use POSIX;
@@ -283,7 +284,7 @@ sub manage_selection {
         next if is_excluded($job_exec->{locationName}, $self->{option_results}->{filter_location_name});
 
         $self->{global}->{detected}++;
-        $jobs_detected{$job_exec->{objectName}} = 1;
+        $jobs_detected{$job_exec->{locationName}.'##'.$job_exec->{objectName}} = 1;
         $job_exec->{jobType} = lc($job_exec->{jobType});
 
         if (!defined($self->{jobs}->{ $job_exec->{objectId} })) {
@@ -375,12 +376,11 @@ sub manage_selection {
         };
     }
 
-    if ($self->{global}->{detected} == 0 && defined($self->{option_results}->{check_retention})) {
+    if ($self->{option_results}->{check_retention}) {
             my $jobs_last_detected = $self->{cache_exec}->get(name => 'jobs');
-            foreach my $job_id (keys %{$jobs_last_detected}) {
-                if (!defined($jobs_detected{$jobs_last_detected->{$job_id}->{jobName}})) {
-                    $self->{global}->{detected}++;
-                }
+            foreach my $job (values %{$jobs_last_detected}) {
+                $self->{global}->{detected}++
+                    unless $jobs_detected{$job->{locationName}.'##'.$job->{jobName}};
             }
     }
 
