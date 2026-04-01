@@ -24,13 +24,14 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::SHA qw/sha256_hex/;
+
+use Digest::SHA qw(sha256_hex);
 use DateTime;
 use POSIX;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw/change_seconds/;
+use centreon::plugins::misc qw/is_excluded change_seconds/;
+use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::statefile;
-use centreon::plugins::constants qw/:counters :values/;
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
@@ -216,11 +217,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-job-id:s'        => { name => 'filter_job_id' },
-        'filter-job-name:s'      => { name => 'filter_job_name' },
-        'filter-job-type:s'      => { name => 'filter_job_type' },
-        'filter-location-name:s' => { name => 'filter_location_name' },
-        'filter-object-type:s'   => { name => 'filter_object_type' },
+        'filter-job-id:s'        => { name => 'filter_job_id',        default => '' },
+        'filter-job-name:s'      => { name => 'filter_job_name',      default => '' },
+        'filter-job-type:s'      => { name => 'filter_job_type',      default => '' },
+        'filter-location-name:s' => { name => 'filter_location_name', default => '' },
+        'filter-object-type:s'   => { name => 'filter_object_type',   default => '' },
         'unit:s'                 => { name => 'unit', default => 's' },
         'limit:s'                => { name => 'limit' },
         'check-retention'        => { name => 'check_retention' }
@@ -250,18 +251,23 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $get_param = [ 'limit=' . $self->{option_results}->{limit} ];
-    if (defined($self->{option_results}->{filter_job_type}) && $self->{option_results}->{filter_job_type} ne '') {
-        push @{$get_param}, 'job_type=' . $self->{option_results}->{filter_job_type};
-    }
+
+    push @{$get_param}, 'job_type=' . $self->{option_results}->{filter_job_type}
+        if $self->{option_results}->{filter_job_type} ne '';
+
+    # object_name API filter is used only when the search string contains no regexp special characters
+    push @{$get_param}, 'object_name=' . $self->{option_results}->{filter_job_name}
+        if $self->{option_results}->{filter_job_name} ne '' && $self->{option_results}->{filter_job_name} =~ /^[-\w\s]+$/;
+
     my $jobs_exec = $options{custom}->get_jobs_monitoring(get_param => $get_param);
 
     $self->{cache_exec}->read(statefile => 'rubrik_' . $self->{mode} . '_' .
         sha256_hex(
             $options{custom}->get_connection_info() . '_' .
-            (defined($self->{option_results}->{filter_job_id}) ? $self->{option_results}->{filter_job_id} : '') . '_' .
-            (defined($self->{option_results}->{filter_job_name}) ? $self->{option_results}->{filter_job_name} : '') . '_' .
-            (defined($self->{option_results}->{filter_job_type}) ? $self->{option_results}->{filter_job_type} : '') . '_' .
-            (defined($self->{option_results}->{filter_object_type}) ? $self->{option_results}->{filter_object_type} : '')
+            $self->{option_results}->{filter_job_id} . '_' .
+            $self->{option_results}->{filter_job_name} . '_' .
+            $self->{option_results}->{filter_job_type}  . '_' .
+            $self->{option_results}->{filter_object_type}
         )
     );
     my $ctime = time();
@@ -272,14 +278,10 @@ sub manage_selection {
     $self->{global} = { detected => 0 };
     $self->{jobs} = {};
     foreach my $job_exec (@$jobs_exec) {
-        next if (defined($self->{option_results}->{filter_job_id}) && $self->{option_results}->{filter_job_id} ne '' && 
-            $job_exec->{objectId} !~ /$self->{option_results}->{filter_job_id}/);
-        next if (defined($self->{option_results}->{filter_job_name}) && $self->{option_results}->{filter_job_name} ne '' && 
-            $job_exec->{objectName} !~ /$self->{option_results}->{filter_job_name}/);
-        next if (defined($self->{option_results}->{filter_object_type}) && $self->{option_results}->{filter_object_type} ne '' && 
-            $job_exec->{objectType} !~ /$self->{option_results}->{filter_object_type}/i);
-        next if (defined($self->{option_results}->{filter_location_name}) && $self->{option_results}->{filter_location_name} ne '' && 
-            $job_exec->{locationName} !~ /$self->{option_results}->{filter_location_name}/);
+        next if is_excluded($job_exec->{objectId}, $self->{option_results}->{filter_job_id});
+        next if is_excluded($job_exec->{objectName}, $self->{option_results}->{filter_job_name});
+        next if is_excluded($job_exec->{objectType}, $self->{option_results}->{filter_object_type});
+        next if is_excluded($job_exec->{locationName}, $self->{option_results}->{filter_location_name});
 
         $self->{global}->{detected}++;
         $jobs_detected{$job_exec->{locationName}.'##'.$job_exec->{objectName}} = 1;
@@ -404,6 +406,7 @@ Filter jobs by job ID.
 =item B<--filter-job-name>
 
 Filter jobs by job name.
+When only alphanumeric characters (as well as _, -, and spaces) are used, filtering is performed directly by the Rubrik API which ensures faster execution times when handling large amounts of data.
 
 =item B<--filter-job-type>
 
