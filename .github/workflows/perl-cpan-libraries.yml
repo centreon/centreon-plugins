@@ -163,14 +163,14 @@ jobs:
     runs-on: ${{ contains(matrix.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     steps:
       - name: Login to Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
       - name: Login to Proxy Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
