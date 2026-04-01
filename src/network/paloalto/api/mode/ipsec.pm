@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::paloalto::api::mode::tunnel;
+package network::paloalto::api::mode::ipsec;
 
 use base qw(centreon::plugins::templates::counter);
 

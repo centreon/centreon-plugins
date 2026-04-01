@@ -17,10 +17,10 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 ...                 --proto=http
-...                 --mode=tunnel
+...                 --mode=ipsec
 
 *** Test Cases ***
-paloalto-tunnel ${tc}
+paloalto-ipsec ${tc}
     [Tags]    network    paloalto    api    tunnel
 
     ${command}    Catenate
