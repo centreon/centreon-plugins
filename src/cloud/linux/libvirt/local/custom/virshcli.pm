@@ -38,7 +38,7 @@ sub new {
 
     unless ($options{noptions}) {
         $options{options}->add_options(arguments => {
-            'connect-uri:s' => { name => 'connect_uri', default => 'qemu:///system' },
+            'connect-uri:s' => { name => 'connect_uri', default => 'qemu:///system?socket=/var/run/libvirt/libvirt-sock-ro' },
             'virsh-path:s'  => { name => 'virsh_path',  default => '/usr/bin' },
             'timeout:s'     => { name => 'timeout',     default => 30 },
             'sudo'          => { name => 'sudo' }
@@ -105,7 +105,7 @@ Libvirt C<virsh> CLI custom mode.
 
 =item B<--connect-uri>
 
-Libvirt connection URI (default: 'qemu:///system').
+Libvirt connection URI (default: 'qemu:///system?socket=/var/run/libvirt/libvirt-sock-ro').
 Examples: qemu:///system, qemu+ssh://user@host/system, xen:///.
 
 =item B<--virsh-path>
