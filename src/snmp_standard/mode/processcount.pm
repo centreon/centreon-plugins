@@ -336,9 +336,9 @@ sub run {
     
     $self->check_top() if (defined($self->{option_results}->{top}));
 
-    foreach my $pid (keys %{$self->{results}}) {
+    foreach my $pid (sort keys %{$self->{results}}) {
         my $long_msg = sprintf("Process '%s'", $pid);
-        foreach my $key (keys %{$self->{results}->{$pid}}) {
+        foreach my $key (sort keys %{$self->{results}->{$pid}}) {
             $long_msg .= sprintf(" [%s: %s]", $key, $self->{results}->{$pid}->{$key});
         }
         $self->{output}->output_add(long_msg => $long_msg);
