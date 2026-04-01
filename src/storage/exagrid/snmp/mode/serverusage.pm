@@ -164,13 +164,13 @@ sub manage_selection {
         nothing_quit => 1
     );   
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    my $landing_used = $result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000;
+    my $landing_used = $result->{egLandingSpaceConfiguredWholeGigabytes} * 1_000_000_000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1_000_000_000;
     $landing_used = 0 if $landing_used < 0;
     $self->{server} = { 
         status => $result->{egServerAlarmState},
-        retention_total => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
-        retention_used => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egRetentionSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000,
-        landing_total => $result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
+        retention_total => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1_000_000_000,
+        retention_used => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1_000_000_000 - $result->{egRetentionSpaceAvailableWholeGigabytes} * 1_000_000_000,
+        landing_total => $result->{egLandingSpaceConfiguredWholeGigabytes} * 1_000_000_000,
         landing_used => $landing_used
     };
 }
