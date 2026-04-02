@@ -86,7 +86,7 @@ sub set_counters {
             critical_default => '@0',
             set => {
                 key_values      => [ { name => 'days_left' }, { name => 'feature' } ],
-                closure_custom_output => \&custom_expiration_output,
+                closure_custom_output => $self->can('custom_expiration_output'),
                 perfdatas => [
                     { template => '%s', unit => 'd', min => -1,
                       label_extra_instance => 1, instance_use => 'feature' }
@@ -140,7 +140,7 @@ sub manage_selection {
             if ($exp_date) {
                 my $now = DateTime->now(time_zone => 'UTC');
                 $days_left = int(($exp_date->epoch() - $now->epoch()) / 86400);
-		$days_left = 0 if $days_left < 0;
+                $days_left = 0 if $days_left < 0;
             }
         }
         $self->{licenses}->{$feature} = {

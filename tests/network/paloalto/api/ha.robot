@@ -31,9 +31,9 @@ paloalto-ha ${tc}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options                                                   expected_result    --
-            ...      1     ${EMPTY}                                                        OK: PA-850 status: local state: passive (priority: 110), peer state: active (priority: 100, conn: up), state sync: synchronized, HA1 link: up, HA2 link: up, HA mode: active-passive, build compatibility: Match
-            ...      2     --warning-peer-state='\\\%{peer_state_priority} =~ /active/'    WARNING: PA-850 status: peer state: active (priority: 100, conn: up)
-            ...      3     --critical-peer-state='\\\%{peer_state_priority} =~ /active/'   CRITICAL: PA-850 status: peer state: active (priority: 100, conn: up)
+            ...      1     ${EMPTY}                                                        OK: PA-850 status: state sync: synchronized, HA1 link: up, HA2 link: up, HA mode: active-passive, build compatibility: Match
+            ...      2     --warning-peer-state='\\\%{peer_state} =~ /active/'             WARNING: PA-850 status: peer state: active (priority: 100, conn: up)
+            ...      3     --critical-peer-state='\\\%{peer_state} =~ /active/'            CRITICAL: PA-850 status: peer state: active (priority: 100, conn: up)
             ...      4     --warning-state-sync='\\\%{state_sync} =~ /synchronized/'       WARNING: PA-850 status: state sync: synchronized
             ...      5     --critical-state-sync='\\\%{state_sync} =~ /synchronized/'      CRITICAL: PA-850 status: state sync: synchronized
             ...      6     --warning-ha1-link-status='\\\%{ha1_status} =~ /up/'            WARNING: PA-850 status: HA1 link: up
