@@ -30,7 +30,7 @@ use centreon::plugins::misc qw(json_decode is_empty value_of is_excluded);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
 
     if (!defined($options{output})) {
@@ -41,23 +41,24 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'key-id:s'     => { name => 'key_id', default => '' },
-            'key-secret:s' => { name => 'key_secret', default => '' },
-            'api-path:s'   => { name => 'api_path', default => '/v1' },
-            'hostname:s'   => { name => 'hostname', default => 'api.zdxcloud.net' },
-            'port:s'       => { name => 'port', default => 443 },
-            'proto:s'      => { name => 'proto', default => 'https' },
-            'timeout:s'    => { name => 'timeout', default => 10 }
+            'auth-url:s'      => { name => 'auth_url', default => '' },
+            'client-id:s'     => { name => 'client_id', default => '' },
+            'client-secret:s' => { name => 'client_secret', default => '' },
+            'api-path:s'      => { name => 'api_path', default => '/zdx/v1' },
+            'hostname:s'      => { name => 'hostname', default => 'api.zsapi.net' },
+            'port:s'          => { name => 'port', default => 443 },
+            'proto:s'         => { name => 'proto', default => 'https' },
+            'timeout:s'       => { name => 'timeout', default => 10 }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
-    $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{http}   = centreon::plugins::http->new(%options, default_backend => 'curl');
+    $self->{cache}  = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -70,14 +71,13 @@ sub get_token {
     $self->settings();
 
     my $has_cache_file = $self->{cache}->read(
-            statefile => 'zdx_token_' . md5_hex(
-                    $self->{hostname}
-                    . ':' . $self->{port}
-                    . '_' . $self->{key_id})
+        statefile => 'zdx_token_' . md5_hex(
+            $self->{auth_url}
+                . '_' . $self->{client_id})
     );
     # return token stored in cache if exists after checking it is still valid
     if ($has_cache_file) {
-        my $expiration      = $self->{cache}->get(name => 'expiration');
+        my $expiration = $self->{cache}->get(name => 'expiration');
         if (defined($expiration) && $expiration > time() + 60) {
             $self->{token}      = $self->{cache}->get(name => 'token');
             $self->{token_type} = $self->{cache}->get(name => 'token_type');
@@ -89,17 +89,22 @@ sub get_token {
     # if we do not have a token or if it has to be renewed
     my $content = $self->{http}->request(
         method          => 'POST',
-        url_path        => '/v1/oauth/token',
-        query_form_post => '{"key_id": "' . $self->{key_id} . '", "key_secret": "' . $self->{key_secret} . '"}',
-
+        full_url        => $self->{auth_url},
+        header          => [ 'Content-Type: application/x-www-form-urlencoded' ],
+        query_form_post => "grant_type=client_credentials&client_id=" . $self->{client_id}
+            . "&client_secret=" . $self->{client_secret},
     );
     my $decoded_content = json_decode($content, output => $self->{output});
 
-    $self->{output}->option_exit(short_msg => "No token found in '$content'") unless ($decoded_content->{token});
-    $self->{token} = $decoded_content->{token};
-    $self->{token_type} = $decoded_content->{token_type};
+    $self->{output}->option_exit(short_msg => "No token found in '$content'")
+        unless ($decoded_content->{access_token} || $decoded_content->{token});
+    # store in $self for further requests
+    $self->{token}      = $decoded_content->{access_token} // $decoded_content->{token};
+    $self->{token_type} = $decoded_content->{token_type} // 'Bearer';
+    # store in cache for further executions
     $self->{http}->add_header(key => 'Authorization', value => $self->{token_type} . ' ' . $self->{token});
-    $self->{cache}->write(data => { token => $decoded_content->{token}, token_type => $decoded_content->{token_type}, expiration => ($decoded_content->{expires_in} + time()) });
+    $self->{cache}->write(data => { token => $self->{token}, token_type => $self->{token_type}, expiration => ($decoded_content->{expires_in} + time()) });
+
     return $self->{token};
 }
 
@@ -120,7 +125,7 @@ sub build_location_filters {
     # if location filters are provided, get the list of location ids
     my $locations = $self->get_locations(%options);
     # $locations points to an array of {id, name}
-    return { loc => [map { $_->{id}} @$locations] };
+    return { loc => [ map {$_->{id}} @$locations ] };
 }
 
 sub get_unique_app {
@@ -143,10 +148,10 @@ sub get_unique_app {
 sub get_unique_app_metrics {
     my ($self, %options) = @_;
 
-    my $to = time();
-    my $get_params = { %{ $self->{get_params}} };
+    my $to              = time();
+    my $get_params      = { %{$self->{get_params}} };
     $get_params->{from} = $to - 60 * ($options{max_metrics_age} // 20);
-    $get_params->{to} = $to;
+    $get_params->{to}   = $to;
 
     my $content = $self->{http}->request(
         method     => 'GET',
@@ -232,8 +237,8 @@ sub get_locations {
 
     # get all locations and check which ones match the filters
     my $locations_json = $self->{http}->request(
-        method     => 'GET',
-        url_path   => $self->{option_results}->{api_path} . '/administration/locations/'
+        method   => 'GET',
+        url_path => $self->{option_results}->{api_path} . '/administration/locations/'
     );
     my $locations = json_decode($locations_json, output => $self->{output});
 
@@ -246,8 +251,8 @@ sub get_locations {
             $options{exclude_location_name});
 
         push @result, {
-            id          => $loc->{id},
-            name        => $loc->{name},
+            id   => $loc->{id},
+            name => $loc->{name},
         };
     }
 
@@ -259,10 +264,11 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{$_} = $self->{option_results}->{$_} foreach qw(hostname port proto api_path timeout key_id key_secret );
+    $self->{$_} = $self->{option_results}->{$_} foreach qw(hostname port proto timeout auth_url api_path client_id client_secret);
+    $self->{output}->option_exit(short_msg => "Mandatory option 'auth-url' is missing for OneAPI authentication.") if ($self->{auth_url} eq '');
 
-    foreach (qw(key_id key_secret)) {
-        $self->{output}->option_exit(short_msg => "Mandatory option '$_' is missing.") if ($self->{$_} eq '');
+    foreach (qw(client_id client_secret)) {
+        $self->{output}->option_exit(short_msg => "Mandatory option '$_' is missing for OneAPI authentication.") if ($self->{$_} eq '');
         $self->{output}->option_exit(short_msg => "Option '$_' contains illegal characters.") if ($self->{$_} =~ /([\b\f\n\r\t\"\\]+)/);
     }
 
@@ -274,9 +280,7 @@ sub check_options {
 sub settings {
     my ($self, %options) = @_;
 
-    #$self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -298,29 +302,37 @@ Zscaler Digital Experience (ZDX) Rest API
 
 =over 8
 
+=item B<--auth-url>
+
+Authentication URL to get a token from (mandatory).
+
+Depends on your Zscaler customer name.
+
+Example: C<https://company-name.zslogin.net/oauth2/v1/token>.
+
 =item B<--hostname>
 
-ZDX API hostname (default: C<api.zdxcloud.net>)
+API URL (default: C<api.zsapi.net>). You should not need to change it.
 
 =item B<--port>
 
-API port (default: 443)
+API port (default: 443).
 
 =item B<--proto>
 
-Specify http if needed (default: 'https')
+Specify http if needed (default: 'https').
 
 =item B<--api-path>
 
-API URL path (default: '/api')
+API URL path (default: '/zdx/v1')
 
-=item B<--key-id>
+=item B<--client-id>
 
-Key ID (see L<here|https://help.zscaler.com/zdx/managing-zdx-api-keys> for more details).
+Client ID for OneAPI authentication (see L<here|https://help.zscaler.com/zidentity/understanding-oneapi-authentication> for more details).
 
-=item B<--key-secret>
+=item B<--client-secret>
 
-Key secret (see L<here|https://help.zscaler.com/zdx/managing-zdx-api-keys> for more details).
+Client secret for OneAPI authentication (see L<here|https://help.zscaler.com/zidentity/understanding-oneapi-authentication> for more details).
 
 =item B<--timeout>
 

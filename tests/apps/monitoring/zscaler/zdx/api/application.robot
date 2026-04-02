@@ -11,13 +11,14 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 ${CMD}              ${CENTREON_PLUGINS}
-...         --plugin=apps::monitoring::zscaler::zdx::api::plugin
-...         --mode=application
-...         --hostname=${HOSTNAME}
-...         --port=${APIPORT}
-...         --proto=http
-...         --key-id=1
-...         --key-secret=1
+...                 --plugin=apps::monitoring::zscaler::zdx::api::plugin
+...                 --mode=application
+...                 --hostname=${HOSTNAME}
+...                 --port=${APIPORT}
+...                 --proto=http
+...                 --client-id=1
+...                 --client-secret=1
+...                 --auth-url=http://127.0.0.1:${APIPORT}/oauth2/v1/token
 
 
 *** Test Cases ***
