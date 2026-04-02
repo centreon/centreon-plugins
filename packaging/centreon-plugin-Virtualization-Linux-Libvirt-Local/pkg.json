@@ -1,5 +1,5 @@
 {
-    "pkg_name": "centreon-plugin-Operatingsystems-Linux-Libvirt-Local",
+    "pkg_name": "centreon-plugin-Virtualization-Linux-Libvirt-Local",
     "pkg_summary": "Centreon plugin to monitor Linux libvirt host and VMs using virsh command",
     "plugin_name": "centreon_linux_libvirt_local.pl",
     "files": [
