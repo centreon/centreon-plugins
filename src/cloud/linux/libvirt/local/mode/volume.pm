@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw(is_excluded convert_bytes trim);
 
-my @_volume_keys = qw(name capacity_bytes allocation_bytes usage_prct);
+my @_volume_keys = qw(pool_name volume_name capacity_bytes allocation_bytes usage_prct);
 
 sub custom_usage_output {
     my ($self, %options) = @_;
@@ -53,7 +53,7 @@ sub set_counters {
     $self->{maps_counters}->{volumes} = [
         { label => 'allocation', nlabel => 'volume.allocation.bytes', set => {
                 key_values => [ { name => 'allocation_bytes' }, { name => 'capacity_bytes' },
-                                { name => 'usage_prct' }, { name => 'name' } ],
+                                { name => 'usage_prct' }, { name => 'pool_name' }, { name => 'volume_name' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { value => 'allocation_bytes', template => '%s',
@@ -62,7 +62,7 @@ sub set_counters {
             }
         },
         { label => 'allocation-prct', nlabel => 'volume.allocation.percentage', set => {
-                key_values => [ { name => 'usage_prct' }, { name => 'name' } ],
+                key_values => [ { name => 'usage_prct' }, { name => 'pool_name' }, { name => 'volume_name' } ],
                 output_template => 'allocated: %.2f %%',
                 perfdatas => [
                     { value => 'usage_prct', template => '%.2f',
@@ -76,7 +76,7 @@ sub set_counters {
 sub prefix_volume_output {
     my ($self, %options) = @_;
 
-    my $str = "Volume '" . $options{instance_value}->{name} . "' ";
+    my $str = "Volume '" . $options{instance_value}->{pool_name} . '/' . $options{instance_value}->{volume_name} . "' ";
     $str .= "path: '" . $options{instance_value}->{path} . "', " if $self->{output}->is_verbose();
     return $str;
 }
@@ -156,10 +156,10 @@ sub manage_selection {
             ($alloc_val = $alloc_val) =~ s/,/./g;
             my $cap_bytes   = convert_bytes(value => $cap_val,   unit => $cap_unit);
             my $alloc_bytes = convert_bytes(value => $alloc_val, unit => $alloc_unit);
-            my $key = "${pool}/${vol_name}";
 
-            $self->{volumes}->{$key} = {
-                name             => $key,
+            $self->{volumes}->{$pool . '/' . $vol_name} = {
+                pool_name        => $pool,
+                volume_name      => $vol_name,
                 path             => $path,
                 capacity_bytes   => $cap_bytes,
                 allocation_bytes => $alloc_bytes,
@@ -182,7 +182,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(custom => $options{custom});
-    foreach my $item (sort { $a->{name} cmp $b->{name} } values %{$self->{volumes}}) {
+    foreach my $item (sort { $a->{pool_name} cmp $b->{pool_name} || $a->{volume_name} cmp $b->{volume_name} } values %{$self->{volumes}}) {
         $self->{output}->add_disco_entry(map { $_ => $item->{$_} } @_volume_keys);
     }
 }

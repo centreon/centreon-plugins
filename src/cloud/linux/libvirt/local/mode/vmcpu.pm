@@ -185,7 +185,7 @@ sub manage_selection {
             }
             $self->{vms}->{$current_vm} = {
                 display    => $current_vm,
-                global_cpu => {},
+                global_cpu => { cpu_time => 0, vcpus => 0 },
                 cpu        => {}
             };
             next

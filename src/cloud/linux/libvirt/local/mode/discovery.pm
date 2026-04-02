@@ -32,9 +32,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'prettify'          => { name => 'prettify', default => 0 },
-        'include-state:s'   => { name => 'include_state' },
-        'exclude-state:s'   => { name => 'exclude_state' }
+        'prettify'          => { name => 'prettify',      default => 0 },
+        'include-name:s'    => { name => 'include_name',  default => '' },
+        'exclude-name:s'    => { name => 'exclude_name',  default => '' },
+        'include-state:s'   => { name => 'include_state', default => '' },
+        'exclude-state:s'   => { name => 'exclude_state', default => '' }
     });
 
     return $self;
@@ -65,6 +67,7 @@ sub run {
         my ($id, $name, $state) = ($1, $2, $3);
         $state = lc($state) =~ s/\s+/_/gr; # Normalize state (e.g., "shut off" -> "shut_off")
 
+        next if is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name});
         next if is_excluded($state, $self->{option_results}->{include_state}, $self->{option_results}->{exclude_state});
 
         my $vm = {
@@ -116,6 +119,14 @@ Returns a JSON document suitable for Centreon Auto Discovery.
 =item B<--prettify>
 
 Format JSON output with indentation.
+
+=item B<--include-name>
+
+Filter VMs by name (regexp).
+
+=item B<--exclude-name>
+
+Exclude VMs whose name matches this regexp.
 
 =item B<--include-state>
 
