@@ -73,7 +73,7 @@ sub set_counters {
         {
             label => 'status',
             type  => COUNTER_KIND_TEXT,
-            critical_default => '%{expired} =~ /yes/i',
+            critical_default => '%{expired} =~ /yes/',
             set => {
                 key_values => [ { name => 'expired' }, { name => 'feature' } ],
                 output_template => 'expired: %s',
@@ -182,7 +182,7 @@ You can use the following variables: %{expired}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{expired} =~ /yes/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{expired} =~ /yes/').
 You can use the following variables: %{expired}
 
 =item B<--warning-expiration-days>

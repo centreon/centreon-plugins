@@ -47,7 +47,7 @@ sub set_counters {
         {
             label => 'local-state',
             type  => COUNTER_KIND_TEXT,
-            critical_default => '%{local_state} !~ /^(?:active|passive)$/i',
+            critical_default => '%{local_state} !~ /^(?:active|passive)$/',
             set => {
                 key_values => [ { name => 'local_state' }, { name => 'local_priority' } ],
                 closure_custom_calc => $self->can('custom_local_state_calc'),
@@ -58,7 +58,7 @@ sub set_counters {
         {
             label => 'peer-state',
             type  => COUNTER_KIND_TEXT,
-            critical_default => '%{peer_state} !~ /^(?:active|passive)$/i || %{peer_conn_status} ne "up"',
+            critical_default => '%{peer_state} !~ /^(?:active|passive)$/ || %{peer_conn_status} ne "up"',
             set => {
                 key_values => [ { name => 'peer_state' }, { name => 'peer_priority' }, { name => 'peer_conn_status' } ],
                 closure_custom_calc => $self->can('custom_peer_state_calc'),
@@ -69,7 +69,7 @@ sub set_counters {
         {
             label => 'state-sync',
             type  => COUNTER_KIND_TEXT,
-            critical_default => '%{state_sync} !~ /^synchronized|complete$/i',
+            critical_default => '%{state_sync} !~ /^synchronized|complete$/',
             set => {
                 key_values => [ { name => 'state_sync' } ],
                 output_template => 'state sync: %s',
@@ -226,7 +226,7 @@ You can use the following variables: %{local_state}, %{local_priority}, %{local_
 
 =item B<--critical-local-state>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{local_state} !~ /^(?:active|passive)$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{local_state} !~ /^(?:active|passive)$/').
 You can use the following variables: %{local_state}, %{local_priority}, %{local_state_last}
 
 =item B<--warning-peer-state>
@@ -236,7 +236,7 @@ You can use the following variables: %{peer_state}, %{peer_priority}, %{peer_con
 
 =item B<--critical-peer-state>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{peer_state} !~ /^(?:active|passive)$/i || %{peer_conn_status} ne "up"').
+Define the conditions to match for the status to be CRITICAL (default: '%{peer_state} !~ /^(?:active|passive)$/ || %{peer_conn_status} ne "up"').
 You can use the following variables: %{peer_state}, %{peer_priority}, %{peer_conn_status}, %{peer_state_last}
 
 =item B<--warning-state-sync>
@@ -246,7 +246,7 @@ You can use the following variables: %{state_sync}
 
 =item B<--critical-state-sync>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state_sync} !~ /^synchronized|complete$/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{state_sync} !~ /^synchronized|complete$/').
 You can use the following variables: %{state_sync}
 
 =item B<--warning-ha1-link-status>
