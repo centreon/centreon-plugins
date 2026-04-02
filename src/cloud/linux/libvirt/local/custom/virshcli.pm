@@ -22,6 +22,7 @@ package cloud::linux::libvirt::local::custom::virshcli;
 
 use strict;
 use warnings;
+use centreon::plugins::ssh;
 use centreon::plugins::misc;
 
 sub new {
@@ -38,6 +39,7 @@ sub new {
 
     unless ($options{noptions}) {
         $options{options}->add_options(arguments => {
+            'hostname:s'    => { name => 'hostname',    default => '' },
             'connect-uri:s' => { name => 'connect_uri', default => 'qemu:///system?socket=/var/run/libvirt/libvirt-sock-ro' },
             'virsh-path:s'  => { name => 'virsh_path',  default => '/usr/bin' },
             'timeout:s'     => { name => 'timeout',     default => 30 },
@@ -49,6 +51,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{custommode_name} = $options{custommode_name};
+    $self->{ssh} = centreon::plugins::ssh->new(%options);
 
     return $self;
 }
@@ -57,7 +60,17 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{$_} = $self->{option_results}->{$_}
-        foreach (qw(connect_uri virsh_path timeout sudo));
+        foreach qw/connect_uri virsh_path timeout sudo hostname/;
+
+    $self->{ssh}->check_options(option_results => $self->{option_results})
+	if $self->{hostname} ne '';
+
+    centreon::plugins::misc::check_security_command(
+        output => $self->{output},
+        command => 'virsh',
+        command_options => '',
+        command_path => $self->{virsh_path}
+    );
 
     return 0;
 }
@@ -66,6 +79,7 @@ sub get_identifier {
     my ($self, %options) = @_;
 
     my $id = $self->{connect_uri} =~ s/[^a-zA-Z0-9_-]/_/gr;
+    $id.=':'.$self->{hostname} if $self->{hostname} ne '';
     return $id;
 }
 
@@ -73,16 +87,32 @@ sub execute_command {
     my ($self, %options) = @_;
 
     # $options{virsh_args}: virsh subcommand and its arguments (e.g. 'list --all')
-    my ($stdout) = centreon::plugins::misc::execute(
-        output          => $self->{output},
-        sudo            => $self->{sudo},
-        options         => { timeout => $self->{timeout} },
-        command         => 'virsh',
-        command_path    => $self->{virsh_path},
-        command_options => '--connect ' . $self->{connect_uri} . ' ' . $options{virsh_args},
-        no_quit         => $options{no_quit},
-        no_shell_interpretation => 1
-    );
+    my $command_options = '--connect ' . $self->{connect_uri} . ' ' . $options{virsh_args};
+
+    my ($stdout, $exit_code);
+    if ($self->{hostname} ne '') {
+        ($stdout, $exit_code) = $self->{ssh}->execute(
+            hostname => $self->{hostname},
+            sudo => $self->{sudo},
+            command => 'virsh',
+            command_path => $self->{virsh_path},
+            command_options => $command_options,
+            timeout => $self->{timeout},
+            no_quit => $options{no_quit}
+        );
+
+    } else {
+	($stdout, $exit_code) = centreon::plugins::misc::execute(
+            output          => $self->{output},
+	    sudo            => $self->{sudo},
+            options         => { timeout => $self->{timeout} },
+	    command         => 'virsh',
+            command_path    => $self->{virsh_path},
+	    command_options => $command_options,
+            no_quit         => $options{no_quit},
+	    no_shell_interpretation => 1
+        );
+    }
 
     $self->{output}->output_add(long_msg => "virsh response: $stdout", debug => 1);
 
@@ -102,6 +132,10 @@ C<virshcli>
 Libvirt C<virsh> CLI custom mode.
 
 =over 8
+
+=item B<--hostname>
+
+Hostname to connect when using the SSH backend.
 
 =item B<--connect-uri>
 

@@ -4,6 +4,8 @@
     "plugin_name": "centreon_linux_libvirt_local.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
         "cloud/linux/libvirt/local/"
     ]
 }
