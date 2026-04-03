@@ -328,11 +328,11 @@ API URL path (default: '/zdx/v1')
 
 =item B<--client-id>
 
-Client ID for OneAPI authentication (see L<here|https://help.zscaler.com/zidentity/understanding-oneapi-authentication> for more details).
+Client ID for OneAPI authentication (see https://help.zscaler.com/zidentity/understanding-oneapi-authentication for more details).
 
 =item B<--client-secret>
 
-Client secret for OneAPI authentication (see L<here|https://help.zscaler.com/zidentity/understanding-oneapi-authentication> for more details).
+Client secret for OneAPI authentication (see https://help.zscaler.com/zidentity/understanding-oneapi-authentication for more details).
 
 =item B<--timeout>
 
