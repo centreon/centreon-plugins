@@ -71,7 +71,7 @@ sub get_token {
     $self->settings();
 
     my $has_cache_file = $self->{cache}->read(
-        statefile => 'zdx_token_' . md5_hex(
+        statefile => 'zdx_token_' . sha256_hex(
             $self->{auth_url}
                 . '_' . $self->{client_id})
     );
@@ -91,7 +91,7 @@ sub get_token {
         method          => 'POST',
         full_url        => $self->{auth_url},
         header          => [ 'Content-Type: application/x-www-form-urlencoded' ],
-        query_form_post => "grant_type=client_credentials&client_id=" . $self->{client_id}
+        query_form_post => "grant_type=client_credentials&client_id=" . uri_escape($self->{client_id})
             . "&client_secret=" . $self->{client_secret},
     );
     my $decoded_content = json_decode($content, output => $self->{output});

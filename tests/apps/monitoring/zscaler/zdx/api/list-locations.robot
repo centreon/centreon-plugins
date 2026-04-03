@@ -18,7 +18,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --client-id=1
 ...                 --client-secret=1
-...                 --auth-url=http://127.0.0.1:${APIPORT}/oauth2/v1/token
+...                 --auth-url=http://${HOSTNAME}:${APIPORT}/oauth2/v1/token
 
 
 *** Test Cases ***
