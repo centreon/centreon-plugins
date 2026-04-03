@@ -92,7 +92,7 @@ sub get_token {
         full_url        => $self->{auth_url},
         header          => [ 'Content-Type: application/x-www-form-urlencoded' ],
         query_form_post => "grant_type=client_credentials&client_id=" . uri_escape($self->{client_id})
-            . "&client_secret=" . $self->{client_secret},
+            . "&client_secret=" . uri_escape($self->{client_secret}),
     );
     my $decoded_content = json_decode($content, output => $self->{output});
 
