@@ -135,14 +135,16 @@ sub get_unique_app {
     my $content = $self->{http}->request(
         method     => 'GET',
         get_params => $self->{get_params},
+        unknown_status => "%{http_code} < 200 or %{http_code} > 404",
         url_path   => $self->{option_results}->{api_path} . '/apps/' . $options{application_id}
     );
     my $app = json_decode($content, output => $self->{output});
+
     return {
-        id          => $app->{id},
-        name        => $app->{name},
-        score       => $app->{score},
-        total_users => $app->{stats}->{active_users}
+        id          => $app->{id} // $options{application_id},
+        name        => $app->{name} // "not found",
+        score       => $app->{score} // -1,
+        total_users => $app->{stats}->{active_users} // 0
     }
 }
 
@@ -189,6 +191,7 @@ sub get_unique_app_metrics {
         }
     }
 
+
     return $data;
 }
 
@@ -227,6 +230,12 @@ sub get_apps {
             total_users => $app->{total_users}
         };
     }
+    push @stats, {
+            id          => $options{application_id} // -1,
+            name        => $options{include_application_name} //"not found",
+            score       => -1,
+            total_users => 0
+        } unless @stats;
 
     return \@stats;
 }
