@@ -25,7 +25,8 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use DateTime;
-use Digest::MD5 qw(md5_hex);
+use URI::Escape;
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::misc qw(json_decode is_empty value_of is_excluded);
 
 sub new {
