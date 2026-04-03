@@ -261,12 +261,26 @@ sub get_locations {
 
 sub set_defaults {}
 
+sub from_fqdn_to_url {
+    my $input = shift;
+    # remove trailing /
+    $input =~ s/\/$//;
+    # if url is already complete, return
+    return $input if $input =~ /^https?:\/\/[\w\.:]+\/.+$/;
+    # add default auth path if nothing after fqdn
+    $input .= "/oauth2/v1/token" if $input =~ /^(https?:\/\/)?[\w\.:]+$/;
+    # add default auth proto if no proto given
+    $input = "https://" . $input if $input !~ /^https?:\/\//;
+    return $input;
+}
+
 sub check_options {
     my ($self, %options) = @_;
 
     $self->{$_} = $self->{option_results}->{$_} foreach qw(hostname port proto timeout auth_url api_path client_id client_secret);
     $self->{output}->option_exit(short_msg => "Mandatory option 'auth-url' is missing for OneAPI authentication.") if ($self->{auth_url} eq '');
 
+    $self->{auth_url} = from_fqdn_to_url($self->{auth_url});
     foreach (qw(client_id client_secret)) {
         $self->{output}->option_exit(short_msg => "Mandatory option '$_' is missing for OneAPI authentication.") if ($self->{$_} eq '');
         $self->{output}->option_exit(short_msg => "Option '$_' contains illegal characters.") if ($self->{$_} =~ /([\b\f\n\r\t\"\\]+)/);
@@ -304,11 +318,11 @@ Zscaler Digital Experience (ZDX) Rest API
 
 =item B<--auth-url>
 
-Authentication URL to get a token from (mandatory).
+Authentication URL (or FQDN) to get a token from (mandatory).
 
 Depends on your Zscaler customer name.
 
-Example: C<https://company-name.zslogin.net/oauth2/v1/token>.
+Example: C<https://company-name.zslogin.net/oauth2/v1/token> or C<company-name.zslogin.net>.
 
 =item B<--hostname>
 
