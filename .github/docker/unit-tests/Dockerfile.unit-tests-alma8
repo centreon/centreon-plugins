@@ -56,4 +56,6 @@ mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/
 NONINTERACTIVE_TESTING=1 PERL_MM_USE_DEFAULT=1 cpan Test2::Harness UUID
 rm -fr /root/.cpan*
+
+sed -i 's/grep { \/\^CURL\/x } keys %{Net::Curl::Easy::};/grep { \/^CURL\/x \&\& !\/_AWS_\/ } keys %{Net::Curl::Easy::};/' /usr/local/lib64/perl5/Net/Curl/Easy.pm
 EOF
