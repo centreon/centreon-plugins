@@ -10,6 +10,9 @@ inputs:
   arch:
     description: "The architecture (amd64 or arm64)"
     required: true
+  stability:
+    description: "The repository stability (stable, testing, unstable)"
+    required: true
 
 runs:
   using: "composite"
@@ -19,46 +22,58 @@ runs:
       name: Install zstd, perl and Centreon repositories
       env:
         DISTRIB: ${{ inputs.distrib }}
+        STABILITY: ${{ inputs.stability }}
       run: |
         dnf install -y zstd perl epel-release 'dnf-command(config-manager)' perl-App-cpanminus
         dnf config-manager --set-enabled powertools || true # alma 8
         dnf config-manager --set-enabled crb || true # alma 9
+        # Map stability to repo channel: stable → stable, testing → testing, anything else → unstable
+        case "$STABILITY" in
+          stable|testing) REPO_STABILITY="$STABILITY" ;;
+          *) REPO_STABILITY="unstable" ;;
+        esac
         # Import Centreon GPG key
         GPG_KEY_URL="https://yum-gpg.centreon.com/RPM-GPG-KEY-CES"
         curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
         rpm --import RPM-GPG-KEY-CES
-        # Add Centreon stable repository so that pre-existing packaged dependencies are available
+        # Add Centreon repository matching the current stability so that pre-existing packaged dependencies are available
         {
-          echo '[centreon-plugins-stable]'
-          echo 'name=centreon plugins stable x86_64'
-          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/stable/x86_64"
+          echo "[centreon-plugins-${REPO_STABILITY}]"
+          echo "name=centreon plugins ${REPO_STABILITY} x86_64"
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${REPO_STABILITY}/x86_64"
           echo 'enabled=1'
           echo 'gpgcheck=1'
           echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
           echo ''
-          echo '[centreon-plugins-stable-noarch]'
-          echo 'name=centreon plugins stable noarch'
-          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/stable/noarch"
+          echo "[centreon-plugins-${REPO_STABILITY}-noarch]"
+          echo "name=centreon plugins ${REPO_STABILITY} noarch"
+          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${REPO_STABILITY}/noarch"
           echo 'enabled=1'
           echo 'gpgcheck=1'
           echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
-        } > /etc/yum.repos.d/centreon-plugins-stable.repo
+        } > /etc/yum.repos.d/centreon-plugins-${REPO_STABILITY}.repo
       shell: bash
 
     - if: ${{ inputs.package_extension == 'deb' }}
       name: Install zstd, perl and Centreon repositories
       env:
         DISTRIB: ${{ inputs.distrib }}
+        STABILITY: ${{ inputs.stability }}
       run: |
         export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y zstd perl wget gpg apt-utils procps build-essential cpanminus
         wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
-        # Add Centreon stable repository so that pre-existing packaged dependencies are available
+        # Map stability to repo channel: stable → stable, testing → testing, anything else → unstable
+        case "$STABILITY" in
+          stable|testing) REPO_STABILITY="$STABILITY" ;;
+          *) REPO_STABILITY="unstable" ;;
+        esac
+        # Add Centreon repository matching the current stability so that pre-existing packaged dependencies are available
         if [[ "$DISTRIB" == "jammy" || "$DISTRIB" == "noble" ]]; then
-          repo="ubuntu-plugins-stable"
+          repo="ubuntu-plugins-${REPO_STABILITY}"
         else
-          repo="apt-plugins-stable"
+          repo="apt-plugins-${REPO_STABILITY}"
         fi
         echo "deb https://packages.centreon.com/$repo/ $DISTRIB main" | tee /etc/apt/sources.list.d/centreon-plugins.list
         # Avoid apt to clean packages cache directory
