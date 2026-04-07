@@ -50,9 +50,9 @@ echo 'export PATH="~/node_modules/.bin/:$PATH"' >> ~/.bashrc
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/apt-standard-24.10-stable bookworm main" | tee /etc/apt/sources.list.d/centreon.list
-echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins-stable.list
+echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins-testing.list
+echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins-unstable.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 
 # Update
