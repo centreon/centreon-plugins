@@ -48,7 +48,11 @@ curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bas
 sed -e '/[ -z "\$PS1" ] && return/ s/^#*/#/' -i \$HOME/.bashrc
 source ~/.bashrc
 cd /usr/local/src
-pnpm install --frozen-lockfile
+pnpm install \
+  --frozen-lockfile \
+  --config.trustPolicy=no-downgrade \
+  --config.minimumReleaseAge=2880 \
+  --config.blockExoticSubdeps=true
 
 # Add Centreon plugins repositories
 echo "deb https://packages.centreon.com/ubuntu-standard-24.04-stable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon.list
