@@ -41,17 +41,20 @@ from cpan_matrix_lib import (
     extras_from_partials,
     get_cpanm_infos,
     dist_to_deb_package,
-    get_stable_rpm_packages,
-    get_stable_deb_packages,
+    get_centreon_rpm_packages,
+    get_centreon_deb_packages,
 )
 
 
-def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
+def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None, stability="unstable"):
     """Return (rpm_matrix, deb_matrix) as dicts with an 'include' list each.
 
     Generates flat include-only matrices: one entry per (lib, distrib/build_name)
     combination that actually needs to be built. No 2D cross-product, no excludes.
     """
+    # Map stability to the actual repo channel: stable → stable, testing → testing, anything else → unstable
+    repo_stability = stability if stability in ("stable", "testing") else "unstable"
+
     rpm_partials = {}  # distrib      → partial matrix data
     deb_partials = {}  # check_distrib → partial matrix data
 
@@ -104,14 +107,14 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
         for check_distrib in DEB_CHECK_DISTRIB_TO_BUILD_NAMES:
             deb_lib_extras.setdefault(check_distrib, {}).update(cpanm_extras)
 
-    # Optionally query Centreon stable repository
+    # Optionally query Centreon repository for the target stability
     rpm_stable: dict = {}  # distrib → {cpan_dist_name: version}
     deb_stable: dict = {}  # (check_distrib, arch) → {pkg_name: version}
     if artifactory_url:
-        print("Checking Centreon stable repository…", file=sys.stderr)
+        print(f"Checking Centreon {repo_stability} repository…", file=sys.stderr)
         for distrib in RPM_DISTRIBS:
-            rpm_stable[distrib] = get_stable_rpm_packages(artifactory_url, distrib)
-            print(f"  RPM {distrib}: {len(rpm_stable[distrib])} packages in stable", file=sys.stderr)
+            rpm_stable[distrib] = get_centreon_rpm_packages(artifactory_url, distrib, repo_stability)
+            print(f"  RPM {distrib}: {len(rpm_stable[distrib])} packages in {repo_stability}", file=sys.stderr)
         seen: set = set()
         for bn_entry in DEB_BUILD_NAME_INCLUDES:
             check_distrib = DEB_IMAGE_TO_CHECK_DISTRIB[bn_entry["image"]]
@@ -120,12 +123,11 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
             if key not in seen:
                 seen.add(key)
                 meta = deb_distrib_meta.get(check_distrib, {})
-                deb_stable[key] = get_stable_deb_packages(
-                    artifactory_url, check_distrib, arch,
+                deb_stable[key] = get_centreon_deb_packages(
+                    artifactory_url, check_distrib, repo_stability, arch,
                     family=meta.get("family", "debian"),
-                    suffix=meta.get("suffix", ""),
                 )
-                print(f"  DEB {check_distrib} {arch}: {len(deb_stable[key])} packages in stable",
+                print(f"  DEB {check_distrib} {arch}: {len(deb_stable[key])} packages in {repo_stability}",
                       file=sys.stderr)
 
     # ── RPM matrix ────────────────────────────────────────────────────────────
@@ -155,7 +157,7 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
                 if stable_version is not None:
                     required = rpm.get("version", "") or cpan_version
                     if versions_match(stable_version, required):
-                        print(f"  Skip RPM {name}/{distrib}: Centreon stable has v{stable_version}",
+                        print(f"  Skip RPM {name}/{distrib}: Centreon {repo_stability} has v{stable_version}",
                               file=sys.stderr)
                         continue
             rpm_includes.append({**RPM_DEFAULTS, **distrib_entry, "name": name,
@@ -193,7 +195,7 @@ def merge_matrices(partial_matrices_dir, libraries, artifactory_url=None):
                 if stable_version is not None:
                     required = deb.get("version", "") or cpan_version
                     if versions_match(stable_version, required):
-                        print(f"  Skip DEB {name}/{build_name}: Centreon stable has v{stable_version}",
+                        print(f"  Skip DEB {name}/{build_name}: Centreon {repo_stability} has v{stable_version}",
                               file=sys.stderr)
                         continue
             deb_includes.append({**DEB_DEFAULTS, **bn_entry, "name": name,
@@ -217,8 +219,14 @@ def main():
         "--artifactory-url", metavar="URL",
         help="Base URL of the public Artifactory instance "
              "(e.g. https://packages.centreon.com). When provided, packages already "
-             "present in the Centreon stable repository at the expected version are "
+             "present in the Centreon repository at the expected version are "
              "skipped (not rebuilt).",
+    )
+    parser.add_argument(
+        "--stability", metavar="STABILITY", default="unstable",
+        help="Stability from the CI environment (stable, testing, unstable, canary, …). "
+             "Mapped to the repo channel: stable → stable, testing → testing, "
+             "anything else → unstable.",
     )
     args = parser.parse_args()
 
@@ -228,6 +236,7 @@ def main():
     rpm_matrix, deb_matrix = merge_matrices(
         args.partial_matrices_dir, libraries,
         artifactory_url=args.artifactory_url,
+        stability=args.stability,
     )
 
     github_output = os.environ.get("GITHUB_OUTPUT", "")
