@@ -256,7 +256,8 @@ SKIP: {
                          password => 'Pa$$w@rd' , curl_opt => [ "CURLOPT_AWS_SIGV4 => osc" ] } };
 
     eval "CURLOPT_AWS_SIGV4";
-    if ($@) {
+    my $curl = `curl --aws-sigv4 2>&1` // '';
+    if ($@ || $curl =~ /is unknown/) {
         print "test ".$test->{title}."\n";
         skip "CURLOPT_AWS_SIGV4 is unsupported on this platform", 5;
     }
