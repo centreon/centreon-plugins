@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package centreon::plugins::output;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/mask_secrets/;
 
 sub new {
     my ($class, %options) = @_;
@@ -51,6 +51,7 @@ sub new {
         'verbose'                 => { name => 'verbose' },
         'debug'                   => { name => 'debug' },
         'debug-stream'            => { name => 'debug_stream' },
+        'show-password'           => { name => 'show_password' },
         'opt-exit:s'              => { name => 'opt_exit', default => 'unknown' },
         'output-xml'              => { name => 'output_xml' },
         'output-json'             => { name => 'output_json' },
@@ -226,6 +227,8 @@ sub output_add {
 
     if (defined($options->{short_msg})) {
         chomp $options->{short_msg};
+        $options->{short_msg} = mask_secrets($options->{short_msg}) unless $options->{show_password};
+
         if (defined($self->{global_short_concat_outputs}->{uc($options->{severity})})) {
             $self->{global_short_concat_outputs}->{uc($options->{severity})} .= $options->{separator} . $options->{short_msg};
         } else {
@@ -237,10 +240,13 @@ sub output_add {
     }
 
     if (defined($options->{long_msg})) {
-        chomp $options->{long_msg};
+        if (($options->{debug} == 0 || defined($self->{option_results}->{debug})) || defined($self->{option_results}->{debug_stream})) {
+            chomp $options->{long_msg};
+            $options->{long_msg} = mask_secrets($options->{long_msg}) unless $options->{show_password};
 
-        push @{$self->{global_long_output}}, $options->{long_msg} if ($options->{debug} == 0 || defined($self->{option_results}->{debug}));
-        print $options->{long_msg} . "\n" if (defined($self->{option_results}->{debug_stream}));
+            push @{$self->{global_long_output}}, $options->{long_msg} if ($options->{debug} == 0 || defined($self->{option_results}->{debug}));
+            print $options->{long_msg} . "\n" if (defined($self->{option_results}->{debug_stream}));
+        }
     }
 }
 
@@ -995,6 +1001,13 @@ sub is_debug {
     return 0;
 }
 
+sub show_password {
+    my ($self) = @_;
+
+    return $self->{option_results}->{show_password}
+}
+
+
 sub load_eval {
     my ($self) = @_;
 
@@ -1570,6 +1583,12 @@ Display extended status information (long output).
 =item B<--debug>
 
 Display debug messages.
+
+=item B<--show-password>
+
+By default this monitoring connector try to mask sensitive information contained in external commands from debug output by replacing then with C<***>.
+Use this option to disable masking.
+However be aware that even without using this option some sensitive information may still be displayed in debug logs.
 
 =item B<--filter-perfdata>
 
