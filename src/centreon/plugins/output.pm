@@ -227,7 +227,7 @@ sub output_add {
 
     if (defined($options->{short_msg})) {
         chomp $options->{short_msg};
-        $options->{short_msg} = mask_secrets($options->{short_msg}) unless $options->{show_password};
+        $options->{short_msg} = mask_secrets($options->{short_msg}) if defined $options->{show_password} && !$options->{show_password};
 
         if (defined($self->{global_short_concat_outputs}->{uc($options->{severity})})) {
             $self->{global_short_concat_outputs}->{uc($options->{severity})} .= $options->{separator} . $options->{short_msg};
@@ -242,7 +242,7 @@ sub output_add {
     if (defined($options->{long_msg})) {
         if (($options->{debug} == 0 || defined($self->{option_results}->{debug})) || defined($self->{option_results}->{debug_stream})) {
             chomp $options->{long_msg};
-            $options->{long_msg} = mask_secrets($options->{long_msg}) unless $options->{show_password};
+            $options->{long_msg} = mask_secrets($options->{long_msg}) if defined $options->{show_password} && !$options->{show_password};
 
             push @{$self->{global_long_output}}, $options->{long_msg} if ($options->{debug} == 0 || defined($self->{option_results}->{debug}));
             print $options->{long_msg} . "\n" if (defined($self->{option_results}->{debug_stream}));
