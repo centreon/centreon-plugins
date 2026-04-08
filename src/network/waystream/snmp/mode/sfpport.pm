@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::statefile;
 
 sub sfp_long_output {
     my ($self, %options) = @_;
@@ -154,7 +155,7 @@ sub set_counters {
             key_values      => [ { name => 'bias_current' } ],
             output_template => 'Bias Current : %.2f mA',
             perfdatas       => [
-                { template => '%.2f', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
+                { template => '%.2f', unit => 'mA', label_extra_instance => 1 }
             ]
         }
         },
@@ -163,7 +164,7 @@ sub set_counters {
             output_template     => 'Bitrate : %s %s/s',
             output_change_bytes => 2,
             perfdatas           => [
-                { template => '%s', unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                { template => '%s', unit => 'b/s', label_extra_instance => 1 }
             ]
         }
         }
@@ -197,9 +198,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 'filter-port:s' => { name => 'filter_port' } });
+    $options{options}->add_options(
+        arguments => {
+            'filter-port:s'       => { name => 'filter_port' },
+            'filter-serial:s'     => { name => 'filter_serial' },
+            'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
+            'show-cache'          => { name => 'show_cache' },
+        }
+    );
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+    $self->{statefile_cache}->check_options(%options);
 }
 
 my $map_status = {
@@ -229,74 +245,132 @@ my $mapping = {
     sfpTempStatus          => { oid => '.1.3.6.1.4.1.9303.4.1.4.1.11', map => $map_gen_status },#  wsSFPTempStatus
 };
 
-sub manage_selection {
+sub reload_cache {
     my ($self, %options) = @_;
+    my $datas = {};
 
-    my $oid_port = '.1.3.6.1.4.1.9303.4.1.4.1';# wsSFPEntry
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_port, nothing_quit => 1);
+    $datas->{last_timestamp} = time();
+    $datas->{sfp} = {};
 
-    $self->{sfp} = {};
-    foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{sfpStatus}->{oid}\.(.*)$/);
-        my $instance = $1;
+    my $oid_wsSFPEntry = '.1.3.6.1.4.1.9303.4.1.4.1';
+    my $oid_wsSFPSerialNumber = '.1.3.6.1.4.1.9303.4.1.4.1.53';
 
-        if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
-            $instance !~ /$self->{option_results}->{filter_port}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $instance . "': no matching filter.", debug => 1);
-            next;
-        }
+    my $result = $options{snmp}->get_table(
+        oid   => $oid_wsSFPEntry,
+        start => $oid_wsSFPSerialNumber
+    );
 
-        $self->{sfp}->{$instance} = {
-            instance    => $instance,
-            status      => { port => $instance },
-            perf        => {},
-            temperature => {}
-        };
+    foreach my $key (keys %$result) {
+        next if ($key !~ /$oid_wsSFPSerialNumber\.([0-9]+)$/);
+        $datas->{sfp}->{$1} = [
+            $self->{output}->decode($result->{$oid_wsSFPSerialNumber . '.' . $1})
+        ];
     }
 
-    if (scalar(keys %{$self->{sfp}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No sfp port found.');
+    if (scalar(keys %{$datas->{sfp}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
         $self->{output}->option_exit();
     }
 
-    $options{snmp}->load(
-        oids            => [ map($_->{oid}, values(%$mapping)) ],
-        instances       => [ map($_->{instance}, values(%{$self->{sfp}})) ],
-        instance_regexp => '^(.*)$'
-    );
-    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    $self->{statefile_cache}->write(data => $datas);
+    return $datas->{sfp};
+}
 
-    foreach (keys %{$self->{sfp}}) {
+sub get_selection {
+    my ($self, %options) = @_;
+
+    # init cache file
+    my $has_cache_file = $self->{statefile_cache}->read(statefile =>
+        'cache_snmpstandard_' . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
+    if (defined($self->{option_results}->{show_cache})) {
+        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
+        $self->{output}->option_exit();
+    }
+
+    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
+    my $sfp_ports = $self->{statefile_cache}->get(name => 'sfp');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || !defined($sfp_ports) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+        $sfp_ports = $self->reload_cache(snmp => $options{snmp});
+        $self->{statefile_cache}->read();
+    }
+
+    my $results = {};
+    foreach (keys %$sfp_ports) {
+        if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
+            $_ !~ /$self->{option_results}->{filter_port}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $_ . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
+            $sfp_ports->{$_}->[0] !~ /$self->{option_results}->{filter_serial}/) {
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $sfp_ports->{$_}->[0] . "': no matching filter.",
+                debug    => 1
+            );
+            next;
+        }
+
+        $results->{$_} = $sfp_ports->{$_};
+    }
+
+    if (scalar(keys %$results) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No sfp ports found. Can be: filters, cache file.");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $sfp_ports = $self->get_selection(snmp => $options{snmp});
+
+    $options{snmp}->load(
+        oids         => [ map($_->{oid}, values(%$mapping)) ],
+        instances    => [ keys %$sfp_ports ],
+        nothing_quit => 1
+    );
+    my $snmp_result = $options{snmp}->get_leef();
+
+    $self->{sfp} = {};
+
+    foreach (keys %$sfp_ports) {
+        my $instance = $_;
+
         my $result = $options{snmp}->map_instance(
             mapping  => $mapping,
             results  => $snmp_result,
-            instance => $self->{sfp}->{$_}->{instance}
+            instance => $instance
         );
-        $self->{sfp}->{$_}->{status}->{status} = $result->{sfpStatus};
-        $self->{sfp}->{$_}->{status}->{temp_status} = $result->{sfpTempStatus};
-        $self->{sfp}->{$_}->{status}->{tx_power_status} = $result->{sfpTxPowerStatus};
-        $self->{sfp}->{$_}->{status}->{rx_power_status} = $result->{sfpRxPowerStatus};
-        $self->{sfp}->{$_}->{status}->{bias_status} = $result->{sfpTxBiasCurrentStatus};
-        $self->{sfp}->{$_}->{status}->{volt_status} = $result->{sfpVoltStatus};
-        $self->{sfp}->{$_}->{status}->{serial} = $result->{sfpSerialNumber};
 
-        $self->{sfp}->{$_}->{serial} = $result->{sfpSerialNumber};
+        $self->{sfp}->{$instance}->{status}->{port} = $instance;
+        $self->{sfp}->{$instance}->{status}->{status} = $result->{sfpStatus};
+        $self->{sfp}->{$instance}->{status}->{temp_status} = $result->{sfpTempStatus};
+        $self->{sfp}->{$instance}->{status}->{tx_power_status} = $result->{sfpTxPowerStatus};
+        $self->{sfp}->{$instance}->{status}->{rx_power_status} = $result->{sfpRxPowerStatus};
+        $self->{sfp}->{$instance}->{status}->{bias_status} = $result->{sfpTxBiasCurrentStatus};
+        $self->{sfp}->{$instance}->{status}->{volt_status} = $result->{sfpVoltStatus};
+        $self->{sfp}->{$instance}->{status}->{serial} = $result->{sfpSerialNumber};
 
-        $self->{sfp}->{$_}->{perf}->{tx_output} = $1 if ($result->{sfpTxPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{perf}->{tx_output} /= 1000 if defined($self->{sfp}->{$_}->{perf}->{tx_output});
-        $self->{sfp}->{$_}->{perf}->{tx_output_dbm} = $1 if ($result->{sfpTxdBmPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{perf}->{tx_output_dbm} /= 1000 if defined($self->{sfp}->{$_}->{perf}->{tx_output_dbm});
-        $self->{sfp}->{$_}->{perf}->{rx_input} = $1 if ($result->{sfpRxPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{perf}->{rx_input} /= 1000 if defined($self->{sfp}->{$_}->{perf}->{rx_input});
-        $self->{sfp}->{$_}->{perf}->{rx_input_dbm} = $1 if ($result->{sfpRxdBmPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{perf}->{rx_input_dbm} /= 1000 if defined($self->{sfp}->{$_}->{perf}->{rx_input_dbm});
-        $self->{sfp}->{$_}->{perf}->{bias_current} = $1 if ($result->{sfpTxBiasCurrent} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{perf}->{bitrate} = $1 if ($result->{sfpBitRate} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{perf}->{bitrate} *= 1000000 if defined($self->{sfp}->{$_}->{perf}->{bitrate});;#Mbps
+        $self->{sfp}->{$instance}->{serial} = $result->{sfpSerialNumber};
 
-        $self->{sfp}->{$_}->{temperature}->{temperature} = $1 if ($result->{sfpTemp} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{voltage}->{volt} = $1 if ($result->{sfpVolt} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{voltage}->{volt} /= 1000 if defined($self->{sfp}->{$_}->{voltage}->{volt});
+        $self->{sfp}->{$instance}->{perf}->{tx_output} = $1 if ($result->{sfpTxPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{perf}->{tx_output} /= 1000 if defined($self->{sfp}->{$instance}->{perf}->{tx_output});
+        $self->{sfp}->{$instance}->{perf}->{tx_output_dbm} = $1 if ($result->{sfpTxdBmPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{perf}->{tx_output_dbm} /= 1000 if defined($self->{sfp}->{$instance}->{perf}->{tx_output_dbm});
+        $self->{sfp}->{$instance}->{perf}->{rx_input} = $1 if ($result->{sfpRxPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{perf}->{rx_input} /= 1000 if defined($self->{sfp}->{$instance}->{perf}->{rx_input});
+        $self->{sfp}->{$instance}->{perf}->{rx_input_dbm} = $1 if ($result->{sfpRxdBmPower} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{perf}->{rx_input_dbm} /= 1000 if defined($self->{sfp}->{$instance}->{perf}->{rx_input_dbm});
+        $self->{sfp}->{$instance}->{perf}->{bias_current} = $1 if ($result->{sfpTxBiasCurrent} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{perf}->{bitrate} = $1 if ($result->{sfpBitRate} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{perf}->{bitrate} *= 1000000 if defined($self->{sfp}->{$instance}->{perf}->{bitrate});;#Mbps
+
+        $self->{sfp}->{$instance}->{temperature}->{temperature} = $1 if ($result->{sfpTemp} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{voltage}->{volt} = $1 if ($result->{sfpVolt} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{voltage}->{volt} /= 1000 if defined($self->{sfp}->{$instance}->{voltage}->{volt});
     }
 }
 
@@ -313,6 +387,10 @@ Check SFP port.
 =item B<--filter-port>
 
 Filter ports by index (can be a regexp).
+
+=item B<--filter-serial>
+
+Filter ports by serial (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -332,6 +410,14 @@ You can use the following variables: %{status}, %{temp_status}, %{tx_power_statu
 
 Thresholds.
 Can be: C<rx-input-power (mW)>, C<rx-input-power-dbm (dBm)>, C<tx-output-power (mW)>, C<tx-output-power-dbm (dBm)>, C<bias-current (mA)>, C<temperature (C)>, C<voltage (V)>, C<bitrate (b/s)>.
+
+=item B<--reload-cache-time>
+
+Time in minutes before reloading cache file (default: 180).
+
+=item B<--show-cache>
+
+Display cache interface data.
 
 =back
 
