@@ -1,0 +1,329 @@
+#!/bin/sh
+#
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+# Mock virsh binary for Robot Framework tests.
+# Called as: virsh --connect <uri> <subcommand> [args...]
+#
+
+# Skip --connect <uri> if present
+if [ "$1" = "--connect" ]; then
+    shift 2
+fi
+
+CMD="$1"
+shift
+
+case "$CMD" in
+    list)
+        ALL=0
+        RUNNING=0
+        for a in "$@"; do
+            [ "$a" = "--all" ]           && ALL=1
+            [ "$a" = "--state-running" ] && RUNNING=1
+        done
+        if [ $ALL -eq 1 ]; then
+            cat <<'EOF'
+ Id   Name            State
+-----------------------------------
+  1   vm1             running
+  2   vm2             running
+  -   vm3             shut off
+EOF
+        elif [ $RUNNING -eq 1 ]; then
+            cat <<'EOF'
+ Id   Name            State
+-----------------------------------
+  1   vm1             running
+  2   vm2             running
+EOF
+        fi
+        ;;
+
+    domstate)
+        VM="$1"
+        case "$VM" in
+            vm1) echo "running"   ;;
+            vm2) echo "running"   ;;
+            vm3) echo "shut off"  ;;
+            *)
+                echo "error: failed to get domain state '$VM'" >&2
+                exit 1
+                ;;
+        esac
+        ;;
+
+    dommemstat)
+        VM="$1"
+        case "$VM" in
+            vm1)
+                cat <<'EOF'
+actual    4194304
+available 4194304
+unused    2097152
+rss       3145728
+EOF
+                ;;
+            vm2)
+                cat <<'EOF'
+actual    2097152
+available 2097152
+unused    524288
+rss       1572864
+EOF
+                ;;
+            *)
+                echo "error: failed to get domain memory stats '$VM'" >&2
+                exit 1
+                ;;
+        esac
+        ;;
+
+    domstats)
+        STAT_CPU=0
+        STAT_BLOCK=0
+        STAT_IFACE=0
+        TARGET="all"
+        for a in "$@"; do
+            [ "$a" = "--cpu-total" ]    && STAT_CPU=1
+            [ "$a" = "--block" ]        && STAT_BLOCK=1
+            [ "$a" = "--interface" ]    && STAT_IFACE=1
+            [ "$a" = "--list-running" ] && TARGET="all"
+            case "$a" in
+                vm1|vm2|vm3) TARGET="$a" ;;
+            esac
+        done
+
+        if [ $STAT_CPU -eq 1 ]; then
+            if [ "$TARGET" = "vm1" ]; then
+                cat <<'EOF'
+Domain: 'vm1'
+  cpu.time=100000000000
+  vcpu.current=4
+  vcpu.0.time=25000000000
+  vcpu.1.time=25000000000
+  vcpu.2.time=25000000000
+  vcpu.3.time=25000000000
+EOF
+            elif [ "$TARGET" = "vm2" ]; then
+                cat <<'EOF'
+Domain: 'vm2'
+  cpu.time=50000000000
+  vcpu.current=2
+  vcpu.0.time=25000000000
+  vcpu.1.time=25000000000
+EOF
+            else
+                cat <<'EOF'
+Domain: 'vm1'
+  cpu.time=100000000000
+  vcpu.current=4
+  vcpu.0.time=25000000000
+  vcpu.1.time=25000000000
+  vcpu.2.time=25000000000
+  vcpu.3.time=25000000000
+
+Domain: 'vm2'
+  cpu.time=50000000000
+  vcpu.current=2
+  vcpu.0.time=25000000000
+  vcpu.1.time=25000000000
+EOF
+            fi
+
+        elif [ $STAT_BLOCK -eq 1 ]; then
+            if [ "$TARGET" = "vm1" ]; then
+                cat <<'EOF'
+Domain: 'vm1'
+  block.count=1
+  block.0.name=vda
+  block.0.rd.reqs=1000
+  block.0.rd.bytes=102400000
+  block.0.wr.reqs=500
+  block.0.wr.bytes=51200000
+EOF
+            elif [ "$TARGET" = "vm2" ]; then
+                cat <<'EOF'
+Domain: 'vm2'
+  block.count=1
+  block.0.name=vda
+  block.0.rd.reqs=2000
+  block.0.rd.bytes=204800000
+  block.0.wr.reqs=800
+  block.0.wr.bytes=81920000
+EOF
+            else
+                cat <<'EOF'
+Domain: 'vm1'
+  block.count=1
+  block.0.name=vda
+  block.0.rd.reqs=1000
+  block.0.rd.bytes=102400000
+  block.0.wr.reqs=500
+  block.0.wr.bytes=51200000
+
+Domain: 'vm2'
+  block.count=1
+  block.0.name=vda
+  block.0.rd.reqs=2000
+  block.0.rd.bytes=204800000
+  block.0.wr.reqs=800
+  block.0.wr.bytes=81920000
+EOF
+            fi
+
+        elif [ $STAT_IFACE -eq 1 ]; then
+            if [ "$TARGET" = "vm1" ]; then
+                cat <<'EOF'
+Domain: 'vm1'
+  net.count=1
+  net.0.name=vnet0
+  net.0.rx.bytes=1048576
+  net.0.rx.pkts=100
+  net.0.rx.errs=0
+  net.0.tx.bytes=524288
+  net.0.tx.pkts=50
+  net.0.tx.errs=0
+EOF
+            elif [ "$TARGET" = "vm2" ]; then
+                cat <<'EOF'
+Domain: 'vm2'
+  net.count=1
+  net.0.name=vnet1
+  net.0.rx.bytes=2097152
+  net.0.rx.pkts=200
+  net.0.rx.errs=0
+  net.0.tx.bytes=1048576
+  net.0.tx.pkts=100
+  net.0.tx.errs=0
+EOF
+            else
+                cat <<'EOF'
+Domain: 'vm1'
+  net.count=1
+  net.0.name=vnet0
+  net.0.rx.bytes=1048576
+  net.0.rx.pkts=100
+  net.0.rx.errs=0
+  net.0.tx.bytes=524288
+  net.0.tx.pkts=50
+  net.0.tx.errs=0
+
+Domain: 'vm2'
+  net.count=1
+  net.0.name=vnet1
+  net.0.rx.bytes=2097152
+  net.0.rx.pkts=200
+  net.0.rx.errs=0
+  net.0.tx.bytes=1048576
+  net.0.tx.pkts=100
+  net.0.tx.errs=0
+EOF
+            fi
+        fi
+        ;;
+
+    pool-list)
+        cat <<'EOF'
+ Name      State    Autostart
+--------------------------------
+ default   active   yes
+ pool1     active   no
+EOF
+        ;;
+
+    pool-info)
+        # Called as: pool-info --bytes <pool>
+        # Last argument is the pool name
+        POOL=""
+        for a in "$@"; do
+            POOL="$a"
+        done
+        case "$POOL" in
+            default)
+                cat <<'EOF'
+Name:           default
+UUID:           00000000-0000-0000-0000-000000000001
+State:          running
+Persistent:     yes
+Autostart:      yes
+Capacity:       107374182400
+Allocation:     26843545600
+Available:      80530636800
+EOF
+                ;;
+            pool1)
+                cat <<'EOF'
+Name:           pool1
+UUID:           00000000-0000-0000-0000-000000000002
+State:          running
+Persistent:     yes
+Autostart:      no
+Capacity:       53687091200
+Allocation:     10737418240
+Available:      42949672960
+EOF
+                ;;
+            *)
+                echo "error: failed to get pool info '$POOL'" >&2
+                exit 1
+                ;;
+        esac
+        ;;
+
+    vol-list)
+        # Called as: vol-list --pool <pool> --details
+        POOL=""
+        NEXT_IS_POOL=0
+        for a in "$@"; do
+            if [ $NEXT_IS_POOL -eq 1 ]; then
+                POOL="$a"
+                NEXT_IS_POOL=0
+            fi
+            [ "$a" = "--pool" ] && NEXT_IS_POOL=1
+        done
+        case "$POOL" in
+            default)
+                cat <<'EOF'
+ Name              Path                                   Type   Capacity    Allocation
+ -----------------------------------------------------------------------------------------
+  vm1.qcow2         /var/lib/libvirt/images/vm1.qcow2     file   20.00 GiB   5.50 GiB
+  vm2.qcow2         /var/lib/libvirt/images/vm2.qcow2     file   10.00 GiB   3.00 GiB
+EOF
+                ;;
+            pool1)
+                cat <<'EOF'
+ Name              Path                                   Type   Capacity    Allocation
+ -----------------------------------------------------------------------------------------
+  data.img          /pool1/data.img                        file   50.00 GiB   25.00 GiB
+EOF
+                ;;
+            *)
+                echo "error: failed to list volumes for pool '$POOL'" >&2
+                exit 1
+                ;;
+        esac
+        ;;
+
+    *)
+        echo "error: unknown virsh command '$CMD'" >&2
+        exit 1
+        ;;
+esac

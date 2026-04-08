@@ -1,0 +1,93 @@
+{
+  "uuid": "a7b3c4d5-e6f7-8901-abcd-ef0123456789",
+  "lastMigration": 32,
+  "name": "Mock for deep JSON path testing in HTTP Collections",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "b1c2d3e4-f5a6-7890-bcde-f01234567890",
+      "type": "http",
+      "documentation": "API items with deeply nested fields",
+      "method": "get",
+      "endpoint": "api/items",
+      "responses": [
+        {
+          "uuid": "c2d3e4f5-a6b7-8901-cdef-012345678901",
+          "body": "",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            }
+          ],
+          "bodyType": "DATABUCKET",
+          "filePath": "",
+          "databucketID": "dpth",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "b1c2d3e4-f5a6-7890-bcde-f01234567890"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "d4e5f6a7-b8c9-0123-defa-bcdef0123456",
+      "id": "dpth",
+      "name": "Deeply nested items response",
+      "documentation": "Response with items containing deeply nested fields for testing path traversal",
+      "value": "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"server1\",\n      \"location\": {\n        \"datacenter\": \"dc1\",\n        \"rack\": {\n          \"row\": \"A\",\n          \"position\": {\n            \"slot\": 42\n          }\n        }\n      }\n    },\n    {\n      \"id\": 2,\n      \"name\": \"server2\",\n      \"location\": {\n        \"datacenter\": \"dc2\",\n        \"rack\": {\n          \"row\": \"B\",\n          \"position\": {\n            \"slot\": 7\n          }\n        }\n      }\n    }\n  ]\n}"
+    }
+  ],
+  "callbacks": []
+}

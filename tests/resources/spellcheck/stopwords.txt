@@ -4,6 +4,7 @@
 --3cx-version
 7210SAS
 7750SR
+Accedian
 ACS
 --add-cpu
 --add-disk-io
@@ -179,6 +180,7 @@ ldap
 LDP
 --legacy-api-beta
 libSSH
+Libvirt
 license-instances-usage-prct
 Loggly
 LSP
@@ -284,6 +286,7 @@ proto
 Proxmox
 --proxyurl
 psu
+PVX
 QoS
 Qtree
 queue-messages-inflighted
@@ -296,6 +299,7 @@ RFC1628
 RRDCached
 rsrp
 rsrq
+RSS
 rssi
 RTT
 Rubrik
@@ -370,6 +374,7 @@ v3
 vCenter
 VCENTER
 vCPU
+vCPUs
 VCSA
 vdom
 vdomain
@@ -378,6 +383,7 @@ VE
 Veeam
 VeloCloud
 vhost
+VIRSHCLI
 VM
 VMs
 VMware

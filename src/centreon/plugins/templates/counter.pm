@@ -189,7 +189,8 @@ sub check_options {
         my $list_counter = '';
         my $th_counter = '';
         my $counters;
-        foreach my $key (keys %{$self->{maps_counters}}) {
+
+        foreach my $key (sort keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
                 $counters->{metrics}->{$_->{label}}->{nlabel} ="";
                 $counters->{metrics}->{$_->{label}}->{min}="";
@@ -212,14 +213,14 @@ sub check_options {
                     $counters->{metrics}->{$_->{label}}->{output_template} = $_->{set}->{perfdatas}->[0]->{template};
                 }
                 my $label = $_->{label};
-                $label =~ s/-//g;
+                $label =~ s/-/_/g;
                 $list_counter .= $_->{label}." ";
-                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";
+                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING_" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL_" . uc($label) . "\$'";
 
             }
         }
         $counters->{"counter list"}=$list_counter;
-        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRAOPTIONS\$";
+        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRA_OPTIONS\$";
 
         my $result_data ="";
         eval {
@@ -883,15 +884,13 @@ Global options for counters.
 Only display some counters (regexp can be used).
 Example to check SSL connections only : --filter-counters='^xxxx|yyyy$'
 
-=item B<--warning-*>
+=item B<--warning-xxx>
 
 Warning threshold.
-Can be: 'xxx', 'xxx'.
 
-=item B<--critical-*>
+=item B<--critical-xxx>
 
 Critical threshold.
-Can be: 'xxx', 'xxx'.
 
 =back
 
