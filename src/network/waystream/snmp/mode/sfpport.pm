@@ -377,9 +377,11 @@ sub manage_selection {
         );
 
         my $display = defined($self->{option_results}->{add_interface_name}) ?
-            $instance . '-' . $sfp_ports->{$instance}->[1] : $instance;
-        $self->{sfp}->{$instance}->{interface} = exists($sfp_ports->{$instance}->[1]) ?
-            $sfp_ports->{$instance}->[1] : '';
+            $instance . '-' . exists($sfp_ports->{$instance}->[1]) ? $sfp_ports->{$instance}->[1] : '' : $instance;
+        $self->{sfp}->{$instance}->{interface} = defined($self->{option_results}->{add_interface_name}) &&
+            exists($sfp_ports->{$instance}->[1]) ?
+            $sfp_ports->{$instance}->[1] :
+            '';
 
         $self->{sfp}->{$instance}->{status}->{port} = $instance;
         $self->{sfp}->{$instance}->{status}->{status} = $result->{sfpStatus};
