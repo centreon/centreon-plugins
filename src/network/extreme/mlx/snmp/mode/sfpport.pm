@@ -43,12 +43,11 @@ sub sfp_long_output {
 sub prefix_sfp_output {
     my ($self, %options) = @_;
 
-    my $output = sprintf("sfp port '%s' - ", $options{instance});
-    if (defined($options{instance_value}->{interface}) && $options{instance_value}->{interface} ne '') {
-        $output .= "$options{instance_value}->{interface} - ";
-    }
-
-    return $output;
+    return sprintf(
+        "sfp port '%s'%s ",
+        $options{instance},
+        $options{instance_value}->{interface} ne '' ? ' - ' . $options{instance_value}->{interface} : ''
+    );
 }
 
 sub custom_status_output {
@@ -294,20 +293,23 @@ sub manage_selection {
             instance => $instance
         );
 
-        $self->{sfp}->{$instance}->{interface} = $sfp_ports->{$instance};
+        my $display = defined($self->{option_results}->{add_interface_name}) ?
+            $instance . '-' . $sfp_ports->{$instance} : $instance;
+
+        $self->{sfp}->{$instance}->{interface} = defined($self->{option_results}->{add_interface_name})
+            && defined($sfp_ports->{$instance}) ?
+            $sfp_ports->{$instance} : '';
 
         $self->{sfp}->{$instance}->{status}->{port} = $instance;
         my ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpTemp});
         $self->{sfp}->{$instance}->{status}->{temp_status} = join ' ', @status;
         $self->{sfp}->{$instance}->{temperature}->{temperature} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$instance}->{temperature}->{display} = defined($self->{option_results}->{add_interface_name}) ?
-            $instance . '-' . $sfp_ports->{$instance} : $instance;
+        $self->{sfp}->{$instance}->{temperature}->{display} = $display;
 
         ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpRxdBmPower});
         $self->{sfp}->{$instance}->{perf}->{rx_input_dbm} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
         $self->{sfp}->{$instance}->{status}->{rx_power_status} = join ' ', @status;
-        $self->{sfp}->{$instance}->{perf}->{display} = defined($self->{option_results}->{add_interface_name}) ?
-            $instance . '-' . $sfp_ports->{$instance} : $instance;
+        $self->{sfp}->{$instance}->{perf}->{display} = $display;
 
         ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpTxdBmPower});
         $self->{sfp}->{$instance}->{perf}->{tx_output_dbm} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
