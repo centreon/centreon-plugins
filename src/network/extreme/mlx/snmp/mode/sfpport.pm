@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::statefile;
 
 sub sfp_long_output {
     my ($self, %options) = @_;
@@ -110,23 +111,23 @@ sub set_counters {
 
     $self->{maps_counters}->{perf} = [
         { label => 'rx-input-power-dbm', display_ok => 0, nlabel => 'port.input.power.dbm', set => {
-            key_values      => [ { name => 'rx_input_dbm' } ],
+            key_values      => [ { name => 'rx_input_dbm' }, { name => 'display' } ],
             output_template => 'input power: %.2f dBm',
             perfdatas       => [
-                { template => '%.2f', unit => 'dBm', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'tx-output-power-dbm', display_ok => 0, nlabel => 'port.output.power.dbm', set => {
-            key_values      => [ { name => 'tx_output_dbm' } ],
+            key_values      => [ { name => 'tx_output_dbm' }, { name => 'display' } ],
             output_template => 'output power: %.2f dBm',
             perfdatas       => [
-                { template => '%.2f', unit => 'dBm', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'bias-current', display_ok => 0, nlabel => 'port.bias.current.milliampere', set => {
-            key_values      => [ { name => 'bias_current' } ],
+            key_values      => [ { name => 'bias_current' }, { name => 'display' } ],
             output_template => 'Bias Current : %.2f mA',
             perfdatas       => [
                 { template => '%.2f', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
@@ -137,10 +138,10 @@ sub set_counters {
 
     $self->{maps_counters}->{temperature} = [
         { label => 'temperature', display_ok => 0, nlabel => 'port.temperature.celsius', set => {
-            key_values      => [ { name => 'temperature' } ],
+            key_values      => [ { name => 'temperature' }, { name => 'display' } ],
             output_template => 'temperature: %.2f C',
             perfdatas       => [
-                { template => '%s', unit => 'C', label_extra_instance => 1 }
+                { template => '%s', unit => 'C', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         }
@@ -154,12 +155,23 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-port:s'      => { name => 'filter_port' },
-            'add-interface-name' => { name => 'add_interface_name' },
+            'filter-port:s'       => { name => 'filter_port' },
+            'filter-interface:s'  => { name => 'filter_interface' },
+            'add-interface-name'  => { name => 'add_interface_name' },
+            'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
+            'show-cache'          => { name => 'show_cache' },
         }
     );
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+    $self->{statefile_cache}->check_options(%options);
 }
 
 my $mapping = {
@@ -169,76 +181,141 @@ my $mapping = {
     sfpTemp          => { oid => '.1.3.6.1.4.1.1991.1.1.3.3.6.1.1' },# snIfOpticalMonitoringTemperature
 };
 
-sub manage_selection {
+sub reload_cache {
     my ($self, %options) = @_;
+    my $datas = {};
 
-    my $oid_port = '.1.3.6.1.4.1.1991.1.1.3.3.6.1';# snIfOpticalMonitoringInfoEntry
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_port, nothing_quit => 1);
+    $datas->{last_timestamp} = time();
+    $datas->{sfp} = {};
+    my $snmp_names = {};
 
-    $self->{sfp} = {};
-    foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{sfpTemp}->{oid}\.(.*)$/);
-        my $instance = $1;
+    if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
+        my $oid_interface_name = '.1.3.6.1.2.1.31.1.1.1.1';
+        my $result = $options{snmp}->get_table(
+            oid => $oid_interface_name,
+        );
 
-        if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
-            $instance !~ /$self->{option_results}->{filter_port}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $instance . "': no matching filter.", debug => 1);
-            next;
+        foreach my $key (keys %$result) {
+            next if $key !~ /^$oid_interface_name\.(.*)$/;
+            my $instance = $1;
+
+            $snmp_names->{$instance} = $self->{output}->decode($result->{$key});
         }
-
-        my $interface_name = undef;
-        if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
-            my $interface_oid = '.1.3.6.1.2.1.31.1.1.1.1' . '.' . $instance;
-            my $temp_snmp_result = $options{snmp}->get_leef(
-                oids         => [ $interface_oid ],
-                nothing_quit => 1
-            );
-            $interface_name = $temp_snmp_result->{$interface_oid};
-        }
-
-        $self->{sfp}->{$instance} = {
-            instance    => $instance,
-            interface   => $interface_name,
-            status      => { port => $instance },
-            perf        => {},
-            temperature => {}
-        };
     }
 
-    if (scalar(keys %{$self->{sfp}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No sfp port found.');
+    my $oid_snIfOpticalMonitoringInfoEntry = '.1.3.6.1.4.1.1991.1.1.3.3.6.1';
+    my $result = $options{snmp}->get_table(
+        oid => $oid_snIfOpticalMonitoringInfoEntry,
+    );
+
+    foreach my $key (keys %$result) {
+        next if ($key !~ /^$mapping->{sfpTemp}->{oid}\.(.*)$/);
+        my $instance = $1;
+
+        $datas->{sfp}->{$instance} = exists($snmp_names->{$instance}) ? $snmp_names->{$instance} : "";
+    }
+
+    if (scalar(keys %{$datas->{sfp}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
         $self->{output}->option_exit();
     }
 
-    $options{snmp}->load(
-        oids            => [ map($_->{oid}, values(%$mapping)) ],
-        instances       => [ map($_->{instance}, values(%{$self->{sfp}})) ],
-        instance_regexp => '^(.*)$'
-    );
-    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    $self->{statefile_cache}->write(data => $datas);
+    return $datas->{sfp};
+}
 
-    foreach (keys %{$self->{sfp}}) {
+sub get_selection {
+    my ($self, %options) = @_;
+
+    # init cache file
+    my $has_cache_file = $self->{statefile_cache}->read(statefile =>
+        'cache_snmpstandard_' . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
+    if (defined($self->{option_results}->{show_cache})) {
+        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
+        $self->{output}->option_exit();
+    }
+
+    my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
+    my $sfp_ports = $self->{statefile_cache}->get(name => 'sfp');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || !defined($sfp_ports) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
+        $sfp_ports = $self->reload_cache(snmp => $options{snmp});
+        $self->{statefile_cache}->read();
+    }
+
+    my $results = {};
+    foreach (keys %$sfp_ports) {
+        if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
+            $_ !~ /$self->{option_results}->{filter_port}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $_ . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        if (defined($self->{option_results}->{add_interface_name}) &&
+            defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
+            $sfp_ports->{$_} !~ /$self->{option_results}->{filter_interface}/) {
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $sfp_ports->{$_} . "': no matching filter.",
+                debug    => 1
+            );
+            next;
+        }
+
+        $results->{$_} = $sfp_ports->{$_};
+    }
+
+    if (scalar(keys %$results) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No sfp ports found. Can be: filters, cache file.");
+        $self->{output}->option_exit();
+    }
+
+    return $results;
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $sfp_ports = $self->get_selection(snmp => $options{snmp});
+
+    $options{snmp}->load(
+        oids         => [ map($_->{oid}, values(%$mapping)) ],
+        instances    => [ keys %$sfp_ports ],
+        nothing_quit => 1
+    );
+    my $snmp_result = $options{snmp}->get_leef();
+
+    $self->{sfp} = {};
+
+    foreach (keys %$sfp_ports) {
+        my $instance = $_;
+
         my $result = $options{snmp}->map_instance(
             mapping  => $mapping,
             results  => $snmp_result,
-            instance => $self->{sfp}->{$_}->{instance}
+            instance => $instance
         );
 
+        $self->{sfp}->{$instance}->{interface} = $sfp_ports->{$instance};
+
+        $self->{sfp}->{$instance}->{status}->{port} = $instance;
         my ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpTemp});
-        $self->{sfp}->{$_}->{status}->{temp_status} = join ' ', @status;
-        $self->{sfp}->{$_}->{temperature}->{temperature} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{status}->{temp_status} = join ' ', @status;
+        $self->{sfp}->{$instance}->{temperature}->{temperature} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{temperature}->{display} = defined($self->{option_results}->{add_interface_name}) ?
+            $instance . '-' . $sfp_ports->{$instance} : $instance;
 
         ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpRxdBmPower});
-        $self->{sfp}->{$_}->{perf}->{rx_input_dbm} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{status}->{rx_power_status} = join ' ', @status;;
+        $self->{sfp}->{$instance}->{perf}->{rx_input_dbm} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{status}->{rx_power_status} = join ' ', @status;
+        $self->{sfp}->{$instance}->{perf}->{display} = defined($self->{option_results}->{add_interface_name}) ?
+            $instance . '-' . $sfp_ports->{$instance} : $instance;
 
         ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpTxdBmPower});
-        $self->{sfp}->{$_}->{perf}->{tx_output_dbm} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{status}->{tx_power_status} = join ' ', @status;;
+        $self->{sfp}->{$instance}->{perf}->{tx_output_dbm} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{status}->{tx_power_status} = join ' ', @status;
 
         ($value, $unit, @status) = split /\s+/, $self->normalize_oid_value(value => $result->{sfpTxBiasCurrent});
-        $self->{sfp}->{$_}->{perf}->{bias_current} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$_}->{status}->{bias_status} = join ' ', @status;;
+        $self->{sfp}->{$instance}->{perf}->{bias_current} = $1 if ($value =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{status}->{bias_status} = join ' ', @status;
     }
 }
 
@@ -266,6 +343,10 @@ Check SFP port.
 =item B<--filter-port>
 
 Filter ports by index (can be a regexp).
+
+=item B<--filter-interface>
+
+Filter ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
 
 =item B<--add-interface-name>
 
