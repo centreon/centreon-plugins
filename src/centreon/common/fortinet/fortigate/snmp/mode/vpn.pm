@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_state_output {
     my ($self, %options) = @_;
@@ -133,9 +134,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-vpn:s'      => { name => 'filter_vpn' },
-        'filter-vdomain:s'  => { name => 'filter_vdomain' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'filter-vpn:s'      => { name => 'filter_vpn',      default => '' },
+        'filter-vdomain:s'  => { name => 'filter_vdomain',  default => '' },
+        'warning-status:s'  => { name => 'warning_status',  default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{state} eq "down"' }
     });
 
@@ -173,9 +174,10 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'fortigate_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_vpn}) ? md5_hex($self->{option_results}->{filter_vpn}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_vdomain}) ? md5_hex($self->{option_results}->{filter_vdomain}) : md5_hex('all'));
+        sha256_hex(
+            ($self->{option_results}->{filter_counters} || 'all') . '_' .
+            ($self->{option_results}->{filter_vpn} || 'all') . '_' .
+            ($self->{option_results}->{filter_vdomain} || 'all'));
 
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
@@ -201,10 +203,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_fgVpnSslStatsTable}, instance => $vdom_instance);
         my $vdomain_name = $snmp_result->{$oid_fgVdEntName}->{$oid_fgVdEntName . '.' . $vdom_instance};
         
-        if (defined($self->{option_results}->{filter_vdomain}) && $self->{option_results}->{filter_vdomain} ne '' &&
-            $vdomain_name !~ /$self->{option_results}->{filter_vdomain}/) {
+        if (is_excluded($vdomain_name, $self->{option_results}->{filter_vdomain})) {
             $self->{output}->output_add(long_msg => "skipping  '" . $vdomain_name . "': no matching filter.", debug => 1);
-            next;
+            next
         }
 
         $self->{vd}->{$vdomain_name} = {
@@ -213,7 +214,7 @@ sub manage_selection {
                 users => $result->{fgVpnSslStatsLoginUsers},
                 tunnels => $result->{fgVpnSslStatsActiveTunnels},
                 sessions => $result->{fgVpnSslStatsActiveWebSessions},
-		ipsec_tunnels_count => $ipsec_tunnels_counter
+                ipsec_tunnels_count => $ipsec_tunnels_counter
             },
             vpn => {},
         };
@@ -225,10 +226,9 @@ sub manage_selection {
             my $instance = $1;
             $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result2, instance => $instance);
 
-            if (defined($self->{option_results}->{filter_vpn}) && $self->{option_results}->{filter_vpn} ne '' &&
-                $result->{fgVpnTunEntPhase2Name} !~ /$self->{option_results}->{filter_vpn}/) {
+            if (is_excluded($result->{fgVpnTunEntPhase2Name}, $self->{option_results}->{filter_vpn})) {
                 $self->{output}->output_add(long_msg => "skipping  '" . $result->{fgVpnTunEntPhase2Name} . "': no matching filter.", debug => 1);
-                next;
+                next
             }
 
             my $name = $result->{fgVpnTunEntPhase2Name};
@@ -257,6 +257,23 @@ sub manage_selection {
      }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => [ 'name', 'vdom', 'state' ]);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(snmp => $options{snmp});
+    foreach my $vd (sort keys %{$self->{vd}}) {
+        foreach my $vpn (sort { $a->{display} cmp $b->{display} } values %{$self->{vd}->{$vd}->{vpn}}) {
+            $self->{output}->add_disco_entry( ( name => $vpn->{display}, vdom => $vd, state => $vpn->{state} ) );
+        }
+    }
+}
+
 1;
 
 __END__
@@ -271,13 +288,53 @@ Check Vdomain statistics and VPN state and traffic
 
 Filter name with regexp. Can be ('vdomain', 'vpn')
 
-=item B<--warning-*>
+=item B<--warning-ipsec-tunnels-count>
 
-Warning on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec-tunnels-count')
+Threshold in tunnels.
 
-=item B<--critical-*>
+=item B<--critical-ipsec-tunnels-count>
 
-Critical on counters. Can be ('users', 'sessions', 'tunnels', 'traffic-in', 'traffic-out', 'ipsec-tunnels-count'))
+Threshold in tunnels.
+
+=item B<--warning-sessions>
+
+Threshold in sessions.
+
+=item B<--critical-sessions>
+
+Threshold in sessions.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
+
+=item B<--warning-tunnels>
+
+Threshold in tunnels.
+
+=item B<--critical-tunnels>
+
+Threshold in tunnels.
+
+=item B<--warning-users>
+
+Threshold in users.
+
+=item B<--critical-users>
+
+Threshold in users.
 
 =item B<--warning-status>
 
