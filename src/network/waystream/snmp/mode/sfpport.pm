@@ -48,8 +48,9 @@ sub prefix_sfp_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "sfp port '%s'%s ",
+        "sfp port '%s'%s%s ",
         $options{instance},
+        $options{instance_value}->{interface} ne '' ? ' - ' . $options{instance_value}->{interface} : '',
         $options{instance_value}->{serial} ne '' ? ' [serial: ' . $options{instance_value}->{serial} . ']' : ''
     );
 }
@@ -120,51 +121,51 @@ sub set_counters {
 
     $self->{maps_counters}->{perf} = [
         { label => 'rx-input-power', display_ok => 0, nlabel => 'port.input.power.milliwatt', set => {
-            key_values      => [ { name => 'rx_input' } ],
+            key_values      => [ { name => 'rx_input' }, { name => 'display' } ],
             output_template => 'input power: %.2f mW',
             perfdatas       => [
-                { template => '%.2f', unit => 'mW', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'mW', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'rx-input-power-dbm', display_ok => 0, nlabel => 'port.input.power.dbm', set => {
-            key_values      => [ { name => 'rx_input_dbm' } ],
+            key_values      => [ { name => 'rx_input_dbm' }, { name => 'display' } ],
             output_template => 'input power: %.2f dBm',
             perfdatas       => [
-                { template => '%.2f', unit => 'dBm', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'tx-output-power', display_ok => 0, nlabel => 'port.output.power.milliwatt', set => {
-            key_values      => [ { name => 'tx_output' } ],
+            key_values      => [ { name => 'tx_output' }, { name => 'display' } ],
             output_template => 'output power: %.2f mW',
             perfdatas       => [
-                { template => '%.2f', unit => 'mW', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'mW', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'tx-output-power-dbm', display_ok => 0, nlabel => 'port.output.power.dbm', set => {
-            key_values      => [ { name => 'tx_output_dbm' } ],
+            key_values      => [ { name => 'tx_output_dbm' }, { name => 'display' } ],
             output_template => 'output power: %.2f dBm',
             perfdatas       => [
-                { template => '%.2f', unit => 'dBm', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'bias-current', display_ok => 0, nlabel => 'port.bias.current.milliampere', set => {
-            key_values      => [ { name => 'bias_current' } ],
+            key_values      => [ { name => 'bias_current' }, { name => 'display' } ],
             output_template => 'Bias Current : %.2f mA',
             perfdatas       => [
-                { template => '%.2f', unit => 'mA', label_extra_instance => 1 }
+                { template => '%.2f', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         },
         { label => 'bitrate', display_ok => 0, nlabel => 'port.bitrate.bitspersecond', set => {
-            key_values          => [ { name => 'bitrate' } ],
+            key_values          => [ { name => 'bitrate' }, { name => 'display' } ],
             output_template     => 'Bitrate : %s %s/s',
             output_change_bytes => 2,
             perfdatas           => [
-                { template => '%s', unit => 'b/s', label_extra_instance => 1 }
+                { template => '%s', unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         }
@@ -172,10 +173,10 @@ sub set_counters {
 
     $self->{maps_counters}->{temperature} = [
         { label => 'temperature', display_ok => 0, nlabel => 'port.temperature.celsius', set => {
-            key_values      => [ { name => 'temperature' } ],
+            key_values      => [ { name => 'temperature' }, { name => 'display' } ],
             output_template => 'temperature: %.2f C',
             perfdatas       => [
-                { template => '%s', unit => 'C', label_extra_instance => 1 }
+                { template => '%s', unit => 'C', label_extra_instance => 1, instance_use => 'display' }
             ]
         }
         }
@@ -183,10 +184,10 @@ sub set_counters {
 
     $self->{maps_counters}->{voltage} = [
         { label => 'volt', display_ok => 0, nlabel => 'port.voltage.volt', set => {
-            key_values      => [ { name => 'volt' } ],
+            key_values      => [ { name => 'volt' }, { name => 'display' } ],
             output_template => 'Voltage : %.2f V',
             perfdatas       => [
-                { template => '%.2f', unit => 'V', label_extra_instance => 1 },
+                { template => '%.2f', unit => 'V', label_extra_instance => 1, instance_use => 'display' },
             ],
         }
         }
@@ -202,6 +203,8 @@ sub new {
         arguments => {
             'filter-port:s'       => { name => 'filter_port' },
             'filter-serial:s'     => { name => 'filter_serial' },
+            'filter-interface:s'  => { name => 'filter_interface' },
+            'add-interface-name'  => { name => 'add_interface_name' },
             'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
             'show-cache'          => { name => 'show_cache' },
         }
@@ -251,6 +254,21 @@ sub reload_cache {
 
     $datas->{last_timestamp} = time();
     $datas->{sfp} = {};
+    my $snmp_names = {};
+
+    if (defined($self->{option_results}->{add_interface_name}) || defined($self->{option_results}->{add_interface_name})) {
+        my $oid_interface_name = '.1.3.6.1.2.1.31.1.1.1.1';
+        my $result = $options{snmp}->get_table(
+            oid => $oid_interface_name,
+        );
+
+        foreach my $key (keys %$result) {
+            next if $key !~ /^$oid_interface_name\.(.*)$/;
+            my $instance = $1;
+
+            $snmp_names->{$instance} = $self->{output}->decode($result->{$key});
+        }
+    }
 
     my $oid_wsSFPEntry = '.1.3.6.1.4.1.9303.4.1.4.1';
     my $oid_wsSFPSerialNumber = '.1.3.6.1.4.1.9303.4.1.4.1.53';
@@ -262,8 +280,11 @@ sub reload_cache {
 
     foreach my $key (keys %$result) {
         next if ($key !~ /$oid_wsSFPSerialNumber\.([0-9]+)$/);
-        $datas->{sfp}->{$1} = [
-            $self->{output}->decode($result->{$oid_wsSFPSerialNumber . '.' . $1})
+        my $instance = $1;
+
+        $datas->{sfp}->{$instance} = [
+            $self->{output}->decode($result->{$oid_wsSFPSerialNumber . '.' . $instance}),
+            exists($snmp_names->{$instance}) ? $snmp_names->{$instance} : ""
         ];
     }
 
@@ -311,6 +332,16 @@ sub get_selection {
             next;
         }
 
+        if (defined($self->{option_results}->{add_interface_name}) &&
+            defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
+            $sfp_ports->{$_}->[1] !~ /$self->{option_results}->{filter_interface}/) {
+            $self->{output}->output_add(
+                long_msg => "skipping '" . $sfp_ports->{$_}->[1] . "': no matching filter.",
+                debug    => 1
+            );
+            next;
+        }
+
         $results->{$_} = $sfp_ports->{$_};
     }
 
@@ -345,6 +376,11 @@ sub manage_selection {
             instance => $instance
         );
 
+        my $display = defined($self->{option_results}->{add_interface_name}) ?
+            $instance . '-' . $sfp_ports->{$instance}->[1] : $instance;
+        $self->{sfp}->{$instance}->{interface} = exists($sfp_ports->{$instance}->[1]) ?
+            $sfp_ports->{$instance}->[1] : '';
+
         $self->{sfp}->{$instance}->{status}->{port} = $instance;
         $self->{sfp}->{$instance}->{status}->{status} = $result->{sfpStatus};
         $self->{sfp}->{$instance}->{status}->{temp_status} = $result->{sfpTempStatus};
@@ -366,11 +402,15 @@ sub manage_selection {
         $self->{sfp}->{$instance}->{perf}->{rx_input_dbm} /= 1000 if defined($self->{sfp}->{$instance}->{perf}->{rx_input_dbm});
         $self->{sfp}->{$instance}->{perf}->{bias_current} = $1 if ($result->{sfpTxBiasCurrent} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
         $self->{sfp}->{$instance}->{perf}->{bitrate} = $1 if ($result->{sfpBitRate} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$instance}->{perf}->{bitrate} *= 1000000 if defined($self->{sfp}->{$instance}->{perf}->{bitrate});;#Mbps
+        $self->{sfp}->{$instance}->{perf}->{bitrate} *= 1000000 if defined($self->{sfp}->{$instance}->{perf}->{bitrate});#Mbps
+        $self->{sfp}->{$instance}->{perf}->{display} = $display;
 
         $self->{sfp}->{$instance}->{temperature}->{temperature} = $1 if ($result->{sfpTemp} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
+        $self->{sfp}->{$instance}->{temperature}->{display} = $display;
+
         $self->{sfp}->{$instance}->{voltage}->{volt} = $1 if ($result->{sfpVolt} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
         $self->{sfp}->{$instance}->{voltage}->{volt} /= 1000 if defined($self->{sfp}->{$instance}->{voltage}->{volt});
+        $self->{sfp}->{$instance}->{voltage}->{display} = $display;
     }
 }
 
@@ -391,6 +431,14 @@ Filter ports by index (can be a regexp).
 =item B<--filter-serial>
 
 Filter ports by serial (can be a regexp).
+
+=item B<--filter-interface>
+
+Filter ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
+
+=item B<--add-interface-name>
+
+Add the corresponding interface name when set. Used for the instance name in perf data, too.
 
 =item B<--unknown-status>
 
