@@ -45,57 +45,8 @@ on:
         description: "Robot tags to include in tests"
         type: string
         default: ""
-    secrets:
-      registry_username:
-        required: true
-      registry_password:
-        required: true
-
 jobs:
-  test-image-to-cache:
-    runs-on: ${{ contains(inputs.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Login to Registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
-        with:
-          registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
-          username: ${{ secrets.registry_username }}
-          password: ${{ secrets.registry_password }}
-
-      - name: Login to Proxy Registry
-        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
-        with:
-          registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
-          username: ${{ secrets.registry_username }}
-          password: ${{ secrets.registry_password }}
-
-      - name: Load image
-        env:
-          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
-        run: |
-          docker image prune -af
-          docker pull $DOCKER_IMAGE
-        shell: bash
-
-      - name: Save image on disk
-        env:
-          IMAGE_NAME: ${{ inputs.image }}
-          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
-        run: |
-          docker save -o ./$IMAGE_NAME $DOCKER_IMAGE
-        shell: bash
-
-      - name: Save image into cache
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: ./${{ inputs.image }}
-          key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
-
   robot-test:
-    needs: [test-image-to-cache]
     runs-on: ${{ contains(inputs.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
 
     strategy:
@@ -110,12 +61,18 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Get the cached docker image for tests
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
-          path: ./${{ inputs.image }}
-          key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
-          fail-on-cache-miss: true
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Pull test image from ghcr.io
+        env:
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image }}:latest
+        run: docker pull "${GHCR_IMAGE}"
+        shell: bash
 
       - name: Get the cached plugins
         if: ${{ inputs.get-packages == 'True' }}
@@ -132,15 +89,10 @@ jobs:
           key: ${{ inputs.plugins-json-cache-key }}
           fail-on-cache-miss: true
 
-      - name: Load image
-        env:
-          IMAGE_NAME: ${{ inputs.image }}
-        run: docker load --input ./$IMAGE_NAME
-
       - name: Install, test and remove plugin
         shell: bash
         env:
-          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image }}:latest
           PACKAGE_EXTENSION: ${{ inputs.package-extension }}
           RUNNER_ID: ${{ matrix.index }}
           SKIP_ROBOT_TESTS: ${{ inputs.skip-robot-tests }}

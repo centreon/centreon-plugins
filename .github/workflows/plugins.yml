@@ -432,9 +432,6 @@ jobs:
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
       skip-robot-tests: ${{ matrix.skip_robot_tests }}
       exclude-robot-tags: centreon-generic-snmp
-    secrets:
-      registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-      registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
