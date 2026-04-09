@@ -69,9 +69,9 @@ sub api_execute {
             my $instance = "thermal_slot" . ($entry->{slot} // 1) . "_index" . $temp_idx;
             $self->{data}->{temperatures}->{$instance} = {
                 description => $entry->{description} // "Temperature $temp_idx",
-                value       => $entry->{DegreesC} // 0,
-                min         => $entry->{min} // 0,
-                max         => $entry->{max} // 0,
+                value       => $entry->{DegreesC} // '',
+                min         => $entry->{min} // '',
+                max         => $entry->{max} // '',
                 alarm       => $entry->{alarm} // 'False'
             };
         }
@@ -88,8 +88,8 @@ sub api_execute {
             my $instance = "fan_slot" . ($entry->{slot} // 1) . "_index" . $fan_idx;
             $self->{data}->{fans}->{$instance} = {
                 description => $entry->{description} // "Fan $fan_idx",
-                rpm         => $entry->{RPMs} // 0,
-                min         => $entry->{min} // 0,
+                rpm         => $entry->{RPMs} // '',
+                min         => $entry->{min} // '',
                 alarm       => $entry->{alarm} // 'False'
             };
         }
@@ -106,9 +106,9 @@ sub api_execute {
             my $instance = "voltage_slot" . ($entry->{slot} // 1) . "_index" . $voltage_idx;
             $self->{data}->{voltages}->{$instance} = {
                 description => $entry->{description} // "Voltage $voltage_idx",
-                value       => $entry->{Volts} // 0,
-                min         => $entry->{min} // 0,
-                max         => $entry->{max} // 0,
+                value       => $entry->{Volts} // '',
+                min         => $entry->{min} // '',
+                max         => $entry->{max} // '',
                 alarm       => $entry->{alarm} // 'False'
             };
         }
