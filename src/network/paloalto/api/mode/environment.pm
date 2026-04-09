@@ -71,7 +71,7 @@ sub api_execute {
                 description => $entry->{description} // "Temperature $temp_idx",
                 value       => $entry->{DegreesC} // 0,
                 min         => $entry->{min} // 0,
-                max         => $entry->{max} // 100,
+                max         => $entry->{max} // 0,
                 alarm       => $entry->{alarm} // 'False'
             };
         }
@@ -108,7 +108,7 @@ sub api_execute {
                 description => $entry->{description} // "Voltage $voltage_idx",
                 value       => $entry->{Volts} // 0,
                 min         => $entry->{min} // 0,
-                max         => $entry->{max} // 5,
+                max         => $entry->{max} // 0,
                 alarm       => $entry->{alarm} // 'False'
             };
         }

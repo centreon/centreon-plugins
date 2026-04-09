@@ -42,9 +42,9 @@ sub check {
                                     $result->{description}, $result->{alarm},
                                     $instance, $result->{value}));
 
-        my $alarm_status = $result->{alarm} =~ /true/i ? 'CRITICAL' : 'OK';
+        my $alarm_status = $self->get_severity(label => 'default', section => 'voltage', value => $result->{alarm});
         $self->{output}->output_add(severity => $alarm_status, short_msg => sprintf("Voltage '%s' alarm is %s", $result->{description}, $alarm_status))
-	    unless $self->{output}->is_status(value => $alarm_status, compare => 'ok', litteral => 1);
+            unless $self->{output}->is_status(value => $alarm_status, compare => 'ok', litteral => 1);
 
         unless (is_empty($result->{value})) {
             my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
@@ -53,7 +53,7 @@ sub check {
                 value => $result->{value}
             );
             $self->{output}->output_add(severity => $exit, short_msg => sprintf("Voltage '%s' value is %s V", $result->{description}, $result->{value}))
-		unless $self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1);
+                unless $self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1);
 
             my $label = $result->{description} . '#hardware.voltage.volt';
             $self->{output}->perfdata_add(

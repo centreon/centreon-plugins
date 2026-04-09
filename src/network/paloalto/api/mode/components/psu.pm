@@ -42,9 +42,9 @@ sub check {
                                     $result->{description}, $result->{alarm},
                                     $instance, $result->{inserted}));
 
-        my $alarm_status = $result->{alarm} =~ /true/i ? 'CRITICAL' : 'OK';
+        my $alarm_status = $self->get_severity(label => 'default', section => 'psu', value => $result->{alarm});
         $self->{output}->output_add(severity => $alarm_status, short_msg => sprintf("Power supply '%s' alarm is %s", $result->{description}, $alarm_status))
-	    unless $self->{output}->is_status(value => $alarm_status, compare => 'ok', litteral => 1);
+            unless $self->{output}->is_status(value => $alarm_status, compare => 'ok', litteral => 1);
     }
 }
 
