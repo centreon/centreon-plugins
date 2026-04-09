@@ -21,6 +21,7 @@
 package network::huawei::standard::snmp::mode::listgponont;
 
 use base qw(centreon::plugins::mode);
+use centreon::plugins::misc qw/is_excluded/;
 
 use strict;
 use warnings;
@@ -41,9 +42,12 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-name:s'   => { name => 'filter_name' },
-            'filter-status:s' => { name => 'filter_status' },
-            'filter-serial:s' => { name => 'filter_serial' }
+            'include-name:s'   => { name => 'include_name',    default => '' },
+            'exclude-name:s'   => { name => 'exclude_name',    default => '' },
+            'include-status:s' => { name => 'include_status',  default => '' },
+            'exclude-status:s' => { name => 'exclude_status',  default => '' },
+            'include-serial:s' => { name => 'include_serial',  default => '' },
+            'exclude-serial:s' => { name => 'exclude_serial',  default => '' }
         }
     );
 
@@ -85,34 +89,10 @@ sub manage_selection {
 
         my $serial = $self->get_serial_string($result->{serial});
         $result->{serial_hex} = uc(unpack("H*", $result->{serial}));
-        $result->{serial} = $serial;
-
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $result->{name} . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
-
-        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $result->{serial} !~ /$self->{option_results}->{filter_serial}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $result->{serial} . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
-
-        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $result->{state} !~ /$self->{option_results}->{filter_status}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $result->{state} . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
+        $result->{serial} = $serial // '';
+        next if is_excluded($result->{name} // '', $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
+        next if is_excluded($result->{serial}, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output});
+        next if is_excluded($result->{state} // '', $self->{option_results}->{include_status}, $self->{option_results}->{exclude_status}, output => $self->{output});
 
         push @{$self->{ont}}, $result;
     }
@@ -123,10 +103,8 @@ sub run {
 
     $self->manage_selection(%options);
 
-    if (scalar(keys @{$self->{ont}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No ONT found matching.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No ONT found matching.")
+        unless keys @{$self->{ont}};
 
     foreach (sort @{$self->{ont}}) {
         $self->{output}->output_add(
@@ -201,17 +179,29 @@ List ONT for GPON.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter ONT by name (can be a regexp).
 
-=item B<--filter-serial>
+=item B<--exclude-name>
+
+Exclude ONT by name (can be a regexp).
+
+=item B<--include-serial>
 
 Filter ONT by serial (can be a regexp).
 
-=item B<--filter-status>
+=item B<--exclude-serial>
+
+Exclude ONT by serial (can be a regexp).
+
+=item B<--include-status>
 
 Filter ONT by status
+
+=item B<--exclude-status>
+
+Exclude ONT by status
 
 =back
 

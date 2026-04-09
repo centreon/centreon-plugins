@@ -934,19 +934,26 @@ sub sort_ips($$) {
 }
 
 # function to assess if a string has to be excluded given an include regexp and an exclude regexp
-sub is_excluded($;$;$) {
-    my ($string, $include_regexp, $exclude_regexp) = @_;
+sub is_excluded($;$;$;%) {
+    my ($string, $include_regexp, $exclude_regexp, %options) = @_;
     return 1 unless defined $string;
 
     if (defined $exclude_regexp) {
         $exclude_regexp = [ $exclude_regexp ] unless ref $exclude_regexp eq 'ARRAY';
-        return 1 if grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp;
+        if (grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp) {
+            $options{output}->output_add(long_msg => "skipping '$string': no matching filter.", debug => 1)
+                if %options && $options{output};
+            return 1
+        }
     }
     return 0 unless defined $include_regexp;
     $include_regexp = [ $include_regexp ] unless ref $include_regexp eq 'ARRAY';
     return 0 unless @{$include_regexp};
 
     return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
+
+    $options{output}->output_add(long_msg => "skipping '$string': no matching filter.", debug => 1)
+        if %options && $options{output};
 
     return 1;
 }
@@ -1592,7 +1599,7 @@ Returns a sorted array.
 
 =head2 is_excluded
 
-    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp, %options);
 
 Determines whether a string should be excluded based on include and exclude regular expressions.
 
@@ -1603,6 +1610,8 @@ Determines whether a string should be excluded based on include and exclude regu
 =item * C<$include_regexp> - A regular expression to include the string.
 
 =item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
+
+=item * C<%options> - An optional hash that allows defining the output module in order to log when the string is excluded.
 
 =back
 

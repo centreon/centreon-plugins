@@ -24,8 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw/is_excluded/;
 
 sub prefix_module_output {
     my ($self, %options) = @_;
@@ -114,7 +116,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-serial:s' => { name => 'filter_serial' }
+        'include-serial:s' => { name => 'include_serial', default => '' },
+        'exclude-serial:s' => { name => 'exclude_serial', default => '' }
     });
 
     return $self;
@@ -144,13 +147,11 @@ sub get_serial_string($) {
 sub manage_selection {
     my ($self, %options) = @_;
 
+     $self->{output}->option_exit(short_msg => "Need to use SNMP v2c or v3.")
+        if $options{snmp}->is_snmpv1();
+
     $self->{cache_name} = 'huawei_gpon_' . $self->{mode} . '_' . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ?
-            md5_hex($self->{option_results}->{filter_counters}) :
-            md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_serial}) ?
-            md5_hex($self->{option_results}->{filter_serial}) :
-            md5_hex('all'));
+        sha256_hex(($self->{option_results}->{filter_counters} || 'all') . '_' . ($self->{option_results}->{filter_serial} || 'all'));
 
     my $mapping = {
         serial => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.43.1.3' },# hwGponDeviceOntSn
@@ -171,14 +172,7 @@ sub manage_selection {
         my $serial_hex = uc(unpack("H*", $result->{serial}));
         my $serial = $self->get_serial_string($result->{serial});
 
-        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $serial !~ /$self->{option_results}->{filter_serial}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $serial . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
+        next if is_excluded($serial, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output});
 
         $self->{ont}{$serial_hex} = {
             instance   => $instance,
@@ -188,10 +182,8 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %{$self->{ont}}) <= 0) {
-        $self->{output}->output_add(long_msg => 'no ont associated');
-        return;
-    }
+    $self->{output}->option_exit(short_msg => 'no ont associated')
+        unless keys %{$self->{ont}};
 
     $mapping = {
         up_packets        => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.4.23.1.1' },# hwGponOntStatisticUpPackts
@@ -238,9 +230,13 @@ Shows the traffic on the ONT module for GPON
 
 =over 8
 
-=item B<--filter-serial>
+=item B<--include-serial>
 
 Filter ONT by serial (can be a regexp).
+
+=item B<--exclude-serial>
+
+Exclude ONT by serial (can be a regexp).
 
 =item B<--warning-traffic-in>
 

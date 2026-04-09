@@ -25,12 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("status %s", $self->{result_values}->{status});
-}
+use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw/is_excluded/;
 
 sub prefix_module_output {
     my ($self, %options) = @_;
@@ -48,24 +44,23 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name             => 'ont',
-            type             => 1,
+            type             => COUNTER_TYPE_INSTANCE,
             cb_prefix_output => 'prefix_module_output',
             message_multiple => 'All ONT modules are ok',
-            skipped_code     => { -10 => 1 }
+            skipped_code     => { NO_VALUE() => 1 }
         }
     ];
 
     $self->{maps_counters}->{ont} = [
         {
             label            => 'status',
-            type             => 2,
+            type             => COUNTER_KIND_TEXT,
             critical_default => '%{status} ne "active"',
             set              =>
                 {
                     key_values                     =>
                         [ { name => 'status' }, { name => 'display' } ],
-                    closure_custom_output          =>
-                        $self->can('custom_status_output'),
+                    output_template => 'status %s',
                     closure_custom_perfdata        =>
                         sub {return 0;},
                     closure_custom_threshold_check =>
@@ -129,7 +124,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-serial:s' => { name => 'filter_serial' }
+        'include-serial:s' => { name => 'include_serial', default => '' },
+        'exclude-serial:s' => { name => 'exclude_serial', default => '' }
     });
 
     return $self;
@@ -195,14 +191,7 @@ sub manage_selection {
         my $serial_hex = uc(unpack("H*", $result->{serial}));
         my $serial = $self->get_serial_string($result->{serial});
 
-        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $serial !~ /$self->{option_results}->{filter_serial}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $serial . "': no matching filter serial.",
-                debug    => 1
-            );
-            next;
-        }
+        next if is_excluded($serial, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output});
 
         $self->{ont}{$serial_hex} = {
             instance   => $instance,
@@ -213,13 +202,12 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %{$self->{ont}}) <= 0) {
-        $self->{output}->output_add(long_msg => 'no ont associated');
-        return;
-    }
+    $self->{output}->option_exit(short_msg => 'no ont associated')
+        unless keys %{$self->{ont}};
 
     $mapping = {
         temperature      => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.51.1.1' },
+        bias_current     => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.51.1.2' },
         tx_power         => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.51.1.3' },# hwGponOntOpticalDdmTxPower
         rx_power         => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.51.1.4' },# hwGponOntOpticalDdmRxPower
         voltage          => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.51.1.5' },# hwGponOntOpticalDdmVoltage
@@ -241,6 +229,7 @@ sub manage_selection {
         );
 
         $self->{ont}->{$_}->{temperature} = $result->{temperature};
+        $self->{ont}->{$_}->{bias_current} = $result->{bias_current} * 0.01;
         $self->{ont}->{$_}->{tx_power} = $result->{tx_power} * 0.01;
         $self->{ont}->{$_}->{rx_power} = $result->{rx_power} * 0.01;
         $self->{ont}->{$_}->{voltage} = $result->{voltage} / 1000;
@@ -259,9 +248,13 @@ Shows the ONT health with performance data for power, temperature and voltage fo
 
 =over 8
 
-=item B<--filter-serial>
+=item B<--include-serial>
 
 Filter ONT by serial (can be a regexp).
+
+=item B<--exclude-serial>
+
+Exclude ONT by serial (can be a regexp).
 
 =item B<--warning-status>
 

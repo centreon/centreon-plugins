@@ -25,12 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("status %s", $self->{result_values}->{online_state});
-}
+use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw/is_excluded/;
 
 sub prefix_module_output {
     my ($self, %options) = @_;
@@ -50,17 +46,17 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name             => 'ethernet_ports',
-            type             => 1,
+            type             => COUNTER_TYPE_INSTANCE,
             cb_prefix_output => 'prefix_module_output',
             message_multiple => 'All ONT ethernet port are ok',
-            skipped_code     => { -10 => 1 }
+            skipped_code     => { NO_VALUE() => 1 }
         }
     ];
 
     $self->{maps_counters}->{ethernet_ports} = [
         {
             label            => 'status',
-            type             => 2,
+            type             => COUNTER_KIND_TEXT,
             critical_default => '%{online_state} ne "linkup" || %{speed} eq "invalid"',
             set              =>
                 {
@@ -69,7 +65,7 @@ sub set_counters {
                         { name => 'display' },
                         { name => 'speed' }
                     ],
-                    closure_custom_output          => $self->can('custom_status_output'),
+                    output_template                 => "status %s",
                     closure_custom_perfdata        => sub {return 0;},
                     closure_custom_threshold_check => \&catalog_status_threshold_ng
                 }
@@ -83,7 +79,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-serial:s' => { name => 'filter_serial' }
+        'include-serial:s' => { name => 'include_serial', default => '' },
+        'exclude-serial:s' => { name => 'exclude_serial', default => '' }
     });
 
     return $self;
@@ -158,16 +155,9 @@ sub manage_selection {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        my $serial = $self->get_serial_string($result->{serial});
+        my $serial = $self->get_serial_string($result->{serial}) // '';
 
-        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $serial !~ /$self->{option_results}->{filter_serial}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $serial . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
+        next if is_excluded($serial, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output});
 
         $ont{$instance} = {
             name       => $result->{name},
@@ -176,10 +166,9 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %ont) <= 0) {
-        $self->{output}->output_add(long_msg => 'no ethernet_ports associated');
-        return;
-    }
+
+    $self->{output}->option_exit(short_msg => 'no ethernet_ports associated')
+        unless keys %ont;
 
     $mapping = {
         online_state => { oid => '.1.3.6.1.4.1.2011.6.128.1.1.2.62.1.22', map => $mapping_online_status },
@@ -229,9 +218,13 @@ Shows the status of a ONT module ETH port for GPON
 
 =over 8
 
-=item B<--filter-serial>
+=item B<--include-serial>
 
 Filter ONT by serial (can be a regexp).
+
+=item B<--exclude-serial>
+
+Exclude ONT by serial (can be a regexp).
 
 =item B<--warning-status>
 
