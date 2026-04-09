@@ -406,8 +406,11 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Webex
 WLAN
 WLC
+workspace
+workspaces
 WSMAN
 XPath
 ZDX
