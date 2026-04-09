@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::backup::veeam::vone::restapi::mode::proxies;
+package apps::automation::opcon::restapi::mode::machines;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,37 +28,17 @@ use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $map_repository_state_numeric = {
-    unknown => 0,
-    ok => 1,
-    inaccessible => 2,
-    disconnected => 3,
-    outOfDate => 4,
-    warning => 5
-};
-
-sub custom_status_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => 'proxy.state.count',
-        instances => $self->{result_values}->{name},
-        value => $map_repository_state_numeric->{ $self->{result_values}->{state} },
-        min => 0
-    );
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of proxies ';
+    return 'Number of machines ';
 }
 
-sub prefix_proxy_output {
+sub prefix_machine_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "proxy '%s' [type: %s] ",
+        "machine '%s' [type: %s] ",
         $options{instance_value}->{name},
         $options{instance_value}->{type}
     );
@@ -69,11 +49,11 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'proxies', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_proxy_output', message_multiple => 'All proxies are ok' }
+        { name => 'machines', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_machine_output', message_multiple => 'All machines are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
-        {   label => 'proxies-detected', display_ok => 0, nlabel => 'proxies.detected.count',
+        {   label => 'machines-detected', display_ok => 0, nlabel => 'machines.detected.count',
             unknown_default => '@0',
             set => {
                 key_values => [ { name => 'detected' } ],
@@ -85,19 +65,46 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{proxies} = [
+    $self->{maps_counters}->{machines} = [
         {
-            label => 'proxy-status',
+            label => 'machine-status',
             type => COUNTER_KIND_TEXT,
-            unknown_default => '%{state} =~ /unknown/',
-            warning_default => '%{state} =~ /warning|outofdate/',
-            critical_default => '%{state} =~ /inaccessible|disconnected/',
+            warning_default => '%{state} =~ /limited/',
+            critical_default => '%{state} =~ /down|error/',
             set => {
                 key_values => [
                     { name => 'state' }, { name => 'name' }, { name => 'type' }
                 ],
                 output_template => 'state: %s',
-                closure_custom_perfdata => $self->can('custom_status_perfdata'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        {
+            label => 'machine-operation-status',
+            type => COUNTER_KIND_TEXT,
+            warning_default => '%{operationStatus} =~ /limited/',
+            critical_default => '%{operationStatus} =~ /down/',
+            set => {
+                key_values => [
+                    { name => 'operationStatus' }, { name => 'name' }, { name => 'type' }
+                ],
+                output_template => 'operation status: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        {
+            label => 'machine-network-status',
+            type => COUNTER_KIND_TEXT,
+            warning_default => '%{networkStatus} =~ /limited/',
+            critical_default => '%{networkStatus} =~ /down/',
+            set => {
+                key_values => [
+                    { name => 'networkStatus' }, { name => 'name' }, { name => 'type' }
+                ],
+                output_template => 'network status: %s',
+                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -110,32 +117,53 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-uid:s'  => { name => 'filter_uid', default => '' },
-        'filter-name:s' => { name => 'filter_name', default => '' }
+        'filter-id:s'   => { name => 'filter_id',   default => '' },
+        'filter-name:s' => { name => 'filter_name', default => '' },
+        'filter-type:s' => { name => 'filter_type', default => '' }
     });
 
     return $self;
 }
 
+my $map_state = {
+    U => 'up',
+    D => 'down',    # NetCom does not look at the machine, communication is stopped
+    E => 'error',   # NetCom cannot connect to the machine (communication error)
+    L => 'limited',
+    W => 'waiting'  # NetCom is waiting on machine to respond (trying to connect, next state will either be UP/LIMITED or ERROR)
+};
+
+my $map_operation_status = {
+    U => 'up',
+    D => 'down',
+    L => 'limited'
+};
+
+my $map_network_status = {
+    U => 'up',
+    D => 'down',
+    L => 'limited'
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $repositories = $options{custom}->get_proxies();
+    my $machines = $options{custom}->get_machines();
 
     $self->{global} = { detected => 0 };
-    $self->{proxies} = {};
-    foreach my $repo (@{$repositories->{items}}) {
-        my $enabled = $repo->{enabled} =~ /true|1/i ? 1 : 0;
-        next unless $enabled || $options{keep_disabled};
-        next if is_excluded($repo->{proxyUidInVbr}, $self->{option_results}->{filter_uid});
-        next if is_excluded($repo->{name}, $self->{option_results}->{filter_name});
+    $self->{machines} = {};
+    foreach my $item (@$machines) {
+        next if is_excluded($item->{id}, $self->{option_results}->{filter_id});
+        next if is_excluded($item->{name}, $self->{option_results}->{filter_name});
+        next if is_excluded($item->{type}, $self->{option_results}->{filter_type});
 
-        $self->{proxies}->{ $repo->{name} } = {
-            uid => $repo->{proxyUidInVbr},
-            name => $repo->{name},
-            type => $repo->{type},
-            state => lc $repo->{state},
-            enabled => $enabled
+        $self->{machines}->{ $item->{id} } = {
+            id => $item->{id},
+            name => $item->{name},
+            type => $item->{type},
+            state => $map_state->{ $item->{state} },
+            networkStatus => $map_network_status->{ $item->{networkStatus} },
+            operationStatus => $map_operation_status->{ $item->{operationStatus} }
         };
         $self->{global}->{detected}++;
     }
@@ -144,14 +172,14 @@ sub manage_selection {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['uid', 'name', 'type', 'state', 'enabled']);
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'type', 'state', 'networkStatus', 'operationStatus', 'osType']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $repos = $self->manage_selection(custom => $options{custom}, keep_disabled => 1);
-    foreach (sort { $a->{name} cmp $b->{name} } values %{ $self->{proxies} } ) {
+    $self->manage_selection(custom => $options{custom}, keep_disabled => 1);
+    foreach (sort { $a->{name} cmp $b->{name} } values %{ $self->{machines} } ) {
         $self->{output}->add_disco_entry(%$_);
     }
 }
@@ -162,38 +190,72 @@ __END__
 
 =head1 MODE
 
-Check proxies.
+Check machines.
 
 =over 8
 
-=item B<--filter-uid>
+=item B<--filter-id>
 
-Filter proxies by UID (can be a regexp).
+Filter machines by ID (can be a regexp).
 
 =item B<--filter-name>
 
-Filter proxies by name (can be a regexp).
+Filter machines by name (can be a regexp).
 
-=item B<--unknown-proxy-status>
+=item B<--filter-type>
 
-Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown/').
+Filter machines by type (can be a regexp).
+
+=item B<--unknown-machine-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 You can use the following variables: %{state}, %{name}, %{type}
 
-=item B<--warning-proxy-status>
+=item B<--warning-machine-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{state} =~ /warning|outofdate/').
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /limited/').
 You can use the following variables: %{state}, %{name}, %{type}
 
-=item B<--critical-proxy-status>
+=item B<--critical-machine-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /inaccessible|disconnected/').
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /down|error/').
 You can use the following variables: %{state}, %{name}, %{type}
 
-=item B<--warning-proxies-detected>
+=item B<--unknown-machine-operation-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{operationStatus}, %{name}, %{type}
+
+=item B<--warning-machine-operation-status>
+
+Define the conditions to match for the status to be WARNING (default: '%{operationStatus} =~ /limited/').
+You can use the following variables: %{operationStatus}, %{name}, %{type}
+
+=item B<--critical-machine-operation-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{operationStatus} =~ /down/').
+You can use the following variables: %{operationStatus}, %{name}, %{type}
+
+=item B<--unknown-machine-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{networkStatus}, %{name}, %{type}
+
+=item B<--warning-machine-network-status>
+
+Define the conditions to match for the status to be WARNING (default: '%{networkStatus} =~ /limited/').
+You can use the following variables: %{networkStatus}, %{name}, %{type}
+
+=item B<--critical-machine-network-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{networkStatus} =~ /down/').
+You can use the following variables: %{networkStatus}, %{name}, %{type}
+
+=item B<--warning-machines-detected>
 
 Thresholds.
 
-=item B<--critical-proxies-detected>
+=item B<--critical-machines-detected>
 
 Thresholds.
 
