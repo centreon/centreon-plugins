@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::statefile;
+use Safe;
 
 sub sfp_long_output {
     my ($self, %options) = @_;
@@ -154,14 +155,19 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-port:s'       => { name => 'filter_port' },
-            'filter-interface:s'  => { name => 'filter_interface' },
-            'add-interface-name'  => { name => 'add_interface_name' },
-            'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
-            'show-cache'          => { name => 'show_cache' },
+            'filter-port:s'           => { name => 'filter_port' },
+            'filter-interface:s'      => { name => 'filter_interface' },
+            'add-interface-name'      => { name => 'add_interface_name' },
+            'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
+            'show-cache'              => { name => 'show_cache' },
+            'display-transform-src:s' => { name => 'display_transform_src' },
+            'display-transform-dst:s' => { name => 'display_transform_dst' }
         }
     );
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -295,6 +301,7 @@ sub manage_selection {
 
         my $display = defined($self->{option_results}->{add_interface_name}) ?
             $instance . '-' . $sfp_ports->{$instance} : $instance;
+        $display = $self->get_display_value(value => $display);
 
         $self->{sfp}->{$instance}->{interface} = defined($self->{option_results}->{add_interface_name})
             && defined($sfp_ports->{$instance}) ?
@@ -330,6 +337,23 @@ sub normalize_oid_value {
     $options{value} =~ s/\s+$//;# remove trailing spaces
 
     return $options{value}
+}
+
+sub get_display_value {
+    my ($self, %options) = @_;
+
+    our $assign_var = $options{value};
+    if (defined($self->{option_results}->{display_transform_src})) {
+        $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}",
+            1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    }
+
+    return $assign_var;
 }
 
 1;
