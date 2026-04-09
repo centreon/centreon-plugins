@@ -178,17 +178,66 @@ sub cache_machines {
     return $datas;
 }
 
+sub cache_masterJobs {
+    my ($self, %options) = @_;
+
+    my $datas = $self->get_masterJobs(disable_cache => 1);
+    $self->write_cache_file(
+        statefile => 'masterJobs',
+        response => $datas
+    );
+
+    return $datas;
+}
+
+sub cache_jobHistories {
+    my ($self, %options) = @_;
+
+    my $datas = $self->get_jobHistories(disable_cache => 1, get_param => $options{get_param});
+    $self->write_cache_file(
+        statefile => 'jobHistories',
+        response => $datas
+    );
+
+    return $datas;
+}
+
 sub add_machine {
     my (%options) = @_;
 
     return {
         id => $options{item}->{id},
-        name => $options{item}->{name},
+        name => $options{item}->{jobName},
         state => $options{item}->{status}->{state},
         networkStatus => $options{item}->{status}->{networkStatus},
         operationStatus => $options{item}->{status}->{operationStatus},
         type => $options{item}->{type}->{description},
         osType => $options{item}->{osType}
+    };
+}
+
+sub add_masterJobs {
+    my (%options) = @_;
+
+    return {
+        id => $options{item}->{id},
+        name => $options{item}->{name},
+        departmentId => $options{item}->{department}->{id}
+    };
+}
+
+sub add_jobHistories {
+    my (%options) = @_;
+
+    return {
+        id => $options{item}->{id},
+        name => $options{item}->{name},
+        startTime => $options{item}->{jobStartTime},
+        statusNum => $options{item}->{jobStatus}->{id},
+        statusDesc => $options{item}->{jobStatus}->{description},
+        terminationTime => $options{item}->{jobTermination},
+        duration => $options{item}->{duration},
+        type => $options{item}->{jobType}->{description}
     };
 }
 
@@ -201,6 +250,31 @@ sub get_machines {
     return $self->request_api(
         endpoint => '/machines',
         add_item_closure => $self->can('add_machine') 
+    );
+}
+
+sub get_masterJobs {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'masterJobs')
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
+
+    return $self->request_api(
+        endpoint => '/masterJobs/v2',
+        add_item_closure => $self->can('add_masterJobs') 
+    );
+}
+
+sub get_jobHistories {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'jobHistories')
+        if $self->{option_results}->{cache_use} && !$options{disable_cache};
+
+    return $self->request_api(
+        endpoint => '/jobHistories',
+        get_param => $options{get_param},
+        add_item_closure => $self->can('add_jobHistories') 
     );
 }
 
