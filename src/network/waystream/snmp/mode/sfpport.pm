@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::statefile;
+use Safe;
 
 sub sfp_long_output {
     my ($self, %options) = @_;
@@ -201,15 +202,20 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-port:s'       => { name => 'filter_port' },
-            'filter-serial:s'     => { name => 'filter_serial' },
-            'filter-interface:s'  => { name => 'filter_interface' },
-            'add-interface-name'  => { name => 'add_interface_name' },
-            'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
-            'show-cache'          => { name => 'show_cache' },
+            'filter-port:s'           => { name => 'filter_port' },
+            'filter-serial:s'         => { name => 'filter_serial' },
+            'filter-interface:s'      => { name => 'filter_interface' },
+            'add-interface-name'      => { name => 'add_interface_name' },
+            'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
+            'show-cache'              => { name => 'show_cache' },
+            'display-transform-src:s' => { name => 'display_transform_src' },
+            'display-transform-dst:s' => { name => 'display_transform_dst' }
         }
     );
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+
+    $self->{safe} = Safe->new();
+    $self->{safe}->share('$assign_var');
 
     return $self;
 }
@@ -378,6 +384,8 @@ sub manage_selection {
 
         my $display = defined($self->{option_results}->{add_interface_name}) ?
             $instance . '-' . exists($sfp_ports->{$instance}->[1]) ? $sfp_ports->{$instance}->[1] : '' : $instance;
+        $display = $self->get_display_value(value => $display);
+
         $self->{sfp}->{$instance}->{interface} = defined($self->{option_results}->{add_interface_name}) &&
             exists($sfp_ports->{$instance}->[1]) ?
             $sfp_ports->{$instance}->[1] :
@@ -414,6 +422,23 @@ sub manage_selection {
         $self->{sfp}->{$instance}->{voltage}->{volt} /= 1000 if defined($self->{sfp}->{$instance}->{voltage}->{volt});
         $self->{sfp}->{$instance}->{voltage}->{display} = $display;
     }
+}
+
+sub get_display_value {
+    my ($self, %options) = @_;
+
+    our $assign_var = $options{value};
+    if (defined($self->{option_results}->{display_transform_src})) {
+        $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
+
+        $self->{safe}->reval("\$assign_var =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}",
+            1);
+        if ($@) {
+            die 'Unsafe code evaluation: ' . $@;
+        }
+    }
+
+    return $assign_var;
 }
 
 1;
@@ -464,6 +489,12 @@ Can be: C<rx-input-power (mW)>, C<rx-input-power-dbm (dBm)>, C<tx-output-power (
 =item B<--reload-cache-time>
 
 Time in minutes before reloading cache file (default: 180).
+
+=item B<--display-transform-src> B<--display-transform-dst>
+
+Modify the interface name displayed by using a regular expression.
+
+Example: adding C<--display-transform-src='eth' --display-transform-dst='ens'>  will replace all occurrences of 'eth' with 'ens'
 
 =item B<--show-cache>
 
