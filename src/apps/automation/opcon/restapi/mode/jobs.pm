@@ -201,7 +201,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my ($masterJobs) = $options{custom}->get_masterJobs();
-    foreach (sort { $a->{id} cmp $b->{id} } values %{ $self->{jobs} }) {
+    foreach (sort { $a->{id} cmp $b->{id} } @$masterJobs) {
         my ($masterId, $name) = split(/\|/, $_->{id});
         my $id = $masterId . '-' . $name;
 
