@@ -144,11 +144,14 @@ sub request_api {
 sub write_cache_file {
     my ($self, %options) = @_;
 
+    my $ctime = time();
     $self->{cache}->read(statefile => 'cache_opcon_' . $options{statefile} . '_' . md5_hex($self->get_connection_info() . '_' . $self->{option_results}->{api_token}));
     $self->{cache}->write(data => {
-        update_time => time(),
+        update_time => $ctime,
         response => $options{response}
     });
+
+    return $ctime;
 }
 
 sub get_cache_file_response {
@@ -163,43 +166,43 @@ sub get_cache_file_response {
     $self->{output}->option_exit(short_msg => 'Cache file expired')
         if (time() - $self->{cache_lifetime}) > $update_time;
 
-    return $response;
+    return ($response, $update_time);
 }
 
 sub cache_machines {
     my ($self, %options) = @_;
 
     my $datas = $self->get_machines(disable_cache => 1);
-    $self->write_cache_file(
+    my $update_time = $self->write_cache_file(
         statefile => 'machines',
         response => $datas
     );
 
-    return $datas;
+    return ($datas, $update_time);
 }
 
 sub cache_masterJobs {
     my ($self, %options) = @_;
 
     my $datas = $self->get_masterJobs(disable_cache => 1);
-    $self->write_cache_file(
+    my $update_time = $self->write_cache_file(
         statefile => 'masterJobs',
         response => $datas
     );
 
-    return $datas;
+    return ($datas, $update_time);
 }
 
 sub cache_jobHistories {
     my ($self, %options) = @_;
 
     my $datas = $self->get_jobHistories(disable_cache => 1, get_param => $options{get_param});
-    $self->write_cache_file(
+    my $update_time = $self->write_cache_file(
         statefile => 'jobHistories',
         response => $datas
     );
 
-    return $datas;
+    return ($datas, $update_time);
 }
 
 sub add_machine {
@@ -207,7 +210,7 @@ sub add_machine {
 
     return {
         id => $options{item}->{id},
-        name => $options{item}->{jobName},
+        name => $options{item}->{name},
         state => $options{item}->{status}->{state},
         networkStatus => $options{item}->{status}->{networkStatus},
         operationStatus => $options{item}->{status}->{operationStatus},
@@ -231,7 +234,7 @@ sub add_jobHistories {
 
     return {
         id => $options{item}->{id},
-        name => $options{item}->{name},
+        name => $options{item}->{jobName},
         startTime => $options{item}->{jobStartTime},
         statusNum => $options{item}->{jobStatus}->{id},
         statusDesc => $options{item}->{jobStatus}->{description},

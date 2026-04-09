@@ -18,49 +18,16 @@
 # limitations under the License.
 #
 
-package apps::backup::veeam::vone::restapi::mode::jobs;
+package apps::automation::opcon::restapi::mode::jobs;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc qw/is_excluded change_seconds/;
+use DateTime;
+use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-my $map_job_status_numeric = {
-    unknown => 0,
-    success => 1,
-    none => 2,
-    failed => 3,
-    running => 4,
-    warning => 5
-};
-
-sub custom_status_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => 'job.status.count',
-        instances => [$self->{result_values}->{type}, $self->{result_values}->{name}],
-        value => $map_job_status_numeric->{ $self->{result_values}->{status} },
-        min => 0
-    );
-}
-
-sub custom_duration_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => 'job.last.duration.seconds',
-        unit => 's',
-        instances => [$self->{result_values}->{type}, $self->{result_values}->{name}],
-        value => $self->{result_values}->{duration_seconds},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min => 0
-    );
-}
+use Digest::MD5 qw(md5_hex);
 
 sub prefix_global_output {
     my ($self, %options) = @_;
@@ -68,23 +35,12 @@ sub prefix_global_output {
     return 'Number of jobs ';
 }
 
-sub job_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking job '%s' [type: %s]",
-        $options{instance_value}->{name},
-        $options{instance_value}->{type}
-    );
-}
-
 sub prefix_job_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "job '%s' [type: %s] ",
-        $options{instance_value}->{name},
-        $options{instance_value}->{type}
+        "job '%s' executions ",
+        $options{instance_value}->{jobId}
     );
 }
 
@@ -93,13 +49,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        {
-            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
-            group => [
-                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE },
-                { name => 'metrics', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
-            ]
-        }
+        { name => 'jobs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -115,30 +65,21 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{status} = [
-        {
-            label => 'job-status',
-            type => COUNTER_KIND_TEXT,
-            unknown_default => '%{status} =~ /unknown/',
-            warning_default => '%{status} =~ /warning/',
-            critical_default => '%{status} =~ /failed/',
-            set => {
-                key_values => [
-                    { name => 'status' }, { name => 'name' }, { name => 'type' }
-                ],
-                output_template => 'status: %s',
-                closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
+    $self->{maps_counters}->{jobs} = [
+        { label => 'job-executions-failed-prct', nlabel => 'job.executions.failed.percentage', set => {
+                key_values => [ { name => 'jobFailedPrct' }, { name => 'jobId' } ],
+                output_template => 'failed: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'jobId' }
+                ]
             }
-        }
-    ];
-
-    $self->{maps_counters}->{metrics} = [
-        { label => 'job-last-duration', set => {
-                key_values => [ { name => 'duration_seconds' }, { name => 'duration_human' }, { name => 'name' }, { name => 'type' } ],
-                output_template => 'last duration time: %s',
-                output_use => 'duration_human',
-                closure_custom_perfdata => $self->can('custom_duration_perfdata')
+        },
+        { label => 'job-executions', nlabel => 'job.executions.count', set => {
+                key_values => [ { name => 'jobCount' }, { name => 'jobId' } ],
+                output_template => 'count: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'jobId' }
+                ]
             }
         }
     ];
@@ -146,16 +87,14 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-uid:s'            => { name => 'filter_uid', default => '' },
-        'filter-name:s'           => { name => 'filter_name', default => '' },
-        'filter-type:s'           => { name => 'filter_type', default => '' },
-        'add-vm-replication-jobs' => { name => 'add_vm_replication_jobs' },
-        'add-vm-backup-jobs'      => { name => 'add_vm_backup_jobs' },
-        'add-backup-copy-jobs'    => { name => 'add_backup_copy_jobs' }
+        'filter-id:s'     => { name => 'filter_id', default => '' },
+        'filter-name:s'   => { name => 'filter_name', default => '' },
+        'timezone:s'      => { name => 'timezone' },
+        'status-failed:s' => { name => 'status_failed' }
     });
 
     return $self;
@@ -165,105 +104,112 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if ($self->{output}->{option_results}->{disco_show}) {
-        # By default all jobs are displayed in discovery mode
-        unless ($self->{option_results}->{add_vm_backup_jobs} || $self->{option_results}->{add_backup_copy_jobs} || $self->{option_results}->{add_vm_replication_jobs}) {
-            $self->{option_results}->{add_vm_replication_jobs} = 1;
-            $self->{option_results}->{add_vm_backup_jobs} = 1;
-            $self->{option_results}->{add_backup_copy_jobs} = 1;
-        }
-    } else {
-        # By default only vm replication jobs are displayed in non-discovery mode
-        $self->{option_results}->{add_vm_replication_jobs} = 1
-            unless $self->{option_results}->{add_vm_backup_jobs} || $self->{option_results}->{add_backup_copy_jobs};
+    $self->{option_results}->{timezone} = 'UTC' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
+
+    if (!defined($self->{option_results}->{status_failed}) || $self->{option_results}->{status_failed} eq '') {
+        $self->{option_results}->{status_failed} = '%{statusDesc} =~ /initialization error|failed/i';
     }
-}
 
-sub add_jobs {
-    my ($self, %options) = @_;
-
-    foreach my $job (@{$options{jobs}->{items}}) {
-        next if is_excluded($job->{ $options{uid} }, $self->{option_results}->{filter_uid});
-        next if is_excluded($job->{name}, $self->{option_results}->{filter_name});
-
-        $self->{jobs}->{ $options{type} . '-' . $job->{name} } = {
-            name => $job->{name},
-            type => $options{type},
-            uid => $job->{ $options{uid} },
-            status => {
-                name => $job->{name},
-                type => $options{type},
-                status => lc $job->{status}
-            },
-            metrics => {
-                name => $job->{name},
-                type => $options{type}
-            }
-        };
-        if (defined($job->{lastRunDurationSec}) && $job->{lastRunDurationSec} =~ /[0-9]+/) {
-            $self->{jobs}->{ $options{type} . '-' . $job->{name} }->{metrics}->{duration_seconds} = $job->{lastRunDurationSec};
-            $self->{jobs}->{ $options{type} . '-' . $job->{name} }->{metrics}->{duration_human} = change_seconds(
-                value => $job->{lastRunDurationSec}
-            );
-        }
-
-        $self->{global}->{detected}++;
-    }
-}
-
-sub add_vm_replication_jobs {
-    my ($self, %options) = @_;
-
-    return unless $self->{option_results}->{add_vm_replication_jobs};
-    return if is_excluded($options{type}, $self->{option_results}->{filter_type});
-
-    my $jobs = $options{custom}->get_vm_replication_jobs();
-    $self->add_jobs(jobs => $jobs, uid => 'vmReplicationJobUid', type => $options{type});
-}
-
-sub add_vm_backup_jobs {
-    my ($self, %options) = @_;
-
-    return unless $self->{option_results}->{add_vm_backup_jobs};
-    return if is_excluded($options{type}, $self->{option_results}->{filter_type});
-
-    my $jobs = $options{custom}->get_vm_backup_jobs();
-    $self->add_jobs(jobs => $jobs, uid => 'vmBackupJobUid', type => $options{type});
-}
-
-sub add_backup_copy_jobs {
-    my ($self, %options) = @_;
-
-    return unless $self->{option_results}->{add_backup_copy_jobs};
-    return if is_excluded($options{type}, $self->{option_results}->{filter_type});
-
-    my $jobs = $options{custom}->get_backup_copy_jobs();
-    $self->add_jobs(jobs => $jobs, uid => 'backupCopyJobUid', type => $options{type});
+    $self->{option_results}->{status_failed} =~ s/%\{(.*?)\}/\$values->{$1}/g;
+    $self->{option_results}->{status_failed} =~ s/%\((.*?)\)/\$values->{$1}/g;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = 'opcon_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
+        md5_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
+            (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
+            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
+            (defined($self->{option_results}->{filter_type}) ? $self->{option_results}->{filter_type} : '')
+        );
+
+    my $ctime = time();
+    my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
+    $last_timestamp = $ctime - (15 * 60) if (!defined($last_timestamp));
+
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
+    my $dt = DateTime->from_epoch(epoch => $ctime, %$tz);
+    my $to = sprintf("%02d-%02d-%d", $dt->day, $dt->month, $dt->year);
+    my $dt2 = DateTime->from_epoch(epoch => $last_timestamp, %$tz);
+    my $from = sprintf("%02d-%02d-%d", $dt2->day, $dt2->month, $dt2->year);
+    my ($items, $update_time) = $options{custom}->get_jobHistories(
+        get_param => [
+            'from=' . $from,
+            'to=' . $to
+        ]
+    );
+
+    my $filter_time = $last_timestamp;
+    if (defined($update_time) && $update_time < $filter_time) {
+        $filter_time = $update_time;
+    }
+
+    my ($masterJobs) = $options{custom}->get_masterJobs();
+
     $self->{global} = { detected => 0 };
     $self->{jobs} = {};
 
-    $self->add_backup_copy_jobs(custom => $options{custom}, type => 'backupCopy');
-    $self->add_vm_backup_jobs(custom => $options{custom}, type => 'vmBackup');
-    $self->add_vm_replication_jobs(custom => $options{custom}, type => 'vmReplication');
+    foreach my $item (@$masterJobs) {
+        my ($masterId, $name) = split(/\|/, $item->{id});
+        my $id = $masterId . '-' . $name;
+
+        next if is_excluded($id, $self->{option_results}->{filter_id});        
+        next if is_excluded($item->{name}, $self->{option_results}->{filter_name});
+
+        $self->{jobs}->{$id} = {
+            jobId => $id,
+            jobName => $item->{name},
+            jobCount => 0,
+            jobFailed => 0
+        };
+        $self->{global}->{detected}++;
+    }
+
+    foreach my $item (@$items) {
+        my ($date, $masterId, $jobNumber, $name) = split(/\|/, $item->{id});
+        my $id = $masterId . '-' . $name;
+        next if is_excluded($id, $self->{option_results}->{filter_id});
+        next if is_excluded($item->{name}, $self->{option_results}->{filter_name});
+
+        # format: "2026-04-08T12:01:46.7400000+02:00"
+        next if ($item->{terminationTime} !~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\.\d+(\+.*)$/);
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, time_zone => $7);
+        my $termination_epoch = $dt->epoch();
+
+        next if ($filter_time > $termination_epoch);
+
+        $self->{jobs}->{$id}->{jobCount}++;
+
+        $self->{jobs}->{$id}->{jobFailed}++ if ($self->{output}->test_eval(test => $self->{option_results}->{status_failed}, values => { statusDesc => $item->{statusDesc} }));
+    }
+
+    foreach my $id (keys %{$self->{jobs}}) {
+        $self->{jobs}->{$id}->{jobFailedPrct} = $self->{jobs}->{$id}->{jobCount} > 0 ?
+            $self->{jobs}->{$id}->{jobFailed} * 100 / $self->{jobs}->{$id}->{jobCount} : 0;
+    }
 }
 
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['uid', 'name', 'type', 'status']);
+    $self->{output}->add_disco_format(elements => ['id', 'masterId', 'name']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(custom => $options{custom});
-    foreach (sort { $a->{uid} cmp $b->{uid} || $a->{name} cmp $b->{name} } values %{ $self->{jobs} }) {
-        $self->{output}->add_disco_entry(uid => $_->{uid}, name => $_->{name}, type => $_->{type}, status => $_->{status}->{status});
+    my ($masterJobs) = $options{custom}->get_masterJobs();
+    foreach (sort { $a->{id} cmp $b->{id} } values %{ $self->{jobs} }) {
+        my ($masterId, $name) = split(/\|/, $_->{id});
+        my $id = $masterId . '-' . $name;
+
+        $self->{output}->add_disco_entry(
+            id => $id,
+            masterId => $masterId,
+            name => $_->{name}
+        );
     }
 }
 
@@ -273,56 +219,25 @@ __END__
 
 =head1 MODE
 
-Check backup jobs.
+Check jobs.
 
 =over 8
 
-=item B<--add-vm-replication-jobs>
+=item B<--filter-id>
 
-Include VM replication jobs when defined. This is the default option if no additional options are used.
-
-=item B<--add-vm-backup-jobs>
-
-Include VM backup jobs when defined.
-
-=item B<--add-backup-copy-jobs>
-
-Include backup copy jobs when defined.
-
-=item B<--filter-uid>
-
-Filter jobs by UID (can be a regexp).
+Filter jobs by ID (can be a regexp).
 
 =item B<--filter-name>
 
 Filter jobs by name (can be a regexp).
 
-=item B<--filter-type>
+=item B<--timezone>
 
-Filter jobs by type (can be a regexp).
+Timezone options. Default is 'UTC'.
 
-=item B<--unknown-job-status>
+=item B<--status-failed>
 
-Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/').
-You can use the following variables: %{status}, %{name}, %{type}
-
-=item B<--warning-job-status>
-
-Define the conditions to match for the status to be WARNING (default: '%{status} =~ /warning/').
-You can use the following variables: %{status}, %{name}, %{type}
-
-=item B<--critical-job-status>
-
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /failed/').
-You can use the following variables: %{status}, %{name}, %{type}
-
-=item B<--warning-job-last-duration>
-
-Threshold.
-
-=item B<--critical-job-last-duration>
-
-Threshold.
+Expression to define status failed (default: '%{statusDesc} =~ /initialization error|failed/i').
 
 =item B<--warning-jobs-detected>
 
@@ -331,6 +246,22 @@ Threshold.
 =item B<--critical-jobs-detected>
 
 Threshold.
+
+=item B<--warning-job-executions>
+
+Threshold.
+
+=item B<--critical-job-executions>
+
+Threshold.
+
+=item B<--warning-job-executions-failed-prct>
+
+Threshold in percentage.
+
+=item B<--critical-job-executions-failed-prct>
+
+Threshold in percentage.
 
 =back
 

@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
 use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -148,7 +149,7 @@ my $map_network_status = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $machines = $options{custom}->get_machines();
+    my ($machines) = $options{custom}->get_machines();
 
     $self->{global} = { detected => 0 };
     $self->{machines} = {};
