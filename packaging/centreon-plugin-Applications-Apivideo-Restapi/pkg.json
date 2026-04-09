@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Apivideo-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_apivideo_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/saas/apivideo/restapi/"
+    ]
+}

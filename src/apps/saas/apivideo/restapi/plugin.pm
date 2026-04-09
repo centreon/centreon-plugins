@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'videos-usage' => 'apps::saas::apivideo::restapi::mode::videosusage'
+        'contents-usage' => 'apps::saas::apivideo::restapi::mode::contentsusage'
     };
 
     $self->{custom_modes}->{api} = 'apps::saas::apivideo::restapi::custom::api';

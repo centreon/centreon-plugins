@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -226,6 +226,7 @@ sub get_endpoint {
     my $access_token = $self->get_access_token();
     my ($content) = $self->{http}->request(
         url_path        => $self->{option_results}->{url_path} . $options{endpoint},
+        get_param       => $options{get_param},
         header          => [ 'Authorization: Bearer ' . $access_token ],
         unknown_status  => '',
         warning_status  => '',
@@ -238,6 +239,7 @@ sub get_endpoint {
         $access_token = $self->get_access_token();
         $content = $self->{http}->request(
             url_path        => $self->{option_results}->{url_path} . $options{endpoint},
+            get_param      => $options{get_param},
             header          => [ 'Authorization: Bearer ' . $access_token ],
             unknown_status  => $self->{option_results}->{unknown_http_status},
             warning_status  => $self->{option_results}->{warning_http_status},
