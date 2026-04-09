@@ -271,11 +271,11 @@ C<%(status)> can have one of these values: C<active>, C<notInService>, C<notRead
 
 =item B<--warning-temperature>
 
-Warning threshold in celsius degrees.
+Warning threshold in Celsius degrees.
 
 =item B<--critical-temperature>
 
-Critical threshold in celsius degrees
+Critical threshold in Celsius degrees.
 
 =item B<--warning-voltage>
 

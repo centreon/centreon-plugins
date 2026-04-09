@@ -48,7 +48,6 @@ BPL
 --cacert-file
 cardtemperature
 CDN
-celsius
 centreon
 Centreon
 centreonvault
