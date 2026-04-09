@@ -31,7 +31,8 @@ sub new {
 
     $self->{modes} = {
         'cache'    => 'apps::automation::opcon::restapi::mode::cache',
-        'machines' => 'apps::automation::opcon::restapi::mode::machines',
+        'jobs'     => 'apps::automation::opcon::restapi::mode::jobs',
+        'machines' => 'apps::automation::opcon::restapi::mode::machines'
     };
 
     $self->{custom_modes}->{api} = 'apps::automation::opcon::restapi::custom::api';
