@@ -1586,9 +1586,8 @@ Display debug messages.
 
 =item B<--show-password>
 
-By default this monitoring connector try to mask sensitive information contained in external commands from debug output by replacing then with C<***>.
-Use this option to disable masking.
-However be aware that even without using this option some sensitive information may still be displayed in debug logs.
+By default, sensitive information in command lines is hidden in debug output and replaced with C<***> (however, debug logs may still display sensitive information).
+Using the C<--show-password> option will display the passwords in plain text.
 
 =item B<--filter-perfdata>
 
