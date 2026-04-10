@@ -952,7 +952,7 @@ sub is_excluded($;$;$;%) {
 
     return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
 
-    $options{output}->output_add(long_msg => "skipping '$string': no matching filter.", debug => 1)
+    $options{output}->output_add(long_msg => "skipping '$string': not included by any filter.", debug => 1)
         if %options && $options{output};
 
     return 1;
