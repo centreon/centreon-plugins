@@ -9,115 +9,11 @@
   "folders": [],
   "routes": [
     {
-      "uuid": "504794f4-d7f3-49ff-92f2-a1272f37b7ae",
-      "type": "http",
-      "documentation": "",
-      "method": "post",
-      "endpoint": "v1/oauth/token",
-      "responses": [
-        {
-          "uuid": "b38dfeec-3ad3-4040-b56b-9901a8e37a88",
-          "body": "{\n  \"token\": \"ABCDEFG1234567890\",\n  \"token_type\": \"Bearer\",\n  \"expires_in\": 3600\n}",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "",
-          "headers": [
-            {
-              "key": "access-control-allow-headers",
-              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
-            },
-            {
-              "key": "access-control-allow-methods",
-              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
-            },
-            {
-              "key": "access-control-allow-origin",
-              "value": "*"
-            },
-            {
-              "key": "content-security-policy",
-              "value": "default-src 'none'"
-            },
-            {
-              "key": "content-type",
-              "value": "text/html; charset=utf-8"
-            },
-            {
-              "key": "x-content-type-options",
-              "value": "nosniff"
-            }
-          ],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [
-            {
-              "target": "header",
-              "modifier": "Accept",
-              "value": "application/json",
-              "invert": false,
-              "operator": "equals"
-            },
-            {
-              "target": "header",
-              "modifier": "Content-Type",
-              "value": "application/json",
-              "invert": false,
-              "operator": "equals"
-            },
-            {
-              "target": "body",
-              "modifier": "key_id",
-              "value": "",
-              "invert": true,
-              "operator": "null"
-            },
-            {
-              "target": "body",
-              "modifier": "key_secret",
-              "value": "",
-              "invert": true,
-              "operator": "null"
-            }
-          ],
-          "rulesOperator": "AND",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        },
-        {
-          "uuid": "5b3bb4c2-4e49-4135-9c63-b13d88ad7fa0",
-          "body": "{}",
-          "latency": 0,
-          "statusCode": 404,
-          "label": "",
-          "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": true,
-          "crudKey": "id",
-          "callbacks": []
-        }
-      ],
-      "responseMode": null,
-      "streamingMode": null,
-      "streamingInterval": 0
-    },
-    {
       "uuid": "28075cfb-d300-4c92-aa12-d12ce3d115f0",
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/apps",
+      "endpoint": "zdx/v1/apps",
       "responses": [
         {
           "uuid": "e2548dda-c2b8-4bb5-8fbe-acd0e8871a35",
@@ -173,7 +69,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/apps/3",
+      "endpoint": "zdx/v1/apps/3",
       "responses": [
         {
           "uuid": "f828448e-7bbb-4966-81b0-0218d6bbac59",
@@ -229,7 +125,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/apps/1",
+      "endpoint": "zdx/v1/apps/1",
       "responses": [
         {
           "uuid": "28158954-8090-4f43-814f-9e57f2b9c2f2",
@@ -285,7 +181,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/administration/locations/",
+      "endpoint": "zdx/v1/administration/locations/",
       "responses": [
         {
           "uuid": "0f279496-8651-43db-9f8a-8361f0f055f5",
@@ -341,7 +237,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/apps/1/metrics",
+      "endpoint": "zdx/v1/apps/1/metrics",
       "responses": [
         {
           "uuid": "9ea32fd0-e42f-4839-a69c-6db87b491e3e",
@@ -397,7 +293,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "v1/apps/3/metrics",
+      "endpoint": "zdx/v1/apps/3/metrics",
       "responses": [
         {
           "uuid": "508d590e-463d-4f32-a1f7-d709a8c2efda",
@@ -551,12 +447,68 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "146c54c4-6503-4c1f-8c02-0166391d5562",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "oauth2/v1/token",
+      "responses": [
+        {
+          "uuid": "d9016e54-aba4-4758-bd31-f1230855b5af",
+          "body": " {\"access_token\":\"ABCDEFG1234567890\",\"token_type\":\"Bearer\",\"expires_in\":899}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
     {
       "type": "route",
-      "uuid": "504794f4-d7f3-49ff-92f2-a1272f37b7ae"
+      "uuid": "146c54c4-6503-4c1f-8c02-0166391d5562"
     },
     {
       "type": "route",

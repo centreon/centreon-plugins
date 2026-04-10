@@ -257,6 +257,7 @@ OIDs
 okta
 OLT
 oneaccess-sys-mib
+OneAPI
 OpenMetrics
 OpenStack
 OpenWSMAN
