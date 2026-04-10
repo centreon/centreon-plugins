@@ -276,20 +276,16 @@ sub reload_cache {
         }
     }
 
-    my $oid_wsSFPEntry = '.1.3.6.1.4.1.9303.4.1.4.1';
-    my $oid_wsSFPSerialNumber = '.1.3.6.1.4.1.9303.4.1.4.1.53';
-
     my $result = $options{snmp}->get_table(
-        oid   => $oid_wsSFPEntry,
-        start => $oid_wsSFPSerialNumber
+        oid   => $mapping->{sfpSerialNumber}->{oid},
     );
 
     foreach my $key (keys %$result) {
-        next if ($key !~ /$oid_wsSFPSerialNumber\.([0-9]+)$/);
+        next if ($key !~ /$mapping->{sfpSerialNumber}->{oid}\.([0-9]+)$/);
         my $instance = $1;
 
         $datas->{sfp}->{$instance} = [
-            $self->{output}->decode($result->{$oid_wsSFPSerialNumber . '.' . $instance}),
+            $self->{output}->decode($result->{$mapping->{sfpSerialNumber}->{oid} . '.' . $instance}),
             exists($snmp_names->{$instance}) ? $snmp_names->{$instance} : ""
         ];
     }
