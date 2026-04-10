@@ -17,7 +17,7 @@ path-status ${tc}
     [Tags]    storage    hitachi    eseries    local    path
     ${command}    Catenate
     ...    ${CMD}
-    ...    --baie-id=0123
+    ...    --instance-id=0123
     ...    --mode=path-status
     ...    ${extra_options}
 

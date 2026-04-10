@@ -70,7 +70,7 @@ sub manage_selection {
 
     my ($stdout) = $options{custom}->execute_command(
         command         => 'raidcom',
-        command_options => 'get system -key efficiency -I' . $options{custom}->get_baie_id(),
+        command_options => 'get system -key efficiency -I' . $options{custom}->get_instance_id(),
     );
 
     # https://docs.hitachivantara.com/r/en-us/command-control-interface/01-87-03/mk-90rd7009/configuration-setting-commands/raidcom-get-system
@@ -109,7 +109,7 @@ __END__
 
 Check Hitachi E-Series storage efficiency ratios.
 
-Command used: C<raidcom get system -key efficiency -I<baie-id>>
+Command used: C<raidcom get system -key efficiency -I<instance-id>>
 
 =over 8
 

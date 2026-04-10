@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=storage::hitachi::eseries::local::plugin --baie-id=0123 --command-path=${CURDIR}${/}bin
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::hitachi::eseries::local::plugin --instance-id=0123 --command-path=${CURDIR}${/}bin
 
 
 *** Test Cases ***

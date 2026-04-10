@@ -73,7 +73,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'remote-baie-id:s@' => { name => 'remote_baie_id' },
+        'remote-instance-id:s@' => { name => 'remote_instance_id' },
         'ldev-id:s@'        => { name => 'ldev_id' },
         'group-id:s'        => { name => 'group_id',        default => '' },
     });
@@ -85,25 +85,25 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    my $baie_id = $self->{option_results}->{baie_id};
-    # If remote_baie_id starts with + or - then it is added to baie_id to determine the effective array ID to use
+    my $instance_id = $self->{option_results}->{instance_id};
+    # If remote_instance_id starts with + or - then it is added to instance_id to determine the effective array ID to use
     # otherwise it is used as is
 
-    if (ref $self->{option_results}->{remote_baie_id} eq 'ARRAY') {
-        foreach my $c_id (reverse @{$self->{option_results}->{remote_baie_id}}) {
+    if (ref $self->{option_results}->{remote_instance_id} eq 'ARRAY') {
+        foreach my $c_id (reverse @{$self->{option_results}->{remote_instance_id}}) {
             next if $c_id eq '';
             if ($c_id =~ /^[\+-]\d+$/) {
-                $baie_id += $c_id;
+                $instance_id += $c_id;
             } elsif ($c_id =~ /^\d+$/) {
-                $baie_id = $c_id;
+                $instance_id = $c_id;
             } else {
-                $self->{output}->option_exit(short_msg => "Please set a valid --remote-baie-id option.");
+                $self->{output}->option_exit(short_msg => "Please set a valid --remote-instance-id option.");
             }
             last
         }
     }
 
-    $self->{remote_baie_id} = $baie_id;
+    $self->{remote_instance_id} = $instance_id;
 
     $self->{ldev_ids} = flatten_arrays($self->{option_results}->{ldev_id});
 
@@ -117,12 +117,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # https://docs.hitachivantara.com/r/en-us/command-control-interface/01-87-03/mk-90rd7009/data-and-system-management-commands/pairdisplay
-    # pairdisplay -ITC<baie-id+1000> -g <group> -CLI -fxce
+    # pairdisplay -ITC<instance-id+1000> -g <group> -CLI -fxce
 
     $self->{pairs} = {};
     my ($stdout) = $options{custom}->execute_command(
         command         => 'pairdisplay',
-        command_options => '-ITC' . $self->{remote_baie_id} . ' -g ' . $self->{group_id} . ' -CLI -fxce'
+        command_options => '-ITC' . $self->{remote_instance_id} . ' -g ' . $self->{group_id} . ' -CLI -fxce'
     );
 
     foreach my $line (split /\n/, $stdout) {
@@ -173,13 +173,13 @@ __END__
 
 Check Hitachi E-Series TrueCopy/Universal Replicator pair status.
 
-Command used: C<pairdisplay -ITC<baie-id+1000> -g <group> -CLI -fxce>
+Command used: C<pairdisplay -ITC<instance-id+1000> -g <group> -CLI -fxce>
 
 =over 8
 
-=item B<--remote-baie-id>
+=item B<--remote-instance-id>
 
-Remote array ID. If starts with + or -, it is added to the local array ID, otherwise used as is (e.g. C<--remote-baie-id='100'> or C<--remote-baie-id='+1000'>).
+Remote array ID. If starts with + or -, it is added to the local array ID, otherwise used as is (e.g. C<--remote-instance-id='100'> or C<--remote-instance-id='+1000'>).
 
 =item B<--group-id>
 

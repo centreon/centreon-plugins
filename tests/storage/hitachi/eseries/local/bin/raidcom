@@ -6,7 +6,7 @@ subcmd="$1 $2"
 
 case "$subcmd" in
     "get system")
-        # raidcom get system -key efficiency -I<baie_id>
+        # raidcom get system -key efficiency -I<instance_id>
 cat<<EOF
 Serial# TOTAL_EFF_R TLS_R PLS_R PLS_CMP_R PLS_DDP_R PLS_RECLAIM_R FMD_SAVING_R FMD_CMP_R FMD_RECLAIM_R SNAPSHOT_EFF_R PROVISIONING_EFF CALCULATION_START CALCULATION_END
 123456 2.50 1.20 1.30 0.50 0.70 0.10 1.50 0.80 0.70 1.10 1.20 2024-01-01 2024-01-02
@@ -14,15 +14,15 @@ EOF
         ;;
 
     "get path")
-        # raidcom get path -I<baie_id>  (use -I9999 to trigger BLK path)
-        baie_id=""
+        # raidcom get path -I<instance_id>  (use -I9999 to trigger BLK path)
+        instance_id=""
         for arg in "$@"; do
-            case "$arg" in -I*) baie_id="${arg#-I}";; esac
+            case "$arg" in -I*) instance_id="${arg#-I}";; esac
         done
         echo "PHG Group STS CM IF MP Port WWN PR LUN PHS Serial# Product_ID LB PM DM QD TO PBW"
         echo "0 0 E 0 - 0 CL1-A 50014380186af83c 0 0 NML 123456 VSP 0 M N 8 N 4096"
         echo "0 0 E 0 - 0 CL1-A 50014380186af83c 0 1 NML 123456 VSP 0 M N 8 N 4096"
-        if [ "$baie_id" = "9999" ]; then
+        if [ "$instance_id" = "9999" ]; then
             echo "0 0 E 0 - 0 CL2-A 50014380186af83d 0 0 BLK 123456 VSP 0 M N 8 N 4096"
         else
             echo "0 0 E 0 - 0 CL2-A 50014380186af83d 0 0 NML 123456 VSP 0 M N 8 N 4096"
@@ -31,14 +31,14 @@ EOF
         ;;
 
     "get pool")
-        # raidcom get pool -I<baie_id>
+        # raidcom get pool -I<instance_id>
         echo "PID POLS U(%) SSCNT Av(MB) Tp(MB) Seq# Num LDEV# H TH Expansion_attribute PoolName"
         echo "000 POLN 50 0 204800 409600 123456 1 0x0001 - 80 - TestPool0"
         echo "001 POLF 98 0 8192 409600 123456 1 0x0011 - 80 - TestPool1"
         ;;
 
     "get quorum")
-        # raidcom get quorum -quorum_id <id> -I<baie_id>
+        # raidcom get quorum -quorum_id <id> -I<instance_id>
         qid=""
         shift 2
         while [ $# -gt 0 ]; do
