@@ -29,6 +29,8 @@ use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 use Digest::SHA qw(sha256_hex);
 
+my @_sdwan_keys = qw(name vdom ifName id state);
+
 sub prefix_traffic_output {
     my ($self, %options) = @_;
 
@@ -343,6 +345,21 @@ sub manage_selection {
             ifName => $result->{ifName},
             packet_loss => $result->{packet_loss}
         };
+    }
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => [ @_sdwan_keys ]);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(snmp => $options{snmp});
+    foreach my $item (sort { $self->{sdwan}->{$a}->{status}->{name} cmp $self->{sdwan}->{$b}->{status}->{name} } keys %{$self->{sdwan}}) {
+        $self->{output}->add_disco_entry(map { $_ => $self->{sdwan}->{$item}->{status}->{$_} } @_sdwan_keys);
     }
 }
 
