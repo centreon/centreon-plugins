@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc qw/is_excluded/;
+use centreon::common::huawei::standard::snmp::functions qw/get_serial_string/;
 
 sub prefix_module_output {
     my ($self, %options) = @_;
@@ -65,7 +66,6 @@ sub set_counters {
                         { name => 'display' },
                         { name => 'speed' }
                     ],
-                    output_template                 => "status %s",
                     closure_custom_perfdata        => sub {return 0;},
                     closure_custom_threshold_check => \&catalog_status_threshold_ng
                 }
@@ -113,27 +113,6 @@ my $mapping_speed = {
     -1 => 'invalid'
 };
 
-sub get_serial_string($) {
-    my ($self) = shift;
-
-    # Get the raw OCTET STRING value for the serial number.
-    # It may contain both ASCII and binary data.
-    my ($raw_bytes) = @_;
-
-    # Extract the first 4 bytes and interpret them as ASCII characters.
-    # Example: '52 43 4D 47' => 'RCMG'
-    my $ascii_part = substr($raw_bytes, 0, 4);
-
-    # Extract the last 4 bytes, convert them to an uppercase hex string.
-    # Example: '1A 98 0E 53' => '1A980E53'
-    my $hex_part = uc(unpack("H*", substr($raw_bytes, 4, 4)));
-
-    # Format the final output string, combining name, serial number, and state.
-    # The serial number is shown as: [first 4 bytes as ASCII][last 4 bytes as HEX].
-    # Example: RCMG1A980E53
-    return "$ascii_part$hex_part";
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -155,7 +134,7 @@ sub manage_selection {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        my $serial = $self->get_serial_string($result->{serial}) // '';
+        my $serial = get_serial_string($result->{serial}) // '';
 
         next if is_excluded($serial, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output});
 

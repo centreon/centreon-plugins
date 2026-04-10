@@ -33,7 +33,7 @@ List-gpon-ont ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    List ONT: [Name = xDSL ANO 1] [Serial = ANON00000001] [Serial Hex = 414E4F4E00000001] [State = active] [Name = xDSL ANO 2] [Serial = ANON00000002] [Serial Hex = 414E4F4E00000002] [State = notReady] [Name = DSLAM ANO 3] [Serial = ANON00000003] [Serial Hex = 414E4F4E00000003] [State = active]
+    ...    List ONT: [Name = DSLAM ANO 3] [Serial = ANON00000003] [Serial Hex = 414E4F4E00000003] [State = active] [Name = xDSL ANO 1] [Serial = ANON00000001] [Serial Hex = 414E4F4E00000001] [State = active] [Name = xDSL ANO 2] [Serial = ANON00000002] [Serial Hex = 414E4F4E00000002] [State = notReady]
     ...    2
     ...    --include-name='xDSL ANO 1'
     ...    List ONT: [Name = xDSL ANO 1] [Serial = ANON00000001] [Serial Hex = 414E4F4E00000001] [State = active]

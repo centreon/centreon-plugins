@@ -22,6 +22,7 @@ package network::huawei::standard::snmp::mode::listgponont;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::misc qw/is_excluded/;
+use centreon::common::huawei::standard::snmp::functions qw/get_serial_string/;
 
 use strict;
 use warnings;
@@ -87,7 +88,7 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        my $serial = $self->get_serial_string($result->{serial});
+        my $serial = get_serial_string($result->{serial});
         $result->{serial_hex} = uc(unpack("H*", $result->{serial}));
         $result->{serial} = $serial // '';
         next if is_excluded($result->{name} // '', $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
@@ -106,7 +107,7 @@ sub run {
     $self->{output}->option_exit(short_msg => "No ONT found matching.")
         unless keys @{$self->{ont}};
 
-    foreach (sort @{$self->{ont}}) {
+    foreach (sort { $a->{name} cmp $b->{name} } @{$self->{ont}}) {
         $self->{output}->output_add(
             long_msg =>
                 sprintf(
@@ -127,27 +128,6 @@ sub run {
     $self->{output}->exit();
 }
 
-sub get_serial_string($) {
-    my ($self) = shift;
-
-    # Get the raw OCTET STRING value for the serial number.
-    # It may contain both ASCII and binary data.
-    my ($raw_bytes) = @_;
-
-    # Extract the first 4 bytes and interpret them as ASCII characters.
-    # Example: '52 43 4D 47' => 'RCMG'
-    my $ascii_part = substr($raw_bytes, 0, 4);
-
-    # Extract the last 4 bytes, convert them to an uppercase hex string.
-    # Example: '1A 98 0E 53' => '1A980E53'
-    my $hex_part = uc(unpack("H*", substr($raw_bytes, 4, 4)));
-
-    # Format the final output string, combining name, serial number, and state.
-    # The serial number is shown as: [first 4 bytes as ASCII][last 4 bytes as HEX].
-    # Example: RCMG1A980E53
-    return "$ascii_part$hex_part";
-}
-
 sub disco_format {
     my ($self, %options) = @_;
 
@@ -159,7 +139,7 @@ sub disco_show {
 
     $self->manage_selection(%options);
 
-    foreach (@{$self->{ont}}) {
+    foreach (sort { $a->{name} cmp $b->{name} } @{$self->{ont}}) {
         $self->{output}->add_disco_entry(
             name       => $_->{name},
             serial     => $_->{serial},
