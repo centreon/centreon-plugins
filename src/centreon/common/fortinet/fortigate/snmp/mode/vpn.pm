@@ -269,7 +269,11 @@ sub disco_show {
     $self->manage_selection(snmp => $options{snmp});
     foreach my $vd (sort keys %{$self->{vd}}) {
         foreach my $vpn (sort { $a->{display} cmp $b->{display} } values %{$self->{vd}->{$vd}->{vpn}}) {
-            $self->{output}->add_disco_entry( ( name => $vpn->{display}, vdom => $vd, state => $vpn->{state} ) );
+            $self->{output}->add_disco_entry(
+                name => $vpn->{display},
+                vdom => $vd,
+                state => $vpn->{state}
+            );
         }
     }
 }
