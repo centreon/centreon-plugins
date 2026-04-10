@@ -251,10 +251,8 @@ sub reload_cache {
         }
     }
 
-    my $oid_bcsiOptMonLaneEntry = '.1.3.6.1.4.1.1588.3.1.8.1.1.1';
-
     my $result = $options{snmp}->get_table(
-        oid => $oid_bcsiOptMonLaneEntry,
+        oid   => $mapping->{sfpTemp}->{oid},
     );
 
     foreach my $key (keys %$result) {
