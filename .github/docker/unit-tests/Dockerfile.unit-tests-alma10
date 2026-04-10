@@ -3,7 +3,6 @@ ARG REGISTRY_URL=docker.io
 FROM ${REGISTRY_URL}/almalinux:10
 
 RUN bash -e <<EOF
-
 dnf install -y 'dnf-command(config-manager)' epel-release zstd jq
 dnf config-manager --set-enabled crb
 
@@ -12,25 +11,25 @@ cat > /etc/yum.repos.d/centreon-plugins.repo <<'REPOEOF'
 [centreon-plugins-stable]
 name=centreon plugins stable x86_64
 baseurl=https://packages.centreon.com/rpm-plugins/el10/stable/x86_64
-enabled=0
+enabled=1
 gpgcheck=1
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES
 [centreon-plugins-stable-noarch]
 name=centreon plugins stable noarch
 baseurl=https://packages.centreon.com/rpm-plugins/el10/stable/noarch
-enabled=0
+enabled=1
 gpgcheck=1
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES
 [centreon-plugins-testing]
 name=centreon plugins testing x86_64
 baseurl=https://packages.centreon.com/rpm-plugins/el10/testing/x86_64
-enabled=0
+enabled=1
 gpgcheck=1
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES
 [centreon-plugins-testing-noarch]
 name=centreon plugins testing noarch
 baseurl=https://packages.centreon.com/rpm-plugins/el10/testing/noarch
-enabled=0
+enabled=1
 gpgcheck=1
 gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES
 [centreon-plugins-unstable]
