@@ -941,7 +941,7 @@ sub is_excluded($;$;$;%) {
     if (defined $exclude_regexp) {
         $exclude_regexp = [ $exclude_regexp ] unless ref $exclude_regexp eq 'ARRAY';
         if (grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp) {
-            $options{output}->output_add(long_msg => "skipping '$string': no matching filter.", debug => 1)
+            $options{output}->output_add(long_msg => "skipping '$string': excluded by a filter.", debug => 1)
                 if %options && $options{output};
             return 1
         }
