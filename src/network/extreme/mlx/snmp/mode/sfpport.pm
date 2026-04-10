@@ -208,9 +208,8 @@ sub reload_cache {
         }
     }
 
-    my $oid_snIfOpticalMonitoringInfoEntry = '.1.3.6.1.4.1.1991.1.1.3.3.6.1';
     my $result = $options{snmp}->get_table(
-        oid => $oid_snIfOpticalMonitoringInfoEntry,
+        oid => $mapping->{sfpTemp}->{oid},
     );
 
     foreach my $key (keys %$result) {
