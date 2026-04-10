@@ -55,6 +55,7 @@ overrides:
       perl(lib),
       perl(sort),
       perl(String::ShellQuote),
+      perl(Digest::SHA),
       tzdata,
       @RPM_DEPENDENCIES@
     ]
@@ -84,6 +85,7 @@ overrides:
       libdatetime-perl,
       libxml-libxml-perl,
       libstring-shellquote-perl,
+      libdigest-sha-perl,
       tzdata,
       @DEB_DEPENDENCIES@
     ]
