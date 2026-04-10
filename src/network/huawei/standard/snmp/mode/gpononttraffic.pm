@@ -69,7 +69,7 @@ sub set_counters {
             key_values          => [
                 { name => 'down_bytes', per_second => 1 }, { name => 'display' }
             ],
-            output_template     => 'traffic in: %.2f %s/s',
+            output_template     => 'traffic out: %.2f %s/s',
             output_change_bytes => 2,
             perfdatas           => [
                 { template => '%.2f', unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
