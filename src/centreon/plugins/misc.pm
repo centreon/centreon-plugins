@@ -980,50 +980,50 @@ sub mask_secrets($;$) {
     # Handled cases with examples
 
     # command -password P@s$W@rD -I100
-    $masked =~ s/(\s+-+password[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+password[=\s:]+)[^\s'"]+/$1$mask/gi;
 
     # command -token=P@s$W@rD -I100
-    $masked =~ s/(\s+-+token[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+token[=\s:]+)[^\s'"]+/$1$mask/gi;
 
     # curl --header "api-key: P@s$W@rD" https://test.com' OR curl -api-key P@s$W@rD
-    $masked =~ s/(\s+-+api[_-]?key[=\s:]+)[^\s'"]+/$1***/gi;
-    $masked =~ s/(api[_-]?key\s*:\s*)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+api[_-]?key[=\s:]+)[^\s'"]+/$1$mask/gi;
+    $masked =~ s/(api[_-]?key\s*:\s*)[^\s'"]+/$1$mask/gi;
 
     # command -secret=P@s$W@rD -I100
-    $masked =~ s/(\s+-+secret[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+secret[=\s:]+)[^\s'"]+/$1$mask/gi;
 
     # curl --header "secret: P@s$W@rD" https://test.com'
-    $masked =~ s/(secret\s*:\s*)[^\s'"]+/$1***/gi;
+    $masked =~ s/(secret\s*:\s*)[^\s'"]+/$1$mask/gi;
 
     # command -authent=P@s$W@rD -I100
-    $masked =~ s/(\s+-+auth(ent)?[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+auth(ent)?[=\s:]+)[^\s'"]+/$1$mask/gi;
 
     # command -cert-password=P@s$W@rD -I100
-    $masked =~ s/(\s+-+cert[_-]?password[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+cert[_-]?password[=\s:]+)[^\s'"]+/$1$mask/gi;
     # command -passphrase=P@s$W@rD -I100
-    $masked =~ s/(\s+-+passphrase[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+passphrase[=\s:]+)[^\s'"]+/$1$mask/gi;
 
     # snmpwalk -snmp-community MyCommunitString123 -v 2c localhost',
-    $masked =~ s/(\s+-+snmp[_-]?community[=\s:]+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-+snmp[_-]?community[=\s:]+)[^\s'"]+/$1$mask/gi;
 
     # snmpwalk --c MyCommunitString123 -v 2c localhost',
-    $masked =~ s/(\s-c\s+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s-c\s+)[^\s'"]+/$1$mask/gi;
 
     # mysql -u root -p PASSWORD database
-    $masked =~ s/(\s+-p\s+)[^\s'"]+/$1***/gi;
+    $masked =~ s/(\s+-p\s+)[^\s'"]+/$1$mask/gi;
 
     # mysql -u root -pPASSWORD database
-    $masked =~ s/(\s+-p)(?!assword\b)([A-Z])[^\s'"]*/$1***/gi;
+    $masked =~ s/(\s+-p)(?!assword\b)([A-Z])[^\s'"]*/$1$mask/gi;
 
     my $common_auth = 'Bearer|Basic|Negotiate|X-API-Key|ApiKey|NTLM|AWS4-HMAC-SHA256';
 
     # curl -H "Authorization: Bearer ABCDEF" http://test.com'
-    $masked =~ s/((?:$common_auth)\s+)[^\s'"]+/$1***/gi;
+    $masked =~ s/((?:$common_auth)\s+)[^\s'"]+/$1$mask/gi;
     # curl -H "PVX-Authorization: ABCDEF" http://test.com'
-    $masked =~ s/((?:[\w-]*)Authorization\s*:\s*)(?!$common_auth)[^\s',;"]+/$1***/gi;
+    $masked =~ s/((?:[\w-]*)Authorization\s*:\s*)(?!$common_auth)[^\s',;"]+/$1$mask/gi;
 
     # https://admin:password@test.com:8080/api
-    $masked =~ s/([\w.-]+):([\w?!@#$%^&*._-]+)(@)/$1:***$3/g;
+    $masked =~ s/([\w.-]+):([\w?!@#$%^&*._-]+)(@)/$1:$mask$3/g;
 
     return $masked;
 }
