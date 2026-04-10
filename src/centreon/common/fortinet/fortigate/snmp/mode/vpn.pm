@@ -294,7 +294,7 @@ sub manage_selection {
 
         foreach my $vpn (values %{$self->{vd}->{$vdomain_name}->{vpn}}) {
             my $p1 = $vpn->{phase1};
-            my $vpn_state = 'dpwn';
+            my $vpn_state = 'down';
             if ($global_state_up{$p1} && !$global_state_down{$p1}) {
                 $vpn_state = 'up';
             } elsif ($global_state_up{$p1} && $global_state_down{$p1}) {
