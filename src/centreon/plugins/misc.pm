@@ -32,8 +32,10 @@ use Exporter 'import';
 use feature 'state';
 
 our @EXPORT_OK = qw/change_seconds
+                    check_security_command
                     check_security_whitelist
                     convert_bytes
+                    execute
                     flatten_arrays
                     flatten_to_hash
                     graphql_escape
@@ -767,15 +769,10 @@ sub check_security_command {
     eval {
         $security = JSON::XS->new->utf8->decode($content);
     };
-    if ($@) {
-        $options{output}->add_option_msg(short_msg => 'Cannot decode security file content');
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => 'Cannot decode security file content') if $@;
 
-    if (defined($security->{block_command_overload}) && $security->{block_command_overload} == 1) {
-        $options{output}->add_option_msg(short_msg => 'Cannot overload command (security)');
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => 'Cannot overload command (security)')
+        if $security->{block_command_overload} && $security->{block_command_overload} == 1;
 
     return 0;
 }
