@@ -307,6 +307,27 @@ sub manage_selection {
     $self->{output}->option_exit(short_msg => 'No matching VPN found.') unless keys %{$self->{vd}};
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => [ 'name', 'vdom', 'state' ]);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(snmp => $options{snmp});
+    foreach my $vd (sort keys %{$self->{vd}}) {
+        foreach my $vpn (sort { $a->{display} cmp $b->{display} } values %{$self->{vd}->{$vd}->{vpn}}) {
+            $self->{output}->add_disco_entry(
+                name => $vpn->{display},
+                vdom => $vd,
+                state => $vpn->{state}
+            );
+        }
+    }
+}
+
 1;
 
 __END__
@@ -340,6 +361,46 @@ Filter by VPN phase 2 names (regexp).
 =item B<--exclude-vpn-phase2>
 
 Exclude by VPN phase 2 names (regexp).
+
+=item B<--warning-ipsec-tunnels-count>
+
+Threshold in tunnels.
+
+=item B<--critical-ipsec-tunnels-count>
+
+Threshold in tunnels.
+
+=item B<--warning-sessions>
+
+Threshold in sessions.
+
+=item B<--critical-sessions>
+
+Threshold in sessions.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
+
+=item B<--warning-tunnels>
+
+Threshold in tunnels.
+
+=item B<--critical-tunnels>
+
+Threshold in tunnels.
 
 =item B<--warning-ipsec-tunnels-count>
 
