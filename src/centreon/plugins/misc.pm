@@ -47,6 +47,7 @@ our @EXPORT_OK = qw/change_seconds
                     slurp_file
                     format_opt
                     trim
+                    mask_secrets
                     value_of/;
 
 sub execute {
@@ -192,6 +193,8 @@ sub unix_execute {
         # On some equipment. Cannot get a pseudo terminal
         if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
             $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(' ', @$args);
+            $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password()) if $options{output}->is_debug();
+
             ($lerror, $stdout, $exit_code) = backtick(
                 command => $cmd,
                 timeout => $options{options}->{timeout},
@@ -199,6 +202,10 @@ sub unix_execute {
                 redirect_stderr => $redirect_stderr
             );
         } else {
+            if ($options{output}->is_debug()) {
+                my $cmd = $cmd . join (' ', [ @$args, $sub_cmd // '']);
+                $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password())
+            }
             ($lerror, $stdout, $exit_code) = backtick(
                 command => $cmd,
                 arguments => [@$args, $sub_cmd],
@@ -212,6 +219,8 @@ sub unix_execute {
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $cmd .= $options{command} if (defined($options{command}));
         $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
+
+        $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password()) if $options{output}->is_debug();
 
         if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
             my @args = split(' ',$cmd);
@@ -961,6 +970,68 @@ sub format_opt($) {
     $_[0] =~ s/_/-/gr;
 }
 
+# Attempts to mask secrets in a command line string by replacing them with $mask ( or *** if mask is not defined )
+# Be aware that this is only a try, there is no guarantee that all secrets will be masked!
+sub mask_secrets($;$) {
+    my ($command, $mask) = @_;
+
+    return '' unless $command;
+
+    $mask = '***' unless defined $mask;
+
+    my $masked = $command;
+
+    # Handled cases with examples
+
+    # command -password P@s$W@rD -I100
+    $masked =~ s/(\s+-+password[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # command -token=P@s$W@rD -I100
+    $masked =~ s/(\s+-+token[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # curl --header "api-key: P@s$W@rD" https://test.com' OR curl -api-key P@s$W@rD
+    $masked =~ s/(\s+-+api[_-]?key[=\s:]+)[^\s'"]+/$1$mask/gi;
+    $masked =~ s/(api[_-]?key\s*:\s*)[^\s'"]+/$1$mask/gi;
+
+    # command -secret=P@s$W@rD -I100
+    $masked =~ s/(\s+-+secret[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # curl --header "secret: P@s$W@rD" https://test.com'
+    $masked =~ s/(secret\s*:\s*)[^\s'"]+/$1$mask/gi;
+
+    # command -authent=P@s$W@rD -I100
+    $masked =~ s/(\s+-+auth(ent)?[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # command -cert-password=P@s$W@rD -I100
+    $masked =~ s/(\s+-+cert[_-]?password[=\s:]+)[^\s'"]+/$1$mask/gi;
+    # command -passphrase=P@s$W@rD -I100
+    $masked =~ s/(\s+-+passphrase[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # snmpwalk -snmp-community MyCommunitString123 -v 2c localhost',
+    $masked =~ s/(\s+-+snmp[_-]?community[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # snmpwalk --c MyCommunitString123 -v 2c localhost',
+    $masked =~ s/(\s-c\s+)[^\s'"]+/$1$mask/gi;
+
+    # mysql -u root -p PASSWORD database
+    $masked =~ s/(\s+-p\s+)[^\s'"]+/$1$mask/gi;
+
+    # mysql -u root -pPASSWORD database
+    $masked =~ s/(\s+-p)(?!assword\b)([A-Z])[^\s'"]*/$1$mask/gi;
+
+    my $common_auth = 'Bearer|Basic|Negotiate|X-API-Key|ApiKey|NTLM|AWS4-HMAC-SHA256';
+
+    # curl -H "Authorization: Bearer ABCDEF" http://test.com'
+    $masked =~ s/((?:$common_auth)\s+)[^\s'"]+/$1$mask/gi;
+    # curl -H "PVX-Authorization: ABCDEF" http://test.com'
+    $masked =~ s/((?:[\w-]*)Authorization\s*:\s*)(?!$common_auth)[^\s',;"]+/$1$mask/gi;
+
+    # https://admin:password@test.com:8080/api
+    $masked =~ s/([\w.-]+):([\w?!@#$%^&*._-]+)(@)/$1:$mask$3/g;
+
+    return $masked;
+}
+
 1;
 
 __END__
@@ -1615,6 +1686,19 @@ Determines whether a string should be excluded based on include and exclude regu
 Returns 1 if the string is excluded, 0 if it is included.
 The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
 not match the string. The string will also be excluded if it is undefined.
+
+=back
+
+=head2 mask_secrets
+
+    my $to_print = centreon::plugins::misc::mask_secrets($unsafe_string, $mask);
+
+Attempts to mask secrets in a command line string by replacing them with $mask ( or *** if mask is not defined )
+Be aware that this is only a try, there is no guarantee that all secrets will be masked!
+
+=over 4
+
+=item * C<$ident> - name to convert.
 
 =head1 AUTHOR
 
