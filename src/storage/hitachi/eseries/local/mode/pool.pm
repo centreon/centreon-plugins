@@ -72,7 +72,7 @@ sub set_counters {
     $self->{maps_counters}->{pools} = [
         { label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} ne "POLN"', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-		output_template => 'Status: %s',
+                output_template => 'Status: %s',
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
@@ -120,7 +120,7 @@ sub manage_selection {
     # https://docs.hitachivantara.com/r/en-us/command-control-interface/01-87-03/mk-90rd7009/configuration-setting-commands/raidcom-get-pool
     my ($stdout) = $options{custom}->execute_command(
         command         => 'raidcom',
-        command_options => 'get pool -I' . $options{custom}->get_baie_id()
+        command_options => 'get pool -I' . $options{custom}->get_instance_id()
     );
 
     # Columns: PID POLS U(%) SSCNT Av(MB) Tp(MB) Seq# Num LDEV# H TH ...
@@ -130,7 +130,7 @@ sub manage_selection {
         next if $line =~ /^\s*$/;
 
         my @fields = split /\s+/, $line;
-	next unless @fields > 5;
+        next unless @fields > 5;
 
         my ($pid, $pols, $usage_prct, $capa_available_mb, $capacity_mb) =
             ($fields[0], $fields[1], $fields[2], $fields[4], $fields[5]);
@@ -165,7 +165,7 @@ __END__
 
 Check Hitachi E-Series pool status and capacity.
 
-Command used: C<raidcom get pool -I<baie-id>>
+Command used: C<raidcom get pool -I<instance-id>>
 
 =over 8
 

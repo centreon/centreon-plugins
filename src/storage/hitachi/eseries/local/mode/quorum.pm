@@ -30,6 +30,9 @@ use centreon::plugins::misc qw/is_excluded is_empty/;
 
 sub prefix_quorum_output {
     my ($self, %options) = @_;
+
+    return "Quorum '" . $options{instance_value}->{display} . "' serial: ". $options{instance_value}->{qrp_serial}.", ldev: ". $options{instance_value}->{ldev} . ", "
+        if $self->{output}->is_verbose();
     return "Quorum '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -44,7 +47,7 @@ sub set_counters {
     $self->{maps_counters}->{quorums} = [
         { label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} ne "NORMAL"', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
-		output_template => 'Status: %s',
+                output_template => 'Status: %s',
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -68,7 +71,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{output}->option_exit(short_msg => "Quorum ID is invalid.")
-	if $self->{option_results}->{quorum_id} ne '' && $self->{option_results}->{quorum_id} !~ /^\d+$/;
+        if $self->{option_results}->{quorum_id} ne '' && $self->{option_results}->{quorum_id} !~ /^\d+$/;
 
     $self->{quorum_id} = $self->{option_results}->{quorum_id};
 }
@@ -86,7 +89,7 @@ sub manage_selection {
     while (1) {
         my ($stdout, $exit_code) = $options{custom}->execute_command(
             command         => 'raidcom',
-            command_options => 'get quorum -quorum_id ' . $qid . ' -I' . $options{custom}->get_baie_id(),
+            command_options => 'get quorum -quorum_id ' . $qid . ' -I' . $options{custom}->get_instance_id(),
             no_quit         => 1
         );
         last if is_empty($stdout) || $stdout =~ /^\s+$/ || $exit_code != 0;
@@ -94,9 +97,9 @@ sub manage_selection {
         # Convert "key: value" formatted output into a hash
         my %q;
         while ($stdout =~ /^([^\s]+)\s*:\s*(.+)$/mg) {
-	    my $value = $2;
-	    my $key = $1 =~ s/\W//gr;
-	    $q{$key} = $value;
+            my $value = $2;
+            my $key = $1 =~ s/\W//gr;
+            $q{$key} = $value;
         }
         next unless defined $q{STS};
 
@@ -109,8 +112,8 @@ sub manage_selection {
             ldev       => $q{LDEV}       // '-'
         };
 
-	last if $self->{quorum_id} ne '';
-	$qid++
+        last if $self->{quorum_id} ne '';
+        $qid++
     }
 
     $self->{output}->option_exit(short_msg => "No quorum found.")
@@ -125,7 +128,7 @@ __END__
 
 Check Hitachi E-Series quorum status.
 
-Command used: C<raidcom get quorum -quorum_id <id> -I<baie-id>>
+Command used: C<raidcom get quorum -quorum_id <id> -I<instance-id>>
 
 =over 8
 

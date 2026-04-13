@@ -34,7 +34,7 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'baie-id:s'      => { name => 'baie_id',      default => '' },
+            'instance-id:s'  => { name => 'instance_id',  default => '' },
             'timeout:s'      => { name => 'timeout',      default => 45 },
             'command-path:s' => { name => 'command_path', default => '' },
             'sudo'           => { name => 'sudo' }
@@ -58,25 +58,25 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{output}->option_exit(short_msg => "Please set a valid --baie-id option.")
-        unless $self->{option_results}->{baie_id} =~ /^\d+$/;
+    $self->{output}->option_exit(short_msg => "Please set a valid --instance-id option.")
+        unless $self->{option_results}->{instance_id} =~ /^\d+$/;
 
     $self->{$_} = $self->{option_results}->{$_}
-	foreach qw/baie_id timeout/;
+        foreach qw/instance_id timeout/;
 
     return 0;
 }
 
-sub get_baie_id {
+sub get_instance_id {
     my ($self, %options) = @_;
-    return $self->{baie_id};
+    return $self->{instance_id};
 }
 
 sub execute_command {
     my ($self, %options) = @_;
 
     my $command_path = $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path}
-								     : $options{command_path};
+                                                                     : $options{command_path};
 
     check_security_command(
         output => $self->{output},
@@ -117,7 +117,7 @@ Hitachi E-Series local client custom connector.
 
 =over 8
 
-=item B<--baie-id>
+=item B<--instance-id>
 
 Storage array ID (4 digits, required).
 

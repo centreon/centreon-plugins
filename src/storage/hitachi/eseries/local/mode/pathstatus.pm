@@ -71,11 +71,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # https://docs.hitachivantara.com/r/en-us/command-control-interface/01-87-03/mk-90rd7009/configuration-setting-commands/raidcom-get-path
-    # raidcom get path -I$<baie_id>
+    # raidcom get path -I$<instance_id>
 
     my ($stdout) = $options{custom}->execute_command(
         command         => 'raidcom',
-        command_options => 'get path -I' . $options{custom}->get_baie_id()
+        command_options => 'get path -I' . $options{custom}->get_instance_id()
     );
 
     # Columns: PHG Group STS CM IF MP Port WWN PR LUN PHS Serial# ...
@@ -84,7 +84,7 @@ sub manage_selection {
         next if $line =~ /^PHG/ || $line =~ /^\s*$/;
 
         my @fields = split /\s+/, $line;
-	next unless @fields > 10;
+        next unless @fields > 10;
         my ($port, $lun, $phs) = ($fields[6], $fields[9], $fields[10]);
 
         next unless defined($port) && defined($lun) && defined($phs);
@@ -111,7 +111,7 @@ __END__
 
 Check Hitachi E-Series path status.
 
-Command used: C<raidcom get path -I<baie-id>>
+Command used: C<raidcom get path -I<instance-id>>
 
 =over 8
 
