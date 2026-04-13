@@ -124,6 +124,7 @@ frsevent
 FSx
 GCP
 --get-param
+GPON
 GraphQL
 GRAPHQL
 HAProxy
@@ -256,6 +257,7 @@ OID
 --oid-filter
 OIDs
 okta
+OLT
 oneaccess-sys-mib
 OneAPI
 OpenMetrics
