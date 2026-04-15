@@ -35,7 +35,7 @@ sub new {
         'list-components' => 'apps::atlassian::statuspage::mode::listcomponents'
     };
 
-    $self->{custom_modes}->{json} = 'apps::atlassian::statuspage::custom::api';
+    $self->{custom_modes}->{json} = 'apps::atlassian::statuspage::custom::json';
     return $self;
 }
 
