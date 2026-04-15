@@ -120,20 +120,20 @@ sub get_incidents {
     my $current_incidents = {};
     foreach my $incident (values %{ $response->{incidentEvent}->{incidents}}) {
         foreach my $productinc (values %{$incident->{products}}) {
-            next if (!defined($productinc->{endedOn}) || $productinc->{endedOn} == 0);
+            next if (!defined($productinc->{endedOn}) || $productinc->{endedOn} > 0);
 
             $current_incidents->{ $productinc->{id} } = [] if (!defined($current_incidents->{ $productinc->{id} }));
 
-            foreach ( sort { $b <=> $a } keys(%{$productinc->{history}}) ) {
-                push @{$current_incidents->{ $productinc->{id} }}, {
-                    status => $_->{status},
-                    statusTime => $_->{statusTime},
-                    severity => $_->{severity},
-                    customerImpact => $_->{customerImpact},
-                    messageEn => $response->{incidentEvent}->{messages}->{en}->{ $_->{messageToken} },
-                };
-                last;
-            }
+            my @times = sort { $b <=> $a } keys(%{$productinc->{history}});
+            next if ($productinc->{history}->{$times[0]}->{status} =~ /Closed/i);
+
+            push @{$current_incidents->{ $productinc->{id} }}, {
+                status => $productinc->{history}->{$times[0]}->{status},
+                statusTime => $productinc->{history}->{$times[0]}->{statusTime},
+                severity => $productinc->{history}->{$times[0]}->{severity},
+                customerImpact => $productinc->{history}->{$times[0]}->{customerImpact},
+                messageEn => $response->{incidentEvent}->{messages}->{en}->{ $productinc->{history}->{$times[0]}->{messageToken} }->{textMessage}
+            };
         }
     }
 

@@ -18,50 +18,79 @@
 # limitations under the License.
 #
 
-package apps::atlassian::statuspage::mode::components;
+package apps::saas::adobestatus::restapi::mode::incidents;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_component_status_output {
+sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        'status: %s',
-        $self->{result_values}->{status}
-    );
+    return 'Number of products ';
 }
 
-sub prefix_component_output {
+sub prefix_product_output {
     my ($self, %options) = @_;
 
-    return "Component '" . $options{instance_value}->{name} . "' ";
+    return "Product '" . $options{instance_value}->{productName} . "' number of current incidents ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'components', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_component_output', message_multiple => 'All components are ok' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'products', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_product_output', message_multiple => 'All products are ok' }
     ];
 
-    $self->{maps_counters}->{components} = [
-        {
-            label => 'status',
-            type => COUNTER_KIND_TEXT,
-            warningd_default => '%{status} =~ /degraded_performance|partial_outage/',
-            critical_default => '%{status} =~ /major_outage/',
+    $self->{maps_counters}->{global} = [
+        {   label => 'products-detected', display_ok => 0, nlabel => 'products.detected.count',
+            unknown_default => '@0',
             set => {
-                key_values => [
-                    { name => 'status' }, { name => 'name' }
-                ],
-                closure_custom_output => $self->can('custom_component_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
+                key_values => [ { name => 'detected' } ],
+                output_template => 'detected: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{products} = [
+        { label => 'product-incidents-major', nlabel => 'product.incidents.major.count', set => {
+                key_values => [ { name => 'major' }, { name => 'productName' } ],
+                output_template => 'major: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'productName' }
+                ]
+            }
+        },
+        { label => 'product-incidents-minor', nlabel => 'product.incidents.minor.count', set => {
+                key_values => [ { name => 'minor' }, { name => 'productName' } ],
+                output_template => 'minor: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'productName' }
+                ]
+            }
+        },
+        { label => 'product-incidents-potential', nlabel => 'product.incidents.potential.count', set => {
+                key_values => [ { name => 'potential' }, { name => 'productName' } ],
+                output_template => 'potential: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'productName' }
+                ]
+            }
+        },
+        { label => 'product-incidents-trivial', nlabel => 'product.incidents.trivial.count', set => {
+                key_values => [ { name => 'trivial' }, { name => 'productName' } ],
+                output_template => 'trivial: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'productName' }
+                ]
             }
         }
     ];
@@ -73,8 +102,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-       'filter-component-id:s'   => { name => 'filter_component_id' },
-       'filter-component-name:s' => { name => 'filter_component_name' }
+       'filter-product-id:s'   => { name => 'filter_product_id', default => '' },
+       'filter-product-name:s' => { name => 'filter_product_name', default => '' },
+       'display-incidents'     => { name => 'display_incidents' }
     });
 
     return $self;
@@ -83,19 +113,41 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->get_components();
+    $self->{global} = { detected => 0 };
+    $self->{products} = {};
+    my $products = $options{custom}->get_products();
+    foreach my $id (keys %$products) {
+        next if is_excluded($id, $self->{option_results}->{filter_product_id});
+        next if is_excluded($products->{$id}, $self->{option_results}->{filter_product_name});
 
-    $self->{components} = {};
-    foreach (@{$results->{components}}) {
-        next if (defined($self->{option_results}->{filter_component_id}) && $self->{option_results}->{filter_component_id} ne '' &&
-            $_->{id} !~ /$self->{option_results}->{filter_component_id}/);
-        next if (defined($self->{option_results}->{filter_component_name}) && $self->{option_results}->{filter_component_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_component_name}/);
-
-        $self->{components}->{ $_->{id} } = {
-            name => $_->{name},
-            status => $_->{status}
+        $self->{global}->{detected}++;
+        $self->{products}->{$id} = {
+            productName => $products->{$id},
+            minor => 0,
+            major => 0,
+            trivial => 0,
+            potential => 0
         };
+    }
+
+    my $incidents = $options{custom}->get_incidents();
+    foreach my $id (keys %$incidents) {
+        next if (!defined($self->{products}->{$id}));
+
+        foreach my $incident (@{$incidents->{$id}}) {
+            $self->{products}->{$id}->{ lc($incident->{severity}) }++;
+            if (defined($self->{option_results}->{display_incidents})) {
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        "incident '%s' [severity: %s] [customerImpact: %s]: %s",
+                        $self->{products}->{$id}->{productName},
+                        $incident->{severity},
+                        $incident->{customerImpact},
+                        scalar(localtime($incident->{statusTime}))
+                    )
+                );
+            }
+        }
     }
 }
 
@@ -105,32 +157,61 @@ __END__
 
 =head1 MODE
 
-Check components.
+Check current incidents.
 
 =over 8
 
-=item B<--filter-component-id>
+=item B<--filter-product-id>
 
-Filter components by ID (can be a regexp).
+Filter products by ID (can be a regexp).
 
-=item B<--filter-component-name>
+=item B<--filter-product-name>
 
-Filter components by name (can be a regexp).
+Filter product by name (can be a regexp).
 
-=item B<--unknown-status>
+=item B<--display-incidents>
 
-Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{name}
+Display incidents in verbose output.
 
-=item B<--warning-status>
+=item B<--warning-products-detected>
 
-Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded_performance|partial_outage/').
-You can use the following variables: %{status}, %{name}
+Threshold.
 
-=item B<--critical-status>
+=item B<--critical-products-detected>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /major_outage/').
-You can use the following variables: %{status}, %{name}
+Threshold.
+
+=item B<--warning-product-incidents-major>
+
+Threshold.
+
+=item B<--critical-product-incidents-major>
+
+Threshold.
+
+=item B<--warning-product-incidents-minor>
+
+Threshold.
+
+=item B<--critical-product-incidents-minor>
+
+Threshold.
+
+=item B<--warning-product-incidents-potential>
+
+Threshold.
+
+=item B<--critical-product-incidents-potential>
+
+Threshold.
+
+=item B<--warning-product-incidents-trivial>
+
+Threshold.
+
+=item B<--critical-product-incidents-trivial>
+
+Threshold.
 
 =back
 
