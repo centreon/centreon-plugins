@@ -91,10 +91,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'     => { name => 'filter_id', default => '' },
-        'filter-name:s'   => { name => 'filter_name', default => '' },
-        'timezone:s'      => { name => 'timezone' },
-        'status-failed:s' => { name => 'status_failed' }
+        'id:s'                => { name => 'id', default => '' },
+        'filter-id:s'         => { name => 'filter_id', default => '' },
+        'filter-name:s'       => { name => 'filter_name', default => '' },
+        'timezone:s'          => { name => 'timezone' },
+        'status-failed:s'     => { name => 'status_failed' },
+        'display-failed-jobs' => { name => 'display_failed_jobs' }
     });
 
     return $self;
@@ -120,9 +122,9 @@ sub manage_selection {
     $self->{cache_name} = 'opcon_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
         md5_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
-            (defined($self->{option_results}->{filter_type}) ? $self->{option_results}->{filter_type} : '')
+            $self->{option_results}->{id} . '_' .
+            $self->{option_results}->{filter_id} . '_' .
+            $self->{option_results}->{filter_name}
         );
 
     my $ctime = time();
@@ -134,12 +136,16 @@ sub manage_selection {
     my $to = sprintf("%02d-%02d-%d", $dt->day, $dt->month, $dt->year);
     my $dt2 = DateTime->from_epoch(epoch => $last_timestamp, %$tz);
     my $from = sprintf("%02d-%02d-%d", $dt2->day, $dt2->month, $dt2->year);
-    my ($items, $update_time) = $options{custom}->get_jobHistories(
-        get_param => [
-            'from=' . $from,
-            'to=' . $to
-        ]
-    );
+    my $get_param = [
+        'from=' . $from,
+        'to=' . $to
+    ];
+    if (defined($self->{option_results}->{id}) && $self->{option_results}->{id} ne '') {
+        my $id = $self->{option_results}->{id};
+        $id =~ s/^(.*?)-/$1|/;
+        push @$get_param, 'UniqueJobIds=' . $id;
+    }
+    my ($items, $update_time) = $options{custom}->get_jobHistories(get_param => $get_param);
 
     my $filter_time = $last_timestamp;
     if (defined($update_time) && $update_time < $filter_time) {
@@ -155,6 +161,8 @@ sub manage_selection {
         my ($masterId, $name) = split(/\|/, $item->{id});
         my $id = $masterId . '-' . $name;
 
+        next if (defined($self->{option_results}->{id}) && $self->{option_results}->{id} ne '' &&
+            $id ne $self->{option_results}->{id});
         next if is_excluded($id, $self->{option_results}->{filter_id});        
         next if is_excluded($item->{name}, $self->{option_results}->{filter_name});
 
@@ -170,6 +178,8 @@ sub manage_selection {
     foreach my $item (@$items) {
         my ($date, $masterId, $jobNumber, $name) = split(/\|/, $item->{id});
         my $id = $masterId . '-' . $name;
+        next if (defined($self->{option_results}->{id}) && $self->{option_results}->{id} ne '' &&
+            $id ne $self->{option_results}->{id});
         next if is_excluded($id, $self->{option_results}->{filter_id});
         next if is_excluded($item->{name}, $self->{option_results}->{filter_name});
 
@@ -182,7 +192,21 @@ sub manage_selection {
 
         $self->{jobs}->{$id}->{jobCount}++;
 
-        $self->{jobs}->{$id}->{jobFailed}++ if ($self->{output}->test_eval(test => $self->{option_results}->{status_failed}, values => { statusDesc => $item->{statusDesc} }));
+        if ($self->{output}->test_eval(test => $self->{option_results}->{status_failed}, values => { statusDesc => $item->{statusDesc} })) {
+            $self->{jobs}->{$id}->{jobFailed}++;
+
+            if (defined($self->{option_results}->{display_failed_jobs})) {
+                $self->{output}->output_add(
+                    long_msg => sprintf(
+                        "job '%s' [number: %s] [state: %s]: %s",
+                        $id,
+                        $jobNumber,
+                        $item->{statusDesc},
+                        $item->{startTime}
+                    )
+                );
+            }
+        }
     }
 
     foreach my $id (keys %{$self->{jobs}}) {
@@ -223,6 +247,10 @@ Check jobs.
 
 =over 8
 
+=item B<--id>
+
+Select job by ID.
+
 =item B<--filter-id>
 
 Filter jobs by ID (can be a regexp).
@@ -238,6 +266,10 @@ Timezone options. Default is 'UTC'.
 =item B<--status-failed>
 
 Expression to define status failed (default: '%{statusDesc} =~ /initialization error|failed/i').
+
+=item B<--display-failed-jobs>
+
+Display failed jobs in verbose output.
 
 =item B<--warning-jobs-detected>
 
