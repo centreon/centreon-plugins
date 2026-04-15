@@ -106,7 +106,7 @@ Critical threshold number of lock-waits per second.
 
 =item B<--filter-instance>
 
-Filter the sub-category inside the performance object. The instance_name represents the lock type. For example: C<_Total>, C<DATABASE>, C<OBJECT>, C<PAGE>, C<KEY>
+Filter the sub-category inside the performance object. The instance_name represents the lock type. For example: C<_Total>, C<DATABASE>, C<OBJECT>, C<PAGE>, C<KEY>. (default: '_Total')
 https://learn.microsoft.com/en-us/sql/relational-databases/performance-monitor/sql-server-locks-object?view=sql-server-ver17
 
 =back
