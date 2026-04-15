@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::atlassian::statuspage::mode::listcomponents;
+package apps::saas::adobestatus::restapi::mode::listproducts;
 
 use base qw(centreon::plugins::mode);
 
@@ -44,32 +44,26 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $components = $options{custom}->get_components();
-
-    my $results = [];
-    foreach (@{$components->{components}}) {
-        push @$results, $_;
-    }
-    return $results;
+    return $options{custom}->get_products();
 }
 
 sub run {
     my ($self, %options) = @_;
   
     my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach my $id (keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[id: %s][name: %s]',
-                $_->{id},
-                $_->{name}
+                $id,
+                $results->{$id}
             )
         );
     }
     
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List components:'
+        short_msg => 'List products:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -85,10 +79,10 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach my $id (keys %$results) {
         $self->{output}->add_disco_entry(
-            id => $_->{id},
-            name => $_->{name}
+            id => $id,
+            name => $results->{$id}
         );
     }
 }
@@ -99,7 +93,7 @@ __END__
 
 =head1 MODE
 
-List components.
+List products.
 
 =over 8
 

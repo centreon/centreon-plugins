@@ -35,7 +35,7 @@ sub new {
         'list-products' => 'apps::saas::adobestatus::restapi::mode::listproducts'
     };
 
-    $self->{custom_modes}->{json} = 'apps::atlassian::statuspage::custom::json';
+    $self->{custom_modes}->{public} = 'apps::saas::adobestatus::restapi::custom::public';
     return $self;
 }
 

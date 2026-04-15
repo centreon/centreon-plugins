@@ -17,13 +17,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package apps::atlassian::statuspage::custom::api;
+package apps::saas::adobestatus::restapi::custom::public;
 
 use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw/is_empty json_decode/;
+use centreon::plugins::constants qw(:messages);
 
 sub new {
     my ($class, %options) = @_;
@@ -41,17 +43,16 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'timeout:s'         => { name => 'timeout' },
-            'api-endpoint:s'    => { name => 'api_endpoint' },
-            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'hostname:s'        => { name => 'hostname', default => 'data.status.adobe.com' },
+            'port:s'            => { name => 'port', default => 443 },
+            'proto:s'           => { name => 'proto', default => 'https' },
+            'timeout:s'         => { name => 'timeout', default => 30 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'PUBLIC API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
@@ -70,18 +71,8 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{option_results}->{api_endpoint} = (defined($self->{option_results}->{api_endpoint})) ? $self->{option_results}->{api_endpoint} : '/api/v2/';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-
-    if ($self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
-        $self->{output}->option_exit();
+    if (is_empty($self->{option_results}->{hostname})) {
+        $self->{output}->option_exit(short_msg => "Need to specify hostname option.");
     }
 
     return 0;
@@ -96,18 +87,12 @@ sub settings {
     $self->{settings_done} = 1;
 }
 
-sub get_connection_info {
-    my ($self, %options) = @_;
-
-    return $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port};
-}
-
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
     my ($content) = $self->{http}->request(
-        url_path => $self->{option_results}->{api_endpoint} . $options{request},
+        url_path => $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status}
@@ -118,22 +103,54 @@ sub request_api {
         $self->{output}->option_exit();
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
+    my $decoded = json_decode(
+        $content,
+        errstr => MSG_JSON_DECODE_ERROR,
+        output => $self->{output}
+    );
 
     return $decoded;
 }
 
-sub get_components {
+sub get_incidents {
     my ($self, %options) = @_;
 
-    return $self->request_api(request => 'components.json');
+    my $response = $self->request_api(endpoint => '/adobestatus/StatusEvents');
+ 
+    my $current_incidents = {};
+    foreach my $incident (values %{ $response->{incidentEvent}->{incidents}}) {
+        foreach my $productinc (values %{$incident->{products}}) {
+            next if (!defined($productinc->{endedOn}) || $productinc->{endedOn} == 0);
+
+            $current_incidents->{ $productinc->{id} } = [] if (!defined($current_incidents->{ $productinc->{id} }));
+
+            foreach ( sort { $b <=> $a } keys(%{$productinc->{history}}) ) {
+                push @{$current_incidents->{ $productinc->{id} }}, {
+                    status => $_->{status},
+                    statusTime => $_->{statusTime},
+                    severity => $_->{severity},
+                    customerImpact => $_->{customerImpact},
+                    messageEn => $response->{incidentEvent}->{messages}->{en}->{ $_->{messageToken} },
+                };
+                last;
+            }
+        }
+    }
+
+    return $current_incidents;
+}
+
+sub get_products {
+    my ($self, %options) = @_;
+
+    my $response = $self->request_api(endpoint => '/adobestatus/SnowServiceRegistry');
+    
+    my $products = {};
+    foreach (values %{$response->{products}}) {
+        $products->{ $_->{id} } = $_->{name};
+    }
+
+    return $products;
 }
 
 1;
@@ -144,7 +161,7 @@ __END__
 
 Public JSON API
 
-=head1 API OPTIONS
+=head1 PUBLIC API OPTIONS
 
 Public JSON API
 
@@ -152,7 +169,7 @@ Public JSON API
 
 =item B<--hostname>
 
-Set hostname.
+Define hostname (default: C<'data.status.adobe.com'>).
 
 =item B<--port>
 
@@ -161,10 +178,6 @@ Port used (default: 443)
 =item B<--proto>
 
 Specify https if needed (default: 'https')
-
-=item B<--api-endpoint>
-
-Argos API requests endpoint (default: '/api/v2/')
 
 =item B<--timeout>
 
