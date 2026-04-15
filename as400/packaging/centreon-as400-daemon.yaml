@@ -2,7 +2,7 @@ name: "centreon-plugin-Operatingsystems-AS400-daemon"
 arch: "${ARCH}"
 platform: "linux"
 version_schema: "none"
-version: "2.0.7"
+version: "2.0.8"
 release: "${RELEASE}${DIST}"
 section: "default"
 priority: "optional"
@@ -60,10 +60,10 @@ scripts:
 overrides:
   rpm:
     depends:
-      - "java-17-openjdk"
+      - "java-17-openjdk-headless"
   deb:
     depends:
-      - "openjdk-17-jre"
+      - "openjdk-17-jre-headless"
 
 rpm:
   summary: Centreon AS 400 Plugin daemon

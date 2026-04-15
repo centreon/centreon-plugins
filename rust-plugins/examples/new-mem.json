@@ -1,0 +1,29 @@
+{
+  "collect": {
+    "snmp": [
+      {
+	"name": "total",
+	"oid": "1.3.6.1.4.1.2021.4.6.0",
+	"query": "Get"
+      },
+      {
+	"name": "free",
+	"oid": "1.3.6.1.4.1.2021.4.11.0",
+	"query": "Get"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "name": "core.mem.usage.percent",
+        "value": "100 * (1 - {free}/{total})",
+	"uom": "%",
+	"min": 0,
+	"max": 100,
+	"threshold-suffix": "mem"
+      }
+    ]
+  }
+}
+
