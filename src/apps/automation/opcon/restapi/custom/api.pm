@@ -264,6 +264,7 @@ sub get_masterJobs {
 
     return $self->request_api(
         endpoint => '/masterJobs/v2',
+        get_param => $options{get_param},
         add_item_closure => $self->can('add_masterJobs') 
     );
 }

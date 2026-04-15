@@ -131,6 +131,12 @@ sub manage_selection {
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     $last_timestamp = $ctime - (15 * 60) if (!defined($last_timestamp));
 
+    my $job_id_select = '';
+    if (defined($self->{option_results}->{id}) && $self->{option_results}->{id} ne '') {
+        $job_id_select = $self->{option_results}->{id};
+        $job_id_select =~ s/^(.*?)-/$1|/;
+    }
+
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     my $dt = DateTime->from_epoch(epoch => $ctime, %$tz);
     my $to = sprintf("%02d-%02d-%d", $dt->day, $dt->month, $dt->year);
@@ -140,10 +146,8 @@ sub manage_selection {
         'from=' . $from,
         'to=' . $to
     ];
-    if (defined($self->{option_results}->{id}) && $self->{option_results}->{id} ne '') {
-        my $id = $self->{option_results}->{id};
-        $id =~ s/^(.*?)-/$1|/;
-        push @$get_param, 'UniqueJobIds=' . $id;
+    if ($job_id_select ne '') {
+        push @$get_param, 'UniqueJobIds=' . $job_id_select;
     }
     my ($items, $update_time) = $options{custom}->get_jobHistories(get_param => $get_param);
 
@@ -152,7 +156,11 @@ sub manage_selection {
         $filter_time = $update_time;
     }
 
-    my ($masterJobs) = $options{custom}->get_masterJobs();
+    $get_param = [];
+    if ($job_id_select ne '') {
+        push @$get_param, 'SelectedIds=' . $job_id_select;
+    }
+    my ($masterJobs) = $options{custom}->get_masterJobs(get_param => $get_param);
 
     $self->{global} = { detected => 0 };
     $self->{jobs} = {};
