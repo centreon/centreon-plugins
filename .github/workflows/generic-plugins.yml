@@ -175,7 +175,12 @@ jobs:
           mkdir -p /var/lib/snmp/cert_indexes/
           useradd snmp || true
           snmpsim-command-responder --logging-method=null --agent-udpv4-endpoint=127.0.0.1:2024 --process-user=snmp --process-group=snmp --data-dir='./tests' &
-          sleep 2
+          # waiting till localhost is listening on UDP port 2024
+          timeout 60  bash -c 'while : ; do
+              # 0100007F:07E8 is 127.0.0.1:2024 in HEX
+              grep " 0100007F:07E8 " /proc/net/udp >/dev/null && break
+              sleep 0.5
+          done ; echo "snmpsim is listening"' || exit 1
           robot --include centreon-generic-snmp --exclude notauto --outputdir /tmp/robot-tests ./tests/os/linux/snmp/
         shell: bash
 
