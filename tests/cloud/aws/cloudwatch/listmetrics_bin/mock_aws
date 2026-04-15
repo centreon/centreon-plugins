@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Mock AWS CLI for testing - returns static JSON data based on --namespace and --metric-name
+
+namespace=""
+metric_name=""
+prev=""
+for arg in "$@"; do
+    if [[ "$prev" == "--namespace" ]]; then
+        namespace="$arg"
+    elif [[ "$prev" == "--metric-name" ]]; then
+        metric_name="$arg"
+    fi
+    prev="$arg"
+done
+
+case "${namespace}_${metric_name}" in
+    _)
+        cat <<EOF
+{"Metrics":[{"Namespace":"AWS/EC2","MetricName":"CPUUtilization","Dimensions":[{"Name":"InstanceId","Value":"i-0123456789abcdef0"}]},{"Namespace":"AWS/EC2","MetricName":"NetworkIn","Dimensions":[{"Name":"InstanceId","Value":"i-0123456789abcdef0"}]},{"Namespace":"AWS/EBS","MetricName":"VolumeReadBytes","Dimensions":[{"Name":"VolumeId","Value":"vol-049df61146c4d7901"}]}]}
+EOF
+        ;;
+    AWS/EC2_)
+        cat <<EOF
+{"Metrics":[{"Namespace":"AWS/EC2","MetricName":"CPUUtilization","Dimensions":[{"Name":"InstanceId","Value":"i-0123456789abcdef0"}]},{"Namespace":"AWS/EC2","MetricName":"NetworkIn","Dimensions":[{"Name":"InstanceId","Value":"i-0123456789abcdef0"}]}]}
+EOF
+        ;;
+    AWS/EC2_CPUUtilization)
+        cat <<EOF
+{"Metrics":[{"Namespace":"AWS/EC2","MetricName":"CPUUtilization","Dimensions":[{"Name":"InstanceId","Value":"i-0123456789abcdef0"}]}]}
+EOF
+        ;;
+    AWS/EBS_VolumeReadBytes)
+        cat <<EOF
+{"Metrics":[{"Namespace":"AWS/EBS","MetricName":"VolumeReadBytes","Dimensions":[{"Name":"VolumeId","Value":"vol-049df61146c4d7901"}]}]}
+EOF
+        ;;
+esac

@@ -110,7 +110,7 @@ def get_plugin_modes(plugin_command):
                     break
     return modes
 
-def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir, skip_robot_tests):
+def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, logs_dir, reports_dir, skip_robot_tests, exclude_tags=None, include_tags=None):
     tests_path = []
     for path in plugin_paths:
         if os.path.exists(f"tests/{path}"):
@@ -135,7 +135,12 @@ def test_plugin(plugin_name, plugin_command, plugin_perl_package, plugin_paths, 
                 f"Failed to get --help for {plugin_name}, output status : {output_status}")
             return output_status
     else:
-        command = f"robot --exclude notauto --variable CENTREON_PLUGINS:/usr/lib/centreon/plugins/{plugin_command} --outputdir /tmp/{plugin_name} {' '.join(tests_path)}"
+        command = f"robot --exclude notauto"
+        if exclude_tags:
+            command += f" --exclude {exclude_tags}"
+        if include_tags:
+            command += f" --include {include_tags}"
+        command += f" --variable CENTREON_PLUGINS:/usr/lib/centreon/plugins/{plugin_command} --outputdir /tmp/{plugin_name} {' '.join(tests_path)}"
         print(
             f"Running robot tests for {plugin_name} with command : {command}")
         robot_results = subprocess.run(
@@ -189,6 +194,8 @@ if __name__ == '__main__':
     parser.add_argument('--logs-dir', type=str, help='Répertoire des logs', default='/var/log')
     parser.add_argument('--reports-dir', type=str, help='Répertoire des rapports', default='reports')
     parser.add_argument('--skip-robot-tests', type=str, help='True to skip robot tests, default value: False', default='false')
+    parser.add_argument('--exclude-tags', type=str, help='Robot tags to exclude', default='')
+    parser.add_argument('--include-tags', type=str, help='Robot tags to include', default='')
     args = parser.parse_args()
 
     launch_snmp_sim()
@@ -232,7 +239,7 @@ if __name__ == '__main__':
                 list_plugin_error.add(plugin)
             else:
                 if plugins[plugin]["test"]:
-                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir, skip_robot_tests)
+                    tmp = test_plugin(plugin, plugins[plugin]["command"], plugins[plugin]["perl_package"], plugins[plugin]["paths"], logs_dir, reports_dir, skip_robot_tests, args.exclude_tags if args.exclude_tags else None, args.include_tags if args.include_tags else None)
                     if tmp > 0:
                         error_tests += 1
                         list_plugin_error.add(plugin)

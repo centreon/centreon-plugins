@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -471,23 +471,7 @@ sub parse_structure {
 
             my $ref = ref($value);
             if ($ref eq 'HASH') {
-
-                if (!defined($value->{ $_->{id} })) {
-                    # Check and assume in case of hash reference first part is the hash ref and second the hash key
-                    if($_->{id} =~ /^(.+?)\.(.*)$/){
-                        if (!defined($value->{$1}->{$2})) {
-                            $entry->{ $_->{id} } = '';
-                            next;
-                        }else{
-                            $entry->{ $_->{id} } = $value->{$1}->{$2};
-                        }
-                    }else {
-                        $entry->{ $_->{id} } = '';
-                        next;
-                    }
-                }else {
-                    $entry->{ $_->{id} } = $value->{ $_->{id} };
-                }
+                $entry->{ $_->{id} } = $self->traverse_hash($_->{id}, $value);
             } elsif (ref($value) eq 'ARRAY') {
                 next;
             } elsif ($ref eq '' || $ref eq 'JSON::PP::Boolean') {
@@ -855,7 +839,7 @@ sub get_local_variable {
     if (defined( $self->{expand}->{ $options{name} })) {
         return $self->{expand}->{ $options{name} };
     } else {
-        $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", keys(%{$self->{expand}})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Key '" . $options{name} . "' not found in ('" . join("', '", sort keys(%{$self->{expand}})) . "')", debug => 1);
         return undef;
     }
 
@@ -880,7 +864,7 @@ sub get_table {
     my ($self, %options) = @_;
 
     if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", sort keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
         return undef;
     }
     return $self->{http_collected}->{tables}->{ $options{table} };
@@ -890,11 +874,11 @@ sub get_table_instance {
     my ($self, %options) = @_;
 
     if (!defined($self->{http_collected}->{tables}->{ $options{table} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{table} . "' not found in ('" . join("', '", sort keys(%{$self->{http_collected}->{tables}})) . "')", debug => 1);
         return undef;
     }
     if (!defined($self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} })) {
-        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", keys(%{$self->{http_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Table '" . $options{instance} . "' not found in ('" . join("', '", sort keys(%{$self->{http_collected}->{tables}->{ $options{table} }})) . "')", debug => 1);
         return undef;
     }
     return $self->{http_collected}->{tables}->{ $options{table} }->{ $options{instance} };
@@ -2039,6 +2023,23 @@ sub manage_selection {
     $self->set_formatting();
 }
 
+sub traverse_hash {
+    my ($self, $search, $data) = @_;
+
+    # if $search is not nested, return the found value or ""
+    return $data->{$search} // "" unless $search =~ /\./;
+
+    # if $search is still nested dive one level deeper
+    my @parts = split(/\./, $search);
+    my $key = shift(@parts);
+    my $remaining = join(".", @parts);
+
+    return $self->traverse_hash($remaining, $data->{$key})
+        if ref($data->{$key}) eq "HASH";
+
+    return "";
+}
+
 1;
 
 __END__
@@ -2065,5 +2066,21 @@ Add a constant.
 Example: --constant='warning=30' --constant='critical=45'
 
 =back
+
+=cut
+
+=head1 traverse_hash
+
+Recursively traverse a nested hash structure using dot-notation paths.
+
+Parameters:
+  - C<$search>: dot-separated path to traverse (e.g., 'response.data.status')
+  - C<$data>: hash reference to traverse
+
+Returns the value at the specified path, or an empty string if the path
+does not exist or is not a hash reference.
+
+Example:
+  my $status = $self->traverse_hash('api.response.status', $hash_ref);
 
 =cut

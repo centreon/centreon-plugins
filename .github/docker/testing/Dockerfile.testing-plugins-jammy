@@ -48,14 +48,17 @@ curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bas
 sed -e '/[ -z "\$PS1" ] && return/ s/^#*/#/' -i \$HOME/.bashrc
 source ~/.bashrc
 cd /usr/local/src
-pnpm install --frozen-lockfile
+pnpm install \
+  --frozen-lockfile \
+  --config.trustPolicy=no-downgrade \
+  --config.minimumReleaseAge=2880 \
+  --config.blockExoticSubdeps=true
 
 # Add Centreon plugins repositories
-echo "deb https://packages.centreon.com/ubuntu-standard-24.04-stable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-stable.list
-echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/ubuntu-plugins-testing/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/ubuntu-plugins-unstable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
-echo "deb https://packages.centreon.com/ubuntu-connectors-stable/ jammy main" | tee /etc/apt/sources.list.d/centreon-connectors.list
+echo "deb https://packages.centreon.com/ubuntu-standard-24.04-stable/ jammy main" | tee -a /etc/apt/sources.list.d/centreon.list
+echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ jammy main" | tee /etc/apt/sources.list.d/centreon-plugins-stable.list
+echo "deb https://packages.centreon.com/ubuntu-plugins-testing/ jammy main" | tee /etc/apt/sources.list.d/centreon-plugins-testing.list
+echo "deb https://packages.centreon.com/ubuntu-plugins-unstable/ jammy main" | tee /etc/apt/sources.list.d/centreon-plugins-unstable.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 apt-get update
 

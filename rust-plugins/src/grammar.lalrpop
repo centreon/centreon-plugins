@@ -1,0 +1,59 @@
+use crate::compute::lexer;
+use crate::compute::ast;
+
+grammar<'input>;
+
+pub Expr: Box<ast::Expr<'input>> = {
+    <s:Expr> "+" <p:Product> => Box::new(ast::Expr::OpPlus(<>)),
+    <s:Expr> "-" <p:Product> => Box::new(ast::Expr::OpMinus(<>)),
+    Product,
+};
+
+pub Product: Box<ast::Expr<'input>> = {
+    <s:Product> "*" <v:Term> => Box::new(ast::Expr::OpStar(<>)),
+    <s:Product> "/" <v:Term> => Box::new(ast::Expr::OpSlash(<>)),
+    <v:Term> => <>,
+};
+
+pub Function: Box<ast::Expr<'input>> = {
+    <f:"id"> "(" <a:Var> ")" => {
+      match f {
+	b"Average" => return Box::new(ast::Expr::Fn(ast::Func::Average, a)),
+	b"Max" => return Box::new(ast::Expr::Fn(ast::Func::Max, a)),
+	b"Min" => return Box::new(ast::Expr::Fn(ast::Func::Min, a)),
+	// FIXME DBO: This case is an error case...
+	_ => return a,
+      }
+    }
+};
+
+pub Term: Box<ast::Expr<'input>> = {
+    "num" => Box::new(ast::Expr::Number(<>)),
+    Function => <>,
+    "(" <v:Expr> ")" => <>,
+    Var => <>,
+};
+
+pub Var: Box<ast::Expr<'input>> = {
+    "{" <"id"> "}" => Box::new(ast::Expr::Id(<>)),
+}
+
+extern {
+    type Location = usize;
+    type Error = lexer::LexicalError;
+
+    // ...
+
+    enum lexer::Tok<'input> {
+	"*" => lexer::Tok::OpStar,
+	"/" => lexer::Tok::OpSlash,
+	"+" => lexer::Tok::OpPlus,
+	"-" => lexer::Tok::OpMinus,
+	"(" => lexer::Tok::LParen,
+	")" => lexer::Tok::RParen,
+	"{" => lexer::Tok::LBrace,
+	"}" => lexer::Tok::RBrace,
+	"num" => lexer::Tok::Num(<f64>),
+	"id" => lexer::Tok::Id(<&'input [u8]>),
+    }
+}

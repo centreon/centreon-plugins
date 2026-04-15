@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:counters/;
 
 sub prefix_output {
     my ($self, %options) = @_;
@@ -45,7 +45,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_output' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -101,8 +101,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info(suffix => $self->{option_results}->{filter_counters} // 'all');
 
     my $results = $options{custom}->get_info();
     $self->{global} = {
@@ -125,35 +124,35 @@ Check CPU utilization.
 
 =item B<--warning-sys>
 
-Warning threshold for Sys CPU utilization
+Warning threshold for system CPU utilization
 
 =item B<--critical-sys>
 
-Critical threshold for Sys CPU utilization
+Critical threshold for system CPU utilization
 
 =item B<--warning-user>
 
-Warning threshold for User CPU utilization
+Warning threshold for user CPU utilization
 
 =item B<--critical-user>
 
-Critical threshold for User CPU utilization
+Critical threshold for user CPU utilization
 
 =item B<--warning-sys-children>
 
-Warning threshold for Sys Children CPU utilization
+Warning threshold for system children CPU utilization
 
 =item B<--critical-sys-children>
 
-Critical threshold for Sys Children CPU utilization
+Critical threshold for system children CPU utilization
 
 =item B<--warning-user-children>
 
-Warning threshold for User Children CPU utilization
+Warning threshold for user children CPU utilization
 
 =item B<--critical-user-children>
 
-Critical threshold for User Children CPU utilization
+Critical threshold for user children CPU utilization
 
 =back
 

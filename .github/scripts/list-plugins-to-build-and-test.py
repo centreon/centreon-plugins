@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import subprocess
 import argparse
 from pathlib import Path
@@ -47,7 +48,12 @@ def add_package_info(packaging_file, build=True, test=True):
         test_dependencies = []
         rpm_file = packaging_dir / 'rpm.json'
         if rpm_file.exists():
-            with open(rpm_file) as rf:
+            packaging_base = os.path.realpath("packaging")
+            rpm_file_real  = os.path.realpath(rpm_file)
+            if os.path.commonpath([packaging_base, rpm_file_real]) != packaging_base:
+                raise Exception("Invalid file path")
+            fd = os.open(rpm_file_real, os.O_RDONLY | os.O_NOFOLLOW)
+            with os.fdopen(fd) as rf:
                 rpm_data = json.load(rf)
                 test_dependencies = [dependency for dependency in rpm_data.get('dependencies', []) if dependency.lower().startswith('centreon-plugin-')]
         if packaging['pkg_name'] not in list_plugins:

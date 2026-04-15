@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "libmodule-find-perl",
         "libjmx4perl-perl"
     ]
 }

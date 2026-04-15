@@ -185,7 +185,12 @@
     {
       "name": "JMX::Jmx4Perl",
       "rpm": {},
-      "deb": {}
+      "deb": {
+        "use_dh_make_perl": "false",
+        "no-auto-depends": "true",
+        "deb_dependencies": "libmodule-find-perl",
+        "revision": "2"
+      }
     },
     {
       "name": "JSON::Path",
