@@ -216,7 +216,7 @@ sub _parse_xml {
         if is_empty($content);
 
     $self->{output}->option_exit(short_msg => "Cannot find XML response in API reply.")
-        unless $content =~ /(<response cmd=["'].*?["'] status=["'](.*?)["']>.*<\/response>)/ms;
+        unless $content =~ /(<response\b[^>]*\bstatus=["'](.*?)["'][^>]*>.*<\/response>)/ms;
 
     my ($xml, $status) = ($1, $2);
     $self->{output}->option_exit(short_msg => "API response status: $status")
