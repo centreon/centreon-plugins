@@ -20,7 +20,7 @@
 
 package cloud::azure::network::frontdoor::mode::discovery;
 
-use base qw(cloud::azure::management::monitor::mode::discovery);
+use base qw(cloud::azure::common::discovery);
 
 use strict;
 use warnings;

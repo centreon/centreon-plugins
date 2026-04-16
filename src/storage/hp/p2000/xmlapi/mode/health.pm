@@ -97,6 +97,11 @@ Can be: 'disk', 'enclosure', 'fan', 'fru', 'psu', 'saslink', 'sensor', 'vdisk'.
 Exclude the items given as a comma-separated list (example: --filter=fru --filter=enclosure).
 You can also exclude items from specific instances: --filter=disk,1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
@@ -115,6 +120,14 @@ Example: --warning='sensor,temperature.*,30'
 
 Set warning threshold for 'sensor', 'fan.speed' (syntax: type,instance,threshold)
 Example: --warning='sensor,temperature.*,30'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

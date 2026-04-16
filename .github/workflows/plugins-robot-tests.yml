@@ -1,0 +1,171 @@
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: "The docker image to use for tests"
+        required: true
+        type: string
+      indexes:
+        description: "The list of runner indexes to use for tests"
+        required: true
+        type: string
+      distrib:
+        description: "The distribution name"
+        required: true
+        type: string
+      arch:
+        description: "The distribution architecture"
+        type: string
+        default: "amd64"
+      get-packages:
+        description: "Whether to get the packages from cache or not"
+        type: string
+        default: true
+      package-extension:
+        description: "Either 'rpm' or 'deb'. Needed to determine the package manager command (dnf or apt-get)."
+        required: true
+        type: string
+      packages-cache-key:
+        description: "The packaged plugin's cache key"
+        required: true
+        type: string
+      plugins-json-cache-key:
+        description: "The cache key for plugin's json"
+        required: true
+        type: string
+      skip-robot-tests:
+        description: "Whether to run robot tests or not"
+        type: boolean
+        default: false
+      exclude-robot-tags:
+        description: "Robot tags to exclude from tests"
+        type: string
+        default: ""
+      include-robot-tags:
+        description: "Robot tags to include in tests"
+        type: string
+        default: ""
+    secrets:
+      registry_username:
+        required: true
+      registry_password:
+        required: true
+
+jobs:
+  test-image-to-cache:
+    runs-on: ${{ contains(inputs.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Login to Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
+          username: ${{ secrets.registry_username }}
+          password: ${{ secrets.registry_password }}
+
+      - name: Login to Proxy Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
+          username: ${{ secrets.registry_username }}
+          password: ${{ secrets.registry_password }}
+
+      - name: Load image
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+        run: |
+          docker image prune -af
+          docker pull $DOCKER_IMAGE
+        shell: bash
+
+      - name: Save image on disk
+        env:
+          IMAGE_NAME: ${{ inputs.image }}
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+        run: |
+          docker save -o ./$IMAGE_NAME $DOCKER_IMAGE
+        shell: bash
+
+      - name: Save image into cache
+        uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./${{ inputs.image }}
+          key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
+
+  robot-test:
+    needs: [test-image-to-cache]
+    runs-on: ${{ contains(inputs.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+
+    strategy:
+      fail-fast: false
+      max-parallel: 15
+      matrix:
+        index: ${{ fromJson(inputs.indexes) }}
+
+    name: "Tests ${{ matrix.index }} on ${{ inputs.distrib }}"
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Get the cached docker image for tests
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./${{ inputs.image }}
+          key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
+          fail-on-cache-miss: true
+
+      - name: Get the cached plugins
+        if: ${{ inputs.get-packages == 'True' }}
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./*.${{ inputs.package-extension }}
+          key: ${{ inputs.packages-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Get the cached plugins.json
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./plugins.json
+          key: ${{ inputs.plugins-json-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Load image
+        env:
+          IMAGE_NAME: ${{ inputs.image }}
+        run: docker load --input ./$IMAGE_NAME
+
+      - name: Install, test and remove plugin
+        shell: bash
+        env:
+          DOCKER_IMAGE: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ inputs.image }}
+          PACKAGE_EXTENSION: ${{ inputs.package-extension }}
+          RUNNER_ID: ${{ matrix.index }}
+          SKIP_ROBOT_TESTS: ${{ inputs.skip-robot-tests }}
+          EXCLUDE_ROBOT_TAGS: ${{ inputs.exclude-robot-tags }}
+          INCLUDE_ROBOT_TAGS: ${{ inputs.include-robot-tags }}
+        run: |
+          mkdir -p reports
+          mkdir -p logs
+          docker run --rm \
+          -v "$(pwd):/test_plugins" \
+          --workdir /test_plugins \
+          -e PACKAGE_EXTENSION \
+          -e RUNNER_ID \
+          -e SKIP_ROBOT_TESTS \
+          -e EXCLUDE_ROBOT_TAGS \
+          -e INCLUDE_ROBOT_TAGS \
+          "${DOCKER_IMAGE}" \
+          bash -c 'if [ -f /.venv/bin/activate ]; then source /.venv/bin/activate; fi; python3 .github/scripts/test-plugins.py --extension="$PACKAGE_EXTENSION" --runner-id="$RUNNER_ID" --logs-dir=./logs --reports-dir=./reports --skip-robot-tests="$SKIP_ROBOT_TESTS" --exclude-tags="$EXCLUDE_ROBOT_TAGS" --include-tags="$INCLUDE_ROBOT_TAGS"'
+
+      - name: Upload logs as artifacts if tests failed
+        if: failure()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: test-plugins-log-${{ inputs.distrib }}-${{ inputs.arch }}-${{ matrix.index }}
+          path: |
+            logs/runner-${{ matrix.index }}
+            reports/runner-${{ matrix.index }}
+          retention-days: 1

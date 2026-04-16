@@ -234,10 +234,13 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vm-id:s'       => { name => 'vm_id' },
-        'vm-name:s'     => { name => 'vm_name' },
-        'filter-name:s' => { name => 'filter_name' },
-        'use-name'      => { name => 'use_name' }
+        'vm-id:s'             => { name => 'vm_id',             default => '' },
+        'vm-name:s'           => { name => 'vm_name',           default => '' },
+        'filter-name:s'       => { name => 'filter_name',       default => '' },
+        'exclude-name:s'      => { name => 'exclude_name',      default => '' },
+        'include-node-name:s' => { name => 'include_node_name', default => '' },
+        'exclude-node-name:s' => { name => 'exclude_node_name', default => '' },
+        'use-name'            => { name => 'use_name' }
     });
 
     $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
@@ -257,6 +260,10 @@ sub manage_selection {
     my $result = $options{custom}->api_get_vms(
         vm_id => $self->{option_results}->{vm_id},
         vm_name => $self->{option_results}->{vm_name},
+        filter_name => $self->{option_results}->{filter_name},
+        exclude_name => $self->{option_results}->{exclude_name},
+        include_node_name => $self->{option_results}->{include_node_name},
+        exclude_node_name => $self->{option_results}->{exclude_node_name},
         statefile => $self->{statefile_cache_vms}
     );
 
@@ -265,16 +272,12 @@ sub manage_selection {
     foreach my $vm_id (keys %{$result}) {
         next if (!defined($result->{$vm_id}->{Stats}));
 
-        my $name = $result->{$vm_id}->{Name};
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
-            next;
-        }
+        my $vm_name = $result->{$vm_id}->{Name};
+        my $node_name = $result->{$vm_id}->{Node};
 
         $self->{vms}->{$vm_id} = {
-            display => defined($self->{option_results}->{use_name}) ? $name : $vm_id,
-            name => $name,
+            display => defined($self->{option_results}->{use_name}) ? $vm_name : $vm_id,
+            name => $vm_name,
             state => $result->{$vm_id}->{State},
             read_io => $result->{$vm_id}->{Stats}->{diskread},
             write_io => $result->{$vm_id}->{Stats}->{diskwrite},
@@ -299,6 +302,8 @@ sub manage_selection {
         md5_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
             (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
+            (defined($self->{option_results}->{exclude_name}) ? $self->{option_results}->{exclude_name} : '') . '_' .
+            (defined($self->{option_results}->{include_node_name}) ? $self->{option_results}->{include_node_name} : '') . '_' .
             (defined($self->{option_results}->{vm_id}) ? $self->{option_results}->{vm_id} : '') . '_' .
             (defined($self->{option_results}->{vm_name}) ? $self->{option_results}->{vm_name} : '')
         );
@@ -310,30 +315,42 @@ __END__
 
 =head1 MODE
 
-Check VM usage on Proxmox VE Cluster.
+Check virtual machines usage on Proxmox VE Cluster.
 
 =over 8
 
 =item B<--vm-id>
 
-Exact VM ID.
+Exact virtual machine ID.
 
 =item B<--vm-name>
 
-Exact VM name (if multiple names: names separated by ':').
+Exact virtual machine name (if multiple names: names separated by ':').
 
 =item B<--use-name>
 
-Use VM name for perfdata and display.
+Use virtual machine name for perfdata and display.
 
 =item B<--filter-name>
 
-Filter by vm name (can be a regexp).
+Filter by virtual machine name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude by virtual machine name (can be a regexp).
+
+=item B<--include-node-name>
+
+Filter only virtual machine running on specified node name (can be a regexp).
+
+=item B<--exclude-node-name>
+
+Exclude virtual machine running on specified node name (can be a regexp).
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^vm-status$'
+Example: C<--filter-counters='^vm-status$'>
 
 =item B<--warning-*>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,6 +18,7 @@
 # limitations under the License.
 #
 
+
 package centreon::plugins::templates::counter;
 
 use base qw(centreon::plugins::mode);
@@ -25,7 +26,8 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
-use centreon::plugins::misc;
+use centreon::plugins::constants qw/:counters/;
+use centreon::plugins::misc qw/is_empty/;
 use JSON::XS;
 
 my $sort_subs = {
@@ -42,10 +44,10 @@ sub set_counters {
     
     $self->{maps_counters_type} = [];
     
-    # 0 = mode total
-    # 1 = mode instances
+    # COUNTER_TYPE_GLOBAL (0) = mode total
+    # COUNTER_TYPE_INSTANCE (1) = mode instances
     #push @{$self->{maps_counters_type}}, { 
-    #    name => 'global', type => 0, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
+    #    name => 'global', type => COUNTER_TYPE_GLOBAL, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
     #};
 
     #$self->{maps_counters}->{global} = [
@@ -62,7 +64,7 @@ sub set_counters {
     
     # Example for instances
     #push @{$self->{maps_counters_type}}, { 
-    #    name => 'cpu', type => 1, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
+    #    name => 'cpu', type => COUNTER_KIND_METRIC, message_separator => ', ', cb_prefix_output => undef, cb_init => undef,
     #    message_multiple => 'All CPU usages are ok',
     #};    
 }
@@ -96,15 +98,15 @@ sub get_threshold_prefix {
     my $prefix = '';
     END_LOOP: foreach (@{$self->{maps_counters_type}}) {
         if ($_->{name} eq $options{name}) {
-            $prefix = 'instance-' if ($_->{type} == 1);
+            $prefix = 'instance-' if $_->{type} == COUNTER_TYPE_INSTANCE;
             last;
         }
         
-        if ($_->{type} == 3) {
+        if ($_->{type} == COUNTER_TYPE_MULTIPLE) {
             foreach (@{$_->{group}}) {
                 if ($_->{name} eq $options{name}) {
-                    $prefix = 'instance-' if ($_->{type} == 0);
-                    $prefix = 'subinstance-' if ($_->{type} == 1);
+                    $prefix = 'instance-' if $_->{type} == COUNTER_MULTIPLE_INSTANCE;
+                    $prefix = 'subinstance-' if $_->{type} == COUNTER_MULTIPLE_SUBINSTANCE;
                     last END_LOOP;
                 }
             }
@@ -174,6 +176,7 @@ sub new {
         }
     }
 
+    $options{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL COUNTERS OPTIONS', once => 1) if $options{display_template_help};
 
     return $self;
 }
@@ -186,7 +189,8 @@ sub check_options {
         my $list_counter = '';
         my $th_counter = '';
         my $counters;
-        foreach my $key (keys %{$self->{maps_counters}}) {
+
+        foreach my $key (sort keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
                 $counters->{metrics}->{$_->{label}}->{nlabel} ="";
                 $counters->{metrics}->{$_->{label}}->{min}="";
@@ -209,14 +213,14 @@ sub check_options {
                     $counters->{metrics}->{$_->{label}}->{output_template} = $_->{set}->{perfdatas}->[0]->{template};
                 }
                 my $label = $_->{label};
-                $label =~ s/-//g;
+                $label =~ s/-/_/g;
                 $list_counter .= $_->{label}." ";
-                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";
+                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING_" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL_" . uc($label) . "\$'";
 
             }
         }
         $counters->{"counter list"}=$list_counter;
-        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRAOPTIONS\$";
+        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRA_OPTIONS\$";
 
         my $result_data ="";
         eval {
@@ -237,9 +241,9 @@ sub check_options {
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
             push @$change_macros_opt, 'unknown-' . $_->{label}, 'warning-' . $_->{label}, 'critical-' . $_->{label}
-                if (defined($_->{type}) && $_->{type} == 2);
+                if $_->{type} && $_->{type} == COUNTER_KIND_TEXT;
             $_->{obj}->{instance_mode} = $self;
-            $_->{obj}->init(option_results => $self->{option_results}) if (!defined($_->{type}) || $_->{type} != 2);
+            $_->{obj}->init(option_results => $self->{option_results}) if !defined($_->{type}) || $_->{type} != COUNTER_KIND_TEXT;
         }
     }
 
@@ -365,10 +369,27 @@ sub run_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
 
+    # The default sort method is cmp (string comparison)
     my $sort_method = 'cmp';
+    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
     $sort_method = $options{config}->{sort_method}
         if (defined($options{config}->{sort_method}));
-    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
+
+    # In the absence of sort_attribute the sort method is set now
+    my $sort_sub = $sort_subs->{$sort_method};
+
+    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
+    if (defined($options{config}->{sort_attribute})) {
+        my $sort_attribute = $options{config}->{sort_attribute};
+        if ($sort_method eq 'cmp') {
+            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
+        } else {
+            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
+        }
+    }
+
+    # Now the loop begins with the desired sorting method
+    foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
@@ -547,10 +568,28 @@ sub run_multiple_instances {
 
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator} : ', ';
+
+    # The default sort method is cmp (string comparison)
     my $sort_method = 'cmp';
+    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
     $sort_method = $options{config}->{sort_method}
         if (defined($options{config}->{sort_method}));
-    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
+
+    # In the absence of sort_attribute the sort method is set now
+    my $sort_sub = $sort_subs->{$sort_method};
+
+    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
+    if (defined($options{config}->{sort_attribute})) {
+        my $sort_attribute = $options{config}->{sort_attribute};
+        if ($sort_method eq 'cmp') {
+            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
+        } else {
+            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
+        }
+    }
+
+    # Now the loop begins with the desired sorting method
+    foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
@@ -652,6 +691,9 @@ sub run_multiple_prefix_output {
 sub run_multiple {
     my ($self, %options) = @_;
 
+    return undef if (!is_empty($self->{option_results}->{filter_counters_block})
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
+
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
@@ -687,9 +729,9 @@ sub run_multiple {
             next if (!defined($self->{$options{config}->{name}}->{$instance}->{$group->{name}}));
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$instance}->{$group->{name}};
 
-            if ($group->{type} == 1) {
+            if ($group->{type} == COUNTER_MULTIPLE_SUBINSTANCE) {
                 $self->run_multiple_instances(config => $group, multiple_parent => $multiple, instance_parent => $instance, indent_long_output => $indent_long_output);
-            } elsif ($group->{type} == 0) {
+            } elsif ($group->{type} == COUNTER_MULTIPLE_INSTANCE) {
                 $self->run_global(
                     config => $group,
                     multiple_parent => $multiple,
@@ -728,13 +770,13 @@ sub run {
     }
 
     foreach my $entry (@{$self->{maps_counters_type}}) {
-        if ($entry->{type} == 0) {
+        if ($entry->{type} == COUNTER_TYPE_GLOBAL) {
             $self->run_global(config => $entry);
-        } elsif ($entry->{type} == 1) {
+        } elsif ($entry->{type} == COUNTER_TYPE_INSTANCE) {
             $self->run_instances(config => $entry);
-        } elsif ($entry->{type} == 2) {
+        } elsif ($entry->{type} == COUNTER_TYPE_GROUP) {
             $self->run_group(config => $entry);
-        } elsif ($entry->{type} == 3) {
+        } elsif ($entry->{type} == COUNTER_TYPE_MULTIPLE) {
             $self->run_multiple(config => $entry);
         }
     }
@@ -831,9 +873,9 @@ sub custom_perfdata_instances {
 
 __END__
 
-=head1 MODE
+=head1 GLOBAL COUNTERS OPTIONS
 
-Default template for counters. Should be extended.
+Global options for counters.
 
 =over 8
 
@@ -842,15 +884,13 @@ Default template for counters. Should be extended.
 Only display some counters (regexp can be used).
 Example to check SSL connections only : --filter-counters='^xxxx|yyyy$'
 
-=item B<--warning-*>
+=item B<--warning-xxx>
 
 Warning threshold.
-Can be: 'xxx', 'xxx'.
 
-=item B<--critical-*>
+=item B<--critical-xxx>
 
 Critical threshold.
-Can be: 'xxx', 'xxx'.
 
 =back
 

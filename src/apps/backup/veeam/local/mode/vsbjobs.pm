@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psexec/;
 use centreon::common::powershell::veeam::vsbjobs;
 use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
@@ -120,7 +121,7 @@ sub new {
 
     $options{options}->add_options(arguments => { 
         'timeout:s'         => { name => 'timeout', default => 50 },
-        'command:s'         => { name => 'command' },
+        'command:s'         => { name => 'command', default => '' },
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options' },
         'no-ps'             => { name => 'no_ps' },
@@ -128,7 +129,8 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
         'exclude-name:s'    => { name => 'exclude_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-type:s'     => { name => 'filter_type' },
+        'veeam-version:s'   => { name => 'veeam_version', default => '12' },
     });
 
     return $self;
@@ -139,14 +141,14 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     centreon::plugins::misc::check_security_command(
-        output => $self->{output},
-        command => $self->{option_results}->{command},
+        output          => $self->{output},
+        command         => $self->{option_results}->{command},
         command_options => $self->{option_results}->{command_options},
-        command_path => $self->{option_results}->{command_path}
+        command_path    => $self->{option_results}->{command_path}
     );
 
-    $self->{option_results}->{command} = 'powershell.exe'
-        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '');
+    $self->{option_results}->{command} = veeam_to_psexec($self->{option_results}->{veeam_version})
+        if $self->{option_results}->{command} eq '';
     $self->{option_results}->{command_options} = '-InputFormat none -NoLogo -EncodedCommand'
         if (!defined($self->{option_results}->{command_options}) || $self->{option_results}->{command_options} eq '');
 }
@@ -155,7 +157,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::veeam::vsbjobs::get_powershell();
+        my $ps = centreon::common::powershell::veeam::vsbjobs::get_powershell(veeam_version => $self->{option_results}->{veeam_version});
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
                 severity => 'OK',
@@ -225,10 +227,17 @@ sub manage_selection {
         my $elapsed_time = 0;
         $elapsed_time = $current_time - $job->{creationTimeUTC} if ($job->{creationTimeUTC} =~ /[0-9]/);
 
+        my $sure_backup_job_type;
+        if (version->parse($options{veeam_version}) >= 12) {
+            $sure_backup_job_type = $job->{type} # Job Type is not returned with Get-VBRSureBackupJob whereas it is with Get-VSBJob
+        } else {
+            $sure_backup_job_type = $job_type->{ $job->{type} } // 'unknown'
+        }
+
         my $status = defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ? $job_result->{ $job->{result} } : '-';
         $self->{jobs}->{ $job->{name} } = {
             name => $job->{name},
-            type => defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown',
+            type => $sure_backup_job_type,
             duration => $elapsed_time,
             status => $status
         };
@@ -246,6 +255,11 @@ __END__
 Check SureBackup jobs.
 
 =over 8
+
+=item B<--veeam-version>
+
+The Veeam version to monitor (default: 12).
+Veeam version 13 and later require PowerShell 7 whereas earlier versions use PowerShell 5.
 
 =item B<--timeout>
 
@@ -303,10 +317,38 @@ You can use the following variables: %{name}, %{type}, %{status}, %{duration}.
 Define the conditions to match for the status to be CRITICAL (default: 'not %{status} =~ /success/i').
 You can use the following variables: %{name}, %{type}, %{status}, %{duration}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jobs-detected>
 
-Thresholds.
-Can be: 'jobs-detected', 'jobs-success', 'jobs-warning', 'jobs-failed'.
+Threshold.
+
+=item B<--critical-jobs-detected>
+
+Threshold.
+
+=item B<--warning-jobs-failed>
+
+Threshold.
+
+=item B<--critical-jobs-failed>
+
+Threshold.
+
+=item B<--warning-jobs-success>
+
+Threshold.
+
+=item B<--critical-jobs-success>
+
+Threshold.
+
+=item B<--warning-jobs-warning>
+
+Threshold.
+
+=item B<--critical-jobs-warning>
+
+Threshold.
+
 
 =back
 

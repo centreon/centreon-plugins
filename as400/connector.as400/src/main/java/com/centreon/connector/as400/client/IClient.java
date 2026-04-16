@@ -40,5 +40,7 @@ public interface IClient {
 
     String getAs400CheckType();
 
+    Integer getAs400Ssl();
+
     Object getAs400Arg(String key);
 }

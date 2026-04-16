@@ -13,7 +13,7 @@ ${MOCKOON_JSON}         ${CURDIR}${/}cloud-azure-policyinsights-policystates.jso
 
 ${BASE_URL}             http://${HOSTNAME}:${APIPORT}
 ${LOGIN_ENDPOINT}       ${BASE_URL}/login
-${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --statefile-dir=/dev/shm/ --login-endpoint=${LOGIN_ENDPOINT}
+${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::azure::policyinsights::policystates::plugin --subscription=subscription --tenant=tenant --client-id=client_id --client-secret=secret --login-endpoint=${LOGIN_ENDPOINT}
 
 
 *** Test Cases ***
@@ -24,7 +24,7 @@ Azure PolicyInsights PolicyStates compliance ${tc}
     ...    ${CMD}
     ...    --mode=compliance
     ...    --management-endpoint=${endpoint}
-       
+
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  endpoint                     policyname                                resourcelocation    resourcetype    expected_result    --

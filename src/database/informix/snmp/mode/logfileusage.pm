@@ -65,6 +65,7 @@ sub new {
 
 my $mapping = {
     onLogicalLogDbspace         => { oid => '.1.3.6.1.4.1.893.1.1.1.8.1.3' },
+    onLogicalLogStatus          => { oid => '.1.3.6.1.4.1.893.1.1.1.8.1.4' },
     onLogicalLogPagesAllocated  => { oid => '.1.3.6.1.4.1.893.1.1.1.8.1.7' },
     onLogicalLogPagesUsed       => { oid => '.1.3.6.1.4.1.893.1.1.1.8.1.8' },
 };
@@ -76,6 +77,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
             { oid => $oid_applName },
             { oid => $mapping->{onLogicalLogDbspace}->{oid} },
+            { oid => $mapping->{onLogicalLogStatus}->{oid} },
             { oid => $mapping->{onLogicalLogPagesAllocated}->{oid} },
             { oid => $mapping->{onLogicalLogPagesUsed}->{oid} },
         ], return_type => 1, nothing_quit => 1
@@ -103,7 +105,17 @@ sub manage_selection {
         }
         
         $self->{global}->{$name}->{allocated} += $result->{onLogicalLogPagesAllocated};
-        $self->{global}->{$name}->{used} += $result->{onLogicalLogPagesUsed};
+          
+        # Status of the logical-log file:
+        #   newlyAdded (1)
+        #   free (2)
+        #   current (3)
+        #   used (4)
+        #   backedUpButNeeded (5)
+        # consider log files with state backedUpButNeeded as free space
+        if ($result->{onLogicalLogStatus} != 5) {
+            $self->{global}->{$name}->{used} += $result->{onLogicalLogPagesUsed};
+        }
     }
     
     foreach (keys %{$self->{global}}) {
@@ -128,7 +140,8 @@ Check log files usage.
 
 =item B<--filter-name>
 
-Filter dbspace name (can be a regexp).
+Define which C<dbspace> should be monitored based on their names.
+This option will be treated as a regular expression.
 
 =item B<--warning-usage>
 

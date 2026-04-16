@@ -5,8 +5,8 @@
     "files": [
         "centreon/plugins/script_custom.pm",
         "cloud/azure/custom/",
-        "cloud/azure/management/monitor/mode/discovery.pm",
-        "cloud/azure/management/monitor/mode/discoverytenant.pm",
+        "cloud/azure/common/discovery.pm",
+        "cloud/azure/common/discoverytenant.pm",
         "cloud/azure/management/discover/"
     ]
 }

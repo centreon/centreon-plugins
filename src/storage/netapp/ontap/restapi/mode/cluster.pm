@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -138,7 +138,7 @@ sub set_counters {
         },
         { label => 'read-latency', nlabel => 'cluster.io.read.latency.milliseconds', set => {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
-                output_template => 'read latency: %s ms',
+                output_template => 'read latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0 }
                 ]
@@ -146,7 +146,7 @@ sub set_counters {
         },
         { label => 'write-latency', nlabel => 'cluster.io.write.latency.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
-                output_template => 'write latency: %s ms',
+                output_template => 'write latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
@@ -154,7 +154,7 @@ sub set_counters {
         },
         { label => 'other-latency', nlabel => 'cluster.io.other.latency.milliseconds', set => {
                 key_values => [ { name => 'other_latency' }, { name => 'display' } ],
-                output_template => 'other latency: %s ms',
+                output_template => 'other latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0 }
                 ]
@@ -162,7 +162,7 @@ sub set_counters {
         },
         { label => 'total-latency', nlabel => 'cluster.io.total.latency.milliseconds', set => {
                 key_values => [ { name => 'total_latency' }, { name => 'display' } ],
-                output_template => 'total latency: %s ms',
+                output_template => 'total latency: %.2f ms',
                 perfdatas => [
                     { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
@@ -195,7 +195,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $cluster = $options{custom}->request_api(endpoint => '/api/cluster?fields=*');
+    my $cluster = $options{custom}->request_api(endpoint => '/api/cluster?fields=name,statistics,metric');
 
     $self->{clusters} = {
         $cluster->{name} => {
@@ -210,16 +210,16 @@ sub manage_selection {
                 write_iops    => $cluster->{metric}->{iops}->{write},
                 other_iops     => $cluster->{metric}->{iops}->{other},
                 total_iops    => $cluster->{metric}->{iops}->{total},
-                read_latency  => $cluster->{metric}->{latency}->{read},
-                write_latency => $cluster->{metric}->{latency}->{write},
-                other_latency  => $cluster->{metric}->{latency}->{other},
-                total_latency => $cluster->{metric}->{latency}->{total}
+                read_latency  => $cluster->{metric}->{latency}->{read} ? $cluster->{metric}->{latency}->{read} / 1_000 : undef,
+                write_latency => $cluster->{metric}->{latency}->{write} ? $cluster->{metric}->{latency}->{write} / 1_000 : undef,
+                other_latency  => $cluster->{metric}->{latency}->{other} ? $cluster->{metric}->{latency}->{other} / 1_000 : undef,
+                total_latency => $cluster->{metric}->{latency}->{total} ? $cluster->{metric}->{latency}->{total} / 1_000 : undef
             },
             nodes => {}
         }
     };
 
-    my $nodes = $options{custom}->request_api(endpoint => '/api/cluster/nodes?fields=*');
+    my $nodes = $options{custom}->request_api(endpoint => '/api/cluster/nodes?fields=name,service_processor');
     foreach (@{$nodes->{records}}) {
         $self->{clusters}->{ $cluster->{name} }->{nodes}->{ $_->{name} } = {
             display => $_->{name},
@@ -245,7 +245,7 @@ Check cluster.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='node-status'
+Example: C<--filter-counters='node-status'>
 
 =item B<--unknown-node-status>
 
@@ -262,12 +262,110 @@ You can use the following variables: %{state}, %{link_status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{state} ne "online"').
 You can use the following variables: %{state}, %{link_status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-cpu-utilization>
+
+Thresholds in %.
+
+=item B<--critical-cpu-utilization>
+
+Thresholds in %.
+
+=item B<--warning-read>
+
+Thresholds in B/s.
+
+=item B<--critical-read>
+
+Thresholds in B/s.
+
+=item B<--warning-write>
+
+Thresholds in B/s.
+
+=item B<--critical-write>
+
+Thresholds in B/s.
+
+=item B<--warning-read-iops>
 
 Thresholds.
-Can be: 'cpu-utilization' (%), 'read' (B/s), 'write' (B/s), 'read-iops', 'write-iops',
-'read-latency' (ms), 'write-lantency' (ms), 'other-latency' (ms), 'total-latency' (ms),
-'other' (B/s), 'total' (B/s), 'other-iops', 'total-iops'.
+
+=item B<--critical-read-iops>
+
+Thresholds.
+
+=item B<--warning-write-iops>
+
+Thresholds.
+
+=item B<--critical-write-iops>
+
+Thresholds.
+
+=item B<--warning-read-latency>
+
+Thresholds in ms.
+
+=item B<--critical-read-latency>
+
+Thresholds in ms.
+
+=item B<--warning-write-latency>
+
+Thresholds in ms.
+
+=item B<--critical-write-latency>
+
+Thresholds in ms.
+
+=item B<--warning-other-latency>
+
+Thresholds in ms.
+
+=item B<--critical-other-latency>
+
+Thresholds in ms.
+
+=item B<--warning-total-latency>
+
+Thresholds in ms.
+
+=item B<--critical-total-latency>
+
+Thresholds in ms.
+
+=item B<--warning-other>
+
+Thresholds in B/s.
+
+=item B<--critical-other>
+
+Thresholds in B/s.
+
+=item B<--warning-total>
+
+Thresholds in B/s.
+
+=item B<--critical-total>
+
+Thresholds in B/s.
+
+=item B<--warning-other-iops>
+
+Thresholds.
+
+=item B<--critical-other-iops>
+
+Thresholds.
+
+=item B<--warning-total-iops>
+
+Thresholds.
+
+=item B<--critical-total-iops>
+
+Thresholds.
+
 
 =back
 

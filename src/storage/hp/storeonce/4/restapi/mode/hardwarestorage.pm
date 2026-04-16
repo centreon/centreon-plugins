@@ -124,6 +124,11 @@ Can be: 'drive', 'driveencl', 'fan', 'iomodule', 'pool', 'psu', 'temperature'.
 Exclude the items given as a comma-separated list (example: --filter=psu).
 You can also exclude items from specific instances: --filter=fan,fan slot 1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
@@ -142,6 +147,14 @@ Example: --warning='fan.speed,.*,10000'
 
 Set critical threshold for 'fan.speed' (syntax: section,[instance,]status,regexp)
 Example: --critical='fan.speed,.*,11000'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

@@ -26,6 +26,24 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
+sub prefix_vs_output {
+    my ($self, %options) = @_;
+
+    return "Virtual server '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub vs_long_output {
+    my ($self, %options) = @_;
+
+    return "checking virtual server '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+
+    return "access profile '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -91,24 +109,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub prefix_vs_output {
-    my ($self, %options) = @_;
-
-    return "Virtual server '" . $options{instance_value}->{display} . "' : ";
-}
-
-sub vs_long_output {
-    my ($self, %options) = @_;
-
-    return "checking virtual server '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_ap_output {
-    my ($self, %options) = @_;
-
-    return "access profile '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -214,11 +214,53 @@ Filter virtual server name (can be a regexp).
 
 Filter access profile name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-sessions-created>
 
 Thresholds.
-Can be: 'sessions-created', 'sessions-active', 'sessions-pending',
-'ap-sessions-created', 'ap-sessions-active', 'ap-sessions-pending'.
+
+=item B<--critical-sessions-created>
+
+Thresholds.
+
+=item B<--warning-sessions-active>
+
+Thresholds.
+
+=item B<--critical-sessions-active>
+
+Thresholds.
+
+=item B<--warning-sessions-pending>
+
+Thresholds.
+
+=item B<--critical-sessions-pending>
+
+Thresholds.
+
+=item B<--warning-ap-sessions-created>
+
+Thresholds.
+
+=item B<--critical-ap-sessions-created>
+
+Thresholds.
+
+=item B<--warning-ap-sessions-active>
+
+Thresholds.
+
+=item B<--critical-ap-sessions-active>
+
+Thresholds.
+
+=item B<--warning-ap-sessions-pending>
+
+Thresholds.
+
+=item B<--critical-ap-sessions-pending>
+
+Thresholds.
 
 =back
 

@@ -161,10 +161,23 @@ sub new {
     
     $options{options}->add_options(arguments => { 
         'disk-name:s'        => { name => 'disk_name' },
-        'filter-disk-name:s' => { name => 'filter_disk_name' }
+        'include-disk-name:s' => { name => 'include_disk_name' },
+        'filter-disk-name:s' => { redirect => 'include_disk_name' }
     });
     
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{uuid} = '';
+    foreach ('filter_counters', 'include_disk_name') {
+        if (defined($self->{option_results}->{$_}) && $self->{option_results}->{$_} ne '') {
+            $self->{uuid} .= $self->{option_results}->{$_};
+        }
+    }
 }
 
 my $map_disk_status = {
@@ -178,9 +191,12 @@ my $map_disk_status = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my %cmd = (command => 'listDisks');
+    my %cmd = (command => 'listDisks', args => {});
     if (defined($self->{option_results}->{disk_name}) && $self->{option_results}->{disk_name} ne '') {
-        $cmd{args} = { diskName => $self->{option_results}->{disk_name} };
+        $cmd{args}->{diskName} = $self->{option_results}->{disk_name};
+    }
+    if ($self->{uuid} ne '') {
+        $cmd{args}->{uuid} = $self->{uuid};
     }
     my $disks = $options{custom}->request_api(%cmd);
 
@@ -188,8 +204,8 @@ sub manage_selection {
     $self->{disks} = {};
     my ($max, $min) = (0, 100);
     foreach my $disk (@{$disks->{result}}) {
-        if (defined($self->{option_results}->{filter_disk_name}) && $self->{option_results}->{filter_disk_name} ne '' &&
-            $disk->{name} !~ /$self->{option_results}->{filter_disk_name}/) {
+        if (defined($self->{option_results}->{include_disk_name}) && $self->{option_results}->{include_disk_name} ne '' &&
+            $disk->{name} !~ /$self->{option_results}->{include_disk_name}/) {
             $self->{output}->output_add(long_msg => "skipping disk '" . $disk->{name} . "': no matching filter.", debug => 1);
             next;
         }
@@ -234,7 +250,7 @@ Check disks.
 
 Check exact disk.
 
-=item B<--filter-disk-name>
+=item B<--include-disk-name>
 
 Filter disks by name (can be a regexp).
 
@@ -253,11 +269,69 @@ You can use the following variables: %{status}, %{name}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /^(noAccess|otherDiskSubFailed|failed|notOperational|noUnitControl)$/i').
 You can use the following variables: %{status}, %{name}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-disks-active>
 
-Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct', 'reserved', 
-'disks-total', 'disks-active', 'disks-errors', 'disks-gap-repartition'.
+Threshold.
+
+=item B<--critical-disks-active>
+
+Threshold.
+
+=item B<--warning-disks-errors>
+
+Threshold.
+
+=item B<--critical-disks-errors>
+
+Threshold.
+
+=item B<--warning-disks-gap-repartition>
+
+Threshold in percentage.
+
+=item B<--critical-disks-gap-repartition>
+
+Threshold in percentage.
+
+=item B<--warning-disks-total>
+
+Threshold.
+
+=item B<--critical-disks-total>
+
+Threshold.
+
+=item B<--warning-reserved>
+
+Threshold in bytes.
+
+=item B<--critical-reserved>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

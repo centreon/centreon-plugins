@@ -1,0 +1,11 @@
+{
+    "pkg_name": "centreon-plugin-Network-Hp-Athonet-Node-Exporter-Api",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_hp_athonet_node_exporter_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/prometheus/restapi/custom/",
+        "cloud/prometheus/exporters/nodeexporter/mode/",
+        "network/hp/athonet/nodeexporter/api/"
+    ]
+}

@@ -89,10 +89,19 @@ Can be: 'current', 'fan', 'power', 'status', 'temperature', 'voltage'.
 Exclude the items given as a comma-separated list (example: --filter=fan --filter=voltage).
 You can also exclude items from specific instances: --filter=fan,fan2
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
 
+=item B<--threshold-overload>
+
+Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
+Example: --threshold-overload='xxxxx,CRITICAL,^(?!(normal)$)'
 
 =item B<--warning>
 
@@ -103,6 +112,14 @@ Example: --warning='temperature,.*,40'
 
 Set critical threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
 Example: --critical='temperature,cpu,50'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

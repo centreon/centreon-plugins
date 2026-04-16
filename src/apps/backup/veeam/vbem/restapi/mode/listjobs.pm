@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,12 +51,23 @@ sub manage_selection {
 
     my $results = {};
     my $jobs_exec = $options{custom}->cache_backup_job_session(timeframe => $self->{option_results}->{timeframe});
-    foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
-        next if (defined($results->{ $job->{JobUid} }));
+    my $jobs_replica = $options{custom}->get_replica_job_session(timeframe => $self->{option_results}->{timeframe});
 
-        $results->{ $job->{JobUid} } = {
-            jobName => $job->{JobName},
-            jobType => $job->{JobType}
+    foreach my $job (@{$jobs_exec->{entities}->{backupjobsessions}->{backupjobsessions}}) {
+        next if (defined($results->{ $job->{jobuid} }));
+
+        $results->{ $job->{jobuid} } = {
+            jobName => $job->{jobname},
+            jobType => $job->{jobtype}
+        }
+    }
+
+    foreach my $job (@{$jobs_replica->{entities}->{replicajobsessions}->{replicajobsessions}}) {
+        next if (defined($results->{ $job->{jobuid} }));
+
+        $results->{ $job->{jobuid} } = {
+            jobName => $job->{jobname},
+            jobType => $job->{jobtype}
         }
     }
 
@@ -67,7 +78,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $results = $self->manage_selection(%options);
-    foreach my $uid (keys %$results) {
+    foreach my $uid (sort keys %$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[uid: %s][jobName: %s][jobType: %s]',
@@ -117,7 +128,7 @@ List jobs.
 
 =item B<--timeframe>
 
-Timeframe to get BackupJobSession (in seconds. Default: 86400). 
+Timeframe to get BackupJobSession and ReplicaJobSession (in seconds. Default: 86400).
 
 =back
 

@@ -92,6 +92,11 @@ Can be: 'temperature', 'humidity'.
 Exclude some parts.
 You can also exclude items from specific instances: --filter=sensor,10
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
@@ -106,6 +111,14 @@ Example: --warning='temperature,.*,30'
 
 Set critical threshold for temperature, humidity (syntax: type,instance,threshold)
 Example: --critical='humidty,.*,40'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

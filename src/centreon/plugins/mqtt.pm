@@ -122,7 +122,7 @@ sub query {
         $self->{mqtt}->unsubscribe($options{topic});
     };
     if (%mqtt_received) {
-        return %mqtt_received{$options{topic}};
+        return $mqtt_received{$options{topic}};
     } else {
         $self->{output}->add_option_msg(short_msg => 'No message in topic: ' . $options{topic});
         $self->{output}->option_exit();

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psversion/;
 use centreon::common::powershell::veeam::repositories;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use apps::backup::veeam::wsman::mode::resources::types qw($repository_type $repository_status);
@@ -139,7 +140,8 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-name:s'     => { name => 'filter_name' },
         'exclude-name:s'    => { name => 'exclude_name' },
-        'filter-type:s'     => { name => 'filter_type' }
+        'filter-type:s'     => { name => 'filter_type' },
+        'veeam-version:s'   => { name => 'veeam_version', default => '12' }
     });
 
     return $self;
@@ -148,7 +150,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-        my $ps = centreon::common::powershell::veeam::repositories::get_powershell();
+    my $ps = centreon::common::powershell::veeam::repositories::get_powershell(veeam_version => $self->{option_results}->{veeam_version});
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
                 severity => 'OK',
@@ -159,8 +161,9 @@ sub manage_selection {
         }
 
     my $result = $options{wsman}->execute_powershell(
+        powershell_version => veeam_to_psversion($self->{option_results}->{veeam_version}),
         label => 'repositories',
-        content => centreon::plugins::misc::powershell_encoded($ps)
+        content => $ps
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
@@ -229,6 +232,10 @@ __END__
 
 =over 8
 
+=item B<--veeam-version>
+
+The Veeam version to monitor (default: 12).
+Veeam version 13 and later require PowerShell 7 whereas earlier versions use PowerShell 5.
 
 =item B<--ps-display>
 
@@ -260,10 +267,29 @@ Can used special variables like: %{status}, %{name}, %{type}.
 Set critical threshold for status (Default: 'not %{status} =~ /ordinal|maintenance/i').
 Can used special variables like: %{status}, %{name}, %{type}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-space-usage>
 
-Thresholds.
-Can be: 'space-usage', 'space-usage-free', 'space-usage-prct'.
+Threshold in bytes.
+
+=item B<--critical-space-usage>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-space-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-space-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-space-usage-prct>
+
+Threshold in percentage.
 
 =back
 

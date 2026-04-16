@@ -31,12 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'cpu'              => 'network::hp::procurve::snmp::mode::cpu',
-        'environment'      => 'network::hp::procurve::snmp::mode::environment',
-        'interfaces'       => 'network::hp::procurve::snmp::mode::interfaces',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::hp::procurve::snmp::mode::memory',
-        'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis'
+        'cpu'                   => 'network::hp::procurve::snmp::mode::cpu',
+        'environment'           => 'network::hp::procurve::snmp::mode::environment',
+        'interfaces'            => 'network::hp::procurve::snmp::mode::interfaces',
+        'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'   => 'snmp_standard::mode::listspanningtrees',
+        'memory'                => 'network::hp::procurve::snmp::mode::memory',
+        'spanning-tree'         => 'snmp_standard::mode::spanningtree',
+        'stack'                 => 'network::hp::procurve::snmp::mode::stack',
+        'uptime'                => 'snmp_standard::mode::uptime',        
+        'virtual-chassis'       => 'network::hp::procurve::snmp::mode::virtualchassis'
     };
 
     return $self;

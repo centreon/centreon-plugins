@@ -33,7 +33,9 @@ sub new {
     $self->{modes} = { 
         'index-update'   => 'apps::monitoring::splunk::mode::indexupdate',
         'query'          => 'apps::monitoring::splunk::mode::query',
-        'splunkd-health' => 'apps::monitoring::splunk::mode::splunkdhealth'
+        'splunkd-health' => 'apps::monitoring::splunk::mode::splunkdhealth',
+        'numeric-value'  => 'apps::monitoring::splunk::mode::numericvalue',
+        'string-value'   => 'apps::monitoring::splunk::mode::stringvalue'
     };
 
     $self->{custom_modes}->{api} = 'apps::monitoring::splunk::custom::api';

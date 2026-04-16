@@ -3,6 +3,8 @@ Documentation       Check tcpcon table
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
@@ -27,7 +29,8 @@ tcpcon ${tc}
     ${output}    Strip String    ${output}
     Should Match Regexp    ${output}    ${expected_result}
 
-    Examples:        tc    extra_options                           expected_result    --
-            ...      1     -application=[services]                 OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
-            ...      2     -application=[threshold-critical]       OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
-            ...      3     -application=[threshold-warning]        OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
+    Examples:        tc    extra_options                                               expected_result    --
+            ...      1     -application=[services]                                     OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
+            ...      2     -application=[threshold-critical]                           OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
+            ...      3     -application=[threshold-warning]                            OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;
+            ...      4     --force-rfc=rfc4022 -application=[threshold-warning]        OK: Total connections: \\\\d+ \\\\| 'service_total'=\\\\d+;;;\\\\d+;

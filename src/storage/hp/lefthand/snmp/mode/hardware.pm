@@ -89,6 +89,11 @@ Can be: 'fan', 'rcc', 'temperature', 'psu', 'voltage', 'device', 'rc', 'ro'.
 Exclude the items given as a comma-separated list (example: --filter=fan --filter=psu).
 You can also exclude items from specific instances: --filter=fan,1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
@@ -107,6 +112,15 @@ Example: --warning='temperature,.*,30'
 
 Set critical threshold for 'temperature', 'voltage', 'fan', 'device.temperature' (syntax: type,regexp,threshold)
 Example: --critical='temperature,.*,50'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,6 +45,8 @@ sub new {
     );
     $self->{version} = '1.0';
     $self->{modes} = {};
+    # modes_options can contain options that will be passed to the module during initialization (e.g. force_new_perfdata)
+    $self->{modes_options} = {};
     $self->{custom_modes} = {};
     $self->{default} = undef;
     $self->{customdefault} = {};
@@ -121,11 +123,14 @@ sub init {
         $self->is_mode(mode => $self->{mode_name});
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{modes}{$self->{mode_name}}, 
                                                error_msg => "Cannot load module --mode.");
-        $self->{mode} = $self->{modes}{$self->{mode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name});
+        $self->{mode} = $self->{modes}{$self->{mode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{mode_name},
+                                                                %{$self->{modes_options}->{$self->{mode_name}} // {}} );
     } elsif (defined($self->{dynmode_name}) && $self->{dynmode_name} ne '') {
         (undef, $self->{dynmode_name}) = centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{dynmode_name}, 
                                                                                 error_msg => "Cannot load module --dyn-mode.");
-        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name});
+        my $short_name = $self->{dynmode_name} =~ /([^:\/\.]+)(?:\.pm)?$/ ? $1 : $self->{dynmode_name};
+        $self->{mode} = $self->{dynmode_name}->new(options => $self->{options}, output => $self->{output}, mode => $self->{dynmode_name},
+                                                                %{$self->{modes_options}->{$short_name} // {}} );
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--mode' or '--dyn-mode' option.");
         $self->{output}->option_exit();
@@ -150,12 +155,26 @@ sub init {
     $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     push @{$self->{custommode_stored}}, $self->{custommode_current};
-    $self->{custommode_current}->set_options(option_results => $self->{option_results});
-    $self->{custommode_current}->set_defaults(default => $self->{customdefault});
+
+    # Call custom mode set_options if it's defined, otherwise set option_results directly
+    if ($self->{custommode_current}->can('set_options')) {
+        $self->{custommode_current}->set_options(option_results => $self->{option_results});
+    } else {
+        $self->{custommode_current}->{option_results} = $self->{option_results};
+    }
+
+    # Call set_defaults only if it's defined in the custom mode
+    $self->{custommode_current}->set_defaults(default => $self->{customdefault})
+        if $self->{custommode_current}->can('set_defaults');
 
     while ($self->{custommode_current}->check_options()) {
         $self->{custommode_current} = $self->{custom_modes}->{$self->{custommode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
-        $self->{custommode_current}->set_options(option_results => $self->{option_results});
+        # Call custom mode set_options if it's defined, otherwise set option_results directly
+        if ($self->{custommode_current}->can('set_options')) {
+            $self->{custommode_current}->set_options(option_results => $self->{option_results});
+        } else {
+            $self->{custommode_current}->{option_results} = $self->{option_results};
+        }
         push @{$self->{custommode_stored}}, $self->{custommode_current};
     }
     $self->{mode}->check_options(

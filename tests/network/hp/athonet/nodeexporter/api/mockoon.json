@@ -1,0 +1,2839 @@
+{
+  "uuid": "93cf7469-62cf-4bd1-b40b-ce4b5199d67c",
+  "lastMigration": 33,
+  "name": "Athonet Node Exporter",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "d5b7c002-364e-4ec4-a30e-81e53cdc6285",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "core/pls/api/1/auth/login",
+      "responses": [
+        {
+          "uuid": "c37b7734-1330-4488-9c4a-0a3eb484dd5a",
+          "body": "{\n    \"access_token\": \"theSecretToken\",\n    \"refresh_token\": \"theRefreshToken\"\n}\n",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "426f281b-4aa8-4b9b-999a-1c6f54459e5e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "core/prometheus/api/v1/query",
+      "responses": [
+        {
+          "uuid": "a0ae8e52-ce0c-4442-91f2-1de41bd27ba1",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        },
+        {
+          "uuid": "a8a0d39b-5648-45ec-bf03-5c559076a2cf",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "chf_active_charging_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "chf_active_charging_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"chf_active_charging_sessions\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745496751.164,\n                    \"14\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6f4887bd-bb1e-42f2-b95d-88c2aaab8187",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"chf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"chf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745496751.502,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "68af4ebe-8895-4e21-b197-3d63d5fcb53c",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"eir\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"eir\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.004,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.004,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "5671e0ec-f06c-4e62-93f1-ae768a07b6f9",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"eir\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"eir\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:1::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:2::4:1\",\n                    \"repository\": \"Eir.DataLayer.Repository\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:1::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"eir@ab34:123:456:2::4:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.106,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "1340324b-91a8-4152-9517-7a7e79a45946",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"eir\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"eir\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"eir\",\n                    \"user\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.206,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8086\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"eir\",\n                    \"user\": \"eir\"\n                },\n                \"value\": [\n                    1745496962.206,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}"
+        },
+        {
+          "uuid": "b60baddd-da22-4525-b523-9dd51b311fd0",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "license_status",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "license_status",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\r\n    \"status\": \"success\",\r\n    \"data\": {\r\n        \"resultType\": \"vector\",\r\n        \"result\": [\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8082\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"udm\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8086\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"eir\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8091\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"ausf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8092\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"udr\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8080\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"nrf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            },\r\n            {\r\n                \"metric\": {\r\n                    \"__name__\": \"license_status\",\r\n                    \"host\": \"site1-ngc-dlf-1\",\r\n                    \"instance\": \"127.0.0.1:8095\",\r\n                    \"job\": \"pls_http_sd_config\",\r\n                    \"target_type\": \"smsf\"\r\n                },\r\n                \"value\": [\r\n                    1745332911.269,\r\n                    \"1\"\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}"
+        },
+        {
+          "uuid": "b7a22301-54fc-45fa-98f3-a3e949cf5dfb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_ue_imsi",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_ue_imsi",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_ue_imsi\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497054.615,\n                    \"8\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "5b1dfedc-b681-4a4d-b28f-2b7a700b8002",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_ue_registered",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_ue_registered",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_ue_registered\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497054.722,\n                    \"8\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "7dde51ad-6a4b-4051-9946-dfc9b7d97187",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_s1_enb",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_s1_enb",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_s1_enb\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497054.81,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "f350c1b6-78ff-482d-9b8f-f88c45914caf",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sum(mme_s1_enb_active_ue)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sum(mme_s1_enb_active_ue)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {},\n                \"value\": [\n                    1745497054.906,\n                    \"7\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "e0407e1c-0759-4b3a-9cdb-a32a27f0a4ec",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sum(mme_s1_enb_ecgi)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sum(mme_s1_enb_ecgi)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {},\n                \"value\": [\n                    1745497054.906,\n                    \"6\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "fa74565f-76b0-44bd-bb0c-c7bd76387728",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mme_s1_enb_status",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "mme_s1_enb_status",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_s1_enb_status\",\n                    \"enb_id\": \"macroENB-208502-103003\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.111,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"mme_s1_enb_status\",\n                    \"enb_id\": \"macroENB-208502-103002\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.111,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6bddeb01-8e68-4ec6-9506-66de525afa4b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "license_constraint",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "license_constraint",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8087\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"chf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_connected_ran_nodes\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_provisioned_supis\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"110\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"license_constraint\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"param\": \"max_registered_ues\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497175.333,\n                    \"100\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6940e563-ce87-4f04-9237-f599cd3a2f42",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"mme\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"mme\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"mme\",\n                    \"user\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.587,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"mme\",\n                    \"user\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.587,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "75bb572b-1ef7-4e89-a863-ec7ed9f2a45b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "gtpc_peer_status{target_type=\"mme\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "gtpc_peer_status{target_type=\"mme\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.20\",\n                    \"remote_ip\": \"172.42.9.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.678,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.20\",\n                    \"remote_ip\": \"172.42.1.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.678,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.19\",\n                    \"remote_ip\": \"172.42.1.19\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.678,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "8879cbfc-b040-4e01-8701-0f85159c26e8",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "gtpc_peer_tun{target_type=\"mme\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "gtpc_peer_tun{target_type=\"mme\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_tun\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.20\",\n                    \"remote_ip\": \"172.42.9.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.811,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_tun\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.20\",\n                    \"remote_ip\": \"172.42.1.35\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.811,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_tun\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9002\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.19\",\n                    \"remote_ip\": \"172.42.1.19\",\n                    \"target_type\": \"mme\"\n                },\n                \"value\": [\n                    1745497055.811,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "a0cec4bd-dc55-421c-8da7-272e3b685649",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec11.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec11.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec21.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-local\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"mmec21.mmegi0001.mme.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-eir01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-pcf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-smsf01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-sig-1\",\n                    \"instance\": \"127.0.0.1:9876\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-udm01.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"stack-public\",\n                    \"target_type\": \"dra\",\n                    \"user\": \"dra\"\n                },\n                \"value\": [\n                    1745496862.917,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4fd39c16-2102-4ddb-a688-c23fb2148e8a",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"nrf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"nrf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.219,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.219,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4b03b37e-ca26-4796-b11f-61a98a87608c",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"nrf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"nrf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:1::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:2::1:1\",\n                    \"repository\": \"repository\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:1::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"nrf@ab34:123:456:2::1:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.325,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "8865df1a-bda8-4267-b0c9-02501031ab25",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_registration_status{nfType!~\"AUSF|AMF\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_registration_status{nfType!~\"AUSF|AMF\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"0c199a90-d121-43d5-bb58-5527a35d3a44\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"11a357fe-6008-4c68-87ba-34c721af4fad\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"3da74841-5c96-43a8-898e-0022f92e2b55\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"639a2dc6-9089-4dc5-a641-fb0285dfa2e3\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"65ca62c5-7d3a-433e-8052-7412c1d6cede\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"8b3edeed-24ac-41b2-85f8-90d6ea8e6900\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"cc33ccd9-ed1e-458a-beb0-d2eb7f03655b\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"dc180c25-23dc-421f-9498-bdc6996b6066\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"26b10ab2-e0a9-4221-81be-fa5dca02f873\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"73cbefc1-dfe5-4f33-ad72-480965c6b0f6\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"beab7f69-12f1-4036-ba26-f3588a383c96\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"5ef20d63-e963-49c4-a696-721d12db6069\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.031,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "cf6d743d-fd63-4c74-b6f5-5960c0821545",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_registration_timestamp_seconds{nfType!~\"AUSF|AMF\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_registration_timestamp_seconds{nfType!~\"AUSF|AMF\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"0c199a90-d121-43d5-bb58-5527a35d3a44\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"11a357fe-6008-4c68-87ba-34c721af4fad\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"3da74841-5c96-43a8-898e-0022f92e2b55\",\n                    \"nfType\": \"UDR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"639a2dc6-9089-4dc5-a641-fb0285dfa2e3\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"65ca62c5-7d3a-433e-8052-7412c1d6cede\",\n                    \"nfType\": \"UDM\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"8b3edeed-24ac-41b2-85f8-90d6ea8e6900\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"cc33ccd9-ed1e-458a-beb0-d2eb7f03655b\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"dc180c25-23dc-421f-9498-bdc6996b6066\",\n                    \"nfType\": \"EIR\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"26b10ab2-e0a9-4221-81be-fa5dca02f873\",\n                    \"nfType\": \"SMF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"73cbefc1-dfe5-4f33-ad72-480965c6b0f6\",\n                    \"nfType\": \"CHF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478084\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"beab7f69-12f1-4036-ba26-f3588a383c96\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_registration_timestamp_seconds\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8080\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"nfInstanceId\": \"5ef20d63-e963-49c4-a696-721d12db6069\",\n                    \"nfType\": \"PCF\",\n                    \"target_type\": \"nrf\"\n                },\n                \"value\": [\n                    1745478093.123,\n                    \"1745478085\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "78260cce-e8ac-4d97-8006-36a0809c9aef",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pcf_n7_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pcf_n7_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pcf_n7_sessions\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497456.841,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n\n"
+        },
+        {
+          "uuid": "c0a518ea-d040-4493-bfdd-f530779e8b19",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pcf_n5_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pcf_n5_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pcf_n5_sessions\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"pcf\"\n                },\n                \"value\": [\n                    1745497456.933,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6902b0ec-8d78-4b77-af3f-2071a49b28ef",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"pcf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"pcf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"pcf\",\n                    \"user\": \"pcf\"\n                },\n                \"value\": [\n                    1745497457.027,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8084\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"pcf\",\n                    \"user\": \"pcf\"\n                },\n                \"value\": [\n                    1745497457.027,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "3d9ebf27-5b30-41a9-9d20-cc74444e291e",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sgw_ue_fsm",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sgw_ue_fsm",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sgw_ue_fsm\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.528,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "9c648c52-2f3c-44aa-92e9-9b5fb4d4cb1b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sgw_dfb_fsm",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sgw_dfb_fsm",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sgw_dfb_fsm\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.637,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "17428dfb-a6bd-4954-9b07-d81fa3f75d9e",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_node_status{target_type=\"sgwc\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_node_status{target_type=\"sgwc\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.10\",\n                    \"remote_ip\": \"172.42.2.8\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.836,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "7c0c5598-d13c-4583-a4d2-7ea3ba2701e3",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "gtpc_peer_status{target_type=\"sgwc\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "gtpc_peer_status{target_type=\"sgwc\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.35\",\n                    \"remote_ip\": \"172.42.9.20\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.733,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.0\",\n                    \"remote_ip\": \"172.42.2.1\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.733,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"gtpc_peer_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.9.35\",\n                    \"remote_ip\": \"172.20.8.20\",\n                    \"target_type\": \"sgwc\"\n                },\n                \"value\": [\n                    1745497509.733,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4eec481e-b293-4817-a9ff-c4f0cb6f36dd",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"sgwc\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"sgwc\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_peer_state_info\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:9003\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"permanent\": \"false\",\n                    \"remote\": \"172.42.2.8\",\n                    \"svc\": \"sgwc\",\n                    \"target_type\": \"sgwc\",\n                    \"type\": \"blacklist\"\n                },\n                \"value\": [\n                    1745497509.935,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "14185f5a-fe50-49c8-9c7d-694cdc836eb5",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sum(smf_sessions)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sum(smf_sessions)",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {},\n                \"value\": [\n                    1745497566.904,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "a65c5dcb-443d-4628-803a-98c1f6899147",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "smf_supi",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "smf_supi",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"smf_supi\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497566.996,\n                    \"13\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "d42aa8dd-be4e-42bb-9a37-2362c361c884",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"smf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"smf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497567.293,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "f469389b-f2ee-4c8c-a1b2-7d264a7cfe9e",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_node_status{target_type=\"smf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_node_status{target_type=\"smf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.9\",\n                    \"remote_ip\": \"172.42.2.8\",\n                    \"target_type\": \"smf\"\n                },\n                \"value\": [\n                    1745497567.091,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}"
+        },
+        {
+          "uuid": "2332a15e-7f00-402c-8a9f-22cca53a7235",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"smf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_peer_state_info{type=\"blacklist\", target_type=\"smf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_peer_state_info\",\n                    \"host\": \"site1-tri-pc-1\",\n                    \"instance\": \"127.0.0.1:8085\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"permanent\": \"false\",\n                    \"remote\": \"172.42.2.8\",\n                    \"svc\": \"smf_up\",\n                    \"target_type\": \"smf\",\n                    \"type\": \"blacklist\"\n                },\n                \"value\": [\n                    1745497567.191,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "eed56fdd-7749-44f8-b7a0-4c05036672ea",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "smsf_sms_stored",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "smsf_sms_stored",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"smsf_sms_stored\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.311,\n                    \"0\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "4c989329-a887-43f6-900d-4fd04ff61768",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"smsf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"smsf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"default\",\n                    \"target_type\": \"smsf\",\n                    \"user\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.411,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8095\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"default\",\n                    \"target_type\": \"smsf\",\n                    \"user\": \"smsf\"\n                },\n                \"value\": [\n                    1745497656.411,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "d326e29f-b858-4084-97eb-4951c545e857",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479325.969,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udm.DataRepository.Repository\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479325.969,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "6edc4039-5098-445f-a5f4-3951b1b6e561",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:1::2:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:2::2:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:1::2:1\",\n                    \"repository\": \"Udm.DataRepository.Repository\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udm@ab34:123:456:2::2:1\",\n                    \"repository\": \"Udm.DataRepository.Repository\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.069,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "8bcc646a-f930-4311-8665-873ba60e9f70",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "diameter_peer_status{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "diameter_peer_status{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site1-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"udm\",\n                    \"user\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.169,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"diameter_peer_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"orig_host\": \"site2-dra01-local.bjo.fgh123.klm567.domain.local\",\n                    \"stack\": \"diam_default\",\n                    \"target_type\": \"udm\",\n                    \"user\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.169,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "1d1889f7-0760-4040-b8f3-cb7a2d093adb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"udm\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"udm\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8082\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"udm\"\n                },\n                \"value\": [\n                    1745479326.277,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "7d3963bf-95f5-4403-b36f-ea5804129056",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes{target_type=\"udr\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes{target_type=\"udr\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.412,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.412,\n                    \"2\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udr.DataLayer.Repository.Session\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.412,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}"
+        },
+        {
+          "uuid": "8a28d66c-ab74-4965-8641-5f3b67fdbc9a",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_cluster_nodes_status{target_type=\"udr\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_cluster_nodes_status{target_type=\"udr\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:1::3:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:2::3:1\",\n                    \"repository\": \"xdb recovery configuration\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:1::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:2::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:1::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Session\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_cluster_nodes_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"node\": \"udr@ab34:123:456:2::3:1\",\n                    \"repository\": \"Udr.DataLayer.Repository.Session\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.509,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "99324a98-c04c-44b5-80da-e381179c02e6",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "sbi_nrf_registration_status{target_type=\"udr\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "sbi_nrf_registration_status{target_type=\"udr\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"sbi_nrf_registration_status\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.903,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "51760729-44fb-49bf-bb7e-e8fa654d33fd",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "nf_data_layer_table_row_count{table=\"supi\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "nf_data_layer_table_row_count{table=\"supi\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"nf_data_layer_table_row_count\",\n                    \"host\": \"site1-ngc-dlf-1\",\n                    \"instance\": \"127.0.0.1:8092\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"repository\": \"Udr.DataLayer.Repository.Provisioning\",\n                    \"table\": \"supi\",\n                    \"target_type\": \"udr\"\n                },\n                \"value\": [\n                    1745478845.608,\n                    \"102\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "cc450f5f-1c09-4db9-96aa-f666999820ed",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "100*scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))/(scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))-scalar(nf_data_layer_table_row_count{table=\"supi\"}))",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "100*scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))/(scalar(delta(nf_data_layer_table_row_count{table=\"supi\"}[24h]))-scalar(nf_data_layer_table_row_count{table=\"supi\"}))",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"scalar\",\n        \"result\": [\n            1745478845.703,\n            \"-0\"\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "f7dbb9af-c583-47d6-9c80-da2b569d03ec",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_sessions",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_sessions",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_sessions\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497821.876,\n                    \"26\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "bc98842b-fed3-4924-8fdb-dec03b5b7a78",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_gtpu_ifaces",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_gtpu_ifaces",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_gtpu_ifaces\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497821.974,\n                    \"4\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "cd9e1670-bbbd-453d-94f9-c7e5a7ead57b",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_ip_ifaces",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_ip_ifaces",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_ip_ifaces\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.07,\n                    \"2\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "40c9a675-5d54-4f8d-8511-bdce73adae48",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "upf_apn_dnn_total",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "upf_apn_dnn_total",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"upf_apn_dnn_total\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.167,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        },
+        {
+          "uuid": "e6966662-9955-4a55-96ea-9a07f9d516fb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pfcp_node_status{target_type=\"upf\"}",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pfcp_node_status{target_type=\"upf\"}",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"resultType\": \"vector\",\n        \"result\": [\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.8\",\n                    \"remote_ip\": \"172.42.2.10\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.372,\n                    \"1\"\n                ]\n            },\n            {\n                \"metric\": {\n                    \"__name__\": \"pfcp_node_status\",\n                    \"host\": \"site1-ngc-up-1\",\n                    \"instance\": \"127.0.0.1:8200\",\n                    \"job\": \"pls_http_sd_config\",\n                    \"local_ip\": \"172.42.2.8\",\n                    \"remote_ip\": \"172.42.2.9\",\n                    \"target_type\": \"upf\"\n                },\n                \"value\": [\n                    1745497822.372,\n                    \"1\"\n                ]\n            }\n        ]\n    }\n}\n"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "6862d2ac-b249-4b63-8d96-b8c871896893",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "core/pls/api/1/auth/refresh_token",
+      "responses": [
+        {
+          "uuid": "30419cbc-4327-4e26-ac05-199f53858eea",
+          "body": "{\n    \"access_token\": \"theNewSecretToken\",\n    \"refresh_token\": \"theNewRefreshToken\"\n}\n",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "d5b7c002-364e-4ec4-a30e-81e53cdc6285"
+    },
+    {
+      "type": "route",
+      "uuid": "426f281b-4aa8-4b9b-999a-1c6f54459e5e"
+    },
+    {
+      "type": "route",
+      "uuid": "6862d2ac-b249-4b63-8d96-b8c871896893"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

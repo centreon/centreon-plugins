@@ -3,14 +3,17 @@ Documentation       Check WD (Western Digital) NAS in SNMP
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
 
 *** Variables ***
-${CMD}                                              ${CENTREON_PLUGINS} --plugin=storage::wd::nas::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=storage::wd::nas::snmp::plugin
+
 
 *** Test Cases ***
-listvolumes${tc}
+listvolumes ${tc}
     [Tags]    listvolumes    storage    snmp
     ${command}    Catenate
     ...    ${CMD}
@@ -20,8 +23,8 @@ listvolumes${tc}
     ...    --snmp-port=${SNMPPORT}
     ...    --snmp-community=storage/wd/nas/snmp/nas-wd
     ...    ${extra_option}
-    
-    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:         tc  extra_option                                        expected_result    --
             ...       1   --snmp-tls-their-identity                           List volumes: [name: Volume_1] [type: ext4]

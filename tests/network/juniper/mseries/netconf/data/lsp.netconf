@@ -1,0 +1,161 @@
+<mpls-lsp-information xmlns="http://xml.juniper.net/junos/21.2R0/junos-routing">
+    <rsvp-session-data>
+        <session-type>Ingress</session-type>
+        <count>2</count>
+        <rsvp-session junos:style="detail">
+            <mpls-lsp>
+                <destination-address>10.0.0.2</destination-address>
+                <source-address>10.0.0.1</source-address>
+                <lsp-state>Up</lsp-state>
+                <route-count>0</route-count>
+                <name>FROM-MX1-TO-MX2</name>
+                <lsp-id>2</lsp-id>
+                <lsp-description></lsp-description>
+                <active-path>(primary)</active-path>
+                <is-nodeprotection/>
+                <lsp-type>Static Configured</lsp-type>
+                <egress-label-operation>Penultimate hop popping</egress-label-operation>
+                <load-balance>random</load-balance>
+                <metric-follows-igp/>
+                <mpls-lsp-attributes>
+                    <encoding-type>Packet</encoding-type>
+                    <switching-type>Packet</switching-type>
+                    <gpid>IPv4</gpid>
+                    <mpls-lsp-upstream-label></mpls-lsp-upstream-label>
+                </mpls-lsp-attributes>
+                <lsp-selfping-status>Disabled</lsp-selfping-status>
+                <mpls-lsp-path>
+                    <title>Primary</title>
+                    <name></name>
+                    <path-active/>
+                    <path-state>Up</path-state>
+                    <setup-priority>7</setup-priority>
+                    <hold-priority>0</hold-priority>
+                    <optimize-timer>900</optimize-timer>
+                    <smart-optimize-timer>180</smart-optimize-timer>
+                    <path-flap-count>0</path-flap-count>
+                    <path-mbb-count>0</path-mbb-count>
+                    <cspf-status>Reoptimization in 817 second(s).</cspf-status>
+                    <cspf-status>
+                        Computed ERO (S [L] denotes strict [loose] hops): (CSPF metric: 10)
+                    </cspf-status>
+                    <explicit-route heading="          ">
+                        <explicit-route-element>
+                            <address>10.1.1.5</address>
+                            <explicit-route-type>S</explicit-route-type>
+                        </explicit-route-element>
+                    </explicit-route>
+                    <received-rro>
+                        Received RRO (ProtectionFlag 1=Available 2=InUse 4=B/W 8=Node 10=SoftPreempt 20=Node-ID):
+                        10.0.0.2(flag=0x20) 10.1.1.5(Label=3)
+                    </received-rro>
+                </mpls-lsp-path>
+            </mpls-lsp>
+        </rsvp-session>
+        <rsvp-session junos:style="detail">
+            <mpls-lsp>
+                <destination-address>10.0.0.3</destination-address>
+                <source-address>10.0.0.1</source-address>
+                <lsp-state>Dn</lsp-state>
+                <route-count>0</route-count>
+                <name>FROM-MX1-TO-MX3</name>
+                <lsp-id>3</lsp-id>
+                <lsp-description></lsp-description>
+                <active-path>(none)</active-path>
+                <is-nodeprotection/>
+                <lsp-type>Static Configured</lsp-type>
+                <egress-label-operation>Penultimate hop popping</egress-label-operation>
+                <load-balance>random</load-balance>
+                <metric-follows-igp/>
+                <mpls-lsp-attributes>
+                    <encoding-type>Packet</encoding-type>
+                    <switching-type>Packet</switching-type>
+                    <gpid>IPv4</gpid>
+                    <mpls-lsp-upstream-label></mpls-lsp-upstream-label>
+                </mpls-lsp-attributes>
+                <lsp-selfping-status>Disabled</lsp-selfping-status>
+                <mpls-lsp-path>
+                    <title>Primary</title>
+                    <name></name>
+                    <path-state>Dn</path-state>
+                    <setup-priority>7</setup-priority>
+                    <hold-priority>0</hold-priority>
+                    <optimize-timer>900</optimize-timer>
+                    <smart-optimize-timer>180</smart-optimize-timer>
+                    <path-flap-count>0</path-flap-count>
+                    <path-mbb-count>0</path-mbb-count>
+                    <cspf-status>Reoptimization in 29 second(s).</cspf-status>
+                    <cspf-status>Will be enqueued for recomputation in 15 second(s).</cspf-status>
+                    <path-history>
+                        <sequence-number>1</sequence-number>
+                        <time>Apr 25 09:14:31.617</time>
+                        <log>CSPF failed: no route toward 10.0.0.3[2 times, first Apr 25 09:12:34.065]</log>
+                        <route></route>
+                    </path-history>
+                </mpls-lsp-path>
+            </mpls-lsp>
+        </rsvp-session>
+        <display-count>2</display-count>
+        <up-count>1</up-count>
+        <down-count>1</down-count>
+    </rsvp-session-data>
+    <rsvp-session-data>
+        <session-type>Egress</session-type>
+        <count>1</count>
+        <rsvp-session junos:style="detail">
+            <destination-address>10.0.0.1</destination-address>
+            <source-address>10.0.0.2</source-address>
+            <lsp-state>Up</lsp-state>
+            <route-count>0</route-count>
+            <name>FROM-MX2-TO-MX1</name>
+            <lsp-path-type>Primary</lsp-path-type>
+            <suggested-label-in>-</suggested-label-in>
+            <suggested-label-out>-</suggested-label-out>
+            <recovery-label-in>-</recovery-label-in>
+            <recovery-label-out>-</recovery-label-out>
+            <rsb-count>1</rsb-count>
+            <resv-style>SE</resv-style>
+            <label-in>3</label-in>
+            <label-out>-</label-out>
+            <psb-lifetime>4929</psb-lifetime>
+            <psb-creation-time>Thu Apr 25 09:14:09 2024
+            </psb-creation-time>
+            <sender-tspec>rate 0bps size 0bps peak Infbps m 20 M 9192</sender-tspec>
+            <lsp-id>7</lsp-id>
+            <tunnel-id>10156</tunnel-id>
+            <proto-id>0</proto-id>
+            <lsp-attribute-flags></lsp-attribute-flags>
+            <is-nodeprotection/>
+            <rsvp-path-status>Protection down</rsvp-path-status>
+            <packet-information heading="  PATH">
+                <previous-hop>10.1.1.5</previous-hop>
+                <interface-name>ae1.0</interface-name>
+                <count>3</count>
+            </packet-information>
+            <adspec>received MTU 9174</adspec>
+            <packet-information heading="  PATH">
+                <next-hop>localclient</next-hop>
+            </packet-information>
+            <packet-information heading="  RESV">
+                <previous-hop>localclient</previous-hop>
+                <entropy-label>Yes</entropy-label>
+            </packet-information>
+            <record-route heading="  Record route: ">
+                <address>10.1.1.5</address>
+                <address>10.0.0.2</address>
+                <self/>
+            </record-route>
+        </rsvp-session>
+        <display-count>1</display-count>
+        <up-count>1</up-count>
+        <down-count>0</down-count>
+    </rsvp-session-data>
+    <rsvp-session-data>
+        <session-type>Transit</session-type>
+        <count>0</count>
+        <display-count>0</display-count>
+        <up-count>0</up-count>
+        <down-count>0</down-count>
+    </rsvp-session-data>
+</mpls-lsp-information>
+

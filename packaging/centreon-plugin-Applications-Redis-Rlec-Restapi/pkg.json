@@ -4,6 +4,6 @@
     "plugin_name": "centreon_redis_rlec_restapi.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
-        "apps/redis/rlec/"
+        "apps/redis/rlec/restapi/"
     ]
 }

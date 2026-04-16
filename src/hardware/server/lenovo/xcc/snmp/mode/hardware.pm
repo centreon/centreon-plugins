@@ -33,18 +33,19 @@ sub set_system {
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
-        default => [
+        default    => [
             ['Normal', 'OK'],
             ['.*', 'CRITICAL']
         ],
         raidvolume => [
             ['Optimal', 'OK'],
             ['.*', 'CRITICAL']
-        ]
+        ],
+
     };
 
     $self->{components_path} = 'hardware::server::lenovo::xcc::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'voltage', 'fan', 'psu', 'disk', 'raidvolume'];
+    $self->{components_module} = ['temperature', 'voltage', 'fan', 'psu', 'disk', 'raidvolume', 'health', 'cpu', 'memory'];
 }
 
 sub snmp_execute {
@@ -77,7 +78,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'temperature', 'voltage', 'fan', 'psu', 'disk', 'raidvolume'.
+Can be: 'temperature', 'voltage', 'fan', 'psu', 'disk', 'raidvolume', 'health', 'cpu', 'memory'.
 
 =item B<--filter>
 

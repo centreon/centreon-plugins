@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/perl-keepass-reader.yml"
       - "dependencies/perl-keepass-reader/**"
   push:
     branches:
@@ -16,17 +17,25 @@ on:
       - master
       - "[2-9][0-9].[0-9][0-9].x"
     paths:
+      - ".github/workflows/perl-keepass-reader.yml"
       - "dependencies/perl-keepass-reader/**"
 
 env:
   module_name: perl-keepass-reader
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   package:
     needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
 
     strategy:
       fail-fast: false
@@ -38,33 +47,44 @@ jobs:
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
+          - image: packaging-plugins-trixie
+            distrib: trixie
+            package_extension: deb
           - image: packaging-plugins-jammy
             distrib: jammy
             package_extension: deb
+          - image: packaging-plugins-noble
+            distrib: noble
+            package_extension: deb
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     name: package ${{ matrix.distrib }}
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Build library
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "rpm" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "rpm" ]]; then
             dnf install -y make perl
           else
             apt-get update
@@ -78,17 +98,20 @@ jobs:
         shell: bash
 
       - name: Set package name and paths according to distrib
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
         run: |
           PERL_VERSION=$(perl -E "say $^V" | sed -E "s/v([0-9]+\.[0-9]+).+/\1/g")
 
           echo "Perl version is $PERL_VERSION"
 
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             NAME="libkeepass-reader-perl"
             PERL_VENDORLIB="/usr/share/perl5"
           else
             NAME="perl-KeePass-Reader"
-            if [[ "${{ matrix.distrib }}" == "el8" ]]; then
+            if [[ "$DISTRIB" == "el8" ]]; then
               PERL_VENDORLIB="/usr/local/share/perl5"
             else
               PERL_VENDORLIB="/usr/local/share/perl5/$PERL_VERSION"
@@ -117,71 +140,55 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-
-  deliver-rpm:
+  deliver-packages:
     needs: [get-environment, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
+    if: |
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
-        distrib: [el8, el9]
+        include:
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
+          - distrib: noble
+            package_extension: deb
 
-    name: Deliver ${{ matrix.distrib }}
-
+    name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
-        uses: ./.github/actions/rpm-delivery
+        uses: ./.github/actions/package-delivery
         with:
           module_name: ${{ env.module_name }}
           distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.run_id }}-rpm-${{ env.module_name }}-${{ matrix.distrib }}
+          cache_key: cache-${{ github.run_id }}-${{ matrix.package_extension }}-${{ env.module_name }}-${{ matrix.distrib }}
           stability: ${{ needs.get-environment.outputs.stability }}
-
-  deliver-deb:
-    needs: [get-environment, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
-    strategy:
-      matrix:
-        distrib: [bullseye, bookworm, jammy]
-
-    name: Deliver ${{ matrix.distrib }}
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Delivery
-        uses: ./.github/actions/deb-delivery
-        with:
-          module_name: ${{ env.module_name }}
-          distrib: ${{ matrix.distrib }}
+          release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.run_id }}-deb-${{ env.module_name }}-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
 
-  promote:
-    needs: [get-environment]
-    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-    strategy:
-      matrix:
-        distrib: [bullseye, bookworm]
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Promote ${{ matrix.distrib }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: ${{ env.module_name }}
-          distrib: ${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

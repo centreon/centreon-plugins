@@ -5,6 +5,7 @@
     "files": [
         "centreon/plugins/script_custom.pm",
         "cloud/azure/custom/",
-        "cloud/azure/management/applicationinsights/"
+        "cloud/azure/management/applicationinsights/",
+        "cloud/azure/common/discovery.pm"
     ]
 }

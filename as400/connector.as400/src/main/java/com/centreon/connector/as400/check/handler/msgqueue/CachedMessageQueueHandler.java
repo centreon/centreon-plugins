@@ -102,8 +102,8 @@ public class CachedMessageQueueHandler extends AbstractHandler implements ICache
         return sb.toString();
     }
 
-    public CachedMessageQueueHandler(final String host, final String login, final String password) {
-        super(host, login, password);
+    public CachedMessageQueueHandler(final String host, final String login, final String password, final Integer ssl) {
+        super(host, login, password, ssl);
     }
 
     @Override

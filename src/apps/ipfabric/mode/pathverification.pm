@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -124,10 +125,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-src-ip:s'   => { name => 'filter_src_ip' },
-        'filter-src-port:s' => { name => 'filter_src_port' },
-        'filter-dst-ip:s'   => { name => 'filter_dst_ip' },
-        'filter-dst-port:s' => { name => 'filter_dst_port' }
+        'filter-src-ip:s'   => { name => 'filter_src_ip',   default => '' },
+        'filter-src-port:s' => { name => 'filter_src_port', default => '' },
+        'filter-dst-ip:s'   => { name => 'filter_dst_ip',   default => '' },
+        'filter-dst-port:s' => { name => 'filter_dst_port', default => '' }
     });
 
     return $self;
@@ -135,6 +136,8 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    my ($indice, $limit) = (0, 1000);
 
     my $path_raw_form_post = {
         columns => [
@@ -149,61 +152,63 @@ sub manage_selection {
         ],
         filters => {},
         pagination => {
-            limit => undef,
-            start => 0
+            limit => $limit,
+            start => $indice
         },
         reports => "/technology/routing/path-verifications"
     };  
 
-    my $path_state_results = $options{custom}->request_api(
-        method => 'POST',
-        endpoint => '/networks/path-lookup-checks',
-        query_form_post => $path_raw_form_post
-    );
-
     $self->{global} = { detected => 0, all_path => 0, error_path => 0, none_path => 0, part_path => 0, total_mismatch => 0 };
-
-    my $path_state = {};
     $self->{paths} = {};
-    foreach my $route (@{$path_state_results->{data}}) {
-        my $dst_port = (defined($route->{dstPorts})) ? $route->{dstPorts} : '-';
-        my $src_port = (defined($route->{srcPorts})) ? $route->{srcPorts} : '-';
+    while (1) {
+        my $path_state_results = $options{custom}->request_api(
+            method => 'POST',
+            endpoint => '/networks/path-lookup-checks',
+            query_form_post => $path_raw_form_post
+        );
 
-        next if (defined($self->{option_results}->{filter_src_ip}) && $self->{option_results}->{filter_src_ip} ne '' &&
-            $route->{src}  !~ /$self->{option_results}->{filter_src_ip}/);
-        next if (defined($self->{option_results}->{filter_src_port}) && $self->{option_results}->{filter_src_port} ne '' &&
-            $src_port !~ /$self->{option_results}->{filter_src_port}/);
-        next if (defined($self->{option_results}->{filter_dst_ip}) && $self->{option_results}->{filter_dst_ip} ne '' &&
-            $route->{dst} !~ /$self->{option_results}->{filter_dst_ip}/);
-        next if (defined($self->{option_results}->{filter_dst_port}) && $self->{option_results}->{filter_dst_port} ne '' &&
-            $dst_port !~ /$self->{option_results}->{filter_dst_port}/);
+        foreach my $route (@{$path_state_results->{data}}) {
+            my $dst_port = $route->{dstPorts} // '-';
+            my $src_port = $route->{srcPorts} // '-';
+            $route->{$_} //= '' foreach qw/src dst/;
 
-        $self->{paths}->{ $route->{id} } = {
-            dst_ip => $route->{dst},
-            dst_port => $dst_port,
-            expected_state => $route->{expectedPassingTraffic},
-            src_ip => $route->{src},
-            src_port => $src_port,
-            protocol => $route->{protocol},
-            state => $route->{passingTraffic}->{data}
-        };
+            next if is_excluded($route->{src}, $self->{option_results}->{filter_src_ip});
+            next if is_excluded($src_port, $self->{option_results}->{filter_src_port});
+            next if is_excluded($route->{dst}, $self->{option_results}->{filter_dst_ip});
+            next if is_excluded($dst_port, $self->{option_results}->{filter_dst_port});
 
-        $self->{global}->{detected}++;
-        if ($route->{passingTraffic}->{data} eq 'none') {
-            $self->{global}->{none_path}++;
+            $self->{paths}->{ $route->{id} } = {
+                dst_ip => $route->{dst},
+                dst_port => $dst_port,
+                expected_state => $route->{expectedPassingTraffic},
+                src_ip => $route->{src},
+                src_port => $src_port,
+                protocol => $route->{protocol},
+                state => $route->{passingTraffic}->{data}
+            };
+
+            $self->{global}->{detected}++;
+
+            $self->{global}->{none_path}++
+                if $route->{passingTraffic}->{data} eq 'none';
+
+            $self->{global}->{all_path}++
+                if $route->{passingTraffic}->{data} eq 'all';
+
+            $self->{global}->{part_path}++
+                if $route->{passingTraffic}->{data} eq 'part';
+
+            $self->{global}->{error_path}++
+                if $route->{passingTraffic}->{data} eq 'error';
+
+            $self->{global}->{total_mismatch}++
+                if $route->{expectedPassingTraffic} ne $route->{passingTraffic}->{data};
         }
-        if ($route->{passingTraffic}->{data} eq 'all') {
-            $self->{global}->{all_path}++;
-        }
-        if ($route->{passingTraffic}->{data} eq 'part') {
-            $self->{global}->{part_path}++;
-        }
-        if ($route->{passingTraffic}->{data} eq 'error') {
-            $self->{global}->{error_path}++;
-        }
-        if ($route->{expectedPassingTraffic} ne $route->{passingTraffic}->{data}) {
-            $self->{global}->{total_mismatch}++;
-        }
+
+        last if scalar(@{$path_state_results->{data}}) < $limit;
+
+        $indice += $limit;
+        $path_raw_form_post->{pagination}->{start} = $indice;
     }
 }
 
@@ -219,7 +224,7 @@ Check end-to-end path's result against predefined expected state in IP Fabric.
 
 =item B<--filter-src-ip>
 
-Filter paths by source ip (regexp can be used).
+Filter paths by source IP (regexp can be used).
 
 =item B<--filter-src-port>
 
@@ -227,11 +232,11 @@ Filter paths by source port (regexp can be used).
 
 =item B<--filter-dst-ip>
 
-Filter paths by destionation ip (regexp can be used).
+Filter paths by destination IP (regexp can be used).
 
 =item B<--filter-dst-port>
 
-Filter paths by destionation port (regexp can be used).
+Filter paths by destination port (regexp can be used).
 
 =item B<--warning-status>
 
@@ -251,11 +256,53 @@ For example, if you want a critical alert when the path state is in 'error' then
 the option would be: 
 --critical-status="%{state} eq 'all'"
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-paths-detected>
 
-Thresholds.
-Can be: 'paths-detected', 'paths-mismatch', 'paths-state-all',
-'paths-state-part', 'paths-state-none', 'paths-state-error'.
+Threshold.
+
+=item B<--critical-paths-detected>
+
+Threshold.
+
+=item B<--warning-paths-mismatch>
+
+Threshold.
+
+=item B<--critical-paths-mismatch>
+
+Threshold.
+
+=item B<--warning-paths-state-all>
+
+Threshold.
+
+=item B<--critical-paths-state-all>
+
+Threshold.
+
+=item B<--warning-paths-state-error>
+
+Threshold.
+
+=item B<--critical-paths-state-error>
+
+Threshold.
+
+=item B<--warning-paths-state-none>
+
+Threshold.
+
+=item B<--critical-paths-state-none>
+
+Threshold.
+
+=item B<--warning-paths-state-part>
+
+Threshold.
+
+=item B<--critical-paths-state-part>
+
+Threshold.
 
 =back
 

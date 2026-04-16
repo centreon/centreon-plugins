@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:values :counters);
 use Digest::MD5;
 use DateTime;
 
@@ -56,9 +57,9 @@ sub custom_long_calc {
     $self->{result_values}->{application} = $options{new_datas}->{$self->{instance} . '_application'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
 
-    return -11 if ($self->{result_values}->{status} !~ /Running/i);
+    return NOT_PROCESSED if ($self->{result_values}->{status} !~ /Running/i);
 
-    return 0;
+    return RUN_OK;
 }
 
 sub custom_success_perfdata {
@@ -97,14 +98,14 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', , skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', },
+        { name => 'jobs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 } }
     ];
     
     $self->{maps_counters}->{jobs} = [
         { 
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /Error/i',
             set => {
                 key_values => [
@@ -116,7 +117,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'long', type => 2, set => {
+        { label => 'long', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'status' }, { name => 'name' }, { name => 'environment' }, 
                     { name => 'application' }, { name => 'elapsed' }
@@ -343,47 +344,47 @@ Example: --filter-counters='total-error'
 
 =item B<--filter-environment>
 
-Filter environment name (cannot be a regexp).
+Filter by environment name (cannot be a regexp).
 
 =item B<--filter-application>
 
-Filter application name (cannot be a regexp).
+Filter by application name (cannot be a regexp).
 
 =item B<--filter-name>
 
-Filter name (can be a regexp).
+Filter by name (can be a regexp).
 
 =item B<--timezone>
 
-Set date timezone.
+Set the timezone.
 Can use format: 'Europe/London' or '+0100'.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: -)
-You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{exit_code}>, C<%{message}>, C<%{environment}>, C<%{application}>.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{exit_code} =~ /Error/i').
-You can use the following variables: %{name}, %{status}, %{exit_code}, %{message}, %{environment}, %{application}
+Define the conditions to match for the status to be CRITICAL (default: C<%{exit_code} =~ /Error/i>).
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{exit_code}>, C<%{message}>, C<%{environment}>, C<%{application}>.
 
 =item B<--warning-long>
 
-Set warning threshold for long jobs (default: none)
-You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
+Set the warning threshold for long jobs.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{elapsed}>, C<%{application}>.
 
 =item B<--critical-long>
 
-Set critical threshold for long jobs (default: none).
-You can use the following variables: %{name}, %{status}, %{elapsed}, %{application}
+Set the critical threshold for long jobs.
+You can use the following variables: C<%{name}>, C<%{status}>, C<%{elapsed}>, C<%{application}>.
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'running', 'errors', 'waiting',
-'finished', 'notscheduled', 'descheduled',
-'success-prct'.
+Can be: C<running>, C<errors>, C<waiting>,
+C<finished>, C<notscheduled>, C<descheduled>,
+C<success-prct>.
 
 =back
 

@@ -178,6 +178,12 @@ my $mapping = {
         total  => { oid => '.1.3.6.1.4.1.24681.2.2.23.1.3' }, # es-SysPoolCapacity
         free   => { oid => '.1.3.6.1.4.1.24681.2.2.23.1.4' }, # es-SysPoolFreeSize
         status => { oid => '.1.3.6.1.4.1.24681.2.2.23.1.5' }  # es-SysPoolStatus
+    },
+    quts => {
+        name   => { oid => '.1.3.6.1.4.1.55062.2.10.7.1.2' }, # es-SysPoolID
+        total  => { oid => '.1.3.6.1.4.1.55062.2.10.7.1.3' }, # es-SysPoolCapacity
+        free   => { oid => '.1.3.6.1.4.1.55062.2.10.7.1.4' }, # es-SysPoolFreeSize
+        status => { oid => '.1.3.6.1.4.1.55062.2.10.7.1.5', , map => $map_status }  # es-SysPoolStatus
     }
 };
 
@@ -197,7 +203,7 @@ sub check_pools {
             next;
         }
 
-        if (defined($options{convert})) {
+        if ($options{type} ne "quts" && defined($options{convert})) {
             $result->{total} = $self->convert_bytes(value => $result->{total});
             $result->{free} = $self->convert_bytes(value => $result->{free});
         }
@@ -233,6 +239,12 @@ sub manage_selection {
         oid => '.1.3.6.1.4.1.24681.1.4.1.1.1.2.2.2' # poolTable
     );
     return if ($self->check_pools(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result));
+
+    $snmp_result = $options{snmp}->get_table(
+        oid => '.1.3.6.1.4.1.55062.2.10.7', # QuTS hero storagePoolTable
+        nothing_quit => 1
+    );
+    return if $self->check_pools(snmp => $options{snmp}, type => 'quts', snmp_result => $snmp_result, convert => 1);
 
     $snmp_result = $options{snmp}->get_table(
         oid => '.1.3.6.1.4.1.24681.2.2.23', # es-SystemPoolTable

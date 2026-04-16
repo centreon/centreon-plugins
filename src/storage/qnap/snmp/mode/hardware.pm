@@ -86,16 +86,21 @@ sub snmp_execute {
 
     $self->{is_es} = 0;
     $self->{is_qts} = 0;
+    $self->{is_quts} = 0;
     my $oid_es_uptime = '.1.3.6.1.4.1.24681.2.2.4.0'; # es-SystemUptime
     my $oid_qts_model = '.1.3.6.1.4.1.55062.1.12.3.0'; # systemModel
+    my $oid_quts_disk_table = '.1.3.6.1.4.1.55062.2.10.7.1.1.1'; # quts-poolTable
     my $snmp_result = $self->{snmp}->get_leef(
-        oids => [$oid_es_uptime, $oid_qts_model]
+        oids => [$oid_es_uptime, $oid_qts_model, $oid_quts_disk_table]
     ); 
     if (defined($snmp_result->{$oid_es_uptime})) {
         $self->{is_es} = 1;
     }
     if (defined($snmp_result->{$oid_qts_model})) {
         $self->{is_qts} = 1;
+    }
+    if (defined($snmp_result->{$oid_quts_disk_table})) {
+        $self->{is_quts} = 1;
     }
 }
 
@@ -152,6 +157,14 @@ Example: --warning='temperature,cpu,30' --warning='fan,.*,1500'
 
 Set critical threshold for temperatures (syntax: type,regexp,threshold)
 Example: --critical='temperature,system,40' --critical='disk,.*,40'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

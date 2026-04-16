@@ -1,4 +1,6 @@
 #
+# Copyright 2025 Centreon (http://www.centreon.com/)
+#
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
 # service performance.
@@ -45,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check UPS APC through SNMP (POWERNET-MIB)
+Check UPS APC through SNMP (C<POWERNET-MIB>)
 
 =cut

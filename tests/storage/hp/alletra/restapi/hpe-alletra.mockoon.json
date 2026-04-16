@@ -1,0 +1,259 @@
+{
+  "uuid": "a7e4aebb-29d2-4b2f-b5b9-342b2a4fcdd8",
+  "lastMigration": 33,
+  "name": "Alletra",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "57a9f2df-01e2-4af0-9f54-695ceb680c0e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/capacity",
+      "responses": [
+        {
+          "uuid": "17c03e91-3180-46f3-85e1-7ff4d5820319",
+          "body": "{\r\n    \"allCapacity\": {\r\n        \"totalMiB\": 175767552,\r\n        \"allocated\": {\r\n            \"totalAllocatedMiB\": 117614592,\r\n            \"volumes\": {\r\n                \"totalVolumesMiB\": 99950592,\r\n                \"nonCPGsMiB\": 0,\r\n                \"nonCPGUserMiB\": 0,\r\n                \"nonCPGSnapshotMiB\": 0,\r\n                \"nonCPGAdminMiB\": 0,\r\n                \"CPGsMiB\": 99950592,\r\n                \"CPGUserMiB\": 91842207,\r\n                \"CPGUserUsedMiB\": 91842207,\r\n                \"CPGUserUsedBulkVVMiB\": 0,\r\n                \"CPGUserUnusedMiB\": 0,\r\n                \"CPGSnapshotMiB\": 8108385,\r\n                \"CPGSnapshotUsedMiB\": 0,\r\n                \"CPGSnapshotUsedBulkVVMiB\": 0,\r\n                \"CPGSnapshotUnusedMiB\": 8108385,\r\n                \"CPGAdminMiB\": 1044480,\r\n                \"CPGAdminUsedMiB\": 740352,\r\n                \"CPGAdminUsedBulkVVMiB\": 0,\r\n                \"CPGAdminUnusedMiB\": 304128,\r\n                \"CPGSharedMiB\": 11078550,\r\n                \"CPGPrivateMiB\": 80763657,\r\n                \"CPGBasePrivateMiB\": 80763657,\r\n                \"CPGBasePrivateReservedMiB\": 80763657,\r\n                \"CPGBasePrivatevSphereVVolsMiB\": 0,\r\n                \"CPGSnapshotPrivateMiB\": 0,\r\n                \"CPGSnapshotPrivateReservedMiB\": 0,\r\n                \"CPGSnapshotPrivatevSphereVVolsMiB\": 0,\r\n                \"CPGFreeMiB\": 8108385,\r\n                \"unmappedMiB\": 0,\r\n                \"capacityEfficiency\": {\r\n                    \"compaction\": 2.84,\r\n                    \"deduplication\": 1.17,\r\n                    \"compression\": 1.00,\r\n                    \"dataReduction\": 1.58,\r\n                    \"overProvisioning\": 0.87\r\n                }\r\n            },\r\n            \"system\": {\r\n                \"totalSystemMiB\": 17664000,\r\n                \"internalMiB\": 1972224,\r\n                \"spareMiB\": 14647296,\r\n                \"spareUsedMiB\": 0,\r\n                \"spareUnusedMiB\": 14647296,\r\n                \"adminMiB\": 1044480\r\n            }\r\n        },\r\n        \"freeMiB\": 58152960,\r\n        \"freeInitializedMiB\": 58152960,\r\n        \"freeUninitializedMiB\": 0,\r\n        \"unavailableCapacityMiB\": 0,\r\n        \"failedCapacityMiB\": 0,\r\n        \"overProvisionedVirtualSizeMiB\": 138715270,\r\n        \"overProvisionedUsedMiB\": 93696444,\r\n        \"overProvisionedAllocatedMiB\": 8096760,\r\n        \"overProvisionedFreeMiB\": 58152960\r\n    },\r\n    \"FCCapacity\": {\r\n        \"totalMiB\": 0,\r\n        \"allocated\": {\r\n            \"totalAllocatedMiB\": 0,\r\n            \"volumes\": {\r\n                \"totalVolumesMiB\": 0,\r\n                \"nonCPGsMiB\": 0,\r\n                \"nonCPGUserMiB\": 0,\r\n                \"nonCPGSnapshotMiB\": 0,\r\n                \"nonCPGAdminMiB\": 0,\r\n                \"CPGsMiB\": 0,\r\n                \"CPGUserMiB\": 0,\r\n                \"CPGUserUsedMiB\": 0,\r\n                \"CPGUserUsedBulkVVMiB\": 0,\r\n                \"CPGUserUnusedMiB\": 0,\r\n                \"CPGSnapshotMiB\": 0,\r\n                \"CPGSnapshotUsedMiB\": 0,\r\n                \"CPGSnapshotUsedBulkVVMiB\": 0,\r\n                \"CPGSnapshotUnusedMiB\": 0,\r\n                \"CPGAdminMiB\": 0,\r\n                \"CPGAdminUsedMiB\": 0,\r\n                \"CPGAdminUsedBulkVVMiB\": 0,\r\n                \"CPGAdminUnusedMiB\": 0,\r\n                \"CPGSharedMiB\": 0,\r\n                \"CPGPrivateMiB\": 0,\r\n                \"CPGBasePrivateMiB\": 0,\r\n                \"CPGBasePrivateReservedMiB\": 0,\r\n                \"CPGBasePrivatevSphereVVolsMiB\": 0,\r\n                \"CPGSnapshotPrivateMiB\": 0,\r\n                \"CPGSnapshotPrivateReservedMiB\": 0,\r\n                \"CPGSnapshotPrivatevSphereVVolsMiB\": 0,\r\n                \"CPGFreeMiB\": 0,\r\n                \"unmappedMiB\": 0,\r\n                \"capacityEfficiency\": {\r\n                    \"compaction\": 0.00,\r\n                    \"deduplication\": 0.00,\r\n                    \"dataReduction\": 0.00,\r\n                    \"overProvisioning\": 0.00\r\n                }\r\n            },\r\n            \"system\": {\r\n                \"totalSystemMiB\": 0,\r\n                \"internalMiB\": 0,\r\n                \"spareMiB\": 0,\r\n                \"spareUsedMiB\": 0,\r\n                \"spareUnusedMiB\": 0,\r\n                \"adminMiB\": 0\r\n            }\r\n        },\r\n        \"freeMiB\": 0,\r\n        \"freeInitializedMiB\": 0,\r\n        \"freeUninitializedMiB\": 0,\r\n        \"unavailableCapacityMiB\": 0,\r\n        \"failedCapacityMiB\": 0,\r\n        \"overProvisionedVirtualSizeMiB\": 0,\r\n        \"overProvisionedUsedMiB\": 0,\r\n        \"overProvisionedAllocatedMiB\": 0,\r\n        \"overProvisionedFreeMiB\": 0\r\n    },\r\n    \"NLCapacity\": {\r\n        \"totalMiB\": 0,\r\n        \"allocated\": {\r\n            \"totalAllocatedMiB\": 0,\r\n            \"volumes\": {\r\n                \"totalVolumesMiB\": 0,\r\n                \"nonCPGsMiB\": 0,\r\n                \"nonCPGUserMiB\": 0,\r\n                \"nonCPGSnapshotMiB\": 0,\r\n                \"nonCPGAdminMiB\": 0,\r\n                \"CPGsMiB\": 0,\r\n                \"CPGUserMiB\": 0,\r\n                \"CPGUserUsedMiB\": 0,\r\n                \"CPGUserUsedBulkVVMiB\": 0,\r\n                \"CPGUserUnusedMiB\": 0,\r\n                \"CPGSnapshotMiB\": 0,\r\n                \"CPGSnapshotUsedMiB\": 0,\r\n                \"CPGSnapshotUsedBulkVVMiB\": 0,\r\n                \"CPGSnapshotUnusedMiB\": 0,\r\n                \"CPGAdminMiB\": 0,\r\n                \"CPGAdminUsedMiB\": 0,\r\n                \"CPGAdminUsedBulkVVMiB\": 0,\r\n                \"CPGAdminUnusedMiB\": 0,\r\n                \"CPGSharedMiB\": 0,\r\n                \"CPGPrivateMiB\": 0,\r\n                \"CPGBasePrivateMiB\": 0,\r\n                \"CPGBasePrivateReservedMiB\": 0,\r\n                \"CPGBasePrivatevSphereVVolsMiB\": 0,\r\n                \"CPGSnapshotPrivateMiB\": 0,\r\n                \"CPGSnapshotPrivateReservedMiB\": 0,\r\n                \"CPGSnapshotPrivatevSphereVVolsMiB\": 0,\r\n                \"CPGFreeMiB\": 0,\r\n                \"unmappedMiB\": 0,\r\n                \"capacityEfficiency\": {\r\n                    \"compaction\": 0.00,\r\n                    \"deduplication\": 0.00,\r\n                    \"dataReduction\": 0.00,\r\n                    \"overProvisioning\": 0.00\r\n                }\r\n            },\r\n            \"system\": {\r\n                \"totalSystemMiB\": 0,\r\n                \"internalMiB\": 0,\r\n                \"spareMiB\": 0,\r\n                \"spareUsedMiB\": 0,\r\n                \"spareUnusedMiB\": 0,\r\n                \"adminMiB\": 0\r\n            }\r\n        },\r\n        \"freeMiB\": 0,\r\n        \"freeInitializedMiB\": 0,\r\n        \"freeUninitializedMiB\": 0,\r\n        \"unavailableCapacityMiB\": 0,\r\n        \"failedCapacityMiB\": 0,\r\n        \"overProvisionedVirtualSizeMiB\": 0,\r\n        \"overProvisionedUsedMiB\": 0,\r\n        \"overProvisionedAllocatedMiB\": 0,\r\n        \"overProvisionedFreeMiB\": 0\r\n    },\r\n    \"SSDCapacity\": {\r\n        \"totalMiB\": 175767552,\r\n        \"allocated\": {\r\n            \"totalAllocatedMiB\": 117614592,\r\n            \"volumes\": {\r\n                \"totalVolumesMiB\": 99950592,\r\n                \"nonCPGsMiB\": 0,\r\n                \"nonCPGUserMiB\": 0,\r\n                \"nonCPGSnapshotMiB\": 0,\r\n                \"nonCPGAdminMiB\": 0,\r\n                \"CPGsMiB\": 99950592,\r\n                \"CPGUserMiB\": 91842207,\r\n                \"CPGUserUsedMiB\": 91842207,\r\n                \"CPGUserUsedBulkVVMiB\": 0,\r\n                \"CPGUserUnusedMiB\": 0,\r\n                \"CPGSnapshotMiB\": 8108385,\r\n                \"CPGSnapshotUsedMiB\": 0,\r\n                \"CPGSnapshotUsedBulkVVMiB\": 0,\r\n                \"CPGSnapshotUnusedMiB\": 8108385,\r\n                \"CPGAdminMiB\": 1044480,\r\n                \"CPGAdminUsedMiB\": 740352,\r\n                \"CPGAdminUsedBulkVVMiB\": 0,\r\n                \"CPGAdminUnusedMiB\": 304128,\r\n                \"CPGSharedMiB\": 11078550,\r\n                \"CPGPrivateMiB\": 80763657,\r\n                \"CPGBasePrivateMiB\": 80763657,\r\n                \"CPGBasePrivateReservedMiB\": 80763657,\r\n                \"CPGBasePrivatevSphereVVolsMiB\": 0,\r\n                \"CPGSnapshotPrivateMiB\": 0,\r\n                \"CPGSnapshotPrivateReservedMiB\": 0,\r\n                \"CPGSnapshotPrivatevSphereVVolsMiB\": 0,\r\n                \"CPGFreeMiB\": 8108385,\r\n                \"unmappedMiB\": 0,\r\n                \"capacityEfficiency\": {\r\n                    \"compaction\": 2.84,\r\n                    \"deduplication\": 1.17,\r\n                    \"compression\": 1.00,\r\n                    \"dataReduction\": 1.58,\r\n                    \"overProvisioning\": 0.87\r\n                }\r\n            },\r\n            \"system\": {\r\n                \"totalSystemMiB\": 17664000,\r\n                \"internalMiB\": 1972224,\r\n                \"spareMiB\": 14647296,\r\n                \"spareUsedMiB\": 0,\r\n                \"spareUnusedMiB\": 14647296,\r\n                \"adminMiB\": 1044480\r\n            }\r\n        },\r\n        \"freeMiB\": 58152960,\r\n        \"freeInitializedMiB\": 58152960,\r\n        \"freeUninitializedMiB\": 0,\r\n        \"unavailableCapacityMiB\": 0,\r\n        \"failedCapacityMiB\": 0,\r\n        \"overProvisionedVirtualSizeMiB\": 138715270,\r\n        \"overProvisionedUsedMiB\": 93696444,\r\n        \"overProvisionedAllocatedMiB\": 8096760,\r\n        \"overProvisionedFreeMiB\": 58152960\r\n    }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "efc0b874-061c-40ba-9b83-8b61693b56c0",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/v1/credentials",
+      "responses": [
+        {
+          "uuid": "d7b75a45-3639-4fbd-842f-cd3387c968de",
+          "body": "{\n  \"key\": \"0-xxx-xxx\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "62dab170-be33-44b9-b2d3-3833e7039405",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/disks",
+      "responses": [
+        {
+          "uuid": "2b4e6a66-69af-4c7a-a083-fd67a71551f2",
+          "body": "{\r\n    \"total\": 12,\r\n    \"members\": [\r\n        {\r\n            \"id\": 0,\r\n            \"position\": \"1:1\",\r\n            \"lastPosition\": \"1:1\",\r\n            \"type\": 2,\r\n            \"state\": 1,\r\n            \"totalSizeMiB\": 14647296,\r\n            \"freeSizeMiB\": 4846592,\r\n            \"mfgCapacityGB\": 15360,\r\n            \"WWN\": \"xxxx1\",\r\n            \"manufacturer\": \"XXXX1\",\r\n            \"model\": \"XXXXXX1\",\r\n            \"serialNumber\": \"XXXXX1\",\r\n            \"fwVersion\": \"3P03\",\r\n            \"protocol\": 4,\r\n            \"mediaType\": 3,\r\n            \"admissionTime\": \"2025-04-08T11:14:23+02:00\",\r\n            \"links\": [\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/disks/XXXXX\",\r\n                    \"rel\": \"self\"\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"id\": 1,\r\n            \"position\": \"1:2\",\r\n            \"lastPosition\": \"1:2\",\r\n            \"type\": 3,\r\n            \"state\": 4,\r\n            \"totalSizeMiB\": 14647296,\r\n            \"freeSizeMiB\": 4846592,\r\n            \"mfgCapacityGB\": 15360,\r\n            \"WWN\": \"XXXX2\",\r\n            \"manufacturer\": \"XXXX2\",\r\n            \"model\": \"XXXX2\",\r\n            \"serialNumber\": \"XXXX2\",\r\n            \"fwVersion\": \"XXXX2\",\r\n            \"protocol\": 4,\r\n            \"mediaType\": 3,\r\n            \"admissionTime\": \"2024-04-08T11:14:23+02:00\",\r\n            \"links\": [\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/disks/XXXXX\",\r\n                    \"rel\": \"self\"\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"id\": 2,\r\n            \"position\": \"1:3\",\r\n            \"lastPosition\": \"1:3\",\r\n            \"type\": 3,\r\n            \"state\": 2,\r\n            \"totalSizeMiB\": 14647296,\r\n            \"freeSizeMiB\": 4846592,\r\n            \"mfgCapacityGB\": 15360,\r\n            \"WWN\": \"XXXXX3\",\r\n            \"manufacturer\": \"XXX3\",\r\n            \"model\": \"XXX3\",\r\n            \"serialNumber\": \"XXX3\",\r\n            \"fwVersion\": \"XXX3\",\r\n            \"protocol\": 2,\r\n            \"mediaType\": 3,\r\n            \"admissionTime\": \"2024-04-08T11:14:23+02:00\",\r\n            \"links\": [\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/disks/XXXXX\",\r\n                    \"rel\": \"self\"\r\n                }\r\n            ]\r\n        }\r\n    ],\r\n    \"links\": [\r\n        {\r\n            \"href\": \"https://127.0.0.1/api/v1/disks\",\r\n            \"rel\": \"self\"\r\n        }\r\n    ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2badd267-3152-4db3-8845-3d64d2abfcc9",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/system",
+      "responses": [
+        {
+          "uuid": "dea39363-53cd-4ac0-98f0-24aa52b0e192",
+          "body": "{\r\n    \"id\": 17,\r\n    \"name\": \"Alletra_XXX\",\r\n    \"systemVersion\": \"1.3.1.9\",\r\n    \"IPv4Addr\": \"****\",\r\n    \"model\": \"HPE Alletra Storage MP\",\r\n    \"serialNumber\": \"****\",\r\n    \"totalNodes\": 2,\r\n    \"masterNode\": 0,\r\n    \"onlineNodes\": [\r\n        0,\r\n        1\r\n    ],\r\n    \"clusterNodes\": [\r\n        0,\r\n        1\r\n    ],\r\n    \"chunkletSizeMiB\": 1024,\r\n    \"totalCapacityMiB\": 175767553.0,\r\n    \"allocatedCapacityMiB\": 117602304.0,\r\n    \"freeCapacityMiB\": 58165248.0,\r\n    \"failedCapacityMiB\": 0.0,\r\n    \"readOnlyParameters\": {\r\n        \"maxVolumeSizeMiB\": 67108864,\r\n        \"maxDedupVolumeSizeMiB\": 67108864,\r\n        \"maxCompressedVolumeSizeMiB\": 67108864\r\n    },\r\n    \"contact\": \"****\",\r\n    \"timeZone\": \"Europe/Rome\",\r\n    \"licenseInfo\": {\r\n        \"issueTimeSec\": 1709726712,\r\n        \"issueTime8601\": \"2024-03-06T13:05:12+01:00\",\r\n        \"diskCount\": -1,\r\n        \"WWNBASE\": 177580,\r\n        \"licenses\": [\r\n            {\r\n                \"name\": \"LICENSE 1\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 2\",\r\n                \"expiryTimeSec\": 1000,\r\n                \"expiryTime8601\": \"2020-04-20T02:00:00+02:00\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 3\",\r\n                \"expiryTimeSec\": 1871337600,\r\n                \"expiryTime8601\": \"2029-04-20T02:00:00+02:00\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 4\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 5\",\r\n                \"expiryTimeSec\": 1871337600,\r\n                \"expiryTime8601\": \"2029-04-20T02:00:00+02:00\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 6\",\r\n                \"expiryTimeSec\": 1871337600,\r\n                \"expiryTime8601\": \"2029-04-20T02:00:00+02:00\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 7\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 8\",\r\n                \"expiryTimeSec\": 1871337600,\r\n                \"expiryTime8601\": \"2029-04-20T02:00:00+02:00\"\r\n            },\r\n            {\r\n                \"name\": \"LICENSE 9\",\r\n                \"expiryTimeSec\": 1871337600,\r\n                \"expiryTime8601\": \"2029-04-20T02:00:00+02:00\"\r\n            }\r\n        ],\r\n        \"licenseState\": {\r\n            \"virtualCopy\": true,\r\n            \"remoteCopy\": true,\r\n            \"thinProvisioing\": true,\r\n            \"thinProvisioning\": true,\r\n            \"domains\": true,\r\n            \"dynamicOptimization\": true,\r\n            \"virtualLock\": true,\r\n            \"thinPersistence\": true,\r\n            \"thinConversion\": true,\r\n            \"adaptiveOptimization\": false,\r\n            \"peerVirtualization\": true,\r\n            \"qos\": true,\r\n            \"systemReporter\": true,\r\n            \"darEncryption\": true,\r\n            \"fileServices\": false,\r\n            \"storageFederation\": false,\r\n            \"onlineImport\": true,\r\n            \"rmcApplicationSuite\": true,\r\n            \"smartSAN\": true,\r\n            \"sedEncryption\": false\r\n        }\r\n    },\r\n    \"parameters\": {\r\n        \"rawSpaceAlertSSD\": 0,\r\n        \"remoteSyslog\": true,\r\n        \"remoteSyslogHost\": \"***514\",\r\n        \"remoteSyslogSecurityHost\": \"***:514\",\r\n        \"sparingAlgorithm\": \"Minimal\",\r\n        \"eventLogsize\": 4194304,\r\n        \"eventLogNum\": 10,\r\n        \"VVRetentionTimeMax\": 1209600,\r\n        \"upgradeNote\": \"\",\r\n        \"autoExportAfterReboot\": true,\r\n        \"thermalShutdown\": true,\r\n        \"sessionTimeout\": 3600,\r\n        \"overProvRatioLimit\": 0.0,\r\n        \"overProvRatioWarning\": 0.0,\r\n        \"disableChunkletInitUNMAP\": false,\r\n        \"remoteCopyHostThrottling\": false,\r\n        \"autoAdmitTune\": true,\r\n        \"singleLunHost\": false,\r\n        \"allowDomainUsersAffectNoDomain\": 2,\r\n        \"enableAIQoS\": false\r\n    }\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d0232ee2-9596-4a82-8879-2529d7b6ffa1",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/volumes",
+      "responses": [
+        {
+          "uuid": "bff66b93-5f69-440b-9d11-51bdde804653",
+          "body": "{\r\n    \"total\": 3,\r\n    \"members\": [\r\n        {\r\n            \"id\": 0,\r\n            \"name\": \"test\",\r\n            \"deduplicationState\": 3,\r\n            \"compressionState\": 4,\r\n            \"provisioningType\": 1,\r\n            \"copyType\": 1,\r\n            \"baseId\": 0,\r\n            \"readOnly\": false,\r\n            \"state\": 1,\r\n            \"failedStates\": [],\r\n            \"degradedStates\": [],\r\n            \"additionalStates\": [],\r\n            \"totalReservedMiB\": 10240,\r\n            \"totalUsedMiB\": 10240,\r\n            \"sizeMiB\": 10240,\r\n            \"wwn\": \"AAA1\",\r\n            \"nguid\": \"AAAAA1\",\r\n            \"creationTimeSec\": 1712567685,\r\n            \"creationTime8601\": \"2024-04-07T11:14:45+02:00\",\r\n            \"usrSpcAllocWarningPct\": 0,\r\n            \"usrSpcAllocLimitPct\": 0,\r\n            \"policies\": {\r\n                \"staleSS\": true,\r\n                \"oneHost\": false,\r\n                \"zeroDetect\": false,\r\n                \"system\": true,\r\n                \"caching\": true\r\n            },\r\n            \"userCPG\": \"AAAAA_r6\",\r\n            \"uuid\": \"ZAZZAZZA\",\r\n            \"udid\": 0,\r\n            \"rcopyStatus\": 1,\r\n            \"links\": [\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/volumes/admin\",\r\n                    \"rel\": \"self\"\r\n                },\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/volumespacedistribution/admin\",\r\n                    \"rel\": \"volumeSpaceDistribution\"\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"id\": 1,\r\n            \"name\": \"stest\",\r\n            \"deduplicationState\": 3,\r\n            \"compressionState\": 4,\r\n            \"provisioningType\": 1,\r\n            \"copyType\": 1,\r\n            \"baseId\": 1,\r\n            \"readOnly\": false,\r\n            \"state\": 2,\r\n            \"failedStates\": [],\r\n            \"degradedStates\": [],\r\n            \"additionalStates\": [],\r\n            \"totalReservedMiB\": 122880,\r\n            \"totalUsedMiB\": 22880,\r\n            \"sizeMiB\": 122880,\r\n            \"wwn\": \"BBBB2\",\r\n            \"nguid\": \"BBBBBB2\",\r\n            \"creationTimeSec\": 1712567696,\r\n            \"creationTime8601\": \"2024-04-08T11:24:56+02:00\",\r\n            \"usrSpcAllocWarningPct\": 0,\r\n            \"usrSpcAllocLimitPct\": 0,\r\n            \"policies\": {\r\n                \"staleSS\": true,\r\n                \"oneHost\": false,\r\n                \"zeroDetect\": false,\r\n                \"system\": true,\r\n                \"caching\": true\r\n            },\r\n            \"userCPG\": \"BBB_r6\",\r\n            \"uuid\": \"SFFDSDDSDSD\",\r\n            \"udid\": 1,\r\n            \"rcopyStatus\": 1,\r\n            \"links\": [\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/volumes/stest\",\r\n                    \"rel\": \"self\"\r\n                },\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/volumespacedistribution/stest\",\r\n                    \"rel\": \"volumeSpaceDistribution\"\r\n                }\r\n            ]\r\n        },\r\n        {\r\n            \"id\": 2,\r\n            \"name\": \"mtest\",\r\n            \"deduplicationState\": 3,\r\n            \"compressionState\": 4,\r\n            \"provisioningType\": 1,\r\n            \"copyType\": 1,\r\n            \"baseId\": 2,\r\n            \"readOnly\": false,\r\n            \"state\": 4,\r\n            \"failedStates\": [],\r\n            \"degradedStates\": [],\r\n            \"additionalStates\": [],\r\n            \"totalReservedMiB\": 524288,\r\n            \"totalUsedMiB\": 524288,\r\n            \"sizeMiB\": 524288,\r\n            \"wwn\": \"CCCCCC3\",\r\n            \"nguid\": \"CCCCC3\",\r\n            \"creationTimeSec\": 1712567697,\r\n            \"creationTime8601\": \"2024-04-08T12:14:57+02:00\",\r\n            \"usrSpcAllocWarningPct\": 0,\r\n            \"usrSpcAllocLimitPct\": 0,\r\n            \"policies\": {\r\n                \"staleSS\": true,\r\n                \"oneHost\": false,\r\n                \"zeroDetect\": false,\r\n                \"system\": true,\r\n                \"caching\": true\r\n            },\r\n            \"userCPG\": \"CCC_r6\",\r\n            \"uuid\": \"AEZDSSFDDSD\",\r\n            \"udid\": 2,\r\n            \"rcopyStatus\": 1,\r\n            \"links\": [\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/volumes/mtest\",\r\n                    \"rel\": \"self\"\r\n                },\r\n                {\r\n                    \"href\": \"https://127.0.0.1/api/v1/volumespacedistribution/mtest\",\r\n                    \"rel\": \"volumeSpaceDistribution\"\r\n                }\r\n            ]\r\n        }\r\n    ],\r\n    \"links\": [\r\n        {\r\n            \"href\": \"https://127.0.0.1/api/v1/volumes\",\r\n            \"rel\": \"self\"\r\n        },\r\n        {\r\n            \"href\": \"https://127.0.0.1/api/v1/volumespacedistribution\",\r\n            \"rel\": \"volumeSpaceDistribution\"\r\n        }\r\n    ]\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "57a9f2df-01e2-4af0-9f54-695ceb680c0e"
+    },
+    {
+      "type": "route",
+      "uuid": "efc0b874-061c-40ba-9b83-8b61693b56c0"
+    },
+    {
+      "type": "route",
+      "uuid": "62dab170-be33-44b9-b2d3-3833e7039405"
+    },
+    {
+      "type": "route",
+      "uuid": "2badd267-3152-4db3-8845-3d64d2abfcc9"
+    },
+    {
+      "type": "route",
+      "uuid": "d0232ee2-9596-4a82-8879-2529d7b6ffa1"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

@@ -6,9 +6,10 @@
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
         "snmp_standard/mode/hardwarefibrealliance.pm",
+        "snmp_standard/mode/components/",
         "snmp_standard/mode/interfaces.pm",
         "snmp_standard/mode/listinterfaces.pm",
-	"snmp_standard/mode/resources/",
+	    "snmp_standard/mode/resources/",
         "storage/hp/msa2000/snmp/"
     ]
 }

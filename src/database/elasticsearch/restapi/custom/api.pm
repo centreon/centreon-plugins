@@ -23,7 +23,9 @@ package database::elasticsearch::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
+use URI::Escape;
 use JSON::XS;
+use centreon::plugins::misc qw/value_of/;
 
 sub new {
     my ($class, %options) = @_;
@@ -41,12 +43,12 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s@' => { name => 'hostname' },
-            'port:s@'     => { name => 'port' },
-            'proto:s@'    => { name => 'proto' },
-            'username:s@' => { name => 'username' },
-            'password:s@' => { name => 'password' },
-            'timeout:s@'  => { name => 'timeout' }
+            'hostname:s' => { name => 'hostname', default => '' },
+            'port:s'     => { name => 'port', default => 9200 },
+            'proto:s'    => { name => 'proto', default => 'https' },
+            'username:s' => { name => 'username', default => '' },
+            'password:s' => { name => 'password', default => '' },
+            'timeout:s'  => { name => 'timeout', default => 10 }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -67,24 +69,12 @@ sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
-    $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 9200;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
-    $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
-    $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
+    $self->{$_} = $self->{option_results}->{$_} for qw/hostname port proto username password timeout/;
  
-    if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to specify hostname option.")
+        if $self->{hostname} eq '';
 
-    if (!defined($self->{hostname}) ||
-        scalar(@{$self->{option_results}->{hostname}}) == 0) {
-        return 0;
-    }
-    return 1;
+    return 0;
 }
 
 sub build_options_for_httplib {
@@ -109,6 +99,62 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->set_options(%{$self->{option_results}});
 }
+
+sub search {
+    my ($self, %options) = @_;
+
+    $self->settings();
+
+    my $query = $options{query};
+
+    my $response;
+    my $pretty = $self->{output}->is_debug() ?
+                    'pretty' :
+                    '';
+
+    my $path = ( $options{index} ne '' ?
+                   '/'.$options{index} :
+                   ''
+               ).'/_search';
+
+
+    # If query contains json object we use POST otherwise it's a simple query and we use GET
+    my $json = $query =~ /^[\t\s]*\{/;
+
+    if ($json) {
+        $response = $self->{http}->request( method => 'POST',
+                                            url_path => "$path?$pretty",
+                                            query_form_post => $query,
+                                            header => [ "Content-Type: application/json" ],
+                                            critical_status => '', warning_status => '');
+    } else {
+        $response = $self->{http}->request( method => 'GET',
+                                            url_path => $path.'?q='.uri_escape($query)."&$pretty",
+                                            critical_status => '', warning_status => '');
+
+    }
+
+    my $content;
+    eval {
+        $content = JSON::XS->new->utf8->decode($response);
+    };
+
+    $self->{output}->option_exit(exit_litteral => 'critical', short_msg => "Cannot decode json response: $@")
+        if $@;
+
+    if ($content->{error}) {
+        my $error;
+        foreach ('->{caused_by}->{reason}', '->{reason}', '->{root_cause}->[0]->{reason}') {
+            $error = value_of($content, "->{error}$_", '');
+            last if $error ne '';
+        }
+        $self->{output}->option_exit(exit_litteral => 'critical',
+                                     short_msg => "Cannot get data: " . ($error || 'Unkown'));
+    }
+
+    return $content;
+}
+
 
 sub get {
     my ($self, %options) = @_;
@@ -159,7 +205,7 @@ Port used (default: 9200)
 
 =item B<--proto>
 
-Specify https if needed (default: 'http')
+Specify https if needed (default: 'https')
 
 =item B<--username>
 

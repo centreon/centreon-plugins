@@ -28,7 +28,8 @@ use Pod::Usage;
 
 my %handlers = (DIE => {}, ALRM => {});
 
-my $global_version = '(dev)';
+my $global_version = '20260500';
+
 my $alternative_fatpacker = 0;
 
 sub new {
@@ -353,7 +354,7 @@ sub check_relaunch {
         }
         if ($uid != $>) {
             if ($> == 0) {
-                unshift @$args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, $rebuild_args);
+                unshift @$args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, @$rebuild_args);
                 $cmd = 'su';
             } else {
                 unshift @$args, '-S', '-u', $self->{runas}, $cmd, @$rebuild_args;

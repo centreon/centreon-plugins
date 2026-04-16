@@ -42,10 +42,11 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'teams-workflow:s' => { name => 'teams_workflow' },
-            'port:s'           => { name => 'port' },
-            'proto:s'          => { name => 'proto' },
-            'timeout:s'        => { name => 'timeout' }
+            'teams-workflow:s'        => { name => 'teams_workflow' },
+            'teams-workflow-params:s' => { name => 'teams_workflow_params'},
+            'port:s'                  => { name => 'port' },
+            'proto:s'                 => { name => 'proto' },
+            'timeout:s'               => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -69,10 +70,11 @@ sub set_options {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{teams_workflow} = (defined($self->{option_results}->{teams_workflow})) ? $self->{option_results}->{teams_workflow} : '';
-    $self->{proto}          = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{port}           = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{timeout}        = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{teams_workflow}        = (defined($self->{option_results}->{teams_workflow})) ? $self->{option_results}->{teams_workflow} : '';
+    $self->{teams_workflow_params} = (defined($self->{option_results}->{teams_workflow_params})) ? $self->{option_results}->{teams_workflow_params} : '';
+    $self->{proto}                 = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
+    $self->{port}                  = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{timeout}               = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
 
     if ($self->{teams_workflow} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify the --teams-workflow option.');
@@ -80,7 +82,7 @@ sub check_options {
     }
 
     $self->{http}->set_options(%{$self->{option_results}}, hostname => 'dummy');
-
+    
     return 0;
 }
 
@@ -104,10 +106,20 @@ sub teams_post_notification {
     my ($self, %options) = @_;
 
     my $encoded_data = JSON::XS->new->utf8->encode($options{json_request});
+    my $full_url = $self->{teams_workflow};
+    
+    if (defined($self->{teams_workflow_params}) && $self->{teams_workflow_params} ne '') {
+        $full_url .= '?';
+        
+        foreach (split(/,/, $self->{teams_workflow_params})) {
+            $full_url .= $_ . '&';
+        }
+    }
 
+    $full_url =~ s/&$//; 
     my $content = $self->{http}->request(
         method          => 'POST',
-        full_url        => $self->{teams_workflow},
+        full_url        => $full_url,
         query_form_post => $encoded_data
     );
 
@@ -120,11 +132,11 @@ __END__
 
 =head1 NAME
 
-O365 Teams Workflows API
+Microsoft Office 365 Teams Workflows API
 
 =head1 SYNOPSIS
 
-O365 Teams Workflows API
+Microsoft Office 365 Teams Workflows API
 
 =head1 REST API OPTIONS
 
@@ -132,7 +144,15 @@ O365 Teams Workflows API
 
 =item B<--teams-workflow>
 
-Define the Workflow full URI (required).
+Define the Workflow URL (required).
+Example: 
+C<perl centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=workflowapi --teams-workflow='https://url.logic.azure.com:443/workflows/workflowId/triggers/manual/paths/invoke?api-version=2023-11-01&sp=%2Ftriggers%2Fmanual%2Frunsv=1.0&sig=sigId'>
+
+=item B<--teams-workflow-params>
+
+Define the Workflow URL parameters separated by commas (required). This option should be used if "&" is in the Centreon Engine illegal characters list.
+Example: 
+C<perl centreon_plugins.pl --plugin=notification::microsoft::office365::teams::plugin --mode=alert --custommode=workflowapi --teams-workflow='https://url.logic.azure.com:443/workflows/workflowId/triggers/manual/paths/invoke' --teams-workflow-params='api-version=2023-11-01,sp=%2Ftriggers%2Fmanual%2Frunsv=1.0,sig=sigId'>
 
 =item B<--port>
 

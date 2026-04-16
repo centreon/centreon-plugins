@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,9 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use JSON::XS;
+use centreon::plugins::lockfile;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw/json_encode/;
 use MIME::Base64;
 
 sub new {
@@ -48,10 +49,11 @@ sub new {
             'port:s'         => { name => 'port' },
             'proto:s'        => { name => 'proto' },
             'url-path:s'     => { name => 'url_path' },
-            'api-username:s' => { name => 'api_username' },
-            'api-password:s' => { name => 'api_password' },
+            'api-username:s' => { name => 'api_username',  default => '' },
+            'api-password:s' => { name => 'api_password',  default => '' },
             'user-domain:s'  => { name => 'user_domain' },
             'timeout:s'      => { name => 'timeout' },
+            'instance:s'     => { name => 'instance', default => 'default' },
             'cache-create'   => { name => 'cache_create' },
             'cache-use'      => { name => 'cache_use' }
         });
@@ -59,8 +61,10 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
+    $self->{cache_authent_token} = centreon::plugins::statefile->new(%options);
+    $self->{lock} = centreon::plugins::lockfile->new(%options);
 
     return $self;
 }
@@ -80,27 +84,28 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/webconsole/api';
-    $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{api_username} = $self->{option_results}->{api_username};
+    $self->{api_password} = $self->{option_results}->{api_password};
+
+    $self->{use_authent_token} = $self->{option_results}->{api_username} eq '' && $self->{option_results}->{api_password} eq '';
+
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{user_domain} = (defined($self->{option_results}->{user_domain})) ? $self->{option_results}->{user_domain} : '';
     $self->{cache_create} = $self->{option_results}->{cache_create};
     $self->{cache_use} = $self->{option_results}->{cache_use};
 
-    if ($self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Need to specify hostname option.')
+        if $self->{hostname} eq '';
+
+    $self->{output}->option_exit(short_msg => "--api-username and --api-password must be set or both be unset")
+        if !$self->{use_authent_token} && ($self->{api_username} eq '' || $self->{api_password} eq '');
 
     $self->{cache}->check_options(option_results => $self->{option_results});
+    $self->{cache_authent_token}->check_options(option_results => $self->{option_results});
+    $self->{lock}->check_options(option_results => { %{$self->{option_results}},
+                                                     lockfile => 'commvault_commserve_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}) . '.lock',
+                                                     lock_expiration_timeout => 3600 });
+
     return 0;
 }
 
@@ -132,22 +137,14 @@ sub json_decode {
     my ($self, %options) = @_;
 
     $options{content} =~ s/\r//mg;
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($options{content});
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
+    return centreon::plugins::misc::json_decode($options{content}, output => $self->{output}, no_exit => 1);
 }
 
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = $self->{hostname};
+    $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
 }
@@ -161,37 +158,89 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub clean_token {
+sub load_authent_token {
+    my ($self, %options) = @_;
+
+    my $has_cache_file = $self->{cache_authent_token}->read(statefile => 'commvault_commserve_cat_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}));
+    return (0, '', '') unless $has_cache_file;
+
+    my $authent_token = $self->{cache_authent_token}->get(name => 'authentToken') // '';
+    my $refresh_token = $self->{cache_authent_token}->get(name => 'refreshToken') // '';
+    my $update_time = $self->{cache_authent_token}->get(name => 'update_time') // 0;
+
+    return ($update_time, $authent_token, $refresh_token);
+}
+
+sub refresh_authent_token
+{
+    my ($self, %options) = @_;
+    my $json_request = { accessToken => $options{authentToken}, refreshToken => $options{refreshToken} };
+
+    $json_request = json_encode($json_request, output => $self->{output});
+
+    my $exit_on_failed = $options{exit_on_failed} // 1;
+    my ($content) = $self->{http}->request(
+        method => 'POST',
+        url_path => $self->{url_path} . '/V4/AccessToken/Renew',
+        query_form_post => $json_request,
+        warning_status => '',
+        unknown_status => '',
+        critical_status => ''
+    );
+
+    my $code = $self->{http}->get_code();
+
+    if ($code != 200) {
+        $self->{cache_authent_token}->remove_file() if $code == 450 || $code == 500;
+        return ('', '') unless $exit_on_failed;
+        my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+        $self->{output}->option_exit(short_msg => "Cannot refresh token [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
+    }
+    my ($accessToken, $refreshToken) = ('', '');
+    # For some obscure reasons json flux is sometime invalid, so we have to extract values with regexp
+    if ($content) {
+        $accessToken = $1
+            if $content =~ /accessToken\":\s*\"([^\"]+)\"/m;
+        $refreshToken = $1
+            if $content =~ /refreshToken\":\s*\"([^\"]+)\"/m;
+    }
+
+    $self->{output}->option_exit(short_msg => "Cannot extract tokens !")
+        if $exit_on_failed && ($accessToken eq '' || $refreshToken eq '');
+
+    return ($accessToken, $refreshToken);
+}
+
+sub write_authent_token {
+    my ($self, %options) = @_;
+    $self->{cache_authent_token}->write(
+        data => { authentToken => $options{authentToken}, refreshToken => $options{refreshToken}, update_time => time() });
+}
+
+sub clean_legacy_token {
     my ($self, %options) = @_;
 
     my $datas = {};
     $options{statefile}->write(data => $datas);
-    $self->{access_token} = undef;
-    $self->{http}->add_header(key => 'Authorization', value => undef);
+    $self->{legacy_token} = undef;
+    $self->{http}->remove_header(key => 'Authorization');
 }
 
-sub get_auth_token {
+sub get_legacy_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $options{statefile}->read(statefile => 'commvault_commserve_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $access_token = $options{statefile}->get(name => 'access_token');
+    my $legacy_token = $options{statefile}->get(name => 'access_token');
 
     # Token expires every 15 minutes
-    if ($has_cache_file == 0 || !defined($access_token)) {
+    if ($has_cache_file == 0 || !defined($legacy_token)) {
         my $json_request = {
             username => $self->{api_username},
             password => MIME::Base64::encode_base64($self->{api_password}, '')
         };
         $json_request->{domain} = $self->{user_domain} if ($self->{user_domain} ne '');
 
-        my $encoded;
-        eval {
-            $encoded = encode_json($json_request);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'cannot encode json request');
-            $self->{output}->option_exit();
-        }
+        my $encoded = json_encode($json_request, output => $self->{output});
 
         my ($content) = $self->{http}->request(
             method => 'POST',
@@ -203,68 +252,83 @@ sub get_auth_token {
         );
 
         if ($self->{http}->get_code() != 200) {
-            $self->{output}->add_option_msg(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-            $self->{output}->option_exit();
+            my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+            $self->{output}->option_exit(short_msg => "Authentication error [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
         }
 
         my $decoded = $self->json_decode(content => $content);
         if (!defined($decoded->{token})) {
-            $self->{output}->add_option_msg(short_msg => "Cannot get token");
+            my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : "Cannot get token";
+            $self->{output}->add_option_msg(short_msg => $message);
             $self->{output}->option_exit();
         }
 
-        $access_token = $decoded->{token};
+        $legacy_token = $decoded->{token};
         my $datas = {
-            access_token => $access_token
+            access_token => $legacy_token
         };
         $options{statefile}->write(data => $datas);
     }
 
-    $self->{access_token} = $access_token;
-    $self->{http}->add_header(key => 'Authtoken', value => $self->{access_token});
+    $self->{legacy_token} = $legacy_token;
+    $self->{http}->add_header(key => 'Authtoken', value => $self->{legacy_token});
 }
 
 sub request_internal {
     my ($self, %options) = @_;
 
     $self->settings();
-    if (!defined($self->{access_token})) {
-        $self->get_auth_token(statefile => $self->{cache});
+    my $authent_token = '';
+
+    if ($self->{use_authent_token}) {
+
+        $self->{output}->option_exit(exit_literal => 'unknown', short_msg => 'Unable to acquire lock: will retry on next run')
+            unless $self->{lock}->lock_file();
+
+        (undef, $authent_token, undef) = $self->load_authent_token();
+
+        $self->{output}->option_exit(short_msg => 'Tokens where not found. Please use the "token" mode first')
+            if $authent_token eq '';
+
+        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $authent_token);
+
+    } elsif (!defined($self->{legacy_token})) {
+        $self->get_legacy_token(statefile => $self->{cache});
     }
 
-    my $content = $self->{http}->request(
-        url_path => $self->{url_path} . $options{endpoint},
-        get_param => $options{get_param},
-        header => $options{header},
-        warning_status => '',
-        unknown_status => '',
-        critical_status => ''
-    );
+    my $content;
 
-    # Maybe there is an issue with the token. So we retry.
-    if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->clean_token(statefile => $self->{cache});
-        $self->get_auth_token(statefile => $self->{cache});
+    # retries to handle token expiration
+    for my $retry (1..2) {
         $content = $self->{http}->request(
             url_path => $self->{url_path} . $options{endpoint},
             get_param => $options{get_param},
-            header => $options{header}, 
+            header => $options{header},
             warning_status => '',
             unknown_status => '',
             critical_status => ''
         );
+
+        last if $self->{http}->get_code() >= 200 && $self->{http}->get_code() < 300;
+        last if $self->{use_authent_token};
+
+        # legacy mode with auth token
+        # Maybe there is an issue with the token. So we retry.
+        $self->clean_legacy_token(statefile => $self->{cache});
+        $self->get_legacy_token(statefile => $self->{cache});
     }
+
+    $self->{lock}->unlock()
+        if $self->{lock}->is_locked();
 
     my $decoded = $self->json_decode(content => $content);
 
-    if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => 'Error while retrieving data (add --debug option for detailed message)');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)')
+        unless defined $decoded;
 
     if ($self->{http}->get_code() < 200 || $self->{http}->get_code() >= 300) {
-        $self->{output}->add_option_msg(short_msg => 'api request error');
-        $self->{output}->option_exit();
+        my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+        $self->{output}->option_exit(short_msg => $message);
     }
 
     return $decoded;
@@ -276,10 +340,10 @@ sub get_cache_file_response {
     $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $response = $self->{cache}->get(name => 'response');
     my $update_time = $self->{cache}->get(name => 'update_time');
-    if (!defined($response)) {
-        $self->{output}->add_option_msg(short_msg => 'Cache file missing');
-        $self->{output}->option_exit();
-    }
+
+    $self->{output}->option_exit(short_msg => 'Cache file missing')
+        unless defined $response;
+
     return $response;
 }
 
@@ -335,11 +399,21 @@ sub request_jobs {
         }
     }
 
-    my $response = $self->request_internal(
-        endpoint => $options{endpoint},
-        get_param => ['completedJobLookupTime=' . $lookup_time],
-        header => ['limit: 10000']
-    );
+    my $offset = 0;
+
+    my @items;
+    while (1) {
+        my $content = $self->request_internal(
+            endpoint => $options{endpoint},
+            get_param => ['completedJobLookupTime=' . $lookup_time],
+            header => [ 'limit: 100', "offset: $offset" ]
+        );
+        push @items, @{$content->{jobs}};
+        last if @items >= $content->{totalRecordsWithoutPaging} // 0;
+        $offset += 100;
+    }
+
+    my $response = { jobs => \@items };
 
     $self->create_cache_file(type => 'jobs', response => $response)
         if (defined($self->{cache_create}));
@@ -384,7 +458,7 @@ Commvault API
 
 =head1 SYNOPSIS
 
-Commvault api
+Commvault API
 
 =head1 REST API OPTIONS
 
@@ -413,6 +487,10 @@ Set API username
 =item B<--api-password>
 
 Set API password
+
+=item B<--instance>
+
+Set instance name to differentiate cache files when --api-token and 'token' authentication are used (default: 'default').
 
 =item B<--timeout>
 

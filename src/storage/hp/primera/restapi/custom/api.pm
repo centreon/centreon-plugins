@@ -175,6 +175,21 @@ sub request_api {
         critical_status => ''
     );
 
+    # Maybe token is invalid. so we retry
+    if (!defined($token) || $self->{http}->get_code() >= 400) {
+        $self->clean_token();
+        $token = $self->get_token();
+
+        $content = $self->{http}->request(
+            url_path        => $options{endpoint},
+            get_param       => $get_param,
+            header          => [ 'X-HP3PAR-WSAPI-SessionKey: ' . $token ],
+            unknown_status  => $self->{unknown_http_status},
+            warning_status  => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+    }
+
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();

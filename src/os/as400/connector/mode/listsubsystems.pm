@@ -44,7 +44,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->request_api(command => 'listSubsystems');
+    return $options{custom}->request_api(command => 'listSubsystems', args => { uuid => 'svc-discovery' });
 }
 
 my $map_subsys_status = {

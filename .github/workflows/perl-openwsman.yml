@@ -8,21 +8,29 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/perl-openwsman.yml"
       - "dependencies/perl-openwsman/**"
   push:
     branches:
       - develop
       - master
     paths:
+      - ".github/workflows/perl-openwsman.yml"
       - "dependencies/perl-openwsman/**"
 
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   package:
     needs: [get-environment]
-    if: ${{ needs.get-environment.outputs.stability != 'stable' }}
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
 
     strategy:
       fail-fast: false
@@ -31,32 +39,47 @@ jobs:
           - image: packaging-plugins-alma8
             distrib: el8
             package_extension: rpm
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
+            arch: amd64
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
+            arch: amd64
+          - image: packaging-plugins-trixie
+            distrib: trixie
+            package_extension: deb
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-jammy
             distrib: jammy
             package_extension: deb
-            runner: ubuntu-22.04
+            runner: ubuntu-24.04
+            arch: amd64
+          - image: packaging-plugins-noble
+            distrib: noble
+            package_extension: deb
+            runner: ubuntu-24.04
             arch: amd64
           - image: packaging-plugins-bullseye-arm64
             distrib: bullseye
             package_extension: deb
-            runner: ["self-hosted", "collect-arm64"]
+            runner: ubuntu-24.04-arm
             arch: arm64
 
     runs-on: ${{ matrix.runner }}
@@ -64,8 +87,8 @@ jobs:
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}:latest
       credentials:
-        username: ${{ secrets.DOCKER_REGISTRY_ID }}
-        password: ${{ secrets.DOCKER_REGISTRY_PASSWD }}
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     name: package ${{ matrix.distrib }} ${{ matrix.arch }}
 
@@ -75,23 +98,32 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install locally sblim-sfcc
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
-            wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
-            cd sblim-sfcc-SFCC_2_2_8
+            if [ "$DISTRIB" = "bullseye" ]; then
+              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
+              mv sblim-sfcc-SFCC_2_2_8 sblim-sfcc
+            else
+              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/881fccbaf19e26cbef3da1bebe2b42b3a9de1147/.tar.gz|tar zxvf -
+              mv sblim-sfcc-881fccbaf19e26cbef3da1bebe2b42b3a9de1147 sblim-sfcc
+            fi
+            cd sblim-sfcc
             ./autoconfiscate.sh
             ./configure --prefix=/usr
             make
             make install
           else
             dnf install -y 'dnf-command(config-manager)'
-            if [ "${{ matrix.distrib }}" = "el8" ]; then
+            if [ "$DISTRIB" = "el8" ]; then
               dnf config-manager --set-enabled powertools
             else
               dnf config-manager --set-enabled crb
@@ -101,16 +133,19 @@ jobs:
         shell: bash
 
       - name: Build openwsman
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          OPENWSMAN_VERSION: ${{ env.version }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get install -y cmake libssl-dev libpam-dev swig libxml2-dev
           else
             dnf install -y wget cmake gcc-c++ libcurl-devel pam-devel swig libxml2-devel openssl-devel
           fi
 
           cd /tmp
-          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${{ env.version }}.tar.gz|tar zxvf -
-          cd openwsman-${{ env.version }}/
+          wget -O - https://github.com/Openwsman/openwsman/archive/refs/tags/v${OPENWSMAN_VERSION}.tar.gz|tar zxvf -
+          cd openwsman-${OPENWSMAN_VERSION}/
           mkdir build
           cd build
           cmake .. -DBUILD_PYTHON=No -DBUILD_PYTHON3=No -DBUILD_JAVA=No -DBUILD_RUBY=No -DBUILD_PERL=Yes
@@ -118,8 +153,12 @@ jobs:
         shell: bash
 
       - name: Set package name and paths according to distrib
+        env:
+          PACKAGE_EXTENSION: ${{ matrix.package_extension }}
+          DISTRIB: ${{ matrix.distrib }}
+          ARCH: ${{ matrix.arch }}
         run: |
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             apt-get install -y perl
           else
             dnf install -y perl
@@ -129,10 +168,10 @@ jobs:
 
           echo "Perl version is $PERL_VERSION"
 
-          if [[ "${{ matrix.package_extension }}" == "deb" ]]; then
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
             NAME_PERL="libopenwsman-perl"
             USRLIB="/usr/lib/"
-            if [ "${{ matrix.arch }}" = "amd64" ]; then
+            if [ "$ARCH" = "amd64" ]; then
               PERL_VENDORARCH="/usr/lib/x86_64-linux-gnu/perl/$PERL_VERSION"
             else
               PERL_VENDORARCH="/usr/lib/aarch64-linux-gnu/perl/$PERL_VERSION"
@@ -140,7 +179,7 @@ jobs:
           else
             NAME_PERL="openwsman-perl"
             USRLIB="/usr/lib64/"
-            if [ "${{ matrix.distrib }}" = "el8" ]; then
+            if [ "$DISTRIB" = "el8" ]; then
               PERL_VENDORARCH="/usr/local/lib64/perl5"
             else
               PERL_VENDORARCH="/usr/local/lib64/perl5/$PERL_VERSION"
@@ -206,132 +245,74 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-  deliver-rpm:
+      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./*.${{ matrix.package_extension }}
+          key: cache-${{ github.sha }}-${{ matrix.package_extension }}-wsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
+
+  deliver-packages:
     needs: [get-environment, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
     strategy:
-      matrix:
-        distrib: [el8, el9]
-
-    name: Deliver ${{ matrix.distrib }}
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Delivery libwsman
-        uses: ./.github/actions/rpm-delivery
-        with:
-          module_name: libwsman-amd64
-          distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.sha }}-rpm-libwsman-${{ matrix.distrib }}-amd64-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-      - name: Delivery perl-openwsman
-        uses: ./.github/actions/rpm-delivery
-        with:
-          module_name: perl-openwsman-amd64
-          distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.sha }}-rpm-perl-openwsman-${{ matrix.distrib }}-amd64-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-  deliver-deb:
-    needs: [get-environment, package]
-    if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-
-    strategy:
-      matrix:
-        include:
-          - distrib: bullseye
-            arch: amd64
-          - distrib: bookworm
-            arch: amd64
-          - distrib: jammy
-            arch: amd64
-          - distrib: bullseye
-            arch: arm64
-
-    name: Deliver ${{ matrix.distrib }} ${{ matrix.arch }}
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-      - name: Delivery sblim-sfcc
-        uses: ./.github/actions/deb-delivery
-        with:
-          module_name: sblim-sfcc-${{ matrix.arch }}
-          distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.sha }}-deb-sblim-sfcc-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-      - name: Delivery libwsman
-        uses: ./.github/actions/deb-delivery
-        with:
-          module_name: libwsman-${{ matrix.arch }}
-          distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.sha }}-deb-libwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-      - name: Delivery perl-openwsman
-        uses: ./.github/actions/deb-delivery
-        with:
-          module_name: perl-openwsman-${{ matrix.arch }}
-          distrib: ${{ matrix.distrib }}
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          cache_key: cache-${{ github.sha }}-deb-perl-openwsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-  promote:
-    needs: [get-environment]
-    if: ${{ contains(fromJson('["stable"]'), needs.get-environment.outputs.stability) }}
-    runs-on: [self-hosted, common]
-    strategy:
+      fail-fast: false
       matrix:
         include:
           - distrib: el8
+            package_extension: rpm
             arch: amd64
           - distrib: el9
+            package_extension: rpm
+            arch: amd64
+          - distrib: el10
+            package_extension: rpm
             arch: amd64
           - distrib: bullseye
-            arch: amd64
-          - distrib: bookworm
+            package_extension: deb
             arch: amd64
           - distrib: bullseye
+            package_extension: deb
             arch: arm64
+          - distrib: bookworm
+            package_extension: deb
+            arch: amd64
+          - distrib: trixie
+            package_extension: deb
+            arch: amd64
+          - distrib: jammy
+            package_extension: deb
+            arch: amd64
+          - distrib: noble
+            package_extension: deb
+            arch: amd64
 
+
+    name: deliver ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Promote sblim-sfcc ${{ matrix.distrib }} ${{ matrix.arch }} to stable
-        if: ${{ contains(fromJSON('["bullseye", "bookworm", "jammy"]'), matrix.distrib) }}
-        uses: ./.github/actions/promote-to-stable
+      - name: Delivery
+        uses: ./.github/actions/package-delivery
         with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: sblim-sfcc-${{ matrix.arch }}
+          module_name: wsman-${{ matrix.arch }}
           distrib: ${{ matrix.distrib }}
+          arch: ${{ matrix.arch }}
+          cache_key: cache-${{ github.sha }}-${{ matrix.package_extension }}-wsman-${{ matrix.distrib }}-${{ matrix.arch }}-${{ github.head_ref || github.ref_name }}
           stability: ${{ needs.get-environment.outputs.stability }}
+          release_type: ${{ needs.get-environment.outputs.release_type }}
+          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
-      - name: Promote libwsman ${{ matrix.distrib }} ${{ matrix.arch }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: libwsman-${{ matrix.arch }}
-          distrib: ${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
-
-      - name: Promote perl-openwsman ${{ matrix.distrib }} ${{ matrix.arch }} to stable
-        uses: ./.github/actions/promote-to-stable
-        with:
-          artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
-          module: perl-openwsman-${{ matrix.arch }}
-          distrib: ${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+  set-skip-label:
+    needs: [get-environment, deliver-packages]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

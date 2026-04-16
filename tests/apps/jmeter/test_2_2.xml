@@ -1,0 +1,30 @@
+<testResults version="1.2">
+    <httpSample t="123" lt="100" ts="1616161616161" s="true" lb="Sample Label" rc="200" rm="OK" tn="Thread Group 1-1" dt="text" by="1024">
+        <assertionResult>
+            <name>Response Assertion</name>
+            <failure>false</failure>
+            <error>false</error>
+        </assertionResult>
+    </httpSample>
+    <httpSample t="234" lt="100" ts="1616161616161" s="true" lb="Sample Label" rc="200" rm="OK" tn="Thread Group 1-2" dt="text" by="1024">
+        <assertionResult>
+            <name>Response Assertion</name>
+            <failure>false</failure>
+            <error>false</error>
+        </assertionResult>
+    </httpSample>
+    <httpSample t="1456" lt="300" ts="1616161616395" s="true" lb="Sample Label 2" rc="200" rm="OK" tn="Thread Group 1-2" dt="text2" by="512">
+        <assertionResult>
+            <name>Response 2 Assertion</name>
+            <failure>false</failure>
+            <error>false</error>
+        </assertionResult>
+    </httpSample>
+    <httpSample t="345" lt="300" ts="1616161616395" s="true" lb="Sample Label 2" rc="200" rm="OK" tn="Thread Group 1-1" dt="text2" by="512">
+        <assertionResult>
+            <name>Response 2 Assertion</name>
+            <failure>false</failure>
+            <error>false</error>
+        </assertionResult>
+    </httpSample>
+</testResults>

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Centreon-DEM-Restapi",
+    "pkg_summary": "Check Centreon DEM (formerly Quanta) application probes results using Rest API.",
+    "plugin_name": "centreon_monitoring_centreon_dem_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/centreon/dem/restapi"
+    ]
+}

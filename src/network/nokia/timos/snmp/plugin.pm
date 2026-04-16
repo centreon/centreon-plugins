@@ -46,6 +46,7 @@ sub new {
         'list-vrtr'        => 'network::nokia::timos::snmp::mode::listvrtr',
         'memory'           => 'network::nokia::timos::snmp::mode::memory',
         'sap-usage'        => 'network::nokia::timos::snmp::mode::sapusage',
+        'sas-alarm'        => 'network::nokia::timos::snmp::mode::sasalarm',
         'uptime'           => 'snmp_standard::mode::uptime',
     );
 

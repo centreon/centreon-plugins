@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Operatingsystems-F5os-Snmp",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_f5os_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "os/f5os/snmp/"
+    ]
+}

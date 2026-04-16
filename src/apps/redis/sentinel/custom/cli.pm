@@ -49,6 +49,8 @@ sub new {
             'password:s'      => { name => 'password' },
             'tls'             => { name => 'tls' },
             'cacert:s'        => { name => 'cacert' },
+            'cert:s'          => { name => 'cert' },
+            'key:s'           => { name => 'key' },
             'insecure'        => { name => 'insecure' },
             'timeout:s'       => { name => 'timeout' }
         });
@@ -73,15 +75,18 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{ssh_hostname} = defined($self->{option_results}->{ssh_hostname}) && $self->{option_results}->{ssh_hostname} ne '' ? $self->{option_results}->{ssh_hostname} : '';
-    $self->{server} = defined($self->{option_results}->{server}) && $self->{option_results}->{server} ne '' ? $self->{option_results}->{server} : '';
-    $self->{port} = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 26379;
-    $self->{username} = defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' ? $self->{option_results}->{username} : '';
-    $self->{password} = defined($self->{option_results}->{password}) && $self->{option_results}->{password} ne '' ? $self->{option_results}->{password} : '';
+    $self->{ssh_hostname} = $self->{option_results}->{ssh_hostname} // '';
+    $self->{server} = $self->{option_results}->{server} // '';
+    $self->{port} = $self->{option_results}->{port} || 26379;
+    $self->{username} = $self->{option_results}->{username} // '';
+    $self->{password} = $self->{option_results}->{password} // '';
     $self->{timeout} = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/ ? $1 : 10;
-    $self->{tls} = defined($self->{option_results}->{tls}) ? 1 : 0;
     $self->{insecure} = defined($self->{option_results}->{insecure}) ? 1 : 0;
-    $self->{cacert} = defined($self->{option_results}->{cacert}) && $self->{option_results}->{cacert} ne '' ? $self->{option_results}->{cacert} : '';
+    $self->{cacert} = $self->{option_results}->{cacert} // '';
+    $self->{cert} = $self->{option_results}->{cert} // '';
+    $self->{key} = $self->{option_results}->{key} // '';
+    # --tls is implied by --key and --cert
+    $self->{tls} = ($self->{cert} ne '' || $self->{key} ne '' || defined($self->{option_results}->{tls})) ? 1 : 0;
 
     if ($self->{server} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to specify --server option.');
@@ -159,6 +164,8 @@ sub get_extra_options {
     my $options = '';
     $options .= ' --tls' if ($self->{tls} == 1);
     $options .= " --cacert '" . $self->{cacert} . "'" if ($self->{cacert} ne '');
+    $options .= " --cert '" . $self->{cert} . "'" if ($self->{cert} ne '');
+    $options .= " --key '" . $self->{key} . "'" if ($self->{key} ne '');
     $options .= ' --insecure' if ($self->{insecure} == 1);
     $options .= " --user '" . $self->{username} . "'" if ($self->{username} ne '');
     $options .= " -a '" . $self->{password} . "'" if ($self->{password} ne '');
@@ -221,10 +228,19 @@ Sentinel port (default: 26379).
 =item B<--tls>
 
 Establish a secure TLS connection (redis-cli >= 6.x mandatory).
+--tls is automatically enabled when --cert or --key are used.
 
 =item B<--cacert>
 
 CA Certificate file to verify with (redis-cli >= 6.x mandatory).
+
+=item B<--cert>
+
+Client certificate to authenticate with (redis-cli >= 6.x mandatory).
+
+=item B<--key>
+
+Private key file to authenticate with (redis-cli >= 6.x mandatory).
 
 =item B<--insecure>
 

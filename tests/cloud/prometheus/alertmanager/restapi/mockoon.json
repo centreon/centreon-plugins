@@ -1,0 +1,94 @@
+{
+  "uuid": "a9efc55d-239f-463a-92dc-37ca4ca137cd",
+  "lastMigration": 33,
+  "name": "Prometheus",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "6ec69f12-8103-43b7-9e28-52e48b3eae64",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/alerts",
+      "responses": [
+        {
+          "uuid": "a429f24b-5423-4d4b-8a5c-87ab6216d39d",
+          "body": "[\n    {\n        \"annotations\": {},\n        \"endsAt\": \"{{ faker 'date.future' }}\",\n        \"fingerprint\": \"{{ faker 'string.alphanumeric' 16 casing='upper' }}\",\n        \"receivers\": [\n            {\n                \"name\": \"log\"\n            }\n        ],\n        \"startsAt\": \"{{ faker 'date.recent' }}\",\n        \"status\": {\n            \"inhibitedBy\": [],\n            \"silencedBy\": [],\n            \"state\": \"active\"\n        },\n        \"updatedAt\": \"{{ faker 'date.soon' }}\",\n        \"generatorURL\": \"{{ faker 'internet.url' }}\",\n        \"labels\": {\n            \"alertname\": \"test-alert1\",\n            \"severity\": \"warning\"\n        }\n    },\n    {\n        \"annotations\": {},\n        \"endsAt\": \"{{ faker 'date.future' }}\",\n        \"fingerprint\": \"{{ faker 'string.alphanumeric' 16 casing='upper' }}\",\n        \"receivers\": [\n            {\n                \"name\": \"log\"\n            }\n        ],\n        \"startsAt\": \"{{ faker 'date.recent' }}\",\n        \"status\": {\n            \"inhibitedBy\": [],\n            \"silencedBy\": [],\n            \"state\": \"active\"\n        },\n        \"updatedAt\": \"{{ faker 'date.soon' }}\",\n        \"generatorURL\": \"{{ faker 'internet.url' }}\",\n        \"labels\": {\n            \"alertname\": \"test-alert2\",\n            \"severity\": \"info\"\n        }\n    },\n    {\n        \"annotations\": {},\n        \"endsAt\": \"{{ faker 'date.future' }}\",\n        \"fingerprint\": \"{{ faker 'string.alphanumeric' 16 casing='upper' }}\",\n        \"receivers\": [\n            {\n                \"name\": \"log\"\n            }\n        ],\n        \"startsAt\": \"{{ faker 'date.recent' }}\",\n        \"status\": {\n            \"inhibitedBy\": [],\n            \"silencedBy\": [],\n            \"state\": \"active\"\n        },\n        \"updatedAt\": \"{{ faker 'date.soon' }}\",\n        \"generatorURL\": \"{{ faker 'internet.url' }}\",\n        \"labels\": {\n            \"alertname\": \"test-alert3\",\n            \"severity\": \"critical\"\n        }\n    },\n    {\n        \"annotations\": {},\n        \"endsAt\": \"{{ faker 'date.future' }}\",\n        \"fingerprint\": \"{{ faker 'string.alphanumeric' 16 casing='upper' }}\",\n        \"receivers\": [\n            {\n                \"name\": \"log\"\n            }\n        ],\n        \"startsAt\": \"{{ faker 'date.recent' }}\",\n        \"status\": {\n            \"inhibitedBy\": [],\n            \"silencedBy\": [],\n            \"state\": \"unprocessed\"\n        },\n        \"updatedAt\": \"{{ faker 'date.soon' }}\",\n        \"generatorURL\": \"{{ faker 'internet.url' }}\",\n        \"labels\": {\n            \"alertname\": \"test-alert4\",\n            \"severity\": \"critical\"\n        }\n    },\n    {\n        \"annotations\": {},\n        \"endsAt\": \"{{ faker 'date.future' }}\",\n        \"fingerprint\": \"{{ faker 'string.alphanumeric' 16 casing='upper' }}\",\n        \"receivers\": [\n            {\n                \"name\": \"log\"\n            }\n        ],\n        \"startsAt\": \"{{ faker 'date.recent' }}\",\n        \"status\": {\n            \"inhibitedBy\": [],\n            \"silencedBy\": [],\n            \"state\": \"suppressed\"\n        },\n        \"updatedAt\": \"{{ faker 'date.soon' }}\",\n        \"generatorURL\": \"{{ faker 'internet.url' }}\",\n        \"labels\": {\n            \"alertname\": \"test-alert5\",\n            \"severity\": \"unknown\"\n        }\n    }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "6ec69f12-8103-43b7-9e28-52e48b3eae64"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

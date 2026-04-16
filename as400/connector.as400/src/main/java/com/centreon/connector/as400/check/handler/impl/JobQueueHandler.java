@@ -37,8 +37,8 @@ import com.centreon.connector.as400.dispatcher.check.ResponseData;
  */
 public class JobQueueHandler extends AbstractHandler implements IJobQueueHandler {
 
-    public JobQueueHandler(final String host, final String login, final String password) {
-        super(host, login, password);
+    public JobQueueHandler(final String host, final String login, final String password, final Integer ssl) {
+        super(host, login, password, ssl);
     }
 
     @Override

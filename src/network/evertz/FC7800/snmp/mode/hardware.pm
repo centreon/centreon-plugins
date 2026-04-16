@@ -79,104 +79,39 @@ Can be: 'psu', 'frameline'.
 Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=psu,1
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
-
 
 =item B<--threshold-overload>
 
 Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='psu,OK,notAvailable'
 
+=item B<--warning>
+
+Define the warning threshold for temperatures (syntax: type,instance,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Define the critical threshold for temperatures (syntax: type,instance,threshold)
+Example: --critical='temperature,.*,40'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
+
 =back
 
 =cut
 
-package network::evertz::FC7800::snmp::mode::components::psu;
-
-use strict;
-use warnings;
-
-my %map_psu_status = (1 => 'false', 2 => 'true', 3 => 'notAvailable');
-
-my $mapping_psu = {
-    powerSupply1Status    => { oid => '.1.3.6.1.4.1.6827.10.232.4.3', map => \%map_psu_status },
-    powerSupply2Status    => { oid => '.1.3.6.1.4.1.6827.10.232.4.4', map => \%map_psu_status },
-};
-
-sub load {
-    my ($self) = @_;
-
-    push @{$self->{request}}, $mapping_psu->{powerSupply1Status}->{oid} . '.0', $mapping_psu->{powerSupply2Status}->{oid} . '.0';
-}
-
-sub check_psu {
-    my ($self, %options) = @_;
-    
-    return if (!defined($options{status}));
-    return if ($self->check_filter(section => 'psu', instance => $options{instance}));
-    
-    $self->{components}->{psu}->{total}++;
-    $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance = %s]",
-                                                    $options{instance}, $options{status}, $options{instance}));
-    my $exit = $self->get_severity(section => 'psu', value => $options{status});
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Power supply '%s' status is '%s'", $options{instance}, $options{status}));
-    }
-}
-
-sub check {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking poer supplies");
-    $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'psu'));
-
-    my $result = $self->{snmp}->map_instance(mapping => $mapping_psu, results => $self->{results}, instance => '0');
-
-    check_psu($self, status => $result->{powerSupply1Status}, instance => 1);
-    check_psu($self, status => $result->{powerSupply2Status}, instance => 2);
-}
-
-1;
-
-package network::evertz::FC7800::snmp::mode::components::frameline;
-
-use strict;
-use warnings;
-
-my %map_frameline_status = (1 => 'false', 2 => 'true', 3 => 'notAvailable');
-
-my $mapping_frameline = {
-    frameStatusLine => { oid => '.1.3.6.1.4.1.6827.10.232.4.2', map => \%map_frameline_status },
-};
-
-sub load {
-    my ($self) = @_;
-
-    push @{$self->{request}}, $mapping_frameline->{frameStatusLine}->{oid} . '.0';
-}
-
-sub check {
-    my ($self) = @_;
-
-    $self->{output}->output_add(long_msg => "Checking frame line");
-    $self->{components}->{frameline} = {name => 'frameline', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'frameline'));
-
-    my $result = $self->{snmp}->map_instance(mapping => $mapping_frameline, results => $self->{results}, instance => '0');
-
-    return if (!defined($result->{frameStatusLine}));
-    $self->{components}->{frameline}->{total}++;
-    $self->{output}->output_add(long_msg => sprintf("frame line status is '%s' [instance = %s]",
-                                                    $result->{frameStatusLine}, '0'));
-    my $exit = $self->get_severity(section => 'frameline', value => $result->{frameStatusLine});
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Frame line status is '%s'", $result->{frameStatusLine}));
-    }
-}
-
-1;

@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "perl(DateTime::Format::Strptime)"
+    ]
+}

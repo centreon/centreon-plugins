@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::http;
+use centreon::plugins::constants qw/:values :counters/;
 
 sub custom_value_threshold {
     my ($self, %options) = @_;
@@ -79,7 +80,7 @@ sub custom_value_calc {
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
     if ($self->{result_values}->{total} == 0) {
         $self->{error_msg} = "skipped";
-        return -2;
+        return NOT_PROCESSED;
     }
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};    
     $self->{result_values}->{prct} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -92,7 +93,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -2 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', skipped_code => { NOT_PROCESSED() => 1 } }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -176,9 +177,9 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
             }
         },
-        { label => 'gracefuly-finished', nlabel => 'apache.slot.gracefulyfinished.count', set => {
-                key_values => [ { name => 'gracefuly_finished' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefuly_finished' },
+        { label => 'gracefully-finishing', nlabel => 'apache.slot.gracefullyfinishing.count', set => {
+                key_values => [ { name => 'gracefully_finishing' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_value_calc'), closure_custom_calc_extra_options => { label_ref => 'gracefully_finishing' },
                 closure_custom_output => $self->can('custom_value_output'),
                 closure_custom_threshold_check => $self->can('custom_value_threshold'),
                 closure_custom_perfdata => $self->can('custom_value_perfdata'),
@@ -197,7 +198,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -211,7 +212,12 @@ sub new {
         'password:s'  => { name => 'password' },
         'header:s@'   => { name => 'header' },
         'timeout:s'   => { name => 'timeout' },
-        'units:s'     => { name => 'units', default => '%' }
+        'units:s'     => { name => 'units', default => '%' },
+        # To keep compatibility with old thresholds
+        'warning-gracefuly-finished:s' => { name => 'warning_gracefully_finishing', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
+        'warning-apache-slot-gracefulyfinished-count:s' => { name => 'warning_gracefully_finishing', redirect => 'warning-apache-slot-gracefullyfinishing-count' },
+        'critical-gracefuly-finished:s' => { name => 'critical_gracefuly_finished', redirect => 'critical-apache-slot-gracefullyfinishing-count' },
+        'critical-apache-slot-gracefulyfinished-count:s' => { name => 'critical_apache_smpt_gracefulyfinished_count', redirect => 'critical-apache-slot-gracefullyfinishing-count' },
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -248,7 +254,7 @@ sub manage_selection {
         reading => ($ScoreBoard =~ tr/R//), sending => ($ScoreBoard =~ tr/W//),
         keepalive => ($ScoreBoard =~ tr/K//), dns_lookup => ($ScoreBoard =~ tr/D//),
         closing => ($ScoreBoard =~ tr/C//), logging => ($ScoreBoard =~ tr/L//),
-        gracefuly_finished => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)
+        gracefully_finishing => ($ScoreBoard =~ tr/G//), idle_cleanup_worker => ($ScoreBoard =~ tr/I//)
     };
 }
 
@@ -258,7 +264,7 @@ __END__
 
 =head1 MODE
 
-Check Apache WebServer Slots informations
+Check Apache WebServer Slots information
 
 =over 8
 
@@ -310,21 +316,101 @@ Set HTTP headers (multiple option)
 
 Threshold unit (default: '%'. Can be: '%' or 'absolute')
 
-=item B<--warning-*>
+=item B<--warning-busy>
 
-Warning threshold.
-Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
-'sending', 'keepalive', 'dns-lookup', 'closing',
-'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+Threshold.
 
-=item B<--critical-*>
+=item B<--critical-busy>
 
-Critical threshold.
-Can be: 'busy', 'free', 'waiting', 'starting', 'reading',
-'sending', 'keepalive', 'dns-lookup', 'closing',
-'logging', 'gracefuly-finished', 'idle-cleanup-worker'.
+Threshold.
 
-=over 8)
+=item B<--warning-closing>
+
+Threshold.
+
+=item B<--critical-closing>
+
+Threshold.
+
+=item B<--warning-dns-lookup>
+
+Threshold.
+
+=item B<--critical-dns-lookup>
+
+Threshold.
+
+=item B<--warning-free>
+
+Threshold.
+
+=item B<--critical-free>
+
+Threshold.
+
+=item B<--warning-gracefully-finishing>
+
+Threshold.
+
+=item B<--critical-gracefully-finishing>
+
+Threshold.
+
+=item B<--warning-idle-cleanup-worker>
+
+Threshold.
+
+=item B<--critical-idle-cleanup-worker>
+
+Threshold.
+
+=item B<--warning-keepalive>
+
+Threshold.
+
+=item B<--critical-keepalive>
+
+Threshold.
+
+=item B<--warning-logging>
+
+Threshold.
+
+=item B<--critical-logging>
+
+Threshold.
+
+=item B<--warning-reading>
+
+Threshold.
+
+=item B<--critical-reading>
+
+Threshold.
+
+=item B<--warning-sending>
+
+Threshold.
+
+=item B<--critical-sending>
+
+Threshold.
+
+=item B<--warning-starting>
+
+Threshold.
+
+=item B<--critical-starting>
+
+Threshold.
+
+=item B<--warning-waiting>
+
+Threshold.
+
+=item B<--critical-waiting>
+
+Threshold.
 
 =back
 

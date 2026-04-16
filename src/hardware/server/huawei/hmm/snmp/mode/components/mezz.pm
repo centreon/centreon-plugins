@@ -53,7 +53,7 @@ sub load {
 sub check {
     my ($self) = @_;
 
-    foreach my $entry (keys $mapping) {
+    foreach my $entry (keys %{$mapping}) {
         $mapping->{$entry}->{oid} =~ s/#/$self->{blade_id}/;
     }
 

@@ -1,0 +1,1046 @@
+{
+  "uuid": "39f9abf3-d9a1-44ae-b36b-52b89fc3ea0d",
+  "lastMigration": 33,
+  "name": "VCSA",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "95cc89cf-76f0-4bbd-b099-b24fb457f64e",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/session",
+      "responses": [
+        {
+          "uuid": "db7eaa60-b107-4103-af1f-b93074d996a1",
+          "body": "\"ABCDEFG1234567890\"",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "3705ccab-e66b-4d01-8a15-b7b77980fdc8",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/system/uptime",
+      "responses": [
+        {
+          "uuid": "ad7c7033-e2ce-4b47-bf8b-c7292ba0f464",
+          "body": "1.848666206E7",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "6e938c8b-da8f-42c2-b61f-eb829f3d80ce",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/update",
+      "responses": [
+        {
+          "uuid": "b8c9b557-f0f7-406e-a374-b4817d49ac6b",
+          "body": "{\n  \"latest_query_time\": \"2024-10-22T11:39:06.803Z\",\n  \"state\": \"{{slice (split (header 'host') ':') 0 1 }}\",\n  \"version\": \"8.0.2.00500\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Up to date",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0495f13a-2bfe-4ffc-b133-8a523020192f",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/services",
+      "responses": [
+        {
+          "uuid": "02d9c627-e069-408b-80ce-c3e2a71722f9",
+          "body": "{\n  \"appliance-shutdown\": {\n    \"description\": \"/etc/rc.local.shutdown Compatibility\",\n    \"state\": \"STOPPED\"\n  },\n  \"atftpd\": {\n    \"description\": \"The tftp server serves files using the trivial file transfer protocol.\",\n    \"state\": \"STOPPED\"\n  },\n  \"auditd\": {\n    \"description\": \"Security Auditing Service\",\n    \"state\": \"STARTED\"\n  },\n  \"cap-lighttpd\": {\n    \"description\": \"CAP Lighttpd Web Server\",\n    \"state\": \"STARTED\"\n  },\n  \"cap-workflow-engine\": {\n    \"description\": \"Cap workflow engine\",\n    \"state\": \"STARTED\"\n  },\n  \"cloud-init-local\": {\n    \"description\": \"Cloud-init: Local Stage (pre-network)\",\n    \"state\": \"STOPPED\"\n  },\n  \"crond\": {\n    \"description\": \"Command Scheduler\",\n    \"state\": \"STARTED\"\n  },\n  \"dbus\": {\n    \"description\": \"D-Bus System Message Bus\",\n    \"state\": \"STARTED\"\n  },\n  \"dm-event\": {\n    \"description\": \"Device-mapper event daemon\",\n    \"state\": \"STOPPED\"\n  },\n  \"dnsmasq\": {\n    \"description\": \"A lightweight, caching DNS proxy\",\n    \"state\": \"STARTED\"\n  },\n  \"dracut-cmdline\": {\n    \"description\": \"dracut cmdline hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-initqueue\": {\n    \"description\": \"dracut initqueue hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-mount\": {\n    \"description\": \"dracut mount hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-mount\": {\n    \"description\": \"dracut pre-mount hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-pivot\": {\n    \"description\": \"dracut pre-pivot and cleanup hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-trigger\": {\n    \"description\": \"dracut pre-trigger hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-pre-udev\": {\n    \"description\": \"dracut pre-udev hook\",\n    \"state\": \"STOPPED\"\n  },\n  \"dracut-shutdown\": {\n    \"description\": \"Restore /run/initramfs on shutdown\",\n    \"state\": \"STARTED\"\n  },\n  \"emergency\": {\n    \"description\": \"Emergency Shell\",\n    \"state\": \"STOPPED\"\n  },\n  \"getty@tty1\": {\n    \"description\": \"Getty on tty1\",\n    \"state\": \"STARTED\"\n  },\n  \"getty@tty2\": {\n    \"description\": \"DCUI\",\n    \"state\": \"STARTED\"\n  },\n  \"haveged\": {\n    \"description\": \"Entropy Daemon based on the HAVEGE algorithm\",\n    \"state\": \"STARTED\"\n  },\n  \"import-state\": {\n    \"description\": \"Import network configuration from initramfs\",\n    \"state\": \"STARTED\"\n  },\n  \"initrd-cleanup\": {\n    \"description\": \"Cleaning Up and Shutting Down Daemons\",\n    \"state\": \"STOPPED\"\n  },\n  \"initrd-parse-etc\": {\n    \"description\": \"Reload Configuration from the Real Root\",\n    \"state\": \"STOPPED\"\n  },\n  \"initrd-switch-root\": {\n    \"description\": \"Switch Root\",\n    \"state\": \"STOPPED\"\n  },\n  \"initrd-udevadm-cleanup-db\": {\n    \"description\": \"Cleanup udev Database\",\n    \"state\": \"STOPPED\"\n  },\n  \"irqbalance\": {\n    \"description\": \"irqbalance daemon\",\n    \"state\": \"STARTED\"\n  },\n  \"kmod-static-nodes\": {\n    \"description\": \"Create list of static device nodes for the current kernel\",\n    \"state\": \"STARTED\"\n  },\n  \"loadmodules\": {\n    \"description\": \"Load legacy module configuration\",\n    \"state\": \"STOPPED\"\n  },\n  \"logrotate\": {\n    \"description\": \"Rotate log files\",\n    \"state\": \"STOPPED\"\n  },\n  \"lsassd\": {\n    \"description\": \"Likewise Security and Authentication Subsystem\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@65:0\": {\n    \"description\": \"LVM event activation on device 65:0\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:112\": {\n    \"description\": \"LVM event activation on device 8:112\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:128\": {\n    \"description\": \"LVM event activation on device 8:128\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:144\": {\n    \"description\": \"LVM event activation on device 8:144\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:160\": {\n    \"description\": \"LVM event activation on device 8:160\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:176\": {\n    \"description\": \"LVM event activation on device 8:176\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:192\": {\n    \"description\": \"LVM event activation on device 8:192\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:208\": {\n    \"description\": \"LVM event activation on device 8:208\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:224\": {\n    \"description\": \"LVM event activation on device 8:224\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:240\": {\n    \"description\": \"LVM event activation on device 8:240\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:32\": {\n    \"description\": \"LVM event activation on device 8:32\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:4\": {\n    \"description\": \"LVM event activation on device 8:4\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:48\": {\n    \"description\": \"LVM event activation on device 8:48\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:64\": {\n    \"description\": \"LVM event activation on device 8:64\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:80\": {\n    \"description\": \"LVM event activation on device 8:80\",\n    \"state\": \"STARTED\"\n  },\n  \"lvm2-pvscan@8:96\": {\n    \"description\": \"LVM event activation on device 8:96\",\n    \"state\": \"STARTED\"\n  },\n  \"lwsmd\": {\n    \"description\": \"Likewise Service Control Manager Service\",\n    \"state\": \"STARTED\"\n  },\n  \"modprobe@configfs\": {\n    \"description\": \"Load Kernel Module configfs\",\n    \"state\": \"STOPPED\"\n  },\n  \"modprobe@drm\": {\n    \"description\": \"Load Kernel Module drm\",\n    \"state\": \"STOPPED\"\n  },\n  \"modprobe@fuse\": {\n    \"description\": \"Load Kernel Module fuse\",\n    \"state\": \"STOPPED\"\n  },\n  \"ntpd\": {\n    \"description\": \"Network Time Service\",\n    \"state\": \"STARTED\"\n  },\n  \"observability\": {\n    \"description\": \"VMware Observability Service\",\n    \"state\": \"STARTED\"\n  },\n  \"rc-local\": {\n    \"description\": \"/etc/rc.d/rc.local Compatibility\",\n    \"state\": \"STOPPED\"\n  },\n  \"rescue\": {\n    \"description\": \"Rescue Shell\",\n    \"state\": \"STOPPED\"\n  },\n  \"rpmdb-rebuild\": {\n    \"description\": \"RPM database rebuild\",\n    \"state\": \"STOPPED\"\n  },\n  \"rsyslog\": {\n    \"description\": \"System Logging Service\",\n    \"state\": \"STARTED\"\n  },\n  \"sendmail\": {\n    \"description\": \"Sendmail Mail Transport Agent\",\n    \"state\": \"STARTED\"\n  },\n  \"sshd-keygen\": {\n    \"description\": \"Generate sshd host keys\",\n    \"state\": \"STOPPED\"\n  },\n  \"sshd\": {\n    \"description\": \"OpenSSH Daemon\",\n    \"state\": \"STARTED\"\n  },\n  \"sysstat-collect\": {\n    \"description\": \"system activity accounting tool\",\n    \"state\": \"STOPPED\"\n  },\n  \"sysstat-summary\": {\n    \"description\": \"Generate a daily summary of process accounting\",\n    \"state\": \"STOPPED\"\n  },\n  \"sysstat\": {\n    \"description\": \"Resets System Activity Logs\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-ask-password-console\": {\n    \"description\": \"Dispatch Password Requests to Console\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-ask-password-wall\": {\n    \"description\": \"Forward Password Requests to Wall\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-binfmt\": {\n    \"description\": \"Set Up Additional Binary Formats\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-boot-system-token\": {\n    \"description\": \"Store a System Token in an EFI Variable\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-fsck-root\": {\n    \"description\": \"File System Check on Root Device\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-hwdb-update\": {\n    \"description\": \"Rebuild Hardware Database\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-initctl\": {\n    \"description\": \"initctl Compatibility Daemon\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-journal-catalog-update\": {\n    \"description\": \"Rebuild Journal Catalog\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-journal-flush\": {\n    \"description\": \"Flush Journal to Persistent Storage\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-journald\": {\n    \"description\": \"Journal Service\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-logind\": {\n    \"description\": \"User Login Management\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-machine-id-commit\": {\n    \"description\": \"Commit a transient machine-id on disk\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-modules-load\": {\n    \"description\": \"Load Kernel Modules\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-networkd-wait-online\": {\n    \"description\": \"Wait for Network to be Configured\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-networkd\": {\n    \"description\": \"Network Service\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-pstore\": {\n    \"description\": \"Platform Persistent Storage Archival\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-quotacheck\": {\n    \"description\": \"File System Quota Check\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-random-seed\": {\n    \"description\": \"Load/Save Random Seed\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-remount-fs\": {\n    \"description\": \"Remount Root and Kernel File Systems\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-repart\": {\n    \"description\": \"Repartition Root Disk\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-resolved\": {\n    \"description\": \"Network Name Resolution\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-sysctl\": {\n    \"description\": \"Apply Kernel Variables\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-tmpfiles-clean\": {\n    \"description\": \"Cleanup of Temporary Directories\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-tmpfiles-setup-dev\": {\n    \"description\": \"Create Static Device Nodes in /dev\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-tmpfiles-setup\": {\n    \"description\": \"Create Volatile Files and Directories\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-udev-settle\": {\n    \"description\": \"Wait for udev To Complete Device Initialization\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-udev-trigger\": {\n    \"description\": \"Coldplug All udev Devices\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-udevd\": {\n    \"description\": \"Rule-based Manager for Device Events and Files\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-update-done\": {\n    \"description\": \"Update is Completed\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-update-utmp-runlevel\": {\n    \"description\": \"Update UTMP about System Runlevel Changes\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-update-utmp\": {\n    \"description\": \"Update UTMP about System Boot/Shutdown\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-user-sessions\": {\n    \"description\": \"Permit User Sessions\",\n    \"state\": \"STARTED\"\n  },\n  \"systemd-userdbd\": {\n    \"description\": \"User Database Manager\",\n    \"state\": \"STOPPED\"\n  },\n  \"systemd-vconsole-setup\": {\n    \"description\": \"Setup Virtual Console\",\n    \"state\": \"STOPPED\"\n  },\n  \"vgauthd\": {\n    \"description\": \"VGAuth Service for open-vm-tools\",\n    \"state\": \"STARTED\"\n  },\n  \"vmafdd\": {\n    \"description\": \"LSB: Authentication Framework Daemon\",\n    \"state\": \"STARTED\"\n  },\n  \"vmcad\": {\n    \"description\": \"LSB: Start and Stop vmca\",\n    \"state\": \"STARTED\"\n  },\n  \"vmdird\": {\n    \"description\": \"LSB: Start and Stop vmdir\",\n    \"state\": \"STARTED\"\n  },\n  \"vmon_2_systemd\": {\n    \"description\": \"Unit to regenerate systemd services\",\n    \"state\": \"STOPPED\"\n  },\n  \"vmtoolsd\": {\n    \"description\": \"Service for virtual machines hosted on VMware\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-expecttls\": {\n    \"description\": \"Vmware Expecttls daemon\",\n    \"state\": \"STOPPED\"\n  },\n  \"vmware-firewall\": {\n    \"description\": \"VMware Firewall service\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-pit\": {\n    \"description\": \"Service for centralized OS property modifications and tweaks\",\n    \"state\": \"STOPPED\"\n  },\n  \"vmware-pod\": {\n    \"description\": \"VMware Pod Service.\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-vdtc\": {\n    \"description\": \"VMware vSphere Distrubuted Tracing Collector\",\n    \"state\": \"STARTED\"\n  },\n  \"vmware-vmon\": {\n    \"description\": \"VMware Service Lifecycle Manager\",\n    \"state\": \"STOPPED\"\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "service_id",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0bd9aec4-6a81-4eeb-8a8b-78742fc9e4c4",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/services/:service_id",
+      "responses": [
+        {
+          "uuid": "5f201e62-c88e-4b3a-bb32-0beebd3b42c7",
+          "body": "{\n  \"description\": \"observability.service\",\n  \"state\": \"STARTED\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "observability",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "service_id",
+              "value": "observability",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "941f0ea8-70a1-4abd-a444-70d00c0e26d9",
+          "body": "{\n  \"description\": \"VMware Service Lifecycle Manager\",\n  \"state\": \"STOPPED\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "vmware-vmon",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "service_id",
+              "value": "vmware-vmon",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "9d8e8ea1-484a-4b29-9873-e4633cfea503",
+          "body": " {\"error_type\":\"NOT_FOUND\",\"messages\":[{\"args\":[\"toto\"],\"default_message\":\"Service toto does not exist\",\"id\":\"com.vmware.appliance.service.not_found\"}]}\n",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "not found",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "85a26bfe-cea3-44ef-afa9-6deda6ff00ad",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/system",
+      "responses": [
+        {
+          "uuid": "b7a51e41-53ed-4c03-bc69-bcc48206759f",
+          "body": "\"green\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "4f2eb125-dad9-4f0f-a3c9-8be2c3e1b21a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/swap",
+      "responses": [
+        {
+          "uuid": "73bffd7c-e3a1-4a60-80de-08efde03a5b8",
+          "body": "\"green\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "1cf0cfe0-1b2d-4723-81ac-7ac6c0e8066a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/storage",
+      "responses": [
+        {
+          "uuid": "e542d6d1-2474-47e0-b9b6-9c7fcfafc9fa",
+          "body": "\"gray\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8158d0ed-f6ba-464e-9ebe-2d69e6a66831",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/mem",
+      "responses": [
+        {
+          "uuid": "b19131eb-100e-4a21-b0e4-62fe98610967",
+          "body": "\"green\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "1ef0dcf6-9fd6-4e47-9133-81f49670d5a3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/load",
+      "responses": [
+        {
+          "uuid": "783775da-342a-4311-86ed-3e9ff6e2c039",
+          "body": "\"green\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c11d626f-7b06-413c-afd1-87feb5018874",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/database-storage",
+      "responses": [
+        {
+          "uuid": "0a17675d-41a4-46cc-8d2c-c7dda91fa6c6",
+          "body": "\"red\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "dd3f10e6-b535-4639-b60f-e1a8ac13dbf6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/software-packages",
+      "responses": [
+        {
+          "uuid": "38b08c58-5cf0-401b-8a08-1beaf45ca8ad",
+          "body": "\"orange\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "ca8a250c-b58b-420b-8763-9436b49f27c6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/health/applmgmt",
+      "responses": [
+        {
+          "uuid": "15ea7e31-75fd-4b68-b585-cebac5cd8a12",
+          "body": "\"yellow\"",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "fa6d8c4d-3afb-48e2-b617-eb7e2410f4e6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/networking/interfaces/",
+      "responses": [
+        {
+          "uuid": "45447803-0fee-4298-9b3a-61a1d16d2bac",
+          "body": "[\n  {\n    \"ipv4\": {\n      \"mode\": \"STATIC\",\n      \"default_gateway\": \"172.16.12.1\",\n      \"address\": \"172.16.12.2\",\n      \"prefix\": 24,\n      \"configurable\": true\n    },\n    \"name\": \"nic0\",\n    \"mac\": \"00:0c:29:44:12:58\",\n    \"status\": \"up\"\n  },\n  {\n    \"ipv4\": {\n      \"mode\": \"STATIC\",\n      \"default_gateway\": \"172.16.12.1\",\n      \"address\": \"172.16.12.3\",\n      \"prefix\": 24,\n      \"configurable\": true\n    },\n    \"name\": \"nic1\",\n    \"mac\": \"00:0c:29:44:12:32\",\n    \"status\": \"down\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0a739ba9-b150-48ab-ba95-62f8a684ad57",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/appliance/networking/interfaces/nic0",
+      "responses": [
+        {
+          "uuid": "140a29d6-7f41-4ddd-9e7a-c491e3b7bd3e",
+          "body": "{\n  \"ipv4\": {\n    \"mode\": \"STATIC\",\n    \"default_gateway\": \"172.16.99.1\",\n    \"address\": \"172.16.99.20\",\n    \"prefix\": 24,\n    \"configurable\": true\n  },\n  \"name\": \"nic0\",\n  \"mac\": \"00:0c:29:48:ef:cc\",\n  \"status\": \"up\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "95cc89cf-76f0-4bbd-b099-b24fb457f64e"
+    },
+    {
+      "type": "route",
+      "uuid": "3705ccab-e66b-4d01-8a15-b7b77980fdc8"
+    },
+    {
+      "type": "route",
+      "uuid": "6e938c8b-da8f-42c2-b61f-eb829f3d80ce"
+    },
+    {
+      "type": "route",
+      "uuid": "0495f13a-2bfe-4ffc-b133-8a523020192f"
+    },
+    {
+      "type": "route",
+      "uuid": "0bd9aec4-6a81-4eeb-8a8b-78742fc9e4c4"
+    },
+    {
+      "type": "route",
+      "uuid": "85a26bfe-cea3-44ef-afa9-6deda6ff00ad"
+    },
+    {
+      "type": "route",
+      "uuid": "4f2eb125-dad9-4f0f-a3c9-8be2c3e1b21a"
+    },
+    {
+      "type": "route",
+      "uuid": "1cf0cfe0-1b2d-4723-81ac-7ac6c0e8066a"
+    },
+    {
+      "type": "route",
+      "uuid": "8158d0ed-f6ba-464e-9ebe-2d69e6a66831"
+    },
+    {
+      "type": "route",
+      "uuid": "1ef0dcf6-9fd6-4e47-9133-81f49670d5a3"
+    },
+    {
+      "type": "route",
+      "uuid": "c11d626f-7b06-413c-afd1-87feb5018874"
+    },
+    {
+      "type": "route",
+      "uuid": "dd3f10e6-b535-4639-b60f-e1a8ac13dbf6"
+    },
+    {
+      "type": "route",
+      "uuid": "ca8a250c-b58b-420b-8763-9436b49f27c6"
+    },
+    {
+      "type": "route",
+      "uuid": "fa6d8c4d-3afb-48e2-b617-eb7e2410f4e6"
+    },
+    {
+      "type": "route",
+      "uuid": "0a739ba9-b150-48ab-ba95-62f8a684ad57"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

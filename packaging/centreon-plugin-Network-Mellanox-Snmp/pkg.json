@@ -1,0 +1,20 @@
+{
+    "pkg_name": "centreon-plugin-Network-Mellanox-Snmp",
+    "pkg_summary": "Centreon Plugin to monitor Mellanox devices using SNMP",
+    "plugin_name": "centreon_mellanox_snmp.pl",
+    "files": [
+        "centreon/plugins/script_snmp.pm",
+        "centreon/plugins/snmp.pm",
+        "network/mellanox/snmp/plugin.pm",
+        "snmp_standard/mode/cpu.pm",
+        "snmp_standard/mode/entity.pm",
+        "snmp_standard/mode/interfaces.pm",
+        "snmp_standard/mode/listinterfaces.pm",
+        "snmp_standard/mode/listspanningtrees.pm",
+        "snmp_standard/mode/resources/",
+        "snmp_standard/mode/spanningtree.pm",
+        "snmp_standard/mode/tcpcon.pm",
+        "snmp_standard/mode/udpcon.pm",
+        "snmp_standard/mode/uptime.pm"
+    ]
+}

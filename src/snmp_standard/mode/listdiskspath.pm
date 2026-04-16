@@ -211,15 +211,15 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--diskpath>
 
-Set the disk path (number expected) example: 1, 2,... (empty means 'check all disks path').
+Specify the path of the disk you want to check (number expected) example: 1, 2,... (empty means 'check all disks path').
 
 =item B<--name>
 
-Allows to use disk path name with option --diskpath instead of disk path oid index.
+Allows to use disk path name with option --diskpath instead of disk path OID index.
 
 =item B<--regexp>
 
-Allows to use regexp to filter diskpath (with option --name).
+Allows to use regexp to filter disk path (with option --name).
 
 =item B<--regexp-insensitive>
 

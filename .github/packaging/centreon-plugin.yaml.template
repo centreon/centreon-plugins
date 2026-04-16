@@ -19,6 +19,7 @@ contents:
     dst: "/usr/lib/centreon/plugins/"
     file_info:
       mode: 0775
+@CONTENTS@
 
 conflicts:
   [@CONFLICTS@]
@@ -30,6 +31,7 @@ provides:
 overrides:
   rpm:
     depends: [
+      perl(Crypt::OpenSSL::AES),
       perl(Digest::MD5),
       perl(Pod::Find),
       perl-Net-Curl,
@@ -52,6 +54,9 @@ overrides:
       perl(FindBin),
       perl(lib),
       perl(sort),
+      perl(String::ShellQuote),
+      perl(Digest::SHA),
+      tzdata,
       @RPM_DEPENDENCIES@
     ]
     conflicts:
@@ -62,6 +67,7 @@ overrides:
       [@RPM_PROVIDES@]
   deb:
     depends: [
+      libcrypt-openssl-aes-perl,
       libpod-parser-perl,
       libnet-curl-perl,
       liburi-encode-perl,
@@ -78,6 +84,9 @@ overrides:
       libkeepass-reader-perl,
       libdatetime-perl,
       libxml-libxml-perl,
+      libstring-shellquote-perl,
+      libdigest-sha-perl,
+      tzdata,
       @DEB_DEPENDENCIES@
     ]
     conflicts:

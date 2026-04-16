@@ -42,8 +42,8 @@ import com.centreon.connector.as400.dispatcher.check.ResponseData;
  */
 public class MessageQueueHandler extends AbstractHandler implements IMessageQueueHandler {
 
-    public MessageQueueHandler(final String host, final String login, final String password) {
-        super(host, login, password);
+    public MessageQueueHandler(final String host, final String login, final String password, final Integer ssl) {
+        super(host, login, password, ssl);
     }
 
     @Override
@@ -94,11 +94,6 @@ public class MessageQueueHandler extends AbstractHandler implements IMessageQueu
                         .debug("Message found : " + message.getID() + " - " + message.getText().replace('|', ' '));
 
                 if ((message.getSeverity() >= minSeverityLevel) && (message.getSeverity() < maxSeverityLevel)) {
-                    if ("A".equals(message.getReplyStatus())) {
-                        // The message has been acknowledge already and we don't take it into account
-                        continue;
-                    }
-
                     final String messageId = message.getID();
                     if (messageIdfilterPattern != null && !messageId.matches(messageIdfilterPattern)) {
                         continue;
@@ -112,6 +107,7 @@ public class MessageQueueHandler extends AbstractHandler implements IMessageQueu
                     attrs.put("jobName", message.getFromJobName());
                     attrs.put("jobNumber", message.getFromJobNumber());
                     attrs.put("user", message.getUser());
+                    attrs.put("replyStatus", message.getReplyStatus());
                     data.getResult().add(attrs);
                 }
             }

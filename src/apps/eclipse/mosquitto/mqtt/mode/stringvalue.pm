@@ -27,15 +27,16 @@ use warnings;
 use centreon::plugins::misc;
 use Time::HiRes qw(time);
 use POSIX qw(floor);
+use Encode;
 
 sub new {
     my ($class, %options) = @_;
-    my $self              = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
         'topic:s'            => { name => 'topic' },
-        'format-custom'      => { name => 'format_custom' },
+        'format-custom:s'    => { name => 'format_custom' },
 
         'warning-regexp:s'   => { name => 'warning_regexp' },
         'critical-regexp:s'  => { name => 'critical_regexp' },
@@ -70,12 +71,14 @@ sub custom_stringvalue_threshold {
     my ($self, %options) = @_;
 
     my $severity = 'ok';
+    my $value = $self->{result_values}->{stringvalue};
+    my $option_results = $self->{instance_mode}->{option_results};
     foreach my $check_severity (('critical', 'warning', 'unknown')) {
-        next if (centreon::plugins::misc::is_empty($self->{option_results}->{$check_severity . '_regexp'}));
-        my $regexp = $self->{option_results}->{$check_severity . '_regexp'};
-        if (defined($self->{option_results}->{use_iregexp}) && $options{value} =~ /$regexp/i) {
+        next if (centreon::plugins::misc::is_empty($option_results->{$check_severity . '_regexp'}));
+        my $regexp = $option_results->{$check_severity . '_regexp'};
+        if (defined($option_results->{use_iregexp}) && $value =~ /$regexp/i) {
             $severity = $check_severity;
-        } elsif (!defined($self->{option_results}->{use_iregexp}) && $options{value} =~ /$regexp/) {
+        } elsif (!defined($option_results->{use_iregexp}) && $value =~ /$regexp/) {
             $severity = $check_severity;
         }
     }
@@ -93,7 +96,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'generic',
           set   => {
-              key_values                     => [{ name => 'stringvalue' }],
+              key_values                     => [ { name => 'stringvalue' } ],
               closure_custom_output          => $self->can('custom_stringvalue_output'),
               closure_custom_threshold_check => \&custom_stringvalue_threshold
           }
@@ -114,8 +117,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $topic = $self->{option_results}->{topic};
+    eval {
+        $topic = decode("utf8", $topic);
+    };
     my $value = $options{mqtt}->query(
-        topic => $self->{option_results}->{topic}
+        topic => $topic
     );
 
     if (!centreon::plugins::misc::is_empty($self->{option_results}->{format_custom})) {

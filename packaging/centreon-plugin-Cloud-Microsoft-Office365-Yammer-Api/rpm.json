@@ -1,7 +1,0 @@
-{
-    "dependencies": [
-        "perl(Text::CSV)",
-        "perl(DateTime)",
-        "perl(Digest::SHA)"
-    ]
-}

@@ -144,12 +144,12 @@ Set resource group (required if resource's name is used).
 =item B<--warning-*>
 
 Warning threshold where '*' can be:
-'closed-connection', 'active-connections', 'opened-connections'.
+'closed-connections', 'active-connections', 'opened-connections'.
 
 =item B<--critical-*>
 
 Critical threshold where '*' can be:
-'closed-connection', 'active-connections', 'opened-connections'.
+'closed-connections', 'active-connections', 'opened-connections'.
 
 =back
 

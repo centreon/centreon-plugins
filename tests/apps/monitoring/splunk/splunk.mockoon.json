@@ -1,0 +1,259 @@
+{
+  "uuid": "9689d632-da86-4321-bc8e-9b9635ddc848",
+  "lastMigration": 33,
+  "name": "Splunk.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3010,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "c8c3892a-dfe1-4d01-9218-c3a02c7eabc9",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "services/search/jobs",
+      "responses": [
+        {
+          "uuid": "6bcfb265-e22c-4cd8-ad54-ec3ab727f684",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<response>\n  <sid>1760010904.323</sid>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "ah",
+              "invert": true,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e3c92f57-46f2-487f-af0b-58201fbb4dc8",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<response>\n  <messages>\n    <msg type=\"FATAL\">Unknown search command 'ah'.</msg>\n  </messages>\n</response>",
+          "latency": 0,
+          "statusCode": 400,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "search",
+              "value": "ah",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "b0095c83-0fa0-4f8c-99af-0cbe0ba2dc66",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "services/search/jobs/1760010904.323",
+      "responses": [
+        {
+          "uuid": "cfb3caf2-c102-4f91-8439-667d7da43790",
+          "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!--This is to override browser formatting; see server.conf[httpServer] to disable. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .-->\n<?xml-stylesheet type=\"text/xml\" href=\"/static/atom.xsl\"?>\n<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:s=\"http://dev.splunk.com/ns/rest\" xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\">\n  <title>| tstats count WHERE index=_internal sourcetype=* earliest=-30m by sourcetype | head 2</title>\n  <id>https://172.17.0.4:8089/services/search/jobs/1760010904.323</id>\n  <updated>2025-10-09T11:55:06.592+00:00</updated>\n  <link href=\"/services/search/jobs/1760010904.323\" rel=\"alternate\"/>\n  <published>2025-10-09T11:55:04.000+00:00</published>\n  <link href=\"/services/search/jobs/1760010904.323/search.log\" rel=\"search.log\"/>\n  <link href=\"/services/search/jobs/1760010904.323/search_telemetry.json\" rel=\"search_telemetry.json\"/>\n  <link href=\"/services/search/jobs/1760010904.323/events\" rel=\"events\"/>\n  <link href=\"/services/search/jobs/1760010904.323/results\" rel=\"results\"/>\n  <link href=\"/services/search/jobs/1760010904.323/results_preview\" rel=\"results_preview\"/>\n  <link href=\"/services/search/jobs/1760010904.323/timeline\" rel=\"timeline\"/>\n  <link href=\"/services/search/jobs/1760010904.323/summary\" rel=\"summary\"/>\n  <link href=\"/services/search/jobs/1760010904.323/control\" rel=\"control\"/>\n  <author>\n    <name>admin2</name>\n  </author>\n  <content type=\"text/xml\">\n    <s:dict>\n      <s:key name=\"canSummarize\">0</s:key>\n      <s:key name=\"cursorTime\">1970-01-01T00:00:00.000+00:00</s:key>\n      <s:key name=\"defaultSaveTTL\">604800</s:key>\n      <s:key name=\"defaultTTL\">600</s:key>\n      <s:key name=\"delegate\"></s:key>\n      <s:key name=\"diskUsage\">81920</s:key>\n      <s:key name=\"dispatchState\">DONE</s:key>\n      <s:key name=\"doneProgress\">1.00000</s:key>\n      <s:key name=\"dropCount\">0</s:key>\n      <s:key name=\"earliestTime\">2025-10-09T11:25:04.000+00:00</s:key>\n      <s:key name=\"eventAvailableCount\">0</s:key>\n      <s:key name=\"eventCount\">9981</s:key>\n      <s:key name=\"eventFieldCount\">0</s:key>\n      <s:key name=\"eventIsStreaming\">1</s:key>\n      <s:key name=\"eventIsTruncated\">0</s:key>\n      <s:key name=\"eventSearch\"></s:key>\n      <s:key name=\"eventSorting\">none</s:key>\n      <s:key name=\"isBatchModeSearch\">1</s:key>\n      <s:key name=\"isDone\">1</s:key>\n      <s:key name=\"isEventsPreviewEnabled\">0</s:key>\n      <s:key name=\"isFailed\">0</s:key>\n      <s:key name=\"isFinalized\">0</s:key>\n      <s:key name=\"isPaused\">0</s:key>\n      <s:key name=\"isPreviewEnabled\">0</s:key>\n      <s:key name=\"isRealTimeSearch\">0</s:key>\n      <s:key name=\"isRemoteTimeline\">0</s:key>\n      <s:key name=\"isSaved\">0</s:key>\n      <s:key name=\"isSavedSearch\">0</s:key>\n      <s:key name=\"isTimeCursored\">0</s:key>\n      <s:key name=\"isZombie\">0</s:key>\n      <s:key name=\"is_prjob\">0</s:key>\n      <s:key name=\"keywords\"></s:key>\n      <s:key name=\"label\"></s:key>\n      <s:key name=\"latestTime\">2038-01-19T03:14:07.000+00:00</s:key>\n      <s:key name=\"normalizedSearch\">tstats prestats=t local=f summariesonly=f allow_old_summaries=f chunk_size=10000000 count where index=_internal sourcetype=* earliest=-30m groupby sourcetype</s:key>\n      <s:key name=\"numPreviews\">0</s:key>\n      <s:key name=\"optimizedSearch\"> | tstats summariesonly=false allow_old_summaries=false count WHERE (index=_internal sourcetype=* _time&gt;=1760009104.000) BY sourcetype | head 2</s:key>\n      <s:key name=\"phase0\">tstats  prestats=t local=f summariesonly=f allow_old_summaries=f chunk_size=10000000 count where (index=_internal sourcetype=* _time&gt;=1760009104.000) groupby sourcetype</s:key>\n      <s:key name=\"phase1\">tstats  summariesonly=false allow_old_summaries=false count WHERE (index=_internal sourcetype=* _time&gt;=1760009104.000) BY sourcetype  | head  2 | noop </s:key>\n      <s:key name=\"pid\">119341</s:key>\n      <s:key name=\"priority\">5</s:key>\n      <s:key name=\"provenance\"></s:key>\n      <s:key name=\"reduceSearch\">sistats count by sourcetype</s:key>\n      <s:key name=\"remoteSearch\">tstats  prestats=t local=f summariesonly=f allow_old_summaries=f chunk_size=10000000 count where (index=_internal sourcetype=* _time&gt;=1760009104.000) groupby sourcetype</s:key>\n      <s:key name=\"reportSearch\">tstats  summariesonly=false allow_old_summaries=false count WHERE (index=_internal sourcetype=* _time&gt;=1760009104.000) BY sourcetype | head  2</s:key>\n      <s:key name=\"resultCount\">2</s:key>\n      <s:key name=\"resultIsStreaming\">0</s:key>\n      <s:key name=\"resultPreviewCount\">2</s:key>\n      <s:key name=\"runDuration\">0.048</s:key>\n      <s:key name=\"sampleRatio\">1</s:key>\n      <s:key name=\"sampleSeed\">0</s:key>\n      <s:key name=\"scanCount\">9981</s:key>\n      <s:key name=\"search\">| tstats count WHERE index=_internal sourcetype=* earliest=-30m by sourcetype | head 2</s:key>\n      <s:key name=\"searchCanBeEventType\">0</s:key>\n      <s:key name=\"searchEarliestTime\">1760009104.000000000</s:key>\n      <s:key name=\"searchLatestTime\">2147483647.000000000</s:key>\n      <s:key name=\"searchTotalBucketsCount\">0</s:key>\n      <s:key name=\"searchTotalEliminatedBucketsCount\">0</s:key>\n      <s:key name=\"sid\">1760010904.323</s:key>\n      <s:key name=\"statusBuckets\">0</s:key>\n      <s:key name=\"ttl\">600</s:key>\n      <s:key name=\"workload_action_information\"></s:key>\n      <s:key name=\"workload_pool\"></s:key>\n      <s:key name=\"performance\">\n        <s:dict>\n          <s:key name=\"command.head\">\n            <s:dict>\n              <s:key name=\"invocations\">1</s:key>\n              <s:key name=\"input_count\">8</s:key>\n              <s:key name=\"output_count\">2</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"command.noop\">\n            <s:dict>\n              <s:key name=\"invocations\">1</s:key>\n              <s:key name=\"input_count\">2</s:key>\n              <s:key name=\"output_count\">2</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"command.tstats\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.001</s:key>\n              <s:key name=\"invocations\">14</s:key>\n              <s:key name=\"input_count\">12</s:key>\n              <s:key name=\"output_count\">20</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"command.tstats.execute_input\">\n            <s:dict>\n              <s:key name=\"invocations\">7</s:key>\n              <s:key name=\"input_count\">12</s:key>\n              <s:key name=\"output_count\">0</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"command.tstats.execute_output\">\n            <s:dict>\n              <s:key name=\"invocations\">1</s:key>\n              <s:key name=\"input_count\">0</s:key>\n              <s:key name=\"output_count\">8</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"command.tstats.query_tsidx\">\n            <s:dict>\n              <s:key name=\"invocations\">6</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.evaluate.head\">\n            <s:dict>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.evaluate.tstats\">\n            <s:dict>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.fetch.rcp.phase_0\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.03</s:key>\n              <s:key name=\"invocations\">7</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.finalWriteToDisk\">\n            <s:dict>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.localSearch\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.001</s:key>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.stream.local\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.001</s:key>\n              <s:key name=\"invocations\">6</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"dispatch.writeStatus\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.001</s:key>\n              <s:key name=\"invocations\">3</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"search.optimize\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.007</s:key>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"startup.configuration\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.011</s:key>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"startup.handoff\">\n            <s:dict>\n              <s:key name=\"duration_secs\">0.008</s:key>\n              <s:key name=\"invocations\">1</s:key>\n            </s:dict>\n          </s:key>\n        </s:dict>\n      </s:key>\n      <s:key name=\"messages\">\n        <s:dict>\n          <s:key name=\"info\">\n            <s:list>\n              <s:item>Your timerange was substituted based on your 'where' clause</s:item>\n            </s:list>\n          </s:key>\n        </s:dict>\n      </s:key>\n      <s:key name=\"request\">\n        <s:dict>\n          <s:key name=\"search\">| tstats count WHERE index=_internal sourcetype=* earliest=-30m by sourcetype | head 2</s:key>\n        </s:dict>\n      </s:key>\n      <s:key name=\"runtime\">\n        <s:dict>\n          <s:key name=\"auto_cancel\">0</s:key>\n          <s:key name=\"auto_pause\">0</s:key>\n        </s:dict>\n      </s:key>\n      <s:key name=\"eai:acl\">\n        <s:dict>\n          <s:key name=\"perms\">\n            <s:dict>\n              <s:key name=\"read\">\n                <s:list>\n                  <s:item>admin2</s:item>\n                </s:list>\n              </s:key>\n              <s:key name=\"write\">\n                <s:list>\n                  <s:item>admin2</s:item>\n                </s:list>\n              </s:key>\n            </s:dict>\n          </s:key>\n          <s:key name=\"owner\">admin2</s:key>\n          <s:key name=\"modifiable\">1</s:key>\n          <s:key name=\"sharing\">global</s:key>\n          <s:key name=\"app\">search</s:key>\n          <s:key name=\"can_write\">1</s:key>\n          <s:key name=\"ttl\">600</s:key>\n        </s:dict>\n      </s:key>\n      <s:key name=\"searchProviders\">\n        <s:list>\n          <s:item>7ba33a94dedf</s:item>\n        </s:list>\n      </s:key>\n    </s:dict>\n  </content>\n</entry>\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "fb5370a7-7c6f-4df9-a5a9-4d8714497446",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "services/search/jobs/1760010904.323/results",
+      "responses": [
+        {
+          "uuid": "22aafd10-31c2-4e05-8182-9e01cd1b0b03",
+          "body": "<?xml version='1.0' encoding='UTF-8'?>\n<results preview='0'>\n<meta>\n<fieldOrder>\n<field>sourcetype</field>\n<field>count</field>\n</fieldOrder>\n</meta>\n\t<result offset='0'>\n\t\t<field k='sourcetype'>\n\t\t\t<value><text>language-server-2</text></value>\n\t\t</field>\n\t\t<field k='count'>\n\t\t\t<value><text>120</text></value>\n\t\t</field>\n\t\t<field k='count2'>\n\t\t\t<value><text>12</text></value>\n\t\t</field>\n\t</result>\n\t<result offset='1'>\n\t\t<field k='sourcetype'>\n\t\t\t<value><text>mongod</text></value>\n\t\t</field>\n\t\t<field k='count'>\n\t\t\t<value><text>32</text></value>\n\t\t</field>\n\t\t<field k='count2'>\n\t\t\t<value><text>312</text></value>\n\t\t</field>\n\t</result>\n</results>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "15a580df-bbda-45a5-b293-505b627c42ef",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "services/auth/login",
+      "responses": [
+        {
+          "uuid": "4e563150-8349-4529-ab17-8cc042986831",
+          "body": "<response>\n  <sessionKey>ABCDEFGHJK</sessionKey>\n  <messages>\n    <msg code=\"\"></msg>\n  </messages>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "c8c3892a-dfe1-4d01-9218-c3a02c7eabc9"
+    },
+    {
+      "type": "route",
+      "uuid": "b0095c83-0fa0-4f8c-99af-0cbe0ba2dc66"
+    },
+    {
+      "type": "route",
+      "uuid": "fb5370a7-7c6f-4df9-a5a9-4d8714497446"
+    },
+    {
+      "type": "route",
+      "uuid": "15a580df-bbda-45a5-b293-505b627c42ef"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

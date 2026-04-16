@@ -28,7 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-
     $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
     
     %{$self->{option_results}} = ();
@@ -45,7 +44,6 @@ sub new {
 sub init {
     my ($self, %options) = @_;
     # options{default} = { mode_xxx => { option_name => option_value }, }
-
     %{$self->{option_results}} = %{$options{option_results}};
     # Manage default value
     return if (!defined($options{default}));

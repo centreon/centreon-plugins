@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -229,53 +229,98 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $jobs_exec = $options{custom}->get_backup_job_session(timeframe => $self->{option_results}->{timeframe});
+    my $jobs_replica = $options{custom}->get_replica_job_session(timeframe => $self->{option_results}->{timeframe});
 
     my $ctime = time();
 
     $self->{global} = { detected => 0 };
     $self->{jobs} = {};
-    foreach my $job (@{$jobs_exec->{Entities}->{BackupJobSessions}->{BackupJobSessions}}) {
-        next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' && $job->{JobUid} !~ /$self->{option_results}->{filter_uid}/);
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && $job->{JobName} !~ /$self->{option_results}->{filter_name}/);
-        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && $job->{JobType} !~ /$self->{option_results}->{filter_type}/);
+    foreach my $job (@{$jobs_exec->{entities}->{backupjobsessions}->{backupjobsessions}}) {
+        next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' && $job->{jobuid} !~ /$self->{option_results}->{filter_uid}/);
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && $job->{jobname} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && $job->{jobtype} !~ /$self->{option_results}->{filter_type}/);
 
-        if (!defined($self->{jobs}->{ $job->{JobUid} })) {
-            $self->{jobs}->{ $job->{JobUid} } = {
-                name => $job->{JobName},
-                type => $job->{JobType},
-                failed => { name => $job->{JobName}, total => 0, failed => 0 }
+        if (!defined($self->{jobs}->{ $job->{jobuid} })) {
+            $self->{jobs}->{ $job->{jobuid} } = {
+                name => $job->{jobname},
+                type => $job->{jobtype},
+                failed => { name => $job->{jobname}, total => 0, failed => 0 }
             };
             $self->{global}->{detected}++;
         }
 
-        $job->{CreationTimeUTC} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+        $job->{creationtimeutc} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
         my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
         my $epoch = $dt->epoch();
         
-        if (!defined($self->{jobs}->{ $job->{JobUid} }->{executions}) || $epoch > $self->{jobs}->{ $job->{JobUid} }->{executions}->{last}->{epoch}) {
-            $self->{jobs}->{ $job->{JobUid} }->{executions}->{last} = {
-                jobName => $job->{JobName},
-                started => $job->{CreationTimeUTC},
-                status => $job->{Result},
+        if (!defined($self->{jobs}->{ $job->{jobuid} }->{executions}) || $epoch > $self->{jobs}->{ $job->{jobuid} }->{executions}->{last}->{epoch}) {
+            $self->{jobs}->{ $job->{jobuid} }->{executions}->{last} = {
+                jobName => $job->{jobname},
+                started => $job->{creationtimeutc},
+                status => $job->{result},
                 epoch => $epoch
             };
 
-            $self->{jobs}->{ $job->{JobUid} }->{timers} = {
-                name => $job->{JobName},
+            $self->{jobs}->{ $job->{jobuid} }->{timers} = {
+                name => $job->{jobname},
                 lastExecSeconds => $ctime - $epoch,
                 lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $epoch)
             };
 
-            if ($job->{State} =~ /Starting|Working|Resuming/i) {
+            if ($job->{state} =~ /Starting|Working|Resuming/i) {
                 my $duration = $ctime - $epoch;
-                $self->{jobs}->{ $job->{JobUid} }->{timers}->{durationSeconds} = $duration;
-                $self->{jobs}->{ $job->{JobUid} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+                $self->{jobs}->{ $job->{jobuid} }->{timers}->{durationSeconds} = $duration;
+                $self->{jobs}->{ $job->{jobuid} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
             }
         }
 
-        $self->{jobs}->{ $job->{JobUid} }->{failed}->{total}++;
-        if (defined($job->{Result}) && $job->{Result} =~ /Failed/i) {
-            $self->{jobs}->{ $job->{JobUid} }->{failed}->{failed}++;
+        $self->{jobs}->{ $job->{jobuid} }->{failed}->{total}++;
+        if (defined($job->{result}) && $job->{result} =~ /Failed/i) {
+            $self->{jobs}->{ $job->{jobuid} }->{failed}->{failed}++;
+        }
+    }
+    foreach my $job (@{$jobs_replica->{entities}->{replicajobsessions}->{replicajobsessions}}) {
+        next if (defined($self->{option_results}->{filter_uid}) && $self->{option_results}->{filter_uid} ne '' && $job->{jobuid} !~ /$self->{option_results}->{filter_uid}/);
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && $job->{jobname} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' && $job->{jobtype} !~ /$self->{option_results}->{filter_type}/);
+
+        if (!defined($self->{jobs}->{ $job->{jobuid} })) {
+            $self->{jobs}->{ $job->{jobuid} } = {
+                name => $job->{jobname},
+                type => $job->{jobtype},
+                failed => { name => $job->{jobname}, total => 0, failed => 0 }
+            };
+            $self->{global}->{detected}++;
+        }
+
+        $job->{creationtimeutc} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/;
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
+        my $epoch = $dt->epoch();
+
+        if (!defined($self->{jobs}->{ $job->{jobuid} }->{executions}) || $epoch > $self->{jobs}->{ $job->{jobuid} }->{executions}->{last}->{epoch}) {
+            $self->{jobs}->{ $job->{jobuid} }->{executions}->{last} = {
+                jobName => $job->{jobname},
+                started => $job->{creationtimeutc},
+                status => $job->{result},
+                epoch => $epoch
+            };
+
+            $self->{jobs}->{ $job->{jobuid} }->{timers} = {
+                name => $job->{jobname},
+                lastExecSeconds => $ctime - $epoch,
+                lastExecHuman => centreon::plugins::misc::change_seconds(value => $ctime - $epoch)
+            };
+
+            if ($job->{state} =~ /Starting|Working|Resuming/i) {
+                my $duration = $ctime - $epoch;
+                $self->{jobs}->{ $job->{jobuid} }->{timers}->{durationSeconds} = $duration;
+                $self->{jobs}->{ $job->{jobuid} }->{timers}->{durationHuman} = centreon::plugins::misc::change_seconds(value => $duration);
+            }
+        }
+
+        $self->{jobs}->{ $job->{jobuid} }->{failed}->{total}++;
+        if (defined($job->{result}) && $job->{result} =~ /Failed/i) {
+            $self->{jobs}->{ $job->{jobuid} }->{failed}->{failed}++;
         }
     }
 
@@ -308,7 +353,7 @@ Filter jobs by type.
 
 =item B<--timeframe>
 
-Timeframe to get BackupJobSession (in seconds. Default: 86400). 
+Timeframe to get BackupJobSession and ReplicaJobSession (in seconds. Default: 86400).
 
 =item B<--unit>
 
@@ -329,11 +374,45 @@ You can use the following variables like: %{status}, %{jobName}
 Set critical threshold for last job execution status (default: %{status} =~ /failed/i).
 You can use the following variables: %{status}, %{jobName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-execution-status>
 
-Thresholds.
-Can be: 'jobs-executions-detected', 'job-executions-failed-prct',
-'job-execution-last', 'job-running-duration'.
+Threshold.
+
+=item B<--critical-execution-status>
+
+Threshold.
+
+=item B<--warning-job-execution-last>
+
+Threshold.
+
+=item B<--critical-job-execution-last>
+
+Threshold.
+
+=item B<--warning-job-executions-failed-prct>
+
+Threshold in percentage.
+
+=item B<--critical-job-executions-failed-prct>
+
+Threshold in percentage.
+
+=item B<--warning-job-running-duration>
+
+Threshold.
+
+=item B<--critical-job-running-duration>
+
+Threshold.
+
+=item B<--warning-jobs-executions-detected>
+
+Threshold.
+
+=item B<--critical-jobs-executions-detected>
+
+Threshold.
 
 =back
 

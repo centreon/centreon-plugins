@@ -56,8 +56,9 @@ sub custom_metric_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
-    $self->{result_values}->{metric} = $options{extra_options}->{metric};
+    $self->{result_values}->{value}     = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
+    $self->{result_values}->{metric}    = $options{extra_options}->{metric};
+
     return 0;
 }
 
@@ -67,8 +68,8 @@ sub custom_metric_threshold {
     my $exit = $self->{perfdata}->threshold_check(
         value     => $self->{result_values}->{value},
         threshold => [
-            { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
-            { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' }
         ]
     );
     return $exit;
@@ -82,8 +83,8 @@ sub custom_metric_perfdata {
         nlabel    => $metrics_mapping{$self->{result_values}->{metric}}->{nlabel},
         unit      => $metrics_mapping{$self->{result_values}->{metric}}->{unit},
         value     => sprintf('%.2f', $self->{result_values}->{value}),
-        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}),
-        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label})
+        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
     );
 }
 
@@ -112,7 +113,7 @@ sub prefix_statistics_output {
 sub long_output {
     my ($self, %options) = @_;
 
-    return "Checking Pool'" . $options{instance_value}->{display} . "' ";
+    return "Checking Pool '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -128,7 +129,7 @@ sub set_counters {
         }
     ];
 
-    foreach my $metric (keys %metrics_mapping) {
+    foreach my $metric (sort keys %metrics_mapping) {
         my $entry = {
             label => $metrics_mapping{$metric}->{label},
             nlabel => $metrics_mapping{$metric}->{nlabel},
@@ -186,8 +187,8 @@ sub check_options {
     }
 
     foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
+        next if ( !centreon::plugins::misc::is_empty($self->{option_results}->{filter_metric})
+            && $metric !~ /$self->{option_results}->{filter_metric}/ );
 
         push @{$self->{az_metrics}}, $metric;
     }
@@ -254,48 +255,72 @@ __END__
 
 =head1 MODE
 
-Check Azure SQL Elastic Pool Storage metrics.
+Monitor Azure SQL Elastic Pool Storage metrics.
 
 Example:
 
 Using resource name:
 
-perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=storage
---resource=<sqlserver>/elasticpools/<elasticpool> --resource-group=<resourcegroup> --aggregation='average'
---allocated-data-storage-percent='90' --verbose
+    perl centreon_plugins.pl --plugin=cloud::azure::database::elasticpool::plugin --custommode=azcli --mode=storage
+    --resource=<sqlserver>/elasticpools/<elasticpool> --resource-group=<resourcegroup> --aggregation='average'
+    --allocated-data-storage-percent='90' --verbose
 
 Using resource ID:
 
-perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=sessions
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Sql/servers/xxx/elasticpools/xxx'
---aggregation='average' --allocated-data-storage-percent='90' --verbose
+    perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=sessions
+    --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Sql/servers/xxx/elasticpools/xxx'
+    --aggregation='average' --allocated-data-storage-percent='90' --verbose
 
-Default aggregation: 'average' / 'minimum' and 'maximum' are valid.
+Available aggregations: 'average' (default) 'minimum' and 'maximum'.
 
 =over 8
 
 =item B<--resource>
 
-Set resource name or ID (required).
+Define the resource name or ID (required).
 
 =item B<--resource-group>
 
-Set resource group (required if resource's name is used).
+Define the resource group to monitor (required if the resource name is used).
 
 =item B<--filter-metric>
 
 Filter on specific metrics. The Azure format must be used, for example: 'allocated_data_storage_percent'
 (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-allocated-data-storage>
 
-Warning threshold where * can be: 'allocated-data-storage', allocated-data-storage-percent',
-'storage-percent', 'storage-used'.
+Thresholds.
 
-=item B<--critical-*>
+=item B<--critical-allocated-data-storage>
 
-Critical threshold where * can be: 'allocated-data-storage', allocated-data-storage-percent',
-'storage-percent', 'storage-used'.
+Thresholds.
+
+=item B<--warning-allocated-data-storage-percent>
+
+Thresholds.
+
+=item B<--critical-allocated-data-storage-percent>
+
+Thresholds.
+
+
+=item B<--warning-storage-percent>
+
+Thresholds.
+
+=item B<--critical-storage-percent>
+
+Thresholds.
+
+=item B<--warning-storage-used>
+
+Thresholds.
+
+=item B<--critical-storage-used>
+
+Thresholds.
+
 
 =back
 

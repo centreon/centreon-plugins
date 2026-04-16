@@ -1,0 +1,6 @@
+{
+    "dependencies": [
+        "perl(Date::Parse)",
+        "perl(JSON)"
+    ]
+}

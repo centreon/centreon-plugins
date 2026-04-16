@@ -23,7 +23,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use centreon::plugins::misc qw(empty);
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;

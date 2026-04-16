@@ -36,6 +36,7 @@ sub custom_status_output {
 
 sub custom_duration_output {
     my ($self, %options) = @_;
+
     if ($self->{result_values}->{status} =~ 'Open') {
         return sprintf(
             'start time: %s, duration: %s',
@@ -145,8 +146,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'   => { name => 'filter_id' },
-        'filter-name:s' => { name => 'filter_name' },
         'ignore-closed' => { name => 'ignore_closed' },
         'timeframe:s'   => { name => 'timeframe'}
     });
@@ -176,23 +175,10 @@ my $status_mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(
-        endpoint => '/results-api/scenarios/status',
-        method => 'POST',
-    );
+    my $results = $options{custom}->request_scenarios_status();
 
     my $scenarios_list = {};
     foreach (@$results) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{scenarioName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $_->{scenarioId} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{scenarioName} . "': no matching filter.", debug => 1);
-            next;
-        }
         push @{$scenarios_list->{scenarioIds}}, $_->{scenarioId};
     }
 
@@ -211,6 +197,10 @@ sub manage_selection {
             post_body => $scenarios_list
         );
 
+    }
+    else{
+        $self->{output}->add_option_msg(short_msg => "No scenarios found, can't search for incidents. Please check filters.");
+        $self->{output}->option_exit();
     }
 
     $self->{global}->{total} = 0;
@@ -257,7 +247,7 @@ __END__
 
 =head1 MODE
 
-Check IP Label Ekara incidents.
+Check Ekara incidents.
 
 =over 8
 
@@ -265,14 +255,6 @@ Check IP Label Ekara incidents.
 
 Set timeframe period in seconds. (default: 900)
 Example: --timeframe='3600' will check the last hour
-
-=item B<--filter-id>
-
-Filter by monitor ID (can be a regexp).
-
-=item B<--filter-name>
-
-Filter by monitor name (can be a regexp).
 
 =item B<--ignore-closed>
 
@@ -314,11 +296,21 @@ Syntax: --critical-trigger-status='%{status} =~ "xxx"'
 Can be 'Unknown', 'Success', 'Failure', 'Aborted', 'No execution',
 'Stopped', 'Excluded', 'Degraded'
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-incidents-total>
 
-Thresholds.
-Can be: 'warning-incidents-total' (count) 'critical-incidents-total' (count),
-'warning-incident-duration' (s), 'critical-incident-duration' (s).
+Threshold.
+
+=item B<--critical-incidents-total>
+
+Threshold.
+
+=item B<--warning-incident-duration>
+
+Threshold in seconds.
+
+=item B<--critical-incident-duration>
+
+Threshold in seconds.
 
 =back
 

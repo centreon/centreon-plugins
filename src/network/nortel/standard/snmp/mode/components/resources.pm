@@ -76,7 +76,13 @@ $map_led_status = {
     4 => 'amberSteady',
     5 => 'amberBlinking',
     6 => 'greenamberBlinking',
-    7 => 'off'
+    7 => 'off',
+    8 => 'blueBlinking',
+    9 => 'blueSteady',
+    10 => 'greenSteadyAmberBlinking',
+    11 => 'greenSteadyGreenBlinking',
+    12 => 'amberSteadyAmberBlinking',
+    13 => 'amberSteadyGreenBlinking'
 };
 
 1;

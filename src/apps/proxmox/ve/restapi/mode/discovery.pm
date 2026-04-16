@@ -65,6 +65,36 @@ sub discovery_vm {
         $vm->{state} = $vms->{$vm_id}->{State};
         $vm->{node_name} = $vms->{$vm_id}->{Node};
 
+        my ($network_ips, $network_interfaces, $osinfo);
+
+        # OSInfo and IPs are retrieved only with a QEMU VM
+        if ($vms->{$vm_id}->{Type} eq 'qemu') {
+            $osinfo = $options{custom}->api_get_osinfo( Node => $vms->{$vm_id}->{Node}, Vmid => $vms->{$vm_id}->{Vmid});
+            $vm->{os_info_name} = $osinfo->{Name};
+            $vm->{os_info_prettyname} = $osinfo->{PrettyName};
+            $vm->{os_info_version} = $osinfo->{Version};
+            $vm->{os_info_machine} = $osinfo->{Machine};
+            $vm->{os_info_kernel} = $osinfo->{Kernel};
+
+            ($network_ips, $network_interfaces) = $options{custom}->api_get_network_interfaces( Node => $vms->{$vm_id}->{Node}, Vmid => $vms->{$vm_id}->{Vmid});
+        } else {
+            $vm->{$_} = '' foreach (qw/os_info_name os_info_prettyname os_info_version os_info_machine os_info_kernel/);
+        }
+
+        # provide the list of IP addresses if available or else provide the VM's name as only address
+        if ($network_ips && ref $network_ips eq 'ARRAY' && @{$network_ips} > 0) {
+            $vm->{ip_addresses} = $network_ips;
+        } else {
+            $vm->{ip_addresses} = [ $vms->{$vm_id}->{Name}];
+        }
+
+        # provide the list of interfaces if available or else provide the VM's name as default address
+        if ($network_interfaces && ref $network_interfaces eq 'ARRAY' && @{$network_interfaces} > 0) {
+            $vm->{iface_addresses} = $network_interfaces;
+        } else {
+            $vm->{iface_addresses} = [ { iface => 'default', ip => $vms->{$vm_id}->{Name} } ];
+        }
+
         push @$disco_data, $vm;
     }
 
@@ -140,7 +170,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (can be: 'vm', 'node').
+Choose the type of resources to discover (can be: C<vm>, C<node>).
 
 =back
 

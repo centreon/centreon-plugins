@@ -24,7 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Encode;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw/value_of/;
 
 sub custom_status_threshold {
     my ($self, %options) = @_;
@@ -40,10 +42,11 @@ sub custom_status_output {
     my $msg = "status is '" . $self->{result_values}->{status} . "'";
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{last_status}, compare => 'ok', litteral => 1)) {
         $msg .= sprintf(
-            ' [issue: %s %s %s]',
+            ' [issue: %s, %s, %s, %s]',
+            $self->{result_values}->{classification},
+            $self->{result_values}->{issue_id},
             $self->{result_values}->{issue_startDateTime},
-            $self->{result_values}->{issue_title},
-            $self->{result_values}->{classification}
+            $self->{result_values}->{issue_title}
         );
     }
     return $msg;
@@ -66,7 +69,8 @@ sub set_counters {
         { label => 'status', type => 2, critical_default => '%{status} !~ /serviceOperational|serviceRestored/i', set => {
                 key_values => [
                     { name => 'status' }, { name => 'service_name' }, { name => 'classification' },
-                    { name => 'issue_startDateTime' }, { name => 'issue_title' }
+                    { name => 'issue_startDateTime' }, { name => 'issue_title' }, { name => 'issue_id' },
+                    { name => 'issue_resolved' }, { name => 'issue_status' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -82,10 +86,35 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-service-name:s' => { name => 'filter_service_name' }
+        'filter-service-name:s'    => { redirect => 'include_service_name' },
+        'include-service-name:s'   => { name => 'include_service_name', default => '' },
+        'exclude-service-name:s'   => { name => 'exclude_service_name', default => '' },
+        'include-classification:s' => { name => 'include_classification', default => '' },
+        'exclude-classification:s' => { name => 'exclude_classification', default => '' },
+        'exclude-resolved:s'       => { name => 'exclude_resolved', default => '1' },
     });
     
     return $self;
+}
+
+# Apply include/exclude filters
+sub apply_filter {
+    my ($self, %options) = @_;
+
+    if ($options{include} ne '' &&
+        $options{value} !~ /$options{include}/) {
+        $self->{output}->output_add(long_msg => "skipping '" . $options{value} . "': no including filter match.", debug => 1);
+
+        return 1;
+    }
+    if ($options{exclude} ne '' &&
+        $options{value} =~ /$options{exclude}/) {
+        $self->{output}->output_add(long_msg => "skipping '" . $options{value} . "': excluding filter match.", debug => 1);
+
+        return 1;
+    }
+
+    return 0;
 }
 
 sub manage_selection {
@@ -94,29 +123,55 @@ sub manage_selection {
     my $results = $options{custom}->get_services_health();
 
     $self->{services} = {};
-    foreach my $service (@$results) {
-        if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
-            $service->{service} !~ /$self->{option_results}->{filter_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $service->{service} . "': no matching filter name.", debug => 1);
-            next;
+
+    my $unique_id = 1;
+
+    NEXT_VALUE: foreach my $service (@$results) {
+        next if $self->apply_filter(value => $service->{service},
+                                    include => $self->{option_results}->{include_service_name},
+                                    exclude => $self->{option_results}->{exclude_service_name});
+        my %item = ( service_name => $service->{service},
+                     status => $service->{status},
+                     issue_startDateTime => '-',
+                     issue_title => '-',
+                     issue_id => '-',
+                     issue_status => '-',
+                     classification => '-',
+                     issue_resolved => '0'
+                   );
+        if ($service->{issues} && @{$service->{issues}}) {
+            foreach my $issue (@{$service->{issues}}) {
+                next if $issue->{isResolved} && $self->{option_results}->{exclude_resolved};
+
+                next if $self->apply_filter(value => $issue->{classification},
+                                            include => $self->{option_results}->{include_classification},
+                                            exclude => $self->{option_results}->{exclude_classification});
+
+                $item{issue_startDateTime} = $issue->{startDateTime};
+                $item{classification} = $issue->{classification};
+                $item{issue_status} = $issue->{status};
+                $item{issue_id} = $issue->{id};
+                $item{issue_resolved} = $issue->{isResolved} ? '1' : '0';
+                # Encode to utf8 to avoid 'Wide character in print' issue
+                $item{issue_title} = Encode::encode('utf-8', $issue->{title});
+
+                # We copy all values to not overwrite previous values
+                $self->{services}->{ $unique_id++ } = { map { $_ => $item{$_} } keys %item };
+            }
+
+            next NEXT_VALUE
         }
-        $self->{services}->{ $service->{id} }->{service_name} = $service->{service};
-        $self->{services}->{ $service->{id} }->{status} = $service->{status};
-        $self->{services}->{ $service->{id} }->{issue_startDateTime} = '-';
-        $self->{services}->{ $service->{id} }->{issue_title} = '-';
-        $self->{services}->{ $service->{id} }->{classification} = '-';
-        if (defined($service->{issues}) && scalar(@{$service->{issues}}) > 0) {
-            my $issue = pop @{$service->{issues}};
-            $self->{services}->{ $service->{id} }->{issue_startDateTime} = $issue->{startDateTime};
-            $self->{services}->{ $service->{id} }->{issue_title} = $issue->{title};
-            $self->{services}->{ $service->{id} }->{classification} = $issue->{classification};
-        }
+
+        next NEXT_VALUE
+            if $self->apply_filter(value => $item{classification},
+                                   include => $self->{option_results}->{include_classification},
+                                   exclude => $self->{option_results}->{exclude_classification});
+
+        $self->{services}->{ $unique_id++ } = \%item;
     }
 
-    if (scalar(keys %{$self->{services}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No services found.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'No services found.')
+        unless %{$self->{services}};
 }
 
 1;
@@ -129,19 +184,36 @@ Check services status.
 
 =over 8
 
-=item B<--filter-service-name>
+=item B<--include-service-name>
 
-Filter services (can be a regexp).
+Filter by service name (can be a regexp).
+
+=item B<--exclude-service-name>
+
+Exclude by service name (can be a regexp).
+
+=item B<--include-classification>
+
+Filter by classification (can be a regexp).
+
+=item B<--exclude-classification>
+
+Exclude by classification (can be a regexp).
+
+=item B<--exclude-resolved>
+
+Exclude resolved issues from report (default: 1).
+Set to 0 to include resolved issues.
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{service_name}, %{status}, %{classification}
+You can use the following variables: %{service_name}, %{status}, %{classification}, %{issue_title}, %{issue_startDateTime}, %{issue_id}, %{issue_status}, %{issue_resolved}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /serviceOperational|serviceRestored/i').
-You can use the following variables: %{service_name}, %{status}, %{classification}
+You can use the following variables: %{service_name}, %{status}, %{classification}, %{issue_title}, %{issue_startDateTime}, %{issue_id}, %{issue_status}, %{issue_resolved}
 
 =back
 

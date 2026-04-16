@@ -80,6 +80,11 @@ Can be: 'sensors'.
 Exclude the items given as a comma-separated list (example: --filter=sensors).
 You can also exclude items from specific instances: --filter=sensors,Inter
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
@@ -98,6 +103,14 @@ Example: --warning='sensors,Int. Temp,30' --warning='sensors,Fuel Level,50:'
 
 Set critical threshold for temperature and humidity (syntax: type,regexp,threshold)
 Example: --warning='sensors,Int. Temp,35' --warning='sensors,Fuel Level,40:'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

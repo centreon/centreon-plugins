@@ -52,17 +52,42 @@ sub manage_selection {
 
     my $results = [];
     foreach (@{$ports->{stats_snapshot}}) {
-        next if ($_->{type} ne 'Port');
+        next if ($_->{type} !~ /Port/i);
 
-        my $info = $options{custom}->request_api(
-            method => 'GET',
-            endpoint => '/api/ports/' . $_->{default_name},
-            get_param => ['properties=enabled,license_status,link_status']
-        );
+        my $type;
+        if ($_->{type} eq 'Port Group') {
+            $type = $_->{type};
+        } elsif (defined($_->{tp_total_tx_count_bytes})) {
+            $type = "Tool Port";
+        } else {
+            $type = "Network Port";
+        }
+    
+        my $info;
+        if ($_->{type} eq 'Port Group') {
+            $info = $options{custom}->request_api(
+                method => 'GET',
+                endpoint => '/internal/port_groups/' . $_->{id},
+                get_param => ['properties=name,link_status']
+            );
+        } else {
+            $info = $options{custom}->request_api(
+                method => 'GET',
+                endpoint => '/api/ports/' . $_->{id},
+                get_param => ['properties=name,enabled,license_status,link_status']
+            );
+        }
+
+        my $adminStatus = 'none';
+        if (defined($info->{enabled})) {
+            $adminStatus = $info->{enabled} =~ /true|1/i ? 'enabled' : 'disabled';
+        }
 
         push @$results, {
-            name => $_->{default_name},
-            adminStatus => $info->{enabled} =~ /true|1/i ? 'enabled' : 'disabled',
+            defaultName => $_->{default_name},
+            name => $info->{name},
+            type => $type,
+            adminStatus => $adminStatus,
             operationalStatus => $info->{link_status}->{link_up} =~ /true|1/i ? 'up' : 'down'
         };
     }
@@ -77,8 +102,10 @@ sub run {
     foreach (@$results) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[name: %s][adminStatus: %s][operationalStatus: %s]',
+                '[defaultName: %s][name: %s][type: %s][adminStatus: %s][operationalStatus: %s]',
+                $_->{defaultName},
                 $_->{name},
+                $_->{type},
                 $_->{adminStatus},
                 $_->{operationalStatus}
             )
@@ -97,7 +124,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name', 'type', 'folder', 'application', 'ctm', 'status']);
+    $self->{output}->add_disco_format(elements => ['defaultName', 'name', 'type', 'adminStatus', 'operationalStatus']);
 }
 
 sub disco_show {

@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "demo-project",
+  "private_key_id": "ABCDEFG1234567890",
+  "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQCMmMHtlAU2FhfCYWk+J3Jzsb8kSxnOX4L0De+R82cBi/1N6D5c\nkAIGk4GOe47cDzEC6CjNe+jGHBDbEUYi8QiLyT3QrtrMrNx3ZC3ReONFhlEoEvnW\nWUCipiYJRrWPjldV3dooZK3qAVfKRV70eQFifOHHsDp5fixD129PRpBV/wIDAQAB\nAoGAbq2mJCdc/tnfdEaIucQF5iuro593Pi2UAhmiWUu5787K5fSIewdmgNTHrWl4\n6aUP2RD3ZeNAOAxJ/JoZk1IZffgBWVWOus4IZ/dH/V98+AfJeTu4j9koxPQ3N1gg\nsw7K41eSDMW1JZwteiK8MFW5kyCPcK+XXoK48v+u2hvHykkCQQDpvQb2ImRApmRY\nxpOtIb0i1tx5gGDIHsI/kMFgtrsJ1KZ5YCiDF3EdE2QW9Fk4YvdEBNtB4CLhpa7y\n9hILcetbAkEAmfzDtoHF+DDxjo1Nbdx/ziugQIebvKCIpBexMAjoQmfUXOR8EGaT\nj7ZkXTenu4fXjJc6xIZIQCnrrnjDjAqVLQJBAOLiMKK0yXmTyi3+O5S//jaWN5bd\nDZTTfpxzJ7J4TWACgcGpnEl7dLnTe8FoWD6Kmhf1Wts79L/xsrt2Lhfb8acCQHpn\nWS93QuXCChHVsqnUr+cz+IOzCBHNzjAaASf8vJskq8NXgGMNFtkTE/6hYfyIw8em\n4vkbAM24RPcAWfi05NUCQBjygS4v//gL/RGSdAgjnzPI1Lnz3VmVc9MUIizwAtUA\ncEEbI1J3VVdv1OePSoNOkYd690DI6ocyUguTTdPHguo=\n-----END RSA PRIVATE KEY-----",
+  "client_email": "look-no-keys@demo-project.iam.gserviceaccount.com",
+  "client_id": "ABCDEFG1234567890",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/look-no-keys%40demo-project.iam.gserviceaccount.com"
+}

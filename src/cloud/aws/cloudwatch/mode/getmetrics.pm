@@ -172,17 +172,23 @@ sub manage_selection {
 
     $self->{metrics} = {};
     foreach my $label (keys %{$metric_results}) {
-        foreach my $stat (('minimum', 'maximum', 'average', 'sum')) {
-            next if (!defined($metric_results->{$label}->{$stat}));
+        foreach my $statistic (@{$self->{aws_statistics}}) {
+            next if (!defined($metric_results->{$label}->{lc($statistic)}) && 
+                !defined($self->{option_results}->{zeroed}));
 
-            my $name = $label . '_' . $stat;
+            my $name = $label . '_' . $statistic;
             $name = $self->{dimension_name} . '_' . $name if ($self->{dimension_name} ne '');
             $self->{metrics}->{$name} = {
                 display => $name,
-                value => $metric_results->{$label}->{$stat},
-                perf_label => $label . '_' . $stat,
+                value => $metric_results->{$label}->{lc($statistic)} // 0,
+                perf_label => $label . '_' . $statistic,
             };
         }
+    }
+
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
+        $self->{output}->option_exit();
     }
 }
 
@@ -192,7 +198,7 @@ __END__
 
 =head1 MODE
 
-Check cloudwatch metrics (same dimension and namespace).
+Check CloudWatch metrics (same dimension and namespace).
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cloudwatch-get-metrics --region=eu-west-1
@@ -203,15 +209,15 @@ perl centreon_plugins.pl --plugin=cloud::aws::plugin --custommode=paws --mode=cl
 
 =item B<--namespace>
 
-Set cloudwatch namespace (required).
+Set CloudWatch namespace (required).
 
 =item B<--dimension>
 
-Set cloudwatch dimensions.
+Set CloudWatch dimensions.
 
 =item B<--metric>
 
-Set cloudwatch metrics (required).
+Set CloudWatch metrics (required).
 
 =item B<--warning-metric>
 

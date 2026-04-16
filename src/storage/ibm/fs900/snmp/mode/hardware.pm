@@ -79,8 +79,8 @@ Check hardware (batteries, fan modules, fibre channels, flashcards, power suppli
 
 =item B<--component>
 
-Which component to check (default: 'all').
-Can be: 'battery', 'fan', 'fibrechannel', 'flashcard', 'psu'.
+Which component to check (default: '.*').
+Can be: C<battery>, C<fan>, C<fibrechannel>, C<flashcard>, C<psu>.
 
 =item B<--filter>
 
@@ -89,7 +89,7 @@ You can also exclude items from specific instances: --filter=fan,1
 
 =item B<--absent-problem>
 
-Return an error if an entity is not 'notAvailable' (default is skipping) (comma separated list)
+Return an error if an entity is not C<notAvailable> (default is skipping) (comma separated list).
 Can be specific or global: --absent-problem=fan,2
 
 =item B<--no-component>
@@ -110,6 +110,14 @@ Example: --warning='battery.capacity,0,10'
 
 Set critical threshold (syntax: type,instance,threshold)
 Example: --critical='battery.voltage,1,1000'
+
+=item B<--warning-count-*>
+
+Define the warning threshold for the number of components of one type (replace '*' with the component type).
+
+=item B<--critical-count-*>
+
+Define the critical threshold for the number of components of one type (replace '*' with the component type).
 
 =back
 

@@ -1,6 +1,6 @@
 {
     "dependencies": [
         "libdatetime-perl",
-	"libxml-simple-perl"
+        "libxml-libxml-simple-perl"
     ]
 }

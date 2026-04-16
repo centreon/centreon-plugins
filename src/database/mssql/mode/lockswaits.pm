@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,7 +34,7 @@ sub set_counters {
     $self->{maps_counters}->{lockswaits} = [
         { label => 'lockswaits', nlabel => 'mssql.lockswaits.count', set => {
                 key_values => [ { name => 'value' } ],
-                output_template => '%.2f dead locks/s',
+                output_template => '%.2f locks waits/s',
                 perfdatas => [
                     { template => '%.2f', min => 0 }
                 ]
@@ -68,7 +68,7 @@ sub manage_selection {
         WHERE
             object_name = 'SQLServer:Locks'
         AND
-            counter_name = 'Lock Waits/sec%'
+            counter_name LIKE 'Lock Waits/sec%'
     });
 
     my $query_result = $options{sql}->fetchall_arrayref();

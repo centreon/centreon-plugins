@@ -10,9 +10,9 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}hpe-primera.mockoon.json
-${HOSTNAME}             127.0.0.1
-${APIPORT}              3000
-${CMD}              ${CENTREON_PLUGINS} 
+${HOSTNAME}         127.0.0.1
+${APIPORT}          3000
+${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=storage::hp::primera::restapi::plugin
 ...                 --mode disk-status
 ...                 --hostname=${HOSTNAME}
@@ -21,11 +21,11 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --port=${APIPORT}
 ...                 --custommode=api
-...                 --statefile-dir=/dev/shm/
+
 
 *** Test Cases ***
 Diskstatus ${tc}
-    [Tags]    storage     api    hpe    hp
+    [Tags]    storage    api    hpe    hp
     ${output}    Run    ${CMD} ${extraoptions}
 
     ${output}    Strip String    ${output}
@@ -35,7 +35,6 @@ Diskstatus ${tc}
     ...    Wrong output result for command:\n${CMD} ${extraoptions}\n\nObtained:\n${output}\n\nExpected:\n${expected_result}\n
     ...    values=False
     ...    collapse_spaces=True
-
 
     Examples:    tc        extraoptions                  expected_result   --
         ...      1        ${EMPTY}                       CRITICAL: Disk #73 (WDC/WLEB14T0S5xeF7.2, serial: 9MJ4SWLT) located 7:5:0 is failed WARNING: Disk #75 (WDC/WLEB14T0S5xeF7.2, serial: 9MJ4SSKT) located 8:1:0 is unknown - Disk #78 (WDC/WLEB14T0S5xeF7.2, serial: 9MJ4TLLT) located 8:4:0 is new - Disk #79 (WDC/WLEB14T0S5xeF7.2, serial: 9MJ4N1TT) located 8:5:0 is new - Disk #81 (WDC/WLEB14T0S5xeF7.2, serial: 9MJ4N8UT) located 8:7:0 is degraded | 'disks.total.count'=82;;;0; 'disks.normal.count'=77;;;0;82 'disks.degraded.count'=1;;;0;82 'disks.new.count'=2;;;0;82 'disks.failed.count'=1;;;0;82 'disks.unknown.count'=1;;;0;82

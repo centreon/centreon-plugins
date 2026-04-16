@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -159,15 +159,29 @@ Check nodes load.
 
 Filter on a specific instance (must be a PromQL filter, Default: 'instance=~".*"')
 
-=item B<--warning-*>
+=item B<--warning-load1>
 
-Warning threshold.
-Can be: 'load1', 'load5', 'load15'.
+Threshold.
 
-=item B<--critical-*>
+=item B<--critical-load1>
 
-Critical threshold.
-Can be: 'load1', 'load5', 'load15'.
+Threshold.
+
+=item B<--warning-load15>
+
+Threshold.
+
+=item B<--critical-load15>
+
+Threshold.
+
+=item B<--warning-load5>
+
+Threshold.
+
+=item B<--critical-load5>
+
+Threshold.
 
 =item B<--extra-filter>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2025 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -84,6 +84,11 @@ Can be: 'sensor'.
 Exclude some parts (comma separated list)
 You can also exclude items from specific instances: --filter=sensor,celsius.*
 
+=item B<--absent-problem>
+
+Return an error if a component is not 'present' (default is skipping).
+It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).
@@ -102,6 +107,14 @@ Example: --warning='sensor.celsius,.*,30'
 
 Set critical threshold (syntax: type,regexp,threshold)
 Example: --critical='sensor.celsius,.*,40'
+
+=item B<--warning-count-sensor>
+
+Threshold.
+
+=item B<--critical-count-sensor>
+
+Threshold.
 
 =item B<--sensor-scale>
 

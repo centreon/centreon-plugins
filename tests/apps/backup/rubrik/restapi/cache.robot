@@ -9,31 +9,25 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}    ${CURDIR}${/}applications-rubrik-restapi.json
-${cmd}              ${CENTREON_PLUGINS} 
-...                 --plugin=apps::backup::rubrik::restapi::plugin 
+${MOCKOON_JSON}     ${CURDIR}${/}applications-rubrik-restapi.json
+${cmd}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::backup::rubrik::restapi::plugin
 ...                 --hostname=${HOSTNAME}
-...                 --api-username='username' 
-...                 --api-password='password' 
+...                 --api-username='username'
+...                 --api-password='password'
 ...                 --proto='http'
 ...                 --port=${APIPORT}
 
 
 *** Test Cases ***
 cache ${tc}/1
-    [Tags]    apps    backup   rubrik    restapi    cache
-    
+    [Tags]    apps    backup    rubrik    restapi    cache
+
     ${command}    Catenate
     ...    ${cmd}
     ...    --mode=cache
 
-    ${output}    Run    ${command}
-    ${output}    Strip String    ${output}
-    Should Be Equal As Strings
-    ...    ${output}
-    ...    ${expected_result}
-    ...    \nWrong output result for command:\n${command}\n\nExpected:\n${expected_result}\nCommand output:\n${output}\n
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
     Examples:        tc    extra_options            expected_result    --
             ...      1     ${EMPTY}                 OK: Cache files created successfully
- 

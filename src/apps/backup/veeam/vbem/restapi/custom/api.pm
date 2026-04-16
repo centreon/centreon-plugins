@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -143,7 +143,7 @@ sub get_session_id {
         ) {
         my $content = $self->{http}->request(
             method => 'POST',
-            url_path => '/api/sessionMngr/',
+            url_path => '/api/sessionMngr/?v=latest',
             query_form_post => '',
             credentials => 1,
             basic => 1,
@@ -208,6 +208,7 @@ sub request_api {
     my $decoded;
     eval {
         $decoded = JSON::XS->new->decode($content);
+        $decoded = $self->lowercase_keys(content => $decoded);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
@@ -215,6 +216,25 @@ sub request_api {
     }
 
     return $decoded;
+}
+
+sub lowercase_keys {
+    my ($self, %options) = @_;
+    my $ref = $options{content};
+
+    if (ref $ref eq 'HASH') {
+        my %new;
+        for my $key (keys %$ref) {
+            $new{ lc $key } = $self->lowercase_keys(content => $ref->{$key});
+        }
+        return \%new;
+    }
+    elsif (ref $ref eq 'ARRAY') {
+        return [ map { $self->lowercase_keys(content => $_) } @$ref ];
+    }
+    else {
+        return $ref;
+    }
 }
 
 sub write_cache_file {
@@ -251,6 +271,7 @@ sub cache_backup_job_session {
     return $datas;
 }
 
+
 sub cache_repository {
     my ($self, %options) = @_;
 
@@ -275,6 +296,24 @@ sub get_backup_job_session {
         endpoint => '/api/query',
         get_param => [
             'type=BackupJobSession',
+            'format=Entities',
+            'filter=CreationTime>=' . $creation_time
+        ]
+    );
+}
+
+sub get_replica_job_session {
+    my ($self, %options) = @_;
+
+    return $self->get_cache_file_response(statefile => 'replica_job_session')
+        if (defined($self->{option_results}->{cache_use}) && !defined($options{disable_cache}));
+
+    my $creation_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601();
+
+    return $self->request_api(
+        endpoint => '/api/query',
+        get_param => [
+            'type=ReplicaJobSession',
             'format=Entities',
             'filter=CreationTime>=' . $creation_time
         ]

@@ -1,6 +1,0 @@
-{
-    "dependencies": [
-        "libtext-csv-perl",
-        "libdatetime-perl"
-    ]
-}

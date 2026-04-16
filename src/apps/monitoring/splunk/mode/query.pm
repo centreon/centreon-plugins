@@ -73,7 +73,6 @@ sub manage_selection {
         query => $self->{option_results}->{query},
         timeframe => $self->{option_results}->{timeframe}
     );
-
     $self->{global} = {
         query_matches => $query_count
     };

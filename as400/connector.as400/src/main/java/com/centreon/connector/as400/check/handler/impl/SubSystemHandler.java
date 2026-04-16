@@ -42,9 +42,9 @@ import com.centreon.connector.as400.dispatcher.check.ResponseData;
  */
 public class SubSystemHandler extends AbstractHandler implements ISubSystemHandler {
 
-    public SubSystemHandler(final String host, final String login, final String password)
+    public SubSystemHandler(final String host, final String login, final String password, final Integer ssl)
             throws AS400SecurityException, IOException {
-        super(host, login, password);
+        super(host, login, password, ssl);
     }
 
     @Override
@@ -76,7 +76,11 @@ public class SubSystemHandler extends AbstractHandler implements ISubSystemHandl
             for (int i = 0; i < list.length; i++) {
                 HashMap<String, Object> attrs = new HashMap<String, Object>();
 
-                list[i].refresh();
+                try {
+                    list[i].refresh();
+                } catch (Exception e) {
+                    continue;
+                }
                 attrs.put("name", list[i].getName());
                 attrs.put("path", list[i].getPath());
                 attrs.put("library", list[i].getLibrary());

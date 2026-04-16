@@ -4,6 +4,7 @@
     "plugin_name": "centreon_azure_integration_servicebus_api.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "cloud/azure/common/discovery.pm",
         "cloud/azure/custom/",
         "cloud/azure/management/monitor/mode/",
         "cloud/azure/integration/servicebus/"

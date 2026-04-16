@@ -4,8 +4,8 @@
     "plugin_name": "centreon_paloalto_ssh.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
-	"centreon/plugins/backend/ssh/",
-	"centreon/plugins/ssh.pm",
+        "centreon/plugins/backend/ssh/",
+        "centreon/plugins/ssh.pm",
         "network/paloalto/ssh/"
     ]
 }

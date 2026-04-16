@@ -20,7 +20,7 @@
 package storage::datacore::restapi::mode::alerts;
 use strict;
 use warnings;
-use centreon::plugins::misc qw(empty);
+use centreon::plugins::misc;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -151,7 +151,7 @@ __END__
 
 =head1 MODE
 
-Check Datacore alerts number exposed through the rest api
+Check Datacore alerts number exposed through the REST API
 
 =over 8
 
@@ -161,7 +161,7 @@ filter alerts to check those newer than this parameter (s)
 
 =item B<--filter-server>
 
-Define which devices should be monitored based on the MachineName. This option will be treated as a regular expression.
+Define which devices should be monitored based on the C<MachineName>. This option will be treated as a regular expression.
 By default all machine will be checked.
 
 =item B<--warning/critical-*>

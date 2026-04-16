@@ -31,7 +31,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    # Adding options specific to this mode
+    $options{options}->add_options(arguments => {
         "warning:s"  => { name => 'warning' },
         "critical:s" => { name => 'critical' },
         "seconds"    => { name => 'seconds' }
@@ -44,10 +45,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    # Validating warning threshold
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
         $self->{output}->option_exit();
     }
+
+    # Validating critical threshold
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
@@ -57,31 +61,45 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    $options{sql}->connect();    
+    $options{sql}->connect();
+
+    # Checking if MySQL version is supported
     if (!($options{sql}->is_version_minimum(version => '5'))) {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
 
+    # Querying MySQL for Uptime status
     $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Uptime'});
     my ($name, $value) = $options{sql}->fetchrow_array();
+
+    # Handling case where uptime value is not available
     if (!defined($value)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get uptime.");
         $self->{output}->option_exit();
     }
 
+    # Checking the threshold and determining exit code
     my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    my $msg = sprintf("database is up since %d days", floor($value / 86400));
+
+    # Calculating uptime in days or seconds based on user preference
+    my $uptime_days = floor($value / 86400);
+    my $msg = sprintf("database is up since %d days", $uptime_days);
     if (defined($self->{option_results}->{seconds})) {
         $msg = sprintf("database is up since %d seconds", $value);
     }
 
+    # Adding start time information to the message
+    $msg .= sprintf(" (Start time = %s)", strftime("%Y/%m/%d %H:%M:%S", localtime(time - $value)));
+
+    # Adding output message and performance data
     $self->{output}->output_add(
         severity => $exit_code,
         short_msg => $msg
     );
+
     $self->{output}->perfdata_add(
-        label => 'uptime', 
+        label => 'uptime',
         nlabel => 'database.uptime.seconds',
         unit => 's',
         value => $value,
@@ -90,7 +108,9 @@ sub run {
         min => 0
     );
 
+    # Displaying the output and exiting
     $self->{output}->display();
+
     $self->{output}->exit();
 }
 
