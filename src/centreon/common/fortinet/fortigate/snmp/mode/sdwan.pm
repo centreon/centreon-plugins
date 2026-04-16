@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,11 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
+use Digest::SHA qw(sha256_hex);
+
+my @_sdwan_keys = qw(name vdom ifName id state);
 
 sub prefix_traffic_output {
     my ($self, %options) = @_;
@@ -39,8 +43,8 @@ sub sdwan_long_output {
     return sprintf(
         "checking sd-wan '%s' [vdom: %s] [interface: %s]",
         $options{instance_value}->{name},
-        $options{instance_value}->{vdom},
-        $options{instance_value}->{ifName}
+        $options{instance_value}->{vdom} // '',
+        $options{instance_value}->{ifName} // ''
     );
 }
 
@@ -50,8 +54,8 @@ sub prefix_sdwan_output {
     return sprintf(
         "sd-wan '%s' [vdom: %s] [interface: %s] ",
         $options{instance_value}->{name},
-        $options{instance_value}->{vdom},
-        $options{instance_value}->{ifName}
+        $options{instance_value}->{vdom} // '',
+        $options{instance_value}->{ifName} // ''
     );
 }
 
@@ -59,14 +63,14 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'sdwan', type => 3, cb_prefix_output => 'prefix_sdwan_output', cb_long_output => 'sdwan_long_output',
+        { name => 'sdwan', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_sdwan_output', cb_long_output => 'sdwan_long_output',
           indent_long_output => '    ', message_multiple => 'All sd-wan links are ok',
             group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1 } },
-                { name => 'latency', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'jitter', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'packetloss', type => 0, skipped_code => { -10 => 1 } }
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'traffic', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_traffic_output', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'latency', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'jitter', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'packetloss', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -74,7 +78,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{state} eq "down"',
             set => {
                 key_values => [ { name => 'state' }, { name => 'vdom' }, { name => 'ifName' }, { name => 'name' }, { name => 'id' } ],
@@ -87,7 +91,7 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'sdwan.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'in', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                key_values => [ { name => 'in' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'in: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -97,7 +101,7 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
                         instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
-                        value => sprintf('%.2f', $self->{result_values}->{in}),
+                        value => $self->{result_values}->{in},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
@@ -106,7 +110,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-out', nlabel => 'sdwan.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'out', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                key_values => [ { name => 'out' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'out: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -116,7 +120,7 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
                         instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
-                        value => sprintf('%.2f', $self->{result_values}->{out}),
+                        value => $self->{result_values}->{out},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
@@ -125,7 +129,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-bi', nlabel => 'sdwan.traffic.bi.bitspersecond', set => {
-                key_values => [ { name => 'bi', per_second => 1 }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
+                key_values => [ { name => 'bi' }, { name => 'vdom' }, { name => 'name' }, { name => 'ifName' } ],
                 output_template => 'bi: %s %s/s',
                 output_change_bytes => 2,
                 closure_custom_perfdata => sub {
@@ -135,7 +139,7 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'b/s',
                         instances => [$self->{result_values}->{vdom}, $self->{result_values}->{name}, $self->{result_values}->{ifName}],
-                        value => sprintf('%.2f', $self->{result_values}->{bi}),
+                        value => $self->{result_values}->{bi},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0
@@ -216,9 +220,17 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-id:s'   => { name => 'filter_id' },
-        'filter-name:s' => { name => 'filter_name' },
-        'filter-vdom:s' => { name => 'filter_vdom' }
+        'filter-id:s'              => { redirect => 'include_id' },
+        'filter-name:s'            => { redirect => 'include_name' },
+        'filter-vdom:s'            => { redirect => 'include_vdom' },
+        'include-id:s'             => { name => 'include_id',             default => '' },
+        'exclude-id:s'             => { name => 'exclude_id',             default => '' },
+        'include-name:s'           => { name => 'include_name',           default => '' },
+        'exclude-name:s'           => { name => 'exclude_name',           default => '' },
+        'include-vdom:s'           => { name => 'include_vdom',           default => '' },
+        'exclude-vdom:s'           => { name => 'exclude_vdom',           default => '' },
+        'include-interface-name:s' => { name => 'include_interface_name', default => '' },
+        'exclude-interface-name:s' => { name => 'exclude_interface_name', default => '' }
     });
 
     return $self;
@@ -242,17 +254,13 @@ sub manage_selection {
     my ($self, %options) = @_;
 
      $self->{cache_name} = 'fortinet_fortigate_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : 'all') . '_' .
-            (defined($self->{option_results}->{filter_id}) ? md5_hex($self->{option_results}->{filter_id}) : 'all') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : 'all') . '_' .
-            (defined($self->{option_results}->{filter_vdom}) ? md5_hex($self->{option_results}->{filter_vdom}) : 'all')
-        );
+        sha256_hex( join '_', map {  $self->{option_results}->{$_} // '' ne '' ?
+                                         $self->{option_results}->{$_} :
+                                         'all'
+                                  } qw/filter_counters include_id exclude_id include_name exclude_name include_vdom exclude_vdom include_interface_name exclude_interface_name/ );
 
-    if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to use SNMP v2c or v3.")
+        if $options{snmp}->is_snmpv1();
 
     my $oid_name = '.1.3.6.1.4.1.12356.101.4.9.2.1.2'; # fgVWLHealthCheckLinkName
     my $snmp_result = $options{snmp}->get_table(
@@ -265,15 +273,13 @@ sub manage_selection {
         /^$oid_name\.(.*)$/;
         my $id = $1;
 
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $id !~ /$self->{option_results}->{filter_id}/) {
+        if (is_excluded($id, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id})) {
             $self->{output}->output_add(long_msg => "skipping sd-wan '" . $snmp_result->{$_} . "'.", debug => 1);
-            next;
+            next
         }
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result->{$_} !~ /$self->{option_results}->{filter_name}/) {
+        if (is_excluded($snmp_result->{$_} // '', $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name})) {
             $self->{output}->output_add(long_msg => "skipping sd-wan '" . $snmp_result->{$_} . "'.", debug => 1);
-            next;
+            next
         }
 
         $self->{sdwan}->{ $id } = {
@@ -282,7 +288,7 @@ sub manage_selection {
         };
     }
 
-    return if (scalar(keys %{$self->{sdwan}}) <= 0);
+    return unless keys %{$self->{sdwan}};
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
@@ -292,11 +298,13 @@ sub manage_selection {
     $snmp_result = $options{snmp}->get_leef();
     foreach (keys %{$self->{sdwan}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        $result->{vdom} //= '';
+        $result->{ifName} //= '';
 
-        if (defined($self->{option_results}->{filter_vdom}) && $self->{option_results}->{filter_vdom} ne '' &&
-            $result->{vdom} !~ /$self->{option_results}->{filter_vdom}/) {
+        if (is_excluded($result->{vdom}, $self->{option_results}->{include_vdom}, $self->{option_results}->{exclude_vdom}) ||
+            is_excluded($result->{ifName}, $self->{option_results}->{include_interface_name}, $self->{option_results}->{exclude_interface_name})) {
             $self->{output}->output_add(long_msg => "skipping sd-wan '" . $self->{sdwan}->{$_}->{name} . "'.", debug => 1);
-            next;
+            next
         }
 
         $self->{sdwan}->{$_}->{vdom} = $result->{vdom};
@@ -340,6 +348,21 @@ sub manage_selection {
     }
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => [ @_sdwan_keys ]);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(snmp => $options{snmp});
+    foreach my $item (sort { $self->{sdwan}->{$a}->{status}->{name} cmp $self->{sdwan}->{$b}->{status}->{name} } keys %{$self->{sdwan}}) {
+        $self->{output}->add_disco_entry(map { $_ => $self->{sdwan}->{$item}->{status}->{$_} } @_sdwan_keys);
+    }
+}
+
 1;
 
 __END__
@@ -350,17 +373,37 @@ Check sd-wan links.
 
 =over 8
 
-=item B<--filter-id>
+=item B<--include-id>
 
 Filter sd-wan links by ID (can be a regexp).
 
-=item B<--filter-name>
+=item B<--exclude-id>
+
+Exclude sd-wan links by ID (can be a regexp).
+
+=item B<--include-name>
 
 Filter sd-wan links by name (can be a regexp).
 
-=item B<--filter-vdom>
+=item B<--exclude-name>
+
+Exclude sd-wan links by name (can be a regexp).
+
+=item B<--include-vdom>
 
 Filter sd-wan links by vdom name (can be a regexp).
+
+=item B<--exclude-vdom>
+
+Exclude sd-wan links by vdom name (can be a regexp).
+
+=item B<--include-interface-name>
+
+Filter sd-wan links by interface name (can be a regexp).
+
+=item B<--exclude-interface-name>
+
+Exclude sd-wan links by interface name (can be a regexp).
 
 =item B<--unknown-status>
 
@@ -377,11 +420,61 @@ You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName
 Define the conditions to match for the status to be CRITICAL (default: '%{state} eq "down"').
 You can use the following variables: %{state}, %{vdom}, %{id}, %{name}, %{ifName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-jitter>
 
-Thresholds.
-Can be: 'traffic-in', 'traffic-out', 'traffic-bi',
-'latency', 'jitter', 'packetloss'.
+Threshold.
+
+=item B<--critical-jitter>
+
+Threshold.
+
+=item B<--warning-latency>
+
+Threshold.
+
+=item B<--critical-latency>
+
+Threshold.
+
+=item B<--warning-packetloss>
+
+Threshold.
+
+=item B<--critical-packetloss>
+
+Threshold.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-traffic-bi>
+
+Threshold.
+
+=item B<--critical-traffic-bi>
+
+Threshold.
+
+=item B<--warning-traffic-in>
+
+Threshold.
+
+=item B<--critical-traffic-in>
+
+Threshold.
+
+=item B<--warning-traffic-out>
+
+Threshold.
+
+=item B<--critical-traffic-out>
+
+Threshold.
 
 =back
 
