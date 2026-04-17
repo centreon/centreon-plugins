@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'application' => 'apps::monitoring::zscaler::zdx::api::mode::application',
-        'discovery'   => 'apps::monitoring::zscaler::zdx::api::mode::discovery',
-        'list-locations'    => 'apps::monitoring::zscaler::zdx::api::mode::listlocations',
+        'application'    => 'apps::monitoring::zscaler::zdx::api::mode::application',
+        'discovery'      => 'apps::monitoring::zscaler::zdx::api::mode::discovery',
+        'list-locations' => 'apps::monitoring::zscaler::zdx::api::mode::listlocations',
     };
     $self->{custom_modes}->{api} = 'apps::monitoring::zscaler::zdx::api::custom::api';
     return $self;

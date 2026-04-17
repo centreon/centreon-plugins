@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -437,6 +437,15 @@ sub write {
     open FILE, '>', $self->{statefile_dir} . '/' . $self->{statefile};
     print FILE $serialized;
     close FILE;
+}
+
+sub remove_file{
+    my ($self, %options) = @_;
+
+    return unless $self->{statefile_dir} && $self->{statefile};
+    my $file = $self->{statefile_dir} . '/' . $self->{statefile};
+
+    unlink $file if -e $file;
 }
 
 1;
