@@ -35,23 +35,30 @@ sub set_counters {
 
     $self->{maps_counters}->{lockswaits} = [
         { label => 'lockswaits', nlabel => 'mssql.lockswaits.count.persecond', set => {
-                key_values => [ { name => 'value', per_second => 1 } ],
-                output_template => '%.2f locks waits/s',
-                perfdatas => [
-                    { template => '%.2f', min => 0 }
-                ]
-            }
+            key_values      => [ { name => 'value', per_second => 1 } ],
+            output_template => '%.2f locks waits/s',
+            perfdatas       => [
+                { template => '%.2f', min => 0 }
+            ]
+        }
+        },
+        { label => 'total', nlabel => 'mssql.lockswaits.count', set => {
+            key_values      => [ { name => 'value' } ],
+            output_template => '%d locks waits',
+            perfdatas       => [
+                { template => '%d', min => 0 },
+            ],
+        }
         }
     ];
 }
-
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
+
+    $options{options}->add_options(arguments => {
         'filter-instance:s' => { name => 'filter_instance', default => '_Total' }
     });
 
@@ -76,14 +83,28 @@ sub manage_selection {
     $self->{lockswaits}->{value} = 0;
 
     foreach my $row (@{$query_result}) {
-        next if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne ''
-                    && $$row[0] !~ /$self->{option_results}->{filter_instance}/);
+        my $instance = $$row[0];
+        $instance =~ s/^\s+|\s+$//g;
+        if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne ''
+            && $instance !~ /$self->{option_results}->{filter_instance}/) {
+            $self->{output}->output_add(long_msg =>
+                "skipping instance '" . $instance . ' - ' . $$row[1] . "' : no matching filter instance",
+                debug                            =>
+                    1);
+            next;
+        }
+
+        $self->{output}->output_add(long_msg => "instance $instance: $$row[1]", debug => 1);
         $self->{lockswaits}->{value} += $$row[1];
     }
 
-    $self->{cache_name} = 'mssql_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_instance}) ? md5_hex($self->{option_results}->{filter_instance}) : md5_hex('all'));
+    $self->{cache_name} = 'mssql_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ?
+            md5_hex($self->{option_results}->{filter_counters}) :
+            md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_instance}) ?
+            md5_hex($self->{option_results}->{filter_instance}) :
+            md5_hex('all'));
 }
 
 1;
