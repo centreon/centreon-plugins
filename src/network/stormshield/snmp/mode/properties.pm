@@ -61,11 +61,31 @@ sub run {
     my $date = $snmp_result->{$oid_date};
     my $uptime = $snmp_result->{$oid_uptime};
 
+    my @info = (
+        "Click to see more infos: ...",
+        "System Name: $system_name",
+        "Model: $model",
+        "Serial Number: $serial_number",
+        "Version: $version",
+        "Date: $date",
+        "Uptime: $uptime",
+    );
+
+    # Add 'System node Name' if Stormshield firmware version >= 4.8.6
+    # This field was introduced in firmware version 4.8.6
+    if (centreon::plugins::misc::minimal_version($version, '4.8.6')) {
+        splice @info, 2, 0, "System node Name: $system_node_name";
+    }
+
+    # Add 'Bios Version' if Stormshield firmware version >= 4.8.15
+    # This field was introduced in firmware version 4.8.15
+    if (centreon::plugins::misc::minimal_version($version, '4.8.15')) {
+        splice @info, 6, 0, "Bios Version: $bios_version";
+    }
+
     $self->{output}->output_add(
-        severity => 'OK',
-        short_msg => sprintf("Click to see more infos: ...\nSystem Name: %s \nSystem node Name: %s \nModel: %s \nSerial Number: %s \nVersion: %s \nBios Version: %s \nDate: %s \nUptime: %s",
-            $system_name, $system_node_name, $model, $serial_number, $version, $bios_version, $date, $uptime
-        )
+        severity  => 'OK',
+        short_msg => join("\n", @info)
     );
 
     $self->{output}->display();
