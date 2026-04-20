@@ -38,16 +38,17 @@ our @EXPORT_OK = qw/change_seconds
                     execute
                     flatten_arrays
                     flatten_to_hash
+                    format_opt
                     graphql_escape
                     is_empty
                     is_excluded
                     is_local_ip
                     json_encode
                     json_decode
-                    slurp_file
-                    format_opt
-                    trim
                     mask_secrets
+                    normalize_mac
+                    slurp_file
+                    trim
                     value_of/;
 
 sub execute {
@@ -1032,6 +1033,28 @@ sub mask_secrets($;$) {
     return $masked;
 }
 
+sub normalize_mac {
+    my ($mac) = @_;
+
+    return '' unless defined $mac;
+
+    # already in a human readable string format ( AABBCC )
+    return lc join (':', $mac =~ /(..)/g)
+        if $mac =~ /^[0-9A-Fa-f]+$/;
+
+    # other humain-readable string formats ( AA BB CC, AA:BB:CC, AA-BB-CC ... )
+    if ($mac =~ /^[0-9A-Fa-f\s:-]+$/) {
+        $mac =~ s/[\s:-]+/:/g;
+        return lc $mac;
+    }
+
+    # binary format
+    return join(':', unpack('(H2)6', $mac)) if length($mac) == 6;
+
+    # fallback
+    return $mac;
+}
+
 1;
 
 __END__
@@ -1698,7 +1721,21 @@ Be aware that this is only a try, there is no guarantee that all secrets will be
 
 =over 4
 
-=item * C<$ident> - name to convert.
+=item * C<$unsafe_string> - input string that may contain secrets.
+
+=item * C<$mask> - replacement string used to mask detected secrets.
+
+=back
+
+=head2 normalize_mac
+
+    my $to_print = centreon::plugins::misc::normalize_mac($mac);
+
+Attempts to format a MAC address into a human-readable format
+
+=over 4
+
+=item * C<$mac> - raw MAC address to print
 
 =head1 AUTHOR
 
