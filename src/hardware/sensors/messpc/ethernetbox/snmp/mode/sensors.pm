@@ -25,6 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -120,17 +122,17 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name             => 'sensor',
-            type             => 1,
+            type             => COUNTER_TYPE_INSTANCE,
             cb_prefix_output => 'prefix_sensor_output',
             message_multiple => 'All sensors are ok',
-            skipped_code     => { -10 => 1 }
+            skipped_code     => { NO_VALUE() => 1 }
         },
     ];
 
     $self->{maps_counters}->{sensor} = [
         {
             label            => 'status',
-            type             => 2,
+            type             => COUNTER_KIND_TEXT,
             unknown_default  => '%{valid} eq 0',
             critical_default => '%{status} eq "high"',
             warning_default  => '%{status} eq "warning"',
@@ -256,7 +258,8 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-sensor-type:s' => { name => 'filter_sensor_type', default => '^(?!na$).+' }
+            'filter-sensor-type:s' => { name => 'filter_sensor_type', default => '^(?!na$).+' },
+            'skip-not-valid'       => { name => 'skip_not_valid', },
         });
 
     return $self;
@@ -332,11 +335,11 @@ sub manage_selection {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        next if is_excluded($result->{sensorType}, $self->{option_results}->{filter_sensor_type});
 
-        if (defined($self->{option_results}->{filter_sensor_type}) && $self->{option_results}->{filter_sensor_type} ne '' &&
-            $result->{sensorType} !~ /$self->{option_results}->{filter_sensor_type}/) {
+        if (defined($self->{option_results}->{skip_not_valid}) && $result->{valid} == 0) {
             $self->{output}->output_add(
-                long_msg => "skipping '" . $result->{sensorType} . "': no matching filter.",
+                long_msg => "skipping 'not valid' sensor.",
                 debug    => 1
             );
             next;
@@ -391,6 +394,10 @@ Can be: C<temperature>, C<humidity>, C<voltage>, C<smoke>, C<contact>, C<brightn
 
 Critical threshold.
 Can be: C<temperature>, C<humidity>, C<voltage>, C<smoke>, C<contact>, C<brightness>.
+
+=item B<--skip-not-valid>
+
+Skip not valid sensors
 
 =back
 
