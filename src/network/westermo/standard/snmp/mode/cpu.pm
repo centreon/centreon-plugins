@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,7 +86,7 @@ sub manage_selection {
     $self->{global} = {
         average_1m => $snmp_result->{$oid_cpuLoadAvg1Min},
         average_5m => $snmp_result->{$oid_cpuLoadAvg5Min},
-        average_1m => $snmp_result->{$oid_cpuLoadAvg15Min},
+        average_15m => $snmp_result->{$oid_cpuLoadAvg15Min},
     };
 }
 
@@ -105,18 +105,28 @@ Check average cpu load.
 Only display some counters (regexp can be used).
 Example: C<--filter-counters='average-15m'>
 
-=item B<--warning-*>
+=item B<--warning-average-15m>
 
-Warning threshold.
+Threshold in percentage.
 
-Can be: 'average-1m', 'average-5m', 'average-15m'
+=item B<--critical-average-15m>
 
-=item B<--critical-*>
+Threshold in percentage.
 
-Critical threshold.
+=item B<--warning-average-1m>
 
-Can be: 'average-1m', 'average-5m', 'average-15m'
+Threshold in percentage.
 
-=back
+=item B<--critical-average-1m>
+
+Threshold in percentage.
+
+=item B<--warning-average-5m>
+
+Threshold in percentage.
+
+=item B<--critical-average-5m>
+
+Threshold in percentage.
 
 =cut

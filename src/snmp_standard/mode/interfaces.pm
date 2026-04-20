@@ -850,7 +850,7 @@ sub set_key_values_out_traffic {
 sub set_oids_label {
     my ($self, %options) = @_;
 
-    $self->{oids_label} = {
+    $self->{oids_label} //= {
         'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
         'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
         'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
@@ -1074,6 +1074,7 @@ sub new {
 
     $self->{safe} = Safe->new();
     $self->{safe}->share('$assign_var');
+    $self->{oids_label} //= $options{oids_label};
 
     return $self;
 }

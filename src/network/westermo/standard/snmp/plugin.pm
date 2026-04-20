@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,11 +29,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version}  = '1.0';
     %{$self->{modes}} = (
         'cpu'                 => 'network::westermo::standard::snmp::mode::cpu',
-        'interfaces'          => 'network::westermo::standard::snmp::mode::interfaces',
-        'list-interfaces'     => 'network::westermo::standard::snmp::mode::listinterfaces',
+        'interfaces'          => 'snmp_standard::mode::interfaces',
+        'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
         'list-spanning-trees' => 'snmp_standard::mode::listspanningtrees',
         'memory'              => 'snmp_standard::mode::memory',
         'sensors'             => 'snmp_standard::mode::entity',
@@ -42,7 +42,27 @@ sub new {
         'udpcon'              => 'snmp_standard::mode::udpcon',
         'uptime'              => 'snmp_standard::mode::uptime',
     );
-
+    $self->{modes_options} = {
+        'interfaces'      => {
+            force_new_perfdata => 1,
+            oids_label         => {
+                'ifname' =>
+                    {
+                        oid   => '.1.3.6.1.4.1.16177.2.4.1.1.1.3',
+                        get   => 'reload_get_simple',
+                        cache => 'reload_cache_index_value'
+                    } } },
+        'list-interfaces' => {
+            'oids_label' => {
+                'ifname' => '.1.3.6.1.4.1.16177.2.4.1.1.1.3'
+            } },
+        'memory'          => { force_new_perfdata => 1 },
+        'sensors'         => { force_new_perfdata => 1 },
+        'spanning-tree'   => { force_new_perfdata => 1 },
+        'tcpcon'          => { force_new_perfdata => 1 },
+        'udpcon'          => { force_new_perfdata => 1 },
+        'uptime'          => { force_new_perfdata => 1 }
+    };
     return $self;
 }
 

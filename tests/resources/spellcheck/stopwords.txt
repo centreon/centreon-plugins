@@ -1,6 +1,3 @@
-1m
-5m
-15m
 2c
 3COM
 3CX
@@ -415,6 +412,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
 WildFire
 WLAN
 WLC
