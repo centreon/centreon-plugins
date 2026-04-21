@@ -71,15 +71,17 @@ sub run {
         "Uptime: $uptime",
     );
 
-    # Add 'System node Name' if Stormshield firmware version >= 4.8.6
-    # This field was introduced in firmware version 4.8.6
-    if (centreon::plugins::misc::minimal_version($version, '4.8.6')) {
+    my ($base_version) = $version =~ /^(\d+\.\d+\.\d+)/;
+
+    # Add 'System node Name' if Stormshield firmware version >= 4.8.6 or == 4.3.40
+    # This field was introduced in firmware version 4.8.6 and in 4.3.40
+    if (centreon::plugins::misc::minimal_version($version, '4.8.6') || (defined $base_version && $base_version eq '4.3.40')) {
         splice @info, 2, 0, "System node Name: $system_node_name";
     }
 
-    # Add 'Bios Version' if Stormshield firmware version >= 4.8.15
-    # This field was introduced in firmware version 4.8.15
-    if (centreon::plugins::misc::minimal_version($version, '4.8.15')) {
+    # Add 'Bios Version' if Stormshield firmware version >= 4.8.15 or == 4.3.42
+    # This field was introduced in firmware version 4.8.15 and in 4.3.42
+    if (centreon::plugins::misc::minimal_version($version, '4.8.15') || (defined $base_version && $base_version eq '4.3.42')) {
         splice @info, 6, 0, "Bios Version: $bios_version";
     }
 
