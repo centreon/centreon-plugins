@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub custom_status_output { 
+sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = '';
@@ -123,32 +123,38 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $single = $options{custom}->api_single_status();
+    # v20: GetSingleStatus (Firewall/Phones/Trunks) endpoint no longer exists
+    # All health information is now consolidated in SystemStatus
     my $system = $options{custom}->api_system_status();
     my $update = $options{custom}->api_update_checker();
 
     $self->{service} = {};
-    foreach my $item (keys %$single) {
-        # As of 3CX 15.5 / 16, we have Firewall, Phones, Trunks
-        $self->{service}->{$item} = { 
-            service => $item, 
-            error => $single->{$item} ? 'false' : 'true',
-        };
-    }
-    # As per 3CX support, $single->{Trunks} does not trigger if TrunksRegistered != TrunksTotal,
-    # but only if "trunk is unsupported", so let's workaround
-    $self->{service}->{HasUnregisteredTrunks} = { 
-        service => 'HasUnregisteredTrunks', 
-        error => ($system->{TrunksRegistered} < $system->{TrunksTotal}) ? 'true' : 'false',
+
+    # Trunks: use TrunksRegistered vs TrunksTotal from SystemStatus
+    $self->{service}->{HasUnregisteredTrunks} = {
+        service => 'HasUnregisteredTrunks',
+        error   => ($system->{TrunksRegistered} < $system->{TrunksTotal}) ? 'true' : 'false',
     };
+
+    # Services health
     $self->{service}->{HasNotRunningServices} = {
         service => 'HasNotRunningServices',
-        error => $system->{HasNotRunningServices} ? 'true' : 'false',
+        error   => $system->{HasNotRunningServices} ? 'true' : 'false',
     };
+
+    # System extensions
     $self->{service}->{HasUnregisteredSystemExtensions} = {
-        service => 'HasUnregisteredSystemExtensions', 
-        error => $system->{HasUnregisteredSystemExtensions} ? 'true' : 'false',
+        service => 'HasUnregisteredSystemExtensions',
+        error   => $system->{HasUnregisteredSystemExtensions} ? 'true' : 'false',
     };
+
+    # License status
+    $self->{service}->{LicenseActive} = {
+        service => 'LicenseActive',
+        error   => $system->{LicenseActive} ? 'false' : 'true',
+    };
+
+    # Updates
     my $updates = 0;
     foreach my $item (@$update) {
         if (defined($self->{option_results}->{filter_category}) && $self->{option_results}->{filter_category} ne '' &&
@@ -159,17 +165,17 @@ sub manage_selection {
         $updates++;
     }
     $self->{service}->{HasUpdatesAvailable} = {
-        service => 'HasUpdatesAvailable', 
-        error => $updates ? 'true' : 'false'
+        service => 'HasUpdatesAvailable',
+        error   => $updates ? 'true' : 'false'
     };
-    
+
     $self->{global} = {
-        calls_used => $system->{CallsActive},
-        calls_free => $system->{MaxSimCalls} - $system->{CallsActive},
-        calls_max => $system->{MaxSimCalls},
-        calls_prct_used => $system->{CallsActive} * 100 / $system->{MaxSimCalls},
+        calls_used            => $system->{CallsActive},
+        calls_free            => $system->{MaxSimCalls} - $system->{CallsActive},
+        calls_max             => $system->{MaxSimCalls},
+        calls_prct_used       => $system->{CallsActive} * 100 / $system->{MaxSimCalls},
         extensions_registered => $system->{ExtensionsRegistered},
-        extensions_total => $system->{ExtensionsTotal}
+        extensions_total      => $system->{ExtensionsTotal}
     };
 }
 
@@ -179,7 +185,7 @@ __END__
 
 =head1 MODE
 
-Check system health
+Check system health (3CX v20+)
 
 =over 8
 
@@ -199,8 +205,10 @@ You can use the following variables: %{error}, %{service}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{error} =~ /false/').
+Define the conditions to match for the status to be CRITICAL (default: '%{error} =~ /true/').
 You can use the following variables: %{error}, %{service}
+Monitored services: HasUnregisteredTrunks, HasNotRunningServices,
+HasUnregisteredSystemExtensions, LicenseActive, HasUpdatesAvailable.
 
 =item B<--warning-*> B<--critical-*>
 

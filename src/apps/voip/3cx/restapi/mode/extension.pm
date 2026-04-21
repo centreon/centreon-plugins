@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use Date::Parse;
 
-sub custom_status_output { 
+sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = '';
@@ -94,7 +94,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-extension:s' => { name => 'filter_extension' }
+        'filter-extension:s'  => { name => 'filter_extension' },
+        'dnd-profile-name:s'  => { name => 'dnd_profile_name', default => 'DND' }
     });
 
     return $self;
@@ -107,13 +108,11 @@ sub manage_selection {
     my $activecalls = $options{custom}->api_activecalls();
     foreach my $item (@$activecalls) {
         $status{$item->{Caller}} = {
-            Status => $item->{Status},
-            Duration => $item->{Duration},
+            Status        => $item->{Status},
             EstablishedAt => $item->{EstablishedAt},
         };
         $status{$item->{Callee}} = {
-            Status => $item->{Status},
-            Duration => $item->{Duration},
+            Status        => $item->{Status},
             EstablishedAt => $item->{EstablishedAt},
         };
     }
@@ -121,9 +120,11 @@ sub manage_selection {
     my $extension = $options{custom}->api_extension_list();
     $self->{extension} = {};
     foreach my $item (@$extension) {
-        if (!defined($item->{_str})) { # 3CX >= 16.0.6.641
-            $item->{_str} = $item->{Number} . (length($item->{FirstName}) ? ' ' . $item->{FirstName} : '') . (length($item->{LastName}) ? ' ' . $item->{LastName} : '');
-        }
+        # v20: build display string from Number + FirstName + LastName
+        $item->{_str} = $item->{Number}
+            . (defined($item->{FirstName}) && length($item->{FirstName}) ? ' ' . $item->{FirstName} : '')
+            . (defined($item->{LastName})  && length($item->{LastName})  ? ' ' . $item->{LastName}  : '');
+
         if (defined($self->{option_results}->{filter_extension}) && $self->{option_results}->{filter_extension} ne '' &&
             $item->{_str} !~ /$self->{option_results}->{filter_extension}/) {
             $self->{output}->output_add(long_msg => "skipping extension '" . $item->{_str} . "': no matching filter.", debug => 1);
@@ -132,18 +133,21 @@ sub manage_selection {
 
         $self->{global}->{count}++;
 
+        # v20: DND boolean field no longer exists, derive it from CurrentProfileName
+        my $profile  = defined($item->{CurrentProfileName}) ? $item->{CurrentProfileName} : '';
+        my $dnd_name = $self->{option_results}->{dnd_profile_name};
+        my $is_dnd   = (lc($profile) eq lc($dnd_name)) ? 'true' : 'false';
+
         $self->{extension}->{$item->{_str}} = {
-            extension => $item->{_str},
+            extension  => $item->{_str},
             registered => $item->{IsRegistered} ? 'true' : 'false',
-            dnd => $item->{DND} ? 'true' : 'false',
-            profile => $item->{CurrentProfile},
-            status => $status{$item->{_str}}->{Status} ? $status{$item->{_str}}->{Status} : '',
-            duration => 0
+            dnd        => $is_dnd,
+            profile    => $profile,
+            status     => defined($status{$item->{_str}}->{Status}) ? $status{$item->{_str}}->{Status} : '',
+            duration   => 0
         };
-        if (defined($status{$item->{_str}}->{EstablishedAt})) { # 3CX >= 16.0.6.641 (#2020-09-08T08:26:05+00:00)
+        if (defined($status{$item->{_str}}->{EstablishedAt})) {
             $self->{extension}->{$item->{_str}}->{duration} = time - Date::Parse::str2time($status{$item->{_str}}->{EstablishedAt});
-        } elsif (defined($status{$item->{_str}}->{Duration}) && $status{$item->{_str}}->{Duration} =~ /(\d\d):(\d\d):(\d\d).*/) {
-            $self->{extension}->{$item->{_str}}->{duration} = $1 * 3600 + $2 * 60 + $3;
         }
     }
 }
@@ -154,13 +158,21 @@ __END__
 
 =head1 MODE
 
-Check extentions status
+Check extensions status (3CX v20+)
 
 =over 8
 
 =item B<--filter-extension>
 
-Filter extension.
+Filter extension (by number, first name or last name).
+
+=item B<--dnd-profile-name>
+
+Name of the profile to consider as DND (Do Not Disturb). Default: 'DND'.
+In 3CX v20, the DND boolean field no longer exists. DND status is derived
+from the CurrentProfileName field. Use this option to specify the exact
+profile name configured in your 3CX instance for DND.
+Example: --dnd-profile-name='Do not disturb'
 
 =item B<--unknown-status>
 
