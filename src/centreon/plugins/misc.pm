@@ -1704,8 +1704,6 @@ Determines whether a string should be excluded based on include and exclude regu
 
 =item * C<%options> - An optional hash that allows defining the output module in order to log when the string is excluded.
 
-=back
-
 Returns 1 if the string is excluded, 0 if it is included.
 The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
 not match the string. The string will also be excluded if it is undefined.
@@ -1736,6 +1734,8 @@ Attempts to format a MAC address into a human-readable format
 =over 4
 
 =item * C<$mac> - raw MAC address to print
+
+=back
 
 =head1 AUTHOR
 
