@@ -7,3 +7,10 @@ report.html
 tests/resources/__pycache__
 src/lib
 node_modules
+
+# VMware SDK archives (proprietary, not committed to git)
+sdks-vmware/*.tar.gz
+sdks-vmware/*.zip
+
+# Docker build context directories (generated at CI time)
+packages-centreon/

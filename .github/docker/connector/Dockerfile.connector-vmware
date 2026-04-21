@@ -54,7 +54,49 @@ ARG USE_SOURCE_VMWARE=false
 FROM vmware-bin-${USE_SOURCE_VMWARE} AS vmware-bin-selected
 
 #############################################
-# Stage 2: Runtime - Debian 12 slim image
+# Stage 2: VMware Perl SDK installer
+# Before building, place the following files in sdks-vmware/ (gitignored):
+#   - VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz
+#   - vsan-sdk-perl.zip
+#############################################
+FROM debian:12-slim AS sdk-installer
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    perl \
+    make \
+    patch \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy patch file for VICommon.pm cookie handling fix
+COPY .github/docker/connector/VICommon.patch /tmp/VICommon.patch
+
+# Install vSphere Perl SDK 7.0
+RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
+    set -e && \
+    cd /tmp && \
+    tar zxf /sdks/VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz && \
+    cd vmware-vsphere-cli-distrib && \
+    patch --backup lib/VMware/share/VMware/VICommon.pm /tmp/VICommon.patch && \
+    perl Makefile.PL && \
+    make pure_install && \
+    echo "=== vSphere SDK installed ===" && \
+    find /usr/local/share/perl5/VMware -name "VIRuntime.pm" || \
+    find /usr -name "VIRuntime.pm" 2>/dev/null | head -3
+
+# Install vSAN SDK
+# Modules are copied to /usr/local/share/perl5/VMware/ (referenced by vsan_sdk_path in config)
+RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
+    set -e && \
+    cd /tmp && \
+    unzip /sdks/vsan-sdk-perl.zip && \
+    mkdir -p /usr/local/share/perl5/VMware && \
+    cp ./vsan-sdk-perl/bindings/VIM25Vsanmgmt* /usr/local/share/perl5/VMware/ && \
+    echo "=== vSAN SDK installed ===" && \
+    ls -lah /usr/local/share/perl5/VMware/
+
+#############################################
+# Stage 3: Runtime - Debian 12 slim image
 #############################################
 FROM debian:12-slim AS centreon-vmware
 
@@ -111,9 +153,6 @@ RUN ARCH=$(dpkg --print-architecture) && \
         cpanm --notest Net::Curl; \
     fi
 
-# TODO: Install VMware Perl SDK (VMware::VIRuntime, VMware::VILib)
-# The SDK installation steps will be provided separately
-
 # Create directory structure
 RUN mkdir -p \
         /etc/centreon \
@@ -126,7 +165,10 @@ RUN mkdir -p \
     chown centreon:centreon /tmp/centreon_vmware && \
     chmod 775 /tmp/centreon_vmware
 
-# Copy Perl modules from selector (vmware modules + script modules)
+# Copy VMware SDK from installer stage (vSphere SDK + vSAN SDK)
+COPY --from=sdk-installer /usr/local/share/perl5/VMware/ /usr/local/share/perl5/VMware/
+
+# Copy Perl modules from selector (centreon vmware modules + script modules)
 COPY --from=vmware-perl-selected /centreon-modules/ /usr/share/perl5/centreon/
 
 # Copy executables from selector
@@ -143,10 +185,11 @@ RUN echo "=== Verification ===" && \
     ls -lah /usr/bin/centreon_vmware.pl && \
     ls -lah /usr/bin/centreon_vmware_convert_config_file && \
     ls -lah /usr/share/perl5/centreon/ && \
+    ls -lah /usr/local/share/perl5/VMware/ && \
     ls -lah /etc/centreon/ && \
     echo "=== Files verified ==="
 
-ENV PERL5LIB=/usr/share/perl5:/usr/lib/perl5
+ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
 WORKDIR /etc/centreon
 
