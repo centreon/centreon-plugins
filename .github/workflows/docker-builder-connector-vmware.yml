@@ -10,6 +10,8 @@ on:
     paths:
       - '.github/workflows/docker-builder-connector-vmware.yml'
       - '.github/docker/connector/Dockerfile.connector-vmware'
+      - 'connectors/vmware/src/**'
+      - 'connectors/vmware/packaging/**'
 
 jobs:
   dependency-scan:
@@ -18,22 +20,75 @@ jobs:
   get-environment:
     needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: connectors/vmware/src/centreon/script/centreon_vmware.pm
 
-  dockerize:
+  package:
     needs: [get-environment]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/packaging-plugins-bookworm
+      credentials:
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+    name: package bookworm
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Package
+        uses: ./.github/actions/package-nfpm
+        with:
+          nfpm_file_pattern: "connectors/vmware/packaging/centreon-plugin-virtualization-vmware-daemon.yaml"
+          distrib: bookworm
+          package_extension: deb
+          version: ${{ needs.get-environment.outputs.version }}
+          release: 1
+          commit_hash: ${{ github.sha }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-deb-bookworm
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+  dockerize:
+    needs: [get-environment, package]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure')
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Restore .deb package from cache
+        uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        with:
+          path: ./*.deb
+          key: ${{ github.sha }}-${{ github.run_id }}-deb-bookworm
+          fail-on-cache-miss: true
+
+      - name: Prepare packages directory for Docker build context
+        run: mkdir -p packages-centreon && mv ./*.deb packages-centreon/
+
       - name: Login to Registry
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}
+          username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
+          password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
+
+      - name: Login to proxy registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ vars.DOCKER_PROXY_REGISTRY_URL }}
           username: ${{ secrets.HARBOR_CENTREON_PUSH_USERNAME }}
           password: ${{ secrets.HARBOR_CENTREON_PUSH_TOKEN }}
 
