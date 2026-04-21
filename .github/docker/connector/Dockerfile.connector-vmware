@@ -1,0 +1,3 @@
+ARG REGISTRY_URL=docker.io
+
+FROM debian:12-slim
