@@ -217,6 +217,9 @@ sub manage_selection {
             $session = $sessions->[1];
         }
 
+        $session->{creationTimeUTC} = '' if (!defined($session->{creationTimeUTC}));
+        $session->{endTimeUTC} = '' if (!defined($session->{endTimeUTC}));
+
         $session->{creationTimeUTC} =~ s/,/\./;
         $session->{endTimeUTC} =~ s/,/\./;
 
@@ -253,8 +256,8 @@ sub manage_selection {
             is_continuous => $job->{isContinuous},
             is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($session->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
             scheduled => $job->{scheduled} =~ /True|1/i ? 1 : 0, 
-            status => defined($job_result->{ $session->{result} }) && $job_result->{ $session->{result} } ne '' ?
-                $job_result->{ $session->{result} } : '-'
+            status => defined($session->{result}) && $session->{result} ne '' ?
+                $session->{result} : '-'
         };
         $self->{global}->{total}++;
     }

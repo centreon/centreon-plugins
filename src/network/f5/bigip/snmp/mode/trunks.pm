@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,13 +25,15 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:counters :values/;
+use Digest::SHA qw(sha256_hex);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
 
     my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && $self->{result_values}->{speed}) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
@@ -39,7 +41,7 @@ sub custom_traffic_perfdata {
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
 
-    my $speed = $self->{result_values}->{speed} > 0 ? $self->{result_values}->{speed} : undef;
+    my $speed = $self->{result_values}->{speed} || undef;
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
@@ -56,7 +58,7 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && $self->{result_values}->{speed}) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -81,7 +83,7 @@ sub custom_traffic_calc {
 
     if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
         $self->{error_msg} = "buffer creation";
-        return -2;
+        return NOT_PROCESSED;
     }
 
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
@@ -218,17 +220,17 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         {
-            name => 'trunks', type => 3, cb_prefix_output => 'prefix_trunk_output', cb_long_output => 'port_trunk_output', indent_long_output => '    ', message_multiple => 'All trunks are ok',
+            name => 'trunks', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_trunk_output', cb_long_output => 'port_trunk_output', indent_long_output => '    ', message_multiple => 'All trunks are ok',
             group => [
-                { name => 'trunk_global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'interfaces', display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interfaces are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'trunk_global', type => 0, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'interfaces', display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interfaces are ok', type => 1, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{trunk_global} = [
         {
-            label => 'status', type => 2, critical_default => '%{status} =~ /uninitialized|down/', 
+            label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} =~ /uninitialized|down/',
             set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 output_template => "status is '%s'", output_error_template => 'status: %s',
@@ -317,7 +319,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'   => { name => 'filter_name' },
+        'filter-name:s'   => { name => 'filter_name',   default => '' },
         'units-traffic:s' => { name => 'units_traffic', default => '%' },
         'speed:s'         => { name => 'speed' },
         'add-interfaces'  => { name => 'add_interfaces' }
@@ -400,18 +402,14 @@ sub manage_selection {
     }
 
     my $oid_sysTrunkName = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.1';
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_sysTrunkName, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_sysTrunkName, nothing_quit => 0);
 
     $self->{trunks} = {};
     foreach (keys %$snmp_result) {
         /^$oid_sysTrunkName\.(.*)$/;
         my $instance = $1;
 
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result->{$_} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping trunk '" . $snmp_result->{$_} . "'.", debug => 1);
-            next;
-        }
+        next if is_excluded($snmp_result->{$_}, $self->{option_results}->{filter_name}, undef, output => $self->{output});
 
         $self->{trunks}->{ $snmp_result->{$_} } = {
             display => $snmp_result->{$_},
@@ -420,10 +418,8 @@ sub manage_selection {
         };
     }
 
-    if (scalar(keys %{$self->{trunks}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No trunk found.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'No trunk found.')
+        unless keys %{$self->{trunks}};
 
     $options{snmp}->load(oids => [
             map($_->{oid}, values(%$mapping))
@@ -444,8 +440,7 @@ sub manage_selection {
     $self->add_interfaces(snmp => $options{snmp}) if (defined($self->{option_results}->{add_interfaces}));
 
     $self->{cache_name} = 'f5_bipgip_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        sha256_hex(($self->{option_results}->{filter_name} eq '' ? 'all' : $self->{option_results}->{filter_name}) . '_' . ($self->{option_results}->{filter_counters} // 'all'));
 }
 
 1;
