@@ -156,12 +156,9 @@ RUN ARCH=$(dpkg --print-architecture) && \
 # Create directory structure
 RUN mkdir -p \
         /etc/centreon \
-        /var/log/centreon \
         /tmp/centreon_vmware && \
     chown -R centreon-gorgone:centreon /etc/centreon && \
     chmod -R 775 /etc/centreon && \
-    chown centreon:centreon /var/log/centreon && \
-    chmod 775 /var/log/centreon && \
     chown centreon:centreon /tmp/centreon_vmware && \
     chmod 775 /tmp/centreon_vmware
 
@@ -200,5 +197,5 @@ USER centreon
 
 CMD ["/usr/bin/perl", "/usr/bin/centreon_vmware.pl", \
      "--config-extra=/etc/centreon/centreon_vmware.json", \
-     "--logfile=/var/log/centreon/centreon_vmware.log", \
+     "--logfile=/dev/stdout", \
      "--severity=error"]
