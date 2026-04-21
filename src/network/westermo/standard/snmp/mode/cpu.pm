@@ -20,6 +20,7 @@
 
 package network::westermo::standard::snmp::mode::cpu;
 
+use centreon::plugins::constants qw/:counters/;
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
@@ -29,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL }
     ];
 
     $self->{maps_counters}->{global} = [
