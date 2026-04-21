@@ -165,7 +165,10 @@ RUN mkdir -p \
     chown centreon:centreon /tmp/centreon_vmware && \
     chmod 775 /tmp/centreon_vmware
 
-# Copy VMware SDK from installer stage (vSphere SDK + vSAN SDK)
+# Copy VMware SDK from installer stage
+# vSphere SDK: make pure_install puts modules in the versioned site path
+COPY --from=sdk-installer /usr/local/share/perl/ /usr/local/share/perl/
+# vSAN SDK: copied directly to /usr/local/share/perl5/VMware/
 COPY --from=sdk-installer /usr/local/share/perl5/VMware/ /usr/local/share/perl5/VMware/
 
 # Copy Perl modules from selector (centreon vmware modules + script modules)
