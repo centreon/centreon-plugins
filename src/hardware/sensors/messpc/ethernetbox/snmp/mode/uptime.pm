@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use POSIX;
 use Time::HiRes qw(time);
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -53,15 +52,14 @@ sub manage_selection {
 
     $result = $options{snmp}->get_leef(oids => [ @oids, $oid_sysUpTime ], nothing_quit => 1);
     $value = $result->{$oid_sysUpTime};
-    $value =~ /\((\d+)\)/; # the value is like "1695 hours 23 minutes 27.54 seconds (610340754)"
-
+    $value =~ s/.+\((\d+)\).*/$1/; # the value is like "1695 hours 23 minutes 27.54 seconds (610340754)"
     $value = $self->check_overload(timeticks => $value, snmp => $options{snmp});
     $value = floor($value / 100);
 
-    my $sys_desc = defined($result->{$oid_location}) ? $result->{$oid_location} : "";
+    my $sys_desc = $result->{$oid_location} // "";
     $sys_desc .= defined($result->{$oid_version}) ? ", $result->{$oid_version}" : "";
 
-    $self->{global} = { uptime => $value, sysdesc => defined($sys_desc) ? $sys_desc : '-' };
+    $self->{global} = { uptime => $value, sysdesc => $sys_desc // '-' };
 }
 
 1;

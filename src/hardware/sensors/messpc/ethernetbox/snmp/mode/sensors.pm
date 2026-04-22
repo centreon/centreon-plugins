@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -258,8 +258,9 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-sensor-type:s' => { name => 'filter_sensor_type', default => '^(?!na$).+' },
-            'skip-not-valid'       => { name => 'skip_not_valid', },
+            'include-sensor-type:s' => { name => 'include_sensor_type', default => '' },
+            'exclude-sensor-type:s' => { name => 'exclude_sensor_type', default => '^na$' },
+            'skip-not-valid'        => { name => 'skip_not_valid' },
         });
 
     return $self;
@@ -335,14 +336,14 @@ sub manage_selection {
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        next if is_excluded($result->{sensorType}, $self->{option_results}->{filter_sensor_type});
+        next if is_excluded($result->{sensorType}, $self->{option_results}->{include_sensor_type}, $self->{option_results}->{exclude_sensor_type}, output => $self->{output});
 
         if (defined($self->{option_results}->{skip_not_valid}) && $result->{valid} == 0) {
             $self->{output}->output_add(
                 long_msg => "skipping 'not valid' sensor.",
                 debug    => 1
             );
-            next;
+            next
         }
 
         (my $display = $result->{name}) =~ s/\s+/_/g;
@@ -354,10 +355,12 @@ sub manage_selection {
             $result->{sensorType} => defined($result->{valueint10}) ? $result->{valueint10} / 10 : undef,
             status                => $result->{status},
             valid                 => $result->{valid},
-            limit_hi              => defined($result->{highlimit}) ? $result->{highlimit} : '',
-            limit_lo              => defined($result->{lowlimit}) ? $result->{lowlimit} : '',
+            limit_hi              => $result->{highlimit} // '',
+            limit_lo              => $result->{lowlimit} // '',
         };
     }
+
+    $self->{output}->option_exit(short_msg => 'No sensors found') unless keys %{$self->{sensor}};
 }
 
 1;
@@ -369,6 +372,15 @@ __END__
 Check sensors.
 
 =over 8
+
+=item B<--include-sensor-type>
+
+Filter by sensor type (can be regexp).
+
+=item B<--exclude-sensor-type>
+
+Exclude by sensor type (can be regexp).
+Default: '^na$'
 
 =item B<--unknown-status>
 
@@ -385,15 +397,53 @@ You can use the following variables: %{status}, %{valid}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} eq "high"').
 You can use the following variables: %{status}, %{valid}
 
-=item B<--warning-*>
+=item B<--warning-brightness>
 
-Warning threshold.
-Can be: C<temperature>, C<humidity>, C<voltage>, C<smoke>, C<contact>, C<brightness>.
+Threshold in percentage.
 
-=item B<--critical-*>
+=item B<--critical-brightness>
 
-Critical threshold.
-Can be: C<temperature>, C<humidity>, C<voltage>, C<smoke>, C<contact>, C<brightness>.
+Threshold in percentage.
+
+=item B<--warning-contact>
+
+Threshold.
+
+=item B<--critical-contact>
+
+Threshold.
+
+=item B<--warning-humidity>
+
+Threshold.
+
+=item B<--critical-humidity>
+
+Threshold.
+
+=item B<--warning-smoke>
+
+Threshold.
+
+=item B<--critical-smoke>
+
+Threshold.
+
+=item B<--warning-temperature>
+
+Threshold.
+
+=item B<--critical-temperature>
+
+Threshold.
+
+=item B<--warning-voltage>
+
+Threshold in Volts.
+
+=item B<--critical-voltage>
+
+Threshold in Volts.
 
 =item B<--skip-not-valid>
 
