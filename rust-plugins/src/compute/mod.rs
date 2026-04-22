@@ -735,7 +735,7 @@ mod test {
             ),
         ]);
         let collect = vec![SnmpResult::new(items)];
-        let parser = Parser::new(&collect);
+        let parser = Parser::new(&collect, false);
         let res = parser.eval_str("{free}foo{total}bar");
         assert!(res.is_ok());
         let res = res.unwrap();
@@ -763,7 +763,7 @@ mod test {
             ),
         ]);
         let collect = vec![SnmpResult::new(items)];
-        let parser = Parser::new(&collect);
+        let parser = Parser::new(&collect, false);
         let res = parser.eval_str("test{free}{total}foo{free}");
         assert!(res.is_ok());
         let res = res.unwrap();
@@ -785,7 +785,7 @@ mod test {
             ("total".to_string(), ExprResult::Vector(vec![2.1, 3.2, 4.3])),
         ]);
         let collect = vec![SnmpResult::new(items)];
-        let parser = Parser::new(&collect);
+        let parser = Parser::new(&collect, false);
         let res = parser.eval_str("test{free}{total}foo{free}");
         assert!(res.is_ok());
         let res = res.unwrap();
