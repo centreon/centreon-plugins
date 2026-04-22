@@ -1,5 +1,7 @@
 # Build arg to select vmware Perl source: false=use .deb (production), true=use local repo (dev/test)
 ARG USE_SOURCE_VMWARE=false
+# Build arg to include VMware Perl SDK (requires proprietary files in sdks-vmware/ — see sdks-vmware/README.md)
+ARG WITH_SDK=false
 
 #############################################
 # Stage 1: Extract files from .deb packages
@@ -54,12 +56,13 @@ ARG USE_SOURCE_VMWARE=false
 FROM vmware-bin-${USE_SOURCE_VMWARE} AS vmware-bin-selected
 
 #############################################
-# Stage 2: VMware Perl SDK installer
-# Before building, place the following files in sdks-vmware/ (gitignored):
-#   - VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz
-#   - vsan-sdk-perl.zip
+# Stage 2a: VMware SDK — with SDK (WITH_SDK=true)
+# Requires SDK archives in sdks-vmware/ (gitignored — proprietary Broadcom license):
+#   - VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz  (download from https://developer.broadcom.com)
+#   - vsan-sdk-perl.zip                                       (download from https://developer.broadcom.com)
+# Build with: docker build --build-arg WITH_SDK=true .
 #############################################
-FROM debian:12-slim AS sdk-installer
+FROM debian:12-slim AS sdk-true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     perl \
@@ -68,10 +71,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy patch file for VICommon.pm cookie handling fix
 COPY .github/docker/connector/VICommon.patch /tmp/VICommon.patch
 
-# Install vSphere Perl SDK 7.0
 RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
     set -e && \
     cd /tmp && \
@@ -81,11 +82,8 @@ RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
     perl Makefile.PL && \
     make pure_install && \
     echo "=== vSphere SDK installed ===" && \
-    find /usr/local/share/perl5/VMware -name "VIRuntime.pm" || \
-    find /usr -name "VIRuntime.pm" 2>/dev/null | head -3
+    ls -lah /usr/local/share/perl/
 
-# Install vSAN SDK
-# Modules are copied to /usr/local/share/perl5/VMware/ (referenced by vsan_sdk_path in config)
 RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
     set -e && \
     cd /tmp && \
@@ -94,6 +92,18 @@ RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
     cp ./vsan-sdk-perl/bindings/VIM25Vsanmgmt* /usr/local/share/perl5/VMware/ && \
     echo "=== vSAN SDK installed ===" && \
     ls -lah /usr/local/share/perl5/VMware/
+
+#############################################
+# Stage 2b: VMware SDK — without SDK (WITH_SDK=false, default)
+# Used by CI and public image builds. The daemon starts but encrypted::
+# credentials won't be decryptable without the SDK.
+#############################################
+FROM debian:12-slim AS sdk-false
+
+RUN mkdir -p /usr/local/share/perl/5.36.0/VMware /usr/local/share/perl5/VMware
+
+# hadolint ignore=DL3006
+FROM sdk-${WITH_SDK} AS sdk-installer
 
 #############################################
 # Stage 3: Runtime - Debian 12 slim image
