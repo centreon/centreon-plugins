@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,8 @@
 package cloud::kubernetes::mode::nodeusage;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw/:values :counters/;
+use centreon::plugins::misc qw/is_excluded/;
 
 use strict;
 use warnings;
@@ -108,8 +110,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output',
-            message_multiple => 'All Nodes usage are ok', skipped_code => { -11 => 1 } },
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_node_output',
+            message_multiple => 'All Nodes usage are ok', skipped_code => { NO_VALUE() => 1 } },
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -183,8 +185,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
-        'units:s'       => { name => 'units', default => '%' } # Keep compat
+        'filter-name:s'    => { redirect => 'include_name' },
+        'include-name:s'   => { name => 'include_name', default => '' },
+        'exclude-name:s'   => { name => 'exclude_name', default => '' },
+        'include-status:s' => { name => 'include_status', default => 'running' },
+        'exclude-status:s' => { name => 'exclude_status', default => '' },
+        'units:s'          => { name => 'units', default => '%' } # Keep compat
     });
    
     return $self;
@@ -202,12 +208,9 @@ sub manage_selection {
 
     my $nodes = $options{custom}->kubernetes_list_nodes();
     
+    my $found = 0;
     foreach my $node (@{$nodes}) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $node->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $node->{metadata}->{name} . "': no matching filter name.", debug => 1);
-            next;
-        }
+        next if is_excluded($node->{metadata}->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
 
         $self->{nodes}->{$node->{metadata}->{name}} = {
             display => $node->{metadata}->{name},
@@ -217,15 +220,18 @@ sub manage_selection {
         }            
     }
     
-    if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No Nodes found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No Nodes found.")
+        unless keys %{$self->{nodes}};
     
     my $pods = $options{custom}->kubernetes_list_pods();
 
     foreach my $pod (@{$pods}) {
-        next if (defined($pod->{spec}->{nodeName}) && !defined($self->{nodes}->{$pod->{spec}->{nodeName}}));
+        next unless defined $pod->{spec}->{nodeName} &&
+                    defined $pod->{status}->{phase} &&
+                    defined $self->{nodes}->{$pod->{spec}->{nodeName}};
+        $pod->{status}->{phase} = lc $pod->{status}->{phase};
+        next if is_excluded($pod->{status}->{phase}, $self->{option_results}->{include_status}, $self->{option_results}->{exclude_status}, output => $self->{output});
+
         $self->{nodes}->{$pod->{spec}->{nodeName}}->{pods_allocated}++;
         foreach my $container (@{$pod->{spec}->{containers}}) {
             $self->{nodes}->{$pod->{spec}->{nodeName}}->{cpu_requests} += $self->to_core(value => $container->{resources}->{requests}->{cpu}) if (defined($container->{resources}->{requests}->{cpu}));
@@ -233,7 +239,11 @@ sub manage_selection {
             $self->{nodes}->{$pod->{spec}->{nodeName}}->{memory_requests} += $self->to_bytes(value => $container->{resources}->{requests}->{memory}) if (defined($container->{resources}->{requests}->{memory}));
             $self->{nodes}->{$pod->{spec}->{nodeName}}->{memory_limits} += $self->to_bytes(value => $container->{resources}->{limits}->{memory}) if (defined($container->{resources}->{limits}->{memory}));
         }
+        $found++
     }
+
+    $self->{output}->option_exit(short_msg => "No Pods found.")
+        unless $found;
 }
 
 sub to_bytes {
@@ -280,15 +290,103 @@ Check node usage.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter node name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*> 
+=item B<--exclude-name>
 
-Thresholds (in percentage).
-Can be: 'cpu-requests', 'cpu-limits', 'memory-requests', 'memory-limits',
-'allocated-pods'.
+Exclude by node name (can be a regexp).
+
+=item B<--include-status>
+
+Filter by node status (can be a regexp).
+Default: 'running'
+Status can be 'pending', 'running', 'succeeded', 'failed', 'unknown'
+
+=item B<--exclude-status>
+
+Exclude by node status (can be a regexp).
+Status can be 'pending', 'running', 'succeeded', 'failed', 'unknown'
+
+=item B<--warning-allocated-pods>
+
+Threshold in percentage.
+
+=item B<--critical-allocated-pods>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-limits>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-limits>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-requests>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-requests>
+
+Threshold in percentage.
+
+=item B<--warning-memory-limits>
+
+Threshold in percentage.
+
+=item B<--critical-memory-limits>
+
+Threshold in percentage.
+
+=item B<--warning-memory-requests>
+
+Threshold in percentage.
+
+=item B<--critical-memory-requests>
+
+Threshold in percentage.
+=item B<--warning-allocated-pods>
+
+Threshold in percentage.
+
+=item B<--critical-allocated-pods>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-limits>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-limits>
+
+Threshold in percentage.
+
+=item B<--warning-cpu-requests>
+
+Threshold in percentage.
+
+=item B<--critical-cpu-requests>
+
+Threshold in percentage.
+
+=item B<--warning-memory-limits>
+
+Threshold in percentage.
+
+=item B<--critical-memory-limits>
+
+Threshold in percentage.
+
+=item B<--warning-memory-requests>
+
+Threshold in percentage.
+
+=item B<--critical-memory-requests>
+
+Threshold in percentage.
 
 =back
 
