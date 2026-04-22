@@ -234,34 +234,60 @@ impl Command {
         target: &str,
         version: &str,
         community: &str,
+        check_format: bool
     ) -> Vec<SnmpResult> {
         let mut collect: Vec<SnmpResult> = Vec::new();
-        let mut to_get = Vec::new();
-        let mut get_name = Vec::new();
-        for s in self.collect.snmp.iter() {
-            match s.query {
-                QueryType::Walk => {
+
+        if check_format {
+            // In check-format mode, don't make SNMP requests and initialize with defaults
+            for s in self.collect.snmp.iter() {
+                collect.push(SnmpResult::new(HashMap::new()));
+            }
+            // Initialize values for validation
+            for result in collect.iter_mut() {
+                for s in self.collect.snmp.iter() {
+                    if !result.items.contains_key(&s.name) {
+                        result.items.insert(s.name.clone(), ExprResult::Vector(vec![0.0, 0.0]));
+                    }
                     if let Some(lab) = &s.labels {
-                        let r = snmp_bulk_walk_with_labels(
-                            target, version, community, &s.oid, &s.name, &lab,
-                        );
-                        collect.push(r);
-                    } else {
-                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
-                        collect.push(r);
+                        for label_val in lab.values() {
+                            let key = format!("{}.{}", s.name, label_val);
+                            if !result.items.contains_key(&key) {
+                                result.items.insert(key, ExprResult::Vector(vec![0.0, 0.0]));
+                            }
+                        }
                     }
                 }
-                QueryType::Get => {
-                    to_get.push(s.oid.as_str());
-                    get_name.push(s.name.as_str());
+            }
+        } else {
+            let mut to_get = Vec::new();
+            let mut get_name = Vec::new();
+            for s in self.collect.snmp.iter() {
+                match s.query {
+                    QueryType::Walk => {
+                        if let Some(lab) = &s.labels {
+                            let r = snmp_bulk_walk_with_labels(
+                                target, version, community, &s.oid, &s.name, &lab,
+                            );
+                            collect.push(r);
+                        } else {
+                            let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
+                            collect.push(r);
+                        }
+                    }
+                    QueryType::Get => {
+                        to_get.push(s.oid.as_str());
+                        get_name.push(s.name.as_str());
+                    }
                 }
+            }
+
+            if !to_get.is_empty() {
+                let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+                collect.push(r);
             }
         }
 
-        if !to_get.is_empty() {
-            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-            collect.push(r);
-        }
         collect
     }
 
@@ -273,6 +299,7 @@ impl Command {
     /// * `community` - SNMP community string
     /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
+    /// * `check_format` - Dry-run mode ( validate macros )
     ///
     /// # Returns
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
@@ -283,8 +310,9 @@ impl Command {
         community: &str,
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
+        check_format: bool
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community);
+        let mut collect = self.execute_snmp_collect(target, version, community, check_format);
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];
@@ -306,17 +334,23 @@ impl Command {
 
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
-            let parser = Parser::new(&collect);
-            let value = parser.eval(value).unwrap();
+            let parser = Parser::new(&collect, check_format);
+            let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
+                message: format!("Metric \"{}\", field \"value\": {}", metric.name, e)
+            })?;
             let min = if let Some(min_expr) = metric.min_expr.as_ref() {
-                parser.eval(&min_expr).unwrap()
+                parser.eval(&min_expr).map_err(|e| error::Error::InvalidJSON {
+                    message: format!("Metric \"{}\", field \"min_expr\": {}", metric.name, e)
+                })?
             } else if let Some(min_value) = metric.min {
                 ExprResult::Number(min_value)
             } else {
                 ExprResult::Empty
             };
             let max = if let Some(max_expr) = metric.max_expr.as_ref() {
-                parser.eval(&max_expr).unwrap()
+                parser.eval(&max_expr).map_err(|e| error::Error::InvalidJSON {
+                    message: format!("Metric \"{}\", field \"max_expr\": {}", metric.name, e)
+                })?
             } else if let Some(max_value) = metric.max {
                 ExprResult::Number(max_value)
             } else {
@@ -331,13 +365,18 @@ impl Command {
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
-                        Some(prefix) => parser.eval_str(prefix).unwrap(),
+                        Some(prefix) => parser.eval_str(prefix).map_err(|e| error::Error::InvalidJSON {
+                            message: format!("Metric \"{}\", field \"prefix\": {}", metric.name, e)
+                        })?,
                         None => ExprResult::Empty,
                     };
                     for (i, item) in v.iter().enumerate() {
                         let name = match &prefix_str {
                             ExprResult::StrVector(v) => {
                                 format!("{:?}#{}", v[i], metric.name)
+                            }
+                            ExprResult::Str(s) => {
+                                format!("{}#{}", s, metric.name)
                             }
                             ExprResult::Empty => {
                                 let res = format!("{}#{}", idx, metric.name);
@@ -439,9 +478,11 @@ impl Command {
             let mut my_res = SnmpResult::new(HashMap::new());
             for metric in aggregations {
                 let value = &metric.value;
-                let parser = Parser::new(&collect);
+                let parser = Parser::new(&collect, check_format);
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
-                    let res = parser.eval(&max_expr).unwrap();
+                    let res = parser.eval(&max_expr).map_err(|e| error::Error::InvalidJSON {
+                        message: format!("Aggregation \"{}\", field \"max_expr\": {}", metric.name, e)
+                    })?;
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
@@ -456,7 +497,9 @@ impl Command {
                     None
                 };
                 let min = if let Some(min_expr) = metric.min_expr.as_ref() {
-                    let res = parser.eval(&min_expr).unwrap();
+                    let res = parser.eval(&min_expr).map_err(|e| error::Error::InvalidJSON {
+                        message: format!("Aggregation \"{}\", field \"min_expr\": {}", metric.name, e)
+                    })?;
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
@@ -470,7 +513,9 @@ impl Command {
                 } else {
                     None
                 };
-                let value = parser.eval(value).unwrap();
+                let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
+                    message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e)
+                })?;
                 match &value {
                     ExprResult::Vector(v) => {
                         for item in v {

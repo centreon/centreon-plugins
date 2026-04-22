@@ -71,14 +71,16 @@ pub struct Compute {
 pub struct Parser<'a> {
     collect: &'a Vec<SnmpResult>,
     parser: grammar::ExprParser,
+    check_format: bool
 }
 
 impl<'a> Parser<'a> {
     /// Creates a new parser over the given SNMP results.
-    pub fn new(collect: &'a Vec<SnmpResult>) -> Parser<'a> {
+    pub fn new(collect: &'a Vec<SnmpResult>, check_format: bool) -> Parser<'a> {
         Parser {
             collect,
             parser: grammar::ExprParser::new(),
+            check_format
         }
     }
 
@@ -89,16 +91,18 @@ impl<'a> Parser<'a> {
     pub fn eval(
         &self,
         expr: &'a str,
-    ) -> Result<ExprResult, ParseError<usize, Tok<'a>, LexicalError>> {
+    ) -> Result<ExprResult, String> {
         debug!("Parsing expression: {}", expr);
         let lexer = lexer::Lexer::new(expr);
         let res = self.parser.parse(lexer);
         match res {
-            Ok(res) => {
-                let res = res.eval(self.collect);
-                Ok(res)
+            Ok(expr) => {
+                if self.check_format {
+                    expr.validate_macros(self.collect)?;
+                }
+                expr.eval(self.collect)
             }
-            Err(e) => Err(e),
+            Err(e) => Err(format!("{:?}", e)),
         }
     }
 
@@ -109,7 +113,7 @@ impl<'a> Parser<'a> {
     pub fn eval_str(
         &self,
         expr: &'a str,
-    ) -> Result<ExprResult, ParseError<usize, Tok<'a>, LexicalError>> {
+    ) -> Result<ExprResult, String> {
         let re = Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").unwrap();
         let mut suffix = expr;
         let mut result: ExprResult = ExprResult::Empty;
@@ -121,10 +125,20 @@ impl<'a> Parser<'a> {
                 if start > 0 {
                     result.join(&ExprResult::Str(suffix[0..start].to_string()));
                 }
+                let macro_name = &suffix[start + 1..end - 1];
+                let mut found = false;
                 for snmp_result in self.collect {
-                    if let Some(v) = snmp_result.items.get(&suffix[start + 1..end - 1]) {
+                    if let Some(v) = snmp_result.items.get(macro_name) {
                         result.join(v);
+                        found = true;
                         break;
+                    }
+                }
+                if !found {
+                    if self.check_format {
+                        return Err(format!("Undefined macro in expression: {{{}}}", macro_name));
+                    } else {
+                        result.join(&ExprResult::Str("".to_string()));
                     }
                 }
                 debug!(
@@ -159,7 +173,7 @@ mod test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         let snmp_result = vec![];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 123_f64),
             _ => panic!("Expected a scalar value"),
@@ -178,7 +192,7 @@ mod test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         let snmp_result = vec![];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 3_f64),
             _ => panic!("Expected a scalar value"),
@@ -187,7 +201,7 @@ mod test {
         let lexer = lexer::Lexer::new("1 + 2 - 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 0_f64),
             _ => panic!("Expected a scalar value"),
@@ -196,7 +210,7 @@ mod test {
         let lexer = lexer::Lexer::new("1 - 2 + 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 2_f64),
             _ => panic!("Expected a scalar value"),
@@ -205,7 +219,7 @@ mod test {
         let lexer = lexer::Lexer::new("1 - (2 + 3)");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == -4_f64),
             _ => panic!("Expected a scalar value"),
@@ -214,7 +228,7 @@ mod test {
         let lexer = lexer::Lexer::new("1 - (2 + (3 - (4 + (5 - (6 + 7)))))");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == -8_f64),
             _ => panic!("Expected a scalar value"),
@@ -228,7 +242,7 @@ mod test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         let snmp_result = vec![];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 6_f64),
             _ => panic!("Expected a scalar value"),
@@ -237,7 +251,7 @@ mod test {
         let lexer = lexer::Lexer::new("1 + 2 * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 7_f64),
             _ => panic!("Expected a scalar value"),
@@ -246,7 +260,7 @@ mod test {
         let lexer = lexer::Lexer::new("(1 + 2) * 3");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 9_f64),
             _ => panic!("Expected a scalar value"),
@@ -255,7 +269,7 @@ mod test {
         let lexer = lexer::Lexer::new("2 * 3 * 4");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 24_f64),
             _ => panic!("Expected a scalar value"),
@@ -264,7 +278,7 @@ mod test {
         let lexer = lexer::Lexer::new("2 * 3 / 2");
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 3_f64),
             _ => panic!("Expected a scalar value"),
@@ -280,7 +294,7 @@ mod test {
         let res = grammar::ExprParser::new().parse(lexer);
         assert!(res.is_ok());
         let snmp_result = vec![];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 4_f64),
             _ => panic!("Expected a scalar value"),
@@ -296,7 +310,7 @@ mod test {
         println!("{:?}", res);
         let items = HashMap::from([("abc".to_string(), ExprResult::Vector(vec![1_f64]))]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 2_f64),
             _ => panic!("Expected a scalar value"),
@@ -323,7 +337,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Vector(v) => assert!(v == vec![4_f64, 6_f64]),
             _ => panic!("Expected a vector value"),
@@ -352,7 +366,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![9_f64, 12_f64, 12_f64, 8_f64]),
@@ -371,7 +385,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![6_f64, 7_f64, 10_f64]),
@@ -390,7 +404,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![19_f64, 20_f64, 23_f64]),
@@ -414,7 +428,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Vector(v) => assert!(v == vec![-2_f64, -1_f64]),
             _ => panic!("Expected a vector value"),
@@ -443,7 +457,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![-7_f64, -8_f64, -2_f64, -8_f64]),
@@ -462,7 +476,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![17_f64, 16_f64, 13_f64]),
@@ -481,7 +495,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![-18.2_f64, -17.2_f64, -14.2_f64]),
@@ -505,7 +519,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Vector(v) => assert!(v == vec![3_f64, 12_f64]),
             _ => panic!("Expected a vector value"),
@@ -534,7 +548,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![15_f64, 48_f64, 35_f64, 8_f64]),
@@ -553,7 +567,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![18_f64, 36_f64, 90_f64]),
@@ -572,7 +586,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![4_f64, 8_f64, 20_f64]),
@@ -596,7 +610,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Vector(v) => assert!(v == vec![3_f64, 4_f64]),
             _ => panic!("Expected a vector value"),
@@ -625,7 +639,7 @@ mod test {
             ),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![2_f64, 1_f64, 5_f64, 0.125_f64]),
@@ -644,7 +658,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![18_f64, 9_f64, 3.6_f64]),
@@ -663,7 +677,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 5_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         debug!("{:?}", res);
         match res {
             ExprResult::Vector(v) => assert!(v == vec![0.25_f64, 0.5_f64, 1.25_f64]),
@@ -682,7 +696,7 @@ mod test {
             ("total".to_string(), ExprResult::Vector(vec![747712_f64])),
         ]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 96.04125652657707_f64),
             _ => panic!("Expected a scalar value"),
@@ -700,7 +714,7 @@ mod test {
             ExprResult::Vector(vec![1_f64, 2_f64, 3_f64]),
         )]);
         let snmp_result = vec![SnmpResult::new(items)];
-        let res = res.unwrap().eval(&snmp_result);
+        let res = res.unwrap().eval(&snmp_result).unwrap();
         match res {
             ExprResult::Number(n) => assert!(n == 2_f64),
             _ => panic!("Expected a scalar value"),
