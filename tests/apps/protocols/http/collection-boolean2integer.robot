@@ -3,7 +3,7 @@ Documentation       Tests boolean2integer
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
 
-# Suite Setup    Start Mockoon    ${MOCKOON_JSON}
+Suite Setup    Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
 Test Timeout        120s
 
