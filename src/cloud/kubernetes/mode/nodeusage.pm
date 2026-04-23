@@ -348,6 +348,7 @@ Threshold in percentage.
 =item B<--critical-memory-requests>
 
 Threshold in percentage.
+
 =item B<--warning-allocated-pods>
 
 Threshold in percentage.
