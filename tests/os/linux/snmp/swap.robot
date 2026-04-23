@@ -120,7 +120,7 @@ cgs-swap ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    OK: Everything is ok | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
     ...    2
     ...    --warning-swap-bytes=0.1
     ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
@@ -154,7 +154,7 @@ cgs-swap-64 ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    OK: Everything is ok | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
     ...    2
     ...    --warning-swap-bytes=0.1
     ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100

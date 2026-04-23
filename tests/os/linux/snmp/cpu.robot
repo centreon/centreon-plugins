@@ -83,7 +83,7 @@ cgs-cpu ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Everything is OK | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    OK: Everything is ok | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
     ...    2
     ...    --warning-avg=0.1
     ...    WARNING: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;0.1;;0;100
