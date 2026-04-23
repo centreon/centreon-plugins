@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Safe;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_empty);
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use Time::HiRes qw(gettimeofday tv_interval);
@@ -1738,15 +1738,14 @@ sub exec_func_boolean2integer {
     #    "src": "%(enabled)",
     #    "save": "%(enabled)",
     #}
-    if (!defined($options{src}) || $options{src} eq '') {
-        $self->{output}->add_option_msg(short_msg => "$self->{current_section} please set src attribute");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "$self->{current_section} please set src attribute")
+        if is_empty($options{src});
+
     my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
-    if ($result->{type} !~ /^(?:0|4)$/) {
-        $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in src attribute");
-        $self->{output}->option_exit();
-    } 
+
+    $self->{output}->option_exit(short_msg => $self->{current_section} . " special variable type not allowed in src attribute")
+        if ($result->{type} !~ /^(?:0|4)$/);
+
     my $data = $self->get_special_variable_value(%$result);
 
     if (ref($data) eq 'JSON::PP::Boolean') {
@@ -1755,10 +1754,10 @@ sub exec_func_boolean2integer {
 
     if (defined($options{save}) && $options{save} ne '') {
         my $save = $self->parse_special_variable(chars => [split //, $options{save}], start => 0);
-        if ($save->{type} !~ /^(?:0|4)$/) {
-            $self->{output}->add_option_msg(short_msg => $self->{current_section} . " special variable type not allowed in save attribute");
-            $self->{output}->option_exit();
-        }
+
+        $self->{output}->option_exit(short_msg => $self->{current_section} . " special variable type not allowed in save attribute")
+            if ($save->{type} !~ /^(?:0|4)$/);
+
         $self->set_special_variable_value(value => $data, %$save);
     }
 }
@@ -2117,5 +2116,36 @@ does not exist or is not a hash reference.
 
 Example:
   my $status = $self->traverse_hash('api.response.status', $hash_ref);
+
+=cut
+
+=head1 exec_func_boolean2integer
+
+Convert JSON boolean values to integers (1 for true, 0 for false).
+
+This function processes boolean values extracted from JSON responses and converts them
+to their integer equivalents. This is useful for monitoring scenarios where boolean
+states need to be expressed as numeric values for thresholds and performance data.
+
+Parameters:
+  - C<src> (required): Special variable reference containing the boolean value to convert
+    (e.g., C<%(enabled)>). The variable type must be of type 0 (builtin function) or 4 (other).
+  - C<save> (optional): Special variable reference where the converted integer value
+    should be stored (e.g., C<%(enabled_int)>). Must be a variable of type 0 or 4.
+
+Returns:
+  No explicit return value. The function either stores the converted value in the
+  C<save> variable if specified, or makes it available in the expand context.
+
+Configuration Example:
+
+  {
+    "type": "boolean2integer",
+    "src": "%(enabled)",
+    "save": "%(enabled_int)"
+  }
+
+This function handles JSON::PP::Boolean objects that may be present in decoded JSON
+responses and safely converts them to standard Perl integer values (0 or 1).
 
 =cut
