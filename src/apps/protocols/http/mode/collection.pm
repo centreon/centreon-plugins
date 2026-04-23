@@ -1738,7 +1738,7 @@ sub exec_func_boolean2integer {
     #    "src": "%(enabled)",
     #    "save": "%(enabled)",
     #}
-    $self->{output}->option_exit(short_msg => "$self->{current_section} please set src attribute")
+    $self->{output}->option_exit(short_msg => $self->{current_section} . " please set src attribute")
         if is_empty($options{src});
 
     my $result = $self->parse_special_variable(chars => [split //, $options{src}], start => 0);
