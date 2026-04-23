@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}collection-deep-path.mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}collection-boolean2integer.mockoon.json
 
 ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::protocols::http::plugin
 ...                 --mode collection
