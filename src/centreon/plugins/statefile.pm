@@ -281,8 +281,19 @@ sub slurp {
     return $content;
 }
 
+sub read_from {
+    my ($self, %options) = @_;
+
+    if ($options{datas}) {
+        $self->{datas} = $options{datas};
+        return
+    }
+    $self->read(%options);
+}
+
 sub read {
     my ($self, %options) = @_;
+
     $self->{statefile_suffix} = defined($options{statefile_suffix}) ? $options{statefile_suffix} : $self->{statefile_suffix};
     $self->{statefile_dir} = defined($options{statefile_dir}) ? $options{statefile_dir} : $self->{statefile_dir};
     $self->{statefile} = defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : $self->{statefile};
@@ -423,9 +434,7 @@ sub write {
             $serialized,
             $self->{memexpiration}
         );
-        if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS$/i) {
-            return ;
-        }
+        return if defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS$/i;
     }
     if (defined($self->{redis_cnx})) {
         return if (defined($self->{redis_cnx}->set(
@@ -434,9 +443,17 @@ sub write {
             'EX', $self->{memexpiration}))
         );
     }
-    open FILE, '>', $self->{statefile_dir} . '/' . $self->{statefile};
-    print FILE $serialized;
-    close FILE;
+
+    # We write data to a temporary file to ensure that other plugin instances can access a valid cache during the write operation
+    my $filename = $self->{statefile_dir} . '/' . $self->{statefile};
+    if (open(my $file, '>', "$filename.tmp")) {
+        print $file $serialized;
+        $self->{output}->add_option_msg(short_msg => "Cannot close or rename statefile '$filename.tmp' to '$filename': $!")
+            unless close($file) && rename ("$filename.tmp", $filename);
+
+    } else {
+        $self->{output}->add_option_msg(short_msg => "Cannot write statefile '$filename': $!");
+    }
 }
 
 sub remove_file{
