@@ -172,3 +172,6 @@ cgs-swap-64 ${tc}
     ...    5
     ...    --critical-swap-prct=0.1
     ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/swap-64.json' JSON is valid
