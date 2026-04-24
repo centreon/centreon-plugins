@@ -65,12 +65,6 @@ sub prefix_metric_output {
     return "Virtual network '" . $options{instance_value}->{display} . "' [" . $options{instance_value}->{stat} . "] ";
 }
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("status: '%s'", $self->{result_values}->{'bgp_peer_status'});
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
