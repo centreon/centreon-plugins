@@ -25,15 +25,16 @@ use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'discovery'                 => 'cloud::azure::network::virtualnetwork::mode::discovery',
-        'list-virtual-networks'     => 'cloud::azure::network::virtualnetwork::mode::listvirtualnetworks',
-        'peerings-status'           => 'cloud::azure::network::virtualnetwork::mode::peeringsstatus',
+    %{$self->{modes}} = (
+        'discovery'             => 'cloud::azure::network::virtualnetwork::mode::discovery',
+        'latency'               => 'cloud::azure::network::virtualnetwork::mode::latency',
+        'list-virtual-networks' => 'cloud::azure::network::virtualnetwork::mode::listvirtualnetworks',
+        'peerings-status'       => 'cloud::azure::network::virtualnetwork::mode::peeringsstatus',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -45,7 +46,7 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+        'api-version:s' => { name => 'api_version', default => '2018-01-01' },
     });
 
     $self->SUPER::init(%options);
