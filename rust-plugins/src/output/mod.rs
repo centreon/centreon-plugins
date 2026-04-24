@@ -208,7 +208,7 @@ impl<'a> OutputFormatter<'a> {
         for m in self.metrics.iter() {
             if let Some(status) = m.status {
                 if status.is_worse_than(self.status) {
-                    v.push(std::format!("{} is {}{}", m.name, m.value, m.uom));
+                    v.push(std::format!("{} is {}{}", m.name, float_string(&m.value), m.uom));
                 }
             }
         }
