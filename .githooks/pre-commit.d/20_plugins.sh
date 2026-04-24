@@ -27,7 +27,7 @@ function fatal() {
     exit 1
 }
 
-function check_tabs() {
+function check_tabs_crlf() {
     local file="$1"
     info "--> Checking BASH indentation"
     grep -P '^\t' "$file" >/dev/null 2>&1 && warning "--> File $file contains leading tab character (suspected bad indentation)."
@@ -88,7 +88,7 @@ for file in "${committed_files[@]}"; do
                 error "Spellcheck error on file $file"
                 tail -n 2 $tmpfile | head -n 1 | sed 's/^[^:]*:/Invalid words:/' 2>/dev/null
             fi
-            check_tabs "$file"
+            check_tabs_crlf "$file"
             check_constants "$file"
             check_md5 "$file"
             ;;
@@ -102,7 +102,7 @@ for file in "${committed_files[@]}"; do
             ;;
         robot)
             info "--> Checking robot format"
-            check_tabs "$file"
+            check_tabs_crlf "$file"
             cp "$file" "$tmpfile" && $robocop_path format "$tmpfile" >/dev/null 2>&1
             diff -q "$file" "$tmpfile" >/dev/null 2>&1
             rc=$?
@@ -111,12 +111,12 @@ for file in "${committed_files[@]}"; do
             fi
             ;;
         sh)
-            check_tabs "$file"
+            check_tabs_crlf "$file"
           ;;
         json)
             info "--> Checking JSON validity"
             jq '' "$file" >/dev/null 2>&1 || error "JSON file $file is not valid"
-            check_tabs "$file"
+            check_tabs_crlf "$file"
           ;;
         *)
             info "File extension '.${file_extension}' has no checks"
