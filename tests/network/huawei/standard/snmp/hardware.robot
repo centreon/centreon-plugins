@@ -18,7 +18,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-Gpon-ont-health ${tc}
+Hardware ${tc}
     [Tags]    network    huawei    snmp
     ${command}    Catenate
     ...    ${CMD}
@@ -39,7 +39,7 @@ Gpon-ont-health ${tc}
     ...    CRITICAL: Component 'fan' instance '1.8' is not present | '1.7#hardware.fan.speed.percentage'=30%;;;0; '2.7#hardware.fan.speed.percentage'=30%;;;0; '3.7#hardware.fan.speed.percentage'=30%;;;0; 'hardware.fan.count'=3;;;;
     ...    3
     ...    --component=temperature
-    ...    CRITICAL: Component 'fan' instance '1.8' is not present | '1.7#hardware.fan.speed.percentage'=30%;;;0; '2.7#hardware.fan.speed.percentage'=30%;;;0; '3.7#hardware.fan.speed.percentage'=30%;;;0; 'hardware.fan.count'=3;;;;
+    ...    CRITICAL: No components are checked.
     ...    4
     ...    --component=temperature --no-component=OK
     ...    OK: All 0 components are ok []. - No components are checked.
