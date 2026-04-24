@@ -106,6 +106,7 @@ foreach my $plugin (@plugins) {
             'centreon/plugins/perfdata.pm',
             'centreon/plugins/script.pm',
             'centreon/plugins/statefile.pm',
+            'centreon/plugins/lockfile.pm',
             'centreon/plugins/values.pm',
             'centreon/plugins/backend/http/curl.pm',
             'centreon/plugins/backend/http/curlconstants.pm',
