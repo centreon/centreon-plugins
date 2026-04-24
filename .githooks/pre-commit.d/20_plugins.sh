@@ -123,7 +123,7 @@ for file in "${committed_files[@]}"; do
             ;;
     esac
 done
-test -f "$tmpfile" && rm "$tmpfile"
+rm -f "$tmpfile"
 
 (( errors > 0 )) && fatal "$errors errors found in pre-commit checks"
 info "All plugins pre-commit checks passed"
