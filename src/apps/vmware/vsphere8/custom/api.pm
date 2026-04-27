@@ -295,8 +295,8 @@ sub get_all_acq_specs {
     $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} });
     # in some cases the statefile was corrupted and the plugin was stuck
     # only return a result if it looks ok, else we store an empty array
-    return $self->{all_acq_specs} if ref($self->{all_acq_specs} = 'ARRAY') && @{$self->{all_acq_specs}};
-    $self->{all_acq_specs} = [];
+    $self->{all_acq_specs} = [] unless ref($self->{all_acq_specs}) eq 'ARRAY' && @{$self->{all_acq_specs}};
+    return $self->{all_acq_specs};
 }
 
 sub compose_type_from_rsrc_id {
