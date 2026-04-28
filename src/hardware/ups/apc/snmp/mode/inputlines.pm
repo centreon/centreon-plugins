@@ -223,7 +223,7 @@ sub new {
             'include-input-type:s'  => { name => 'include_input_type' },
             'exclude-input-type:s'  => { name => 'exclude_input_type' },
             'include-input-phase:s' => { name => 'include_input_phase' },
-            'exclude-input-phase:s' => { name => 'exclude_input_phase' },
+            'exclude-input-phase:s' => { name => 'exclude_input_phase', default => '\b\d{3}\b' },
         }
     );
 
