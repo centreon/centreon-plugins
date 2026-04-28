@@ -59,11 +59,11 @@ flowchart TD
 
 | Événement | Condition | Description |
 |---|---|---|
-| `pull_request` | Modification de `.github/workflows/perl-cpan-libraries.yml` uniquement | Déclenché quand le workflow lui-même est modifié |
-| `push` | Branches `develop`, `dev-YY.MM.x`, `master`, `YY.MM.x` + même chemin | Déclenché après la fusion d'une modification du fichier workflow |
+| `pull_request` | Modification de `.github/workflows/perl-cpan-libraries.yml` ou de `.github/packaging/cpan-libraries.json` | Déclenché quand le workflow lui-même ou le catalogue de bibliothèques est modifié |
+| `push` | Branches `develop`, `dev-YY.MM.x`, `master`, `YY.MM.x` + mêmes chemins | Déclenché après la fusion d'une modification du fichier workflow ou du catalogue |
 | `workflow_dispatch` | Déclenchement manuel (aucune entrée requise) | Exécution manuelle à tout moment |
 
-> **Important :** Contrairement au pipeline plugins, ce workflow ne se déclenche **pas** sur les modifications de `src/**`, `packaging/**` ou `tests/**`. Il ne se déclenche que si le fichier de définition du workflow lui-même change, ou lors d'un déclenchement manuel. Pour ajouter ou mettre à jour une bibliothèque, il faut modifier `cpan-libraries.json` et déclencher manuellement (ou inclure le changement du fichier workflow dans la même PR).
+> **Important :** Contrairement au pipeline plugins, ce workflow ne se déclenche **pas** sur les modifications de `src/**`, `packaging/**` ou `tests/**`. Il ne se déclenche que si le fichier de définition du workflow ou `.github/packaging/cpan-libraries.json` change, ou lors d'un déclenchement manuel. Pour ajouter ou mettre à jour une bibliothèque, il suffit de modifier `cpan-libraries.json` directement — la CI se déclenchera automatiquement sur la PR.
 
 ### Concurrence
 
@@ -144,7 +144,7 @@ Utilise `cpanminus` pour résoudre le nom de distribution CPAN et la version de 
 
 ### Niveau 2 — Vérification de l'Artifactory stable Centreon (`generate-matrices`)
 
-Après la collecte de tous les partiels, `generate-matrices.py` interroge en plus le dépôt Artifactory public de Centreon (`packages.centreon.com`) pour chaque bibliothèque. Si le paquet est déjà présent dans le dépôt stable à la version attendue, il est exclu de la matrice de build.
+Après la collecte de toutes les matrices partielles, `generate-matrices.py` interroge en plus le dépôt Artifactory public de Centreon (`packages.centreon.com`) pour chaque bibliothèque. Si le paquet est déjà présent dans le dépôt stable à la version attendue, il est exclu de la matrice de build.
 
 Cela évite les rebuilds redondants lors d'une re-exécution du workflow sur une branche où aucune bibliothèque n'a réellement changé.
 
@@ -174,7 +174,7 @@ Pour chaque distribution :
    - Appelle `cpanm --info` pour chaque bibliothèque afin d'obtenir le nom de distribution CPAN et la version la plus récente.
    - Interroge le gestionnaire de paquets pour vérifier si la bibliothèque (ou son équivalent packagé dans la distrib) est déjà disponible à la bonne version.
    - Produit `official-repos/partial-matrix-{distrib}.json`.
-4. Uploade le partiel comme artifact GitHub Actions.
+4. Uploade la matrice partielle comme artifact GitHub Actions.
 
 ### `get-packaging-images`
 
@@ -311,24 +311,10 @@ Ajoute le label `skip-workflow-perl-cpan-libraries` à la PR après une livraiso
    ```
    Des objets `rpm` et `deb` vides utilisent toutes les valeurs par défaut (build pour toutes les distributions, dernière version CPAN, détection automatique des dépendances).
 
-2. Déclencher le workflow manuellement via `workflow_dispatch`, ou inclure le changement de `cpan-libraries.json` dans une PR qui modifie aussi le fichier workflow.
+2. Ouvrir une PR avec ce changement — la CI se déclenchera automatiquement puisque `cpan-libraries.json` est dans le filtre de chemins. Alternativement, déclencher le workflow manuellement via `workflow_dispatch`.
 
 3. La CI vérifiera d'abord les dépôts officiels. Si le module est déjà packagé là, rien ne sera construit et le workflow se termine avec succès.
 
 4. Si le module est absent des dépôts officiels, il sera automatiquement packagé, testé et livré.
 
 > **Astuce :** Pour les modules complexes (extensions XS/C, systèmes de build inhabituels), utiliser `preinstall_cpanlibs`, `preinstall_packages`, ou fournir un `spec_file` personnalisé. Se référer aux entrées existantes dans `cpan-libraries.json` pour des exemples.
-
----
-
-## Différences clés avec le pipeline plugins
-
-| Aspect | `plugins.yml` | `perl-cpan-libraries.yml` |
-|---|---|---|
-| Chemins déclencheurs | `src/**`, `packaging/**`, `tests/**` | `.github/workflows/perl-cpan-libraries.yml` uniquement |
-| Détection des changements | Par plugin (`plugins.json`) | Globale (toutes les bibliothèques réévaluées) |
-| Filtrage du build | Tous les plugins modifiés | Vérification dépôts officiels + Artifactory stable |
-| Outil de packaging | App::FatPacker + nfpm | cpanm + rpmbuild/fpm/dh-make-perl |
-| Signature DEB | Via nfpm | Non signés (les paquets DEB ne sont pas signés GPG) |
-| Signature RPM | Via nfpm | Job dédié `sign-rpm` |
-| Méthode de test | Installation + Robot Framework / `--help` | Installation + `perl -e "use Module"` |

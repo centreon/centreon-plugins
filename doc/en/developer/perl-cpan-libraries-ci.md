@@ -59,11 +59,11 @@ flowchart TD
 
 | Event | Condition | Description |
 |---|---|---|
-| `pull_request` | Changes to `.github/workflows/perl-cpan-libraries.yml` only | Triggered when the workflow itself is modified |
-| `push` | Branches `develop`, `dev-YY.MM.x`, `master`, `YY.MM.x` + same path | Triggered after merging a change to the workflow file |
+| `pull_request` | Changes to `.github/workflows/perl-cpan-libraries.yml` or `.github/packaging/cpan-libraries.json` | Triggered when the workflow itself or the library catalogue is modified |
+| `push` | Branches `develop`, `dev-YY.MM.x`, `master`, `YY.MM.x` + same paths | Triggered after merging a change to the workflow file or the library catalogue |
 | `workflow_dispatch` | Manual trigger (no inputs required) | Manual run at any time |
 
-> **Important:** Unlike the plugins pipeline, this workflow does **not** trigger on changes to `src/**`, `packaging/**`, or `tests/**`. It only triggers when the workflow definition itself changes, or when launched manually. To add or update a library, modify `cpan-libraries.json` and trigger manually (or include the workflow file change in the same PR).
+> **Important:** Unlike the plugins pipeline, this workflow does **not** trigger on changes to `src/**`, `packaging/**`, or `tests/**`. It only triggers when the workflow definition or `.github/packaging/cpan-libraries.json` changes, or when launched manually. To add or update a library, modify `cpan-libraries.json` directly — the CI will trigger automatically on the PR.
 
 ### Concurrency
 
@@ -311,24 +311,10 @@ Adds the label `skip-workflow-perl-cpan-libraries` to the PR after successful de
    ```
    Empty `rpm` and `deb` objects use all defaults (build for all distributions, latest CPAN version, automatic dependency detection).
 
-2. Trigger the workflow manually via `workflow_dispatch`, or include the `cpan-libraries.json` change in a PR that also modifies the workflow file.
+2. Open a PR with that change — the CI will trigger automatically since `cpan-libraries.json` is in the path filter. Alternatively, trigger the workflow manually via `workflow_dispatch`.
 
 3. The CI will check official repositories first. If the module is already packaged there, nothing will be built and the workflow completes successfully.
 
 4. If the module is missing from official repos, it will be packaged, tested, and delivered automatically.
 
 > **Tip:** For complex modules (XS/C extensions, unusual build systems), use `preinstall_cpanlibs`, `preinstall_packages`, or provide a custom `spec_file`. Refer to existing entries in `cpan-libraries.json` for examples.
-
----
-
-## Key differences from the plugins pipeline
-
-| Aspect | `plugins.yml` | `perl-cpan-libraries.yml` |
-|---|---|---|
-| Trigger paths | `src/**`, `packaging/**`, `tests/**` | `.github/workflows/perl-cpan-libraries.yml` only |
-| Change detection | Per-plugin (`plugins.json`) | Global (all libraries re-evaluated) |
-| Build filtering | All modified plugins | Official repo check + stable Artifactory check |
-| Packaging tool | App::FatPacker + nfpm | cpanm + rpmbuild/fpm/dh-make-perl |
-| DEB signing | Via nfpm | Not signed (DEB packages are not GPG-signed) |
-| RPM signing | Via nfpm | Dedicated `sign-rpm` job |
-| Test method | Install + Robot Framework / `--help` | Install + `perl -e "use Module"` |
