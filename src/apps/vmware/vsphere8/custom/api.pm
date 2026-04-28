@@ -293,6 +293,9 @@ sub get_all_acq_specs {
 
     # store it in the cache for future runs
     $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} });
+    # in some cases the statefile was corrupted and the plugin was stuck
+    # only return a result if it looks ok, else we store an empty array
+    $self->{all_acq_specs} = [] unless ref($self->{all_acq_specs}) eq 'ARRAY' && @{$self->{all_acq_specs}};
     return $self->{all_acq_specs};
 }
 
