@@ -121,7 +121,7 @@ sub manage_selection {
     # Used to make sure Perl see this as a string (without dots). Making sure we use an unique separator so it doesn't destroy anything else.
     # With dots, it displays: Argument "x.x.x" isn't numeric in sprintf
     my $version_clean = $version;
-    $version_clean =~ s/\./_ç_/g; 
+    $version_clean =~ s/\./__/g; 
 
 
     # Add 'System node Name' if Stormshield firmware version >= 4.8.6 or 4.3.x with x>=40
@@ -141,7 +141,7 @@ sub manage_selection {
         $bios_version = undef;
     } else{
         #Same as $version_clean
-        $bios_version =~ s/\./_ç_/g; 
+        $bios_version =~ s/\./__/g; 
     }
 
     my $uptime_raw = $result->{$oid_uptime};
@@ -177,7 +177,7 @@ sub custom_version_output {
     
     # Now, rebuilding the "version" string with dots
     my $display_val = defined($val) ? $val : "N/A";
-    $display_val =~ s/_ç_/./g;
+    $display_val =~ s/__/./g;
     
     return "Version: " . $display_val;
 }
@@ -189,7 +189,7 @@ sub custom_bios_version_output {
     
     # Now, rebuilding the "bios_version" string with dots
     my $display_val = defined($val) ? $val : "N/A";
-    $display_val =~ s/_ç_/./g;
+    $display_val =~ s/__/./g;
     
     return "Bios Version: " . $display_val;
 }
