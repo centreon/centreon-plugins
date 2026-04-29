@@ -163,6 +163,8 @@ jobs:
           - image: packaging-plugins-jammy
           - image: packaging-plugins-noble
           - image: packaging-plugins-bullseye-arm64
+          - image: packaging-plugins-bookworm-arm64
+          - image: packaging-plugins-trixie-arm64
     runs-on: ${{ contains(matrix.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     steps:
       - name: Login to Registry
@@ -539,6 +541,16 @@ jobs:
           - package_extension: deb
             image: debian:bullseye
             distrib: bullseye
+            arch: arm64
+            runner_name: ubuntu-24.04-arm
+          - package_extension: deb
+            image: debian:bookworm
+            distrib: bookworm
+            arch: arm64
+            runner_name: ubuntu-24.04-arm
+          - package_extension: deb
+            image: debian:trixie
+            distrib: trixie
             arch: arm64
             runner_name: ubuntu-24.04-arm
 
