@@ -99,12 +99,6 @@ sub prefix_metric_output {
     return "Virtual Hub '" . $options{instance_value}->{display} . "' [" . $options{instance_value}->{stat} . "] ";
 }
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("status: '%s'", $self->{result_values}->{'bgp_peer_status'});
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -151,19 +145,6 @@ sub set_counters {
             push @{$self->{maps_counters}->{metric}}, $entry;
         }
     }
-
-    my $entry = {
-        label            => 'status',
-        type             => 2,
-        critical_default => '%{bgp_peer_status} ne "Connected"',
-        set              => {
-            key_values                     => [ { name => 'bgp_peer_status' } ],
-            closure_custom_output          => $self->can('custom_status_output'),
-            closure_custom_perfdata        => sub {return 0;},
-            closure_custom_threshold_check => \&catalog_status_threshold_ng,
-        }
-    };
-    push @{$self->{maps_counters}->{metric}}, $entry;
 }
 
 sub new {
@@ -269,24 +250,6 @@ sub manage_selection {
                         0;
             }
         }
-
-        ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource           => $resource_name,
-            resource_group     => $resource_group,
-            resource_type      => $self->{az_resource_type},
-            resource_namespace => $self->{az_resource_namespace},
-            metrics            => [ 'BgpPeerStatus' ],
-            aggregations       => [ 'Maximum' ],
-            timeframe          => $self->{az_timeframe},
-            interval           => $self->{az_interval},
-        );
-
-        my $aggregation = 'maximum';
-        $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
-        $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
-        $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
-        $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{bgp_peer_status} =
-            $metric_results{$resource_name}->{'bgppeerstatus'}->{$aggregation} == 1 ? 'Connected' : 'Not connected';
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0) {

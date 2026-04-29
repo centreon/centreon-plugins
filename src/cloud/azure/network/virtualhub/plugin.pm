@@ -33,7 +33,8 @@ sub new {
     %{$self->{modes}} = (
         'discovery'   => 'cloud::azure::network::virtualhub::mode::discovery',
         'health'      => 'cloud::azure::network::virtualhub::mode::health',
-        'hub-traffic' => 'cloud::azure::network::virtualhub::mode::hubtraffic'
+        'hub-traffic' => 'cloud::azure::network::virtualhub::mode::hubtraffic',
+        'hub-status'  => 'cloud::azure::network::virtualhub::mode::hubstatus',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
