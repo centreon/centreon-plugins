@@ -412,6 +412,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
 WildFire
 WLAN
 WLC
