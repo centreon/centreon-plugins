@@ -1,0 +1,4 @@
+User_Alias      CENTREON_COLLECT_LINUX_LOCAL_USERS=centreon-engine,centreon-gorgone
+Defaults:CENTREON_COLLECT_LINUX_LOCAL_USERS !requiretty
+
+CENTREON_COLLECT_LINUX_LOCAL_USERS   ALL = NOPASSWD: /usr/lib/centreon/plugins/centreon_linux_local_process.pl *

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,37 +21,38 @@
 package cloud::aws::apigateway::mode::requests;
 
 use base qw(centreon::plugins::templates::counter);
-
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 use strict;
 use warnings;
 
 my %metrics_mapping = (
-    'Count' => {
+    'Count'    => {
         'output' => 'Client Requests',
-        'label' => 'requests-client',
+        'label'  => 'requests-client',
         'nlabel' => 'apigateway.requests.client.count'
     },
     '4XXError' => {
         'output' => 'HTTP 4XX Errors',
-        'label' => 'requests-errors-4xx',
+        'label'  => 'requests-errors-4xx',
         'nlabel' => 'apigateway.requests.errors.4xx.count'
     },
     '5XXError' => {
         'output' => 'HTTP 5XX Errors',
-        'label' => 'requests-errors-5xx',
+        'label'  => 'requests-errors-5xx',
         'nlabel' => 'apigateway.requests.errors.5xx.count'
     },
 );
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
-    
+
     return " '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_statistics_output {
     my ($self, %options) = @_;
-    
+
     return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
 }
 
@@ -63,26 +64,36 @@ sub long_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
-          message_multiple => 'All requests metrics are ok', indent_long_output => '    ',
-            group => [
-                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
-                  message_multiple => 'All requests are ok', type => 1, skipped_code => { -10 => 1 } },
-            ]
-        }    
+        {
+            name               => 'metrics',
+            type               => COUNTER_TYPE_MULTIPLE,
+            cb_prefix_output   => 'prefix_metric_output',
+            cb_long_output     => 'long_output',
+            message_multiple   => 'All requests metrics are ok',
+            indent_long_output => '    ',
+            group              =>
+                [
+                    { name               => 'statistics',
+                        display_long     => 1,
+                        cb_prefix_output => 'prefix_statistics_output',
+                        message_multiple => 'All requests are ok',
+                        type             => COUNTER_MULTIPLE_SUBINSTANCE,
+                        skipped_code     => { NO_VALUE() => 1 } },
+                ]
+        }
     ];
 
     foreach my $metric (keys %metrics_mapping) {
         my $entry = {
-            label => $metrics_mapping{$metric}->{label},
+            label  => $metrics_mapping{$metric}->{label},
             nlabel => $metrics_mapping{$metric}->{nlabel},
-            set => {
-                key_values => [ { name => $metric }, { name => 'display' } ],
+            set    => {
+                key_values      => [ { name => $metric }, { name => 'display' } ],
                 output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
-                perfdatas => [
-                    { value => $metric , template => '%.2f', label_extra_instance => 1 }
+                perfdatas       => [
+                    { value => $metric, template => '%.2f', label_extra_instance => 1 }
                 ],
             }
         };
@@ -93,14 +104,16 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1,  %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'api-name:s@'     => { name => 'api_name' },
-        'filter-metric:s' => { name => 'filter_metric' },
+        'api-name:s@'        => { redirect => 'dimension_value' },
+        'api-gateway-type:s' => { name => 'api_gateway_type', default => 'REST' },
+        'dimension-value:s@' => { name => 'dimension_value' },
+        'filter-metric:s'    => { name => 'filter_metric',    default => '' },
     });
-    
+
     return $self;
 }
 
@@ -108,7 +121,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    foreach my $instance (@{$self->{option_results}->{api_name}}) {
+    $self->{output}->option_exit(short_msg => "Unsupported --api-gateway-type option.")
+        unless $self->{option_results}->{api_gateway_type} =~ /^(REST|HTTP|WebSocket)$/;
+
+    foreach my $instance (@{$self->{option_results}->{dimension_value}}) {
         if ($instance ne '') {
             push @{$self->{aws_instance}}, $instance;
         }
@@ -116,8 +132,8 @@ sub check_options {
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
-    $self->{aws_statistics} = ['Sum'];
+
+    $self->{aws_statistics} = [ 'Sum' ];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
         foreach my $stat (@{$self->{option_results}->{statistic}}) {
@@ -128,8 +144,7 @@ sub check_options {
     }
 
     foreach my $metric (keys %metrics_mapping) {
-        next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-            && $metric !~ /$self->{option_results}->{filter_metric}/);
+        next if is_excluded($metric, $self->{option_results}->{filter_metric});
 
         push @{$self->{aws_metrics}}, $metric;
     }
@@ -139,14 +154,16 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %metric_results;
+    my $dimension_instance = $self->{option_results}->{api_gateway_type} eq 'REST' ? 'ApiName' : 'ApiId';
+
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            namespace => 'AWS/ApiGateway',
-            dimensions => [ { Name => 'ApiName', Value => $instance } ],
-            metrics => $self->{aws_metrics},
+            namespace  => 'AWS/ApiGateway',
+            dimensions => [ { Name => $dimension_instance, Value => $instance } ],
+            metrics    => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
-            timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            timeframe  => $self->{aws_timeframe},
+            period     => $self->{aws_period},
         );
 
         foreach my $metric (@{$self->{aws_metrics}}) {
@@ -158,13 +175,14 @@ sub manage_selection {
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} =
                     defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ?
-                    $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                        $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
-    
+
     if (scalar(keys %{$self->{metrics}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
+        $self->{output}->add_option_msg(short_msg =>
+            'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
 }
@@ -175,23 +193,47 @@ __END__
 
 =head1 MODE
 
-Check metrics related to ApiGateway requests
-Default statistic: 'sum'
+Check metrics related to C<ApiGateway> requests
+Default statistic: C<sum>
 
 =over 8
 
-=item B<--api-name>
+=item B<--api-gateway-type>
 
-Set the api name (required) (can be defined multiple times).
+The type of the API gateway. Default C<REST>
+(Can be: C<REST>, C<HTTP>, C<WebSocket>). Used to set the correct dimension instance (C<ApiName> or C<ApiId>)
+
+=item B<--dimension-value>
+
+Can be the C<APIName> or the C<ApiId> value (Required) depending by the --api-gateway-type (can be defined multiple times).
 
 =item B<--filter-metric>
 
-Filter metrics (can be: 'Count', '4XXError', '5XXError') 
+Filter metrics (can be: C<Count>, C<4XXError>, C<5XXError>)
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-requests-client>
 
-Warning thresholds (* can be requests-client,
-requests-errors-4xx, requests-errors-5xx).
+Threshold.
+
+=item B<--critical-requests-client>
+
+Threshold.
+
+=item B<--warning-requests-errors-4xx>
+
+Threshold.
+
+=item B<--critical-requests-errors-4xx>
+
+Threshold.
+
+=item B<--warning-requests-errors-5xx>
+
+Threshold.
+
+=item B<--critical-requests-errors-5xx>
+
+Threshold.
 
 =back
 

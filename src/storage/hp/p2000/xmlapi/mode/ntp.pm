@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -178,7 +178,7 @@ __END__
 
 =head1 MODE
 
-Check ntp status.
+Check NTP status.
 
 =over 8
 
@@ -199,16 +199,19 @@ Can use special variables like: %{status}
 
 =item B<--timezone>
 
-Set timezone for ntp contact time (default is 'UTC').
+Set timezone for NTP contact time (default is 'UTC').
 
 =item B<--unit>
 
 Select the time unit for the performance data and thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-contact-last-time>
 
 Thresholds.
-Can be: 'contact-last-time'.
+
+=item B<--critical-contact-last-time>
+
+Thresholds.
 
 =back
 

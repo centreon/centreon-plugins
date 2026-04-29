@@ -1,92 +1,189 @@
 {
-    "uuid": "c8fba1bd-af32-4acd-83a2-5b26a0152183",
-    "lastMigration": 32,
-    "name": "Rubrik2",
-    "endpointPrefix": "api/v1",
-    "latency": 0,
-    "port": 3000,
-    "hostname": "",
-    "folders": [],
-    "routes": [
+  "uuid": "c8fba1bd-af32-4acd-83a2-5b26a0152183",
+  "lastMigration": 33,
+  "name": "Rubrik2",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "b9fdb329-671b-48d0-a906-d58e45a70527",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/job_monitoring",
+      "responses": [
         {
-            "uuid": "b9fdb329-671b-48d0-a906-d58e45a70527",
-            "type": "http",
-            "documentation": "",
-            "method": "get",
-            "endpoint": "job_monitoring",
-            "responses": [
-                {
-                    "uuid": "4aac7b2c-2947-4e6b-83a4-094da73ecc5a",
-                    "body": "{\r\n    \"jobMonitoringInfoList\": [\r\n        {\r\n            \"jobMonitoringState\": \"Success\",\r\n            \"jobStatus\": \"Success\",\r\n            \"jobType\": \"Backup\",\r\n            \"objectId\": \"VolumeGroup:::123a456-123a-456b-789c-123456789\",\r\n            \"objectType\": \"WindowsVolumeGroup\",\r\n            \"objectName\": \"centreon.groupe.active volumes\",\r\n            \"locationId\": \"Host:::123c456-a123-b456-c789-123a456\",\r\n            \"locationName\": \"centreon.groupe.active\",\r\n            \"slaDomainId\": \"1234a456-123a-456b-aaaa-12345\",\r\n            \"slaDomainName\": \"CENTREON-DOMAIN\",\r\n            \"startTime\": \"2024-07-18T20:00:01.382Z\",\r\n            \"endTime\": \"2024-07-19T06:42:16.355Z\",\r\n            \"lastSuccessfulJobTime\": \"2024-07-16T20:00:01.382Z\",\r\n            \"nextJobTime\": \"2023-11-07T20:00:00.000Z\",\r\n            \"isFirstFullSnapshot\": false,\r\n            \"sourceClusterName\": \"LOCAL\",\r\n            \"sourceClusterId\": \"aaaaaa-123a-456b-aaaa-12345\",\r\n            \"retryCount\": 0,\r\n            \"maximumAttemptsForJob\": 3,\r\n            \"dataTransferred\": 571231961088,\r\n            \"objectLogicalSize\": 193955119497216,\r\n            \"eventSeriesId\": \"Zaaaaaa-123a-456b-123a-12345abcd\",\r\n            \"duration\": 38534973,\r\n            \"nodeId\": \"AAAABBBBCCCCDDD\",\r\n            \"warningCount\": 0,\r\n            \"lastUpdatedTime\": \"2024-07-19T06:42:16.721Z\",\r\n            \"isLogTask\": false,\r\n            \"isOnDemand\": false,\r\n            \"retryStatus\": \"NotRetried\"\r\n        },\r\n        {\r\n            \"jobMonitoringState\": \"Scheduled\",\r\n            \"jobStatus\": \"Scheduled\",\r\n            \"jobType\": \"Backup\",\r\n            \"objectId\": \"VolumeGroup:::123a456-123a-456b-789c-123456789\",\r\n            \"objectType\": \"WindowsVolumeGroup\",\r\n            \"objectName\": \"centreon.groupe.active volumes\",\r\n            \"locationId\": \"Host:::123c456-a123-b456-c789-123a456\",\r\n            \"locationName\": \"centreon.groupe.active\",\r\n            \"slaDomainId\": \"1234a456-123a-456b-aaaa-12345\",\r\n            \"slaDomainName\": \"CENTREON-DOMAIN\",\r\n            \"startTime\": \"2024-07-18T20:00:00.000Z\",\r\n            \"lastSuccessfulJobTime\": \"2024-07-18T20:00:01.382Z\",\r\n            \"isFirstFullSnapshot\": false,\r\n            \"sourceClusterName\": \"LOCAL\",\r\n            \"sourceClusterId\": \"aaaaaa-123a-456b-aaaa-12345\",\r\n            \"retryCount\": 0,\r\n            \"maximumAttemptsForJob\": 3,\r\n            \"objectLogicalSize\": 193955119497216,\r\n            \"eventSeriesId\": \"afba57d8-efb3-452e-892b-157acc6b6069\",\r\n            \"nodeId\": \"AAAABBBBCCCCDDD\",\r\n            \"warningCount\": 0,\r\n            \"lastUpdatedTime\": \"2024-07-18T06:42:16.894Z\",\r\n            \"isLogTask\": false,\r\n            \"isOnDemand\": false,\r\n            \"retryStatus\": \"NotRetried\"\r\n        }\r\n    ],\r\n    \"jobType\": \"Backup\",\r\n    \"shouldIncludeLogRelatedJob\": false,\r\n    \"objectName\": \"CENTREON\",\r\n    \"hasMore\": false\r\n}",
-                    "latency": 0,
-                    "statusCode": 200,
-                    "label": "",
-                    "headers": [],
-                    "bodyType": "INLINE",
-                    "filePath": "",
-                    "databucketID": "",
-                    "sendFileAsBody": false,
-                    "rules": [],
-                    "rulesOperator": "OR",
-                    "disableTemplating": false,
-                    "fallbackTo404": false,
-                    "default": true,
-                    "crudKey": "id",
-                    "callbacks": []
-                }
-            ],
-            "responseMode": null
-        }
-    ],
-    "rootChildren": [
+          "uuid": "4aac7b2c-2947-4e6b-83a4-094da73ecc5a",
+          "body": "{\r\n    \"jobMonitoringInfoList\": [\r\n        {\r\n            \"jobMonitoringState\": \"Success\",\r\n            \"jobStatus\": \"Success\",\r\n            \"jobType\": \"Backup\",\r\n            \"objectId\": \"VolumeGroup:::123a456-123a-456b-789c-123456789\",\r\n            \"objectType\": \"WindowsVolumeGroup\",\r\n            \"objectName\": \"centreon.groupe.active volumes\",\r\n            \"locationId\": \"Host:::123c456-a123-b456-c789-123a456\",\r\n            \"locationName\": \"centreon.groupe.active\",\r\n            \"slaDomainId\": \"1234a456-123a-456b-aaaa-12345\",\r\n            \"slaDomainName\": \"CENTREON-DOMAIN\",\r\n            \"startTime\": \"2024-07-18T20:00:01.382Z\",\r\n            \"endTime\": \"2024-07-19T06:42:16.355Z\",\r\n            \"lastSuccessfulJobTime\": \"2024-07-16T20:00:01.382Z\",\r\n            \"nextJobTime\": \"2023-11-07T20:00:00.000Z\",\r\n            \"isFirstFullSnapshot\": false,\r\n            \"sourceClusterName\": \"LOCAL\",\r\n            \"sourceClusterId\": \"aaaaaa-123a-456b-aaaa-12345\",\r\n            \"retryCount\": 0,\r\n            \"maximumAttemptsForJob\": 3,\r\n            \"dataTransferred\": 571231961088,\r\n            \"objectLogicalSize\": 193955119497216,\r\n            \"eventSeriesId\": \"Zaaaaaa-123a-456b-123a-12345abcd\",\r\n            \"duration\": 38534973,\r\n            \"nodeId\": \"AAAABBBBCCCCDDD\",\r\n            \"warningCount\": 0,\r\n            \"lastUpdatedTime\": \"2024-07-19T06:42:16.721Z\",\r\n            \"isLogTask\": false,\r\n            \"isOnDemand\": false,\r\n            \"retryStatus\": \"NotRetried\"\r\n        },\r\n        {\r\n            \"jobMonitoringState\": \"Scheduled\",\r\n            \"jobStatus\": \"Scheduled\",\r\n            \"jobType\": \"Backup\",\r\n            \"objectId\": \"VolumeGroup:::123a456-123a-456b-789c-123456789\",\r\n            \"objectType\": \"WindowsVolumeGroup\",\r\n            \"objectName\": \"centreon.groupe.active volumes\",\r\n            \"locationId\": \"Host:::123c456-a123-b456-c789-123a456\",\r\n            \"locationName\": \"centreon.groupe.active\",\r\n            \"slaDomainId\": \"1234a456-123a-456b-aaaa-12345\",\r\n            \"slaDomainName\": \"CENTREON-DOMAIN\",\r\n            \"startTime\": \"2024-07-18T20:00:00.000Z\",\r\n            \"lastSuccessfulJobTime\": \"2024-07-18T20:00:01.382Z\",\r\n            \"isFirstFullSnapshot\": false,\r\n            \"sourceClusterName\": \"LOCAL\",\r\n            \"sourceClusterId\": \"aaaaaa-123a-456b-aaaa-12345\",\r\n            \"retryCount\": 0,\r\n            \"maximumAttemptsForJob\": 3,\r\n            \"objectLogicalSize\": 193955119497216,\r\n            \"eventSeriesId\": \"afba57d8-efb3-452e-892b-157acc6b6069\",\r\n            \"nodeId\": \"AAAABBBBCCCCDDD\",\r\n            \"warningCount\": 0,\r\n            \"lastUpdatedTime\": \"2024-07-18T06:42:16.894Z\",\r\n            \"isLogTask\": false,\r\n            \"isOnDemand\": false,\r\n            \"retryStatus\": \"NotRetried\"\r\n        }\r\n    ],\r\n    \"jobType\": \"Backup\",\r\n    \"shouldIncludeLogRelatedJob\": false,\r\n    \"objectName\": \"CENTREON\",\r\n    \"hasMore\": false\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic dGVzdHJldGVudGlvbjp0ZXN0cmV0ZW50aW9u",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
         {
-            "type": "route",
-            "uuid": "b9fdb329-671b-48d0-a906-d58e45a70527"
+          "uuid": "50841e34-e600-43c2-b5ea-879e57c873b4",
+          "body": "{\r\n    \"jobMonitoringInfoList\": [\r\n    ],\r\n    \"jobType\": \"Backup\",\r\n    \"shouldIncludeLogRelatedJob\": false,\r\n    \"objectName\": \"CENTREON\",\r\n    \"hasMore\": false\r\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "test rentention with user testretention/testretention",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic dGVzdHJldGVudGlvbjp0ZXN0cmV0ZW50aW9u",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
-    ],
-    "proxyMode": false,
-    "proxyHost": "",
-    "proxyRemovePrefix": false,
-    "tlsOptions": {
-        "enabled": false,
-        "type": "CERT",
-        "pfxPath": "",
-        "certPath": "",
-        "keyPath": "",
-        "caPath": "",
-        "passphrase": ""
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
-    "cors": true,
-    "headers": [
+    {
+      "uuid": "7936c0ef-a2ca-4d91-ba41-ee7d0c9f7fc0",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/client_token",
+      "responses": [
         {
-            "key": "Content-Type",
-            "value": "application/json"
-        },
-        {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-        },
-        {
-            "key": "Access-Control-Allow-Methods",
-            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
-        },
-        {
-            "key": "Access-Control-Allow-Headers",
-            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+          "uuid": "ec77790d-7058-4509-8f26-f5ad790c9526",
+          "body": "{\"client_id\":\"client|c9bba9a9-1234-1234-b7c6-123440b4cf64\",\"access_token\":\"toktok\",\"expires_in\":43200}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
-    ],
-    "proxyReqHeaders": [
-        {
-            "key": "",
-            "value": ""
-        }
-    ],
-    "proxyResHeaders": [
-        {
-            "key": "",
-            "value": ""
-        }
-    ],
-    "data": [],
-    "callbacks": []
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "b9fdb329-671b-48d0-a906-d58e45a70527"
+    },
+    {
+      "type": "route",
+      "uuid": "7936c0ef-a2ca-4d91-ba41-ee7d0c9f7fc0"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
 }

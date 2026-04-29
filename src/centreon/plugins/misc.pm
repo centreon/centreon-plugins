@@ -32,16 +32,22 @@ use Exporter 'import';
 use feature 'state';
 
 our @EXPORT_OK = qw/change_seconds
+                    check_security_command
+                    check_security_whitelist
+                    convert_bytes
+                    execute
                     flatten_arrays
                     flatten_to_hash
+                    format_opt
                     graphql_escape
                     is_empty
                     is_excluded
                     is_local_ip
                     json_encode
                     json_decode
+                    mask_secrets
+                    normalize_mac
                     slurp_file
-                    format_opt
                     trim
                     value_of/;
 
@@ -188,6 +194,8 @@ sub unix_execute {
         # On some equipment. Cannot get a pseudo terminal
         if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
             $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(' ', @$args);
+            $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password()) if $options{output}->is_debug();
+
             ($lerror, $stdout, $exit_code) = backtick(
                 command => $cmd,
                 timeout => $options{options}->{timeout},
@@ -195,6 +203,10 @@ sub unix_execute {
                 redirect_stderr => $redirect_stderr
             );
         } else {
+            if ($options{output}->is_debug()) {
+                my $cmd = $cmd . join (' ', [ @$args, $sub_cmd // '']);
+                $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password())
+            }
             ($lerror, $stdout, $exit_code) = backtick(
                 command => $cmd,
                 arguments => [@$args, $sub_cmd],
@@ -208,6 +220,8 @@ sub unix_execute {
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $cmd .= $options{command} if (defined($options{command}));
         $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
+
+        $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password()) if $options{output}->is_debug();
 
         if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
             my @args = split(' ',$cmd);
@@ -765,15 +779,10 @@ sub check_security_command {
     eval {
         $security = JSON::XS->new->utf8->decode($content);
     };
-    if ($@) {
-        $options{output}->add_option_msg(short_msg => 'Cannot decode security file content');
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => 'Cannot decode security file content') if $@;
 
-    if (defined($security->{block_command_overload}) && $security->{block_command_overload} == 1) {
-        $options{output}->add_option_msg(short_msg => 'Cannot overload command (security)');
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => 'Cannot overload command (security)')
+        if $security->{block_command_overload} && $security->{block_command_overload} == 1;
 
     return 0;
 }
@@ -932,19 +941,26 @@ sub sort_ips($$) {
 }
 
 # function to assess if a string has to be excluded given an include regexp and an exclude regexp
-sub is_excluded($;$;$) {
-    my ($string, $include_regexp, $exclude_regexp) = @_;
+sub is_excluded($;$;$;%) {
+    my ($string, $include_regexp, $exclude_regexp, %options) = @_;
     return 1 unless defined $string;
 
     if (defined $exclude_regexp) {
         $exclude_regexp = [ $exclude_regexp ] unless ref $exclude_regexp eq 'ARRAY';
-        return 1 if grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp;
+        if (grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp) {
+            $options{output}->output_add(long_msg => "skipping '$string': excluded by a filter.", debug => 1)
+                if %options && $options{output};
+            return 1
+        }
     }
     return 0 unless defined $include_regexp;
     $include_regexp = [ $include_regexp ] unless ref $include_regexp eq 'ARRAY';
     return 0 unless @{$include_regexp};
 
     return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
+
+    $options{output}->output_add(long_msg => "skipping '$string': not included by any filter.", debug => 1)
+        if %options && $options{output};
 
     return 1;
 }
@@ -953,6 +969,90 @@ sub is_excluded($;$;$) {
 # Eg: 'include_test' becomes 'include-test'
 sub format_opt($) {
     $_[0] =~ s/_/-/gr;
+}
+
+# Attempts to mask secrets in a command line string by replacing them with $mask ( or *** if mask is not defined )
+# Be aware that this is only a try, there is no guarantee that all secrets will be masked!
+sub mask_secrets($;$) {
+    my ($command, $mask) = @_;
+
+    return '' unless $command;
+
+    $mask = '***' unless defined $mask;
+
+    my $masked = $command;
+
+    # Handled cases with examples
+
+    # command -password P@s$W@rD -I100
+    $masked =~ s/(\s+-+password[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # command -token=P@s$W@rD -I100
+    $masked =~ s/(\s+-+token[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # curl --header "api-key: P@s$W@rD" https://test.com' OR curl -api-key P@s$W@rD
+    $masked =~ s/(\s+-+api[_-]?key[=\s:]+)[^\s'"]+/$1$mask/gi;
+    $masked =~ s/(api[_-]?key\s*:\s*)[^\s'"]+/$1$mask/gi;
+
+    # command -secret=P@s$W@rD -I100
+    $masked =~ s/(\s+-+secret[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # curl --header "secret: P@s$W@rD" https://test.com'
+    $masked =~ s/(secret\s*:\s*)[^\s'"]+/$1$mask/gi;
+
+    # command -authent=P@s$W@rD -I100
+    $masked =~ s/(\s+-+auth(ent)?[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # command -cert-password=P@s$W@rD -I100
+    $masked =~ s/(\s+-+cert[_-]?password[=\s:]+)[^\s'"]+/$1$mask/gi;
+    # command -passphrase=P@s$W@rD -I100
+    $masked =~ s/(\s+-+passphrase[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # snmpwalk -snmp-community MyCommunitString123 -v 2c localhost',
+    $masked =~ s/(\s+-+snmp[_-]?community[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # snmpwalk --c MyCommunitString123 -v 2c localhost',
+    $masked =~ s/(\s-c\s+)[^\s'"]+/$1$mask/gi;
+
+    # mysql -u root -p PASSWORD database
+    $masked =~ s/(\s+-p\s+)[^\s'"]+/$1$mask/gi;
+
+    # mysql -u root -pPASSWORD database
+    $masked =~ s/(\s+-p)(?!assword\b)([A-Z])[^\s'"]*/$1$mask/gi;
+
+    my $common_auth = 'Bearer|Basic|Negotiate|X-API-Key|ApiKey|NTLM|AWS4-HMAC-SHA256';
+
+    # curl -H "Authorization: Bearer ABCDEF" http://test.com'
+    $masked =~ s/((?:$common_auth)\s+)[^\s'"]+/$1$mask/gi;
+    # curl -H "PVX-Authorization: ABCDEF" http://test.com'
+    $masked =~ s/((?:[\w-]*)Authorization\s*:\s*)(?!$common_auth)[^\s',;"]+/$1$mask/gi;
+
+    # https://admin:password@test.com:8080/api
+    $masked =~ s/([\w.-]+):([\w?!@#$%^&*._-]+)(@)/$1:$mask$3/g;
+
+    return $masked;
+}
+
+sub normalize_mac {
+    my ($mac) = @_;
+
+    return '' unless defined $mac;
+
+    # already in a human readable string format ( AABBCC )
+    return lc join (':', $mac =~ /(..)/g)
+        if $mac =~ /^[0-9A-Fa-f]+$/;
+
+    # other humain-readable string formats ( AA BB CC, AA:BB:CC, AA-BB-CC ... )
+    if ($mac =~ /^[0-9A-Fa-f\s:-]+$/) {
+        $mac =~ s/[\s:-]+/:/g;
+        return lc $mac;
+    }
+
+    # binary format
+    return join(':', unpack('(H2)6', $mac)) if length($mac) == 6;
+
+    # fallback
+    return $mac;
 }
 
 1;
@@ -1590,7 +1690,7 @@ Returns a sorted array.
 
 =head2 is_excluded
 
-    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp, %options);
 
 Determines whether a string should be excluded based on include and exclude regular expressions.
 
@@ -1602,11 +1702,40 @@ Determines whether a string should be excluded based on include and exclude regu
 
 =item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
 
-=back
+=item * C<%options> - An optional hash that allows defining the output module in order to log when the string is excluded.
 
 Returns 1 if the string is excluded, 0 if it is included.
 The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
 not match the string. The string will also be excluded if it is undefined.
+
+=back
+
+=head2 mask_secrets
+
+    my $to_print = centreon::plugins::misc::mask_secrets($unsafe_string, $mask);
+
+Attempts to mask secrets in a command line string by replacing them with $mask ( or *** if mask is not defined )
+Be aware that this is only a try, there is no guarantee that all secrets will be masked!
+
+=over 4
+
+=item * C<$unsafe_string> - input string that may contain secrets.
+
+=item * C<$mask> - replacement string used to mask detected secrets.
+
+=back
+
+=head2 normalize_mac
+
+    my $to_print = centreon::plugins::misc::normalize_mac($mac);
+
+Attempts to format a MAC address into a human-readable format
+
+=over 4
+
+=item * C<$mac> - raw MAC address to print
+
+=back
 
 =head1 AUTHOR
 

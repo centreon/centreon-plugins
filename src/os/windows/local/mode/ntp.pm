@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -166,29 +166,29 @@ __END__
 
 =head1 MODE
 
-Check time offset of server with ntp server.
+Check time offset of server with NTP server.
 
 =over 8
 
 =item B<--warning>
 
-Warning threshold.
+Time warning threshold range (in seconds), in the format -n:n (e.g., -5:5). Returns WARNING when the offset is less than -n seconds or greater than n seconds.
 
 =item B<--critical>
 
-Critical threshold.
+Time critical threshold range (in seconds), in the format -n:n (e.g., -5:5). Returns CRITICAL when the offset is less than -n seconds or greater than n seconds.
 
 =item B<--ntp-hostname>
 
-Set the ntp hostname (if not set, we try to find it with w32tm command).
+Set the NTP hostname (if not set, we try to find it with C<w32tm> command).
 
 =item B<--ntp-port>
 
-Set the ntp port (default: 123).
+Set the NTP port (default: 123).
 
 =item B<--timeout>
 
-Set timeout time for 'w32tm' command execution (default: 30 sec)
+Set timeout time for C<w32tm> command execution (default: 30 sec)
 
 =back
 

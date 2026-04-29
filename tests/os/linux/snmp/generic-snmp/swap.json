@@ -1,0 +1,36 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "memTotalSwap",
+        "oid": ".1.3.6.1.4.1.2021.4.3.0",
+        "query": "Get"
+      },
+      {
+        "name": "memAvailSwap",
+        "oid": ".1.3.6.1.4.1.2021.4.4.0",
+        "query": "Get"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [],
+    "aggregations": [
+      {
+        "name": "swap.usage.bytes",
+        "value": "{memTotalSwap} - {memAvailSwap}",
+        "uom": "B",
+        "min": 0,
+        "threshold-suffix": "swap-bytes"
+      },
+      {
+        "name": "swap.usage.percent",
+        "value": "100 * ({memTotalSwap} - {memAvailSwap}) / {memTotalSwap}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "swap-prct"
+      }
+    ]
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "uuid": "919382d8-0f30-447f-abcd-45c98e84d7fe",
+  "lastMigration": 33,
+  "name": "PaloAlto API Mock Server",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "type": "http",
+      "documentation": "Generate API Key",
+      "method": "post",
+      "endpoint": "/api",
+      "responses": [
+        {
+          "uuid": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+          "body": "<response status=\"success\">\n  <result>\n    <key>D@pAs$W@rD</key>\n  </result>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "keygen success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+      "type": "http",
+      "documentation": "Get HA Data",
+      "method": "get",
+      "endpoint": "/api",
+      "responses": [
+        {
+          "uuid": "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <enabled>yes</enabled>\n    <group>\n      <mode>Active-Passive</mode>\n      <local-info>\n        <url-compat>Mismatch</url-compat>\n        <app-version>8868-8828</app-version>\n        <gpclient-version>5.2.12</gpclient-version>\n        <build-rel>10.1.12</build-rel>\n        <ha2-port>dedicated-ha2</ha2-port>\n        <av-version>4875-5393</av-version>\n        <ha1-encrypt-enable>no</ha1-encrypt-enable>\n        <ha2-keep-alive>log-only</ha2-keep-alive>\n        <url-version>20240527.20193</url-version>\n        <ha1-backup-ipaddr>x.y.9.7/24</ha1-backup-ipaddr>\n        <mgmt-hb>configured</mgmt-hb>\n        <platform-model>PA-850</platform-model>\n        <av-compat>Match</av-compat>\n        <ha2-ipaddr>x.y.7.10/24</ha2-ipaddr>\n        <vpnclient-compat>Match</vpnclient-compat>\n        <ha1-ipaddr>x.y.6.7/24</ha1-ipaddr>\n        <ha1-backup-macaddr>f.g.h.i.j:10</ha1-backup-macaddr>\n        <ha2-backup-ipaddr>x.y.8.10/24</ha2-backup-ipaddr>\n        <vpnclient-version>Not Installed</vpnclient-version>\n        <ha2-macaddr>f.g.h.i.j:06</ha2-macaddr>\n        <monitor-fail-holdup>0</monitor-fail-holdup>\n        <priority>110</priority>\n        <preempt-hold>1</preempt-hold>\n        <state>passive</state>\n        <version>1</version>\n        <promotion-hold>500</promotion-hold>\n        <threat-compat>Match</threat-compat>\n        <gpclient-compat>Match</gpclient-compat>\n        <state-sync>Complete</state-sync>\n        <addon-master-holdup>500</addon-master-holdup>\n        <heartbeat-interval>1000</heartbeat-interval>\n        <ha1-link-mon-intv>3000</ha1-link-mon-intv>\n        <ha2-backup-port>ethernet1/2</ha2-backup-port>\n        <hello-interval>8000</hello-interval>\n        <ha1-port>dedicated-ha1</ha1-port>\n        <ha1-encrypt-imported>no</ha1-encrypt-imported>\n        <mgmt-ip>x.y.56.7/24</mgmt-ip>\n        <ha1-backup-port>ethernet1/1</ha1-backup-port>\n        <preempt-flap-cnt>0</preempt-flap-cnt>\n        <DLP>Match</DLP>\n        <ha2-ka-thresh>10000</ha2-ka-thresh>\n        <nonfunc-flap-cnt>0</nonfunc-flap-cnt>\n        <threat-version>8868-8828</threat-version>\n        <ha1-macaddr>f.g.h.i.j:05</ha1-macaddr>\n        <state-duration>3889207</state-duration>\n        <max-flaps>3</max-flaps>\n        <active-passive>\n          <passive-link-state>auto</passive-link-state>\n          <monitor-fail-holddown>1</monitor-fail-holddown>\n        </active-passive>\n        <mgmt-ipv6/>\n        <state-sync-type>ethernet</state-sync-type>\n        <preemptive>yes</preemptive>\n        <iot-version>129-504</iot-version>\n        <mode>Active-Passive</mode>\n        <build-compat>Match</build-compat>\n        <iot-compat>Mismatch</iot-compat>\n        <ha2-backup-macaddr>f.g.h.i.j:11</ha2-backup-macaddr>\n        <app-compat>Match</app-compat>\n      </local-info>\n      <peer-info>\n        <app-version>8868-8828</app-version>\n        <gpclient-version>5.2.12</gpclient-version>\n        <url-version>20240711.20198</url-version>\n        <ha1-backup-ipaddr>x.y.9.3</ha1-backup-ipaddr>\n        <av-version>4875-5393</av-version>\n        <platform-model>PA-850</platform-model>\n        <ha2-ipaddr>x.y.7.6</ha2-ipaddr>\n        <ha1-ipaddr>x.y.6.3</ha1-ipaddr>\n        <ha2-backup-ipaddr>x.y.8.6</ha2-backup-ipaddr>\n        <vm-license/>\n        <ha2-macaddr>a.b.c.d.e:06</ha2-macaddr>\n        <priority>100</priority>\n        <state>active</state>\n        <version>1</version>\n        <conn-mgmt>\n          <conn-status>up</conn-status>\n          <conn-desc>heartbeat status</conn-desc>\n        </conn-mgmt>\n        <last-error-reason>User requested</last-error-reason>\n        <build-rel>10.1.12</build-rel>\n        <conn-status>up</conn-status>\n        <ha1-backup-macaddr>a.b.c.d.e:10</ha1-backup-macaddr>\n        <vpnclient-version>Not Installed</vpnclient-version>\n        <mgmt-ip>x.y.56.6/24</mgmt-ip>\n        <DLP>1.0.3</DLP>\n        <conn-ha2>\n          <conn-type>log-only</conn-type>\n          <conn-primary>yes</conn-primary>\n          <conn-status>up</conn-status>\n          <conn-desc>keep-alive status</conn-desc>\n          <conn-ka-enbled>yes</conn-ka-enbled>\n          <conn-hold>0</conn-hold>\n        </conn-ha2>\n        <threat-version>8868-8828</threat-version>\n        <ha1-macaddr>a.b.c.d.e:05</ha1-macaddr>\n        <conn-ha1>\n          <conn-status>up</conn-status>\n          <conn-primary>yes</conn-primary>\n          <conn-desc>heartbeat status</conn-desc>\n        </conn-ha1>\n        <conn-ha2-backup>\n          <conn-status>up</conn-status>\n          <conn-ka-enbled>yes</conn-ka-enbled>\n          <conn-desc>keep-alive status</conn-desc>\n        </conn-ha2-backup>\n        <state-duration>3889207</state-duration>\n        <mgmt-ipv6/>\n        <ha2-backup-macaddr>a.b.c.d.e:11</ha2-backup-macaddr>\n        <last-error-state>suspended</last-error-state>\n        <preemptive>yes</preemptive>\n        <iot-version>133-512</iot-version>\n        <mode>Active-Passive</mode>\n        <conn-ha1-backup>\n          <conn-status>up</conn-status>\n          <conn-desc>heartbeat status</conn-desc>\n        </conn-ha1-backup>\n      </peer-info>\n      <link-monitoring>\n        <failure-condition>any</failure-condition>\n        <enabled>yes</enabled>\n        <groups>\n          <entry>\n            <interface>\n              <entry>\n                <status>up</status>\n                <name>ethernet1/9</name>\n              </entry>\n              <entry>\n                <status>up</status>\n                <name>ethernet1/10</name>\n              </entry>\n            </interface>\n            <failure-condition>all</failure-condition>\n            <enabled>yes</enabled>\n            <name>INSIDE Ports</name>\n          </entry>\n          <entry>\n            <interface>\n              <entry>\n                <status>up</status>\n                <name>ethernet1/11</name>\n              </entry>\n              <entry>\n                <status>up</status>\n                <name>ethernet1/12</name>\n              </entry>\n            </interface>\n            <failure-condition>all</failure-condition>\n            <enabled>yes</enabled>\n            <name>OUTSIDE Ports</name>\n          </entry>\n        </groups>\n      </link-monitoring>\n      <path-monitoring>\n        <virtual-wire/>\n        <failure-condition>any</failure-condition>\n        <enabled>no</enabled>\n        <vlan/>\n        <virtual-router/>\n      </path-monitoring>\n      <running-sync>synchronized</running-sync>\n      <running-sync-enabled>yes</running-sync-enabled>\n    </group>\n  </result>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "HA",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<high-availability>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7808dac1-5a12-41ca-9fba-ded37545fc73",
+          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <power-supply>\n      <Slot1>\n        <entry>\n          <slot>1</slot>\n          <alarm>False</alarm>\n          <Inserted>True</Inserted>\n          <description>Power Supply #1 (left)</description>\n          <min>True</min>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <alarm>False</alarm>\n          <Inserted>True</Inserted>\n          <description>Power Supply #2 (right)</description>\n          <min>True</min>\n        </entry>\n      </Slot1>\n    </power-supply>\n    <thermal>\n      <Slot1>\n        <entry>\n          <slot>1</slot>\n          <description>Temperature near CPLD (inlet)</description>\n          <min>0.0</min>\n          <max>60.0</max>\n          <alarm>False</alarm>\n          <DegreesC>40.9</DegreesC>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>Temperature near Cavium (outlet)</description>\n          <min>0.0</min>\n          <max>60.0</max>\n          <alarm>False</alarm>\n          <DegreesC>51.6</DegreesC>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>Temperature near Management Port (inlet)</description>\n          <min>0.0</min>\n          <max>60.0</max>\n          <alarm>False</alarm>\n          <DegreesC>38.0</DegreesC>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>Temperature near Switch (midboard)</description>\n          <min>0.0</min>\n          <max>60.0</max>\n          <alarm>False</alarm>\n          <DegreesC>45.0</DegreesC>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>Temperature @ Cavium Core</description>\n          <min>0.0</min>\n          <max>85.0</max>\n          <alarm>False</alarm>\n          <DegreesC>53.175</DegreesC>\n        </entry>\n      </Slot1>\n    </thermal>\n    <fan>\n      <Slot1>\n        <entry>\n          <slot>1</slot>\n          <alarm>False</alarm>\n          <description>Fan #1 RPM</description>\n          <RPMs>9157</RPMs>\n          <min>2500</min>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <alarm>False</alarm>\n          <description>Fan #2 RPM</description>\n          <RPMs>9557</RPMs>\n          <min>2500</min>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <alarm>False</alarm>\n          <description>Fan #3 RPM</description>\n          <RPMs>9418</RPMs>\n          <min>2500</min>\n        </entry>\n      </Slot1>\n    </fan>\n    <power>\n      <Slot1>\n        <entry>\n          <slot>1</slot>\n          <description>0.85V Power Rail</description>\n          <min>0.76</min>\n          <Volts>0.860666666667</Volts>\n          <alarm>False</alarm>\n          <max>0.94</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>0.9V Power Rail</description>\n          <min>0.81</min>\n          <Volts>0.904</Volts>\n          <alarm>False</alarm>\n          <max>0.99</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>1.0V Power Rail</description>\n          <min>0.9</min>\n          <Volts>1.006</Volts>\n          <alarm>False</alarm>\n          <max>1.1</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>1.1V Power Rail</description>\n          <min>0.99</min>\n          <Volts>1.09466666667</Volts>\n          <alarm>False</alarm>\n          <max>1.21</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>1.2V Power Rail</description>\n          <min>1.08</min>\n          <Volts>1.224</Volts>\n          <alarm>False</alarm>\n          <max>1.32</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>1.5V Power Rail</description>\n          <min>1.35</min>\n          <Volts>1.51066666667</Volts>\n          <alarm>False</alarm>\n          <max>1.65</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>1.8V Power Rail</description>\n          <min>1.62</min>\n          <Volts>1.812</Volts>\n          <alarm>False</alarm>\n          <max>1.98</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>2.5V Power Rail</description>\n          <min>2.25</min>\n          <Volts>2.504</Volts>\n          <alarm>False</alarm>\n          <max>2.75</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>3.3V Power Rail</description>\n          <min>2.97</min>\n          <Volts>3.332</Volts>\n          <alarm>False</alarm>\n          <max>3.63</max>\n        </entry>\n        <entry>\n          <slot>1</slot>\n          <description>3.3V SD Power Rail</description>\n          <min>2.97</min>\n          <Volts>3.332</Volts>\n          <alarm>False</alarm>\n          <max>3.63</max>\n        </entry>\n      </Slot1>\n    </power>\n  </result>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "ENVIRONMENT",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<environmentals>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "8909ebf2-6b23-52db-a0cb-3fde48656e84",
+          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <licenses>\n      <entry>\n        <feature>Advanced DNS Security</feature>\n        <description>Advanced DNS Security Subscription</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>Advanced Threat Prevention</feature>\n        <description>Advanced Threat Prevention</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>Advanced URL Filtering</feature>\n        <description>Palo Alto Networks Advanced URL License</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>Advanced WildFire License</feature>\n        <description>Access to Advanced WildFire signatures, logs, API</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>DNS Security</feature>\n        <description>Palo Alto Networks DNS Security License</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode>I4876380</authcode>\n      </entry>\n      <entry>\n        <feature>GlobalProtect Gateway</feature>\n        <description>GlobalProtect Gateway License</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>GlobalProtect Portal</feature>\n        <description>GlobalProtect Portal License</description>\n        <serial>123456789</serial>\n        <issued>February 10, 2020</issued>\n        <expires>Never</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>Logging Service</feature>\n        <description>Device Logging Service</description>\n        <serial>123456789</serial>\n        <issued>January 18, 2024</issued>\n        <expires>April 26, 2028</expires>\n        <expired>no</expired>\n        <custom>\n          <_Log_Storage_TB>1</_Log_Storage_TB>\n        </custom>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>PAN-DB URL Filtering</feature>\n        <description>Palo Alto Networks URL Filtering License</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode>I4287613</authcode>\n      </entry>\n      <entry>\n        <feature>SD WAN</feature>\n        <description>License to enable SD WAN feature</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>Standard</feature>\n        <description>10 x 5 phone support; repair and replace hardware service</description>\n        <serial>123456789</serial>\n        <issued>February 25, 2021</issued>\n        <expires>August 05, 2024</expires>\n        <expired>yes</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>Threat Prevention</feature>\n        <description>Threat Prevention</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n      <entry>\n        <feature>WildFire License</feature>\n        <description>WildFire signature feed, integrated WildFire logs, WildFire API</description>\n        <serial>123456789</serial>\n        <issued>May 20, 2024</issued>\n        <expires>August 05, 2025</expires>\n        <expired>no</expired>\n        <authcode/>\n      </entry>\n    </licenses>\n  </result>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "LICENSES",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<request><license>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "3dddb89e-01f4-4048-92d2-81992c5c17b7",
+          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <system>\n      <hostname>Firewall_Name-01</hostname>\n      <ip-address>x.y.z.7</ip-address>\n      <public-ip-address>unknown</public-ip-address>\n      <netmask>255.255.255.0</netmask>\n      <default-gateway>x.y.z.254</default-gateway>\n      <is-dhcp>no</is-dhcp>\n      <ipv6-address>unknown</ipv6-address>\n      <ipv6-link-local-address>fe80::x:y:z:a/64</ipv6-link-local-address>\n      <mac-address>a:b:c:d:e</mac-address>\n      <time>Thu Jul 11 15:16:54 2024</time>\n      <uptime>98 days, 23:42:29</uptime>\n      <devicename>Firewall_Name-01</devicename>\n      <family>800</family>\n      <model>PA-850</model>\n      <serial>123456789</serial>\n      <cloud-mode>non-cloud</cloud-mode>\n      <sw-version>10.1.12</sw-version>\n      <global-protect-client-package-version>5.2.12</global-protect-client-package-version>\n      <device-dictionary-version>129-504</device-dictionary-version>\n      <device-dictionary-release-date>2024/05/26 15:42:11 CEST</device-dictionary-release-date>\n      <app-version>8868-8828</app-version>\n      <app-release-date>2024/07/08 23:25:41 CEST</app-release-date>\n      <av-version>4875-5393</av-version>\n      <av-release-date>2024/07/10 13:03:40 CEST</av-release-date>\n      <threat-version>8868-8828</threat-version>\n      <threat-release-date>2024/07/08 23:25:41 CEST</threat-release-date>\n      <wf-private-version>0</wf-private-version>\n      <wf-private-release-date>unknown</wf-private-release-date>\n      <url-db>paloaltonetworks</url-db>\n      <wildfire-version>889843-893745</wildfire-version>\n      <wildfire-release-date>2024/07/11 14:56:58 CEST</wildfire-release-date>\n      <wildfire-rt>Disabled</wildfire-rt>\n      <url-filtering-version>20240527.20193</url-filtering-version>\n      <global-protect-datafile-version>1695498753</global-protect-datafile-version>\n      <global-protect-datafile-release-date>2023-09-23 19:52:33</global-protect-datafile-release-date>\n      <global-protect-clientless-vpn-version>98-260</global-protect-clientless-vpn-version>\n      <global-protect-clientless-vpn-release-date>2023/05/23 00:41:22 CEST</global-protect-clientless-vpn-release-date>\n      <logdb-version>10.1.2</logdb-version>\n      <plugin_versions>\n        <entry name=\"dlp\" version=\"1.0.3\">\n          <pkginfo>dlp-1.0.3</pkginfo>\n        </entry>\n      </plugin_versions>\n      <platform-family>800</platform-family>\n      <vpn-disable-mode>off</vpn-disable-mode>\n      <multi-vsys>off</multi-vsys>\n      <ZTP>Disabled</ZTP>\n      <operational-mode>normal</operational-mode>\n      <device-certificate-status>Valid</device-certificate-status>\n    </system>\n  </result>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "SYSTEM",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<system>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "7f89e90c-80f8-4957-ac9a-26fe37fe81cd",
+          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <ntun>60</ntun>\n    <entries>\n      <entry>\n        <kb>Unlimited</kb>\n        <life>3600</life>\n        <enc>G256</enc>\n        <remote>Addresse IP a.b.c.d</remote>\n        <name>Nom du tunnel 1</name>\n        <proto>ESP</proto>\n        <i_spi>2300285266</i_spi>\n        <gwid>19</gwid>\n        <o_spi>1430731122</o_spi>\n        <remain>1727</remain>\n        <tid>66</tid>\n        <hash/>\n        <gateway>Nom de la Gateway 1</gateway>\n      </entry>\n      <entry>\n        <kb>Unlimited</kb>\n        <life>3600</life>\n        <enc>G256</enc>\n        <remote>Addresse IP a.b.c.d</remote>\n        <name>Nom du tunnel 2</name>\n        <proto>ESP</proto>\n        <i_spi>2300285266</i_spi>\n        <gwid>19</gwid>\n        <o_spi>1430731122</o_spi>\n        <remain>1727</remain>\n        <tid>66</tid>\n        <hash/>\n        <gateway>Nom de la Gateway 2</gateway>\n      </entry>\n      <entry>\n        <kb>Unlimited</kb>\n        <life>3600</life>\n        <enc>G256</enc>\n        <remote>Addresse IP a.b.c.d</remote>\n        <name>Nom du tunnel 3</name>\n        <proto>ESP</proto>\n        <i_spi>2300285266</i_spi>\n        <gwid>19</gwid>\n        <o_spi>1430731122</o_spi>\n        <remain>1727</remain>\n        <tid>66</tid>\n        <hash/>\n        <gateway>Nom de la Gateway 3</gateway>\n      </entry>\n    </entries>\n  </result>\n</response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "TUNNEL",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<ipsec-sa>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
+    },
+    {
+      "type": "route",
+      "uuid": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/xml"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

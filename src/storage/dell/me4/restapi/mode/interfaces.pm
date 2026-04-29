@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -59,10 +61,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'ports', type => 3, cb_prefix_output => 'prefix_port_output', cb_long_output => 'port_long_output', indent_long_output => '    ', message_multiple => 'All interfaces are ok',
+        { name => 'ports', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_port_output', cb_long_output => 'port_long_output', indent_long_output => '    ', message_multiple => 'All interfaces are ok',
             group => [
-                { name => 'port_global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'interfaces', display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interfaces are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'port_global', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'interfaces', display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interfaces are ok', type => COUNTER_MULTIPLE_SUBINSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -70,7 +72,7 @@ sub set_counters {
     $self->{maps_counters}->{port_global} = [
          {
              label => 'port-status',
-             type => 2,
+             type => COUNTER_KIND_TEXT,
              unknown_default => '%{health} =~ /unknown/i',
              warning_default => '%{health} =~ /degraded/i',
              critical_default => '%{health} =~ /fault/i',
@@ -151,7 +153,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-port-name:s' => { name => 'filter_port_name' }
+        'filter-port-name:s' => { name => 'filter_port_name', default => '' },
+        'omit-phy-statistics' => { name => 'omit_phy_statistics' }
     });
 
     return $self;
@@ -171,7 +174,10 @@ sub manage_selection {
 
     my $result_ports = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/ports');
     my $result_ports_stats = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/host-port-statistics');
-    my $result_logical_interfaces = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/host-phy-statistics');
+    my $result_logical_interfaces;
+    if (!$self->{option_results}->{omit_phy_statistics}) {
+        $result_logical_interfaces = $options{custom}->request_api(method => 'GET', url_path =>  '/api/show/host-phy-statistics');
+    }
 
     my $mapping_ports = {};
 
@@ -179,8 +185,7 @@ sub manage_selection {
     foreach my $port (@{$result_ports->{port}}) {
         my $port_name = $port->{port};
 
-        next if (defined($self->{option_results}->{filter_port_name}) && $self->{option_results}->{filter_port_name} ne ''
-            && $port_name !~ /$self->{option_results}->{filter_port_name}/);
+        next if is_excluded($port_name, $self->{option_results}->{filter_port_name});
 
         $mapping_ports->{ $port->{'durable-id'} } = $port_name;
 
@@ -205,20 +210,21 @@ sub manage_selection {
         
     }
 
-    foreach (@{$result_logical_interfaces->{'sas-host-phy-statistics'}}) {
-        next if (!defined($self->{ports}->{ $_->{port} }));
+    if (!$self->{option_results}->{omit_phy_statistics} && defined($result_logical_interfaces) && defined($result_logical_interfaces->{'sas-host-phy-statistics'})) {
+        foreach (@{$result_logical_interfaces->{'sas-host-phy-statistics'}}) {
+            next if (!defined($self->{ports}->{ $_->{port} }));
 
-        $self->{ports}->{ $_->{port} }->{interfaces}->{ $_->{phy} } = {
-            display => $_->{phy},
-            disparity_errors => int($_->{'disparity-errors'}),
-            invalid_dwords => int($_->{'invalid-dwords'}),
-            lost_dwords => int($_->{'lost-dwords'})
-        };
+            $self->{ports}->{ $_->{port} }->{interfaces}->{ $_->{phy} } = {
+                display => $_->{phy},
+                disparity_errors => int($_->{'disparity-errors'}),
+                invalid_dwords => int($_->{'invalid-dwords'}),
+                lost_dwords => int($_->{'lost-dwords'})
+            };
+        }
     }
 
     $self->{cache_name} = 'dell_me4_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_port_name}) ? md5_hex($self->{option_results}->{filter_port_name}) : md5_hex('all'));
+        sha256_hex(($self->{option_results}->{filter_counters} // '').'_'.$self->{option_results}->{filter_port_name});
 }
 
 1;
@@ -235,6 +241,10 @@ Check interfaces.
 
 Filter port name (can be a regexp).
 
+=item B<--omit-phy-statistics>
+
+Filter diagnostic information relating to SAS controller physical channels.
+
 =item B<--unknown-port-status>
 
 Define the conditions to match for the status to be UNKNOWN (default: '%{status} =~ /unknown/i').
@@ -250,11 +260,61 @@ You can use the following variables: %{status}, %{health}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /fault/i').
 You can use the following variables: %{status}, %{health}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-interface-disparity-errors>
 
-Thresholds.
-Can be: 'read-iops', 'write-iops', 'read-traffic', 'write-traffic',
-'interface-disparity-errors', 'interface-lost-dwords', 'interface-invalid-dwords'.
+Threshold.
+
+=item B<--critical-interface-disparity-errors>
+
+Threshold.
+
+=item B<--warning-interface-invalid-dwords>
+
+Threshold.
+
+=item B<--critical-interface-invalid-dwords>
+
+Threshold.
+
+=item B<--warning-interface-lost-dwords>
+
+Threshold.
+
+=item B<--critical-interface-lost-dwords>
+
+Threshold.
+
+=item B<--warning-read-iops>
+
+Threshold in iops.
+
+=item B<--critical-read-iops>
+
+Threshold in iops.
+
+=item B<--warning-read-traffic>
+
+Threshold in b/s.
+
+=item B<--critical-read-traffic>
+
+Threshold in b/s.
+
+=item B<--warning-write-iops>
+
+Threshold in iops.
+
+=item B<--critical-write-iops>
+
+Threshold in iops.
+
+=item B<--warning-write-traffic>
+
+Threshold in b/s.
+
+=item B<--critical-write-traffic>
+
+Threshold in b/s.
 
 =back
 

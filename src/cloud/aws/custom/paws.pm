@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -219,10 +219,18 @@ sub cloudwatch_get_alarms {
         my $cw = $self->{paws}->service('CloudWatch', region => $self->{option_results}->{region});
         my $alarms = $cw->DescribeAlarms();
         foreach my $alarm (@{$alarms->{MetricAlarms}}) {
+            my $metric;
+            if (defined $alarm->{MetricName}) {
+                $metric = $alarm->{MetricName};
+            } elsif (ref $alarm->{Metrics} eq 'ARRAY') {
+                $metric = 'Multiple metrics';
+            } else {
+                $metric = '';
+            }
             push @$alarm_results, {
                 AlarmName => $alarm->{AlarmName},
                 StateValue => $alarm->{StateValue},
-                MetricName => $alarm->{MetricName},
+                MetricName => $metric,
                 StateReason => $alarm->{StateReason},
                 StateUpdatedTimestamp => $alarm->{StateUpdatedTimestamp},
             };
@@ -933,7 +941,7 @@ Set AWS session token.
 
 =item B<--aws-role-arn>
 
-Set arn of the role to be assumed.
+Set ARN of the role to be assumed.
 
 =item B<--region>
 
@@ -949,7 +957,7 @@ Set timeframe in seconds.
 
 =item B<--statistic>
 
-Set cloudwatch statistics
+Set CloudWatch statistics
 (can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--zeroed>
