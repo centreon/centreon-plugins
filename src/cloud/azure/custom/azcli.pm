@@ -600,6 +600,25 @@ sub azure_get_publicip {
     return $self->execute(cmd_options => $cmd_options);
 }
 
+sub azure_list_resource_metrics_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "monitor metrics list-definitions --resource '$options{resource}' --only-show-errors --output json";
+
+    return $cmd_options;
+}
+
+sub azure_list_resource_metrics {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_list_resource_metrics_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results;
+}
+
 1;
 
 __END__
