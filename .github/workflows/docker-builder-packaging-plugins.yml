@@ -61,9 +61,15 @@ jobs:
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bookworm
             image: packaging-plugins-bookworm
+          - runner: ubuntu-24.04-arm
+            dockerfile: packaging-plugins-bookworm
+            image: packaging-plugins-bookworm-arm64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-trixie
             image: packaging-plugins-trixie
+          - runner: ubuntu-24.04-arm
+            dockerfile: packaging-plugins-trixie
+            image: packaging-plugins-trixie-arm64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
             image: packaging-plugins-java-bullseye
