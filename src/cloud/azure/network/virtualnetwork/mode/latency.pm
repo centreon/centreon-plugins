@@ -41,7 +41,7 @@ sub get_metrics_mapping {
             'max'             => '',
             'template'        => '%.2f',
             'output_template' => '%.2f ms',
-            'display_ok'      => 0,
+            'display_ok'      => 1,
         },
         'PingMeshProbesFailedPercent' => {
             'output'          => 'Failed Pings to a VM',
@@ -52,7 +52,7 @@ sub get_metrics_mapping {
             'max'             => '100',
             'template'        => '%.2f',
             'output_template' => '%.2f %%',
-            'display_ok'      => 0,
+            'display_ok'      => 1,
         },
     };
 
@@ -86,7 +86,7 @@ sub set_counters {
             my $entry = {
                 label      => $metric_label . '-' . $aggregation,
                 nlabel     => $metric->{nlabel},
-                display_ok => 0,
+                display_ok => $metric->{display_ok},
                 set        => {
                     key_values      =>
                         [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
