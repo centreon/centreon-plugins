@@ -167,6 +167,11 @@ Filter Virtual Hub by name (can be a regexp).
 
 Exclude Virtual Hub by name (can be a regexp).
 
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN (default: '').
+You can use the following variables: %{provisioning_state}, %{routing_state}>, %{display}
+
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING (default: '').
