@@ -1149,6 +1149,25 @@ sub azure_list_sqlvms {
     return $full_response;
 }
 
+sub azure_list_netapp_volumes_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+        $options{resource_group} . "/providers/Microsoft.NetApp/netAppAccounts/" . $options{account_name} .
+        "/capacityPools/" . $options{pool_name} . "/volumes?api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_list_netapp_volumes {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_list_netapp_volumes_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response->{value};
+}
+
 sub azure_list_sqlelasticpools_set_url {
     my ($self, %options) = @_;
 
