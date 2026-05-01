@@ -89,7 +89,7 @@ jobs:
         shell: bash
 
       - name: Save image into cache
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./${{ inputs.image }}
           key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
@@ -111,7 +111,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Get the cached docker image for tests
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./${{ inputs.image }}
           key: ${{ inputs.image }}-${{ github.sha }}-${{ github.run_id }}
@@ -119,14 +119,14 @@ jobs:
 
       - name: Get the cached plugins
         if: ${{ inputs.get-packages == 'True' }}
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./*.${{ inputs.package-extension }}
           key: ${{ inputs.packages-cache-key }}
           fail-on-cache-miss: true
 
       - name: Get the cached plugins.json
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./plugins.json
           key: ${{ inputs.plugins-json-cache-key }}
