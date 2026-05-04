@@ -200,7 +200,7 @@ sub get_metrics_mapping {
 sub prefix_metric_output {
     my ($self, %options) = @_;
 
-    return "NetApp account volume'" . $options{instance_value}->{display} . "' ";
+    return "NetApp account volume '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {

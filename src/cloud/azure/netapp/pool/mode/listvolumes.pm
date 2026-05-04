@@ -79,6 +79,12 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
+
+    foreach my $volume (@{$self->{volumes}}) {
+        $volume->{path} = $volume->{name};
+        ($volume->{name}) =~ s|.*/||;
+    }
+
     foreach (sort {$a->{name} cmp $b->{name}} @{$self->{volumes}}) {
         my $volume = $_;
         next if is_excluded($volume->{name} // '',
@@ -93,7 +99,8 @@ sub run {
 
         $self->{output}->output_add(
             long_msg =>
-                sprintf("[name = %s][resourcegroup = %s][location = %s][id = %s][type = %s] [storage_to_network_proximity = %s] [service_level = %s]",
+                sprintf("[path = %s] [name = %s] [resourcegroup = %s] [location = %s] [id = %s] [type = %s] [storage_to_network_proximity = %s] [service_level = %s]",
+                    $volume->{path},
                     $volume->{name},
                     $resource_group,
                     $volume->{location},
@@ -119,6 +126,7 @@ sub disco_format {
 
     $self->{output}->add_disco_format(
         elements => [
+            'path',
             'name',
             'resourcegroup',
             'location',
@@ -134,6 +142,12 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
+
+    foreach my $volume (@{$self->{volumes}}) {
+        $volume->{path} = $volume->{name};
+        ($volume->{name}) =~ s|.*/||;
+    };
+
     foreach (sort {$a->{name} cmp $b->{name}} @{$self->{volumes}}) {
         my $volume = $_;
         my $resource_group = '-';
@@ -141,6 +155,7 @@ sub disco_show {
         $resource_group = $1 if ($resource_group eq '-' && defined($volume->{id}) && $volume->{id} =~ /resourceGroups\/(.*)\/providers/);
 
         $self->{output}->add_disco_entry(
+            path                         => $volume->{path},
             name                         => $volume->{name},
             resourcegroup                => $resource_group,
             location                     => $volume->{location},
