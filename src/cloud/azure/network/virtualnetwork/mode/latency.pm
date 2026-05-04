@@ -134,6 +134,7 @@ sub check_options {
     }
 
     $self->{az_resource} = $self->{option_results}->{resource};
+    $self->{az_subscription_id} = $self->{option_results}->{subscription};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));;
     $self->{az_resource_type} = 'virtualNetworks';
     $self->{az_resource_namespace} = 'Microsoft.Network';
@@ -149,10 +150,13 @@ sub manage_selection {
     my %metric_results;
     foreach my $resource (@{$self->{az_resource}}) {
         my $resource_group = $self->{az_resource_group};
+
         my $resource_name = $resource;
         if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualNetworks\/(.*)$/) {
             $resource_group = $1;
             $resource_name = $2;
+        } else {
+            $resource = "/subscriptions/" . $self->{az_subscription_id} . "/resourceGroups/" . $resource_group . "/providers/Microsoft.Network/virtualNetworks/" . $resource_name;
         }
 
         my $metrics = $options{custom}->azure_list_resource_metrics(resource => $resource);
