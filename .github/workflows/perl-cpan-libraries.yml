@@ -170,13 +170,13 @@ jobs:
 
       - name: Pull packaging image from ghcr.io
         env:
-          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
         run: docker pull "${GHCR_IMAGE}"
         shell: bash
 
       - if: ${{ matrix.spec_file == '' }}
         env:
-          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           RPM_DEPENDENCIES: ${{ matrix.rpm_dependencies }}
           RPM_PROVIDES: ${{ matrix.rpm_provides }}
@@ -200,7 +200,7 @@ jobs:
 
       - if: ${{ matrix.spec_file != '' }}
         env:
-          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
           SPEC_FILE: ${{ matrix.spec_file }}
         run: |
           docker run --rm \
@@ -268,7 +268,7 @@ jobs:
         distrib: [el8, el9, el10]
     name: sign rpm ${{ matrix.distrib }}
     container:
-      image: docker.centreon.com/centreon-private/rpm-signing:latest
+      image: docker.centreon.com/centreon-private/rpm-signing
       options: -t
       credentials:
         username: ${{ secrets.HARBOR_CENTREON_PRIVATE_USERNAME }}
@@ -321,7 +321,7 @@ jobs:
 
       - name: Pull packaging image from ghcr.io
         env:
-          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
         run: docker pull "${GHCR_IMAGE}"
         shell: bash
 
@@ -333,7 +333,7 @@ jobs:
 
       - if: ${{ matrix.use_dh_make_perl == 'false' }}
         env:
-          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           DEB_DEPENDENCIES: ${{ matrix.deb_dependencies }}
           DEB_PROVIDES: ${{ matrix.deb_provides }}
@@ -360,7 +360,7 @@ jobs:
 
       - if: ${{ matrix.use_dh_make_perl == 'true' }}
         env:
-          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ matrix.image }}
           VERSION: ${{ matrix.version || matrix.cpan_version }}
           PREINSTALL_CPANLIBS: ${{ matrix.preinstall_cpanlibs }}
           PREINSTALL_PACKAGES: ${{ matrix.preinstall_packages }}

@@ -36,61 +36,99 @@ jobs:
         include:
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma8
-            image: packaging-plugins-alma8
+            image: packaging
+            distrib: alma8
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma9
-            image: packaging-plugins-alma9
+            image: packaging
+            distrib: alma9
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-alma10
-            image: packaging-plugins-alma10
+            image: packaging
+            distrib: alma10
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma8
-            image: packaging-plugins-java-alma8
+            image: packaging-java
+            distrib: alma8
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma9
-            image: packaging-plugins-java-alma9
+            image: packaging-java
+            distrib: alma9
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-alma10
-            image: packaging-plugins-java-alma10
+            image: packaging-java
+            distrib: alma10
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bullseye
-            image: packaging-plugins-bullseye
+            image: packaging
+            distrib: bullseye
+            arch: amd64
           - runner: ubuntu-24.04-arm
             dockerfile: packaging-plugins-bullseye
-            image: packaging-plugins-bullseye-arm64
+            image: packaging
+            distrib: bullseye
+            arch: arm64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-bookworm
-            image: packaging-plugins-bookworm
+            image: packaging
+            distrib: bookworm
+            arch: amd64
           - runner: ubuntu-24.04-arm
             dockerfile: packaging-plugins-bookworm
-            image: packaging-plugins-bookworm-arm64
+            image: packaging
+            distrib: bookworm
+            arch: arm64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-trixie
-            image: packaging-plugins-trixie
+            image: packaging
+            distrib: trixie
+            arch: amd64
           - runner: ubuntu-24.04-arm
             dockerfile: packaging-plugins-trixie
-            image: packaging-plugins-trixie-arm64
+            image: packaging
+            distrib: trixie
+            arch: arm64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bullseye
-            image: packaging-plugins-java-bullseye
+            image: packaging-java
+            distrib: bullseye
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-bookworm
-            image: packaging-plugins-java-bookworm
+            image: packaging-java
+            distrib: bookworm
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-trixie
-            image: packaging-plugins-java-trixie
+            image: packaging-java
+            distrib: trixie
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-jammy
-            image: packaging-plugins-jammy
+            image: packaging
+            distrib: jammy
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-jammy
-            image: packaging-plugins-java-jammy
+            image: packaging-java
+            distrib: jammy
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-noble
-            image: packaging-plugins-noble
+            image: packaging
+            distrib: noble
+            arch: amd64
           - runner: ubuntu-24.04
             dockerfile: packaging-plugins-java-noble
-            image: packaging-plugins-java-noble
+            image: packaging-java
+            distrib: noble
+            arch: amd64
 
     runs-on: ${{ matrix.runner }}
 
@@ -117,6 +155,17 @@ jobs:
 
       - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ matrix.image }}
+          labels: |
+            org.opencontainers.image.description=Packaging image for Centreon Plugins packaging
+            com.centreon.stability=${{ needs.get-environment.outputs.stability }}
+            com.centreon.version=${{ needs.get-environment.outputs.version }}
+
+
       - uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
           file: .github/docker/packaging/Dockerfile.${{ matrix.dockerfile }}
@@ -124,10 +173,72 @@ jobs:
           build-args: "REGISTRY_URL=${{ vars.DOCKER_PROXY_REGISTRY_URL }}"
           pull: true
           push: true
-          tags: ghcr.io/${{ github.repository }}/${{ matrix.image }}:latest
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ matrix.distrib }}-${{ matrix.arch }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  compute-merge-matrix:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.compute.outputs.matrix }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Compute merge matrix
+        id: compute
+        shell: bash
+        run: |
+          matrix=$(yq -o=json '.jobs.dockerize.strategy.matrix.include' \
+            .github/workflows/docker-builder-packaging-plugins.yml | \
+            jq -c '
+              group_by([.image, .distrib]) |
+              map({
+                image: .[0].image,
+                distrib: .[0].distrib,
+                archs: (map(.arch) | join(" "))
+              }) |
+              {include: .}
+            ')
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+
+  merge:
+    needs: [get-environment, dockerize, compute-merge-matrix]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.compute-merge-matrix.outputs.matrix) }}
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Create multi-platform manifest
+        shell: bash
+        run: |
+          SOURCE=""
+          for arch in ${{ matrix.archs }}; do
+            SOURCE="$SOURCE ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ matrix.distrib }}-$arch"
+          done
+          docker buildx imagetools create \
+            --tag ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ matrix.distrib }} \
+            $SOURCE
+
 
   set-skip-label:
-    needs: [get-environment, dockerize]
+    needs: [get-environment, merge]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       ! cancelled() &&

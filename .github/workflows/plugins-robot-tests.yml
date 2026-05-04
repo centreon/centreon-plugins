@@ -47,7 +47,7 @@ on:
         default: ""
 jobs:
   robot-test:
-    runs-on: ${{ contains(inputs.image, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    runs-on: ${{ inputs.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
 
     strategy:
       fail-fast: false
@@ -70,7 +70,7 @@ jobs:
 
       - name: Pull test image from ghcr.io
         env:
-          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image }}:latest
+          GHCR_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image }}
         run: docker pull "${GHCR_IMAGE}"
         shell: bash
 
@@ -92,7 +92,7 @@ jobs:
       - name: Install, test and remove plugin
         shell: bash
         env:
-          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image }}:latest
+          DOCKER_IMAGE: ghcr.io/${{ github.repository }}/${{ inputs.image }}
           PACKAGE_EXTENSION: ${{ inputs.package-extension }}
           RUNNER_ID: ${{ matrix.index }}
           SKIP_ROBOT_TESTS: ${{ inputs.skip-robot-tests }}
