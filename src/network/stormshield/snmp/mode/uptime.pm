@@ -154,7 +154,7 @@ sub manage_selection {
             my ($days, $hours, $minutes, $seconds) = @parts;
             $uptime_seconds = ($days * 86400) + ($hours * 3600) + ($minutes * 60) + $seconds;
         } else {
-            $self->{output}->message_add(severity => 'CRITICAL', short_msg => "Format d'uptime inattendu: $uptime_raw");
+            $self->{output}->message_add(severity => 'CRITICAL', short_msg => "Unexpected uptime format: $uptime_raw");
         }
     }
 
