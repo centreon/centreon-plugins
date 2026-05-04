@@ -25,6 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 
 sub get_metrics_mapping {
     my ($self, %options) = @_;
@@ -207,10 +209,10 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name             => 'metric',
-            type             => 1,
+            type             => COUNTER_TYPE_INSTANCE,
             cb_prefix_output => 'prefix_metric_output',
             message_multiple => "All pool metrics are ok",
-            skipped_code     => { -10 => 1 } }
+            skipped_code     => { NO_VALUE() => 1 } }
     ];
 
     $self->{metrics_mapping} = $self->get_metrics_mapping;
@@ -310,8 +312,8 @@ sub manage_selection {
         } @$metrics;
 
         foreach my $metric (keys %{$self->{metrics_mapping}}) {
-            next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
-                && $metric !~ /$self->{option_results}->{filter_metric}/);
+            my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
+            next if is_excluded($metric_label_name, $self->{option_results}->{filter_metric});
 
             next unless exists $metric_values{$metric};
 
@@ -358,6 +360,7 @@ __END__
 =head1 MODE
 
 Check NetApp pool volume metrics.
+(https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/microsoft-netapp-netappaccounts-capacitypools-volumes-metrics)
 
 Example:
 
@@ -384,6 +387,123 @@ Set resource name or ID (required).
 Set resource group (required if resource's name is used).
 
 =item B<--filter-metric>
+
+Filter metrics (can be: 'allocated-size', 'logical-used-size', 'snaphot-size', 'consumed-size', 'inodes-used-percentage',
+'read-iops', 'write-iops', 'total-iops', 'read-throughput', 'write-throughput', 'total-throughput', 'read-latency',
+'write-latency', 'throughput-limit-reached')
+Can be a regexp.
+
+=item B<--warning-allocated-size>
+
+Warning thresholds.
+
+=item B<--critical-allocated-size>
+
+Critical thresholds.
+
+=item B<--warning-logical-used-size>
+
+Warning thresholds.
+
+=item B<--critical-logical-used-size>
+
+Critical thresholds.
+
+=item B<--warning-snaphot-size>
+
+Warning thresholds.
+
+=item B<--critical-snaphot-size>
+
+Critical thresholds.
+
+=item B<--warning-consumed-size>
+
+Warning thresholds.
+
+=item B<--critical-consumed-size>
+
+Critical thresholds.
+
+=item B<--warning-inodes-used-percentage>
+
+Warning thresholds.
+
+=item B<--critical-inodes-used-percentage>
+
+Critical thresholds.
+
+=item B<--warning-read-iops>
+
+Warning thresholds.
+
+=item B<--critical-read-iops>
+
+Critical thresholds.
+
+=item B<--warning-write-iops>
+
+Warning thresholds.
+
+=item B<--critical-write-iops>
+
+Critical thresholds.
+
+=item B<--warning-total-iops>
+
+Warning thresholds.
+
+=item B<--critical-total-iops>
+
+Critical thresholds.
+
+=item B<--warning-read-throughput>
+
+Warning thresholds.
+
+=item B<--critical-read-throughput>
+
+Critical thresholds.
+
+=item B<--warning-write-throughput>
+
+Warning thresholds.
+
+=item B<--critical-write-throughput>
+
+Critical thresholds.
+
+=item B<--warning-total-throughput>
+
+Warning thresholds.
+
+=item B<--critical-total-throughput>
+
+Critical thresholds.
+
+=item B<--warning-read-latency>
+
+Warning thresholds.
+
+=item B<--critical-read-latency>
+
+Critical thresholds.
+
+=item B<--warning-write-latency>
+
+Warning thresholds.
+
+=item B<--critical-write-latency>
+
+Critical thresholds.
+
+=item B<--warning-throughput-limit-reached>
+
+Warning thresholds.
+
+=item B<--critical-throughput-limit-reached>
+
+Critical thresholds.
 
 =back
 

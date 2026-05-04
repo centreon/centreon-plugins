@@ -295,6 +295,7 @@ __END__
 =head1 MODE
 
 Check NetApp capacity pool metrics.
+(https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/microsoft-netapp-netappaccounts-capacitypools-metrics)
 
 Example:
 
@@ -324,15 +325,17 @@ Set resource group (required if resource's name is used).
 
 Filter metrics (can be: 'allocated-size', 'allocated-used', 'consumed-size', 'snapshot-size', 'allocated-throughput',
 'provisioned-throughput')
-(can be a regexp).
+Can be a regexp.
 
 =item B<--warning-$metric$-$aggregation$>
 
-Warning thresholds ($metric$ can be: C<allocated-size>, C<allocated-used>, C<consumed-size>, C<snapshot-size>, C<allocated-throughput>, C<provisioned-throughput>).
+Warning thresholds ($metric$ can be: C<allocated-size>, C<allocated-used>, C<consumed-size>, C<snapshot-size>,
+C<allocated-throughput>, C<provisioned-throughput>).
 
 =item B<--critical-$metric$-$aggregation$>
 
-Critical thresholds ($metric$ can be: C<allocated-size>, C<allocated-used>, C<consumed-size>, C<snapshot-size>, C<allocated-throughput>, C<provisioned-throughput>).
+Critical thresholds ($metric$ can be: C<allocated-size>, C<allocated-used>, C<consumed-size>, C<snapshot-size>,
+C<allocated-throughput>, C<provisioned-throughput>).
 
 =back
 

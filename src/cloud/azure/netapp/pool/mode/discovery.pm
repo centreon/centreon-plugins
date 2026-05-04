@@ -40,6 +40,7 @@ __END__
 =head1 MODE
 
 NetApp account pool discovery.
+(https://learn.microsoft.com/en-us/rest/api/netapp/pools/list?view=rest-netapp-2025-12-01&tabs=HTTP)
 
 =over 8
 
