@@ -20,7 +20,7 @@ void set_fn(char *workgroup,
   snprintf(User, sizeof(User), "%s", username);
   snprintf(Password, sizeof(Password), "%s", password);
   /* set workgroup only when set */
-  if (workgroup[0] && workgroup[0] != 0) {
+  if (workgroup && *workgroup) {
 #ifdef VERBOSE
     printf("Workgroup is set to %s\n", workgroup);
 #endif
@@ -40,21 +40,20 @@ void auth_fn(const char *server,
 #ifdef VERBOSE
   printf("auth_fn\n");
 #endif
-
   /* set workgroup only when set */
-  if (Workgroup[0] && Workgroup[0] != 0) {
+  if (*Workgroup && workgroup) {
 #ifdef VERBOSE
     printf("Workgroup is set to %s\n", Workgroup);
 #endif
     snprintf(workgroup, wgmaxlen, "%s", Workgroup);
   }
-  snprintf(username, unmaxlen, "%s", User);
-  snprintf(password, pwmaxlen, "%s", Password);
+  if (username) snprintf(username, unmaxlen, "%s", User);
+  if (password) snprintf(password, pwmaxlen, "%s", Password);
 
 #ifdef VERBOSE
-  fprintf(stdout, "username: [%s]\n", username);
-  fprintf(stdout, "password: [%s]\n", password);
-  fprintf(stdout, "workgroup: [%s]\n", workgroup);
+  fprintf(stdout, "username: [%s]\n", username ? username : "(null)");
+  fprintf(stdout, "password: [%s]\n", password ? password : "(null)");
+  fprintf(stdout, "workgroup: [%s]\n", workgroup ? workgroup : "(null)");
 #endif
 
 
