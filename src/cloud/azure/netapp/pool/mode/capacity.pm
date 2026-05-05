@@ -177,8 +177,9 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            "resource:s@"      => { name => 'resource' },
+            "resource:s"       => { name => 'resource' },
             "resource-group:s" => { name => 'resource_group' },
+            "account-name:s"   => { name => 'account_name' },
             "filter-metric:s"  => { name => 'filter_metric' },
             "api-version:s"    => { name => 'api_version', default => '2018-01-01' },
         }
@@ -192,11 +193,18 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
-        $self->{output}->add_option_msg(short_msg =>
-            'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg =>
+            'Need to specify either --resource <name> with --resource-group and --account-name option or --resource <id>.');
+    } elsif ($self->{option_results}->{resource} !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.NetApp\/netAppAccounts\/(.*)\/capacityPools\/(.*)$/) {
+        if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq ''
+            || !defined($self->{option_results}->{account_name}) || $self->{option_results}->{account_name} eq '') {
+            $self->{output}->option_exit(short_msg =>
+                'Need to specify --resource-group and --account-name together with --resource <name>.');
+        }
     }
 
+    $self->{az_account_name} = $self->{option_results}->{account_name};
+    $self->{az_subscription_id} = $self->{option_results}->{subscription};
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));;
     $self->{az_resource_type} = 'netAppAccounts';
@@ -211,80 +219,82 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %metric_results;
-    foreach my $resource (@{$self->{az_resource}}) {
-        my $resource_group = $self->{az_resource_group};
-        my $resource_name = $resource;
-        my $account_name = undef;
+    my $resource = $self->{az_resource};
+    my $resource_group = $self->{az_resource_group};
+    my $resource_name = $resource;
+    my $account_name = $self->{az_account_name};;
 
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.NetApp\/netAppAccounts\/(.*)\/capacityPools\/(.*)$/) {
-            $resource_group = $1;
-            $account_name = $2;
-            $resource_name = $3;
-        }
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.NetApp\/netAppAccounts\/(.*)\/capacityPools\/(.*)$/) {
+        $resource_group = $1;
+        $account_name = $2;
+        $resource_name = $3;
+    } else {
+        $resource = '/subscriptions/' . $self->{az_subscription_id} . '/resourceGroups/'
+            . $resource_group . '/providers/Microsoft.NetApp/netAppAccounts/'
+            . $account_name . '/capacityPools/' . $resource_name;
+    }
 
-        my $metrics = $options{custom}->azure_list_resource_metrics(resource => $resource);
-        my %metric_values = map {
-            $_->{name}->{value} => $_;
-        } @$metrics;
+    my $metrics = $options{custom}->azure_list_resource_metrics(resource => $resource);
+    my %metric_values = map {
+        $_->{name}->{value} => $_;
+    } @$metrics;
 
-        foreach my $metric (keys %{$self->{metrics_mapping}}) {
-            my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
-            next if is_excluded($metric_label_name, $self->{option_results}->{filter_metric});
+    foreach my $metric (keys %{$self->{metrics_mapping}}) {
+        my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
+        next if is_excluded($metric_label_name, $self->{option_results}->{filter_metric});
 
-            next unless exists $metric_values{$metric};
+        next unless exists $metric_values{$metric};
 
-            push @{$self->{az_metrics}}, $metric;
-        }
+        push @{$self->{az_metrics}}, $metric;
+    }
 
-        ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource           => $account_name . '/capacityPools/' . $resource_name,
-            resource_group     => $resource_group,
-            resource_type      => $self->{az_resource_type},
-            resource_namespace => $self->{az_resource_namespace},
-            metrics            => $self->{az_metrics},
-            aggregations       => $self->{az_aggregations},
-            timeframe          => $self->{az_timeframe},
-            interval           => $self->{az_interval},
-        );
+    ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
+        resource           => $account_name . '/capacityPools/' . $resource_name,
+        resource_group     => $resource_group,
+        resource_type      => $self->{az_resource_type},
+        resource_namespace => $self->{az_resource_namespace},
+        metrics            => $self->{az_metrics},
+        aggregations       => $self->{az_aggregations},
+        timeframe          => $self->{az_timeframe},
+        interval           => $self->{az_interval},
+    );
 
-        foreach my $metric (@{$self->{az_metrics}}) {
-            my $metric_name = lc($metric);
-            $metric_name =~ s/ /_/g;
-            my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
-            my $aggregations = [];
+    foreach my $metric (@{$self->{az_metrics}}) {
+        my $metric_name = lc($metric);
+        $metric_name =~ s/ /_/g;
+        my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
+        my $aggregations = [];
 
-            if (defined($self->{option_results}->{aggregation})) {
-                foreach my $stat (@{$self->{option_results}->{aggregation}}) {
-                    if ($stat ne '') {
-                        push @{$aggregations}, ucfirst(lc($stat));
-                    }
+        if (defined($self->{option_results}->{aggregation})) {
+            foreach my $stat (@{$self->{option_results}->{aggregation}}) {
+                if ($stat ne '') {
+                    push @{$aggregations}, ucfirst(lc($stat));
                 }
-            } else {
-                push @{$aggregations}, lc($metric_values{$metric}->{primaryAggregationType});
             }
+        } else {
+            push @{$aggregations}, lc($metric_values{$metric}->{primaryAggregationType});
+        }
 
-            foreach my $aggregation (@{$aggregations}) {
-                my $metric_def = $metric_values{$metric};
-                my %agg_lookup = map {lc($_) => 1} @{$metric_def->{supportedAggregationTypes}};
+        foreach my $aggregation (@{$aggregations}) {
+            my $metric_def = $metric_values{$metric};
+            my %agg_lookup = map {lc($_) => 1} @{$metric_def->{supportedAggregationTypes}};
 
-                next if !exists $agg_lookup{lc($aggregation)};
-                next if (!defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
+            next if !exists $agg_lookup{lc($aggregation)};
+            next if (!defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) && !defined($self->{option_results}->{zeroed}));
 
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
-                $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_label_name . "_" . lc($aggregation)} =
-                    defined($metric_results{$resource_name}->{$metric_label_name}->{lc($aggregation)}) ?
-                        $metric_results{$resource_name}->{$metric_label_name}->{lc($aggregation)} :
-                        0;
-            }
+            $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{display} = $resource_name;
+            $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
+            $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
+            $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_label_name . "_" . lc($aggregation)} =
+                defined($metric_results{$resource_name}->{$metric_label_name}->{lc($aggregation)}) ?
+                    $metric_results{$resource_name}->{$metric_label_name}->{lc($aggregation)} :
+                    0;
         }
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg =>
+        $self->{output}->option_exit(short_msg =>
             'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
     }
 }
 

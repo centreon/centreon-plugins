@@ -260,8 +260,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "resource:s@"      => { name => 'resource' },
+        "resource:s"       => { name => 'resource' },
         "resource-group:s" => { name => 'resource_group' },
+        "account-name:s"   => { name => 'account_name' },
+        "pool-name:s"      => { name => 'pool_name' },
         "filter-metric:s"  => { name => 'filter_metric' },
         "api-version:s"    => { name => 'api_version', default => '2018-01-01' },
     });
@@ -274,11 +276,19 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
-        $self->{output}->add_option_msg(short_msg =>
+        $self->{output}->option_exit(short_msg =>
             'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
-        $self->{output}->option_exit();
+    } elsif ($self->{option_results}->{resource} !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.NetApp\/netAppAccounts\/(.*)\/capacityPools\/(.*)\/volumes\/(.*)$/) {
+        if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq ''
+            || !defined($self->{option_results}->{account_name}) || $self->{option_results}->{account_name} eq '') {
+            $self->{output}->option_exit(short_msg =>
+                'Need to specify --resource-group and --account-name together with --resource <name>.');
+        }
     }
 
+    $self->{az_account_name} = $self->{option_results}->{account_name};
+    $self->{az_pool_name} = $self->{option_results}->{pool_name};
+    $self->{az_subscription_id} = $self->{option_results}->{subscription};
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));;
     $self->{az_resource_type} = 'netAppAccounts';
@@ -293,63 +303,65 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my %metric_results;
-    foreach my $resource (@{$self->{az_resource}}) {
-        my $resource_group = $self->{az_resource_group};
-        my $resource_name = $resource;
-        my $account_name = undef;
-        my $pool_name = undef;
+    my $resource = $self->{az_resource};
+    my $resource_group = $self->{az_resource_group};
+    my $resource_name = $resource;
+    my $account_name = $self->{az_account_name};
+    my $pool_name = $self->{az_pool_name};
 
-        if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.NetApp\/netAppAccounts\/(.*)\/capacityPools\/(.*)\/volumes\/(.*)$/) {
-            $resource_group = $1;
-            $account_name = $2;
-            $pool_name = $3;
-            $resource_name = $4;
-        }
+    if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.NetApp\/netAppAccounts\/(.*)\/capacityPools\/(.*)\/volumes\/(.*)$/) {
+        $resource_group = $1;
+        $account_name = $2;
+        $pool_name = $3;
+        $resource_name = $4;
+    } else {
+        $resource = '/subscriptions/' . $self->{az_subscription_id} . '/resourceGroups/'
+            . $resource_group . '/providers/Microsoft.NetApp/netAppAccounts/'
+            . $account_name . '/capacityPools/' . $pool_name . '/volumes/' . $resource_name;
+    }
 
-        my $metrics = $options{custom}->azure_list_resource_metrics(resource => $resource);
-        my %metric_values = map {
-            $_->{name}->{value} => $_;
-        } @$metrics;
+    my $metrics = $options{custom}->azure_list_resource_metrics(resource => $resource);
+    my %metric_values = map {
+        $_->{name}->{value} => $_;
+    } @$metrics;
 
-        foreach my $metric (keys %{$self->{metrics_mapping}}) {
-            my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
-            next if is_excluded($metric_label_name, $self->{option_results}->{filter_metric});
+    foreach my $metric (keys %{$self->{metrics_mapping}}) {
+        my $metric_label_name = $self->{metrics_mapping}{$metric}->{label};
+        next if is_excluded($metric_label_name, $self->{option_results}->{filter_metric});
 
-            next unless exists $metric_values{$metric};
+        next unless exists $metric_values{$metric};
 
-            push @{$self->{az_metrics}}, $metric;
-        }
+        push @{$self->{az_metrics}}, $metric;
+    }
 
-        ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
-            resource           => $account_name . '/capacityPools/' . $pool_name . '/volumes/' . $resource_name,
-            resource_group     => $resource_group,
-            resource_type      => $self->{az_resource_type},
-            resource_namespace => $self->{az_resource_namespace},
-            metrics            => $self->{az_metrics},
-            aggregations       => $self->{az_aggregations},
-            timeframe          => $self->{az_timeframe},
-            interval           => $self->{az_interval},
-        );
+    ($metric_results{$resource_name}, undef, undef) = $options{custom}->azure_get_metrics(
+        resource           => $account_name . '/capacityPools/' . $pool_name . '/volumes/' . $resource_name,
+        resource_group     => $resource_group,
+        resource_type      => $self->{az_resource_type},
+        resource_namespace => $self->{az_resource_namespace},
+        metrics            => $self->{az_metrics},
+        aggregations       => $self->{az_aggregations},
+        timeframe          => $self->{az_timeframe},
+        interval           => $self->{az_interval},
+    );
 
-        foreach my $metric (@{$self->{az_metrics}}) {
-            my $metric_name = lc($metric);
-            $metric_name =~ s/ /_/g;
+    foreach my $metric (@{$self->{az_metrics}}) {
+        my $metric_name = lc($metric);
+        $metric_name =~ s/ /_/g;
 
-            next if (!defined($metric_results{$resource_name}->{$metric_name}->{average}) && !defined($self->{option_results}->{zeroed}));
+        next if (!defined($metric_results{$resource_name}->{$metric_name}->{average}) && !defined($self->{option_results}->{zeroed}));
 
-            $self->{metric}->{$resource_name}->{display} = $resource_name;
-            $self->{metric}->{$resource_name}->{timeframe} = $self->{az_timeframe};
-            $self->{metric}->{$resource_name }->{$metric_name} =
-                defined($metric_results{$resource_name}->{$metric_name}->{average}) ?
-                    $metric_results{$resource_name}->{$metric_name}->{average} :
-                    0;
-        }
+        $self->{metric}->{$resource_name}->{display} = $resource_name;
+        $self->{metric}->{$resource_name}->{timeframe} = $self->{az_timeframe};
+        $self->{metric}->{$resource_name }->{$metric_name} =
+            defined($metric_results{$resource_name}->{$metric_name}->{average}) ?
+                $metric_results{$resource_name}->{$metric_name}->{average} :
+                0;
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg =>
+        $self->{output}->option_exit(short_msg =>
             'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
     }
 }
 
