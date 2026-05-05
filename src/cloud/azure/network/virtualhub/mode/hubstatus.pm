@@ -105,8 +105,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --resource-group option");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Need to specify --resource-group option");
     }
 
 }
@@ -137,8 +136,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{hubs}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No Virtual Hub found.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No Virtual Hub found.");
     }
 }
 

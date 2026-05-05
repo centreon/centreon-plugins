@@ -120,7 +120,7 @@ sub set_counters {
             my $entry = {
                 label      => $metric_label . '-' . $aggregation,
                 nlabel     => $metric->{nlabel},
-                display_ok => ,$metric->{display_ok},
+                display_ok =>, $metric->{display_ok},
                 set        => {
                     key_values      =>
                         [
@@ -166,11 +166,16 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
-        $self->{output}->add_option_msg(short_msg =>
+        $self->{output}->option_exit(short_msg =>
             'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
-        $self->{output}->option_exit();
+    } elsif ($self->{option_results}->{resource} !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualHubs\/(.*)$/) {
+        if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
+            $self->{output}->option_exit(short_msg =>
+                'Need to specify --resource-group together with --resource <name>.');
+        }
     }
 
+    $self->{az_subscription_id} = $self->{option_results}->{subscription};
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));;
     $self->{az_resource_type} = 'virtualHubs';
@@ -191,6 +196,9 @@ sub manage_selection {
         if ($resource =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualHubs\/(.*)$/) {
             $resource_group = $1;
             $resource_name = $2;
+        } else {
+            $resource = '/subscriptions/' . $self->{az_subscription_id} . '/resourceGroups/'
+                . $resource_group . '/providers/Microsoft.Network/virtualHubs/' . $resource_name;
         }
 
         my $metrics = $options{custom}->azure_list_resource_metrics(resource => $resource);
@@ -253,9 +261,8 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg =>
+        $self->{output}->option_exit(short_msg =>
             'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
-        $self->{output}->option_exit();
     }
 }
 
