@@ -319,9 +319,6 @@ jobs:
 
     container:
       image: ghcr.io/${{ github.repository }}/${{ matrix.image }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     name: "Package ${{ matrix.distrib }}"
 
