@@ -129,7 +129,7 @@ sub new {
         'list-counters'           => { name => 'list_counters' }
     });
     $self->{statefile_value} = undef;
-    if (defined($options{statefile}) && $options{statefile}) {
+    if ($options{statefile}) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'centreon::plugins::statefile',
@@ -249,9 +249,7 @@ sub check_options {
 
     $self->change_macros(macros => $change_macros_opt) if (scalar(@$change_macros_opt) > 0);
 
-    if (defined($self->{statefile_value})) {
-        $self->{statefile_value}->check_options(%options);
-    }
+    $self->{statefile_value}->check_options(%options) if $self->{statefile_value};
 }
 
 sub run_global {
