@@ -22,7 +22,7 @@ dnf clean all
 dnf install -y python3.13 python3.13-pip
 pip3.13 install robotframework robotframework-examples
 # Install snmpsim
-pip3.13 install snmpsim
+pip3.13 install snmpsim pysmi
 
 dnf install -y nodejs24
 curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=${PNPM_VERSION} bash -
