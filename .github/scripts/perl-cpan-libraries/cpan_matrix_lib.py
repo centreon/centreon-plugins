@@ -65,6 +65,22 @@ DEB_BUILD_NAME_INCLUDES = [
         "arch": "arm64",
         "runner_name": "ubuntu-24.04-arm",
     },
+    {
+        "build_name": "bookworm-arm64",
+        "distrib":    "bookworm",
+        "package_extension": "deb",
+        "image": "packaging-plugins-bookworm-arm64",
+        "arch": "arm64",
+        "runner_name": "ubuntu-24.04-arm",
+    },
+    {
+        "build_name": "trixie-arm64",
+        "distrib":    "trixie",
+        "package_extension": "deb",
+        "image": "packaging-plugins-trixie-arm64",
+        "arch": "arm64",
+        "runner_name": "ubuntu-24.04-arm",
+    },
 ]
 
 # ── Derived constants (single source of truth: the include lists above) ────────

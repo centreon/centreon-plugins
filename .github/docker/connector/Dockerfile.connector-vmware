@@ -1,0 +1,215 @@
+# Build arg to select vmware Perl source: false=use .deb (production), true=use local repo (dev/test)
+ARG USE_SOURCE_VMWARE=false
+# Build arg to include VMware Perl SDK (requires proprietary files in sdks-vmware/ — see sdks-vmware/README.md)
+ARG WITH_SDK=false
+
+#############################################
+# Stage 1: Extract files from .deb packages
+#############################################
+FROM debian:12-slim AS extractor
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    dpkg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Extract .deb package (mounted via --mount during build)
+RUN --mount=type=bind,source=packages-centreon,target=/packages \
+    mkdir -p /extracted && \
+    cd /packages && \
+    for deb in centreon-plugin-Virtualization-VMWare-daemon*.deb; do \
+        echo "Extracting $deb..."; \
+        dpkg-deb -x "$deb" /extracted/; \
+    done && \
+    echo "=== Extracted Perl modules ===" && \
+    ls -lah /extracted/usr/share/perl5/centreon/ || true && \
+    echo "=== Extracted binaries ===" && \
+    ls -lah /extracted/usr/bin/ || true
+
+#############################################
+# Stage 1b/1c: Perl modules source selector
+# USE_SOURCE_VMWARE=false → extract from .deb (production default)
+# USE_SOURCE_VMWARE=true  → copy from local repo source (dev/testing)
+#############################################
+FROM scratch AS vmware-perl-false
+COPY --from=extractor /extracted/usr/share/perl5/centreon /centreon-modules/
+
+FROM scratch AS vmware-perl-true
+COPY connectors/vmware/src/centreon/ /centreon-modules/
+
+ARG USE_SOURCE_VMWARE=false
+# hadolint ignore=DL3006
+FROM vmware-perl-${USE_SOURCE_VMWARE} AS vmware-perl-selected
+
+#############################################
+# Stage 1d/1e: Binary source selector
+#############################################
+FROM scratch AS vmware-bin-false
+COPY --from=extractor /extracted/usr/bin/centreon_vmware.pl /centreon_vmware.pl
+COPY --from=extractor /extracted/usr/bin/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
+
+FROM scratch AS vmware-bin-true
+COPY connectors/vmware/src/centreon_vmware.pl /centreon_vmware.pl
+COPY connectors/vmware/src/centreon/script/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
+
+ARG USE_SOURCE_VMWARE=false
+# hadolint ignore=DL3006
+FROM vmware-bin-${USE_SOURCE_VMWARE} AS vmware-bin-selected
+
+#############################################
+# Stage 2a: VMware SDK — with SDK (WITH_SDK=true)
+# Requires SDK archives in sdks-vmware/ (gitignored — proprietary Broadcom license):
+#   - VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz  (download from https://developer.broadcom.com)
+#   - vsan-sdk-perl.zip                                       (download from https://developer.broadcom.com)
+# Build with: docker build --build-arg WITH_SDK=true .
+#############################################
+FROM debian:12-slim AS sdk-true
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    perl \
+    make \
+    patch \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY .github/docker/connector/VICommon.patch /tmp/VICommon.patch
+
+RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
+    set -e && \
+    cd /tmp && \
+    tar zxf /sdks/VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz && \
+    cd vmware-vsphere-cli-distrib && \
+    patch --backup lib/VMware/share/VMware/VICommon.pm /tmp/VICommon.patch && \
+    perl Makefile.PL && \
+    make pure_install && \
+    echo "=== vSphere SDK installed ===" && \
+    ls -lah /usr/local/share/perl/
+
+RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
+    set -e && \
+    cd /tmp && \
+    unzip /sdks/vsan-sdk-perl.zip && \
+    mkdir -p /usr/local/share/perl5/VMware && \
+    cp ./vsan-sdk-perl/bindings/VIM25Vsanmgmt* /usr/local/share/perl5/VMware/ && \
+    echo "=== vSAN SDK installed ===" && \
+    ls -lah /usr/local/share/perl5/VMware/
+
+#############################################
+# Stage 2b: VMware SDK — without SDK (WITH_SDK=false, default)
+# Used by CI and public image builds. The daemon starts but encrypted::
+# credentials won't be decryptable without the SDK.
+#############################################
+FROM debian:12-slim AS sdk-false
+
+RUN mkdir -p /usr/local/share/perl/5.36.0/VMware /usr/local/share/perl5/VMware
+
+# hadolint ignore=DL3006
+FROM sdk-${WITH_SDK} AS sdk-installer
+
+#############################################
+# Stage 3: Runtime - Debian 12 slim image
+#############################################
+FROM debian:12-slim AS centreon-vmware
+
+ARG VERSION
+ARG STABILITY
+
+# Create users and groups
+RUN groupadd -g 33 www-data 2>/dev/null || true && \
+    groupadd -g 900 centreon && \
+    useradd -u 900 -g centreon -m -r -d /var/spool/centreon -s /bin/bash centreon && \
+    groupadd -g 901 centreon-engine && \
+    useradd -u 901 -g centreon-engine -m -r -d /var/lib/centreon-engine -s /bin/bash centreon-engine && \
+    groupadd -g 903 centreon-gorgone && \
+    useradd -u 903 -g centreon-gorgone -m -r -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone && \
+    usermod -aG centreon-engine centreon && \
+    usermod -aG centreon-gorgone centreon
+
+# Add Centreon plugins-stable repository (needed for libnet-curl-perl on amd64)
+RUN apt-get update && apt-get install -y --no-install-recommends gnupg wget ca-certificates && \
+    echo "deb [arch=amd64] https://packages.centreon.com/apt-plugins-stable/ bookworm main" \
+        > /etc/apt/sources.list.d/centreon-plugins.list && \
+    wget -O- https://apt-key.centreon.com | gpg --dearmor \
+        | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    perl \
+    libclass-methodmaker-perl \
+    libcrypt-openssl-aes-perl \
+    libcrypt-ssleay-perl \
+    libio-socket-inet6-perl \
+    libjson-xs-perl \
+    liblwp-protocol-https-perl \
+    libsoap-lite-perl \
+    libtext-template-perl \
+    libuuid-perl \
+    libzmq-constants-perl \
+    libzmq-libzmq4-perl \
+    libxml-libxml-perl \
+    libjson-perl \
+    libzmq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install libnet-curl-perl (only available in Centreon plugins repo for amd64, cpanm fallback for arm64)
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            libnet-curl-perl && \
+        rm -rf /var/lib/apt/lists/*; \
+    else \
+        apt-get update && apt-get install -y --no-install-recommends \
+            cpanminus \
+            build-essential \
+            libcurl4-openssl-dev \
+            libssl-dev && \
+        rm -rf /var/lib/apt/lists/* && \
+        cpanm --notest Net::Curl; \
+    fi
+
+# Create directory structure
+RUN mkdir -p \
+        /etc/centreon \
+        /tmp/centreon_vmware && \
+    chown -R centreon-gorgone:centreon /etc/centreon && \
+    chmod -R 775 /etc/centreon && \
+    chown centreon:centreon /tmp/centreon_vmware && \
+    chmod 775 /tmp/centreon_vmware
+
+# Copy VMware SDK from installer stage
+# vSphere SDK: make pure_install puts modules in the versioned site path
+COPY --from=sdk-installer /usr/local/share/perl/ /usr/local/share/perl/
+# vSAN SDK: copied directly to /usr/local/share/perl5/VMware/
+COPY --from=sdk-installer /usr/local/share/perl5/VMware/ /usr/local/share/perl5/VMware/
+
+# Copy Perl modules from selector (centreon vmware modules + script modules)
+COPY --from=vmware-perl-selected /centreon-modules/ /usr/share/perl5/centreon/
+
+# Copy executables from selector
+COPY --from=vmware-bin-selected --chmod=755 /centreon_vmware.pl /usr/bin/centreon_vmware.pl
+COPY --from=vmware-bin-selected --chmod=755 /centreon_vmware_convert_config_file /usr/bin/centreon_vmware_convert_config_file
+
+# Copy default configuration (template with placeholder vCenter URLs)
+COPY --chown=centreon-gorgone:centreon --chmod=660 \
+    connectors/vmware/packaging/config/centreon_vmware-conf.json \
+    /etc/centreon/centreon_vmware.json
+
+# Verify critical files exist
+RUN echo "=== Verification ===" && \
+    ls -lah /usr/bin/centreon_vmware.pl && \
+    ls -lah /usr/bin/centreon_vmware_convert_config_file && \
+    ls -lah /usr/share/perl5/centreon/ && \
+    ls -lah /usr/local/share/perl5/VMware/ && \
+    ls -lah /etc/centreon/ && \
+    echo "=== Files verified ==="
+
+ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
+
+WORKDIR /etc/centreon
+
+USER centreon
+
+CMD ["/usr/bin/perl", "/usr/bin/centreon_vmware.pl", \
+     "--config-extra=/etc/centreon/centreon_vmware.json", \
+     "--logfile=/dev/stdout", \
+     "--severity=error"]
