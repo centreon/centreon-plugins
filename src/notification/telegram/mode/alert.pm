@@ -427,7 +427,7 @@ C</main.php?p=20202>) instead of the new Resources Status page.
 
 =item B<--centreon-token>
 
-Specify the centreon token for autologin macro (could be used in link-url and graph-url option).
+Specify the centreon token for auto-login macro (could be used in link-url and graph-url option).
 
 =item B<--graph-url>
 
