@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Now Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
+use URI::Encode;
 
 my %telegram_icon_host = (
     up => "\x{2705}",
@@ -61,6 +62,8 @@ sub new {
         "link-url:s"            => { name => 'link_url' },
         "centreon-url:s"        => { name => 'centreon_url' },
         "centreon-token:s"      => { name => 'centreon_token' },
+        "action-links"          => { name => 'action_links' },
+        "legacy"                => { name => 'legacy' },
         "timeout:s"             => { name => 'timeout' }
     });
 
@@ -84,6 +87,12 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to specify --host-name option.");
         $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{action_links})) {
+        if (!defined($self->{option_results}->{centreon_url}) || $self->{option_results}->{centreon_url} eq '') {
+            $self->{output}->add_option_msg(short_msg => "Please set --centreon-url option when using --action-links");
+            $self->{output}->option_exit();
+        }
+    }
 
     foreach (('graph_url', 'link_url')) {
         if (defined($self->{option_results}->{$_})) {
@@ -94,8 +103,131 @@ sub check_options {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
+# Build the URL path pointing to the new Resources Status page (/monitoring/resources),
+# with a pre-filled JSON filter for the host and/or service.
+sub build_resource_status_filters {
+    my ($self, %options) = @_;
+
+    my $data_format = URI::Encode->new({ encode_reserved => 1 });
+
+    my $raw_resource_status_filters = {
+        "id"        => "",
+        "name"      => "New+filter",
+        "criterias" => [
+            {
+                "name"        => "resource_types",
+                "object_type" => undef,
+                "type"        => "multi_select",
+                "value"       => [
+                    {
+                        "id"   => "service",
+                        "name" => "Service"
+                    }
+                ]
+            },
+            {
+                "name"        => "states",
+                "object_type" => undef,
+                "type"        => "multi_select",
+                "value"       => []
+            },
+            {
+                "name"        => "statuses",
+                "object_type" => undef,
+                "type"        => "multi_select",
+                "value"       => []
+            },
+            {
+                "name"        => "status_types",
+                "object_type" => undef,
+                "type"        => "multi_select",
+                "value"       => []
+            },
+            {
+                "name"        => "host_groups",
+                "object_type" => "host_groups",
+                "type"        => "multi_select",
+                "value"       => []
+            },
+            {
+                "name"        => "service_groups",
+                "object_type" => "service_groups",
+                "type"        => "multi_select",
+                "value"       => []
+            },
+            {
+                "name"        => "monitoring_servers",
+                "object_type" => "monitoring_servers",
+                "type"        => "multi_select",
+                "value"       => []
+            },
+            {
+                "name"        => "search",
+                "object_type" => undef,
+                "type"        => "text",
+                "value"       => sprintf(
+                    's.description:%s h.name:%s',
+                    defined($self->{option_results}->{service_description}) ? $self->{option_results}->{service_description} : '',
+                    defined($self->{option_results}->{host_name})           ? $self->{option_results}->{host_name}           : ''
+                )
+            },
+            {
+                "name"        => "sort",
+                "object_type" => undef,
+                "type"        => "array",
+                "value"       => [ "status_severity_code", "asc" ]
+            }
+        ]
+    };
+
+    my $link_url_path           = '/monitoring/resources?filter=';
+    my $encoded_filters         = JSON::XS->new->utf8->encode($raw_resource_status_filters);
+    my $encoded_data_for_uri    = $data_format->encode($encoded_filters);
+    $link_url_path             .= $encoded_data_for_uri;
+
+    return $link_url_path;
+}
+
+sub build_action_links {
+    my ($self, %options) = @_;
+
+    return unless defined($self->{option_results}->{action_links});
+
+    my $resource_type = (defined($self->{option_results}->{service_description})
+                         && $self->{option_results}->{service_description} ne '')
+                        ? 'service' : 'host';
+
+    my $uri          = URI::Encode->new({ encode_reserved => 0 });
+    my $link_url_path;
+
+    if (defined($self->{option_results}->{legacy})) {
+        # Legacy: redirect to deprecated Centreon monitoring pages
+        $link_url_path = '/main.php?p=2020';
+        if ($resource_type eq 'service') {
+            $link_url_path .= '1&o=svc&host_search=' . $self->{option_results}->{host_name}
+                           .  '&search='             . $self->{option_results}->{service_description};
+        } else {
+            $link_url_path .= '2&o=svc&host_search=' . $self->{option_results}->{host_name};
+        }
+    } else {
+        # Default: redirect to the new Resources Status page
+        $link_url_path = $self->build_resource_status_filters();
+    }
+
+    my $link_uri_encoded = $uri->encode($self->{option_results}->{centreon_url}) . $link_url_path;
+    $self->{action_link_url} = $link_uri_encoded;
+
+    # Graph link (service only) : always points to the performance graph page
+    if ($resource_type eq 'service') {
+        my $graph_url_path   = '/main.php?p=204&mode=0&svc_id='
+                             . $self->{option_results}->{host_name} . ';'
+                             . $self->{option_results}->{service_description};
+        $self->{action_graph_url} = $uri->encode($self->{option_results}->{centreon_url} . $graph_url_path);
+    }
+}
+
 sub host_message {
-  my ($self, %options) = @_;
+    my ($self, %options) = @_;
 
     if (defined($self->{option_results}->{host_state}) && $self->{option_results}->{host_state} ne '') {
         if (defined($telegram_icon_host{lc($self->{option_results}->{host_state})})) {
@@ -113,7 +245,11 @@ sub host_message {
     if (defined($self->{option_results}->{host_output}) && $self->{option_results}->{host_output} ne '') {
         $self->{message} .= "\n " . $self->{option_results}->{host_output};
     }
-    if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
+
+    # --action-links takes priority over the manual --link-url
+    if (defined($self->{action_link_url}) && $self->{action_link_url} ne '') {
+        $self->{message} .= "\n <a href=\"" . $self->{action_link_url} . "\">Link</a>";
+    } elsif (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $self->{message} .= "\n <a href=\"" . $self->{option_results}->{link_url} . "\">Link</a>";
     }
 }
@@ -135,18 +271,28 @@ sub service_message {
         $self->{message} .= ' alert';
     }
     if (defined($self->{option_results}->{service_output}) && $self->{option_results}->{service_output} ne '') {
-        $self->{message} .= "\n ".  $self->{option_results}->{service_output};
+        $self->{message} .= "\n " . $self->{option_results}->{service_output};
     }
-    if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
+
+    # --action-links takes priority over the manual --link-url / --graph-url
+    if (defined($self->{action_link_url}) && $self->{action_link_url} ne '') {
+        $self->{message} .= "\n <a href=\"" . $self->{action_link_url} . "\">Link</a>";
+    } elsif (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $self->{message} .= "\n <a href=\"" . $self->{option_results}->{link_url} . "\">Link</a>";
     }
-    if (defined($self->{option_results}->{graph_url}) && $self->{option_results}->{graph_url} ne '') {
+
+    if (defined($self->{action_graph_url}) && $self->{action_graph_url} ne '') {
+        $self->{message} .= "\n <a href=\"" . $self->{action_graph_url} . "\">Graph</a>";
+    } elsif (defined($self->{option_results}->{graph_url}) && $self->{option_results}->{graph_url} ne '') {
         $self->{message} .= "\n <a href=\"" . $self->{option_results}->{graph_url} . "\">Graph</a>";
     }
 }
 
 sub set_payload {
     my ($self, %options) = @_;
+
+    # Build action links (Resources Status or legacy pages) before composing the message
+    $self->build_action_links();
 
     if (defined($self->{option_results}->{service_description}) && $self->{option_results}->{service_description} ne '') {
         $self->service_message();
@@ -161,9 +307,9 @@ sub format_payload {
     my $json = JSON::XS->new->utf8;
 
     my $payload = {
-        chat_id =>$self->{option_results}->{chat_id},
+        chat_id    => $self->{option_results}->{chat_id},
         parse_mode => 'HTML',
-        text => $self->{message}
+        text       => $self->{message}
     };
     eval {
         $self->{payload_str} = $json->encode($payload);
@@ -174,20 +320,20 @@ sub format_payload {
     }
 }
 
-
 sub run {
     my ($self, %options) = @_;
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    $self->{http}->add_header(key => 'Accept', value => 'application/json');
+    $self->{http}->add_header(key => 'Accept',       value => 'application/json');
 
     $self->set_payload();
     $self->format_payload();
 
     my $url_path = '/bot' . $self->{option_results}->{bot_token} . $self->{option_results}->{url_path};
     my $response = $self->{http}->request(
-        url_path => $url_path,
-        method => 'POST', query_form_post => $self->{payload_str}
+        url_path        => $url_path,
+        method          => 'POST',
+        query_form_post => $self->{payload_str}
     );
 
     my $decoded;
@@ -229,6 +375,10 @@ Use Telegram CLI for getting Chat ID
 Telegram Bot Token (Check Telegram Doc for Creating Bot)
 https://core.telegram.org/bots#3-how-do-i-create-a-bot
 
+=item B<--host-name>
+
+Specify host server name for the alert (required).
+
 =item B<--host-state>
 
 Specify host server state for the alert.
@@ -236,10 +386,6 @@ Specify host server state for the alert.
 =item B<--host-output>
 
 Specify host server output message for the alert.
-
-=item B<--host-name>
-
-Specify host server name for the alert (required).
 
 =item B<--service-description>
 
@@ -253,9 +399,31 @@ Specify service state for the alert.
 
 Specify service output message for the alert.
 
+=item B<--action-links>
+
+Only to be used with Centreon.
+
+Automatically generate and add links to the notification message pointing to the
+Centreon Resources Status page (C</monitoring/resources>) with a pre-filled filter
+for the notified host/service.
+
+Requires C<--centreon-url> to be set.
+
+When combined with C<--legacy>, links will point to the deprecated monitoring pages
+(C</main.php?p=2020x>) instead.
+
 =item B<--centreon-url>
 
-Specify the centreon url macro (could be used in link-url and graph-url option).
+Specify the Centreon interface URL (to be used with C<--action-links>).
+
+Syntax: C<--centreon-url='https://mycentreon.mydomain.local/centreon'>
+
+=item B<--legacy>
+
+Only to be used with Centreon together with C<--action-links>.
+
+Redirect to the deprecated Centreon resource status pages (C</main.php?p=20201> /
+C</main.php?p=20202>) instead of the new Resources Status page.
 
 =item B<--centreon-token>
 
@@ -263,11 +431,19 @@ Specify the centreon token for autologin macro (could be used in link-url and gr
 
 =item B<--graph-url>
 
-Specify the graph url (example: %{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}).
+Specify a custom graph url.
+
+Example: C<%{centreon_url}/include/views/graphs/generateGraphs/generateImage.php?username=myuser&token=%{centreon_token}&hostname=%{host_name}&service=%{service_description}>
+
+Ignored when C<--action-links> is set (the graph link is then built automatically).
 
 =item B<--link-url>
 
-Specify the link url (example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
+Specify a custom link url.
+
+Example: C<%{centreon_url}/monitoring/resources>
+
+Ignored when C<--action-links> is set (the link is then built automatically).
 
 =item B<--timeout>
 
