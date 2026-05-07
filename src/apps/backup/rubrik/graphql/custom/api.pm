@@ -392,7 +392,7 @@ sub request_api_paginate {
             # 00:00:00 for 'gt' comparisons and 23:59:59 for 'lt' comparisons
             my $end = $ts =~ /gt$/i ? '00:00:00' : '23:59:59';
             $variables->{$filter}->{$ts}.='T'.$end.'Z';
-        } elsif (length($variables->{$filter}) == 19) {
+        } elsif (length($variables->{$filter}->{$ts}) == 19) {
             $variables->{$filter}->{$ts}=~s/\s/T/;
             $variables->{$filter}->{$ts}.='Z';
         }

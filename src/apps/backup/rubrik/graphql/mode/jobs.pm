@@ -267,7 +267,7 @@ sub check_options {
 
     # Defaults to last day when no other time filter is used
     $self->{option_results}->{updated_start_time} = 9800
-    unless $self->{option_results}->{updated_start_time} || $self->{option_results}->{updated_end_time} || $self->{option_results}->{start_time} || $self->{option_results}->{end_time}
+        unless $self->{option_results}->{updated_start_time} || $self->{option_results}->{updated_end_time} || $self->{option_results}->{start_time} || $self->{option_results}->{end_time}
 
 }
 
