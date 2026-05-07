@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -62,7 +62,7 @@ sub check_oids_label {
 sub set_oids_label {
     my ($self, %options) = @_;
 
-    $self->{oids_label} = {
+    $self->{oids_label} //= {
         'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
         'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
         'ifname' => '.1.3.6.1.2.1.31.1.1.1.1'
@@ -116,6 +116,8 @@ sub new {
 
     $self->{safe} = Safe->new();
     $self->{safe}->share('$assign_var');
+
+    $self->{oids_label} //= $options{oids_label};
 
     return $self;
 }

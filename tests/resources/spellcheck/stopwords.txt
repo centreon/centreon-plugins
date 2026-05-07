@@ -139,6 +139,7 @@ ifDesc
 ifName
 --ignore-orgs-api-disabled
 IKS
+IMAP
 IMEI
 in-bcast
 in-crc
@@ -412,6 +413,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
 WildFire
 WLAN
 WLC
