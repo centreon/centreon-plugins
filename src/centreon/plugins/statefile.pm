@@ -364,10 +364,7 @@ sub get_string_content {
 sub get {
     my ($self, %options) = @_;
 
-    if (defined($self->{datas}->{ $options{name} })) {
-        return $self->{datas}->{ $options{name} };
-    }
-    return undef;
+    return $self->{datas}->{ $options{name} } // $options{default} // undef;
 }
 
 sub encrypt {

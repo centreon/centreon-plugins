@@ -1,0 +1,389 @@
+{
+  "uuid": "811ed548-481d-4d19-8c8f-bfabc61c3da4",
+  "lastMigration": 33,
+  "name": "Rubrik mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "47c273aa-aad8-432a-940f-2b6f78bbc3ee",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "da8ab6f1-194c-49cf-b928-a869636edbfd",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "6dfc4fb6-09fe-40b6-9751-09b99ebd4482",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/client_token",
+      "responses": [
+        {
+          "uuid": "090edeed-dbda-48c8-9a85-2838fe6dd234",
+          "body": "{\"client_id\":\"client|xxXXxx\",\"access_token\":\"xXxXxXx\",\"expires_in\":43200}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "32b12cd1-153b-45fe-8e3e-6a52a4d79ae2",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/graphql",
+      "responses": [
+        {
+          "uuid": "7fc6bfac-a078-40bd-ae24-203b276009be",
+          "body": "{\"data\":{\"taskDetailConnection\":{\"edges\":[{\"node\":{\"clusterName\":\"RBKC-IN-DB\",\"clusterUuid\":\"586b76d3-24c4-4fb0-92d3-36a5a39d6e1b\",\"startTime\":\"2026-05-06T10:08:25.000Z\",\"endTime\":\"2026-05-06T10:09:33.000Z\",\"objectName\":\"Bdc_Service_DB_97e1ec940b6e4498a957965adbd62272\",\"objectType\":\"Mssql\",\"failureReason\":\"\",\"taskCategory\":\"Protection\",\"taskType\":\"Log Archival\",\"status\":\"Success\"}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"RXVFQ0VnaGxibVJmZEdsdFpSSVdjbVZ3YjNKMFgycHZZbDlwYm5OMFlXNWpaVjlwWkJvZjhnRVVNakF5Tmkwd05TMHdOVlF4TURveU1qbzBNVm9xQmdqeGllZlBCaHFiQXZJQmlnRXlNREkyTFRBMUxUQTFMVEV3TFRBd0l5TWpUVk5UVVV4ZlRFOUhYMEpCUTB0VlVEbzZPazFUVTFGTVgweFBSMTlDUVVOTFZWQmZNamM0WkdVd1lXWXRaak5tWVMwMFpXRmlMV0l6T1dNdE0yUTVOMk0yTXpZMlkyRm1JeU1qTVRNNU9EWTZPam8xT0RaaU56WmtNeTB5TkdNMExUUm1ZakF0T1RKa015MHpObUUxWVRNNVpEWmxNV0lLaWdFeU1ESTJMVEExTFRBMUxURXdMVEF3SXlNalRWTlRVVXhmVEU5SFgwSkJRMHRWVURvNk9rMVRVMUZNWDB4UFIxOUNRVU5MVlZCZk1qYzRaR1V3WVdZdFpqTm1ZUzAwWldGaUxXSXpPV010TTJRNU4yTTJNelkyWTJGbUl5TWpNVE01T0RZNk9qbzFPRFppTnpaa015MHlOR00wTFRSbVlqQXRPVEprTXkwek5tRTFZVE01WkRabE1XST0=\"}}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode tasks",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "getProtectionTasksStatus",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4a5205a5-ba6c-4f6b-891d-ecdd78b3772d",
+          "body": "{\"data\":{\"clusterConnection\":{\"edges\":[{\"node\":{\"id\":\"aaaaa-bbbbb-ccccc-dddd-eeee\",\"name\":\"TEST-IN\",\"clusterDiskConnection\":{\"nodes\":[{\"status\":\"ACTIVE\",\"path\":\"/\",\"diskId\":\"sda\",\"serial\"\n:\"\",\"isEncrypted\":false,\"raidStatus\":\"NONE\",\"raidType\":null},{\"status\":\"ACTIVE\",\"path\":\"/mnt/tutu\",\"diskId\":\"sdb\",\"serial\":\"\",\"isEncrypted\":false,\"raidStatus\":\"NONE\",\"raidType\":null}]}}},{\"node\":{\"id\":\"zzazaz-azab-zazbf-azazaz26-zzazazza\",\"name\":\"TEST-VI\",\"clusterDiskConnection\":{\"nodes\":[{\"status\":\"ACTIVE\",\"path\":\"/\",\"diskId\":\"sda\",\"serial\":\"\",\"isEncrypted\":false,\"raidStatus\":\"NONE\",\"raidType\":null},{\"status\":\"ACTIVE\",\"path\":\"/mnt/ekek\",\"diskId\":\"sdb\",\"serial\":\"\",\"isEncrypted\":false,\"raidStatus\":\"NONE\",\"raidType\":null},{\"status\":\"ACTIVE\",\"path\":\"/mnt/mumu\",\"diskId\":\"sdc\",\"serial\":\"\",\"isEncrypted\":false,\"raidStatus\":\"NONE\",\"raidType\":null}]}}},{\"node\":{\"id\":\"zzazaza-dfdf-42323-11116-ezezzeez\",\"name\":\"TEST-OS\",\"clusterDiskConnection\":{\"nodes\":[{\"status\":\"ACTIVE\",\"path\":\"/mnt/www\",\"diskId\":\"sdb\",\"serial\":\"\",\"isEncrypted\":true,\"raidStatus\":\"NONE\",\"raidType\":null},{\"status\":\"ACTIVE\",\"path\":\"/\",\"diskId\":\"sda\",\"serial\":\"\",\"isEncrypted\":true,\"raidStatus\":\"NONE\",\"raidType\":null}]}}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"aaaaaaa==\"}}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode disks",
+          "headers": [
+            {
+              "key": "",
+              "value": ""
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "clusterDisks",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "85bf4fd7-8fc4-4070-a0e4-f773ba013e6c",
+          "body": "{\"data\":{\"clusterConnection\":{\"edges\":[{\"node\":{\"id\":\"eaeaae-ee-aea-eeee-aeaeeaba\",\"name\":\"TEST-IN\",\"clusterNodeConnection\":{\"nodes\":[{\"id\":\"OSDIOSDDS\",\"hostname\":\"DSJKDSDS\",\"ipAddress\":\"1.2.3.4\",\"status\":\"OK\"}]}}},{\"node\":{\"id\":\"azzaza-6zaza-zzaf-zaza-3332\",\"name\":\"TEST-VI\",\"clusterNodeConnection\":{\"nodes\":[{\"id\":\"ODSIOIODS\",\"hostname\":\"DSDSDDS\",\"ipAddress\":\"5.6.7.8\",\"status\":\"OK\"}]}}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"AAAA==\"}}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode nodes",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "clusterNodes",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4eff6791-70bb-46cf-9512-e8684e8021c6",
+          "body": "{\"data\":{\"clusterConnection\":{\"edges\":[{\"node\":{\"id\":\"zzeeza-7ee1-1234-9876-aaaaaaaa\",\"name\":\"TRBKE-IN\",\"estimatedRunway\":1826,\"metric\":{\"availableCapacity\":1021356974080,\"averageDailyGrowth\":-917407,\"totalCapacity\":1034222690304,\"usedCapacity\":12865716224}}},{\"node\":{\"id\":\"94ff0288-6beb-4fbf-a726-121de6f77022\",\"name\":\"RBKE-VI\",\"estimatedRunway\":1194,\"metric\":{\"availableCapacity\":1497454981120,\"averageDailyGrowth\":1253542206,\"totalCapacity\":2070812979200,\"usedCapacity\":573357998080}}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"Y3Vyc29yOmludDoxMg==\"}}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode storage",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "clusterStorage",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "580b0fbf-a7ec-4c08-a229-d6017a863b97",
+          "body": "{\"data\":{\"clusterConnection\":{\"edges\":[{\"node\":{\"id\":\"qssqsq-sqsqsq-ssdsdsd-dsdssdsd\",\"name\":\"TEST-D1\",\"status\":\"Connected\",\"systemStatus\":\"OK\",\"isHealthy\":true,\"clusterNodeStats\":[{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":618186,\"networkBytesReceived\":2879,\"networkBytesTransmitted\":18056,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":47},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":42257,\"writeThroughputBytesPerSecond\":672256,\"networkBytesReceived\":2746,\"networkBytesTransmitted\":1444,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":53},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":661128,\"networkBytesReceived\":2597,\"networkBytesTransmitted\":2876,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":52},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":1599930,\"networkBytesReceived\":753,\"networkBytesTransmitted\":649,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":214},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":921770,\"networkBytesReceived\":3136,\"networkBytesTransmitted\":18117,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":53},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":79171}],\"ipmiInfo\":{\"isAvailable\":true,\"usesHttps\":true,\"usesIkvm\":true}}}, {\"node\":{\"id\":\"abcdeff-xwxwxwxw-xwxwxw-xwxwxw-xwxwxw\",\"name\":\"TEST-D2\",\"status\":\"Connected\",\"systemStatus\":\"OK\",\"isHealthy\":true,\"clusterNodeStats\":[{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":618186,\"networkBytesReceived\":2879,\"networkBytesTransmitted\":18056,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":47},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":42257,\"writeThroughputBytesPerSecond\":672256,\"networkBytesReceived\":2746,\"networkBytesTransmitted\":1444,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":53},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":661128,\"networkBytesReceived\":2597,\"networkBytesTransmitted\":2876,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":52},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":1599930,\"networkBytesReceived\":753,\"networkBytesTransmitted\":649,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":214},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":921770,\"networkBytesReceived\":3136,\"networkBytesTransmitted\":18117,\"iopsReadsPerSecond\":2,\"iopsWritesPerSecond\":53},{\"clusterPhysicalDataIngest\":0,\"readThroughputBytesPerSecond\":40550,\"writeThroughputBytesPerSecond\":79171}],\"ipmiInfo\":{\"isAvailable\":true,\"usesHttps\":true,\"usesIkvm\":true}}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"ABCDEFG==\"}}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode cluster",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "clusterStats",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2bd7ba6e-1a2e-4ba0-a3bd-b3117d753466",
+          "body": " {\"data\":{\"snappableConnection\":{\"edges\":[{\"node\":{\"id\":\"Fileset:::122121-1221-42116-1221-2212121\",\"name\":\"/POBIEN: **\",\"location\":\"centreon.local:PASBIEN01:/POBIEN01\",\"objectType\":\"NAS_FILESET\",\"missedSnapshots\":4,\"complianceStatus\":\"OUT_OF_COMPLIANCE\",\"protectionStatus\":\"Protected\",\"cluster\":{\"name\":\"TEST-IN\",\"id\":\"ddddd:cccc:bbbb:bbbb\"},\"slaDomain\":{\"name\":\"DADOM\"}}},{\"node\":{\"id\":\"Fileset:::121221-1212-122112-1212-aaaaaaa\",\"name\":\"/POBIEN1: **\",\"location\":\"test.local:POBIEN1:/POBIEN1\",\"objectType\":\"FILESET\",\"missedSnapshots\":4,\"complianceStatus\":\"OUT_OF_COMPLIANCE\",\"protectionStatus\":\"Protected\",\"cluster\":{\"name\":\"TEST2\",\"id\":\"zazazaza:zazazaza:zazaza:zazazaza\"},\"slaDomain\":{\"name\":\"DADOM02\"}}}]}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode compliance",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "snappableConnection",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "374ee9c7-359a-4245-ad10-e20d685723f5",
+          "body": "{\"data\":{\"activitySeriesConnection\":{\"edges\":[{\"node\":{\"id\":11,\"objectName\":\"TESTID: *\",\"objectId\":\"Fileset:::zazaza-zzzazza-dsdsdds-sdsdsd-sddssdsd\",\"objectType\":\"NAS_FILESET\",\"startTime\":\"2026-04-06T16:12:32.942Z\",\"lastUpdated\":\"2026-04-06T16:12:32.942Z\",\"lastActivityType\":\"Backup\",\"lastActivityStatus\":\"Queued\",\"failureReason\":\"Scheduled backup of Fileset 'TEST: *' on 'May 02, 2026 00:00:00 CEST'\",\"location\":\"\\\\\\\\test.local:TEST\\\\testIDT\",\"clusterName\":\"TEST-VE\",\"cluster\":{\"id\":\"azzaza-sqsqssq-sqsqsq-sqsq-sqsqsqsq\"}}},{\"node\":{\"id\":22,\"objectName\":\"TESTID: *\",\"objectId\":\"Fileset:::zazaza-sqsqssq-ssdsdsd-sdds-sddssd\",\"objectType\":\"NAS_FILESET\",\"startTime\":\"2026-04-06T16:00:40.244Z\",\"lastUpdated\":\"2026-04-06T16:12:32.709Z\",\"lastActivityType\":\"Backup\",\"lastActivityStatus\":\"Success\",\"failureReason\":\"Completed backup of Fileset 'TEST: *' from '\\\\\\\\test.local:TEST\\\\TEST'\",\"location\":\"\\\\\\\\test.local:TEST\\\\TEST\",\"clusterName\":\"TEST-VE\",\"cluster\":{\"id\":\"zazaza-zazazaza-zeaze-ssd-sdsddsds\"}}}],\"pageInfo\":{\"hasNextPage\":false,\"endCursor\":\"AZAZAZAZZAZA==\"}}}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "mode jobs",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "getActivitySeries",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "47c273aa-aad8-432a-940f-2b6f78bbc3ee"
+    },
+    {
+      "type": "route",
+      "uuid": "6dfc4fb6-09fe-40b6-9751-09b99ebd4482"
+    },
+    {
+      "type": "route",
+      "uuid": "32b12cd1-153b-45fe-8e3e-6a52a4d79ae2"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
