@@ -82,9 +82,9 @@ Le nom de la branche détermine le niveau de stabilité, qui conditionne les act
 ```mermaid
 flowchart LR
     B1["Branche feature\n(tout autre nom)"] --> canary
-    B2["develop\ndev-YY.MM.x"] --> unstable
+    B2["develop"] --> unstable
     B3["release-*\nhotfix-*"] --> testing
-    B4["master\nYY.MM.x"] --> stable
+    B4["master"] --> stable
 
     canary["canary\nPackage + test uniquement"]
     unstable["unstable\nPackage + test + livraison"]
@@ -95,9 +95,9 @@ flowchart LR
 | Stabilité | Branches | Format de version | Paquet livré |
 |---|---|---|---|
 | `canary` | Toute branche feature | `YYYYMM00` | Non |
-| `unstable` | `develop`, `dev-YY.MM.x` | `YYYYMMDD` (date du jour) | Oui (dépôt unstable) |
+| `unstable` | `develop` | `YYYYMMDD` (date du jour) | Oui (dépôt unstable) |
 | `testing` | `release-YYYYMMDD`, `hotfix-YYYYMMDD` | Date extraite du nom de branche | Oui (dépôt testing) |
-| `stable` | `master`, `YY.MM.x` | Depuis le fichier `.version.plugins` | Oui (dépôt stable) |
+| `stable` | `master` | Depuis le fichier `.version.plugins` | Oui (dépôt stable) |
 
 ---
 

@@ -60,7 +60,7 @@ flowchart TD
 | Événement | Condition | Description |
 |---|---|---|
 | `pull_request` | Modification de `.github/workflows/perl-cpan-libraries.yml` ou de `.github/packaging/cpan-libraries.json` | Déclenché quand le workflow lui-même ou le catalogue de bibliothèques est modifié |
-| `push` | Branches `develop`, `dev-YY.MM.x`, `master`, `YY.MM.x` + mêmes chemins | Déclenché après la fusion d'une modification du fichier workflow ou du catalogue |
+| `push` | Branches `develop`, `master` + mêmes chemins | Déclenché après la fusion d'une modification du fichier workflow ou du catalogue |
 | `workflow_dispatch` | Déclenchement manuel (aucune entrée requise) | Exécution manuelle à tout moment |
 
 > **Important :** Contrairement au pipeline plugins, ce workflow ne se déclenche **pas** sur les modifications de `src/**`, `packaging/**` ou `tests/**`. Il ne se déclenche que si le fichier de définition du workflow ou `.github/packaging/cpan-libraries.json` change, ou lors d'un déclenchement manuel. Pour ajouter ou mettre à jour une bibliothèque, il suffit de modifier `cpan-libraries.json` directement — la CI se déclenchera automatiquement sur la PR.

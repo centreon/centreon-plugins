@@ -60,7 +60,7 @@ flowchart TD
 | Event | Condition | Description |
 |---|---|---|
 | `pull_request` | Changes to `.github/workflows/perl-cpan-libraries.yml` or `.github/packaging/cpan-libraries.json` | Triggered when the workflow itself or the library catalogue is modified |
-| `push` | Branches `develop`, `dev-YY.MM.x`, `master`, `YY.MM.x` + same paths | Triggered after merging a change to the workflow file or the library catalogue |
+| `push` | Branches `develop`, `master` + same paths | Triggered after merging a change to the workflow file or the library catalogue |
 | `workflow_dispatch` | Manual trigger (no inputs required) | Manual run at any time |
 
 > **Important:** Unlike the plugins pipeline, this workflow does **not** trigger on changes to `src/**`, `packaging/**`, or `tests/**`. It only triggers when the workflow definition or `.github/packaging/cpan-libraries.json` changes, or when launched manually. To add or update a library, modify `cpan-libraries.json` directly — the CI will trigger automatically on the PR.
