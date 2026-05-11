@@ -273,7 +273,7 @@ Warning threshold for total number of returned objects.
 
 =item B<--critical-objects-count>
 
-Critical threshold for total number of returned objects.
+Critical threshold for total number of returned objects (default: '0:0').
 
 =item B<--unknown-status>
 
@@ -287,7 +287,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /compliant/i').
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-missed-snapshots>
