@@ -168,10 +168,14 @@ sub check_options {
     if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
         $self->{output}->option_exit(short_msg =>
             'Need to specify either --resource <name> with --resource-group option or --resource <id>.');
-    } elsif ($self->{option_results}->{resource} !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualHubs\/(.*)$/) {
-        if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
-            $self->{output}->option_exit(short_msg =>
-                'Need to specify --resource-group together with --resource <name>.');
+    } else {
+        foreach my $tmp_resource (@{$self->{az_resource}}) {
+            if ($tmp_resource !~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Network\/virtualHubs\/(.*)$/) {
+                if (!defined($self->{option_results}->{resource_group}) || $self->{option_results}->{resource_group} eq '') {
+                    $self->{output}->option_exit(short_msg =>
+                        'Need to specify --resource-group together with --resource <name>.');
+                }
+            }
         }
     }
 
@@ -180,8 +184,12 @@ sub check_options {
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));;
     $self->{az_resource_type} = 'virtualHubs';
     $self->{az_resource_namespace} = 'Microsoft.Network';
-    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT5M";
+    $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ?
+        $self->{option_results}->{timeframe} :
+        900;
+    $self->{az_interval} = defined($self->{option_results}->{interval}) ?
+        $self->{option_results}->{interval} :
+        "PT5M";
 
     $self->{az_aggregations} = [ 'average', 'maximum', 'minimum', 'total' ];
 }
