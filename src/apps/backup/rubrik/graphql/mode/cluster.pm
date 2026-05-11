@@ -59,7 +59,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{clusters} = [
-        { label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} !~ /connected/', set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} !~ /connected/ || %{system_status} !~ /ok/', set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'system_status' }, { name => 'is_healthy' }, { name => 'system_status_message' }, { name => 'ipmi' }, { name => 'id' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -239,7 +239,7 @@ You can use the following variables: %{status}, %{name}
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /connected/').
+Define the conditions to match for the status to be CRITICAL (default: '%{status} !~ /connected/ || %{system_status} !~ /ok/').
 You can use the following variables: %{status}, %{name}
 
 =item B<--warning-read>
