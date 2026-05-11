@@ -139,6 +139,7 @@ ifDesc
 ifName
 --ignore-orgs-api-disabled
 IKS
+IMAP
 IMEI
 in-bcast
 in-crc
