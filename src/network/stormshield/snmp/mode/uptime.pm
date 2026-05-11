@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,9 +33,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        {name => 'global', type => 0, message_separator => "\n", skipped_code => { NO_VALUE() => 1 }}
+        {name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 }}
     ];
-
 
     $self->{maps_counters}->{global} = [
         { label => 'uptime', set => {
@@ -44,43 +43,6 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_uptime_threshold_check'),
                 output_template => "Uptime: %s",
-            }
-        },
-        { label => 'system_name', set => {
-                key_values => [ { name => 'system_name' } ],
-                output_template => "System Name: %s",
-            }
-        },
-        { label => 'system_node_name', set => {
-                key_values => [ { name => 'system_node_name' } ],
-                output_template => "System node Name: %s",
-            }
-        },
-        { label => 'model', set => {
-                key_values => [ { name => 'model' } ],
-                output_template => "Model: %s",
-            }
-        },
-        { label => 'serial_number', set => {
-                key_values => [ { name => 'serial_number' } ],
-                output_template => "Serial Number: %s",
-            }
-        },
-        { label => 'version', set => {
-                key_values => [ { name => 'version' } ],
-                perfdatas => [], 
-                closure_custom_output => $self->can('custom_version_output'),
-            }
-        },
-        { label => 'bios_version', set => {
-                key_values => [ { name => 'bios_version' } ],
-                perfdatas => [], 
-                closure_custom_output => $self->can('custom_bios_version_output'),                
-            }
-        },
-        { label => 'date', set => {
-                key_values => [ { name => 'date' } ],
-                output_template => "Date: %s",
             }
         },
     ];
@@ -102,49 +64,39 @@ sub manage_selection {
 
     $self->{cache_name} = 'fw_stormshield_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex('all');
 
-    my $oid_system_name = '.1.3.6.1.4.1.11256.1.18.4.0';
-    my $oid_system_node_name = '.1.3.6.1.4.1.11256.1.18.16.0';
-    my $oid_bios_version = '.1.3.6.1.4.1.11256.1.18.17.0';
-    my $oid_model = '.1.3.6.1.4.1.11256.1.18.1.0';
-    my $oid_version = '.1.3.6.1.4.1.11256.1.18.2.0';
-    my $oid_serial_number = '.1.3.6.1.4.1.11256.1.18.3.0';
-    my $oid_date = '.1.3.6.1.4.1.11256.1.10.1.0';
-    my $oid_uptime = '.1.3.6.1.4.1.11256.1.10.2.0';
+    my $oid_snsSystemName = '.1.3.6.1.4.1.11256.1.18.4.0';
+    my $oid_snsSystemNodeName = '.1.3.6.1.4.1.11256.1.18.16.0';
+    my $oid_snsBiosVersion = '.1.3.6.1.4.1.11256.1.18.17.0';
+    my $oid_snsModel = '.1.3.6.1.4.1.11256.1.18.1.0';
+    my $oid_snsVersion = '.1.3.6.1.4.1.11256.1.18.2.0';
+    my $oid_snsSerialNumber = '.1.3.6.1.4.1.11256.1.18.3.0';
+    my $oid_snsDate = '.1.3.6.1.4.1.11256.1.10.1.0';
+    my $oid_snsUptime = '.1.3.6.1.4.1.11256.1.10.2.0';
 
     my $result = $options{snmp}->get_leef(
-        oids => [ $oid_system_name, $oid_system_node_name, $oid_bios_version, $oid_model, $oid_version, $oid_serial_number, $oid_date, $oid_uptime ],
+        oids => [ $oid_snsSystemName, $oid_snsSystemNodeName, $oid_snsBiosVersion, $oid_snsModel, $oid_snsVersion, $oid_snsSerialNumber, $oid_snsDate, $oid_snsUptime ],
         nothing_quit => 1
     );
 
-    my $version = $result->{$oid_version};
-
-    # Used to make sure Perl see this as a string (without dots). Making sure we use an unique separator so it doesn't destroy anything else.
-    # With dots, it displays: Argument "x.x.x" isn't numeric in sprintf
-    my $version_clean = $version;
-    $version_clean =~ s/\./__/g; 
-
+    my $version = $result->{$oid_snsVersion};
 
     # Add 'System node Name' if Stormshield firmware version >= 4.8.6 or 4.3.x with x>=40
     # This field was introduced in firmware version 4.8.6 and in 4.3.40
-    my $system_node_name = $result->{$oid_system_node_name};
+    my $system_node_name = $result->{$oid_snsSystemNodeName};
     if (!centreon::plugins::misc::minimal_version($version, '4.8.6') && 
         !(centreon::plugins::misc::minimal_version($version, '4.3.40') && !centreon::plugins::misc::minimal_version($version, '4.4.0'))) {
         $system_node_name = undef;
     }
 
-
     # Add 'Bios Version' if Stormshield firmware version >= 4.8.15 or 4.3.x with x>=42
     # This field was introduced in firmware version 4.8.15 and in 4.3.42
-    my $bios_version = $result->{$oid_bios_version};
+    my $bios_version = $result->{$oid_snsBiosVersion};
     if (!centreon::plugins::misc::minimal_version($version, '4.8.15') &&
         !(centreon::plugins::misc::minimal_version($version, '4.3.42') && !centreon::plugins::misc::minimal_version($version, '4.4.0'))) {
         $bios_version = undef;
-    } else{
-        #Same as $version_clean
-        $bios_version =~ s/\./__/g; 
     }
 
-    my $uptime_raw = $result->{$oid_uptime};
+    my $uptime_raw = $result->{$oid_snsUptime};
     my $uptime_seconds = 0;
 
     if (defined($uptime_raw) && $uptime_raw ne "") {
@@ -158,40 +110,28 @@ sub manage_selection {
         }
     }
 
+    my $long_msg = "System Name: " . $result->{$oid_snsSystemName} . "\n";
+    $long_msg .= "Model: " . $result->{$oid_snsModel} . "\n";
+    $long_msg .= "Serial Number: " . $result->{$oid_snsSerialNumber} . "\n";
+    $long_msg .= "Version: " . $version . "\n";
+    $long_msg .= "Date: " . $result->{$oid_snsDate} . "\n";
+    
+    if (defined($system_node_name)) {
+        $long_msg .= "System Node Name: " . $system_node_name . "\n";
+    }
+    
+    if (defined($bios_version)) {
+        $long_msg .= "Bios Version: " . $bios_version . "\n";
+    }
+    
+    $self->{output}->output_add(
+        long_msg => $long_msg,
+        forced_output => 1
+    );
+
     $self->{global} = {
-        system_name      => $result->{$oid_system_name},
-        system_node_name => $system_node_name,
-        model            => $result->{$oid_model},
-        serial_number    => $result->{$oid_serial_number},
-        version          => $version_clean,
-        bios_version     => $bios_version,
-        date             => $result->{$oid_date},
-        uptime           => $uptime_seconds,
+        uptime => $uptime_seconds,
     };
-}
-
-sub custom_version_output {
-    my ($self, %options) = @_;
-    
-    my $val = $self->{result_values}->{version};
-    
-    # Now, rebuilding the "version" string with dots
-    my $display_val = defined($val) ? $val : "N/A";
-    $display_val =~ s/__/./g;
-    
-    return "Version: " . $display_val;
-}
-
-sub custom_bios_version_output {
-    my ($self, %options) = @_;
-    
-    my $val = $self->{result_values}->{bios_version};
-    
-    # Now, rebuilding the "bios_version" string with dots
-    my $display_val = defined($val) ? $val : "N/A";
-    $display_val =~ s/__/./g;
-    
-    return "Bios Version: " . $display_val;
 }
 
 sub custom_uptime_output {
@@ -265,10 +205,6 @@ Warning threshold for uptime (in seconds).
 =item B<--critical-uptime>
 
 Critical threshold for uptime (in seconds).
-
-=item B<--warning-*> B<--critical-*>
-
-Other thresholds (system_name, model, etc.) are not applicable as these are informational only.
 
 =back
 
