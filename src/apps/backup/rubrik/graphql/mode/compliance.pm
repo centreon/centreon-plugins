@@ -249,11 +249,6 @@ Include location (can use regex).
 
 Exclude location (can use regex).
 
-=item B<--sla-domain-id>
-
-Filter by SLA domain ID.
-Multiple values can be separated by comma. This filter is passed directly to the GraphQL API (server-side filtering).
-
 =item B<--compliance-status>
 
 Filter by compliance status. Multiple values can be separated by comma (default: 'OUT_OF_COMPLIANCE').
