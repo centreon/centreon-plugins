@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,6 +28,7 @@ use JSON::XS;
 use MIME::Base64;
 use Crypt::OpenSSL::AES;
 use centreon::plugins::statefile;
+use centreon::plugins::misc qw(is_empty);
 
 my $VAULT_PATH_REGEX = qr/^secret::hashicorp_vault::([^:]+)::(.+)$/;
 
@@ -46,7 +47,7 @@ sub new {
     }
 
     $options{options}->add_options(arguments => {
-        'vault-config:s'    => { name => 'vault_config',    default => '/etc/centreon-engine/centreonvault.json'},
+        'vault-config:s'    => { name => 'vault_config',    default => '/var/lib/centreon/vault/vault.json'},
         'vault-cache:s'     => { name => 'vault_cache',     default => '/var/lib/centreon/centplugins/centreonvault_session'},
         'vault-env-file:s'  => { name => 'vault_env_file',  default => '/usr/share/centreon/.env'},
     });
@@ -94,14 +95,12 @@ sub extract_map_options {
 sub vault_settings {
     my ($self, %options) = @_;
 
-    if (centreon::plugins::misc::is_empty($options{option_results}->{vault_config})) {
-        $self->{output}->add_option_msg(short_msg => "Please provide a Centreon Vault configuration file path with --vault-config option");
-        $self->{output}->option_exit();
-    }
-    if (! -f $options{option_results}->{vault_config}) {
-        $self->{output}->add_option_msg(short_msg => "File '$options{option_results}->{vault_config}' could not be found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Please provide a Centreon Vault configuration file path with --vault-config option")
+        if is_empty($options{option_results}->{vault_config});
+
+    $self->{output}->option_exit(short_msg => "File '$options{option_results}->{vault_config}' could not be found.")
+        unless -f $options{option_results}->{vault_config};
+
     $self->{vault_cache}    = $options{option_results}->{vault_cache};
     $self->{vault_env_file} = $options{option_results}->{vault_env_file};
     $self->{vault_config}   = $options{option_results}->{vault_config};
@@ -109,10 +108,10 @@ sub vault_settings {
 
     my $file_content = do {
         local $/ = undef;
-        if (!open my $fh, "<", $options{option_results}->{vault_config}) {
-            $self->{output}->add_option_msg(short_msg => "Could not read file $options{option_results}->{vault_config}: $!");
-            $self->{output}->option_exit();
-        }
+
+        $self->{output}->option_exit(short_msg => "Could not read file $options{option_results}->{vault_config}: $!")
+            unless open my $fh, "<", $options{option_results}->{vault_config};
+
         <$fh>;
     };
 
@@ -152,16 +151,13 @@ sub get_decryption_key {
     my ($self, %options) = @_;
 
     # try getting APP_SECRET from the environment variables
-    if ( !centreon::plugins::misc::is_empty($ENV{'APP_SECRET'}) ) {
-        return $ENV{'APP_SECRET'};
-    }
-
+    return substr(decode_base64($ENV{'APP_SECRET'}), 0, 32) unless is_empty($ENV{'APP_SECRET'});
     # try getting APP_SECRET defined in the env file (default: /usr/share/centreon/.env) file
     my $fh;
     return undef if (!open $fh, "<", $self->{vault_env_file});
     for my $line (<$fh>) {
         if ($line =~ /^APP_SECRET=(.*)$/) {
-            return $1;
+            return substr(decode_base64($1), 0, 32);
         }
     }
 
@@ -173,6 +169,7 @@ sub extract_and_decrypt {
 
     my $input = decode_base64($options{data});
     my $key   = $options{key};
+
 
     # with AES-256, the IV length must 16 bytes
     my $iv_length = 16;
@@ -332,10 +329,8 @@ sub request_api {
     $self->vault_settings(%options);
 
     # check the authentication
-    if (!$self->check_authentication(%options)) {
-        $self->{output}->add_option_msg(short_msg => "Unable to authenticate to the vault.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Unable to authenticate to the vault.")
+        unless $self->check_authentication(%options);
 
     $self->{lookup_values} = {};
 
