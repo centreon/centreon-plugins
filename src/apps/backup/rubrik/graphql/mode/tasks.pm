@@ -106,8 +106,6 @@ sub manage_selection {
 
     $self->{global} = { succeeded => 0, failed => 0, canceled => 0 };
 
-    my %details = ( succeeded => [], failed => [], canceled => [] );
-
     my %filters;
     $filters{taskCategory} = $self->{option_results}->{task_category} if @{$self->{option_results}->{task_category}};
     $filters{objectType} = $self->{option_results}->{object_type} if @{$self->{option_results}->{object_type}};

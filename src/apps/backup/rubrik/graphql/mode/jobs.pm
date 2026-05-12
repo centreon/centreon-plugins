@@ -111,8 +111,9 @@ sub job_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking job '%s' [type: %s] [object type: %s] [location: %s] [cluster name: %s]",
+        "checking job '%s' (%s) [type: %s] [object type: %s] [location: %s] [cluster name: %s]",
         $options{instance_value}->{name},
+        $options{instance_value}->{fid},
         $options{instance_value}->{jobType},
         $options{instance_value}->{objectType},
         $options{instance_value}->{location},
@@ -217,6 +218,7 @@ sub new {
     $options{options}->add_options(arguments => {
         %$timerange_filters,
 
+        'job-id:s@'               => { name => 'job_id', },
         'include-job-id:s'        => { name => 'include_job_id',        default => '' },
         'exclude-job-id:s'        => { name => 'exclude_job_id',        default => '' },
 
@@ -259,7 +261,7 @@ sub check_options {
     timerange_check_options($self);
     timerange_check_options($self, prefix => 'updated');
 
-    $self->{option_results}->{$_} = flatten_arrays($self->{option_results}->{$_}) foreach qw/job_type job_status object_type/;
+    $self->{option_results}->{$_} = flatten_arrays($self->{option_results}->{$_}) foreach qw/job_type job_status object_type job_id/;
 
     $self->{option_results}->{job_type} = [ 'BACKUP' ]
         unless $self->{option_results}->{job_type} && @{$self->{option_results}->{job_type}};
@@ -280,6 +282,7 @@ sub manage_selection {
 
     $filters{objectName} = $self->{option_results}->{job_name} if $self->{option_results}->{job_name} ne '';
     $filters{objectType} = $self->{option_results}->{object_type} if $self->{option_results}->{object_type};
+    $filters{objectFid} = $self->{option_results}->{job_id} if $self->{option_results}->{job_id};
     $filters{lastActivityType} = $self->{option_results}->{job_type} if $self->{option_results}->{job_type};
     $filters{lastActivityStatus} = $self->{option_results}->{job_status} if $self->{option_results}->{job_status};
     $filters{clusterId} = $self->{option_results}->{cluster_id} if $self->{option_results}->{cluster_id};
@@ -307,11 +310,10 @@ sub manage_selection {
 
     my %jobs_by_id;
     foreach my $exec (@$jobs_exec) {
-        $exec->{$_} //= '' foreach qw/objectId objectName objectType location lastActivityStatus lastActivityType clusterName/;
+        $exec->{$_} //= '' foreach qw/fid objectName objectType location lastActivityStatus lastActivityType clusterName/;
 
         my $clusterId = $exec->{cluster} && $exec->{cluster}->{id} ? $exec->{cluster}->{id} : undef;
-
-        next if is_excluded($exec->{objectId}, $s->{include_job_id}, $s->{exclude_job_id}, output => $self->{output}) ||
+        next if is_excluded($exec->{fid}, $s->{include_job_id}, $s->{exclude_job_id}, output => $self->{output}) ||
                 is_excluded($exec->{objectName}, $s->{include_job_name}, $s->{exclude_job_name}, output => $self->{output}) ||
                 is_excluded($exec->{lastActivityType}, $s->{include_job_type}, $s->{exclude_job_type}, output => $self->{output}) ||
                 is_excluded($exec->{objectType}, $s->{include_object_type}, $s->{exclude_object_type}, output => $self->{output}) ||
@@ -319,11 +321,11 @@ sub manage_selection {
                 is_excluded($exec->{lastActivityStatus}, $s->{include_job_status}, $s->{exclude_job_status}, output => $self->{output}) ||
                 $options{custom}->is_common_excluded(id => $clusterId, name => $exec->{clusterName});
 
-        push @{$jobs_by_id{$exec->{objectId}}}, $exec;
+        push @{$jobs_by_id{$exec->{fid}}}, $exec;
     }
 
-    foreach my $objectId (keys %jobs_by_id) {
-        my $executions = $jobs_by_id{$objectId};
+    foreach my $fid (keys %jobs_by_id) {
+        my $executions = $jobs_by_id{$fid};
         my $first = $executions->[0];
 
         $self->{global}->{detected} += scalar @$executions;
@@ -342,8 +344,9 @@ sub manage_selection {
             $total++;
         }
 
-        $self->{jobs}->{$objectId} = {
+        $self->{jobs}->{$fid} = {
             name => $first->{objectName},
+            fid => $fid,
             jobType => $first->{lastActivityType},
             objectType => $first->{objectType},
             location => $first->{location},
@@ -352,14 +355,14 @@ sub manage_selection {
             executions => {}
         };
 
-        $self->{jobs}->{$objectId}->{failed} = {
+        $self->{jobs}->{$fid}->{failed} = {
             jobName => $first->{objectName},
             jobType => $first->{lastActivityType},
             failedPrct => $total > 0 ? $failed * 100 / $total : 0
         };
 
         if ($last_exec) {
-            $self->{jobs}->{$objectId}->{executions}->{last} = {
+            $self->{jobs}->{$fid}->{executions}->{last} = {
                 jobName => $first->{objectName},
                 jobType => $first->{lastActivityType},
                 started => $last_exec->{startTime},
@@ -379,7 +382,7 @@ sub manage_selection {
                     $end_time = $dt_end->epoch();
                 }
 
-                $self->{jobs}->{$objectId}->{timers} = {
+                $self->{jobs}->{$fid}->{timers} = {
                     jobName => $first->{objectName},
                     jobType => $first->{lastActivityType},
                     lastExecSeconds => $elapsed,
@@ -388,12 +391,12 @@ sub manage_selection {
 
                 if ($end_time) {
                     my $duration = $end_time - $start_time;
-                    $self->{jobs}->{$objectId}->{timers}->{durationSeconds} = $duration;
-                    $self->{jobs}->{$objectId}->{timers}->{durationHuman} = change_seconds(value => $duration);
+                    $self->{jobs}->{$fid}->{timers}->{durationSeconds} = $duration;
+                    $self->{jobs}->{$fid}->{timers}->{durationHuman} = change_seconds(value => $duration);
                 }
             }
         } else {
-            $self->{jobs}->{$objectId}->{timers} = {
+            $self->{jobs}->{$fid}->{timers} = {
                 jobName => $first->{objectName},
                 jobType => $first->{lastActivityType},
                 lastExecSeconds => -1,
@@ -413,7 +416,7 @@ sub disco_show {
 
     foreach my $job (@{$jobs}) {
         $self->{output}->add_disco_entry(
-            jobId => $job->{objectId}, jobName => $job->{objectName}, jobType => $job->{lastActivityType}, locationName => $job->{location} // ''
+            jobId => $job->{fid}, jobName => $job->{objectName}, jobType => $job->{lastActivityType}, locationName => $job->{location} // ''
         );
     }
 }
@@ -423,8 +426,6 @@ sub disco_format {
 
     $self->{output}->add_disco_format(elements => @_entities);
 }
-
-
 
 1;
 
@@ -478,6 +479,10 @@ Filter jobs by job status. Multiple values can be separated by comma. This filte
 =item B<--object-type>
 
 Filter jobs by object type. Multiple values can be separated by comma. This filter is passed directly to the GraphQL API (server-side filtering).
+
+=item B<--job-id>
+
+Filter jobs by job ID. Multiple values can be separated by comma. This filter is passed directly to the GraphQL API (server-side filtering).
 
 =item B<--include-job-id>
 

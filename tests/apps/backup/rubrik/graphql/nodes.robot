@@ -36,19 +36,19 @@ Nodes ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: All clusters are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
+    ...    OK: All nodes are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
     ...    2
     ...    --start-time=2020-01-01 --end-time=2030-02-02
-    ...    OK: All clusters are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
+    ...    OK: All nodes are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
     ...    3
     ...    --last=99999m
-    ...    OK: All clusters are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
+    ...    OK: All nodes are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
     ...    4
     ...    --include-node-id=ODSIOIODS
-    ...    OK: All clusters are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=0;;;0; 'TEST-IN#cluster.nodes.ok.count'=0;;;0;0
+    ...    OK: All nodes are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=0;;;0; 'TEST-IN#cluster.nodes.ok.count'=0;;;0;0
     ...    5
     ...    --exclude-node-id=ODSIOIODS
-    ...    OK: All clusters are ok | 'TEST-VI#cluster.nodes.total.count'=0;;;0; 'TEST-VI#cluster.nodes.ok.count'=0;;;0;0 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
+    ...    OK: All nodes are ok | 'TEST-VI#cluster.nodes.total.count'=0;;;0; 'TEST-VI#cluster.nodes.ok.count'=0;;;0;0 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
     ...    6
     ...    --unknown-nodes-status='\\\%{status} =~ /ok/'
     ...    UNKNOWN: Cluster 'TEST-VI' Node 'ODSIOIODS' status: ok - Cluster 'TEST-IN' Node 'OSDIOSDDS' status: ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
@@ -75,4 +75,4 @@ Nodes ${tc}
     ...    OK: Cluster 'TEST-VI' Node 'ODSIOIODS' status: ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1
     ...    14
     ...    --exclude-cluster=TEST-IN
-    ...    OK: All clusters are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1
+    ...    OK: All nodes are ok | 'TEST-VI#cluster.nodes.total.count'=1;;;0; 'TEST-VI#cluster.nodes.ok.count'=1;;;0;1 'TEST-IN#cluster.nodes.total.count'=1;;;0; 'TEST-IN#cluster.nodes.ok.count'=1;;;0;1

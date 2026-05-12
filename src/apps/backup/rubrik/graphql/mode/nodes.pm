@@ -69,7 +69,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'clusters', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
+        { name => 'clusters', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All nodes are ok',
             group => [
                 { name => 'cluster', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_global_cluster_output' },
                 { name => 'nodes', type => COUNTER_MULTIPLE_SUBINSTANCE, display_long => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'nodes are ok', skipped_code => { NO_VALUE() => 1 } }

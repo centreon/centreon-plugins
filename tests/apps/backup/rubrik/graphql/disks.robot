@@ -36,25 +36,25 @@ Disks ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
     ...    2
     ...    --start-time=2020-01-01 --end-time=2030-02-02
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
     ...    3
     ...    --last=99999m
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
     ...    4
     ...    --include-disk-id=zzazaz-azab-zazbf-azazaz26-zzazazza
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=0;;;0; 'TEST-IN#cluster.disks.active.count'=0;;;0;0 'TEST-VI#cluster.disks.total.count'=0;;;0; 'TEST-VI#cluster.disks.active.count'=0;;;0;0 'TEST-OS#cluster.disks.total.count'=0;;;0; 'TEST-OS#cluster.disks.active.count'=0;;;0;0
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=0;;;0; 'TEST-IN#cluster.disks.active.count'=0;;;0;0 'TEST-VI#cluster.disks.total.count'=0;;;0; 'TEST-VI#cluster.disks.active.count'=0;;;0;0 'TEST-OS#cluster.disks.total.count'=0;;;0; 'TEST-OS#cluster.disks.active.count'=0;;;0;0
     ...    5
     ...    --exclude-disk-id=zzazaz-azab-zazbf-azazaz26-zzazazza
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
     ...    6
     ...    --include-disk-path=ekek
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=0;;;0; 'TEST-IN#cluster.disks.active.count'=0;;;0;0 'TEST-VI#cluster.disks.total.count'=1;;;0; 'TEST-VI#cluster.disks.active.count'=1;;;0;1 'TEST-OS#cluster.disks.total.count'=0;;;0; 'TEST-OS#cluster.disks.active.count'=0;;;0;0
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=0;;;0; 'TEST-IN#cluster.disks.active.count'=0;;;0;0 'TEST-VI#cluster.disks.total.count'=1;;;0; 'TEST-VI#cluster.disks.active.count'=1;;;0;1 'TEST-OS#cluster.disks.total.count'=0;;;0; 'TEST-OS#cluster.disks.active.count'=0;;;0;0
     ...    7
     ...    --exclude-disk-path=ekek
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=2;;;0; 'TEST-VI#cluster.disks.active.count'=2;;;0;2 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=2;;;0; 'TEST-VI#cluster.disks.active.count'=2;;;0;2 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
     ...    8
     ...    --unknown-disk-status=1
     ...    UNKNOWN: Cluster 'TEST-IN' Disk 'sda' status: active - Disk 'sdb' status: active - Cluster 'TEST-VI' Disk 'sda' status: active - Disk 'sdb' status: active - Disk 'sdc' status: active - Cluster 'TEST-OS' Disk 'sda' status: active - Disk 'sdb' status: active | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
@@ -81,4 +81,4 @@ Disks ${tc}
     ...    OK: Cluster 'TEST-IN' disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2
     ...    16
     ...    --exclude-cluster=zzazaza-dfdf-42323-11116-ezezzeez
-    ...    OK: All clusters are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2
+    ...    OK: All disks are ok | 'TEST-IN#cluster.disks.total.count'=2;;;0; 'TEST-IN#cluster.disks.active.count'=2;;;0;2 'TEST-VI#cluster.disks.total.count'=3;;;0; 'TEST-VI#cluster.disks.active.count'=3;;;0;3 'TEST-OS#cluster.disks.total.count'=2;;;0; 'TEST-OS#cluster.disks.active.count'=2;;;0;2

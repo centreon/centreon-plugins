@@ -153,17 +153,17 @@ sub manage_selection {
         unless ref $result eq 'ARRAY';
     $self->{clusters} = {};
     foreach my $cluster (@$result) {
-    next if $options{custom}->is_common_excluded(id => $cluster->{id}, name => $cluster->{name});
+        next if $options{custom}->is_common_excluded(id => $cluster->{id}, name => $cluster->{name});
 
         # Aggregate stats from all nodes
-    my %aggregate = ();
-    my %average = ();
+        my %aggregate = ();
+        my %average = ();
 
-    $aggregate{$_} = $average{$_} = 0
+        $aggregate{$_} = $average{$_} = 0
             foreach qw/networkBytesReceived networkBytesTransmitted readThroughputBytesPerSecond writeThroughputBytesPerSecond iopsReadsPerSecond iopsWritesPerSecond/;
 
         if (ref $cluster->{clusterNodeStats} eq 'ARRAY') {
-            foreach my $node_stat (@{$cluster->{clusterNodeStats} || []}) {
+            foreach my $node_stat (@{$cluster->{clusterNodeStats}}) {
                while (my ($key, $value) = each %$node_stat) {
                     $aggregate{$key} += $value;
                }
@@ -176,8 +176,8 @@ sub manage_selection {
             }
         }
 
-    my $ipmi = 'none';
-    if ($cluster->{ipmiInfo} && $cluster->{ipmiInfo}->{isAvailable}) {
+        my $ipmi = 'none';
+        if ($cluster->{ipmiInfo} && $cluster->{ipmiInfo}->{isAvailable}) {
             my @mod;
             push @mod, "Https" if $cluster->{ipmiInfo}->{usesHttps};
             push @mod, "Ikvm" if $cluster->{ipmiInfo}->{usesIkvm};

@@ -292,9 +292,8 @@ sub get_jobs_monitoring {
             ) {
                 edges {
                     node {
-                        id
                         objectName
-                        objectId
+                        fid
                         objectType
                         startTime
                         lastUpdated
