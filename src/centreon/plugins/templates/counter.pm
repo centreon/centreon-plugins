@@ -304,14 +304,18 @@ sub run_global {
         $obj->perfdata(extra_instance => $multiple_parent);
     }
 
-    my ($prefix_output, $suffix_output);
-    $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_prefix_output}));
-    $prefix_output = '' if (!defined($prefix_output));
+    my ($prefix_output, $suffix_output) = ('', '');
+    if (defined $options{config}->{prefix_output}) {
+        $prefix_output = $options{config}->{prefix_output};
+    } elsif (defined $options{config}->{cb_prefix_output}) {
+        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
 
-    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_suffix_output}));
-    $suffix_output = '' if (!defined($suffix_output));
+    if (defined $options{config}->{suffix_output}) {
+        $suffix_output = $options{config}->{suffix_output};
+    } elsif (defined $options{config}->{cb_suffix_output}) {
+        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
 
     if ($called_multiple == 1 && $long_msg ne '') {
         $self->{output}->output_add(long_msg => $options{indent_long_output} . $prefix_output. $long_msg . $suffix_output);

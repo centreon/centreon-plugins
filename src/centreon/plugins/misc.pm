@@ -27,6 +27,7 @@ use JSON::XS;
 use Safe;
 use Encode;
 use MIME::Base64;
+use Digest::SHA qw/sha256_hex/;
 
 use Exporter 'import';
 use feature 'state';
@@ -35,6 +36,7 @@ our @EXPORT_OK = qw/change_seconds
                     check_security_command
                     check_security_whitelist
                     convert_bytes
+                    date_xm_ago_utc
                     execute
                     flatten_arrays
                     flatten_to_hash
@@ -45,6 +47,7 @@ our @EXPORT_OK = qw/change_seconds
                     is_local_ip
                     json_encode
                     json_decode
+                    json_to_sha256
                     mask_secrets
                     normalize_mac
                     slurp_file
@@ -1055,6 +1058,24 @@ sub normalize_mac {
     return $mac;
 }
 
+sub json_to_sha256 {
+    my (%options) = @_;
+
+    my $data = $options{data} // '';
+    my $prefix = $options{prefix} // '';
+    $prefix .= '_' if $prefix ne '';
+    my $encoded = eval { JSON::XS->new->utf8->canonical(1)->encode($data) };
+    return undef if $@;
+    return sha256_hex($prefix.$encoded);
+}
+
+sub date_xm_ago_utc {
+    my ($value) = @_;
+    my @t = gmtime(time() - ($value * 60)); # heure en minutes
+    #@t = gmtime(time() - 600); # 24h en secondes
+    return sprintf( "%04d-%02d-%02dT%02d:%02d:%02dZ", $t[5] + 1900, $t[4] + 1, $t[3], $t[2], $t[1], $t[0]);
+}
+
 1;
 
 __END__
@@ -1736,6 +1757,42 @@ Attempts to format a MAC address into a human-readable format
 =item * C<$mac> - raw MAC address to print
 
 =back
+
+=head2 json_to_sha256
+
+    my $hash = centreon::plugins::misc::json_to_sha256(%options);
+
+Converts a JSON object to a SHA256 hash.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<data> - The data to encode as JSON and hash.
+
+=item * C<prefix> - Optional prefix to prepend to the encoded JSON before hashing.
+
+=back
+
+Returns the hexadecimal SHA256 hash of the JSON encoded data.
+
+=back
+
+=head2 date_xm_ago_utc
+
+    my $date = centreon::plugins::misc::date_xm_ago_utc($minutes);
+
+Returns a date in ISO 8601 UTC format that is X minutes ago from now.
+
+=over 4
+
+=item * C<$minutes> - Number of minutes ago to calculate from current time.
+
+=back
+
+Returns a string in the format: C<YYYY-MM-DDTHH:MM:SSZ>
 
 =head1 AUTHOR
 
