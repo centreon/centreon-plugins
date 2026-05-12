@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,14 +24,15 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:values :counters/;
+use Digest::SHA qw(sha256_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'container', type => 1, cb_prefix_output => 'prefix_container_output', message_multiple => 'All containers are ok' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } },
+        { name => 'container', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_container_output', message_multiple => 'All containers are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -80,10 +81,7 @@ sub manage_selection {
     $self->{global} = { requests => 0 };
     $self->{container} = {};
 
-    my $container = undef;
-    if(defined($options{custom}->{container}) && $options{custom}->{container} ne 'default') {
-	    $container = $options{custom}->{container};
-    }	
+    my $container = $options{custom}->{container} && $options{custom}->{container} ne 'default' ? (lc $options{custom}->{container}) : '';
 
     my $response = $options{custom}->execute(
         params => $self->{option_results},
@@ -91,7 +89,7 @@ sub manage_selection {
     );
 
     foreach my $container_name (keys %{$response->{data}}) {
-        next if(defined($container) && $container !~ /$container_name/);
+        next if $container ne '' && $container ne lc $container_name;
         $self->{container}->{$container_name} = {
             display => $container_name,
             requests => $response->{data}->{$container_name}->{requests}
@@ -100,7 +98,7 @@ sub manage_selection {
     }
     
     $self->{cache_name} = "cache_vmware_" . $options{custom}->get_id() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        sha256_hex($self->{option_results}->{filter_counters} // 'all');
 }
 
 1;
@@ -109,19 +107,25 @@ __END__
 
 =head1 MODE
 
-Get number of requests for each connectors (information from daemon. Not VMWare).
+Get number of requests for each connectors (information from daemon. Not VMware).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-total-requests>
 
 Warning threshold.
-Can be: 'total-requests', 'requests'.
 
-=item B<--critical-*>
+=item B<--critical-total-requests>
 
 Critical threshold.
-Can be: 'total-requests', 'requests'.
+
+=item B<--warning-requests>
+
+Warning threshold.
+
+=item B<--critical-requests>
+
+Warning threshold.
 
 =back
 
