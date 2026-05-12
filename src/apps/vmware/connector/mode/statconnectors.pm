@@ -125,7 +125,7 @@ Warning threshold.
 
 =item B<--critical-requests>
 
-Warning threshold.
+Critical threshold.
 
 =back
 
