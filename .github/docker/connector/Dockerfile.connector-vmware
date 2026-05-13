@@ -126,7 +126,7 @@ RUN groupadd -g 33 www-data 2>/dev/null || true && \
 
 # Add Centreon plugins-stable repository (needed for libnet-curl-perl on amd64)
 RUN apt-get update && apt-get install -y --no-install-recommends gnupg wget ca-certificates && \
-    echo "deb [arch=amd64] https://packages.centreon.com/apt-plugins-stable/ bookworm main" \
+    echo "deb [arch=amd64] https://packages.centreon.com/apt-plugins-stable/ trixie main" \
         > /etc/apt/sources.list.d/centreon-plugins.list && \
     wget -O- https://apt-key.centreon.com | gpg --dearmor \
         | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1 && \
