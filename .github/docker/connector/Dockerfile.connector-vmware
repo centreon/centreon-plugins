@@ -124,19 +124,23 @@ RUN groupadd -g 33 www-data 2>/dev/null || true && \
     usermod -aG centreon-engine centreon && \
     usermod -aG centreon-gorgone centreon
 
-# Add Centreon plugins-stable repository (needed for libnet-curl-perl on amd64)
-RUN apt-get update && apt-get install -y --no-install-recommends gnupg wget ca-certificates && \
-    echo "deb [arch=amd64] https://packages.centreon.com/apt-plugins-stable/ trixie main" \
-        > /etc/apt/sources.list.d/centreon-plugins.list && \
-    wget -O- https://apt-key.centreon.com | gpg --dearmor \
-        | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1 && \
-    rm -rf /var/lib/apt/lists/*
+# Add Centreon plugins-stable repository on amd64 only.
+# On arm64 the repo is skipped — amd64-only packages are handled by cpanm.
+RUN ARCH=$(dpkg --print-architecture) && \
+    if [ "$ARCH" = "amd64" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends gnupg wget ca-certificates && \
+        echo "deb [arch=amd64] https://packages.centreon.com/apt-plugins-stable/ trixie main" \
+            > /etc/apt/sources.list.d/centreon-plugins.list && \
+        wget -O- https://apt-key.centreon.com | gpg --dearmor \
+            | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1 && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
 
 # Install runtime dependencies
+# libcrypt-openssl-aes-perl, libzmq-libzmq4-perl, libnet-curl-perl: amd64-only in trixie repos
 RUN apt-get update && apt-get install -y --no-install-recommends \
     perl \
     libclass-methodmaker-perl \
-    libcrypt-openssl-aes-perl \
     libcrypt-ssleay-perl \
     libio-socket-inet6-perl \
     libjson-xs-perl \
@@ -144,35 +148,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsoap-lite-perl \
     libtext-template-perl \
     libuuid-perl \
-    libzmq-constants-perl \
-    libzmq-libzmq4-perl \
+    libzmq5 \
     libxml-libxml-perl \
     libjson-perl \
-    libzmq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install libnet-curl-perl (only available in Centreon plugins repo for amd64, cpanm fallback for arm64)
+# amd64-only packages (Centreon repo): cpanm fallback for arm64
+# libzmq-constants-perl, libzmq-libzmq4-perl, libcrypt-openssl-aes-perl, libnet-curl-perl
 RUN ARCH=$(dpkg --print-architecture) && \
     if [ "$ARCH" = "amd64" ]; then \
         apt-get update && apt-get install -y --no-install-recommends \
+            libzmq-constants-perl \
+            libcrypt-openssl-aes-perl \
+            libzmq-libzmq4-perl \
             libnet-curl-perl && \
         rm -rf /var/lib/apt/lists/*; \
     else \
         apt-get update && apt-get install -y --no-install-recommends \
             cpanminus \
             build-essential \
+            libzmq3-dev \
             libcurl4-openssl-dev \
             libssl-dev && \
         rm -rf /var/lib/apt/lists/* && \
-        cpanm --notest Net::Curl; \
+        cpanm --notest --configure-timeout 300 ZMQ::Constants ZMQ::LibZMQ4 Crypt::OpenSSL::AES Net::Curl; \
     fi
 
 # Create directory structure
 RUN mkdir -p \
         /etc/centreon \
-        /tmp/centreon_vmware && \
+        /tmp/centreon_vmware \
+        /etc/centreon-engine/ && \
     chown -R centreon-gorgone:centreon /etc/centreon && \
-    chmod -R 775 /etc/centreon && \
+    chown centreon-engine:centreon-engine /etc/centreon-engine &&\
+    chmod -R 775 /etc/centreon /etc/centreon-engine && \
     chown centreon:centreon /tmp/centreon_vmware && \
     chmod 775 /tmp/centreon_vmware
 
@@ -203,11 +212,15 @@ RUN echo "=== Verification ===" && \
     ls -lah /etc/centreon/ && \
     echo "=== Files verified ==="
 
+COPY --chmod=755 .github/docker/connector/entrypoint.sh /usr/local/bin/entrypoint.sh
+
 ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
 WORKDIR /etc/centreon
 
 USER centreon
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 CMD ["/usr/bin/perl", "/usr/bin/centreon_vmware.pl", \
      "--config-extra=/etc/centreon/centreon_vmware.json", \
