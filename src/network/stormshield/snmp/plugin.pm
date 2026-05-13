@@ -45,7 +45,10 @@ sub new {
         'qos'             => 'network::stormshield::snmp::mode::qos',
         'storage'         => 'snmp_standard::mode::storage',
         'swap'            => 'snmp_standard::mode::swap',
-        'vpn-status'      => 'network::stormshield::snmp::mode::vpnstatus'
+        'vpn-status'      => 'network::stormshield::snmp::mode::vpnstatus',
+        'uptime'          => 'network::stormshield::snmp::mode::uptime',
+        'licences'        => 'network::stormshield::snmp::mode::licences'
+
     };
 
     return $self;
