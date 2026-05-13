@@ -398,15 +398,26 @@ sub api_list_services {
 
         my $list_services = $self->internal_api_list_services(node_name => $node_name);
         foreach my $task (@$list_tasks) {
-            $services->{ $task->{ServiceID} } = {} if (!defined($services->{ $task->{ServiceID} }));
             my $service = $self->internal_get_by_id(list => $list_services, Id => $task->{ServiceID});
-            $services->{ $task->{ServiceID} }->{ $task->{ID} } = {
-                node_id => $task->{NodeID},
-                node_name => $node_name,
-                service_name => $service->{Spec}->{Name},
-                container_id => $task->{Status}->{ContainerStatus}->{ContainerID},
+            if (!defined($services->{ $task->{ServiceID} })) {
+                $services->{ $task->{ServiceID} } = {
+                    node_id       => $task->{NodeID},
+                    node_name     => $node_name,
+                    container_id  => $task->{Status}->{ContainerStatus}->{ContainerID},
+                    service_id    => $task->{ServiceID},
+                    service_name  => $service->{Spec}->{Name},
+                    replicas      => $service->{Spec}->{Mode}->{Replicated}->{Replicas} // 0,
+                    tasks         => {}
+                }
+            }
+            
+            $services->{ $task->{ServiceID} }->{tasks}->{ $task->{ID} } = {
+                node_id       => $task->{NodeID},
+                node_name     => $node_name,
+                service_name  => $service->{Spec}->{Name},
+                container_id  => $task->{Status}->{ContainerStatus}->{ContainerID},
                 desired_state => defined($task->{DesiredState}) && $task->{DesiredState} ne '' ? $task->{DesiredState} : '-',
-                state => defined($task->{Status}->{State}) && $task->{Status}->{State} ne '' ? $task->{Status}->{State} : '-',
+                state         => defined($task->{Status}->{State}) && $task->{Status}->{State} ne '' ? $task->{Status}->{State} : '-',
                 state_message => defined($task->{Status}->{Message}) && $task->{Status}->{Message} ne '' ? $task->{Status}->{Message} : '-'
             };
         }

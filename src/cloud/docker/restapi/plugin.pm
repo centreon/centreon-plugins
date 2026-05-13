@@ -33,6 +33,7 @@ sub new {
     $self->{modes} = {
         'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
         'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
+        'list-services'     => 'cloud::docker::restapi::mode::listservices',
         'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
         'service-status'    => 'cloud::docker::restapi::mode::servicestatus'
     };
