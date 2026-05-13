@@ -217,8 +217,8 @@ sub manage_selection {
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{timeframe} = $self->{az_timeframe};
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{stat} = lc($aggregation);
                 $self->{metric}->{$resource_name . "_" . lc($aggregation)}->{$metric_label_name . "_" . lc($aggregation)} =
-                    defined($metric_results{$resource_name}->{$metric_label_name}->{lc($aggregation)}) ?
-                        $metric_results{$resource_name}->{$metric_label_name}->{lc($aggregation)} :
+                    defined($metric_results{$resource_name}->{$metric_name}->{lc($aggregation)}) ?
+                        $metric_results{$resource_name}->{$metric_name}->{lc($aggregation)} :
                         0;
             }
         }
