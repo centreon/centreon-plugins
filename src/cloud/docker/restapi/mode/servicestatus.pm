@@ -117,7 +117,7 @@ sub set_counters {
         { 
             label => 'service-status',
             type => COUNTER_KIND_TEXT, 
-            critical_default => '%{total} < %{replicas} || %{problems} > 0', 
+            critical_default => '%{total} != %{replicas} || %{problems} > 0', 
             set => {
                 key_values => [ 
                     { name => 'service_name' }, { name => 'node_name' }, 
@@ -286,7 +286,7 @@ You can use the following variables: %{service_id}, %{service_name}, %{node_name
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{total} < %{replicas} || %{problems} > 0').
+Define the conditions to match for the status to be CRITICAL (default: '%{total} != %{replicas} || %{problems} > 0').
 You can use the following variables: %{service_id}, %{service_name}, %{node_name}, %{node_id}, %{container_id}, %{total}, %{replicas}, %{problems}.
 
 =item B<--warning-*> B<--critical-*>
