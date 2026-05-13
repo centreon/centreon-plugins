@@ -37,6 +37,7 @@ our @EXPORT_OK = qw/change_seconds
                     check_security_whitelist
                     convert_bytes
                     date_xm_ago_utc
+                    disco_escape
                     execute
                     flatten_arrays
                     flatten_to_hash
@@ -1076,6 +1077,15 @@ sub date_xm_ago_utc {
     return sprintf( "%04d-%02d-%02dT%02d:%02d:%02dZ", $t[5] + 1900, $t[4] + 1, $t[3], $t[2], $t[1], $t[0]);
 }
 
+# Escape a string to be used by the discovery module
+sub disco_escape($;$) {
+    my ($value, $sub) = @_;
+
+    $sub //= '_';
+
+    return $value =~ s/[~!\$%\^&\*"'\|<>?,()=]/$sub/gr;
+}
+
 1;
 
 __END__
@@ -1755,6 +1765,20 @@ Attempts to format a MAC address into a human-readable format
 =over 4
 
 =item * C<$mac> - raw MAC address to print
+
+=back
+
+=head2 disco_escape
+
+    my $value = centreon::plugins::misc::disco_escape($value, $sub);
+
+Replace characters not allowed by centengine/discovery with $sub
+
+=over 4
+
+=item * C<$value> - label
+
+=item * C<$sub> - replacement character ( default: '_' )
 
 =back
 
