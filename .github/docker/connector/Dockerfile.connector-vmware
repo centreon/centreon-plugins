@@ -6,7 +6,7 @@ ARG WITH_SDK=false
 #############################################
 # Stage 1: Extract files from .deb packages
 #############################################
-FROM debian:12-slim AS extractor
+FROM debian:13-slim AS extractor
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     dpkg \
@@ -62,7 +62,7 @@ FROM vmware-bin-${USE_SOURCE_VMWARE} AS vmware-bin-selected
 #   - vsan-sdk-perl.zip                                       (download from https://developer.broadcom.com)
 # Build with: docker build --build-arg WITH_SDK=true .
 #############################################
-FROM debian:12-slim AS sdk-true
+FROM debian:13-slim AS sdk-true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     perl \
@@ -98,7 +98,7 @@ RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
 # Used by CI and public image builds. The daemon starts but encrypted::
 # credentials won't be decryptable without the SDK.
 #############################################
-FROM debian:12-slim AS sdk-false
+FROM debian:13-slim AS sdk-false
 
 RUN mkdir -p /usr/local/share/perl/5.36.0/VMware /usr/local/share/perl5/VMware
 
@@ -106,9 +106,9 @@ RUN mkdir -p /usr/local/share/perl/5.36.0/VMware /usr/local/share/perl5/VMware
 FROM sdk-${WITH_SDK} AS sdk-installer
 
 #############################################
-# Stage 3: Runtime - Debian 12 slim image
+# Stage 3: Runtime - Debian 13 slim image (trixie)
 #############################################
-FROM debian:12-slim AS centreon-vmware
+FROM debian:13-slim AS centreon-vmware
 
 ARG VERSION
 ARG STABILITY
