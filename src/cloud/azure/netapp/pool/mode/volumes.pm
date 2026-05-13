@@ -218,7 +218,7 @@ sub set_counters {
     $self->{metrics_mapping} = $self->get_metrics_mapping;
 
     foreach my $metric_name (keys %{$self->{metrics_mapping}}) {
-        my $metric_label = lc($metric_name);
+        my $metric_key = lc($metric_name);
         my $metric = $self->{metrics_mapping}{$metric_name};
         my $entry = {
             label      => $metric->{label},
@@ -226,12 +226,12 @@ sub set_counters {
             display_ok => $metric->{display_ok},
             set        => {
                 key_values      =>
-                    [ { name => $metric_label }, { name => 'display' } ],
+                    [ { name => $metric_key }, { name => 'display' } ],
                 output_template => $metric->{label} . ': ' . $metric->{output_template},
                 perfdatas       =>
                     [
                         {
-                            value                => $metric_label,
+                            value                => $metric_key,
                             template             => $metric->{template},
                             label_extra_instance => 1,
                             unit                 => $metric->{unit},
