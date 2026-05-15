@@ -27,7 +27,7 @@ use warnings;
 
 use DateTime;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw/is_excluded change_seconds flatten_arrays/;
+use centreon::plugins::misc qw/is_excluded change_seconds flatten_arrays disco_escape/;
 use apps::backup::rubrik::graphql::common qw/timerange_check_options $timerange_filters/;
 use centreon::plugins::constants qw(:counters);
 use POSIX qw/floor/;
@@ -416,7 +416,7 @@ sub disco_show {
 
     foreach my $job (@{$jobs}) {
         $self->{output}->add_disco_entry(
-            jobId => $job->{fid}, jobName => $job->{objectName}, jobType => $job->{lastActivityType}, locationName => $job->{location} // ''
+            jobId => $job->{fid}, jobName => disco_escape($job->{objectName}), jobType => $job->{lastActivityType}, locationName => disco_escape($job->{location} // '')
         );
     }
 }
