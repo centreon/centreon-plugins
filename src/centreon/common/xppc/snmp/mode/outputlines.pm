@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,7 +54,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         {
             label            => 'status',
-            type             => 2,
+            type             => COUNTER_KIND_TEXT,
             unknown_default  => '%{status} =~ /unknown/i',
             warning_default  => '%{status} =~ /rebooting|onBypass/i',
             critical_default => '%{status} =~ /onBattery/i',
@@ -73,9 +73,9 @@ sub set_counters {
             ]
         }
         },
-        { label => 'frequence', nlabel => 'lines.output.frequence.hertz', set => {
+        { label => 'frequency', nlabel => 'lines.output.frequency.hertz', set => {
             key_values      => [ { name => 'upsSmartOutputFrequency', no_value => 0 } ],
-            output_template => 'frequence: %.2f Hz',
+            output_template => 'frequency: %.2f Hz',
             perfdatas       => [
                 { template => '%.2f', unit => 'Hz' }
             ]
@@ -97,7 +97,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'warning-frequence:s'                      => { redirect => 'warning-lines-output-frequency-hertz' },
+        'warning-lines-output-frequence-hertz:s'   => { redirect => 'warning-lines-output-frequency-hertz' },
+        'critical-frequence:s'                     => { redirect => 'critical-lines-output-frequency-hertz' },
+        'critical-lines-output-frequence-hertz:s'  => { redirect => 'critical-lines-output-frequency-hertz' }
+    });
 
     return $self;
 }
@@ -171,11 +176,19 @@ Threshold.
 
 =item B<--warning-voltage>
 
-Threshold.
+Threshold in Volts.
 
 =item B<--critical-voltage>
 
-Threshold.
+Threshold in Volts.
+
+=item B<--warning-frequency>
+
+Threshold in Hertz.
+
+=item B<--critical-frequency>
+
+Threshold in Hertz.
 
 =back
 
