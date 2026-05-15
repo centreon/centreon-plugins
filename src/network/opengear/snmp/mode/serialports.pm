@@ -268,7 +268,8 @@ sub disco_show {
 
     $self->manage_selection(%options);
     $self->{output}->add_disco_entry( name => $_->{name} )
-        foreach sort values %{$self->{interfaces}};
+        foreach sort { $a->{name} cmp $b->{name} }
+                values %{$self->{interfaces}};
 }
 
 1;
