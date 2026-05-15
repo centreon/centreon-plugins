@@ -143,6 +143,53 @@ jobs:
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
+  docker-build:
+    needs: [get-environment, package]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        include:
+          - package_extension: deb
+            distrib: trixie
+    name: docker build connector-vmware ${{ matrix.distrib }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Restore ${{ matrix.distrib }} package from cache
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ./*.${{ matrix.package_extension }}
+          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          fail-on-cache-miss: true
+
+      - name: Prepare packages-centreon directory
+        run: |
+          mkdir -p packages-centreon
+          mv ./*.${{ matrix.package_extension }} packages-centreon/
+        shell: bash
+
+      - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Build Docker image
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          file: .github/docker/connector/Dockerfile.connector-vmware
+          context: .
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            PACKAGE_SOURCE=mount
+            WITH_SDK=false
+          push: false
+
   set-skip-label:
     needs: [get-environment, deliver-packages]
     if: |

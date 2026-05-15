@@ -10,7 +10,7 @@ on:
     paths:
       - '.github/workflows/docker-builder-connector-vmware.yml'
       - '.github/docker/connector/Dockerfile.connector-vmware'
-      - 'connectors/vmware/src/**'
+      - '.github/docker/connector/entrypoint/**'
 
 jobs:
   dependency-scan:
@@ -34,6 +34,6 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           build-args: |
-            PACKAGE_SOURCE=mount
+            PACKAGE_SOURCE=local
             WITH_SDK=false
           push: false
