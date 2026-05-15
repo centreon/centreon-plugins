@@ -194,13 +194,11 @@ sub manage_selection {
     };
     if ($@) {
         $ha_error = 1;
-        $self->{output}->output_add(long_msg => "HA Check OID error: $@", debug => 1);
     }
 
     my $is_ha = 0;
     if ($ha_error || !defined $ha_result || scalar(keys %$ha_result) == 0) {
         # No data returned from HA OID, assume Single Node mode
-        $self->{output}->output_add(long_msg => "HA Check returned no data, assuming single node mode.", debug => 1);
         push @$ha_instances, '0';
         $is_ha = 0;
     } else {
@@ -219,9 +217,10 @@ sub manage_selection {
     }
 
     # Fetch serial numbers for each detected instance (useful for display in HA)
+    my @serial_oids = map { "$oid_snsFwSerial.$_" } @$ha_instances;
+    my $serial_res = $options{snmp}->get_leef(oids => \@serial_oids, nothing_quit => 0);
     foreach my $inst (@$ha_instances) {
         my $oid_serial = "$oid_snsFwSerial.$inst";
-        my $serial_res = $options{snmp}->get_leef(oids => [$oid_serial], nothing_quit => 0);
         if (defined $serial_res && defined $serial_res->{$oid_serial}) {
             $serials->{$inst} = $serial_res->{$oid_serial};
         } else {
@@ -231,7 +230,6 @@ sub manage_selection {
 
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     my $licence_count_total = 0;
-
 
     # Define OIDs based on HA or non-HA mode
     # Stormshield uses different MIB for HA clusters vs standalone devices    
