@@ -11,6 +11,8 @@ on:
       - '.github/workflows/connector-vmware.yml'
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
+      - '.github/docker/connector/Dockerfile.connector-vmware'
+      - '.github/docker/connector/entrypoint/**'
   push:
     branches:
       - develop
@@ -19,6 +21,8 @@ on:
       - '.github/workflows/connector-vmware.yml'
       - 'connectors/vmware/src/**'
       - 'connectors/vmware/packaging/**'
+      - '.github/docker/connector/Dockerfile.connector-vmware'
+      - '.github/docker/connector/entrypoint/**'
 
 jobs:
   dependency-scan:
