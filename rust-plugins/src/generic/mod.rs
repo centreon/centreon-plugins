@@ -239,25 +239,17 @@ impl Command {
         let mut collect: Vec<SnmpResult> = Vec::new();
 
         if check_format {
-            // In check-format mode, don't make SNMP requests and initialize with defaults
+            // In check-format mode, don't make SNMP requests and initialize with dummy values
             for s in self.collect.snmp.iter() {
-                collect.push(SnmpResult::new(HashMap::new()));
-            }
-            // Initialize values for validation
-            for result in collect.iter_mut() {
-                for s in self.collect.snmp.iter() {
-                    if !result.items.contains_key(&s.name) {
-                        result.items.insert(s.name.clone(), ExprResult::Vector(vec![0.0, 0.0]));
-                    }
-                    if let Some(lab) = &s.labels {
-                        for label_val in lab.values() {
-                            let key = format!("{}.{}", s.name, label_val);
-                            if !result.items.contains_key(&key) {
-                                result.items.insert(key, ExprResult::Vector(vec![0.0, 0.0]));
-                            }
-                        }
+                let mut items = HashMap::new();
+                items.insert(s.name.clone(), ExprResult::Vector(vec![0.0, 0.0]));
+                if let Some(lab) = &s.labels {
+                    for label_val in lab.values() {
+                        let key = format!("{}.{}", s.name, label_val);
+                        items.insert(key, ExprResult::Vector(vec![0.0, 0.0]));
                     }
                 }
+                collect.push(SnmpResult::new(items));
             }
         } else {
             let mut to_get = Vec::new();

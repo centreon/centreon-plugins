@@ -288,6 +288,9 @@ impl ExprResult {
                 ExprResult::Str(s) => {
                     *self = ExprResult::Str(s.clone());
                 }
+                ExprResult::Vector(vv) => {
+                    *self = ExprResult::StrVector(vv.iter().map(|n| crate::output::float_string(n)).collect());
+                }
                 _ => panic!("Unable to join objects others than strings"),
             },
             ExprResult::StrVector(v) => match other {
