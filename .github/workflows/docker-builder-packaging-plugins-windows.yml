@@ -1,0 +1,100 @@
+name: docker-builder-packaging-plugins-windows
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - ".github/workflows/docker-builder-packaging-plugins-windows.yml"
+      - ".github/patch/ntp.diff"
+  pull_request:
+    paths:
+      - ".github/workflows/docker-builder-packaging-plugins-windows.yml"
+      - ".github/patch/ntp.diff"
+
+jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  get-environment:
+    needs: [dependency-scan]
+    uses: ./.github/workflows/get-environment.yml
+
+  build-environment:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Check cache
+        id: cache-perl
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: C:\Strawberry
+          key: strawberry-perl-5.42.0.1-${{ hashFiles('.github/patch/ntp.diff') }}
+          lookup-only: true
+
+      - name: Install Strawberry Perl
+        if: steps.cache-perl.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          Invoke-WebRequest `
+            -Uri https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54201_64bit/strawberry-perl-5.42.0.1-64bit.msi `
+            -OutFile strawberry-perl.msi
+          Start-Process msiexec.exe -ArgumentList '/i strawberry-perl.msi /quiet /norestart' -Wait -NoNewWindow
+          Remove-Item strawberry-perl.msi
+
+      - name: Install CPAN modules
+        if: steps.cache-perl.outputs.cache-hit != 'true'
+        shell: cmd
+        run: |
+          C:\Strawberry\perl\bin\cpanm --notest ^
+            PAR::Packer ^
+            Authen::NTLM ^
+            Date::Manip ^
+            Email::Send::SMTP::Gmail ^
+            HTTP::ProxyPAC ^
+            IO::Socket::SSL ^
+            JE ^
+            JSON::XS ^
+            Net::Curl ^
+            Net::FTPSSL ^
+            Net::NTP ^
+            Net::SSLeay ^
+            Pod::Simple::Search ^
+            Tie::RefHash::Weak ^
+            Win32::Job ^
+            XML::LibXML
+
+      - name: Apply NTP patch for Windows compatibility
+        if: steps.cache-perl.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          $ntpPath = & C:\Strawberry\perl\bin\perl.exe -MNet::NTP -e 'print $INC{"Net/NTP.pm"}'
+          & "C:\Program Files\Git\usr\bin\patch.exe" $ntpPath .github\patch\ntp.diff
+
+      - name: Save environment to cache
+        if: steps.cache-perl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: C:\Strawberry
+          key: strawberry-perl-5.42.0.1-${{ hashFiles('.github/patch/ntp.diff') }}
+
+  set-skip-label:
+    needs: [get-environment, build-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

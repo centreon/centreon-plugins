@@ -1,0 +1,28 @@
+--- NTP.pm
++++ NTP.pm
+@@ -171,14 +171,17 @@
+ 
+     ## receive with deadline
+     my $data;
+-    eval {
+-        local $SIG{ALRM} = sub { die "Net::NTP timed out getting NTP packet\n"; };
+-        alarm($TIMEOUT);
+-        $sock->recv($data, 960)
+-          or die "recv() failed: $!\n";
+-        alarm(0);
+-    };
+-    alarm 0;
++    my $rin = '';
++    vec($rin, $sock->fileno(), 1) = 1;
++    my $rout = $rin;
++    select($rout, undef, undef, $TIMEOUT);
++    if (vec($rout, $sock->fileno(), 1)) {
++        $sock->recv($data, 960)
++            or die "recv() failed: $!\n";
++    }
++    else {
++        die "Net::NTP timed out getting NTP packet\n";
++    }
+ 
+     my $rectime = time; # T4
+     my $pkt = Net::NTP::Packet->decode($data, $xmttime, $rectime);
