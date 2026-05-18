@@ -5,6 +5,7 @@
     "files": [
         "centreon/plugins/script_snmp.pm",
         "centreon/plugins/snmp.pm",
-        "hardware/ups/phoenixtec/snmp/"
+        "hardware/ups/phoenixtec/snmp/",
+        "centreon/common/xppc/snmp/mode/"
     ]
 }
