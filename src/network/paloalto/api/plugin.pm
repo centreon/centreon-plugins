@@ -35,7 +35,8 @@ sub new {
         'ha'          => 'network::paloalto::api::mode::ha',
         'licenses'    => 'network::paloalto::api::mode::licenses',
         'system'      => 'network::paloalto::api::mode::system',
-        'ipsec'       => 'network::paloalto::api::mode::ipsec'
+        'ipsec'       => 'network::paloalto::api::mode::ipsec',
+        'panorama-firewall-discovery' => 'network::paloalto::api::mode::panoramafirewalldiscovery'
     };
 
     $self->{custom_modes}->{api} = 'network::paloalto::api::custom::api';
