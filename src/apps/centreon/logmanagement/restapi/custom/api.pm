@@ -23,7 +23,7 @@ package apps::centreon::logmanagement::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON::XS;
+use centreon::plugins::misc qw(json_decode);
 
 sub new {
     my ($class, %options) = @_;
@@ -34,10 +34,8 @@ sub new {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless defined($options{options});
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
@@ -120,12 +118,11 @@ sub get_log_count {
 
     # Combine authentication header with content-type header
     my @headers = ("Content-Type: application/json");
-    
+
     # Add authentication header if token is provided
-    if (defined($self->{token}) && $self->{token} ne '') {
-        push @headers, "X-Api-Key: " . $self->{token};
-    }
-    
+    push @headers, "X-Api-Key: " . $self->{token}
+        if $self->{token};
+
     my $response = $self->{http}->request(
         method => 'POST',
         url_path => $self->{api_path},
@@ -135,20 +132,7 @@ sub get_log_count {
         warning_status => ''
     );
 
-    my $content;
-    eval {
-        $content = JSON::XS->new->utf8->decode($response);
-    };
-
-    $self->{output}->option_exit(exit_litteral => 'critical', short_msg => "Cannot decode json response: $@")
-        if $@;
-
-    if (defined($content->{error})) {
-        $self->{output}->option_exit(exit_litteral => 'critical',
-                                     short_msg => "Cannot get data: " . ($content->{error}->{message} || 'Unknown error'));
-    }
-
-    return $content;
+    return json_decode($response, output => $self->{output});
 }
 
 1;

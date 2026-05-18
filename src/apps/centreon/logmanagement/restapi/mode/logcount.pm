@@ -25,6 +25,8 @@ use warnings;
 
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw(value_of);
 
 sub custom_result_output {
     my ($self, %options) = @_;
@@ -35,8 +37,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'logcount', type => 0, skipped_code => { -10 => 1 } }
-    ];
+        { name => 'logcount', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } }    ];
 
     $self->{maps_counters}->{logcount} = [
         { label => 'count', nlabel => 'log.count', set => {
@@ -87,35 +88,12 @@ sub manage_selection {
 
     # Extract the log count from the API response
     # API response format: {"curves":[{"metric":"count","times":[...],"data":[count_value,...],"attributes":[]}]}
-    my $count = 0;
-    
-    # Parse the response to extract the count from curves->data[0]
-    if (defined($result->{curves}) && ref($result->{curves}) eq 'ARRAY' && @{$result->{curves}} > 0) {
-        my $first_curve = $result->{curves}->[0];
-        if (defined($first_curve->{data}) && ref($first_curve->{data}) eq 'ARRAY' && @{$first_curve->{data}} > 0) {
-            $count = $first_curve->{data}->[0];
-            # Convert to integer if it's a float like 0.0
-            $count = int($count) if $count =~ /\.\d+/;
-        }
-    }
-    
-    # If we still don't have a count, try fallback methods
-    if ($count == 0) {
-        # Try alternative response structures
-        if (defined($result->{data}->{count})) {
-            $count = $result->{data}->{count};
-        } elsif (defined($result->{count})) {
-            $count = $result->{count};
-        } elsif (defined($result->{result}->{count})) {
-            $count = $result->{result}->{count};
-        }
-    }
-    
-    # If we still can't find the count, show debug info and exit
-    if ($count == 0 && (!defined($result->{curves}) || !@{$result->{curves}})) {
-        $self->{output}->output_add(long_msg => "API response: " . JSON::XS->new->utf8->encode($result), debug => 1);
-        $self->{output}->option_exit(exit_litteral => 'critical', short_msg => "Cannot find log count in API response");
-    }
+    $self->{output}->option_exit("curves array is missing from response")
+        unless $result->{curves} && ref($result->{curves}) eq 'ARRAY';
+
+    my $count = value_of($result, '->{curves}->[0]->{data}->[0]', 'none');
+    $self->{output}->option_exit("Path .response.curves[0].data[0] could not be found or is '" . $count . "'")
+        unless $count =~ /^[\.\d]+$/;
 
     $self->{logcount} = {
         count => $count
