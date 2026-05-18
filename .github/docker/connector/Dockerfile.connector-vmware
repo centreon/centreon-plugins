@@ -52,8 +52,8 @@ RUN set -e && \
     apt-get update && \
     mkdir -p /extracted && \
     apt-get install -y --no-install-recommends --download-only \
-        "centreon-plugin-virtualization-vmware-daemon${VERSION:+=$VERSION}" && \
-    for deb in /var/cache/apt/archives/centreon-plugin-virtualization-vmware-daemon*deb${DEBVER}*.deb; do \
+        "centreon-plugin-virtualization-vmware-daemon" && \
+    for deb in /var/cache/apt/archives/centreon-plugin-virtualization-vmware-daemon*.deb; do \
         echo "Extracting $deb..."; \
         dpkg-deb -x "$deb" /extracted/; \
     done && \
