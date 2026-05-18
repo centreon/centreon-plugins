@@ -132,8 +132,6 @@ cgs-swap ${tc}
     ...    WARNING: swap.usage.percent is 49.97% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
     ...    5
     ...    --critical-swap-prct=0.1
-    ...    5
-    ...    --critical-swap-prct=0.1
     ...    CRITICAL: swap.usage.percent is 49.97% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
     ...    6
     ...    --check-format
