@@ -1,0 +1,11 @@
+{
+  "nsclient": {
+    "version": "0.11.8",
+    "msi_filename": "NSCP-0.11.8-x64.msi",
+    "msi_url": "https://github.com/mickem/nscp/releases/download/0.11.8/NSCP-0.11.8-x64.msi",
+    "msi_sha256": "7586b43dc18dc7e99a744d62c7b3f464f2bb3059a048dbb1584048530111ca65"
+  },
+  "nsis": {
+    "version": "3.11"
+  }
+}
