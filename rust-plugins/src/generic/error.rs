@@ -21,6 +21,12 @@ pub enum Error {
     #[snafu(display("Threshold: The threshold syntax must follow '[@]start:end'"))]
     BadThreshold,
 
+    #[snafu(display("Unknown argument: {arg}\nUse --help to display available options"))]
+    UnknownArgument { arg: String },
+
+    #[snafu(display("{message}"))]
+    InvalidJSON { message: String },
+
     #[snafu(transparent)]
     Io { source: io::Error },
     #[snafu(transparent)]
