@@ -46,22 +46,38 @@ DEB_DEFAULTS = {
 # ── Fixed include entries ──────────────────────────────────────────────────────
 
 RPM_DISTRIB_INCLUDES = [
-    {"distrib": "el8",  "package_extension": "rpm", "image": "packaging-plugins-alma8"},
-    {"distrib": "el9",  "package_extension": "rpm", "image": "packaging-plugins-alma9"},
-    {"distrib": "el10", "package_extension": "rpm", "image": "packaging-plugins-alma10"},
+    {"distrib": "el8",  "package_extension": "rpm", "image": "packaging:alma8"},
+    {"distrib": "el9",  "package_extension": "rpm", "image": "packaging:alma9"},
+    {"distrib": "el10", "package_extension": "rpm", "image": "packaging:alma10"},
 ]
 
 DEB_BUILD_NAME_INCLUDES = [
-    {"build_name": "bullseye-amd64", "distrib": "bullseye", "package_extension": "deb", "image": "packaging-plugins-bullseye"},
-    {"build_name": "bookworm",       "distrib": "bookworm", "package_extension": "deb", "image": "packaging-plugins-bookworm"},
-    {"build_name": "trixie",         "distrib": "trixie",   "package_extension": "deb", "image": "packaging-plugins-trixie"},
-    {"build_name": "jammy",          "distrib": "jammy",    "package_extension": "deb", "image": "packaging-plugins-jammy"},
-    {"build_name": "noble",          "distrib": "noble",    "package_extension": "deb", "image": "packaging-plugins-noble"},
+    {"build_name": "bullseye-amd64", "distrib": "bullseye", "package_extension": "deb", "image": "packaging:bullseye"},
+    {"build_name": "bookworm",       "distrib": "bookworm", "package_extension": "deb", "image": "packaging:bookworm"},
+    {"build_name": "trixie",         "distrib": "trixie",   "package_extension": "deb", "image": "packaging:trixie"},
+    {"build_name": "jammy",          "distrib": "jammy",    "package_extension": "deb", "image": "packaging:jammy"},
+    {"build_name": "noble",          "distrib": "noble",    "package_extension": "deb", "image": "packaging:noble"},
     {
         "build_name": "bullseye-arm64",
         "distrib":    "bullseye",
         "package_extension": "deb",
-        "image": "packaging-plugins-bullseye-arm64",
+        "image": "packaging:bullseye",
+        "arch": "arm64",
+        "runner_name": "ubuntu-24.04-arm",
+    },
+    {
+        "build_name": "bookworm-arm64",
+        "distrib":    "bookworm",
+        "package_extension": "deb",
+        "image": "packaging:bookworm",
+        "arch": "arm64",
+        "runner_name": "ubuntu-24.04-arm",
+    },
+    {
+        "build_name": "trixie-arm64",
+        "distrib":    "trixie",
+        "package_extension": "deb",
+        "image": "packaging:trixie",
         "arch": "arm64",
         "runner_name": "ubuntu-24.04-arm",
     },
