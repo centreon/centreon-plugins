@@ -271,6 +271,8 @@
     {
       "name": "Net::DHCP",
       "rpm": {
+        "version": "0.8",
+        "comment": "Force version 0.8 because of a problem with the packaging job on version 0.9",
         "rpm_provides": "perl(Net::DHCP::Constants) perl(Net::DHCP::Packet)"
       }
     },
