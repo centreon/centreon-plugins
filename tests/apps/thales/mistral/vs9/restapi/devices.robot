@@ -183,7 +183,7 @@ Devices ${tc}
     ...    WARNING: device '987654.000001' uptime: \\\\d+d \\\\d+h \\\\d+m \\\\d+s - device 'DASERIAL' uptime: \\\\d+d \\\\d+h \\\\d+m \\\\d+s \\\| 'devices.detected.count'=2;;;0; '987654.000001#system.uptime.seconds'=\\\\d+s;0:1;;0; '987654.000001#system.time.offset.seconds'=-\\\\d+s;;;; 'DASERIAL#system.uptime.seconds'=\\\\d+s;0:1;;0; 'DASERIAL#system.time.offset.seconds'=-\\\\d+s;;;;
     ...    50
     ...    --critical-system-uptime=1 --add-system
-    ...    CRITICAL: device '987654.000001' uptime: \\\\d+d \\\\d+h \\\\d+m \\\\d+s - device 'DASERIAL' uptime: \\\\d+d \\\\d+h \\\\d+m \\\\d+s \\\| 'devices.detected.count'=2;;;0; '987654.000001#system.uptime.seconds'=\\\\d+;;0:1;0; '987654.000001#system.time.offset.seconds'=-\\\\Ê+s;;;; 'DASERIAL#system.uptime.seconds'=\\\\d+s;;0:1;0; 'DASERIAL#system.time.offset.seconds'=-\\\\d+s;;;;
+    ...    CRITICAL: device '987654.000001' uptime: \\\\d+d \\\\d+h \\\\d+m \\\\d+s - device 'DASERIAL' uptime: \\\\d+d \\\\d+h \\\\d+m \\\\d+s \\\| 'devices.detected.count'=2;;;0; '987654.000001#system.uptime.seconds'=\\\\d+s;;0:1;0; '987654.000001#system.time.offset.seconds'=-\\\\d+s;;;; 'DASERIAL#system.uptime.seconds'=\\\\d+s;;0:1;0; 'DASERIAL#system.time.offset.seconds'=-\\\\d+s;;;;
     ...    51
     ...    --warning-system-time-offset=1 --add-system
     ...    WARNING: device '987654.000001' time offset
