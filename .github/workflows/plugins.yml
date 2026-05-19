@@ -293,35 +293,32 @@ jobs:
       matrix:
         include:
           - package_extension: rpm
-            image: packaging-plugins-alma8
+            image: packaging:alma8
             distrib: el8
           - package_extension: rpm
-            image: packaging-plugins-alma9
+            image: packaging:alma9
             distrib: el9
           - package_extension: rpm
-            image: packaging-plugins-alma10
+            image: packaging:alma10
             distrib: el10
           - package_extension: deb
-            image: packaging-plugins-bullseye
+            image: packaging:bullseye
             distrib: bullseye
           - package_extension: deb
-            image: packaging-plugins-bookworm
+            image: packaging:bookworm
             distrib: bookworm
           - package_extension: deb
-            image: packaging-plugins-trixie
+            image: packaging:trixie
             distrib: trixie
           - package_extension: deb
-            image: packaging-plugins-jammy
+            image: packaging:jammy
             distrib: jammy
           - package_extension: deb
-            image: packaging-plugins-noble
+            image: packaging:noble
             distrib: noble
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+      image: ghcr.io/${{ github.repository }}/${{ matrix.image }}
 
     name: "Package ${{ matrix.distrib }}"
 
@@ -376,45 +373,45 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-alma10, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-trixie, testing-plugins-noble, testing-plugins-bullseye-arm64]
+        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bullseye, testing:bookworm, testing:trixie, testing:noble]
         include:
           - skip_robot_tests: false
           - package_extension: rpm
-            image: testing-plugins-alma8
+            image: testing:alma8
             distrib: el8
             arch: amd64
           - package_extension: rpm
-            image: testing-plugins-alma9
+            image: testing:alma9
             distrib: el9
             arch: amd64
           - package_extension: rpm
-            image: testing-plugins-alma10
+            image: testing:alma10
             distrib: el10
             arch: amd64
             skip_robot_tests: true
           - package_extension: deb
-            image: testing-plugins-bullseye
+            image: testing:bullseye
             distrib: bullseye
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-bookworm
+            image: testing:bookworm
             distrib: bookworm
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-trixie
+            image: testing:trixie
             distrib: trixie
             arch: amd64
             skip_robot_tests: true
           - package_extension: deb
-            image: testing-plugins-jammy
+            image: testing:jammy
             distrib: jammy
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-noble
+            image: testing:noble
             distrib: noble
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-bullseye-arm64
+            image: testing:bullseye
             distrib: bullseye
             arch: arm64
 
@@ -432,9 +429,6 @@ jobs:
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
       skip-robot-tests: ${{ matrix.skip_robot_tests }}
       exclude-robot-tags: centreon-generic-snmp
-    secrets:
-      registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-      registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
