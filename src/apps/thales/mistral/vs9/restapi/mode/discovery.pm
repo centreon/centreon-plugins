@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,10 +46,8 @@ sub check_options {
     if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
         $self->{option_results}->{resource_type} = 'device';
     }
-    if ($self->{option_results}->{resource_type} !~ /^device|mmc$/) {
-        $self->{output}->add_option_msg(short_msg => 'unknown resource type');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'unknown resource type')
+        unless $self->{option_results}->{resource_type} =~ /^device|mmc$/;
 }
 
 sub discovery_device {
@@ -204,7 +202,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (can be: 'device', 'mmc').
+Choose the type of resources to discover (can be: C<device>, C<mmc>).
 
 =back
 

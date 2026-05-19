@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::misc;
 
 sub new {
@@ -130,16 +130,16 @@ sub minimal_api_version {
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache_connect}->read(statefile => 'thales_mistral_connect_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'thales_mistral_connect_' . sha256_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $token = $self->{cache_connect}->get(name => 'token');
     $self->{api_version} = $self->{cache_connect}->get(name => 'api_version');
-    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
-    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
+    my $sha256_secret_cache = $self->{cache_connect}->get(name => 'sha256_secret');
+    my $sha256_secret = sha256_hex($self->{api_username} . $self->{api_password});
 
     if ($has_cache_file == 0 ||
         !defined($token) ||
         !defined($self->{api_version}) ||
-        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        (defined($sha256_secret_cache) && $sha256_secret_cache ne $sha256_secret)
         ) {
         # Login
         my $json_request = {
@@ -200,7 +200,7 @@ sub get_token {
             updated => time(),
             token => $token,
             api_version => $self->{api_version},
-            md5_secret => $md5_secret
+            sha256_secret => $sha256_secret
         };
         $self->{cache_connect}->write(data => $datas);
     }
@@ -220,6 +220,7 @@ sub request_api {
 
     $self->settings();
     my $token = $self->get_token();
+
     my ($content) = $self->{http}->request(
         url_path => '/api' . $options{endpoint},
         get_param => $options{get_param},
@@ -252,6 +253,7 @@ sub request_api {
     eval {
         $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
     };
+
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
@@ -280,7 +282,7 @@ sub get_certificates_ca_with_signed_certificates {
 sub get_clusters {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_clusters_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_clusters_' . sha256_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $updated = $self->{cache}->get(name => 'updated');
     my $clusters = $self->{cache}->get(name => 'clusters');
     if ($has_cache_file == 0 || !defined($updated) || ((time() - $updated) > (($self->{option_results}->{reload_cache_time} * 60)))) {
@@ -300,7 +302,7 @@ sub get_clusters {
 sub get_gateway_inventory {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_inventory_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_inventory_' . sha256_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $updated = $self->{cache}->get(name => 'updated');
     my $inventory = $self->{cache}->get(name => 'gwInventory');
     if ($has_cache_file == 0 || !defined($updated) || ((time() - $updated) > (($self->{option_results}->{reload_cache_time} * 60)))) {
@@ -347,11 +349,11 @@ __END__
 
 =head1 NAME
 
-Mistral vs9 API
+Mistral VS9 API
 
 =head1 REST API OPTIONS
 
-Mistral vs9 API
+Mistral VS9 API
 
 =over 8
 

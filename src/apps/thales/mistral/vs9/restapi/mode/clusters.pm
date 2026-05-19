@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,6 +28,7 @@ use DateTime;
 use POSIX;
 use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw/:values :counters/;
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
 my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
@@ -126,13 +127,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'clusters', type => 3, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
+            name => 'clusters', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All clusters are ok',
             group => [
-                { name => 'information', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'members', type => 1, cb_prefix_output => 'prefix_member_output', message_multiple => 'members are ok', display_long => 1, skipped_code => { -10 => 1 } }
+                { name => 'information', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'members', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_member_output', message_multiple => 'members are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -151,7 +152,7 @@ sub set_counters {
     $self->{maps_counters}->{information} = [
         {
             label => 'cluster-information',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'virtualIp' }, { name => 'timeToSwitch' } ],
                 closure_custom_output => $self->can('custom_information_output'),
@@ -164,7 +165,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'cluster-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{gatewaysClusterStatus} =~ /HAC_FAILOVER/i',
             critical_default => '%{gatewaysClusterStatus} =~ /HAC_FAILURE|HAC_DOWN|HAC_BACKUP_FAILURE/i',
             set => {
@@ -179,7 +180,7 @@ sub set_counters {
     $self->{maps_counters}->{members} = [
         {
             label => 'member-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'role' }, { name => 'connectedStatus' }, { name => 'clusterName' }, { name => 'memberName' } ],
                 closure_custom_output => $self->can('custom_member_status_output'),
@@ -335,10 +336,21 @@ You can use the following variables: %{connectedStatus}, %{role}, %{memberName}
 Select the time unit for contact threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is seconds.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-clusters-detected>
 
-Thresholds.
-Can be: 'clusters-detected', 'member-contact-last-time'.
+Threshold.
+
+=item B<--critical-clusters-detected>
+
+Threshold.
+
+=item B<--warning-member-contact-last-time>
+
+Threshold.
+
+=item B<--critical-member-contact-last-time>
+
+Threshold.
 
 =back
 
