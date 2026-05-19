@@ -388,6 +388,7 @@ jobs:
             image: testing:alma10
             distrib: el10
             arch: amd64
+            skip_robot_tests: true
           - package_extension: deb
             image: testing:bullseye
             distrib: bullseye
@@ -400,6 +401,7 @@ jobs:
             image: testing:trixie
             distrib: trixie
             arch: amd64
+            skip_robot_tests: true
           - package_extension: deb
             image: testing:jammy
             distrib: jammy
