@@ -132,6 +132,14 @@ Check the overall status of C<StorMagic SvSAN>.
 
 =over 8
 
+=item B<--include-name>
+
+Filter pools by name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude pools by name (can be a regexp).
+
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN (default: '').
