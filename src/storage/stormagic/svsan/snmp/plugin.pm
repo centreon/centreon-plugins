@@ -31,6 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'list-mirrors'   => 'storage::stormagic::svsan::snmp::mode::listmirrors',
+        'list-pools'    => 'storage::stormagic::svsan::snmp::mode::listpools',
         'mirrors'       => 'storage::stormagic::svsan::snmp::mode::mirrors',
         'pools'         => 'storage::stormagic::svsan::snmp::mode::pools',
         'system-status' => 'storage::stormagic::svsan::snmp::mode::systemstatus',

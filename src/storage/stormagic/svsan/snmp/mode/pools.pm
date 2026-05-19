@@ -424,7 +424,7 @@ Skip cache that have zero size.
 
 =item B<--unknown-pool-status>
 
-Define the conditions to match for the status to be UNKNOWN.
+Define the conditions to match for the status to be UNKNOWN (default: '').
 You can use the following variables: %{status}, %{display}
 
 =item B<--warning-pool-status>
