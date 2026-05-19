@@ -139,6 +139,7 @@ ifDesc
 ifName
 --ignore-orgs-api-disabled
 IKS
+IMAP
 IMEI
 in-bcast
 in-crc
@@ -317,10 +318,12 @@ scenarii
 SCVMM
 SFOS
 sfp.temperature
+SHA256
 SignalR
 sinr
 --skip-ssl-check
 SkyHigh
+SLA
 SMS
 SnapMirrors
 snmp
@@ -412,6 +415,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
 WildFire
 WLAN
 WLC

@@ -27,6 +27,7 @@ use JSON::XS;
 use Safe;
 use Encode;
 use MIME::Base64;
+use Digest::SHA qw/sha256_hex/;
 
 use Exporter 'import';
 use feature 'state';
@@ -35,19 +36,23 @@ our @EXPORT_OK = qw/change_seconds
                     check_security_command
                     check_security_whitelist
                     convert_bytes
+                    date_xm_ago_utc
+                    disco_escape
                     execute
                     flatten_arrays
                     flatten_to_hash
+                    format_opt
                     graphql_escape
                     is_empty
                     is_excluded
                     is_local_ip
                     json_encode
                     json_decode
-                    slurp_file
-                    format_opt
-                    trim
+                    json_to_sha256
                     mask_secrets
+                    normalize_mac
+                    slurp_file
+                    trim
                     value_of/;
 
 sub execute {
@@ -1032,6 +1037,55 @@ sub mask_secrets($;$) {
     return $masked;
 }
 
+sub normalize_mac {
+    my ($mac) = @_;
+
+    return '' unless defined $mac;
+
+    # already in a human readable string format ( AABBCC )
+    return lc join (':', $mac =~ /(..)/g)
+        if $mac =~ /^[0-9A-Fa-f]+$/;
+
+    # other humain-readable string formats ( AA BB CC, AA:BB:CC, AA-BB-CC ... )
+    if ($mac =~ /^[0-9A-Fa-f\s:-]+$/) {
+        $mac =~ s/[\s:-]+/:/g;
+        return lc $mac;
+    }
+
+    # binary format
+    return join(':', unpack('(H2)6', $mac)) if length($mac) == 6;
+
+    # fallback
+    return $mac;
+}
+
+sub json_to_sha256 {
+    my (%options) = @_;
+
+    my $data = $options{data} // '';
+    my $prefix = $options{prefix} // '';
+    $prefix .= '_' if $prefix ne '';
+    my $encoded = eval { JSON::XS->new->utf8->canonical(1)->encode($data) };
+    return undef if $@;
+    return sha256_hex($prefix.$encoded);
+}
+
+sub date_xm_ago_utc {
+    my ($value) = @_;
+    my @t = gmtime(time() - ($value * 60)); # heure en minutes
+    #@t = gmtime(time() - 600); # 24h en secondes
+    return sprintf( "%04d-%02d-%02dT%02d:%02d:%02dZ", $t[5] + 1900, $t[4] + 1, $t[3], $t[2], $t[1], $t[0]);
+}
+
+# Escape a string to be used by the discovery module
+sub disco_escape($;$) {
+    my ($value, $sub) = @_;
+
+    $sub //= '_';
+
+    return $value =~ s/[~!\$%\^&\*"'\|<>?,()=]/$sub/gr;
+}
+
 1;
 
 __END__
@@ -1681,8 +1735,6 @@ Determines whether a string should be excluded based on include and exclude regu
 
 =item * C<%options> - An optional hash that allows defining the output module in order to log when the string is excluded.
 
-=back
-
 Returns 1 if the string is excluded, 0 if it is included.
 The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
 not match the string. The string will also be excluded if it is undefined.
@@ -1698,7 +1750,73 @@ Be aware that this is only a try, there is no guarantee that all secrets will be
 
 =over 4
 
-=item * C<$ident> - name to convert.
+=item * C<$unsafe_string> - input string that may contain secrets.
+
+=item * C<$mask> - replacement string used to mask detected secrets.
+
+=back
+
+=head2 normalize_mac
+
+    my $to_print = centreon::plugins::misc::normalize_mac($mac);
+
+Attempts to format a MAC address into a human-readable format
+
+=over 4
+
+=item * C<$mac> - raw MAC address to print
+
+=back
+
+=head2 disco_escape
+
+    my $value = centreon::plugins::misc::disco_escape($value, $sub);
+
+Replace characters not allowed by centengine/discovery with $sub
+
+=over 4
+
+=item * C<$value> - label
+
+=item * C<$sub> - replacement character ( default: '_' )
+
+=back
+
+=head2 json_to_sha256
+
+    my $hash = centreon::plugins::misc::json_to_sha256(%options);
+
+Converts a JSON object to a SHA256 hash.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<data> - The data to encode as JSON and hash.
+
+=item * C<prefix> - Optional prefix to prepend to the encoded JSON before hashing.
+
+=back
+
+Returns the hexadecimal SHA256 hash of the JSON encoded data.
+
+=back
+
+=head2 date_xm_ago_utc
+
+    my $date = centreon::plugins::misc::date_xm_ago_utc($minutes);
+
+Returns a date in ISO 8601 UTC format that is X minutes ago from now.
+
+=over 4
+
+=item * C<$minutes> - Number of minutes ago to calculate from current time.
+
+=back
+
+Returns a string in the format: C<YYYY-MM-DDTHH:MM:SSZ>
 
 =head1 AUTHOR
 
