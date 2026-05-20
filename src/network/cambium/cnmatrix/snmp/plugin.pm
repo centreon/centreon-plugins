@@ -41,6 +41,12 @@ sub new {
         'uptime'          => 'snmp_standard::mode::uptime',
     };
 
+    $self->{modes_options} = {
+        'tcpcon'          => { force_new_perfdata => 1 },
+        'udpcon'          => { force_new_perfdata => 1 },
+        'uptime'          => { force_new_perfdata => 1 }
+    };
+
     return $self;
 }
 
