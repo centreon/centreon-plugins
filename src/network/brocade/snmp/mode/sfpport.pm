@@ -412,6 +412,10 @@ Check SFP port.
 
 Filter sfp port by instance (can be a regexp).
 
+=item B<--exclude-instance>
+
+Excludes sfp port by instance (can be a regexp).
+
 =item B<--add-interface-name>
 
 Add the corresponding interface name when set. Used for the instance name in perf data, too.
@@ -419,6 +423,10 @@ Add the corresponding interface name when set. Used for the instance name in per
 =item B<--include-interface>
 
 Filter ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
+
+=item B<--include-interface>
+
+Excludes ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
 
 =item B<--unknown-status>
 
@@ -435,10 +443,53 @@ You can use the following variables: %{tx_power_status}, %{rx_power_status}
 Define the conditions to match for the status to be CRITICAL (default: '%{tx_power_status} =~ /alarm/ || %{rx_power_status} =~ /alarm/').
 You can use the following variables: %{tx_power_status}, %{rx_power_status}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-rx-input-power>
 
-Thresholds.
-Can be: C<rx-input-power (mW)>, C<rx-input-power-dbm (dBm)>, C<tx-output-power (mW)>, C<tx-output-power-dbm (dBm)>, C<bias-current (mA)>, C<temperature (C)>.
+Thresholds. (mW)
+
+=item B<--critical-rx-input-power>
+
+Thresholds. (mW)
+
+=item B<--warning-rx-input-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--critical-rx-input-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--warning-tx-output-power>
+
+Thresholds. (mW)
+
+=item B<--critical-tx-output-power>
+
+Thresholds. (mW)
+
+=item B<--warning-tx-output-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--critical-tx-output-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--warning-bias-current>
+
+Thresholds. (mA)
+
+=item B<--critical-bias-current>
+
+Thresholds. (mA)
+
+=item B<--warning-temperature>
+
+Thresholds. (C)
+
+=item B<--critical-temperature>
+
+Thresholds. (C)
 
 =item B<--display-transform-src> B<--display-transform-dst>
 
