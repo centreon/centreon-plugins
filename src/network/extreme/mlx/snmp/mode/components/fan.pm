@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,12 +49,11 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_snChasFan2Entry}})) {
         next if ($oid !~ /^$mapping->{snChasFanOperStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping =>
-            $mapping,
-            results                                      =>
-                $self->{results}->{$oid_snChasFan2Entry},
-            instance                                     =>
-                $instance);
+        my $result = $self->{snmp}->map_instance(
+            mapping  => $mapping,
+            results  => $self->{results}->{$oid_snChasFan2Entry},
+            instance => $instance
+        );
 
         next if ($self->check_filter(section => 'fan', instance => $instance));
 

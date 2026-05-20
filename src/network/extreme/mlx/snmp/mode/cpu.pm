@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,41 +24,47 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPUs are ok' }
+        {
+            name             => 'cpu',
+            type             => COUNTER_TYPE_INSTANCE,
+            cb_prefix_output => 'prefix_cpu_output',
+            message_multiple => 'All CPUs are ok'
+        }
     ];
 
     $self->{maps_counters}->{cpu} = [
         { label => 'utilization-5s', nlabel => 'cpu.utilization.5s.percentage', set => {
-                key_values => [ { name => 'cpu_5s' }, { name => 'display' } ],
-                output_template => '%.2f %% (5s)',
-                perfdatas => [
-                    { value => 'cpu_5s',  template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'cpu_5s' }, { name => 'display' } ],
+            output_template => '%.2f %% (5s)',
+            perfdatas       => [
+                { value  => 'cpu_5s', template => '%.2f',
+                    unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+            ]
+        }
         },
         { label => 'utilization-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
-                key_values => [ { name => 'cpu_1m' }, { name => 'display' } ],
-                output_template => '%.2f %% (1m)',
-                perfdatas => [
-                    { value => 'cpu_1m',  template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'cpu_1m' }, { name => 'display' } ],
+            output_template => '%.2f %% (1m)',
+            perfdatas       => [
+                { value  => 'cpu_1m', template => '%.2f',
+                    unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+            ]
+        }
         },
         { label => 'utilization-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
-                key_values => [ { name => 'cpu_5m' }, { name => 'display' } ],
-                output_template => '%.2f %% (5m)',
-                perfdatas => [
-                    { value => 'cpu_5m',  template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
-                ]
-            }
+            key_values      => [ { name => 'cpu_5m' }, { name => 'display' } ],
+            output_template => '%.2f %% (5m)',
+            perfdatas       => [
+                { value  => 'cpu_5m', template => '%.2f',
+                    unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+            ]
+        }
         }
     ];
 }
@@ -93,9 +99,9 @@ sub manage_selection {
 
         $self->{cpu}->{$instance} = {
             display => $instance,
-            cpu_5s => $snmp_result->{ $oid_snAgentCpuUtilPercent . '.' . $1 . '.' . $2 . '.5' },
-            cpu_1m => $snmp_result->{ $oid_snAgentCpuUtilPercent . '.' . $1 . '.' . $2 . '.60' },
-            cpu_5m => $snmp_result->{ $oid_snAgentCpuUtilPercent . '.' . $1 . '.' . $2 . '.300' }
+            cpu_5s  => $snmp_result->{ $oid_snAgentCpuUtilPercent . '.' . $1 . '.' . $2 . '.5' },
+            cpu_1m  => $snmp_result->{ $oid_snAgentCpuUtilPercent . '.' . $1 . '.' . $2 . '.60' },
+            cpu_5m  => $snmp_result->{ $oid_snAgentCpuUtilPercent . '.' . $1 . '.' . $2 . '.300' }
         };
     }
 }

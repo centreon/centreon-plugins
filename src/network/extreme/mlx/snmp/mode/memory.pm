@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,19 +24,20 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 0 }
+        { name => 'memory', type => COUNTER_TYPE_GLOBAL }
     ];
 
     $self->{maps_counters}->{memory} = [
         { label => 'memory-utilization', nlabel => 'memory.utilization.percentage', set => {
-            key_values => [ { name => 'memory_usage' } ],
+            key_values      => [ { name => 'memory_usage' } ],
             output_template => 'memory usage is: %.2f%%',
-            perfdatas => [
+            perfdatas       => [
                 { template => '%.2f', unit => '%', min => 0, max => 100 }
             ]
         }
@@ -49,8 +50,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -60,7 +60,7 @@ sub manage_selection {
 
     my $oid_agentCurrentMemoryUtilization = '.1.3.6.1.4.1.1991.1.1.2.12.4.1.0';
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ $oid_agentCurrentMemoryUtilization ],
+        oids         => [ $oid_agentCurrentMemoryUtilization ],
         nothing_quit => 1
     );
 

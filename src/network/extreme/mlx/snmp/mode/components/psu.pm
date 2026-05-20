@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,12 +49,11 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_snChasPwrSupply2Entry}})) {
         next if ($oid !~ /^$mapping->{snChasPwrSupplyOperStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping =>
-            $mapping,
-            results                                      =>
-                $self->{results}->{$oid_snChasPwrSupply2Entry},
-            instance                                     =>
-                $instance);
+        my $result = $self->{snmp}->map_instance(
+            mapping  => $mapping,
+            results  => $self->{results}->{$oid_snChasPwrSupply2Entry},
+            instance => $instance
+        );
 
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
@@ -67,12 +66,11 @@ sub check {
                 $instance
             )
         );
-        my $exit = $self->get_severity(label =>
-            'default',
-            section                          =>
-                'psu',
-            value                            =>
-                $result->{snChasPwrSupplyOperStatus});
+        my $exit = $self->get_severity(
+            label   => 'default',
+            section => 'psu',
+            value   => $result->{snChasPwrSupplyOperStatus}
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity  => $exit,

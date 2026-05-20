@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,6 +41,13 @@ sub new {
         'tcp-con'         => 'snmp_standard::mode::tcpcon',
         'udp-con'         => 'snmp_standard::mode::udpcon',
         'uptime'          => 'snmp_standard::mode::uptime',
+    };
+
+    $self->{modes_options} = {
+        'interfaces'      => { force_new_perfdata => 1 },
+        'tcpcon'          => { force_new_perfdata => 1 },
+        'udpcon'          => { force_new_perfdata => 1 },
+        'uptime'          => { force_new_perfdata => 1 }
     };
 
     return $self;

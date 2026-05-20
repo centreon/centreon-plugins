@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,16 +49,15 @@ sub check {
         next if ($oid !~ /^$mapping->{snAgentTempSensorDescr}->{oid}\.(.*)$/);
         my $instance = $1;
         next if ($self->{results}->{$oid_snAgentTempEntry}->{$oid} !~ /temperature/i);
-        my $result = $self->{snmp}->map_instance(mapping =>
-            $mapping,
-            results                                      =>
-                $self->{results}->{$oid_snAgentTempEntry},
-            instance                                     =>
-                $instance);
+        my $result = $self->{snmp}->map_instance(
+            mapping  => $mapping,
+            results  => $self->{results}->{$oid_snAgentTempEntry},
+            instance => $instance
+        );
 
         next if ($self->check_filter(section => 'temperature', instance => $instance));
-        if ($result->{snAgentTempValue} == 0) {
-            $self->{output}->output_add(long_msg => sprintf("skipping temperature '%s' (counter is 0)",
+        if (!defined($result->{snAgentTempValue}) || $result->{snAgentTempValue} == 0) {
+            $self->{output}->output_add(long_msg => sprintf("skipping temperature '%s'",
                 $result->{snAgentTempSensorDescr}));
             next;
         }
@@ -67,19 +66,18 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("temperature '%s' is %s C [instance = %s]",
             $result->{snAgentTempSensorDescr}, $result->{snAgentTempValue}, $instance));
 
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section =>
-            'temperature',
-            instance                                                             =>
-                $instance,
-            value                                                                =>
-                $result->{snAgentTempValue});
+        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+            section  => 'temperature',
+            instance => $instance,
+            value    => $result->{snAgentTempValue}
+        );
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>
-                $exit,
-                short_msg                        =>
-                    sprintf("Temperature '%s' is %s C",
-                        $result->{snAgentTempSensorDescr},
-                        $result->{snAgentTempValue}));
+            $self->{output}->output_add(
+                severity  => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' is %s C", $result->{snAgentTempSensorDescr},
+                    $result->{snAgentTempValue})
+            );
         }
         $self->{output}->perfdata_add(
             label     => 'temp', unit => 'C',
