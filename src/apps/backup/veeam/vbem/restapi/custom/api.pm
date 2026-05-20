@@ -143,7 +143,7 @@ sub get_session_id {
         ) {
         my $content = $self->{http}->request(
             method => 'POST',
-            url_path => '/api/sessionMngr/',
+            url_path => '/api/sessionMngr/?v=latest',
             query_form_post => '',
             credentials => 1,
             basic => 1,

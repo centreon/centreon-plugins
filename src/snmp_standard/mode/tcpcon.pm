@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,6 +59,7 @@ sub new {
         'critical:s'      => { name => 'critical' },
         'service:s@'      => { name => 'service' },
         'application:s@'  => { name => 'application' },
+        'force-rfc:s'     => { name => 'force_rfc',  default => 'auto' },
     });
 
     @{$self->{connections}} = ();
@@ -159,7 +160,11 @@ sub get_from_rfc1213 {
 sub build_connections {
     my ($self, %options) = @_;
 
-    if ($self->get_from_rfc4022() == 0) {
+    if ($self->{option_results}->{force_rfc} eq 'rfc4022') {
+        $self->get_from_rfc4022();
+    } elsif ($self->{option_results}->{force_rfc} eq 'rfc1213') {
+        $self->get_from_rfc1213();
+    } elsif ($self->get_from_rfc4022() == 0) {
         $self->get_from_rfc1213();
     }
 }
@@ -306,14 +311,14 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning-service-total', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-service-total', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.")
+        unless $self->{perfdata}->threshold_validate(label => 'warning-service-total', value => $self->{option_results}->{warning});
+    $self->{output}->option_exit(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.")
+        unless $self->{perfdata}->threshold_validate(label => 'critical-service-total', value => $self->{option_results}->{critical});
+
+    $self->{output}->option_exit(short_msg => "Invalid --force-rfc value '" . $self->{option_results}->{force_rfc}. "'. Valid values: auto, rfc1213, rfc4022.")
+        unless $self->{option_results}->{force_rfc} =~ /^(auto|rfc1213|rfc4022)$/;
+
     $self->check_services();
     $self->check_applications();
 }
@@ -356,6 +361,11 @@ Warning threshold for total connections.
 =item B<--critical>
 
 Critical threshold for total connections.
+
+=item B<--force-rfc>
+
+Select the RFC to use for TCP connections. Allowed values: C<auto>, C<rfc4022>, C<rfc1213> (default: C<auto>).
+With 'auto', the plugin uses RFC 4022 and falls back to RFC 1213 if it is not supported.
 
 =item B<--service>
 

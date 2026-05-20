@@ -128,7 +128,7 @@ Check maintenance mode of ESX hosts.
 =item B<--esx-hostname>
 
 ESX hostname to check.
-If not set, we check all ESX.
+You can check all ESX using .* and --filter option.
 
 =item B<--filter>
 
