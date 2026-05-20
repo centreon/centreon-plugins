@@ -39,6 +39,10 @@ sub new {
         'uptime'        => 'snmp_standard::mode::uptime',
     };
 
+    $self->{modes_options} = {
+        'uptime' => { force_new_perfdata => 1 }
+    };
+
     return $self;
 }
 
