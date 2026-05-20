@@ -318,68 +318,20 @@ sub execute_winshell_commands {
     return $command_result;
 }
 
-# The "execute_powershell" function is now deprecated !
-# Use "execute_powershell_script" function instead which uses exclusively PowerShell commands
-# With "execute_powershell_script" data must be encoded using "powershell_encoded_script" and not with "powershell_encoded"
-
-# The script provided via 'content' must be Base64 encoded using 'powershell_encoded' function
-# Parameters:
-# $options{label}: label to identify the command ro retrieve results
-# $options{content}: UTF16le content encoded in base64 using powershell_encoded function
-
-sub execute_powershell {
-    my ($self, %options) = @_;
-
-    my $chunk = 8000;
-    my $filename = 'C:/Windows/Temp/' . $options{label} . '-' . sprintf("%08X", rand(0xFFFFFFFF)) . '.bat';
-    my $commands = [
-        {
-            label => 'prev1-' . $options{label},
-            value => 'if not exist "C:/Windows/Temp/" mkdir C:/Windows/Temp'
-        },
-        {
-            label => 'prev2-' . $options{label},
-            value => '(echo @ECHO OFF) >> ' . $filename
-        },
-        {
-            label => 'prev3-' . $options{label},
-            value => 'echo|set /P="powershell -encodedcommand ">> ' . $filename
-        }
-    ];
-
-    # To work around the 8191 character command line length limit when the data exceeds 8000 characters the string is
-    # split into 8000 character chunks and reassembled using a temporary file
-    my $i = 0;
-    foreach (unpack('(A' . $chunk . ')*', $options{content})) {
-        push @$commands, {
-            label => 'chunk-' . $i . '-' . $options{label},
-            value => 'echo|set /P="' . $_ . '">>' . $filename
-        };
-    }
-
-    push @$commands,
-        {
-            label => $options{label},
-            value => $filename
-        },
-        {
-            label => 'del-' . $options{label},
-            value => 'del /f ' . $filename
-        };
-
-    return $self->execute_winshell_commands(
-        commands => $commands,
-        keep_open => 1
-    );
-}
-
-# The script provided via 'content' must be Base64 encoded using 'powershell_encoded_script' function
-# This function is similar to execute_powershell but it exclusively uses PowerShell commands
+# This function executes 'content' commands via WSMAN using exclusively PowerShell commands
 # Parameters:
 # $options{label}: label to identify the command ro retrieve results
 # $options{content}: base64 encoded content using powershell_encoded_script function
-sub execute_powershell_script {
+sub execute_powershell {
     my ($self, %options) = @_;
+
+    $options{powershell_version} ||= 5;
+
+    # Powershell 7 is called pwsh.exe, previous versions are called powershell.exe
+    # To keep compatibility we use powershell.exe by default
+    my $pwsh = $options{powershell_version} >= 7 ? 'pwsh.exe' : 'powershell.exe';
+
+    $options{content} = encode_base64($options{content}, '');
 
     my $chunk = 8000;
     my $base = 'C:/Windows/Temp/';
@@ -388,7 +340,7 @@ sub execute_powershell_script {
     my $commands = [
         {
             label => 'prev1-' . $options{label},
-            value => qq(powershell.exe -command "new-item -itemtype directory -path '$base' -force")
+            value => qq($pwsh -command "new-item -itemtype directory -path '$base' -force")
         }
     ];
 
@@ -399,7 +351,7 @@ sub execute_powershell_script {
     foreach (unpack('(A' . $chunk . ')*', $options{content})) {
         push @$commands, {
             label => 'chunk-' . ($i++) . '-' . $options{label},
-            value => qq(powershell.exe -NoProfile -Command "$cmd_content -Path '$b64_filename' -Value '$_' -Encoding ASCII")
+            value => qq($pwsh -NoProfile -Command "$cmd_content -Path '$b64_filename' -Value '$_' -Encoding ASCII")
         };
 
         $cmd_content = 'Add-Content';
@@ -407,14 +359,14 @@ sub execute_powershell_script {
 
     push @$commands, {
                          label => 'convert-' . $options{label},
-                         value => qq(powershell.exe -NoProfile -Command "[IO.File]::WriteAllBytes('$ps1_filename',[Convert]::FromBase64String((Get-Content '$b64_filename' -Raw)))")
+                         value => qq($pwsh -NoProfile -Command "[IO.File]::WriteAllBytes('$ps1_filename',[Convert]::FromBase64String((Get-Content '$b64_filename' -Raw)))")
                      },
                      {   label => $options{label},
-                         value => qq(powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$ps1_filename")
+                         value => qq($pwsh -NoProfile -ExecutionPolicy Bypass -File "$ps1_filename")
                      },
                      {
                          label => 'del-' . $options{label},
-                         value => qq(powershell.exe -NoProfile -Command '$ps1_filename','$b64_filename' -Force)
+                         value => qq($pwsh -NoProfile -Command "Remove-Item '$ps1_filename','$b64_filename' -Force")
                      };
 
     return $self->execute_winshell_commands(

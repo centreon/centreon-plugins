@@ -125,7 +125,7 @@ C<storage>, C<swap>, C<system>.
 =item B<--warning-status>
 
 Define the condition to match for the status to be WARNING. Available macros: C<%(color)> and C<%(health_check)>.
-Default: C<%{state} ne "green">
+Default: C<%{color} ne "green">
 
 Color can be:
 
@@ -148,8 +148,8 @@ View the details in the Health Messages pane.
 
 =item B<--critical-status>
 
-Define the condition to match for the status to be WARNING. Available macros: C<%(color)> and C<%(health_check)>.
-Default: C<%{state} eq "red">
+Define the condition to match for the status to be CRITICAL. Available macros: C<%(color)> and C<%(health_check)>.
+Default: C<%{color} eq "red">
 
 Status colors are detailed in C<--warning-status> option.
 

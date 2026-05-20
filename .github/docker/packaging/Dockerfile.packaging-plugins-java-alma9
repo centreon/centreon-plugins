@@ -6,15 +6,15 @@ RUN bash -e <<EOF
 
 dnf install -y \
   git \
-  java-17-openjdk-devel \
+  java-17-openjdk-headless \
   wget \
   zstd
 
 cd /usr/local/src
-wget https://dlcdn.apache.org/maven/maven-3/3.8.9/binaries/apache-maven-3.8.9-bin.tar.gz
-tar zxf apache-maven-3.8.9-bin.tar.gz
-ln -s /usr/local/src/apache-maven-3.8.9/bin/mvn /usr/bin/mvn
-rm -f apache-maven-3.8.9-bin.tar.gz
+wget https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
+tar zxf apache-maven-3.9.16-bin.tar.gz
+ln -s /usr/local/src/apache-maven-3.9.16/bin/mvn /usr/bin/mvn
+rm -f apache-maven-3.9.16-bin.tar.gz
 
 echo '[goreleaser]
 name=GoReleaser

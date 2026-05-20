@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:counters/;
 
 sub prefix_output {
     my ($self, %options) = @_;
@@ -36,7 +36,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' ', cb_prefix_output => 'prefix_output' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, message_separator => ' ', cb_prefix_output => 'prefix_output' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -72,8 +72,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    $self->{cache_name} = 'redis_database_' . $self->{mode} . '_' . $options{custom}->get_connection_info(suffix => $self->{option_results}->{filter_counters} // 'all');
 
     my $results = $options{custom}->get_info();
     $self->{global} = {

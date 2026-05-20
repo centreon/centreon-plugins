@@ -8,18 +8,24 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
   push:
     branches:
       - develop
       - master
     paths:
+      - ".github/workflows/centreon-plugins-sudoers.yml"
       - "dependencies/centreon-plugins-sudoers/**"
 
 env:
   module_name: centreon-plugins-sudoers
 jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
   get-environment:
+    needs: [dependency-scan]
     uses: ./.github/workflows/get-environment.yml
 
   package:
@@ -38,11 +44,17 @@ jobs:
           - image: packaging-plugins-alma9
             distrib: el9
             package_extension: rpm
+          - image: packaging-plugins-alma10
+            distrib: el10
+            package_extension: rpm
           - image: packaging-plugins-bullseye
             distrib: bullseye
             package_extension: deb
           - image: packaging-plugins-bookworm
             distrib: bookworm
+            package_extension: deb
+          - image: packaging-plugins-trixie
+            distrib: trixie
             package_extension: deb
           - image: packaging-plugins-jammy
             distrib: jammy
@@ -63,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Package
         uses: ./.github/actions/package-nfpm
@@ -98,9 +110,13 @@ jobs:
             package_extension: rpm
           - distrib: el9
             package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
           - distrib: bullseye
             package_extension: deb
           - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
             package_extension: deb
           - distrib: jammy
             package_extension: deb
@@ -110,7 +126,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Delivery
         uses: ./.github/actions/package-delivery

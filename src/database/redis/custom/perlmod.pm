@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package database::redis::custom::perlmod;
 use strict;
 use warnings;
 use Redis;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -122,7 +122,8 @@ sub get_connection_info {
             $id .= $_ . '-';
         }
     }
-    return md5_hex($id);
+    $id.='-'.$options{suffix} if $options{suffix};
+    return sha256_hex($id);
 }
 
 sub get_info {

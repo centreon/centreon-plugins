@@ -4,6 +4,7 @@
 --3cx-version
 7210SAS
 7750SR
+Accedian
 ACS
 --add-cpu
 --add-disk-io
@@ -11,11 +12,13 @@ ACS
 --add-qos-limit
 --add-sysdesc
 ADSL
+AIX
 Alcatel
 Alertmanager
 allCapacity
 Alletra
 allsteps
+Alto
 Ansible
 --api-filter-orgs
 api.ip-label.net
@@ -26,9 +29,11 @@ api.meraki.com
 --api-username
 --api-version
 AppearTV
+ARN
 AS400
 ASAM
 Athonet
+Aviat
 Avigilon
 Avocent
 aws
@@ -51,6 +56,8 @@ centreonvault
 --cert-pkcs12
 --cert-pwd
 CloudWatch
+CommServe
+Commvault
 connections-dhcp
 connections-dns
 cpu
@@ -114,8 +121,10 @@ FQDN
 FreeBSD
 FrontDoor
 frsevent
+FSx
 GCP
 --get-param
+GPON
 GraphQL
 GRAPHQL
 HAProxy
@@ -130,6 +139,7 @@ ifDesc
 ifName
 --ignore-orgs-api-disabled
 IKS
+IMAP
 IMEI
 in-bcast
 in-crc
@@ -163,6 +173,7 @@ jobqueues
 Jolokia
 journalctl
 JSONPath
+Kairos
 kccevent
 keepass
 Keysight
@@ -173,6 +184,7 @@ ldap
 LDP
 --legacy-api-beta
 libSSH
+Libvirt
 license-instances-usage-prct
 Loggly
 LSP
@@ -232,6 +244,7 @@ NLCapacity
 --nomachineaccount
 notapplicable
 NRPE
+NSClient
 --ntlmv2
 NTLMv2
 NTP
@@ -245,7 +258,9 @@ OID
 --oid-filter
 OIDs
 okta
+OLT
 oneaccess-sys-mib
+OneAPI
 OpenMetrics
 OpenStack
 OpenWSMAN
@@ -256,6 +271,7 @@ out-mcast
 out-ucast
 overprovisioning
 packetloss
+Palo
 partiallyActive
 passthrough
 --patch-redhat
@@ -265,6 +281,7 @@ physicaldrive
 PKCS1
 Plink
 Podman
+Postgres
 powershell
 powershell.exe
 PPID
@@ -276,6 +293,7 @@ proto
 Proxmox
 --proxyurl
 psu
+PVX
 QoS
 Qtree
 queue-messages-inflighted
@@ -288,6 +306,7 @@ RFC1628
 RRDCached
 rsrp
 rsrq
+RSS
 rssi
 RTT
 Rubrik
@@ -300,10 +319,12 @@ SCVMM
 SFOS
 SFP
 sfp.temperature
+SHA256
 SignalR
 sinr
 --skip-ssl-check
 SkyHigh
+SLA
 SMS
 SnapMirrors
 snmp
@@ -320,6 +341,7 @@ standAlone
 statefile
 --statefile-concat-cwd
 Stormshield
+sudoers
 superseed
 SureBackup
 systemd
@@ -362,6 +384,7 @@ v3
 vCenter
 VCENTER
 vCPU
+vCPUs
 VCSA
 vdom
 vdomain
@@ -370,6 +393,7 @@ VE
 Veeam
 VeloCloud
 vhost
+VIRSHCLI
 VM
 VMs
 VMware
@@ -392,8 +416,12 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
+WildFire
 WLAN
 WLC
 WSMAN
 XPath
+ZDX
 ZFS
+Zscaler
