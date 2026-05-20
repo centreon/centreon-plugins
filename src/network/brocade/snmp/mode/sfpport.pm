@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::statefile;
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 use Safe;
 
 sub sfp_long_output {
@@ -75,16 +77,16 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name               => 'sfp',
-            type               => 3,
+            type               => COUNTER_TYPE_MULTIPLE,
             cb_prefix_output   => 'prefix_sfp_output',
             cb_long_output     => 'sfp_long_output',
             indent_long_output => '    ',
             message_multiple   => 'All sfp ports are ok',
             group              =>
                 [
-                    { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                    { name => 'perf', type => 0, skipped_code => { -10 => 1 } },
-                    { name => 'temperature', type => 0, skipped_code => { -10 => 1 } },
+                    { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                    { name => 'perf', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                    { name => 'temperature', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
                 ]
         }
     ];
@@ -92,7 +94,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label            => 'status',
-            type             => 2,
+            type             => COUNTER_KIND_TEXT,
             critical_default =>
                 '%{tx_power_status} =~ /alarm/ || %{rx_power_status} =~ /alarm/',
             warning_default  =>
@@ -176,8 +178,10 @@ sub new {
     $options{options}->add_options(
         arguments =>
             {
-                'filter-instance:s'       => { name => 'filter_instance' },
-                'filter-interface:s'      => { name => 'filter_interface' },
+                'include-instance:s'      => { name => 'include_instance' },
+                'exclude-instance:s'      => { name => 'exclude_instance' },
+                'include-interface:s'     => { name => 'include_interface' },
+                'exclude-interface:s'     => { name => 'exclude_interface' },
                 'add-interface-name'      => { name => 'add_interface_name' },
                 'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
                 'show-cache'              => { name => 'show_cache' },
@@ -252,7 +256,7 @@ sub reload_cache {
     }
 
     my $result = $options{snmp}->get_table(
-        oid   => $mapping->{sfpTemp}->{oid},
+        oid => $mapping->{sfpTemp}->{oid},
     );
 
     foreach my $key (keys %$result) {
@@ -268,8 +272,7 @@ sub reload_cache {
     }
 
     if (scalar(keys %{$datas->{sfp}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Can't construct cache...");
     }
 
     $self->{statefile_cache}->write(data => $datas);
@@ -283,8 +286,7 @@ sub get_selection {
     my $has_cache_file = $self->{statefile_cache}->read(statefile =>
         'cache_snmpstandard_' . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(long_msg => $self->{statefile_cache}->get_string_content());
     }
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
@@ -296,28 +298,23 @@ sub get_selection {
 
     my $results = {};
     foreach (keys %$sfp_ports) {
-        if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
-            $_ !~ /$self->{option_results}->{filter_instance}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $_ . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if is_excluded(
+            $_,
+            $self->{option_results}->{include_instance},
+            $self->{option_results}->{exclude_instance}
+        );
 
-        if (defined($self->{option_results}->{add_interface_name}) && exists($sfp_ports->{$_}->[2]) &&
-            defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $sfp_ports->{$_}->[2] !~ /$self->{option_results}->{filter_interface}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $sfp_ports->{$_}->[2] . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
+        next if defined($self->{option_results}->{add_interface_name}) && is_excluded(
+            $sfp_ports->{$_}->[2],
+            $self->{option_results}->{include_interface},
+            $self->{option_results}->{exclude_interface},
+        );
 
         $results->{$_} = $sfp_ports->{$_};
     }
 
     if (scalar(keys %$results) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No sfp ports found. Can be: filters, cache file.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No sfp ports found. Can be: filters, cache file.");
     }
 
     return $results;
@@ -338,7 +335,7 @@ sub manage_selection {
 
     $self->{sfp} = {};
 
-    foreach (keys %$sfp_ports) {
+    foreach (sort keys %$sfp_ports) {
         my $result = $options{snmp}->map_instance(
             mapping  => $mapping,
             results  => $snmp_result,
@@ -411,7 +408,7 @@ Check SFP port.
 
 =over 8
 
-=item B<--filter-instance>
+=item B<--include-instance>
 
 Filter sfp port by instance (can be a regexp).
 
@@ -419,7 +416,7 @@ Filter sfp port by instance (can be a regexp).
 
 Add the corresponding interface name when set. Used for the instance name in perf data, too.
 
-=item B<--filter-interface>
+=item B<--include-interface>
 
 Filter ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
 
