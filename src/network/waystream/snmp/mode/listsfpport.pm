@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,6 +23,8 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw/is_excluded/;
+
 
 sub new {
     my ($class, %options) = @_;
@@ -31,8 +33,9 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'add-interface-name' => { name => 'add_interface_name' },
-            'filter-connector:s' => { name => 'filter_connector' }
+            'add-interface-name'  => { name => 'add_interface_name' },
+            'include-connector:s' => { name => 'include_connector' },
+            'exclude-connector:s' => { name => 'exclude_connector' },
         });
 
     return $self;
@@ -99,11 +102,11 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        if (defined($self->{option_results}->{filter_connector}) && $self->{option_results}->{filter_connector} ne '' &&
-            $result->{sfpConnector} !~ /$self->{option_results}->{filter_connector}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{sfpConnector} . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if is_excluded(
+            $result->{sfpConnector},
+            $self->{option_results}->{include_connector},
+            $self->{option_results}->{exclude_connector}
+        );
 
         $results->{$result->{sfpNumber}} = {
             number         => $result->{sfpNumber},
@@ -167,9 +170,13 @@ List SFP ports.
 
 Add the corresponding interface name when set.
 
-=item B<--filter-connector>
+=item B<--include-connector>
 
 Filters the ports by the connector type. Can be: C<sc>, C<fiberJack>, C<lc>, C<mtrj>, C<mu>, C<sg>, C<opticalPigtail>, C<hssdcii>, C<copperPigtail>
+
+=item B<--exclude-connector>
+
+Excludes the ports by the connector type. Can be: C<sc>, C<fiberJack>, C<lc>, C<mtrj>, C<mu>, C<sg>, C<opticalPigtail>, C<hssdcii>, C<copperPigtail>
 
 =back
 
