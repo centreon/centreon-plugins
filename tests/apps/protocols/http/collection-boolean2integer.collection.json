@@ -1,0 +1,78 @@
+{
+  "mapping": {},
+  "constants": {
+    "method": "http",
+    "port": "3000"
+  },
+  "http": {
+    "requests": [
+      {
+        "name": "interruptor",
+        "hostname": "%(constants.hostname)",
+        "proto": "%(constants.method)",
+        "port": "%(constants.port)",
+        "endpoint": "/boolean",
+        "headers": [
+          "Accept:application/json",
+          "Content-Type:application/json"
+        ],
+        "insecure": 1,
+        "timeout": 30,
+        "backend": "curl",
+        "rtype": "json",
+        "parse": [
+          {
+            "name": "entry",
+            "path": "..interruptor[*]",
+            "entries": [
+              {
+                "id": "name"
+              },
+              {
+                "id": "enabled"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "selection_loop": [
+    {
+      "name": "interruptorValues",
+      "source": "%(http.tables.interruptorEntry)",
+      "expand_table": {
+        "interruptor": "%(http.tables.interruptorEntry.[%(interruptorEntry.instance)])"
+      },
+      "functions": [
+        {
+          "type": "boolean2integer",
+          "src": "%(interruptor.enabled)",
+          "save": "%(interruptor.enabled)"
+        }
+      ],
+      "critical": "%(interruptor.enabled) =~ /%(constants.critical)/i",
+      "perfdatas": [
+        {
+          "nlabel": "interruptor.enabled.count",
+          "value": "%(interruptor.enabled)",
+          "instances": [
+            "%(interruptor.name)"
+          ]
+        }
+      ],
+      "formatting": {
+        "printf_msg": "interruptor '%s' switch enabled: %s",
+        "printf_var": [
+          "%(interruptor.name)",
+          "%(interruptor.enabled)"
+        ]
+      }
+    }
+  ],
+  "formatting": {
+    "custom_message_global": "interruptor switches are ok",
+    "separator": "-"
+  }
+}
+

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Time::Local;
 
@@ -37,7 +38,7 @@ sub custom_status_output {
         $msg .= ', expired';
     } else {
         $msg .= sprintf(
-            "expires in %s [%s]",
+            ", expires in %s [%s]",
             $self->{result_values}->{expires_human},
             $self->{result_values}->{expires_date}
         );
@@ -81,11 +82,11 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'license', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All licenses status are ok' }
+        { name => 'license', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_output', message_multiple => 'All licenses status are ok' }
     ];
     
     $self->{maps_counters}->{license} = [
-        { label => 'status', type => 2, critical_default => '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)', set => {
+        { label => 'status', type => COUNTER_TYPE_GROUP, critical_default => '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)', set => {
                 key_values => [
                     { name => 'sysExtLicenseKey' }, { name => 'sysExtLicenseFlags' },
                     { name => 'sysExtLicenseService' }, { name => 'sysExtLicenseExpires' }
@@ -111,7 +112,7 @@ sub new {
 }
 
 my %map_flags = (
-    'E' => 'enabled', 'A' => 'auto-generated', 'R' => 'reboot-required'
+    'E' => 'enabled', 'A' => 'auto-generated', 'R' => 'reboot-required', 'M' => 'activated-using-master-token', 'ES' => 'enabled'
 );
 
 my $oid_wlsxSysExtSwitchLicenseTable = '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1';
@@ -139,7 +140,7 @@ sub manage_selection {
     }
     
     $self->{license} = {};
-    foreach my $oid (keys %{$snmp_result}) {
+    foreach my $oid (sort keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{sysExtLicenseKey}->{oid}\.(.*)/);
         my $instance = $1;
         
@@ -152,10 +153,8 @@ sub manage_selection {
         $self->{license}->{$result->{sysExtLicenseService}} = { %{$result} };
     }
 
-    if (scalar(keys %{$self->{license}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No license found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No license found.")
+        unless keys %{$self->{license}};
 }
 
 1;
@@ -164,7 +163,7 @@ __END__
 
 =head1 MODE
 
-Check license (WLSX-SYSTEMEXT-MIB).
+Check license (C<WLSX-SYSTEMEXT-MIB>).
 
 =over 8
 

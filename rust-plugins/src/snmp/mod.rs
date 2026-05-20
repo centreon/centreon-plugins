@@ -1,0 +1,882 @@
+//! SNMP protocol communication using SNMPv2c bulk get/walk operations.
+//!
+//! Provides functions to query SNMP agents via UDP, parse responses,
+//! and store results as vectors or scalars for metric computation.
+
+extern crate log;
+extern crate rasn;
+extern crate rasn_smi;
+extern crate rasn_snmp;
+
+use crate::compute::ast::ExprResult;
+use log::{info, trace, warn};
+use rasn::types::ObjectIdentifier;
+use rasn_snmp::v2::BulkPdu;
+use rasn_snmp::v2::GetBulkRequest;
+use rasn_snmp::v2::Pdus;
+use rasn_snmp::v2::VarBind;
+use rasn_snmp::v2::VarBindValue;
+use rasn_snmp::v2c::Message;
+use std::collections::HashMap;
+use std::convert::TryInto;
+use std::net::UdpSocket;
+
+/// The SNMP value type for an OID response.
+#[derive(Debug)]
+pub enum ValueType {
+    /// No value present.
+    None(()),
+    /// A 32-bit signed integer.
+    Integer(i64),
+    /// A floating-point value (not a standard SNMP type, for internal use).
+    Float(f64),
+    /// A string value (OCTET STRING).
+    String(String),
+    /// A 64-bit unsigned counter.
+    Counter64(u64),
+}
+
+/// Result of an SNMP query operation.
+///
+/// Stores collected values keyed by OID name, and tracks the last OID
+/// for walk-based operations.
+#[derive(Debug)]
+pub struct SnmpResult {
+    /// Collected values from this SNMP query, indexed by OID name.
+    pub items: HashMap<String, ExprResult>,
+    last_oid: Vec<u32>,
+}
+
+impl SnmpResult {
+    /// Creates a new `SnmpResult` with the given items map.
+    pub fn new(items: HashMap<String, ExprResult>) -> SnmpResult {
+        SnmpResult {
+            items,
+            last_oid: Vec::new(),
+        }
+    }
+}
+
+//pub fn snmp_get(target: &str, oid: &str, community: &str) -> SnmpResult {
+//    let oid_tab = oid
+//        .split('.')
+//        .map(|x| x.parse::<u32>().unwrap())
+//        .collect::<Vec<u32>>();
+//
+//    let request_id = 1;
+//
+//    let variable_bindings = vec![VarBind {
+//        name: ObjectIdentifier::new_unchecked(oid_tab.into()),
+//        value: VarBindValue::Unspecified,
+//    }];
+//
+//    let pdu = Pdu {
+//        request_id,
+//        error_status: 0,
+//        error_index: 0,
+//        variable_bindings,
+//    };
+//
+//    let get_request = GetRequest(pdu);
+//
+//    let message: rasn_snmp::v2c::Message<GetRequest> = Message {
+//        version: 1.into(),
+//        community: community.to_string().into(),
+//        data: get_request.into(),
+//    };
+//
+//    // Send the message through an UDP socket
+//    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+//    socket.connect(target).expect("connect function failed");
+//    let duration = std::time::Duration::from_millis(1000);
+//    socket.set_read_timeout(Some(duration)).unwrap();
+//
+//    let encoded = rasn::der::encode(&message).unwrap();
+//    let res = socket.send(&encoded).unwrap();
+//    assert!(res == encoded.len());
+//
+//    let mut buf = [0; 1024];
+//    let resp = socket.recv_from(buf.as_mut_slice()).unwrap();
+//
+//    trace!("Received {} bytes", resp.0);
+//    assert!(resp.0 > 0);
+//    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+//    build_response(decoded, "", {}, false).0
+//}
+
+//pub fn snmp_walk(target: &str, oid: &str) -> SnmpResult {
+//    let community = "public";
+//    let oid_tab = oid
+//        .split('.')
+//        .map(|x| x.parse::<u32>().unwrap())
+//        .collect::<Vec<u32>>();
+//
+//    let mut retval = SnmpResult::new();
+//    let mut request_id: i32 = 1;
+//
+//    let create_next_request = |id: i32, oid: &[u32]| -> Message<GetNextRequest> {
+//        let variable_bindings = vec![VarBind {
+//            name: ObjectIdentifier::new_unchecked(oid.to_vec().into()),
+//            value: VarBindValue::Unspecified,
+//        }];
+//
+//        let pdu = Pdu {
+//            request_id: id,
+//            error_status: 0,
+//            error_index: 0,
+//            variable_bindings,
+//        };
+//        let get_request: GetNextRequest = GetNextRequest(pdu);
+//
+//        Message {
+//            version: 1.into(),
+//            community: community.into(),
+//            data: get_request.into(),
+//        }
+//    };
+//
+//    let mut message = create_next_request(request_id, &oid_tab);
+//    // Send the message through an UDP socket
+//    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+//    socket.connect(target).expect("connect function failed");
+//    let duration = std::time::Duration::from_millis(1000);
+//    socket.set_read_timeout(Some(duration)).unwrap();
+//
+//    loop {
+//        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+//        let res: usize = socket.send(&encoded).unwrap();
+//        assert!(res == encoded.len());
+//
+//        let mut buf: [u8; 1024] = [0; 1024];
+//        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+//
+//        trace!("Received {} bytes", resp.0);
+//        assert!(resp.0 > 0);
+//        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+//        if let Pdus::Response(resp) = &decoded.data {
+//            let resp_oid = &resp.0.variable_bindings[0].name;
+//            let n = resp_oid.len() - 1;
+//            if resp_oid[0..n] != oid_tab[0..n] {
+//                break;
+//            }
+//            message = create_next_request(request_id, &resp_oid);
+//        }
+//        retval.merge(build_response(decoded, &oid, true).0);
+//        request_id += 1;
+//    }
+//    retval
+//}
+
+/// Retrieves values for multiple OIDs in a single bulk request.
+///
+/// # Arguments
+/// * `target` - Target address in "host:port" format
+/// * `_version` - SNMP version (e.g., "2c")
+/// * `community` - SNMP community string
+/// * `non_repeaters` - Number of non-repeating OIDs (typically 0 or 1)
+/// * `max_repetitions` - Maximum repetitions per OID
+/// * `oid` - Vector of OID strings to query
+/// * `names` - Vector of logical names (one per OID)
+///
+/// # Returns
+/// An [`SnmpResult`] containing the retrieved values indexed by name
+pub fn snmp_bulk_get<'a>(
+    target: &str,
+    _version: &str,
+    community: &str,
+    non_repeaters: u32,
+    max_repetitions: u32,
+    oid: &Vec<&str>,
+    names: &Vec<&str>,
+) -> SnmpResult {
+    let oids_tab = oid
+        .iter()
+        .map(|x| {
+            x.split('.')
+                .skip_while(|d| d.is_empty()) // OIDs are generally given starting with a '.' so the first digit may be empty
+                .map(|x| x.parse::<u32>().unwrap())
+                .filter(|x| *x != 0) // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first OID we are trying to get will never be requested
+                .collect::<Vec<u32>>()
+        })
+        .collect::<Vec<Vec<u32>>>();
+
+    let mut retval = SnmpResult {
+        items: HashMap::new(),
+        last_oid: Vec::new(),
+    };
+    let request_id: i32 = 1;
+
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
+
+    let variable_bindings = oids_tab
+        .iter()
+        .map(|x| VarBind {
+            name: ObjectIdentifier::new_unchecked(x.to_vec().into()),
+            value: VarBindValue::Unspecified,
+        })
+        .collect::<Vec<VarBind>>();
+
+    let pdu = BulkPdu {
+        request_id,
+        variable_bindings,
+        non_repeaters,
+        max_repetitions,
+    };
+
+    let get_request: GetBulkRequest = GetBulkRequest(pdu);
+
+    let message: Message<GetBulkRequest> = Message {
+        version: 1.into(),
+        community: community.to_string().into(),
+        data: get_request.into(),
+    };
+
+    // Send the message through an UDP socket
+    let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+    let res: usize = socket.send(&encoded).unwrap();
+    assert!(res == encoded.len());
+
+    let mut buf: [u8; 1024] = [0; 1024];
+    let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+    trace!("Received {} bytes", resp.0);
+    assert!(resp.0 > 0);
+    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+    let _completed = retval.build_response_with_names(decoded, "", names, false);
+    retval
+}
+
+/// Walks a subtree of OIDs using repeated bulk requests until the subtree is exhausted.
+///
+/// Continues retrieving values until an OID outside the subtree is encountered
+/// or a timeout occurs.
+///
+/// # Arguments
+/// * `target` - Target address in "host:port" format
+/// * `_version` - SNMP version (e.g., "2c")
+/// * `community` - SNMP community string
+/// * `oid` - The base OID to walk
+/// * `snmp_name` - Logical name for collected values
+///
+/// # Returns
+/// An [`SnmpResult`] containing all values under the specified OID
+pub fn snmp_bulk_walk<'a>(
+    target: &str,
+    _version: &str,
+    community: &str,
+    oid: &str,
+    snmp_name: &str,
+) -> SnmpResult {
+    let oid_init = oid
+        .split('.')
+        .skip_while(|d| d.is_empty()) // OIDs are generally given starting with a '.' so the first digit may be empty
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect::<Vec<u32>>();
+    let mut oid_tab = &oid_init;
+    let mut retval = SnmpResult {
+        items: HashMap::new(),
+        last_oid: Vec::new(),
+    };
+    let request_id: i32 = 1;
+
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
+
+    loop {
+        let variable_bindings = vec![VarBind {
+            name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
+            value: VarBindValue::Unspecified,
+        }];
+
+        let pdu = BulkPdu {
+            request_id,
+            non_repeaters: 0,
+            max_repetitions: 10,
+            variable_bindings,
+        };
+
+        let get_request: GetBulkRequest = GetBulkRequest(pdu);
+
+        let message: Message<GetBulkRequest> = Message {
+            version: 1.into(),
+            community: community.to_string().into(),
+            data: get_request.into(),
+        };
+
+        // Send the message through an UDP socket
+        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+        let res: usize = socket.send(&encoded).unwrap();
+        assert!(res == encoded.len());
+
+        let mut buf: [u8; 1024] = [0; 1024];
+        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+        trace!("Received {} bytes", resp.0);
+        assert!(resp.0 > 0);
+        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+        let completed = retval.build_response(decoded, &oid, snmp_name, true);
+
+        if completed {
+            break;
+        }
+        oid_tab = &retval.last_oid;
+    }
+    retval
+}
+
+/// Walks a subtree and organizes results by label matches.
+///
+/// Used for tabular SNMP data where the last segment of an OID identifies
+/// the column (labeled in the `labels` map), and values are organized per label.
+///
+/// # Arguments
+/// * `target` - Target address in "host:port" format
+/// * `_version` - SNMP version (e.g., "2c")
+/// * `community` - SNMP community string
+/// * `oid` - The base OID to walk
+/// * `snmp_name` - Logical name prefix for collected values
+/// * `labels` - Map of label identifiers to logical names
+///
+/// # Returns
+/// An [`SnmpResult`] with values organized by label as separate vectors
+pub fn snmp_bulk_walk_with_labels<'a>(
+    target: &str,
+    _version: &str,
+    community: &str,
+    oid: &str,
+    snmp_name: &str,
+    labels: &'a HashMap<String, String>,
+) -> SnmpResult {
+    let oid_init = oid
+        .split('.')
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect::<Vec<u32>>();
+
+    let mut oid_tab = &oid_init;
+    let mut retval = SnmpResult {
+        items: HashMap::new(),
+        last_oid: Vec::new(),
+    };
+    let request_id: i32 = 1;
+
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket.connect(target).expect("connect function failed");
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration)).unwrap();
+
+    loop {
+        let variable_bindings = vec![VarBind {
+            name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
+            value: VarBindValue::Unspecified,
+        }];
+
+        let pdu = BulkPdu {
+            request_id,
+            non_repeaters: 0,
+            max_repetitions: 10,
+            variable_bindings,
+        };
+
+        let get_request: GetBulkRequest = GetBulkRequest(pdu);
+
+        let message: Message<GetBulkRequest> = Message {
+            version: 1.into(),
+            community: community.to_string().into(),
+            data: get_request.into(),
+        };
+
+        // Send the message through an UDP socket
+        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
+        let res: usize = socket.send(&encoded).unwrap();
+        assert!(res == encoded.len());
+
+        let mut buf: [u8; 1024] = [0; 1024];
+        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
+
+        trace!("Received {} bytes", resp.0);
+        assert!(resp.0 > 0);
+        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+        let completed = retval.build_response_with_labels(decoded, &oid, snmp_name, labels, true);
+        if completed {
+            break;
+        }
+        oid_tab = &retval.last_oid;
+    }
+    retval
+}
+
+impl SnmpResult {
+    /// Parses an SNMP response and organizes values by label.
+    ///
+    /// # Arguments
+    /// * `decoded` - The decoded SNMP response message
+    /// * `oid` - The base OID (for walk termination detection)
+    /// * `snmp_name` - Prefix for result keys
+    /// * `labels` - Label map for splitting results
+    /// * `walk` - If true, returns true when subtree is exhausted
+    ///
+    /// # Returns
+    /// `true` if the walk should terminate (for walk operations)
+    fn build_response_with_labels<'a>(
+        &mut self,
+        decoded: Message<Pdus>,
+        oid: &str,
+        snmp_name: &str,
+        labels: &'a HashMap<String, String>,
+        walk: bool,
+    ) -> bool {
+        let mut completed = false;
+
+        if let Pdus::Response(resp) = &decoded.data {
+            let vars = &resp.0.variable_bindings;
+            for var in vars {
+                let name = var.name.to_string();
+                self.last_oid = name
+                    .split('.')
+                    .map(|x| x.parse::<u32>().unwrap())
+                    .collect::<Vec<u32>>();
+                if walk {
+                    if !name.starts_with(oid) {
+                        completed = true;
+                        break;
+                    }
+                }
+                let prefix = &name[..name.rfind('.').unwrap()];
+                for l in labels {
+                    if prefix.ends_with(l.0) {
+                        let mut typ = ValueType::None(());
+                        let value = match &var.value {
+                            VarBindValue::Unspecified => {
+                                warn!("Unspecified");
+                            }
+                            VarBindValue::NoSuchObject => {
+                                warn!("NoSuchObject");
+                            }
+                            VarBindValue::NoSuchInstance => {
+                                warn!("NoSuchInstance");
+                            }
+                            VarBindValue::EndOfMibView => {
+                                warn!("EndOfMibView");
+                            }
+                            VarBindValue::Value(value) => {
+                                warn!("Value {:?}", &value);
+                                match value {
+                                    rasn_smi::v2::ObjectSyntax::Simple(value) => {
+                                        info!("Simple {:?}", value);
+                                        match value {
+                                            rasn_smi::v2::SimpleSyntax::Integer(value) => {
+                                                typ = ValueType::Integer(value.try_into().unwrap());
+                                            }
+                                            rasn_smi::v2::SimpleSyntax::String(value) => {
+                                                // We transform the value into a rust String
+                                                typ = ValueType::String(
+                                                    String::from_utf8(value.to_vec()).unwrap(),
+                                                );
+                                            }
+                                            rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
+                                                let oid: String = value
+                                                    .iter()
+                                                    .map(|&id| id.to_string() + ".")
+                                                    .collect();
+                                                typ = ValueType::String(oid);
+                                            }
+                                            _ => {
+                                                typ = ValueType::String("Other".to_string());
+                                            }
+                                        };
+                                    }
+                                    rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
+                                        info!("Application {:?}", value);
+                                    }
+                                };
+                            }
+                        };
+                        let key = format!("{}.{}", snmp_name, l.1);
+                        self.items
+                            .entry(key)
+                            .and_modify(|e| match e {
+                                ExprResult::Number(_) => panic!("Should not arrive"),
+                                ExprResult::Str(_) => panic!("Should not arrive"),
+                                ExprResult::Vector(v) => v.push(match &typ {
+                                    ValueType::Float(f) => *f,
+                                    ValueType::None(()) => {
+                                        panic!("Should not arrive");
+                                    }
+                                    ValueType::String(_) => {
+                                        panic!("Value should be a float");
+                                    }
+                                    ValueType::Integer(i) => *i as f64,
+                                    ValueType::Counter64(i) => *i as f64,
+                                }),
+                                ExprResult::StrVector(v) => v.push(match &typ {
+                                    ValueType::Float(_) => {
+                                        panic!("Value should be a string");
+                                    }
+                                    ValueType::None(()) => {
+                                        panic!("Should not arrive");
+                                    }
+                                    ValueType::String(s) => s.to_string(),
+                                    ValueType::Integer(_) => panic!("Value should be a string"),
+                                    ValueType::Counter64(_) => panic!("Value should be a string"),
+                                }),
+                                ExprResult::Empty => {
+                                    panic!("Value from SNMP query cannot be empty");
+                                }
+                            })
+                            .or_insert(match typ {
+                                ValueType::Float(f) => ExprResult::Vector(vec![f]),
+                                ValueType::None(()) => panic!("Should not arrive"),
+                                ValueType::String(s) => ExprResult::StrVector(vec![s]),
+                                ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
+                                ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
+                            });
+                    }
+                }
+            }
+        }
+        completed
+    }
+
+    /// Parses an SNMP response from a get request using provided names.
+    ///
+    /// # Arguments
+    /// * `decoded` - The decoded SNMP response message
+    /// * `oid` - The base OID (for walk termination detection)
+    /// * `names` - Names for each OID result
+    /// * `walk` - If true, returns true when subtree is exhausted
+    ///
+    /// # Returns
+    /// `true` if the walk should terminate (for walk operations)
+    fn build_response_with_names<'a>(
+        &mut self,
+        decoded: Message<Pdus>,
+        oid: &str,
+        names: &Vec<&str>,
+        walk: bool,
+    ) -> bool {
+        let mut completed = false;
+
+        if let Pdus::Response(resp) = &decoded.data {
+            let vars = &resp.0.variable_bindings;
+            for (idx, var) in vars.iter().enumerate() {
+                let name = var.name.to_string();
+                self.last_oid = name
+                    .split('.')
+                    .map(|x| x.parse::<u32>().unwrap())
+                    .collect::<Vec<u32>>();
+                if walk {
+                    if !name.starts_with(oid) {
+                        completed = true;
+                        break;
+                    }
+                }
+                let prefix: &str = &name[..name.rfind('.').unwrap()];
+                let mut typ = ValueType::None(());
+                let value = match &var.value {
+                    VarBindValue::Unspecified => {
+                        warn!("Unspecified");
+                    }
+                    VarBindValue::NoSuchObject => {
+                        warn!("NoSuchObject");
+                    }
+                    VarBindValue::NoSuchInstance => {
+                        warn!("NoSuchInstance");
+                    }
+                    VarBindValue::EndOfMibView => {
+                        warn!("EndOfMibView");
+                    }
+                    VarBindValue::Value(value) => {
+                        warn!("Value {:?}", &value);
+                        match value {
+                            rasn_smi::v2::ObjectSyntax::Simple(value) => {
+                                info!("Simple {:?}", value);
+                                match value {
+                                    rasn_smi::v2::SimpleSyntax::Integer(value) => {
+                                        typ = ValueType::Integer(value.try_into().unwrap());
+                                    }
+                                    rasn_smi::v2::SimpleSyntax::String(value) => {
+                                        // We transform the value into a rust String
+                                        typ = ValueType::String(
+                                            String::from_utf8(value.to_vec()).unwrap(),
+                                        );
+                                    }
+                                    rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
+                                        let oid: String =
+                                            value.iter().map(|&id| id.to_string() + ".").collect();
+                                        typ = ValueType::String(oid);
+                                    }
+                                    _ => {
+                                        typ = ValueType::String("Other".to_string());
+                                    }
+                                }
+                            }
+                            rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
+                                info!("ApplicationWide {:?}", value);
+                                match value {
+                                    rasn_smi::v2::ApplicationSyntax::Address(ip_address) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Counter(counter) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Ticks(time_ticks) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Arbitrary(opaque) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::BigCounter(counter64) => {
+                                        typ = ValueType::Counter64(counter64.0);
+                                    }
+                                    rasn_smi::v2::ApplicationSyntax::Unsigned(gauge) => todo!(),
+                                }
+                            }
+                            _ => {
+                                info!("other");
+                            }
+                        }
+                    }
+                };
+                let key = format!("{}", names[idx]);
+                self.items
+                    .entry(key)
+                    .and_modify(|e| match e {
+                        ExprResult::Number(_) => panic!("Should not arrive"),
+                        ExprResult::Vector(v) => v.push(match &typ {
+                            ValueType::Float(f) => *f,
+                            ValueType::None(()) => {
+                                panic!("Should not arrive");
+                            }
+                            ValueType::String(_) => {
+                                panic!("Value should be a float");
+                            }
+                            ValueType::Integer(i) => *i as f64,
+                            ValueType::Counter64(i) => *i as f64,
+                        }),
+                        ExprResult::Str(_) => panic!("Should not arrive"),
+                        ExprResult::StrVector(v) => v.push(match &typ {
+                            ValueType::Float(_) => {
+                                panic!("Value should be a string");
+                            }
+                            ValueType::None(()) => {
+                                panic!("Should not arrive");
+                            }
+                            ValueType::String(s) => s.to_string(),
+                            ValueType::Integer(_) => {
+                                panic!("Value should be a string");
+                            }
+                            ValueType::Counter64(_) => panic!("Value should be a string"),
+                        }),
+                        ExprResult::Empty => {
+                            panic!("Value should not be empty");
+                        }
+                    })
+                    .or_insert(match typ {
+                        ValueType::Float(f) => ExprResult::Vector(vec![f]),
+                        ValueType::None(()) => panic!("Should not arrive"),
+                        ValueType::String(s) => ExprResult::StrVector(vec![s]),
+                        ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
+                        ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
+                    });
+            }
+        }
+        completed
+    }
+    /// Parses an SNMP response and stores values under a single logical name.
+    ///
+    /// # Arguments
+    /// * `decoded` - The decoded SNMP response message
+    /// * `oid` - The base OID (for walk termination detection)
+    /// * `snmp_name` - Logical name for collected values
+    /// * `walk` - If true, returns true when subtree is exhausted
+    ///
+    /// # Returns
+    /// `true` if the walk should terminate (for walk operations)
+    fn build_response<'a>(
+        &mut self,
+        decoded: Message<Pdus>,
+        oid: &str,
+        snmp_name: &str,
+        walk: bool,
+    ) -> bool {
+        let mut completed = false;
+
+        if let Pdus::Response(resp) = &decoded.data {
+            let vars = &resp.0.variable_bindings;
+            for var in vars {
+                let name = var.name.to_string();
+                self.last_oid = name
+                    .split('.')
+                    .map(|x| x.parse::<u32>().unwrap())
+                    .collect::<Vec<u32>>();
+                if walk {
+                    if !name.starts_with(oid) {
+                        completed = true;
+                        break;
+                    }
+                }
+                let prefix: &str = &name[..name.rfind('.').unwrap()];
+                let mut typ = ValueType::None(());
+                let value = match &var.value {
+                    VarBindValue::Unspecified => {
+                        warn!("Unspecified");
+                    }
+                    VarBindValue::NoSuchObject => {
+                        warn!("NoSuchObject");
+                    }
+                    VarBindValue::NoSuchInstance => {
+                        warn!("NoSuchInstance");
+                    }
+                    VarBindValue::EndOfMibView => {
+                        warn!("EndOfMibView");
+                    }
+                    VarBindValue::Value(value) => {
+                        warn!("Value {:?}", &value);
+                        match value {
+                            rasn_smi::v2::ObjectSyntax::Simple(value) => {
+                                info!("Simple {:?}", value);
+                                match value {
+                                    rasn_smi::v2::SimpleSyntax::Integer(value) => {
+                                        typ = ValueType::Integer(value.try_into().unwrap());
+                                    }
+                                    rasn_smi::v2::SimpleSyntax::String(value) => {
+                                        // We transform the value into a rust String
+                                        typ = ValueType::String(
+                                            String::from_utf8(value.to_vec()).unwrap(),
+                                        );
+                                    }
+                                    rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
+                                        let oid: String =
+                                            value.iter().map(|&id| id.to_string() + ".").collect();
+                                        typ = ValueType::String(oid);
+                                    }
+                                    _ => {
+                                        typ = ValueType::String("Other".to_string());
+                                    }
+                                }
+                            }
+                            _ => {
+                                info!("other");
+                            }
+                        }
+                        //match value {
+                        //    rasn_smi::v2::ObjectSyntax::Simple(value) => {
+                        //        info!("Simple {:?}", value);
+                        //        match value {
+                        //            rasn_smi::v2::ObjectSyntax::Simple(value) => {
+                        //                info!("Simple {:?}", value);
+                        //                match value {
+                        //                    rasn_smi::v2::SimpleSyntax::Integer(value) => {
+                        //                        typ = ValueType::Integer(value.try_into().unwrap());
+                        //                    }
+                        //                    rasn_smi::v2::SimpleSyntax::String(value) => {
+                        //                        // We transform the value into a rust String
+                        //                        typ = ValueType::String(
+                        //                            String::from_utf8(value.to_vec()).unwrap(),
+                        //                        );
+                        //                    }
+                        //                    rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
+                        //                        let oid: String = value
+                        //                            .iter()
+                        //                            .map(|&id| id.to_string() + ".")
+                        //                            .collect();
+                        //                        typ = ValueType::String(oid);
+                        //                    }
+                        //                    _ => {
+                        //                        typ = ValueType::String("Other".to_string());
+                        //                    }
+                        //                };
+                        //            }
+                        //            rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
+                        //                info!("Application {:?}", value);
+                        //            }
+                        //        };
+                        //    }
+                        //}
+                    }
+                };
+                let key = format!("{}", snmp_name);
+                self.items
+                    .entry(key)
+                    .and_modify(|e| match e {
+                        ExprResult::Number(_) => panic!("Should not arrive"),
+                        ExprResult::Vector(v) => v.push(match &typ {
+                            ValueType::Float(f) => *f,
+                            ValueType::None(()) => {
+                                panic!("Should not arrive");
+                            }
+                            ValueType::String(_) => {
+                                panic!("Value should be a float");
+                            }
+                            ValueType::Integer(i) => *i as f64,
+                            ValueType::Counter64(i) => *i as f64,
+                        }),
+                        ExprResult::Str(_) => panic!("Should not arrive"),
+                        ExprResult::StrVector(v) => v.push(match &typ {
+                            ValueType::Float(_) => {
+                                panic!("Value should be a string");
+                            }
+                            ValueType::None(()) => {
+                                panic!("Should not arrive");
+                            }
+                            ValueType::String(s) => s.to_string(),
+                            ValueType::Integer(_) | ValueType::Counter64(_) => {
+                                panic!("Value should be a string");
+                            }
+                        }),
+                        ExprResult::Empty => {
+                            panic!("Value should be a string");
+                        }
+                    })
+                    .or_insert(match typ {
+                        ValueType::Float(f) => ExprResult::Vector(vec![f]),
+                        ValueType::None(()) => {
+                            panic!("Should not arrive");
+                        }
+                        ValueType::String(s) => ExprResult::StrVector(vec![s]),
+                        ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
+                        ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
+                    });
+            }
+        }
+        completed
+    }
+}
+
+//mod tests {
+//    use super::*;
+//
+//    #[test]
+//    fn test_snmp_get() {
+//        let result = r_snmp_get("127.0.0.1:161", "1.3.6.1.2.1.1.1.0", "public");
+//        let expected = SnmpResult {
+//            variables: vec![SnmpVariable{
+//                "1.3.6.1.2.1.1.1.0".to_string(),
+//                "Linux CNTR-PORT-A104 6.1.0-31-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.128-1 (2025-02-07) x86_64".to_string()}],
+//        };
+//        assert_eq!(result, expected);
+//    }
+//
+//    #[test]
+//    fn test_snmp_walk() {
+//        let result = r_snmp_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
+//
+//        let re = Regex::new(r"[0-9]+").unwrap();
+//        assert!(result.variables.len() > 0);
+//        for v in result.variables.iter() {
+//            let name = &v.name;
+//            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+//            assert!(re.is_match(&v.value));
+//        }
+//    }
+//
+//    #[test]
+//    fn test_snmp_bulk_walk() {
+//        let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
+//        let re = Regex::new(r"[0-9]+").unwrap();
+//        assert!(result.variables.len() > 0);
+//        for v in result.variables.iter() {
+//            println!("{:?}", v);
+//            let name = &v.name;
+//            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+//            assert!(re.is_match(&v.value));
+//        }
+//    }
+//}

@@ -1,5 +1,6 @@
 {
     "dependencies": [
+        "centreon-plugin-operatingsystems-linux-sudoers",
         "libdatetime-perl",
         "libxml-libxml-perl",
         "net-tools",

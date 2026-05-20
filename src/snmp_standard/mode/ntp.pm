@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -192,7 +192,7 @@ __END__
 
 =head1 MODE
 
-Check time offset of server with ntp server. Use local time if ntp-host option is not set. 
+Check time offset of server with NTP server. Use local time if C<--ntp-hostname> option is not set. 
 SNMP gives a date with second precision (no milliseconds). Time precision is not very accurate.
 Use threshold with (+-) 2 seconds offset (minimum).
 
@@ -204,19 +204,19 @@ Override default OID.
 
 =item B<--warning-offset>
 
-Time offset warning threshold (in seconds).
+Time warning threshold range (in seconds), in the format -n:n (e.g., -5:5). Returns WARNING when the offset is less than -n seconds or greater than n seconds.
 
 =item B<--critical-offset>
 
-Time offset critical Threshold (in seconds).
+Time critical threshold range (in seconds), in the format -n:n (e.g., -5:5). Returns CRITICAL when the offset is less than -n seconds or greater than n seconds.
 
 =item B<--ntp-hostname>
 
-Set the ntp hostname (if not set, localtime is used).
+Set the NTP hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (default: 123).
+Set the NTP port (default: 123).
 
 =item B<--timezone>
 

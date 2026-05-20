@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -84,9 +84,9 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    my $switch_temperature = $snmp_result->{$oid_switchTemperature} =~ s/\s\C.*//r;
-    my $cpu_temperature = $snmp_result->{$oid_cpuTemperature} =~ s/\s\C.*//r;
-    my $chip_temperature = $snmp_result->{$oid_chipTemperature} =~ s/\s\C.*//r;
+    my $switch_temperature = $snmp_result->{$oid_switchTemperature} =~ s/([\d\.]+).*/$1/r;
+    my $cpu_temperature = $snmp_result->{$oid_cpuTemperature} =~ s/([\d\.]+).*/$1/r;
+    my $chip_temperature = $snmp_result->{$oid_chipTemperature} =~ s/([\d\.]+).*/$1/r;
 
     $self->{global} = {
         switch_temperature => $switch_temperature,
@@ -107,27 +107,27 @@ Check temperature.
 
 =item B<--warning-switch-temperature>
 
-Warning threshold in celsius degrees for Pica switch.
+Warning threshold in Celsius degrees for Pica switch.
 
 =item B<--critical-switch-temperature>
 
-Critical threshold in celsius degrees for Pica switch.
+Critical threshold in Celsius degrees for Pica switch.
 
 =item B<--warning-chip-temperature>
 
-Warning threshold in celsius degrees for chip.
+Warning threshold in Celsius degrees for chip.
 
 =item B<--critical-chip-temperature>
 
-Critical threshold in celsius degrees for chip.
+Critical threshold in Celsius degrees for chip.
 
 =item B<--warning-cpu-temperature>
 
-Warning threshold in celsius degrees for CPU.
+Warning threshold in Celsius degrees for CPU.
 
 =item B<--critical-cpu-temperature>
 
-Critical threshold in celsius degrees for CPU.
+Critical threshold in Celsius degrees for CPU.
 
 =back
 

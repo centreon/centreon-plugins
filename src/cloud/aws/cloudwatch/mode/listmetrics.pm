@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,7 +48,7 @@ sub manage_selection {
 
     $self->{metrics} = $options{custom}->cloudwatch_list_metrics(
         namespace => $self->{option_results}->{namespace},
-        metric => $self->{option_results}->{metric}
+        metric    => $self->{option_results}->{metric}
     );
 }
 
@@ -65,17 +65,36 @@ sub get_dimensions_str {
     return $dimensions;
 }
 
+sub get_dimensions_str_short {
+    my ($self, %options) = @_;
+
+    my $dimensions = '';
+    my $append = '';
+    foreach (@{$options{dimensions}}) {
+        $dimensions .= $append . "$_->{Name}:$_->{Value}";
+        $append = ' ';
+    }
+
+    return $dimensions;
+}
+
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
     foreach (@{$self->{metrics}}) {
-        $self->{output}->output_add(long_msg => sprintf("[Namespace = %s][Dimensions = %s][Metric = %s]",
-            $_->{Namespace}, $self->get_dimensions_str(dimensions => $_->{Dimensions}), $_->{MetricName}));
+        $self->{output}->output_add(
+            long_msg => sprintf("[Namespace = %s][Dimensions = %s][Metric = %s][Dimension Metric = %s]",
+                $_->{Namespace},
+                $self->get_dimensions_str(dimensions => $_->{Dimensions}),
+                $_->{MetricName},
+                $_->{MetricName} . " " . $self->get_dimensions_str_short(dimensions => $_->{Dimensions})
+            )
+        );
     }
 
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List metrics:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -85,7 +104,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['namespace', 'metric', 'dimensions']);
+    $self->{output}->add_disco_format(elements => [ 'namespace', 'metric', 'dimensions', 'dimension_metric' ]);
 }
 
 sub disco_show {
@@ -94,9 +113,10 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach (@{$self->{metrics}}) {
         $self->{output}->add_disco_entry(
-            namespace => $_->{Namespace},
-            metric => $_->{MetricName},
-            dimensions => $self->get_dimensions_str(dimensions => $_->{Dimensions}),
+            namespace        => $_->{Namespace},
+            metric           => $_->{MetricName},
+            dimensions       => $self->get_dimensions_str(dimensions => $_->{Dimensions}),
+            dimension_metric => $_->{MetricName} . " " . $self->get_dimensions_str_short(dimensions => $_->{Dimensions})
         );
     }
 }
@@ -107,17 +127,17 @@ __END__
 
 =head1 MODE
 
-List cloudwatch metrics.
+List CloudWatch metrics.
 
 =over 8
 
 =item B<--namespace>
 
-Set cloudwatch namespace.
+Set CloudWatch namespace.
 
 =item B<--metric>
 
-Set cloudwatch metric.
+Set CloudWatch metric.
 
 =back
 

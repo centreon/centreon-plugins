@@ -129,7 +129,7 @@ sub new {
         'list-counters'           => { name => 'list_counters' }
     });
     $self->{statefile_value} = undef;
-    if (defined($options{statefile}) && $options{statefile}) {
+    if ($options{statefile}) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'centreon::plugins::statefile',
@@ -189,7 +189,8 @@ sub check_options {
         my $list_counter = '';
         my $th_counter = '';
         my $counters;
-        foreach my $key (keys %{$self->{maps_counters}}) {
+
+        foreach my $key (sort keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
                 $counters->{metrics}->{$_->{label}}->{nlabel} ="";
                 $counters->{metrics}->{$_->{label}}->{min}="";
@@ -212,14 +213,14 @@ sub check_options {
                     $counters->{metrics}->{$_->{label}}->{output_template} = $_->{set}->{perfdatas}->[0]->{template};
                 }
                 my $label = $_->{label};
-                $label =~ s/-//g;
+                $label =~ s/-/_/g;
                 $list_counter .= $_->{label}." ";
-                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";
+                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING_" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL_" . uc($label) . "\$'";
 
             }
         }
         $counters->{"counter list"}=$list_counter;
-        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRAOPTIONS\$";
+        $counters->{"pack configuration"}=$th_counter." \$_SERVICEEXTRA_OPTIONS\$";
 
         my $result_data ="";
         eval {
@@ -248,9 +249,7 @@ sub check_options {
 
     $self->change_macros(macros => $change_macros_opt) if (scalar(@$change_macros_opt) > 0);
 
-    if (defined($self->{statefile_value})) {
-        $self->{statefile_value}->check_options(%options);
-    }
+    $self->{statefile_value}->check_options(%options) if $self->{statefile_value};
 }
 
 sub run_global {
@@ -305,14 +304,18 @@ sub run_global {
         $obj->perfdata(extra_instance => $multiple_parent);
     }
 
-    my ($prefix_output, $suffix_output);
-    $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_prefix_output}));
-    $prefix_output = '' if (!defined($prefix_output));
+    my ($prefix_output, $suffix_output) = ('', '');
+    if (defined $options{config}->{prefix_output}) {
+        $prefix_output = $options{config}->{prefix_output};
+    } elsif (defined $options{config}->{cb_prefix_output}) {
+        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
 
-    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_suffix_output}));
-    $suffix_output = '' if (!defined($suffix_output));
+    if (defined $options{config}->{suffix_output}) {
+        $suffix_output = $options{config}->{suffix_output};
+    } elsif (defined $options{config}->{cb_suffix_output}) {
+        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
 
     if ($called_multiple == 1 && $long_msg ne '') {
         $self->{output}->output_add(long_msg => $options{indent_long_output} . $prefix_output. $long_msg . $suffix_output);
@@ -883,15 +886,13 @@ Global options for counters.
 Only display some counters (regexp can be used).
 Example to check SSL connections only : --filter-counters='^xxxx|yyyy$'
 
-=item B<--warning-*>
+=item B<--warning-xxx>
 
 Warning threshold.
-Can be: 'xxx', 'xxx'.
 
-=item B<--critical-*>
+=item B<--critical-xxx>
 
 Critical threshold.
-Can be: 'xxx', 'xxx'.
 
 =back
 

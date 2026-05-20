@@ -22,7 +22,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
     - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
@@ -96,7 +96,7 @@ runs:
             } else if (["unit-tests", "fatpacker", "test-plugins"].includes(failed_job)) {
               ticket_squad_id = 10504
               ticket_board_id = 222
-              squad_name = "COLLECT"
+              squad_name = "CONNECTORS"
               project_name = "CTOR"
             } else {
               core.setFailed(`Not finding any squad association with job ${failed_job}.`);
@@ -132,6 +132,11 @@ runs:
                   "description": data
                 }
               }
+
+            if (project_name === "CTOR") {
+              ticket_data.fields["customfield_10016"] = 1;
+              ticket_data.fields["customfield_11022"] = [{"id": "10557"}]; // TargetBranches: "develop"
+            }
 
             if (current_sprint !== null) {
               ticket_data.fields.customfield_10007 = parseInt(current_sprint, 10);
@@ -171,7 +176,10 @@ runs:
             console.log(`Response on priority change: ${response}`);
 
             // Update ticket status to NEED REFINEMENT and then SPRINT READY so that squad members can see it in their respective sprints
-            for (const transition_id of [11, 21]) {
+            // MON: 11 = "Select for refinement" (NEED REFINEMENT), 21 = "Ready to develop" (SPRINT READY)
+            // CTOR: 61 = "Select for refinement" (NEED REFINEMENT), 81 = "Ready to develop" (SPRINT READY)
+            const transition_ids = project_name === "CTOR" ? [61, 81] : [11, 21];
+            for (const transition_id of transition_ids) {
               response = execSync(
                 `curl --request POST \
                   --url "${{ inputs.jira_base_url }}/rest/api/latest/issue/${ticket_key}/transitions" \

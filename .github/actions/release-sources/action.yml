@@ -31,15 +31,22 @@ runs:
       shell: bash
 
     - name: Publish on download.centreon.com
+      env:
+        MODULE_NAME: ${{ inputs.module_name }}
+        VERSION: ${{ inputs.version }}
+        MODULE_DIRECTORY: ${{ inputs.module_directory }}
+        BUCKET_DIRECTORY: ${{ inputs.bucket_directory }}
+        TOKEN_DOWNLOAD: ${{ inputs.token_download_centreon_com }}
+        RELEASE: ${{ inputs.release }}
       run: |
-        SRC_FILE="${{ inputs.module_name }}-${{ inputs.version }}.tar.gz"
+        SRC_FILE="${MODULE_NAME}-${VERSION}.tar.gz"
 
-        mv "${{ inputs.module_directory }}" "${{ inputs.module_name }}-${{ inputs.version }}"
-        tar czf $SRC_FILE "${{ inputs.module_name }}-${{ inputs.version }}"
+        mv "$MODULE_DIRECTORY" "${MODULE_NAME}-${VERSION}"
+        tar czf $SRC_FILE "${MODULE_NAME}-${VERSION}"
 
         SRC_HASH=$(md5sum $SRC_FILE | cut -d ' ' -f 1)
         SRC_SIZE=$(stat -c '%s' $SRC_FILE)
 
-        aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${{ inputs.bucket_directory }}/$SRC_FILE"
-        curl --fail "https://download.centreon.com/api/?token=${{ inputs.token_download_centreon_com }}&product=${{ inputs.module_name }}&release=${{ inputs.release }}&version=${{ inputs.version }}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
+        aws s3 cp --acl public-read "$SRC_FILE" "s3://centreon-download/public/${BUCKET_DIRECTORY}/$SRC_FILE"
+        curl --fail "https://download.centreon.com/api/?token=${TOKEN_DOWNLOAD}&product=${MODULE_NAME}&release=${RELEASE}&version=${VERSION}&extension=tar.gz&md5=$SRC_HASH&size=$SRC_SIZE&ddos=0&dryrun=0"
       shell: bash

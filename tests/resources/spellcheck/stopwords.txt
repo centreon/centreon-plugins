@@ -4,6 +4,7 @@
 --3cx-version
 7210SAS
 7750SR
+Accedian
 ACS
 --add-cpu
 --add-disk-io
@@ -17,6 +18,7 @@ Alertmanager
 allCapacity
 Alletra
 allsteps
+Alto
 Ansible
 --api-filter-orgs
 api.ip-label.net
@@ -27,6 +29,7 @@ api.meraki.com
 --api-username
 --api-version
 AppearTV
+ARN
 AS400
 ASAM
 Athonet
@@ -121,6 +124,7 @@ frsevent
 FSx
 GCP
 --get-param
+GPON
 GraphQL
 GRAPHQL
 HAProxy
@@ -135,6 +139,7 @@ ifDesc
 ifName
 --ignore-orgs-api-disabled
 IKS
+IMAP
 IMEI
 in-bcast
 in-crc
@@ -179,6 +184,7 @@ ldap
 LDP
 --legacy-api-beta
 libSSH
+Libvirt
 license-instances-usage-prct
 Loggly
 LSP
@@ -252,7 +258,9 @@ OID
 --oid-filter
 OIDs
 okta
+OLT
 oneaccess-sys-mib
+OneAPI
 OpenMetrics
 OpenStack
 OpenWSMAN
@@ -263,6 +271,7 @@ out-mcast
 out-ucast
 overprovisioning
 packetloss
+Palo
 partiallyActive
 passthrough
 --patch-redhat
@@ -284,6 +293,7 @@ proto
 Proxmox
 --proxyurl
 psu
+PVX
 QoS
 Qtree
 queue-messages-inflighted
@@ -296,6 +306,7 @@ RFC1628
 RRDCached
 rsrp
 rsrq
+RSS
 rssi
 RTT
 Rubrik
@@ -307,10 +318,12 @@ scenarii
 SCVMM
 SFOS
 sfp.temperature
+SHA256
 SignalR
 sinr
 --skip-ssl-check
 SkyHigh
+SLA
 SMS
 SnapMirrors
 snmp
@@ -327,6 +340,7 @@ standAlone
 statefile
 --statefile-concat-cwd
 Stormshield
+sudoers
 superseed
 SureBackup
 systemd
@@ -369,6 +383,7 @@ v3
 vCenter
 VCENTER
 vCPU
+vCPUs
 VCSA
 vdom
 vdomain
@@ -377,6 +392,7 @@ VE
 Veeam
 VeloCloud
 vhost
+VIRSHCLI
 VM
 VMs
 VMware
@@ -399,6 +415,8 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
+WildFire
 WLAN
 WLC
 WSMAN
