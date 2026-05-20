@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::statefile;
+use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::misc qw/is_excluded/;
 use Safe;
 
 sub sfp_long_output {
@@ -76,17 +78,17 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name               => 'sfp',
-            type               => 3,
+            type               => COUNTER_TYPE_MULTIPLE,
             cb_prefix_output   => 'prefix_sfp_output',
             cb_long_output     => 'sfp_long_output',
             indent_long_output => '    ',
             message_multiple   => 'All sfp ports are ok',
             group              =>
                 [
-                    { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                    { name => 'perf', type => 0, skipped_code => { -10 => 1 } },
-                    { name => 'temperature', type => 0, skipped_code => { -10 => 1 } },
-                    { name => 'voltage', type => 0, skipped_code => { -10 => 1 } }
+                    { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                    { name => 'perf', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                    { name => 'temperature', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                    { name => 'voltage', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
                 ]
         }
     ];
@@ -94,7 +96,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label            => 'status',
-            type             => 2,
+            type             => COUNTER_KIND_TEXT,
             critical_default =>
                 '%{status} =~ /invalid/ || %{temp_status} =~ /alarm/ || %{tx_power_status} =~ /alarm/ || %{rx_power_status} =~ /alarm/ || %{bias_status} =~ /alarm/ || %{volt_status} =~ /alarm/',
             warning_default  =>
@@ -202,9 +204,12 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-port:s'           => { name => 'filter_port' },
-            'filter-serial:s'         => { name => 'filter_serial' },
-            'filter-interface:s'      => { name => 'filter_interface' },
+            'include-port:s'          => { name => 'include_port' },
+            'exclude-port:s'          => { name => 'exclude_port' },
+            'include-serial:s'        => { name => 'include_serial' },
+            'exclude-serial:s'        => { name => 'exclude_serial' },
+            'include-interface:s'     => { name => 'include_interface' },
+            'exclude-interface:s'     => { name => 'exclude_interface' },
             'add-interface-name'      => { name => 'add_interface_name' },
             'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
             'show-cache'              => { name => 'show_cache' },
@@ -277,7 +282,7 @@ sub reload_cache {
     }
 
     my $result = $options{snmp}->get_table(
-        oid   => $mapping->{sfpSerialNumber}->{oid},
+        oid => $mapping->{sfpSerialNumber}->{oid},
     );
 
     foreach my $key (keys %$result) {
@@ -291,8 +296,7 @@ sub reload_cache {
     }
 
     if (scalar(keys %{$datas->{sfp}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "Can't construct cache...");
     }
 
     $self->{statefile_cache}->write(data => $datas);
@@ -306,8 +310,7 @@ sub get_selection {
     my $has_cache_file = $self->{statefile_cache}->read(statefile =>
         'cache_snmpstandard_' . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(long_msg => $self->{statefile_cache}->get_string_content());
     }
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
@@ -319,37 +322,24 @@ sub get_selection {
 
     my $results = {};
     foreach (keys %$sfp_ports) {
-        if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
-            $_ !~ /$self->{option_results}->{filter_port}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $_ . "': no matching filter.", debug => 1);
-            next;
-        }
-
-        if (defined($self->{option_results}->{filter_serial}) && $self->{option_results}->{filter_serial} ne '' &&
-            $sfp_ports->{$_}->[0] !~ /$self->{option_results}->{filter_serial}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $sfp_ports->{$_}->[0] . "': no matching filter.",
-                debug    => 1
+        next if is_excluded($_, $self->{option_results}->{include_port}, $self->{option_results}->{exclude_port});
+        next if is_excluded(
+            $sfp_ports->{$_}->[0],
+            $self->{option_results}->{include_serial},
+            $self->{option_results}->{exclude_serial}
+        );
+        next if defined($self->{option_results}->{add_interface_name}) &&
+            is_excluded(
+                $sfp_ports->{$_}->[1],
+                $self->{option_results}->{include_interface},
+                $self->{option_results}->{exclude_interface}
             );
-            next;
-        }
-
-        if (defined($self->{option_results}->{add_interface_name}) &&
-            defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
-            $sfp_ports->{$_}->[1] !~ /$self->{option_results}->{filter_interface}/) {
-            $self->{output}->output_add(
-                long_msg => "skipping '" . $sfp_ports->{$_}->[1] . "': no matching filter.",
-                debug    => 1
-            );
-            next;
-        }
 
         $results->{$_} = $sfp_ports->{$_};
     }
 
     if (scalar(keys %$results) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No sfp ports found. Can be: filters, cache file.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No sfp ports found. Can be: filters, cache file.");
     }
 
     return $results;
@@ -369,7 +359,7 @@ sub manage_selection {
 
     $self->{sfp} = {};
 
-    foreach (keys %$sfp_ports) {
+    foreach (sort keys %$sfp_ports) {
         my $instance = $_;
 
         my $result = $options{snmp}->map_instance(
@@ -447,17 +437,29 @@ Check SFP port.
 
 =over 8
 
-=item B<--filter-port>
+=item B<--include-port>
 
 Filter ports by index (can be a regexp).
 
-=item B<--filter-serial>
+=item B<--exclude-port>
+
+Excludes ports by index (can be a regexp).
+
+=item B<--include-serial>
 
 Filter ports by serial (can be a regexp).
 
-=item B<--filter-interface>
+=item B<--exclude-serial>
+
+Excludes ports by serial (can be a regexp).
+
+=item B<--include-interface>
 
 Filter ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
+
+=item B<--exclude-interface>
+
+Excludes ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
 
 =item B<--add-interface-name>
 
@@ -477,10 +479,70 @@ You can use the following variables: %{status}, %{temp_status}, %{tx_power_statu
 
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /invalid/ || %{temp_status} =~ /alarm/ || %{tx_power_status} =~ /alarm/ || %{rx_power_status} =~ /alarm/ || %{bias_status} =~ /alarm/ || %{volt_status} =~ /alarm/').
 You can use the following variables: %{status}, %{temp_status}, %{tx_power_status}, %{rx_power_status}, %{bias_status}, %{volt_status}
-=item B<--warning-*> B<--critical-*>
 
-Thresholds.
-Can be: C<rx-input-power (mW)>, C<rx-input-power-dbm (dBm)>, C<tx-output-power (mW)>, C<tx-output-power-dbm (dBm)>, C<bias-current (mA)>, C<temperature (C)>, C<voltage (V)>, C<bitrate (b/s)>.
+=item B<--warning-rx-input-power>
+
+Thresholds. (mW)
+
+=item B<--critical-rx-input-power>
+
+Thresholds. (mW)
+
+=item B<--warning-rx-input-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--critical-rx-input-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--warning-tx-output-power>
+
+Thresholds. (mW)
+
+=item B<--critical-tx-output-power>
+
+Thresholds. (mW)
+
+=item B<--warning-tx-output-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--critical-tx-output-power-dbm>
+
+Thresholds. (dBm)
+
+=item B<--warning-bias-current>
+
+Thresholds. (mA)
+
+=item B<--critical-bias-current>
+
+Thresholds. (mA)
+
+=item B<--warning-temperature>
+
+Thresholds. (C)
+
+=item B<--critical-temperature>
+
+Thresholds. (C)
+
+=item B<--warning-voltage>
+
+Thresholds. (V)
+
+=item B<--critical-voltage>
+
+Thresholds. (V)
+
+=item B<--warning-bitrate>
+
+Thresholds. (b/s)
+
+=item B<--critical-bitrate>
+
+Thresholds. (b/s)
 
 =item B<--reload-cache-time>
 

@@ -31,20 +31,30 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'arp'                 => 'snmp_standard::mode::arp',
-        'cpu'                 => 'snmp_standard::mode::cpu',
-        'cpu-detailed'        => 'network::waystream::snmp::mode::cpudetailed',
-        'interfaces'          => 'snmp_standard::mode::interfaces',
-        'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
-        'list-sfp-ports'      => 'network::waystream::snmp::mode::listsfpport',
-        'memory'              => 'network::waystream::snmp::mode::memory',
-        'ntp'                 => 'snmp_standard::mode::ntp',
-        'hardware'            => 'network::waystream::snmp::mode::hardware',
-        'sfp-port'            => 'network::waystream::snmp::mode::sfpport',
-        'tcpcon'              => 'snmp_standard::mode::tcpcon',
-        'udpcon'              => 'snmp_standard::mode::udpcon',
-        'uptime'              => 'snmp_standard::mode::uptime',
+        'arp'             => 'snmp_standard::mode::arp',
+        'cpu'             => 'snmp_standard::mode::cpu',
+        'cpu-detailed'    => 'network::waystream::snmp::mode::cpudetailed',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-sfp-ports'  => 'network::waystream::snmp::mode::listsfpport',
+        'memory'          => 'network::waystream::snmp::mode::memory',
+        'ntp'             => 'snmp_standard::mode::ntp',
+        'hardware'        => 'network::waystream::snmp::mode::hardware',
+        'sfp-port'        => 'network::waystream::snmp::mode::sfpport',
+        'tcpcon'          => 'snmp_standard::mode::tcpcon',
+        'udpcon'          => 'snmp_standard::mode::udpcon',
+        'uptime'          => 'snmp_standard::mode::uptime',
     );
+
+    $self->{modes_options} = {
+        'arp'        => { force_new_perfdata => 1 },
+        'cpu'        => { force_new_perfdata => 1 },
+        'interfaces' => { force_new_perfdata => 1 },
+        'ntp'        => { force_new_perfdata => 1 },
+        'tcpcon'     => { force_new_perfdata => 1 },
+        'udpcon'     => { force_new_perfdata => 1 },
+        'uptime'     => { force_new_perfdata => 1 }
+    };
 
     return $self;
 }

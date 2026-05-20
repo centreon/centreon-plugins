@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_cpu_calc {
     my ($self, %options) = @_;
@@ -73,7 +74,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_cpu_output', skipped_code => { -10 => 1 } },
+        {
+            name => 'global',
+            type => COUNTER_TYPE_GLOBAL,
+            cb_prefix_output => 'prefix_cpu_output',
+            skipped_code => { NO_VALUE() => 1 }
+        },
     ];
     $self->{maps_counters}->{global} = [
         { label => 'user', nlabel => 'cpu.user.utilization.percentage', set => {
@@ -156,7 +162,7 @@ sub prefix_cpu_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
