@@ -419,10 +419,18 @@ sub check_filter {
     return 0;
 }
 
+# Called when an element is missing.
+# A CRITICAL status is generated if the missing element is listed in 'absent_problem' array.
+# When 'always_skip' is set to 1 in %options this function always returns 1 allowing the element to
+# be skipped (as in centreon/common/huawei/standard/snmp/mode/components/fan.pm)
+# Otherwise the function returns 1 only if the status becomes CRITICAL.
 sub absent_problem {
     my ($self, %options) = @_;
 
     $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));
+
+    my $skip = $options{always_skip} // 0;
+    my $problem = '';
     foreach (@{$self->{absent_problem}}) {
         if ($options{section} =~ /$_->{filter}/) {
             if (!defined($_->{instance}) || $options{instance} =~ /$_->{instance}/) {
@@ -434,14 +442,17 @@ sub absent_problem {
                         $options{instance}
                     )
                 );
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
-                $self->{components}->{$options{section}}->{skip}++;
-                return 1;
+                $skip = 1;
+                $problem = ', indicates a problem';
+                last
             }
         }
     }
-
-    return 0;
+    if ($skip) {
+        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present$problem)"));
+        $self->{components}->{$options{section}}->{skip}++;
+    }
+    return $skip;
 }
 
 sub get_severity_count {

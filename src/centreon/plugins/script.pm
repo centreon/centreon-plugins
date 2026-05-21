@@ -28,7 +28,7 @@ use Pod::Usage;
 
 my %handlers = (DIE => {}, ALRM => {});
 
-my $global_version = '20260500';
+my $global_version = '20260600';
 
 my $alternative_fatpacker = 0;
 
