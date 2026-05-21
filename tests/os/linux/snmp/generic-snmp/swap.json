@@ -42,7 +42,7 @@
     ]
   },
   "output": {
-    "ok": "OK: Swap Used: {aggregations.swap.usage.bytes}B - Free: {metrics.swap.free.bytes} - Total: {memTotalSwap}",
+    "ok": "OK: Swap Used: {aggregations.swap.usage.bytes}B - Free: {metrics.swap.free.bytes}B - Total: {memTotalSwap}B",
     "warning": "WARNING: ",
     "detail_warning": true,
     "critical": "CRITICAL: ",
