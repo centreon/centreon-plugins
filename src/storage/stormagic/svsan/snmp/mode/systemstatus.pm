@@ -134,11 +134,11 @@ Check the overall status of C<StorMagic SvSAN>.
 
 =item B<--include-name>
 
-Filter pools by name (can be a regexp).
+Filter systems by name (can be a regexp).
 
 =item B<--exclude-name>
 
-Exclude pools by name (can be a regexp).
+Exclude systems by name (can be a regexp).
 
 =item B<--unknown-status>
 

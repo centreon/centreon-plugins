@@ -454,27 +454,27 @@ You can use the following variables: %{cache_state}, %{display}
 
 =item B<--warning-space-usage>
 
-Threshold for warning when the space usage exceeds the specified value in bytes.
+Warning threshold for space usage (B).
 
 =item B<--critical-space-usage>
 
-Threshold for critical when the space usage exceeds the specified value in bytes.
+Critical threshold for space usage (B).
 
 =item B<--warning-space-usage-prct>
 
-Threshold for warning when the space usage exceeds the specified percentage of the total capacity.
+Warning threshold for space usage (%).
 
 =item B<--critical-space-usage-prct>
 
-Threshold for critical when the space usage exceeds the specified percentage of the total capacity.
+Critical threshold for space usage (%).
 
 =item B<--warning-space-usage-free>
 
-Threshold for warning when the free space falls below the specified value in bytes.
+Warning threshold for free space usage (B).
 
 =item B<--critical-space-usage-free>
 
-Threshold for critical when the free space falls below the specified value in bytes.
+Critical threshold for free space usage (B).
 
 =back
 
