@@ -103,7 +103,15 @@ Check messages in a mailbox with IMAP filter.
 
 =item B<--search>
 
-Set the search string (required)
+Set the search string (required). The syntax is the one described in the perl library Mail::IMAPClient and in the RFC 9051.
+
+Common examples:
+
+    All messages in the mailbox:
+    --search='ALL'
+
+    Messages that contain the specified string in the envelope structure's SUBJECT field
+    --search='SUBJECT "<string>"'
 
 =item B<--delete>
 

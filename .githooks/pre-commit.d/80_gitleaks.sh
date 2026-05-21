@@ -9,4 +9,4 @@ if ! command -v gitleaks >/dev/null 2>&1; then
 fi
 
 # scan for secrets before commit
-gitleaks detect --no-git --verbose
+gitleaks protect -v --staged
