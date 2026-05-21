@@ -14,7 +14,15 @@
     ]
   },
   "compute": {
-    "metrics": [],
+    "metrics": [
+      {
+        "name": "swap.free.bytes",
+        "value": "{memAvailSwap}",
+        "uom": "B",
+        "min": 0,
+        "threshold-suffix": "swap-free-bytes"
+      }
+    ],
     "aggregations": [
       {
         "name": "swap.usage.bytes",
@@ -32,5 +40,14 @@
         "threshold-suffix": "swap-prct"
       }
     ]
+  },
+  "output": {
+    "ok": "OK: Swap Used: {aggregations.swap.usage.bytes}B - Free: {metrics.swap.free.bytes} - Total: {memTotalSwap}",
+    "warning": "WARNING: ",
+    "detail_warning": true,
+    "critical": "CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
   }
 }
