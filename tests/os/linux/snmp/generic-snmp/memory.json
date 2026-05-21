@@ -1,0 +1,52 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "memTotalReal",
+        "oid": ".1.3.6.1.4.1.2021.4.5.0",
+        "query": "Get"
+      },
+      {
+        "name": "memAvailReal",
+        "oid": ".1.3.6.1.4.1.2021.4.6.0",
+        "query": "Get"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "name": "memory.free.bytes",
+        "value": "{memAvailReal}",
+        "uom": "B",
+        "min": 0,
+        "threshold-suffix": "memory-free-bytes"
+      }],
+    "aggregations": [
+      {
+        "name": "memory.usage.bytes",
+        "value": "{memTotalReal} - {memAvailReal}",
+        "uom": "B",
+        "min": 0,
+        "threshold-suffix": "memory-bytes"
+      },
+      {
+        "name": "memory.usage.percent",
+        "value": "100 * ({memTotalReal} - {memAvailReal}) / {memTotalReal}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "memory-prct-used"
+      }
+    ]
+  },
+  "output": {
+    "ok": "OK: Memory Used: {aggregations.memory.usage.bytes}B - Free: {metrics.memory.free.bytes} - Total: {memTotalSwap}",
+    "warning": "WARNING: ",
+    "detail_warning": true,
+    "critical": "CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
+  }
+}

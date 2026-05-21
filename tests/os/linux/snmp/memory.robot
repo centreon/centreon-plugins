@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-
+${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
 
 *** Test Cases ***
 memory ${tc}
@@ -199,3 +199,46 @@ memory ${tc}
     ...    2c
     ...    --patch-redhat='1'
     ...    OK: Ram Total: 5.91 TB Used (-buffers/cache): 5.89 TB (99.68%) Free: 19.12 GB (0.32%), Buffer: 694.54 MB, Cached: 219.41 GB, Shared: 9.31 GB | 'used'=6472685486080B;;;0;6493217484800 'free'=20531998720B;;;0;6493217484800 'used_prct'=99.68%;;;0;100 'buffer'=728276992B;;;0; 'cached'=235591376896B;;;0; 'shared'=9997410304B;;;0;
+
+cgs-mem ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
+    ${command}    Catenate
+    ...    ${CGS_CMD}
+    ...    -j ${CURDIR}/generic-snmp/memory.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/linux
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK:
+    ...    2
+    ...    --warning-swap-bytes=0.1
+    ...    WARNING:
+    ...    3
+    ...    --critical-swap-bytes=0.1
+    ...    CRITICAL:
+    ...    4
+    ...    --warning-swap-prct=0.1
+    ...    WARNING:
+    ...    5
+    ...    --critical-swap-prct=0.1
+    ...    CRITICAL:
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/swap.json' JSON is valid
+    ...    7
+    ...    --warning-swap-free-bytes=1
+    ...    WARNING:
+    ...    8
+    ...    --critical-swap-free-bytes=1
+    ...    CRITICAL:
