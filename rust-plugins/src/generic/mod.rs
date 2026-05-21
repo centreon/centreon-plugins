@@ -239,10 +239,15 @@ impl Command {
         let mut collect: Vec<SnmpResult> = Vec::new();
 
         if check_format {
-            // In check-format mode, don't make SNMP requests and initialize with dummy values
+            // In check-format mode, don't make SNMP requests and initialize with dummy values.
+            // Get queries return a single value; Walk queries return multiple values.
             for s in self.collect.snmp.iter() {
                 let mut items = HashMap::new();
-                items.insert(s.name.clone(), ExprResult::Vector(vec![0.0, 0.0]));
+                let dummy = match s.query {
+                    QueryType::Get => ExprResult::Vector(vec![0.0]),
+                    QueryType::Walk => ExprResult::Vector(vec![0.0, 0.0]),
+                };
+                items.insert(s.name.clone(), dummy);
                 if let Some(lab) = &s.labels {
                     for label_val in lab.values() {
                         let key = format!("{}.{}", s.name, label_val);
