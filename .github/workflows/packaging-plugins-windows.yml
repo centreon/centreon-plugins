@@ -104,6 +104,7 @@ jobs:
         run: |
           set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
           set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
+          set PERL_MM_OPT=OPTIMIZE=-Wno-deprecated-declarations
           C:\Strawberry\perl\bin\cpanm --notest Net::Curl
 
       - name: Apply NTP patch (cache miss fallback)
