@@ -30,7 +30,7 @@ jobs:
   build:
     needs: [get-environment]
     if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
+      false && needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable'
     runs-on: windows-latest
 
