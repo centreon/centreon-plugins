@@ -12,12 +12,10 @@ on:
     paths:
       - ".github/workflows/packaging-plugins-windows.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
-      - ".github/patch/ntp.diff"
   pull_request:
     paths:
       - ".github/workflows/packaging-plugins-windows.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
-      - ".github/patch/ntp.diff"
 
 jobs:
   dependency-scan:
@@ -43,7 +41,7 @@ jobs:
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: C:\Strawberry
-          key: strawberry-perl-5.34.3.1-${{ hashFiles('.github/patch/ntp.diff') }}
+          key: strawberry-perl-5.34.3.1
 
       - name: Install Strawberry Perl (cache miss fallback)
         if: steps.cache-perl.outputs.cache-hit != 'true'
@@ -106,13 +104,6 @@ jobs:
           set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
           set PERL_MM_OPT=DEFINE=-DCURL_DISABLE_TYPECHECK OPTIMIZE=-Wno-deprecated-declarations
           C:\Strawberry\perl\bin\cpanm --notest Net::Curl
-
-      - name: Apply NTP patch (cache miss fallback)
-        if: steps.cache-perl.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          $ntpPath = & C:\Strawberry\perl\bin\perl.exe -MNet::NTP -e 'print $INC{"Net/NTP.pm"}'
-          & "C:\Program Files\Git\usr\bin\patch.exe" $ntpPath .github\patch\ntp.diff
 
       - name: Add Strawberry Perl to PATH
         shell: powershell

@@ -11,11 +11,9 @@ on:
       - develop
     paths:
       - ".github/workflows/docker-builder-packaging-plugins-windows.yml"
-      - ".github/patch/ntp.diff"
   pull_request:
     paths:
       - ".github/workflows/docker-builder-packaging-plugins-windows.yml"
-      - ".github/patch/ntp.diff"
 
 jobs:
   dependency-scan:
@@ -41,7 +39,7 @@ jobs:
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: C:\Strawberry
-          key: strawberry-perl-5.34.3.1-${{ hashFiles('.github/patch/ntp.diff') }}
+          key: strawberry-perl-5.34.3.1
           lookup-only: true
 
       - name: Install Strawberry Perl
@@ -120,19 +118,12 @@ jobs:
             }
           }
 
-      - name: Apply NTP patch for Windows compatibility
-        if: steps.cache-perl.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          $ntpPath = & C:\Strawberry\perl\bin\perl.exe -MNet::NTP -e 'print $INC{"Net/NTP.pm"}'
-          & "C:\Program Files\Git\usr\bin\patch.exe" $ntpPath .github\patch\ntp.diff
-
       - name: Save environment to cache
         if: steps.cache-perl.outputs.cache-hit != 'true'
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: C:\Strawberry
-          key: strawberry-perl-5.34.3.1-${{ hashFiles('.github/patch/ntp.diff') }}
+          key: strawberry-perl-5.34.3.1
 
   set-skip-label:
     needs: [get-environment, build-environment]
