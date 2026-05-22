@@ -58,7 +58,7 @@ jobs:
         if: steps.cache-perl.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          C:\Strawberry\perl\bin\cpanm --notest ^
+          C:\Strawberry\perl\bin\cpanm --force --notest ^
             PAR::Packer ^
             Authen::NTLM ^
             Date::Manip ^
