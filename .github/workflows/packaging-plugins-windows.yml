@@ -61,6 +61,8 @@ jobs:
         run: |
           set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
           set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
+          set LIBCURL_INCLUDE=C:\Strawberry\c\include
+          set LIBCURL_LIBS=-LC:\Strawberry\c\lib -lcurl
           C:\Strawberry\perl\bin\cpanm --force --notest ^
             PAR::Packer ^
             Authen::NTLM ^
