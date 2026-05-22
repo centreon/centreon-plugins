@@ -306,6 +306,14 @@ Check output bank metrics.
 
 =over 8
 
+=item B<--include-name>
+
+Filter banks by name (can be a regexp).
+
+=item B<--exclude-name>
+
+Exclude banks by name (can be a regexp).
+
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
