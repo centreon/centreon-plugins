@@ -90,7 +90,7 @@ sub set_counters {
                     { name => 'runtime'}, { name => 'duration' },
                     { name => 'failed_count' }, { name => 'success_count' },
                     { name => 'retry_count' }, { name => 'canceled_count' },
-                    { name => 'running_count' }
+                    { name => 'running_count' }, { name => 'total_count' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub {
