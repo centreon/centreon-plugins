@@ -79,14 +79,37 @@ jobs:
             Win32::Job ^
             XML::LibXML
 
+      - name: Install libcurl dev files
+        if: steps.cache-perl.outputs.cache-hit != 'true'
+        shell: powershell
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://curl.se/windows/dl-8.7.1_1/curl-8.7.1_1-win64-mingw.zip" `
+            -OutFile curl.zip
+          Expand-Archive curl.zip -DestinationPath C:\curl-tmp -Force
+          $src = (Get-ChildItem C:\curl-tmp -Directory | Select-Object -First 1).FullName
+          Copy-Item "$src\include\curl" "C:\Strawberry\c\include\" -Recurse -Force
+          Copy-Item "$src\lib\libcurl.dll.a" "C:\Strawberry\c\lib\" -Force
+          Copy-Item "$src\bin\libcurl-x64.dll" "C:\Strawberry\c\bin\" -Force
+          @"
+prefix=C:/Strawberry/c
+exec_prefix=`${prefix}
+libdir=`${exec_prefix}/lib
+includedir=`${prefix}/include
+Name: libcurl
+Description: Library to transfer files with ftp, http, etc.
+Version: 8.7.1
+Libs: -L`${libdir} -lcurl
+Cflags: -I`${includedir}
+"@ | Set-Content "C:\Strawberry\c\lib\pkgconfig\libcurl.pc" -Encoding ASCII
+          Remove-Item curl.zip, C:\curl-tmp -Recurse -Force
+
       - name: Install CPAN Curl module
         if: steps.cache-perl.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
           set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
-          set LIBCURL_INCLUDE=C:\Strawberry\c\include
-          set LIBCURL_LIBS=-LC:\Strawberry\c\lib -lcurl
           C:\Strawberry\perl\bin\cpanm --notest Net::Curl
 
       - name: Show cpanm build logs on failure
