@@ -41,7 +41,7 @@ jobs:
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: C:\Strawberry
-          key: strawberry-perl-5.42.0.1-${{ hashFiles('.github/patch/ntp.diff') }}
+          key: strawberry-perl-5.34.3.1-${{ hashFiles('.github/patch/ntp.diff') }}
           lookup-only: true
 
       - name: Install Strawberry Perl
@@ -49,7 +49,7 @@ jobs:
         shell: powershell
         run: |
           Invoke-WebRequest `
-            -Uri https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54201_64bit/strawberry-perl-5.42.0.1-64bit.msi `
+            -Uri https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/sp5.34.3.1/strawberry-perl-5.34.3.1-64bit.msi `
             -OutFile strawberry-perl.msi
           Start-Process msiexec.exe -ArgumentList '/i strawberry-perl.msi /quiet /norestart' -Wait -NoNewWindow
           Remove-Item strawberry-perl.msi
@@ -88,7 +88,7 @@ jobs:
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: C:\Strawberry
-          key: strawberry-perl-5.42.0.1-${{ hashFiles('.github/patch/ntp.diff') }}
+          key: strawberry-perl-5.34.3.1-${{ hashFiles('.github/patch/ntp.diff') }}
 
   set-skip-label:
     needs: [get-environment, build-environment]
