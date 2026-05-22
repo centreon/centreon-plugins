@@ -91,17 +91,17 @@ jobs:
           Copy-Item "$src\include\curl" "C:\Strawberry\c\include\" -Recurse -Force
           Copy-Item "$src\lib\libcurl.dll.a" "C:\Strawberry\c\lib\" -Force
           Copy-Item "$src\bin\libcurl-x64.dll" "C:\Strawberry\c\bin\" -Force
-          @"
-prefix=C:/Strawberry/c
-exec_prefix=`${prefix}
-libdir=`${exec_prefix}/lib
-includedir=`${prefix}/include
-Name: libcurl
-Description: Library to transfer files with ftp, http, etc.
-Version: 8.7.1
-Libs: -L`${libdir} -lcurl
-Cflags: -I`${includedir}
-"@ | Set-Content "C:\Strawberry\c\lib\pkgconfig\libcurl.pc" -Encoding ASCII
+          $pc = 'prefix=C:/Strawberry/c',
+            'exec_prefix=${prefix}',
+            'libdir=${exec_prefix}/lib',
+            'includedir=${prefix}/include',
+            '',
+            'Name: libcurl',
+            'Description: Library to transfer files with ftp, http, etc.',
+            'Version: 8.7.1',
+            'Libs: -L${libdir} -lcurl',
+            'Cflags: -I${includedir}'
+          ($pc -join "`n") + "`n" | Set-Content 'C:\Strawberry\c\lib\pkgconfig\libcurl.pc' -Encoding ASCII
           Remove-Item curl.zip, C:\curl-tmp -Recurse -Force
 
       - name: Install CPAN Curl module
