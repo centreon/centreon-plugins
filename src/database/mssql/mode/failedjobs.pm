@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Time::Local;
-use centreon::plugins::misc;
+use centreon::plugins::constants qw/:counters/;
+use centreon::plugins::misc qw/change_seconds is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -36,7 +37,7 @@ sub custom_status_output {
         $self->{result_values}->{name},
         $self->{result_values}->{status},
         $self->{result_values}->{runtime},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration})
+        change_seconds(value => $self->{result_values}->{duration})
     );
 }
 
@@ -50,9 +51,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'jobs', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { nlabel => 'jobs.problems.current.count', min => 0 },
-          group => [ { name => 'job', skipped_code => { -11 => 1 } } ]
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'jobs', type => COUNTER_TYPE_GROUP, message_multiple => '0 problem(s) detected', display_counter_problem => { nlabel => 'jobs.problems.current.count', min => 0 },
+          group => [ { name => 'job' } ]
         }
     ];
 
@@ -82,11 +83,14 @@ sub set_counters {
     $self->{maps_counters}->{job} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [
                     { name => 'name' }, { name => 'status' },
-                    { name => 'runtime'}, { name => 'duration' }
+                    { name => 'runtime'}, { name => 'duration' },
+                    { name => 'failed_count' }, { name => 'success_count' },
+                    { name => 'retry_count' }, { name => 'canceled_count' },
+                    { name => 'running_count' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub {
@@ -116,7 +120,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter:s'              => { name => 'filter' },
+        'filter:s'              => { name => 'filter', default => '' },
         'warning:s'             => { name => 'warning', redirect => 'warning-jobs-failed-count' },  # legacy
         'critical:s'            => { name => 'critical', redirect => 'critical-jobs-failed-count' }, # legacy
         'lookback:s'            => { name => 'lookback' },
@@ -173,8 +177,17 @@ sub manage_selection {
     # run_date format = YYYYMMDD
     # run_time format = HHMMSS. Can be: HMMSS
     # run_duration format = HHMMSS
+
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter}) && $row->[0] !~ /$self->{option_results}->{filter}/);
+        next if is_excluded($row->[0], $self->{option_results}->{filter}, undef, output => $self->{output});
+        next if (defined($self->{option_results}->{lookback}) && $row->[5] > $self->{option_results}->{lookback});
+
+        $self->{global}->{total}++;
+        $self->{global}->{ $map_state->{ $row->[1] } }++;
+    }
+
+    foreach my $row (@$result) {
+        next if is_excluded($row->[0], $self->{option_results}->{filter}, undef, output => $self->{output});
         next if (defined($self->{option_results}->{lookback}) && $row->[5] > $self->{option_results}->{lookback});
 
         my $job_name = $row->[0];
@@ -197,11 +210,10 @@ sub manage_selection {
             name => $job_name,
             status => $map_state->{ $row->[1] },
             duration => $run_duration,
-            runtime => (defined($year) ? $year . '-' . $month . '-' . $day : '') . $hour . ':' . $minute . ':' . $second
+            runtime => (defined($year) ? $year . '-' . $month . '-' . $day : '') . $hour . ':' . $minute . ':' . $second,
+            map { $_ . '_count' => $self->{global}->{$_} } qw/total failed success retry canceled running/
         };
 
-        $self->{global}->{total}++;
-        $self->{global}->{ $map_state->{ $row->[1] } }++;
     }
 }
 
@@ -230,17 +242,62 @@ Display job duration time.
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{name}, %{status}, %{duration}
+You can use the following variables: %{name}, %{status}, %{duration}, %{total_count}, %{failed_count}, %{success_count}, %{retry_count}, %{canceled_count}, %{running_count}
+The details of jobs matching this condition are displayed.
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{name}, %{status}, %{duration}
+You can use the following variables: %{name}, %{status}, %{duration}, %{total_count}, %{failed_count}, %{success_count}, %{retry_count}, %{canceled_count}, %{running_count}
+The details of jobs matching this condition are displayed.
 
-=item B<--warning-*> B<--critical-*> 
+=item B<--warning-jobs-canceled>
 
-Thresholds.
-Can be: 'jobs-total', 'jobs-failed', 'jobs-success', 'jobs-canceled', 'jobs-running', 'jobs-retry'.
+Threshold.
+
+=item B<--critical-jobs-canceled>
+
+Threshold.
+
+=item B<--warning-jobs-failed>
+
+Threshold.
+
+=item B<--critical-jobs-failed>
+
+Threshold.
+
+=item B<--warning-jobs-retry>
+
+Threshold.
+
+=item B<--critical-jobs-retry>
+
+Threshold.
+
+=item B<--warning-jobs-running>
+
+Threshold.
+
+=item B<--critical-jobs-running>
+
+Threshold.
+
+=item B<--warning-jobs-success>
+
+Threshold.
+
+=item B<--critical-jobs-success>
+
+Threshold.
+
+=item B<--warning-jobs-total>
+
+Threshold.
+
+=item B<--critical-jobs-total>
+
+Threshold.
 
 =back
 
