@@ -80,6 +80,18 @@ jobs:
             Win32::Job ^
             XML::LibXML
 
+      - name: Show cpanm build logs on failure
+        if: failure()
+        shell: powershell
+        run: |
+          $logDir = "$env:USERPROFILE\.cpanm\work"
+          if (Test-Path $logDir) {
+            Get-ChildItem -Path $logDir -Recurse -Filter "build.log" | ForEach-Object {
+              Write-Host "`n=== $($_.FullName) ==="
+              Get-Content $_.FullName | Select-Object -Last 50
+            }
+          }
+
       - name: Apply NTP patch for Windows compatibility
         if: steps.cache-perl.outputs.cache-hit != 'true'
         shell: powershell
