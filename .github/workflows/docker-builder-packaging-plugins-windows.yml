@@ -58,25 +58,9 @@ jobs:
         if: steps.cache-perl.outputs.cache-hit != 'true'
         shell: cmd
         run: |
+          set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+          set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
           C:\Strawberry\perl\bin\cpanm --notest ^
-            PAR::Packer ^
-            Authen::NTLM ^
-            Date::Manip ^
-            Email::Send::SMTP::Gmail ^
-            HTTP::ProxyPAC ^
-            IO::Socket::SSL ^
-            JE ^
-            JSON::XS ^
-            Net::Curl ^
-            Net::FTPSSL ^
-            Net::NTP ^
-            Net::SSLeay ^
-            Pod::Simple::Search ^
-            Tie::RefHash::Weak ^
-            Win32::Job ^
-            XML::LibXML
-
-          C:\Strawberry\perl\bin\cpanm --force --notest ^
             PAR::Packer ^
             Authen::NTLM ^
             Date::Manip ^

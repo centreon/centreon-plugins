@@ -59,6 +59,8 @@ jobs:
         if: steps.cache-perl.outputs.cache-hit != 'true'
         shell: cmd
         run: |
+          set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+          set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
           C:\Strawberry\perl\bin\cpanm --force --notest ^
             PAR::Packer ^
             Authen::NTLM ^
