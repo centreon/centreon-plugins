@@ -1,6 +1,7 @@
 #!/bin/bash
 if [[ -z "$1" || "$1" =~ ^--help|-h$ ]] || [[ ! "$1" =~ ^[a-z0-9:]+$ ]]; then
-    echo -e "Usage: ${0##*/} path::to::plugin [mode]\n"
+    echo "Usage: ${0##*/} path::to::plugin [mode]"
+
     exit
 fi
 
@@ -24,7 +25,10 @@ PERL5LIB="$PERL5LIB:$project_path/src/"
 base_cmd="$project_path/src/centreon_plugins.pl --plugin=$plugin"
 # transform the Perl package path into file system path of the Perl code
 plugin_fs_path="${plugin//:://}"
-plugin_fs_path="${plugin_fs_path%plugin*}"
+plugin_fs_path="${plugin_fs_path%/plugin*}"
+
+$base_cmd | grep "Can't locate $plugin" >/dev/null && fatal "Plugin '$plugin' not found"
+
 # where the tests should be located:
 tests_path="$project_path/tests/${plugin_fs_path}"
 mkdir -p "$tests_path"
@@ -44,13 +48,13 @@ Test Timeout        120s
 *** Variables ***
 \${MOCKOON_JSON}     \${CURDIR}\${/}mockoon.json
 \${CMD}              \${CENTREON_PLUGINS}
-...         --plugin=$plugin
-...         --mode=$mode
-...         --hostname=\${HOSTNAME}
-...         --port=\${APIPORT}
-...         --proto=http
-...         --username=1
-...         --password=1
+...                 --plugin=$plugin
+...                 --mode=$mode
+...                 --hostname=\${HOSTNAME}
+...                 --port=\${APIPORT}
+...                 --proto=http
+...                 --username=1
+...                 --password=1
 
 EOF
 }
@@ -58,7 +62,7 @@ EOF
 # part that is specific to snmp-based tests
 function print_snmp_tpl() {
     local community="$1"
-    
+
     cat <<EOF
 Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
@@ -67,12 +71,11 @@ Test Timeout        120s
 
 *** Variables ***
 \${CMD}      \${CENTREON_PLUGINS}
-...         --plugin=$plugin
-...         --mode=$mode
-...         --hostname=\${HOSTNAME}
-...         --snmp-port=\${SNMPPORT}
-...         --snmp-community=$community/TO_BE_COMPLETED
-
+...        --plugin=$plugin
+...        --mode=$mode
+...        --hostname=\${HOSTNAME}
+...        --snmp-port=\${SNMPPORT}
+...        --snmp-community=$community/TO_BE_COMPLETED
 EOF
 }
 
@@ -129,33 +132,45 @@ EOF
     echo -e "    Examples:\n${line_prefix}tc\n${line_prefix}extra_options\n${line_prefix}expected_result\n${line_prefix}--"
     for option in "${options[@]}"; do
         [[ "$option" != "\${EMPTY}" ]] && option="$option=1"
+        expected_status="OK"
+        [[ "$option" =~ --warning ]] && expected_status="WARNING"
+        [[ "$option" =~ --critical ]] && expected_status="CRITICAL"
         echo "${line_prefix}${tc}"
         echo "${line_prefix}${option}"
-        echo "${line_prefix}OK"
+        echo "${line_prefix}${expected_status}: put the real expected output here"
         # increment the test case counter
         : $((tc++))
     done
 }
 
-
 # if $2 is provided, then only this mode will be tested
 if [[ -n "$unique_mode" ]]; then
+    $base_cmd --mode=$unique_mode | grep "UNKNOWN: mode '$unique_mode'" >/dev/null && fatal "Mode '$unique_mode' not found for plugin $plugin"
     modes=( $unique_mode )
 else
     # if no $2, list all the plugin's modes: eval will evaluate the declaration returned by parse_modes
     eval $(parse_modes $base_cmd --list-mode)
     # now we have an array of available modes in the variable named "modes"
 fi
+
 [[ $DEBUG ]] && declare -p modes
 
 for mode in "${modes[@]}"; do
     info "Generating tests for mode $mode"
+    robot_file="${tests_path}/${mode}.robot"
     # get the list of options in variable threshold_options
     eval $(parse_threshold_options_from_help $base_cmd --mode=$mode --help)
     [[ $DEBUG ]] && declare -p threshold_options
 
+    # Backup the file if it already exists
+    if [[ -f "$robot_file" ]] ; then
+        robot_backup="${robot_file}_$(date  +%F_%H-%M-%S).${RANDOM}"
+        warning "Backing up $robot_file to $robot_backup"
+        cp "$robot_file" "$robot_backup"
+    fi
+    info "Writing test file ${robot_file}"
     # print the robot content into the file
     print_robot "$plugin" "$mode" "$plugin_fs_path" ${threshold_options[*]} > "${tests_path}/${mode}.robot"
-    unset threshold_options
+    unset threshold_options robot_file robot_backup
 done
 info "Tests have been generated in $tests_path"
