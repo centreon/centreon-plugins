@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -104,6 +104,7 @@ sub check_options {
         $self->{output}->option_exit();
     };
 
+    $self->{http}->set_options(%{$self->{option_results}});
     return 0;
 }
 
@@ -149,7 +150,7 @@ sub get_access_token {
     my ($self, %options) = @_;
 
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'vault_restapi_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{auth_method}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'vault_restapi_' . sha256_hex($self->{hostname} . '_' . $self->{auth_method}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
     if ( $has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10) ) {
