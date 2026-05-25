@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package apps::centreon::logmanagement::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::misc qw(json_decode);
+use centreon::plugins::misc qw(json_decode json_encode);
 
 sub new {
     my ($class, %options) = @_;
@@ -42,15 +42,19 @@ sub new {
             'hostname:s' => { name => 'hostname', default => 'api.euwest1.obs.mycentreon.com' },
             'org:s'      => { name => 'org', default => '' },
             'api-path:s' => { name => 'api_path', default => '/v1/orgs/{org}/datasources/centreon-log/query/metrics' },
-            'proto:s'    => { name => 'proto', default => 'https' },
+            'port:i'     => { name => 'port', default => '443', greater_than => 0, less_than => 65536 },
+            'proto:s'    => { name => 'proto', default => 'https', regexp_match => '^http[s]?$' },
             'token:s'    => { name => 'token', default => '' },
-            'timeout:s'  => { name => 'timeout', default => 30 }
+            'timeout:s'  => { name => 'timeout', default => 30 },
+            'unknown-http-status:s' => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+            'warning-http-status:s' => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{http} = centreon::plugins::http->new(%options);
+    $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
 
     return $self;
 }
@@ -65,7 +69,7 @@ sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->{$_} = $self->{option_results}->{$_} for qw/hostname org api_path proto token timeout/;
+    $self->{$_} = $self->{option_results}->{$_} for qw/hostname org api_path proto port token timeout/;
   
     $self->{output}->option_exit(short_msg => "Need to specify --org option.")
         if $self->{org} eq '';
@@ -85,8 +89,9 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{port}     = $self->{port};
+    $self->{option_results}->{proto}    = $self->{proto};
+    $self->{option_results}->{timeout}  = $self->{timeout};
 
     # Note: Authentication header is handled directly in get_log_count method
     # to avoid being overridden by Content-Type header
@@ -104,16 +109,16 @@ sub get_log_count {
 
     $self->settings();
 
-    my $query = $options{query};
-    my $period = $options{period};
-    my $interval = $options{interval};  # Use the provided interval value
+    my $query    = $options{query};
+    my $period   = $options{period};
+    my $interval = $options{interval}; # Use the provided interval value
 
     my $request_body = {
-        op => 'count-doc',
-        period => $period,
-        query => $query,
-        version => '1',
-        interval => $interval
+        op       => 'count-doc',
+        period   => int($period),
+        query    => $query,
+        version  => '1',
+        interval => int($interval)
     };
 
     # Combine authentication header with content-type header
@@ -124,15 +129,21 @@ sub get_log_count {
         if $self->{token};
 
     my $response = $self->{http}->request(
-        method => 'POST',
-        url_path => $self->{api_path},
-        query_form_post => JSON::XS->new->utf8->encode($request_body),
-        header => \@headers,
-        critical_status => '',
-        warning_status => ''
+        method          => 'POST',
+        proto           => $self->{proto},
+        port            => $self->{port},
+        url_path        => $self->{api_path},
+        query_form_post => json_encode($request_body, output => $self->{output}),
+        header          => \@headers,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
-    return json_decode($response, output => $self->{output});
+    $response = json_decode($response, output => $self->{output});
+    $self->{output}->option_exit(short_msg => $response->{message}) if $response->{message};
+
+    return $response;
 }
 
 1;
@@ -168,13 +179,29 @@ The {org} placeholder will be replaced with the organization code.
 
 Specify https if needed (default: 'https').
 
+=item B<--port>
+
+Specify TCP port if needed (default: 443).
+
 =item B<--token>
 
-Authentication token for Centreon Log Management API. This token is sent in the X-Api-Key header.
+Authentication token for Centreon Log Management API. This token is sent in the C<X-Api-Key> header.
 
 =item B<--timeout>
 
 Set HTTP timeout (default: 30).
+
+=item B<--unknown-http-status>
+
+Threshold for unknown HTTP status (default: '%{http_code} < 200 or %{http_code} >= 300').
+
+=item B<--warning-http-status>
+
+Threshold for warning HTTP status.
+
+=item B<--critical-http-status>
+
+Threshold for critical HTTP status.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Log count: %s',
                 perfdatas => [
-                    { template => '%d', min => 0, unit => 'logs' }
+                    { template => '%d', min => 0}
                 ]
             }
         }
@@ -58,7 +58,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'query:s'     => { name => 'query', default => '' },
-        'period:i'    => { name => 'period', default => 3600 }
+        'period:i'    => { name => 'period', default => 3600, greater_than_or_equal => 60 }
     });
 
     return $self;
@@ -113,11 +113,6 @@ Expected response format: {"curves":[{"metric":"count","times":[...],"data":[cou
 
 =over 8
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='^count$'
-
 =item B<--query>
 
 Set query to execute (required).
@@ -126,17 +121,18 @@ Example: --query='service_name:httpd'
 =item B<--period>
 
 Set the time period in seconds (default: 3600, 1 hour). This value is used for both the period and interval parameters in the API request.
-Example: --period=86400 (for 24 hours)
+Example: --period=86400 (for 24 hours).
+The period cannot be less than 60.
 
 =item B<--warning-count>
 
 Threshold warning on the log count.
-Example: --warning-count=100
+Example: C<--warning-count=10:> to get a WARNING state when the count is lower than 10.
 
 =item B<--critical-count>
 
 Threshold critical on the log count.
-Example: --critical-count=500
+Example: C<--critical-count=1:> to get a CRITICAL state when the count is equal to 0.
 
 =back
 
