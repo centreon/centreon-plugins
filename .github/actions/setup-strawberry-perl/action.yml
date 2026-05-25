@@ -86,6 +86,23 @@ runs:
         set PERL_MM_OPT=DEFINE=-DCURL_DISABLE_TYPECHECK OPTIMIZE=-Wno-deprecated-declarations
         C:\Strawberry\perl\bin\cpanm --notest Net::Curl
 
+    - name: Copy PAR::Packer source to cpan build directory
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        $parVersion = & C:\Strawberry\perl\bin\perl.exe -MPAR::Packer -e 'print $PAR::Packer::VERSION'
+        $cpanmWork = "$env:USERPROFILE\.cpanm\work"
+        $parDir = Get-ChildItem $cpanmWork -Recurse -Directory -ErrorAction SilentlyContinue |
+          Where-Object { $_.Name -eq "PAR-Packer-$parVersion" } |
+          Select-Object -First 1
+        if (-not $parDir) {
+          Write-Error "PAR::Packer $parVersion source not found in $cpanmWork"
+          exit 1
+        }
+        New-Item "C:\Strawberry\cpan\build" -ItemType Directory -Force | Out-Null
+        Copy-Item $parDir.FullName "C:\Strawberry\cpan\build\PAR-Packer-$parVersion" -Recurse -Force
+        Write-Host "PAR::Packer source saved to C:\Strawberry\cpan\build\PAR-Packer-$parVersion"
+
     - name: Show cpanm build logs on failure
       if: ${{ failure() }}
       shell: powershell

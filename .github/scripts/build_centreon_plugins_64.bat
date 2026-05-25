@@ -62,7 +62,7 @@ COPY /Y %PAR_PACKER_SRC%\myldr\Static.pm %PERL_INSTALL_DIR%\perl\site\lib\PAR\St
 CHDIR /d %~dp0
 SET PAR_VERBATIM=1
 
-CMD /C %PERL_INSTALL_DIR%\perl\site\bin\pp --lib=centreon-plugins\src\ ^
+perl %PERL_INSTALL_DIR%\perl\site\bin\pp --lib=centreon-plugins\src\ ^
 -o resources\scripts\x64\centreon\centreon_plugins.exe centreon-plugins\src\centreon_plugins.pl ^
 --unicode ^
 -X IO::Socket::INET6 ^
