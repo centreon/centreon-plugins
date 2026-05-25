@@ -19,7 +19,7 @@ runs:
       uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       with:
         path: C:\Strawberry
-        key: strawberry-perl-5.34.3.1
+        key: strawberry-perl-5.34.3.1-v2
         lookup-only: ${{ inputs.lookup-only }}
 
     - name: Install Strawberry Perl
@@ -32,7 +32,25 @@ runs:
         Start-Process msiexec.exe -ArgumentList '/i strawberry-perl.msi /quiet /norestart' -Wait -NoNewWindow
         Remove-Item strawberry-perl.msi
 
-    - name: Install CPAN modules except Curl
+    - name: Install PAR::Packer
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+        C:\Strawberry\perl\bin\cpanm --notest PAR::Packer
+
+    - name: Verify PAR::Packer installation
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        $pp = "C:\Strawberry\perl\site\bin\pp"
+        if (-not (Test-Path $pp)) {
+          Write-Error "pp not found at $pp - PAR::Packer installation failed"
+          exit 1
+        }
+        Write-Host "PAR::Packer OK: pp found at $pp"
+
+    - name: Install other CPAN modules
       if: steps.cache-perl.outputs.cache-hit != 'true'
       shell: cmd
       run: |
@@ -41,7 +59,6 @@ runs:
         set LIBCURL_INCLUDE=C:\Strawberry\c\include
         set LIBCURL_LIBS=-LC:\Strawberry\c\lib -lcurl
         C:\Strawberry\perl\bin\cpanm --notest ^
-          PAR::Packer ^
           Authen::NTLM ^
           Date::Manip ^
           Email::Send::SMTP::Gmail ^

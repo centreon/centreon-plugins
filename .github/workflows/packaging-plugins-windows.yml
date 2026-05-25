@@ -62,6 +62,7 @@ jobs:
           name: centreon_plugins_windows_x64
           path: .github\scripts\resources\scripts\x64\centreon\centreon_plugins.exe
           retention-days: 7
+          if-no-files-found: error
 
   set-skip-label:
     needs: [get-environment, build]

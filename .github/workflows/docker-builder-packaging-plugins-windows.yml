@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: C:\Strawberry
-          key: strawberry-perl-5.34.3.1
+          key: strawberry-perl-5.34.3.1-v2
 
   set-skip-label:
     needs: [get-environment, build-environment]
