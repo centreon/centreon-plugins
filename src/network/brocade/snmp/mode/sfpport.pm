@@ -424,7 +424,7 @@ Add the corresponding interface name when set. Used for the instance name in per
 
 Filter ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
 
-=item B<--include-interface>
+=item B<--exclude-interface>
 
 Excludes ports by interface name (can be a regexp). Can be used only together with --add-interface-name.
 
