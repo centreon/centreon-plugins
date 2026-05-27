@@ -390,6 +390,14 @@ perl centreon_plugins.pl --plugin=cloud::azure::netapp::pool::plugin --custommod
 
 =over 8
 
+=item B<--account-name>
+
+Filter resource by NetApp account name.
+
+=item B<--pool-name>
+
+Filter resource by NetApp account pool name.
+
 =item B<--resource>
 
 Set resource name or ID (required).
@@ -397,10 +405,6 @@ Set resource name or ID (required).
 =item B<--resource-group>
 
 Set resource group (required if resource's name is used).
-
-=item B<--account-name>
-
-Filter resource by NetApp account name.
 
 =item B<--filter-metric>
 
