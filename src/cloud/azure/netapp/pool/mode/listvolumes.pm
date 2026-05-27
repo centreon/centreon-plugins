@@ -106,9 +106,8 @@ sub run {
                     $volume->{location},
                     $volume->{id},
                     $volume->{type},
-                    $volume->{storage_to_network_proximity},
-                    $volume->{service_level},
-                    $volume->{through_put_mibps}
+                    $volume->{properties}->{storageToNetworkProximity},
+                    $volume->{properties}->{serviceLevel}
                 )
         );
     }

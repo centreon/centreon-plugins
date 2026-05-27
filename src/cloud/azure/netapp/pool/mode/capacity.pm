@@ -331,6 +331,10 @@ Set resource name or ID (required).
 
 Set resource group (required if resource's name is used).
 
+=item B<--account-name>
+
+Filter resource by NetApp account name.
+
 =item B<--filter-metric>
 
 Filter metrics (can be: 'allocated-size', 'allocated-used', 'consumed-size', 'snapshot-size', 'allocated-throughput',
