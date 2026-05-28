@@ -129,9 +129,9 @@ sub generate_api_key {
     my $content = $self->{http}->request(
         url_path        => '/api/',
         method          => 'POST',
-        get_param       => ['type=keygen'],
+        get_param       => [ 'type=keygen' ],
         query_form_post => 'user=' . uri_escape($self->{username}) . '&password=' . uri_escape($self->{password}),
-        header          => ['Content-Type: application/x-www-form-urlencoded'],
+        header          => [ 'Content-Type: application/x-www-form-urlencoded' ],
         unknown_status  => '',
         warning_status  => '',
         critical_status => ''
@@ -185,13 +185,17 @@ sub _build_auth_header {
 sub _http_request {
     my ($self, %options) = @_;
 
+    my %params = (
+        'type' => $options{type}
+    );
+    $params{'cmd'} = $options{cmd} if $options{cmd};
+    $params{'action'} = $options{action} if $options{action};
+    $params{'xpath'} = $options{xpath} if $options{xpath};
+    $params{'target'} = $self->{target} if $self->{target};
+
     return $self->{http}->request(
         url_path  => '/api/',
-        get_params => {
-            'type' => $options{type},
-            'cmd' => $options{cmd},
-            $self->{target} ? ( target => $self->{target} ) : ()
-        },
+        get_params => \%params,
         header => [
             $self->_build_auth_header(),
             'Accept: application/xml'
