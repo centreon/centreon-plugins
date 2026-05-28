@@ -32,16 +32,11 @@ sub prefix_tunnel_output {
     return sprintf("tunnel '%s' ", $options{instance_value}->{name});
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-    return 'Tunnels ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Tunnels ' },
         { name => 'tunnels', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' }
     ];
 
@@ -118,14 +113,15 @@ sub manage_selection {
     $self->{tunnels} = {};
     $self->{global} = { tunnels_count => 0 };
 
-    return unless ref $result->{entries} eq 'HASH';
+    $self->{output}->option_exit(short_msg => "No matching device !")
+        unless ref $result->{entries} eq 'HASH';
 
     foreach my $entry (@{$result->{entries}->{entry}}) {
         my $name = $entry->{name} // '';
         my $gateway = $entry->{gateway} // '';
 
-        next if is_excluded($name, $self->{option_results}->{include_tunnel_name}, $self->{option_results}->{exclude_tunnel_name});
-        next if is_excluded($gateway, $self->{option_results}->{include_gateway_name}, $self->{option_results}->{exclude_gateway_name});
+        next if is_excluded($name, $self->{option_results}->{include_tunnel_name}, $self->{option_results}->{exclude_tunnel_name}, output => $self->{output}) ||
+                is_excluded($gateway, $self->{option_results}->{include_gateway_name}, $self->{option_results}->{exclude_gateway_name}, output => $self->{output});
 
         $self->{tunnels}->{$name} = {
             name    => $name,

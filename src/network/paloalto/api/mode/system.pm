@@ -25,18 +25,14 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::constants qw(:counters);
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-    return 'System ';
-}
+use centreon::plugins::constants qw(:counters :unit_conversion);
+use centreon::plugins::misc qw/convert_bytes/;
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'System ' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -71,7 +67,7 @@ sub set_counters {
             }
         },
         {
-            label => 'software-version',
+            label => 'software-version', display_ok => 0,
             type  => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'sw_version' } ],
@@ -80,14 +76,41 @@ sub set_counters {
             }
         },
         {
-            label => 'wildfire-mode',
+            label => 'wildfire-mode', display_ok => 0,
             type  => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'wildfire_mode' } ],
                 output_template => 'WildFire mode: %s',
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
+        },
+        { label => 'packet-rate', nlabel => 'system.sessions.packet.rate.persecond', set => {
+                key_values => [ { name => 'packet_rate' } ],
+                output_template => 'packet rate: %s p/s',
+                perfdatas => [
+                    { template => '%s', unit => 'p/s', min => 0 }
+                ]
+            }
+        },
+
+        { label => 'sessions-traffic', nlabel => 'system.sessions.throughput.bitspersecond', set => {
+                key_values => [ { name => 'throughput' } ],
+                output_template => 'throughput: %s %s/s',
+                output_change_bytes => CONVERT_NETWORK,
+                perfdatas => [
+                    { template => '%s', unit => 'b/s', min => 0 }
+                ]
+            }
+        },
+        { label => 'active-sessions', nlabel => 'system.sessions.total.count', set => {
+                key_values => [ { name => 'active_sessions' } ],
+                output_template => 'total active sessions: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
         }
+
     ];
 }
 
@@ -112,15 +135,20 @@ sub manage_selection {
         cert_status       => 'Unknown',
         operational_mode  => 'Unknown',
         sw_version        => 'Unknown',
-        wildfire_mode     => 'Unknown'
+        wildfire_mode     => 'Unknown',
+        packet_rate       => 0,
+        throughput        => 0,
+        active_sessions   => 0
     };
 
-    return unless defined($result->{system});
+    $self->{output}->option_exit(short_msg => "No matching device !")
+        unless ref $result->{system} eq 'HASH';
 
     my $system = $result->{system};
 
     # Parse uptime: "X days, HH:MM:SS" format
-    if (defined($system->{uptime})) {
+    # <uptime>0 days, 0:13:44</uptime>
+    if ($system->{uptime}) {
         my $uptime_str = $system->{uptime};
         my $uptime_seconds = 0;
 
@@ -146,6 +174,22 @@ sub manage_selection {
 
     $self->{global}->{wildfire_mode} = $system->{'wildfire-rt'}
         if $system->{'wildfire-rt'};
+
+    $result = $options{custom}->request_api(
+        type => 'op',
+        cmd  => '<show><session><info></info></session></show>'
+    );
+
+    return unless ref $result eq 'HASH';
+
+    $self->{global}->{packet_rate} = $result->{pps}
+        if exists $result->{pps};
+
+    $self->{global}->{throughput} = convert_bytes(value => $result->{kbps}, unit => 'kb', network => 1)
+        if exists $result->{kbps};
+
+    $self->{global}->{active_sessions} = $result->{'num-active'}
+        if exists $result->{'num-active'};
 }
 
 1;
@@ -157,6 +201,11 @@ __END__
 Check Palo Alto system information and status.
 
 =over 8
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='^uptime$'
 
 =item B<--warning-uptime>
 
@@ -181,35 +230,74 @@ You can use the following variables: %{cert_status}
 Define the conditions to match for the status to be CRITICAL (default: '%{cert_status} !~ /Valid/i').
 You can use the following variables: %{cert_status}
 
-=back
+=item B<--unknown-operational-mode>
 
-=head1 AVAILABLE COUNTERS
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{operational_mode}
 
-=over 8
+=item B<--warning-operational-mode>
 
-=item B<tunnels-count>
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{operational_mode}
 
-Total number of active system counters.
+=item B<--critical-operational-mode>
 
-=item B<uptime>
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{operational_mode}
 
-System uptime in seconds.
+=item B<--unknown-software-version>
 
-=item B<certificate-status>
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{sw_version}
 
-Device certificate status (Valid/Invalid/etc).
+=item B<--warning-software-version>
 
-=item B<operational-mode>
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{sw_version}
 
-Current operational mode (normal/maintenance/etc).
+=item B<--critical-software-version>
 
-=item B<software-version>
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{sw_version}
 
-Software version string.
+=item B<--unknown-wildfire-mode>
 
-=item B<wildfire-mode>
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{wildfire_mode}
 
-WildFire mode status (Enabled/Disabled).
+=item B<--warning-wildfire-mode>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{wildfire_mode}
+
+=item B<--critical-wildfire-mode>
+
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{wildfire_mode}
+
+=item B<--warning-active-sessions>
+
+Threshold.
+
+=item B<--critical-active-sessions>
+
+Threshold.
+
+=item B<--warning-packet-rate>
+
+Threshold in p/s.
+
+=item B<--critical-packet-rate>
+
+Threshold in p/s.
+
+=item B<--warning-sessions-traffic>
+
+Threshold in b/s.
+
+=item B<--critical-sessions-traffic>
+
+Threshold in b/s.
 
 =back
 

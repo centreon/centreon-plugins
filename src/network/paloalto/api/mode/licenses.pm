@@ -27,7 +27,6 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw(:counters);
 use centreon::plugins::misc qw(is_excluded);
-use DateTime;
 use DateTime::Format::Strptime;
 
 sub custom_expiration_output {
@@ -42,16 +41,11 @@ sub prefix_license_output {
     return sprintf("license '%s' ", $options{instance_value}->{feature});
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-    return 'Licenses ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Licenses ' },
         { name => 'licenses', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_license_output', message_multiple => 'All licenses are ok' }
     ];
 
@@ -130,7 +124,7 @@ sub manage_selection {
 
     foreach my $entry (@{$result->{licenses}->{entry}}) {
         my $feature = $entry->{feature} // '';
-        next if is_excluded($feature, $self->{option_results}->{include_license_name}, $self->{option_results}->{exclude_license_name});
+        next if is_excluded($feature, $self->{option_results}->{include_license_name}, $self->{option_results}->{exclude_license_name}, output => $self->{output});
 
         my $days_left = -1;
         my $expires = $entry->{expires};
@@ -173,17 +167,17 @@ Exclude license names (regexp).
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{expired}
+You can use the following variables: %{expired} %{feature}
 
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{expired}
+You can use the following variables: %{expired} %{feature}
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{expired} =~ /yes/').
-You can use the following variables: %{expired}
+You can use the following variables: %{expired} %{feature}
 
 =item B<--warning-expiration-days>
 

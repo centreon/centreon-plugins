@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::paloalto::api::mode::panoramafirewalldiscovery;
+package network::paloalto::api::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
@@ -34,9 +34,9 @@ sub new {
 
     $options{options}->add_options(arguments => {
         "prettify"             => { name => 'prettify' },
-        'only-connected'       => { name => 'only_connected' },
-        'include-name:s'       => { name => 'include_name', default => '' },
-        'exclude-name:s'       => { name => 'exclude_name', default => '' },
+        'connected-only'       => { name => 'connected_only' },
+        'include-serial:s'     => { name => 'include_serial', default => '' },
+        'exclude-serial:s'     => { name => 'exclude_serial', default => '' },
         'include-model:s'      => { name => 'include_model', default => '' },
         'exclude-model:s'      => { name => 'exclude_model', default => '' },
         'include-ip-address:s' => { name => 'include_ip_address', default => '' },
@@ -57,7 +57,7 @@ sub manage_selection {
     $self->{output}->option_exit( short_msg => "The --target parameter is not allowed in this mode." )
         if $options{custom}->{target};
 
-    my $filter = $self->{option_results}->{only_connected} ? 'connected' : 'all';
+    my $filter = $self->{option_results}->{connected_only} ? 'connected' : 'all';
     my $result = $self->{instances} = $options{custom}->request_api(
         type => 'op',
         cmd => "<show><devices><$filter></$filter></devices></show>",
@@ -73,14 +73,13 @@ sub manage_selection {
 
         my $item = {
             Serial => $device->{serial},
-            Name => $device->{name} // '',
             HostName => $device->{hostname} // '',
             Connected => $device->{connected} // '',
             Model => $device->{model} // '',
             IpAddress => $device->{'ip-address'} // '',
         };
 
-        next if is_excluded($item->{Name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output}) ||
+        next if is_excluded($item->{Serial}, $self->{option_results}->{include_serial}, $self->{option_results}->{exclude_serial}, output => $self->{output}) ||
                 is_excluded($item->{Model}, $self->{option_results}->{include_model}, $self->{option_results}->{exclude_model}, output => $self->{output}) ||
                 is_excluded($item->{IpAddress}, $self->{option_results}->{include_ip_address}, $self->{option_results}->{exclude_ip_address}, output => $self->{output});
 
@@ -120,17 +119,17 @@ Discover firewalls managed by Panorama.
 
 =over 8
 
-=item B<--only-connected>
+=item B<--connected-only>
 
 Display only connected firewalls.
 
-=item B<--include-name>
+=item B<--include-serial>
 
-Filter firewall by name (can be a regex).
+Filter firewall by serial number (can be a regex).
 
-=item B<--exclude-name>
+=item B<--exclude-serial>
 
-Exclude firewall by name (can be a regex).
+Exclude firewall by serial number (can be a regex).
 
 =item B<--include-model>
 
