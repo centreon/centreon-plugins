@@ -29,7 +29,7 @@ use XML::Simple;
 use MIME::Base64 qw(encode_base64);
 use URI::Escape qw(uri_escape);
 use Digest::SHA qw(sha256_hex);
-use centreon::plugins::misc qw(is_empty);
+use centreon::plugins::misc qw(is_empty value_of);
 
 sub new {
     my ($class, %options) = @_;
