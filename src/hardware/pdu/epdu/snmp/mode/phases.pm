@@ -53,10 +53,10 @@ sub set_counters {
             output_template => 'Voltage : %.2f V',
             perfdatas       => [
                 {
-                    template => '%s',
-                    unit => 'V',
+                    template             => '%s',
+                    unit                 => 'V',
                     label_extra_instance => 1,
-                    instance_use => 'display'
+                    instance_use         => 'display'
                 }
             ],
         }
@@ -66,10 +66,10 @@ sub set_counters {
             output_template => 'Current : %.2f A',
             perfdatas       => [
                 {
-                    template => '%s',
-                    unit => 'A',
+                    template             => '%s',
+                    unit                 => 'A',
                     label_extra_instance => 1,
-                    instance_use => 'display'
+                    instance_use         => 'display'
                 }
             ],
         }
@@ -164,7 +164,7 @@ sub new {
 }
 
 my $mapping = {
-    ePDUPhaseStatusModule         => { oid => '.1.3.6.1.4.1.318.1.1.30.4.2.1.2' },
+    ePDUPhaseStatusModule        => { oid => '.1.3.6.1.4.1.318.1.1.30.4.2.1.2' },
     ePDUPhaseStatusNumber        => { oid => '.1.3.6.1.4.1.318.1.1.30.4.2.1.3' },
     ePDUPhaseStatusVoltage       => { oid => '.1.3.6.1.4.1.318.1.1.30.4.2.1.4' },
     ePDUPhaseStatusCurrent       => { oid => '.1.3.6.1.4.1.318.1.1.30.4.2.1.5' },

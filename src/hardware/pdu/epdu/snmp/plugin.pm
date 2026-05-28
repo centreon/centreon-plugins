@@ -34,6 +34,7 @@ sub new {
         'uptime' => 'snmp_standard::mode::uptime',
         'load'   => 'hardware::pdu::epdu::snmp::mode::load',
         'phases' => 'hardware::pdu::epdu::snmp::mode::phases',
+        'outlet' => 'hardware::pdu::epdu::snmp::mode::outlet',
     };
 
     $self->{modes_options} = {
