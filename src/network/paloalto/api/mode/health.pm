@@ -177,7 +177,7 @@ sub set_counters {
 
     $self->{maps_counters}->{template_sync} = [
         { label => 'template-sync-status', type => COUNTER_KIND_TEXT,
-          critical_default => '%{sync_status} ne "in-sync"',
+          critical_default => '%{sync_status} ne "in sync"',
           set => {
                 key_values => [ { name => 'sync_status' }, { name => 'template_name' }, { name => 'device_serial' }, { name => 'vsys' } ],
                 output_template => 'template: %{template_name}, vsys: %{vsys}, status: %s',
@@ -362,7 +362,7 @@ sub manage_selection {
 
                     # Create entry for each vsys with sync status
                     foreach my $vsys_name (keys %{$vsys_sync_states}) {
-                        my $sync_status = $vsys_sync_states->{$vsys_name} // 'unknown';
+                        my $sync_status = lc ($vsys_sync_states->{$vsys_name} // 'unknown');
                         my $entry_key = "$template_name-$device_serial-$vsys_name";
 
                         $self->{template_sync}->{$entry_key} = {
@@ -370,11 +370,11 @@ sub manage_selection {
                             device_serial => $device_serial,
                             device_name   => $device_info->{name},
                             vsys          => $vsys_name,
-                            sync_status   => lc($sync_status),
+                            sync_status   => $sync_status,
                             connected     => $device_info->{connected}
                         };
 
-                        if ($sync_status ne 'In Sync' && $sync_status ne 'unknown') {
+                        if ($sync_status ne 'in sync' && $sync_status ne 'unknown') {
                             $self->{global}->{template_assignments_out_of_sync}++;
                         }
                     }
@@ -586,7 +586,7 @@ You can use the following variables: %{sync_status}, %{template_name}, %{device_
 
 =item B<--critical-template-sync-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{sync_status} ne "in-sync"').
+Define the conditions to match for the status to be CRITICAL (default: '%{sync_status} ne "in sync"').
 You can use the following variables: %{sync_status}, %{template_name}, %{device_serial}, %{vsys}
 
 =item B<--warning-devices-total>
