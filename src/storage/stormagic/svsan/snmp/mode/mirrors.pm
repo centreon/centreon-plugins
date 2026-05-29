@@ -118,7 +118,7 @@ sub set_counters {
                     closure_custom_threshold_check => \&catalog_status_threshold_ng
                 }
         },
-        { label => 'mirror-size', nlabel => 'mirror.size.bytes', set => {
+        { label => 'mirror-size', display_ok => 1, nlabel => 'mirror.size.bytes', set => {
             key_values          =>
                 [ { name => 'size' } ],
             output_template     => 'size: %s %s',
@@ -136,6 +136,23 @@ sub set_counters {
                 ]
         }
         },
+        { label => 'resync-progress', display_ok => 1, nlabel => 'mirror.resync.progress.percentage', set => {
+            key_values      =>
+                [
+                    { name => 'resync_progress' }
+                ],
+            output_template => 'resync progress: %s %%',
+            perfdatas       => [
+                {
+                    template             => '%d',
+                    unit                 => '%',
+                    min                  => 0,
+                    max                  => 100,
+                    label_extra_instance => 1
+                }
+            ]
+        }
+        }
     ];
 
     $self->{maps_counters}->{mbc} = [
@@ -321,9 +338,10 @@ sub manage_selection {
         };
 
         $self->{mirror}->{$instance}->{status} = {
-            mirror_state  => $result->{mirrorState},
-            mirror_online => $result->{mirrorOnline},
-            size          => $result->{mirrorSize} * 1024 * 1024,
+            mirror_state    => $result->{mirrorState},
+            mirror_online   => $result->{mirrorOnline},
+            size            => $result->{mirrorSize} * 1024 * 1024,
+            resync_progress => $result->{mirrorResyncProg}
         };
 
         if ($result->{mirrorMBCPresent} == 1) {
@@ -340,7 +358,8 @@ sub manage_selection {
                 prct_free => defined($size) && $size > 0 ? $free * 100 / $size : undef
             };
         } else {
-            $self->{output}->output_add(long_msg => sprintf("mirror '%s' has no memory cache (MBC)",$result->{mirrorName}));
+            $self->{output}->output_add(long_msg =>
+                sprintf("mirror '%s' has no memory cache (MBC)", $result->{mirrorName}));
         }
 
         if ($result->{mirrorCachePresent} == 1) {
@@ -349,7 +368,7 @@ sub manage_selection {
                 cache_state => $result->{mirrorCacheState},
             };
         } else {
-            $self->{output}->output_add(long_msg => sprintf("mirror '%s' has no cache",$result->{mirrorName}));
+            $self->{output}->output_add(long_msg => sprintf("mirror '%s' has no cache", $result->{mirrorName}));
         }
     }
 
@@ -469,6 +488,14 @@ Warning threshold for memory cache usage (%).
 =item B<--critical-mbc-usage-prct>
 
 Critical threshold for memory cache usage (%).
+
+=item B<--warning-resync-progress>
+
+Warning threshold for Resynchronization progress (%).
+
+=item B<--critical-resync-progress>
+
+Critical threshold for Resynchronization progress (%).
 
 =back
 
