@@ -11,10 +11,10 @@ dnf install -y \
   zstd
 
 cd /usr/local/src
-wget https://dlcdn.apache.org/maven/maven-3/3.9.15/binaries/apache-maven-3.9.15-bin.tar.gz
-tar zxf apache-maven-3.9.15-bin.tar.gz
-ln -s /usr/local/src/apache-maven-3.9.15/bin/mvn /usr/bin/mvn
-rm -f apache-maven-3.9.15-bin.tar.gz
+wget https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
+tar zxf apache-maven-3.9.16-bin.tar.gz
+ln -s /usr/local/src/apache-maven-3.9.16/bin/mvn /usr/bin/mvn
+rm -f apache-maven-3.9.16-bin.tar.gz
 
 echo '[goreleaser]
 name=GoReleaser
