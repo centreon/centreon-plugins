@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,7 +23,7 @@ package centreon::plugins::values;
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::constants qw(:values);
+use centreon::plugins::constants qw(:values :unit_conversion);
 
 # Warning message with sprintf and too much arguments.
 # Really annoying. Need to disable that warning
@@ -158,10 +158,11 @@ sub output {
 
     if (defined($name)) {
         $value = $self->{result_values}->{$name};
-        if ($self->{output_change_bytes} == 1) {
+        if ($self->{output_change_bytes} == CONVERT_STORAGE) {
             ($value, $unit) = $self->{perfdata}->change_bytes(value => $value);
-        } elsif ($self->{output_change_bytes} == 2) {
+        } elsif ($self->{output_change_bytes} == CONVERT_NETWORK) {
             ($value, $unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
+
         }
     }
 

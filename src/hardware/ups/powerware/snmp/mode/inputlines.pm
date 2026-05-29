@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,8 @@
 package hardware::ups::powerware::snmp::mode::inputlines;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw/:values :counters/;
+use centreon::plugins::misc qw/is_empty is_excluded/;
 
 use strict;
 use warnings;
@@ -33,16 +35,15 @@ sub prefix_iline_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'iline', type => 1, cb_prefix_output => 'prefix_iline_output', message_multiple => 'All input lines are ok', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } },
+        { name => 'iline', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_iline_output', message_multiple => 'All input lines are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'frequence', nlabel => 'lines.input.frequence.hertz', set => {
-                key_values => [ { name => 'xupsInputFrequency', no_value => 0 } ],
-                output_template => 'frequence: %.2f Hz',
+        { label => 'frequency', nlabel => 'lines.input.frequency.hertz', set => {
+                key_values => [ { name => 'xupsInputFrequency' } ],
+                output_template => 'frequency: %.2f Hz',
                 perfdatas => [
                     { template => '%.2f', unit => 'Hz' }
                 ]
@@ -50,9 +51,11 @@ sub set_counters {
         }
     ];
 
+    $self->{xupsInputVoltage} = { name => 'xupsInputVoltage' };
+
     $self->{maps_counters}->{iline} = [
         { label => 'current', nlabel => 'line.input.current.ampere', set => {
-                key_values => [ { name => 'xupsInputCurrent', no_value => 0 } ],
+                key_values => [ { name => 'xupsInputCurrent' } ],
                 output_template => 'current: %.2f A',
                 perfdatas => [
                     { template => '%.2f', min => 0, unit => 'A', label_extra_instance => 1 }
@@ -60,7 +63,7 @@ sub set_counters {
             }
         },
         { label => 'voltage', nlabel => 'line.input.voltage.volt', set => {
-                key_values => [ { name => 'xupsInputVoltage', no_value => 0 } ],
+                key_values => [ $self->{xupsInputVoltage} ],
                 output_template => 'voltage: %.2f V',
                 perfdatas => [
                     { template => '%.2f', unit => 'V', label_extra_instance => 1 }
@@ -68,7 +71,7 @@ sub set_counters {
             }
         },
         { label => 'power', nlabel => 'line.input.power.watt', set => {
-                key_values => [ { name => 'xupsInputWatts', no_value => 0 } ],
+                key_values => [ { name => 'xupsInputWatts' } ],
                 output_template => 'power: %.2f W',
                 perfdatas => [
                     { template => '%.2f', unit => 'W', label_extra_instance => 1 }
@@ -84,7 +87,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-iline:s' => { name => 'filter_iline' }
+        'filter-iline:s'                          => { name => 'filter_iline', default => '' },
+        'warning-frequence:s'                     => { redirect => 'warning-frequency' },
+        'critical-frequence:s'                    => { redirect => 'critical-frequency' }
     });
 
     return $self;
@@ -124,11 +129,7 @@ sub manage_selection {
         next if ($oid !~ /^$oid_xupsInputEntry\.\d+\.(.*)$/);
         my $instance = $1;
 
-        if (defined($self->{option_results}->{filter_iline}) && $self->{option_results}->{filter_iline} ne '' &&
-            $instance !~ /$self->{option_results}->{filter_iline}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $instance . "': no matching 'iline' filter.", debug => 1);
-            next;
-        }
+        next if is_excluded($instance, $self->{option_results}->{filter_iline}, undef, output => $self->{output});
 
         next if (defined($self->{iline}->{$instance}));
 
@@ -137,10 +138,8 @@ sub manage_selection {
         $self->{iline}->{$instance} = { display => $instance, %$result };
     }
     
-    if (scalar(keys %{$self->{iline}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No input lines found.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No input lines found.")
+        unless %{$self->{iline}};
 
     my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => '0');
 
@@ -148,13 +147,13 @@ sub manage_selection {
     $self->{global} = $result;
 
     $result = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => '0');
-    if ((!defined($self->{option_results}->{'warning-voltage'}) || $self->{option_results}->{'warning-voltage'} eq '') &&
-        (!defined($self->{option_results}->{'critical-voltage'}) || $self->{option_results}->{'critical-voltage'} eq '')
-    ) {
+    if (is_empty($self->{option_results}->{'warning-voltage'}) && is_empty($self->{option_results}->{'critical-voltage'})) {
         my $th = '';
-        $th .= $result->{upsConfigHighVoltageTransferPoint} if (defined($result->{upsConfigHighVoltageTransferPoint}) && $result->{upsConfigHighVoltageTransferPoint} =~ /\d+/ && $result->{upsConfigHighVoltageTransferPoint} != 0);
-        $th = $result->{upsConfigLowVoltageTransferPoint} . ':' . $th if (defined($result->{upsConfigLowVoltageTransferPoint}) && $result->{upsConfigLowVoltageTransferPoint} =~ /\d+/ && $result->{upsConfigLowVoltageTransferPoint} != 0);
-        $self->{perfdata}->threshold_validate(label => 'critical-voltage', value => $th) if ($th ne '');
+        $th .= $result->{upsConfigHighVoltageTransferPoint} if $result->{upsConfigHighVoltageTransferPoint} && $result->{upsConfigHighVoltageTransferPoint} =~ /\d+/;
+        $th = $result->{upsConfigLowVoltageTransferPoint} . ':' . $th if $result->{upsConfigLowVoltageTransferPoint} && $result->{upsConfigLowVoltageTransferPoint} =~ /\d+/;
+        $self->{perfdata}->threshold_validate(label => 'critical-voltage', value => $th) if $th;
+
+        $self->{xupsInputVoltage}->{no_value} = 0;
     }
 }
 
@@ -164,7 +163,7 @@ __END__
 
 =head1 MODE
 
-Check input lines metrics (frequence, voltage, current and true power) (XUPS-MIB).
+Check input lines metrics (frequency, voltage, current and true power) (C<XUPS-MIB>).
 
 =over 8
 
@@ -172,10 +171,38 @@ Check input lines metrics (frequence, voltage, current and true power) (XUPS-MIB
 
 Filter input lines that match the regexp
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-current>
 
-Thresholds.
-Can be: 'frequence', 'voltage', 'current', 'power'.
+Threshold in Amperes.
+
+=item B<--critical-current>
+
+Threshold in Amperes.
+
+=item B<--warning-frequency>
+
+Threshold in Hertz.
+
+=item B<--critical-frequency>
+
+Threshold in Hertz.
+
+=item B<--warning-power>
+
+Threshold in Watts.
+
+=item B<--critical-power>
+
+Threshold in Watts.
+
+=item B<--warning-voltage>
+
+Threshold in Volts.
+
+=item B<--critical-voltage>
+
+Threshold in Volts.
+If --warning-voltage and --critical-voltage are not specified the connector uses the SNMP values C<upsConfigLowVoltageTransferPoint> ( OID .1.3.6.1.2.1.33.1.9.9 ) and C<upsConfigHighVoltageTransferPoint> ( OID .1.3.6.1.2.1.33.1.9.10 ) to set the CRITICAL threshold if these values are different from zero.
 
 =back
 
