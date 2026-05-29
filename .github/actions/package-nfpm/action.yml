@@ -118,6 +118,7 @@ runs:
         export RPM_SIGNING_KEY_ID="$RPM_GPG_SIGNING_KEY_ID"
         export NFPM_RPM_PASSPHRASE="$RPM_GPG_SIGNING_PASSPHRASE"
 
+        REPO_ROOT=$(pwd)
         for FILE in $NFPM_FILE_PATTERN; do
           DIRNAME=$(dirname $FILE)
           BASENAME=$(basename $FILE)
@@ -125,6 +126,22 @@ runs:
           sed -i "s/@APACHE_USER@/$APACHE_USER/g" $BASENAME
           sed -i "s/@APACHE_GROUP@/$APACHE_GROUP/g" $BASENAME
           sed -i "s/@COMMIT_HASH@/$COMMIT_HASH/g" $BASENAME
+          if [[ "$PACKAGE_EXTENSION" == "deb" ]]; then
+            PKG_LICENSE=$(grep '^license:' "$BASENAME" | head -1 | sed 's/^license: *//;s/"//g' | xargs)
+            COPYRIGHT_SRC=""
+            if [[ -f "${REPO_ROOT}/copyright.${PKG_LICENSE}" ]]; then
+              COPYRIGHT_SRC="${REPO_ROOT}/copyright.${PKG_LICENSE}"
+            else
+              for candidate in "${REPO_ROOT}/LICENSE.md" "${REPO_ROOT}/LICENSE" "${REPO_ROOT}/LICENSE.txt"; do
+                [[ -f "$candidate" ]] && COPYRIGHT_SRC="$candidate" && break
+              done
+            fi
+            if [[ -n "$COPYRIGHT_SRC" ]]; then
+              cp "$COPYRIGHT_SRC" ./copyright
+              PACKAGE_NAME=$(grep '^name:' "$BASENAME" | head -1 | sed 's/^name: *//;s/"//g' | xargs)
+              awk -v pkg="$PACKAGE_NAME" 'BEGIN{in_contents=0;injected=0} /^contents:/{in_contents=1} in_contents && /^[a-z]/ && !/^contents:/ && !injected{print "  - src: ./copyright"; print "    dst: /usr/share/doc/" pkg "/copyright"; print "    packager: deb"; injected=1; in_contents=0} {print} END{if(!injected){if(!in_contents){print "contents:"} print "  - src: ./copyright"; print "    dst: /usr/share/doc/" pkg "/copyright"; print "    packager: deb"}}' "$BASENAME" > "${BASENAME}.tmp" && mv "${BASENAME}.tmp" "$BASENAME"
+            fi
+          fi
           nfpm package --config $BASENAME --packager $PACKAGE_EXTENSION
           cd -
           mv $DIRNAME/*.$PACKAGE_EXTENSION ./
