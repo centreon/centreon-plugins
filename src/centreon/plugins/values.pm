@@ -162,6 +162,7 @@ sub output {
             ($value, $unit) = $self->{perfdata}->change_bytes(value => $value);
         } elsif ($self->{output_change_bytes} == CONVERT_NETWORK) {
             ($value, $unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
+
         }
     }
 
