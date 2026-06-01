@@ -20,6 +20,9 @@ contents:
     file_info:
       mode: 0775
 @CONTENTS@
+  - src: "../../LICENSE.md"
+    dst: "/usr/share/doc/@PACKAGE_NAME@/copyright"
+    packager: "deb"
 
 conflicts:
   [@CONFLICTS@]
