@@ -219,7 +219,6 @@ Ctn Run Command And Check Result As Json
     ...    Wrong JSON result for command:\n${command}\n\nObtained:\n${output}\n\nExpected JSON:\n${expected}\n
     ...    values=False
     ...    ignore_keys=['end_time', 'start_time', 'duration']
-    ...    ignore_value_order=true
 
     Log Dictionary    ${json_output}
 

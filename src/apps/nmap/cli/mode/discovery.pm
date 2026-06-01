@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,10 +21,10 @@
 package apps::nmap::cli::mode::discovery;
 
 use base qw(centreon::plugins::mode);
+use centreon::plugins::misc qw/json_encode/;
 
 use strict;
 use warnings;
-use JSON::XS;
 use XML::Simple;
 
 sub new {
@@ -164,17 +164,11 @@ sub run {
     $disco_stats->{discovered_items} = @disco_data;
     $disco_stats->{results} = \@disco_data;
 
-    my $encoded_data;
-    eval {
-        if (defined($self->{option_results}->{prettify})) {
-            $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
-        } else {
-            $encoded_data = JSON::XS->new->utf8->encode($disco_stats);
-        }
-    };
-    if ($@) {
-        $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
-    }
+    my $encoded_data = json_encode($disco_stats, prettify => $self->{option_results}->{prettify},
+                                                 output => $self->{output},
+                                                 no_exit => 1);
+    $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}'
+        unless $encoded_data;
     
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
@@ -188,7 +182,7 @@ __END__
 =head1 MODE
 
 Resources discovery.
-Default command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__ 2> /dev/null
+Default command used: C<nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__ 2<gt> /dev/null>
 
 Timeout defaults to 120 seconds.
 
@@ -196,14 +190,14 @@ Timeout defaults to 120 seconds.
 
 =item B<--subnet>
 
-Specify subnet from which discover
+Specify sub-net from which discover
 resources (must be <ip>/<cidr> format) (mandatory).
 
 =item B<--nmap-options>
 
-Specify the options to use with Nmap.
-Default value: -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
-Note that -oX - are mandatory when using the Plugin in Centreon Host Discovery
+Specify the options to use with C<Nmap>.
+Default value: C<-sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__>
+Note that C<-oX -> are mandatory when using the Plugin in Centreon Host Discovery
 
 =item B<--prettify>
 
