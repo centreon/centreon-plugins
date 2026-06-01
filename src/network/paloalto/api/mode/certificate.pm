@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'cert_expiry_days' }, { name => 'serial' }, { name => 'hostname' }, { name => 'connected' } ],
                 output_template => 'expires in: %{cert_expiry_days} days',
                 perfdatas => [
-                    { template => '%s', unit => 'd', min => 0 }
+                    { template => '%s', unit => 'd', min => 0, instance_use => 'hostname', label_extra_instance => 1 }
                 ]
             }
         },
@@ -149,16 +149,14 @@ sub _calculate_days_until_expiry {
 
     my $parser = DateTime::Format::Strptime->new(
         pattern => '%b %d, %Y',
-        on_error => 'undef'
+        on_error => 'undef',
+        time_zone => 'UTC'
     );
 
     my $expiry_dt = $parser->parse_datetime($expiry_str);
     return -1 unless $expiry_dt;
 
-    my $now = DateTime->now(time_zone => 'UTC');
-    my $duration = $expiry_dt - $now;
-
-    return int($duration->in_units('days'));
+    return int(($expiry_dt->epoch() - time()) / 86400);
 }
 
 1;
