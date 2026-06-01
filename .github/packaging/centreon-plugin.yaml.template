@@ -24,7 +24,7 @@ contents:
     dst: "/usr/share/doc/@PACKAGE_NAME@/copyright"
     packager: "deb"
     file_info:
-	  mode: 0644
+      mode: 0644
 
 conflicts:
   [@CONFLICTS@]
