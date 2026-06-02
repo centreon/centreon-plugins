@@ -58,8 +58,6 @@ sub set_counters {
           message_multiple => 'All devices are ok' },
         { name => 'plugins',        type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_plugin_output',
           message_multiple => 'All plugins are ok' },
-        { name => 'device_groups',  type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_device_group_output',
-          message_multiple => 'All device groups are ok' },
         { name => 'templates',      type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_template_output',
           message_multiple => 'All templates are ok' },
         { name => 'template_sync',  type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_template_sync_output',
@@ -162,9 +160,6 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{device_groups} = [
-    ];
-
     $self->{maps_counters}->{templates} = [
         { label => 'template-devices-count', nlabel => 'template.devices.count',
           set => {
@@ -243,7 +238,6 @@ sub manage_selection {
 
     $self->{devices}       = {};
     $self->{plugins}       = {};
-    $self->{device_groups} = {};
     $self->{templates}     = {};
     $self->{template_sync} = {};
 
