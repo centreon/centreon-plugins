@@ -116,7 +116,7 @@ sub manage_selection {
     $self->{devices} = {};
 
     $self->{output}->option_exit(short_msg => "No certificates found !")
-        unless ref $result->{devices} eq 'HASH';
+        unless $result && ref $result->{devices} eq 'HASH';
 
     foreach my $device (@{$result->{devices}->{entry}}) {
         my $serial = $device->{name};
