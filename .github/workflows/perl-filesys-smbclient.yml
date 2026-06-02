@@ -50,7 +50,7 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - run: |
           yum install -y yum-utils
@@ -103,7 +103,7 @@ jobs:
             apt-get install -y zstd
         shell: bash
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
@@ -150,7 +150,7 @@ jobs:
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Parse distrib name
         id: parse-distrib
@@ -206,7 +206,7 @@ jobs:
     name: deliver ${{ matrix.distrib }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Delivery
         uses: ./.github/actions/package-delivery
