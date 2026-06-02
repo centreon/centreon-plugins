@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc;
 
@@ -62,7 +61,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cache_name} = 'fw_stormshield_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex('all');
 
     my $oid_snsSystemName = '.1.3.6.1.4.1.11256.1.18.4.0';
     my $oid_snsSystemNodeName = '.1.3.6.1.4.1.11256.1.18.16.0';
@@ -126,7 +124,6 @@ sub manage_selection {
     
     $self->{output}->output_add(
         long_msg => $long_msg,
-        forced_output => 1
     );
 
     $self->{global} = {
@@ -179,12 +176,6 @@ sub custom_uptime_threshold_check {
             { label => 'warning-uptime', exit_litteral => 'warning' },
         ]
     );
-}
-
-sub check {
-    my ($self, %options) = @_;
-    $self->SUPER::check(%options);
-
 }
 
 1;
