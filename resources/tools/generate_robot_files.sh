@@ -1,7 +1,11 @@
 #!/bin/bash
+
 if [[ -z "$1" || "$1" =~ ^--help|-h$ ]] || [[ ! "$1" =~ ^[a-z0-9:]+$ ]]; then
     echo "Usage: ${0##*/} path::to::plugin [mode]"
-
+    echo
+    echo "Prepare a robot test file for the mode passed as second argument (or all available modes if none provided)."
+    echo "Example: ${0##*/} os::linux::snmp::plugin cpu"
+    echo
     exit
 fi
 
@@ -39,6 +43,36 @@ mkdir -p "$tests_path"
 
 # part that is specific to mockoon-based tests
 function print_mockoon_tpl() {
+  # if a custom mode is provided, use it's options in the main command definition
+  if [[ "$custommode" != "" ]]; then
+    cat <<EOF
+Suite Setup         Start Mockoon    \${MOCKOON_JSON}
+Suite Teardown      Stop Mockoon
+Test Timeout        120s
+
+
+*** Variables ***
+\${MOCKOON_JSON}     \${CURDIR}\${/}mockoon.json
+\${CMD}              \${CENTREON_PLUGINS}
+...                 --plugin=$plugin
+...                 --mode=$mode
+EOF
+    declare -A option_value=(
+      [--hostname]="\${HOSTNAME}"
+      [--port]="\${APIPORT}"
+      [--proto]="http"
+      [--username]="username"
+      [--password]="password"
+      [--token]="token"
+      [--timeout]="10"
+    )
+    for option in "${custommode_options[@]}"; do
+      value="${option_value[$option]}"
+      [[ "$value" == "" ]] && value="${option#--}"
+      echo "...                 ${option}=$value"
+    done
+  else
+    # if no custom mode is provided (it barely happens) put default options as placeholders
     cat <<EOF
 Suite Setup         Start Mockoon    \${MOCKOON_JSON}
 Suite Teardown      Stop Mockoon
@@ -57,6 +91,7 @@ Test Timeout        120s
 ...                 --password=1
 
 EOF
+  fi
 }
 
 # part that is specific to snmp-based tests
@@ -75,7 +110,8 @@ Test Timeout        120s
 ...        --mode=$mode
 ...        --hostname=\${HOSTNAME}
 ...        --snmp-port=\${SNMPPORT}
-...        --snmp-community=$community/TO_BE_COMPLETED
+...        --snmp-version=\${SNMPVERSION}
+...        --snmp-community=$community/snmpwalk_file_base_name
 EOF
 }
 
@@ -158,14 +194,24 @@ fi
 for mode in "${modes[@]}"; do
     info "Generating tests for mode $mode"
     robot_file="${tests_path}/${mode}.robot"
-    # get the list of options in variable threshold_options
-    eval $(parse_threshold_options_from_help $base_cmd --mode=$mode --help)
+    # get the first custom mode
+
+    custommode=$(get_first_custommode $base_cmd --mode=$mode --list-custommode)
+
+    # get the list of options brought by the custommode if any
+    declare -a custommode_options
+    if [[ "$custommode" != "" ]] ; then
+      eval $(parse_custommode_options_from_help $custommode $base_cmd --custommode=$custommode --mode=$mode --help)
+      [[ $DEBUG ]] && declare -p custommode_options
+    fi
+
+    eval $(parse_threshold_options_from_help $base_cmd --custommode=$custommode --mode=$mode --help)
     [[ $DEBUG ]] && declare -p threshold_options
 
     # Backup the file if it already exists
     if [[ -f "$robot_file" ]] ; then
         robot_backup="${robot_file}_$(date  +%F_%H-%M-%S).${RANDOM}"
-        warning "Backing up $robot_file to $robot_backup"
+        warning "$robot_file already exists! Backing it up to $robot_backup"
         cp "$robot_file" "$robot_backup"
     fi
     info "Writing test file ${robot_file}"
