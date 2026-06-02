@@ -368,7 +368,7 @@ sub manage_selection {
                         $self->{template_sync}->{$entry_key} = {
                             template_name => $template_name,
                             device_serial => $device_serial,
-                            device_name   => $device_info->{name},
+                            device_name   => $device_info->{hostname},
                             vsys          => $vsys_name,
                             sync_status   => $sync_status,
                             connected     => $device_info->{connected}
@@ -415,7 +415,7 @@ sub manage_selection {
             # Keep only the most recent push job
             if ($last_push) {
                 my $epoch = $self->_parse_panorama_timestamp($tfin);
-                if ($epoch && $last_push->{timestamp_epoch} && $epoch > $last_push->{timestamp_epoch}) {
+                if ($epoch && (!$last_push->{timestamp_epoch} || $epoch > $last_push->{timestamp_epoch})) {
                     my $age_seconds = ($now - $epoch);
                     $last_push = {
                         status          => $result,
