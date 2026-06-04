@@ -31,7 +31,7 @@ base_cmd="$project_path/src/centreon_plugins.pl --plugin=$plugin"
 plugin_fs_path="${plugin//:://}"
 plugin_fs_path="${plugin_fs_path%/plugin*}"
 
-$base_cmd | grep "Can't locate $plugin" >/dev/null && fatal "Plugin '$plugin' not found"
+$base_cmd | grep "Can't locate" >/dev/null && fatal "Plugin '$plugin' not found"
 
 # where the tests should be located:
 tests_path="$project_path/tests/${plugin_fs_path}"

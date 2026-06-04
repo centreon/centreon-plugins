@@ -193,6 +193,8 @@ use centreon::plugins::http;
 use base qw(centreon::plugins::templates::counter);
 # Import some functions that will make your life easier
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+# Import constants for counter types and kinds
+use centreon::plugins::constants qw(:counter_types :counter_kinds);
 # We will have to process some JSON, no need to reinvent the wheel, load the lib you installed in a previous section
 use JSON::XS;
 ```
@@ -280,14 +282,14 @@ sub set_counters {
     $self->{maps_counters_type} = [
         # health and queries are global metric, they don't refer to a specific instance. 
         # In other words, you cannot get several values for health or queries
-        # That's why the type is 0.
-        { name => 'health', type => 0, cb_prefix_output => 'prefix_health_output' },
-        { name => 'queries', type => 0, cb_prefix_output => 'prefix_queries_output' },
+        # That's why the type is COUNTER_TYPE_GLOBAL.
+        { name => 'health', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_health_output' },
+        { name => 'queries', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_queries_output' },
         # app_metrics groups connections and errors and each will receive value for both instances (my-awesome-frontend and my-awesome-db)
-        # the type => 1 explicits that
+        # the type => COUNTER_TYPE_INSTANCE explicits that
         # as above, you can define a callback (cb) function to manage the output prefix. This function is called 
         # each time a value is passed to the counter and can be shared across multiple counters.
-        { name => 'app_metrics', type => 1, cb_prefix_output => 'prefix_app_output' }
+        { name => 'app_metrics', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_app_output' }
     ];
 
     $self->{maps_counters}->{health} = [
@@ -295,7 +297,7 @@ sub set_counters {
         {
             label => 'health',
             # All properties below (before et) are related to the catalog_status_ng catalog function imported at the top of our mode
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             # These properties allow you to define default thresholds for each status but not mandatory.
             warning_default => '%{health} =~ /yellow/', 
             critical_default => '%{health} =~ /red/', 
