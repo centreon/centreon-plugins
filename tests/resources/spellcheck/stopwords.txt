@@ -262,6 +262,7 @@ OLT
 oneaccess-sys-mib
 OneAPI
 OpenMetrics
+OpenShift
 OpenStack
 OpenWSMAN
 OSPF

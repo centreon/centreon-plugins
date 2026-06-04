@@ -32,18 +32,22 @@ use Digest::SHA qw/sha256_hex/;
 use Exporter 'import';
 use feature 'state';
 
-our @EXPORT_OK = qw/change_seconds
+our @EXPORT_OK = qw/bool_to_int
+                    change_seconds
                     check_security_command
                     check_security_whitelist
                     convert_bytes
                     date_xm_ago_utc
                     disco_escape
                     execute
+                    exprintf
                     flatten_arrays
                     flatten_to_hash
                     format_opt
                     graphql_escape
+                    int_to_bool
                     is_empty
+                    is_not_empty
                     is_excluded
                     is_local_ip
                     json_encode
@@ -372,10 +376,12 @@ sub backtick {
 
 sub is_empty {
     my $value = shift;
-    if (!defined($value) or $value eq '') {
-        return 1;
-    }
-    return 0;
+    return !defined($value) || $value eq '';
+}
+
+sub is_not_empty {
+    my $value = shift;
+    return defined $value && $value ne '';
 }
 
 # Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
@@ -1086,6 +1092,27 @@ sub disco_escape($;$) {
     return $value =~ s/[~!\$%\^&\*"'\|<>?,()=]/$sub/gr;
 }
 
+sub exprintf($$;$) {
+    my ($template, $datas, $default) = @_;
+
+    return $template unless ref $datas eq 'HASH';
+
+    $default = '' unless defined $default;
+
+    return $template =~ s!%\{([A-Za-z0-9_]+)\}! $datas->{$1} // $default !ger;
+}
+
+sub bool_to_int {
+    my $value = shift;
+    return int ($value && $value =~ /(?:true|1)$/i);
+}
+
+sub int_to_bool {
+    my $value = shift;
+
+    return $value ? 'true' : 'false';
+}
+
 1;
 
 __END__
@@ -1237,6 +1264,20 @@ Checks if a value is empty.
 =item * C<$value> - The value to check.
 
 =back
+
+=head2 is_not_empty
+
+    my $result = centreon::plugins::misc::is_not_empty($value);
+
+Check if a value is non-empty.
+
+=over 4
+
+=item * C<$value> - The value to check
+
+=back
+
+Returns 1 if the value is defined and not an empty string, 0 otherwise.
 
 =head2 value_of
 
@@ -1803,6 +1844,53 @@ Converts a JSON object to a SHA256 hash.
 Returns the hexadecimal SHA256 hash of the JSON encoded data.
 
 =back
+
+=head2 C<exprintf>
+
+    my $output = centreon::plugins::misc::exprintf($template, $hash_ref, $default);
+
+Replace placeholders in a template string with values from a hash.
+
+=over 4
+
+=item * C<$template> - Template string with placeholders in the form C<%{key}>
+
+=item * C<$hash_ref> - Hash reference containing the values to substitute
+
+=item * C<$default> - Optional default value to use when a key is not found (default: empty string)
+
+=back
+
+Returns the template string with all C<%{key}> placeholders replaced by the corresponding hash values.
+If C<$hash_ref> is not a hash reference, returns the template unchanged.
+
+=head2 bool_to_int
+
+    my $int = centreon::plugins::misc::bool_to_int($value);
+
+Convert a boolean-like value to an integer (0 or 1).
+
+=over 4
+
+=item * C<$value> - A value that may be a boolean string (e.g., 'true', 'false', 'True', 'False') or integer
+
+=back
+
+Returns 1 if the value matches C<'true'> or C<'1'> (case-insensitive), 0 otherwise.
+
+=head2 int_to_bool
+
+    my $bool = centreon::plugins::misc::int_to_bool($value);
+
+Convert an integer to a boolean string representation.
+
+=over 4
+
+=item * C<$value> - An integer or value that evaluates to true/false in Perl
+
+=back
+
+Returns 'true' if the value is true, 'false' otherwise.
 
 =head2 date_xm_ago_utc
 

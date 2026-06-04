@@ -22,7 +22,7 @@ package centreon::plugins::values;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/exprintf/;
 use centreon::plugins::constants qw(:values :unit_conversion);
 
 # Warning message with sprintf and too much arguments.
@@ -166,7 +166,7 @@ sub output {
         }
     }
 
-    return sprintf($self->{output_template}, $value, $unit);
+    return sprintf(exprintf($self->{output_template}, $self->{result_values}), $value, $unit);
 }
 
 sub use_instances {
@@ -194,7 +194,9 @@ sub perfdata {
         my $cast_int = (defined($perf->{cast_int}) && $perf->{cast_int} == 1) ? 1 : 0;
         my $template = '%s';
         
-        $template = $perf->{template} if (defined($perf->{template}));
+        $template = exprintf($perf->{template}, $self->{result_values})
+            if defined $perf->{template};
+
         $label = $perf->{label} if (defined($perf->{label}));
         if (defined($perf->{min})) {
             $min = ($perf->{min} =~ /[^0-9.-]/) ? $self->{result_values}->{$perf->{min}} : $perf->{min};
