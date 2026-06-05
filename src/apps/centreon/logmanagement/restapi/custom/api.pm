@@ -59,13 +59,7 @@ sub new {
     return $self;
 }
 
-sub set_options {
-    my ($self, %options) = @_;
-
-    $self->{option_results} = $options{option_results};
-}
-
-sub set_defaults {}
+``
 
 sub check_options {
     my ($self, %options) = @_;
