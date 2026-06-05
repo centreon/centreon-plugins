@@ -59,8 +59,6 @@ sub new {
     return $self;
 }
 
-``
-
 sub check_options {
     my ($self, %options) = @_;
     $self->{$_} = $self->{option_results}->{$_} for qw/hostname org api_path proto port token timeout/;
