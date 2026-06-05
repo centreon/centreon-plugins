@@ -44,7 +44,7 @@ Tasks ${tc}
     ...    --last=9999d
     ...    OK: Tasks succeeded: 1, failed: 0, canceled: 0 | 'tasks.succeeded.count'=1;;;0; 'tasks.failed.count'=0;;;0; 'tasks.canceled.count'=0;;;0;
     ...    4
-    ...    --task-category=1
+    ...    --task-category=Protection
     ...    OK: Tasks succeeded: 1, failed: 0, canceled: 0 | 'tasks.succeeded.count'=1;;;0; 'tasks.failed.count'=0;;;0; 'tasks.canceled.count'=0;;;0;
     ...    5
     ...    --object-type=1

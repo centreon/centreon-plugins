@@ -99,12 +99,33 @@ sub check_options {
     $self->{option_results}->{$_} = flatten_arrays($self->{option_results}->{$_}) foreach qw/task_category object_type task_status task_type/;
 
     $self->{option_results}->{start_time} = 1440 unless $self->{option_results}->{start_time};
+
+    foreach my $task (@{$self->{option_results}->{task_category}}) {
+        $task = ucfirst lc $task;
+        # To avoid internal error from rubril API which does not handle invalid values gracefully
+        $self->{output}->option_exit(short_msg => "--task-category should be either 'Protection' or 'Recovery'")
+            unless $task =~ /^(?:Protection|Recovery)$/;
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = { succeeded => 0, failed => 0, canceled => 0 };
+
+    my $cluster_filters = $options{custom}->common_filters();
+
+    # taskDetailConnection does not support native filtering by name, so we convert names to UUIDs
+    my $cluster_ids = $cluster_filters->{id} // [];
+
+    if ($cluster_filters->{name}) {
+        my $other_clusters = $options{custom}->clusters_uuid_from_name(@{$cluster_filters->{name}});
+
+        $self->{output}->option_exit(short_msg => 'No matching cluster !')
+            unless ref $other_clusters eq 'ARRAY' && @$other_clusters;
+
+        push @$cluster_ids, @$other_clusters;
+    }
 
     my %filters;
     $filters{taskCategory} = $self->{option_results}->{task_category} if @{$self->{option_results}->{task_category}};
@@ -113,6 +134,7 @@ sub manage_selection {
     $filters{taskType} = $self->{option_results}->{task_type} if @{$self->{option_results}->{task_type}};
     $filters{time_gt} = $self->{option_results}->{start_time} if $self->{option_results}->{start_time} ne '';
     $filters{time_lt} = $self->{option_results}->{end_time} if $self->{option_results}->{end_time} ne '';
+    $filters{clusterUuid} = $cluster_ids if $cluster_ids && @$cluster_ids;
 
     my $tasks = $options{custom}->get_protection_tasks( filters => \%filters );
 
@@ -160,7 +182,7 @@ Default is: C<1d> (1 day).
 =item B<--task-category>
 
 Filter by task category. Multiple values can be separated by comma.
-Can be 'protected' or 'recovery'. Default is 'protected'.
+Can be 'Protection' or 'Recovery'. Default is 'Protection'.
 
 =item B<--object-type>
 
