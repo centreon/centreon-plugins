@@ -23,6 +23,8 @@ package apps::backup::commvault::commserve::restapi::mode::token;
 use base qw(centreon::plugins::mode);
 
 use centreon::plugins::misc qw/format_opt value_of/;
+use centreon::plugins::lockfile;
+use Digest::SHA qw(sha256_hex);
 
 use strict;
 use warnings;
@@ -33,12 +35,15 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "refresh-frequency:s" => { name => 'refresh_frequency', default => 25 * 60 },
+        "refresh-frequency:s" => { name => 'refresh_frequency' }, # legacy
+        "refresh-before:s"    => { name => 'refresh_before', default => 15 * 60 },
         "force-refresh"       => { name => 'force_refresh' },
         "api-token:s"         => { name => 'api_token', default => '' },
         "refresh-token:s"     => { name => 'refresh_token', default => '' },
         "status-if-unused:s"  => { name => 'status_if_unused', default => 'OK' },
     });
+
+    $self->{lock} = centreon::plugins::lockfile->new(%options);
 
     return $self;
 }
@@ -57,6 +62,13 @@ sub check_options {
     $self->{output}->option_exit(short_msg => '--api-token and --refresh-token are mandatory')
         if $self->{option_results}->{api_token} eq '' || $self->{option_results}->{refresh_token} eq '';
 
+
+    $self->{output}->option_exit(short_msg => '--refresh-before must be a number')
+        unless $self->{option_results}->{refresh_before} =~ /^\d+$/;
+
+    $self->{lock}->check_options(option_results => { %{$self->{option_results}},
+                                                     lockfile => 'commvault_commserve_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{instance}) . '.lock',
+                                                     lock_expiration_timeout => 3600 });
 }
 
 # Information about the new access token authentication mode:
@@ -77,30 +89,31 @@ sub run {
     $options{custom}->settings(%{$self->{option_results}});
 
     $self->{output}->option_exit(exit_literal => 'unknown', short_msg => 'Unable to acquire lock: will retry on next run')
-        unless $options{custom}->{lock}->lock_file();
+        unless $self->{lock}->lock_file();
 
-    my ($update_time, $authent_token, $refresh_token) = $options{custom}->load_authent_token();
+    my ($expiry_time, $authent_token, $refresh_token) = $options{custom}->load_authent_token();
 
     my $msg = 'Token available';
     my $severity = 'OK';
     if ($self->{option_results}->{api_token} ne '') {
-        if ($update_time == 0 || $update_time + $self->{option_results}->{refresh_frequency} <= time() || $self->{option_results}->{force_refresh}) {
+        if ($expiry_time < $self->{option_results}->{refresh_before} || $self->{option_results}->{force_refresh}) {
             if ($authent_token eq '') {
                 $authent_token = $self->{option_results}->{api_token};
                 $refresh_token = $self->{option_results}->{refresh_token};
             }
 
-            ($authent_token, $refresh_token) = $options{custom}->refresh_authent_token(
+            ($authent_token, $refresh_token, $expiry_time) = $options{custom}->refresh_authent_token(
                 authentToken => $authent_token,
                 refreshToken  => $refresh_token,
-                exit_on_failed => 0
+                expityTyme => $expiry_time,
+                exit_on_failed => 1
             );
 
             if ($authent_token eq '') {
                 $severity = 'CRITICAL';
                 $msg = 'Token not refreshed: '.value_of(\%options, "->{custom}->{http}->get_code()", 'Cannot extract tokens !');
             } else {
-                $options{custom}->write_authent_token(authentToken => $authent_token, refreshToken => $refresh_token);
+                $options{custom}->write_authent_token(authentToken => $authent_token, refreshToken => $refresh_token, expiryTime => $expiry_time);
                 $msg = 'Token refreshed';
             }
         } else {
@@ -110,7 +123,7 @@ sub run {
         $msg = 'Using session authentication';
     }
 
-    $options{custom}->{lock}->unlock();
+    $self->{lock}->unlock();
 
     $self->{output}->output_add(severity => $severity,
                                 short_msg => $msg);
@@ -138,11 +151,10 @@ Each token should be used by only one connector, it must not have any other use 
 Set API refresh token associated to the access token.
 Refresh token is mandatory when --api-token is used.
 
-=item B<--refresh-frequency>
+=item B<--refresh-before>
 
-Token validity duration (in seconds).
-Tokens will be automatically renewed after this duration when operating in 'token' mode.
-Default: --refresh-token=1500 (25 minutes)
+Refresh the token when its expiration time is less than C<refresh-before> seconds away.
+Default: --refresh-before=900 (15 minutes)
 
 =item B<--force-refresh>
 
