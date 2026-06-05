@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,17 +23,19 @@ package database::mssql::mode::lockswaits;
 use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters :values);
+use Digest::SHA qw(sha256_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'lockswaits', type => 0 }
+        { name => 'lockswaits', type => COUNTER_TYPE_GLOBAL, skipped_code => BUFFER_CREATION }
     ];
 
     $self->{maps_counters}->{lockswaits} = [
-        { label => 'lockswaits', nlabel => 'mssql.lockswaits.count', set => {
-                key_values => [ { name => 'value' } ],
+        { label => 'lockswaits', type => COUNTER_KIND_METRIC, nlabel => 'mssql.lockswaits.count.persecond', set => {
+                key_values => [ { name => 'value', per_second => 1 } ],
                 output_template => '%.2f locks waits/s',
                 perfdatas => [
                     { template => '%.2f', min => 0 }
@@ -46,7 +48,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
