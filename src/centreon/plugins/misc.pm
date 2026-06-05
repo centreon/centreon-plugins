@@ -32,18 +32,24 @@ use Digest::SHA qw/sha256_hex/;
 use Exporter 'import';
 use feature 'state';
 
-our @EXPORT_OK = qw/change_seconds
+our @EXPORT_OK = qw/bool_to_int
+                    change_seconds
                     check_security_command
                     check_security_whitelist
                     convert_bytes
+                    convert_bytes_ng
                     date_xm_ago_utc
                     disco_escape
                     execute
+                    exprintf
                     flatten_arrays
                     flatten_to_hash
+                    format_bytes
                     format_opt
                     graphql_escape
+                    int_to_bool
                     is_empty
+                    is_not_empty
                     is_excluded
                     is_local_ip
                     json_encode
@@ -372,10 +378,12 @@ sub backtick {
 
 sub is_empty {
     my $value = shift;
-    if (!defined($value) or $value eq '') {
-        return 1;
-    }
-    return 0;
+    return !defined($value) || $value eq '';
+}
+
+sub is_not_empty {
+    my $value = shift;
+    return defined $value && $value ne '';
 }
 
 # Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
@@ -550,6 +558,27 @@ sub scale_bytesbit {
     return $options{value};
 }
 
+sub format_bytes {
+    my (%options) = @_;
+
+    my $value = $options{value};
+    my $divide = defined($options{network}) ? 1000 : 1024;
+    my @units = ('K', 'M', 'G', 'T');
+    my $unit = '';
+    my $sign = '';
+
+    $sign = '-' if ($value != abs($value));
+    $value = abs($value);
+
+    for (my $i = 0; $i < scalar(@units); $i++) {
+        last if (($value / $divide) < 1);
+        $unit = $units[$i];
+        $value = $value / $divide;
+    }
+
+    return (sprintf('%.2f', $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
+}
+
 sub convert_bytes {
     my (%options) = @_;
 
@@ -567,6 +596,43 @@ sub convert_bytes {
     }
 
     return $value;
+}
+
+# Unlike 'convert_bytes' the 'convert_bytes_ng' function automatically determines
+# the appropriate base (1000 or 1024) from the unit
+sub convert_bytes_ng {
+    my (%options) = @_;
+
+    return 0 unless $options{value};
+
+    my %units = (
+        'ki' => 1024,
+        'mi' => 1024**2,
+        'gi' => 1024**3,
+        'ti' => 1024**4,
+        'pi' => 1024**5,
+        'k'  => 1000,
+        'm'  => 1000**2,
+        'g'  => 1000**3,
+        't'  => 1000**4,
+        'p'  => 1024**5
+    );
+
+    my ($value, $unit);
+
+    if (defined $options{unit}) {
+        $unit = $options{unit} =~ s/[bB]$//r;
+        $value = $options{value};
+    } else {
+        my $regexp = $options{pattern} // '^([\d\.]+)(?:([kmgtp]i?)B?)?$';
+        return 0 unless $options{value} =~ /$regexp/i;
+        ($value, $unit) = ($1, $2 // '');
+    }
+    $unit = lc $unit;
+    return $value * $options{base} if defined $options{base};
+
+    return $value unless $unit && exists $units{$unit};
+    return $value * $units{$unit} if exists $units{$unit};
 }
 
 sub convert_fahrenheit {
@@ -1086,6 +1152,40 @@ sub disco_escape($;$) {
     return $value =~ s/[~!\$%\^&\*"'\|<>?,()=]/$sub/gr;
 }
 
+# exprintf replaces placeholders in a string with values from a hash.
+# Placeholders can optionally use the 'storage' or 'network' filter to
+# convert and format values before display.
+# See tests/centreon/plugins/misc/exprintf.t for usage examples
+sub exprintf($$;$) {
+    my ($template, $datas, $default) = @_;
+
+    return $template unless ref $datas eq 'HASH';
+
+    $default = '' unless defined $default;
+
+    return $template =~ s{%\{(\w+)(?:\|(\w+))?\}}{  my $value = $datas->{$1} // $default;
+                                                    if ($2) {
+                                                        if ($2 eq 'network') {
+                                                            $value = join '', format_bytes(value => $value, network => 1);
+                                                        } elsif ($2 eq 'storage') {
+                                                            $value = join '', format_bytes(value => $value);
+                                                        }
+                                                    }
+                                                    $value
+                                                 }ger;
+}
+
+sub bool_to_int {
+    my $value = shift;
+    return int ($value && $value =~ /(?:true|1)$/i);
+}
+
+sub int_to_bool {
+    my $value = shift;
+
+    return $value ? 'true' : 'false';
+}
+
 1;
 
 __END__
@@ -1237,6 +1337,20 @@ Checks if a value is empty.
 =item * C<$value> - The value to check.
 
 =back
+
+=head2 is_not_empty
+
+    my $result = centreon::plugins::misc::is_not_empty($value);
+
+Check if a value is non-empty.
+
+=over 4
+
+=item * C<$value> - The value to check
+
+=back
+
+Returns 1 if the value is defined and not an empty string, 0 otherwise.
 
 =head2 value_of
 
@@ -1804,6 +1918,55 @@ Returns the hexadecimal SHA256 hash of the JSON encoded data.
 
 =back
 
+=head2 C<exprintf>
+
+    my $output = centreon::plugins::misc::exprintf($template, $hash_ref, $default);
+
+Replace placeholders in a template string with values from a hash.
+
+=over 4
+
+=item * C<$template> - Template string with placeholders in the form C<%{key}> or C<%{key|filter}>
+
+=item * C<$hash_ref> - Hash reference containing the values to substitute
+
+=item * C<$default> - Optional default value to use when a key is not found (default: empty string)
+
+Supported filters: C<storage> (binary units 1024), C<network> (decimal units 1000).
+
+=back
+
+Returns the template string with all C<%{key}> placeholders replaced by the corresponding hash values.
+If C<$hash_ref> is not a hash reference, returns the template unchanged.
+
+=head2 bool_to_int
+
+    my $int = centreon::plugins::misc::bool_to_int($value);
+
+Convert a boolean-like value to an integer (0 or 1).
+
+=over 4
+
+=item * C<$value> - A value that may be a boolean string (e.g., 'true', 'false', 'True', 'False') or integer
+
+=back
+
+Returns 1 if the value matches C<'true'> or C<'1'> (case-insensitive), 0 otherwise.
+
+=head2 int_to_bool
+
+    my $bool = centreon::plugins::misc::int_to_bool($value);
+
+Convert an integer to a boolean string representation.
+
+=over 4
+
+=item * C<$value> - An integer or value that evaluates to true/false in Perl
+
+=back
+
+Returns 'true' if the value is true, 'false' otherwise.
+
 =head2 date_xm_ago_utc
 
     my $date = centreon::plugins::misc::date_xm_ago_utc($minutes);
@@ -1817,6 +1980,42 @@ Returns a date in ISO 8601 UTC format that is X minutes ago from now.
 =back
 
 Returns a string in the format: C<YYYY-MM-DDTHH:MM:SSZ>
+
+=head2 format_bytes
+
+    my ($value, $unit) = centreon::plugins::misc::format_bytes(value => $value, network => $bool);
+
+Format a value into human readable units.
+
+=over 4
+
+=item * C<value> - Value in bytes to format
+
+=item * C<network> - Use network units (Kb, Mb, Gb) if true, storage units (KB, MB, GB) if false. Optional (default: storage).
+
+Returns a list of (formatted_value, unit) where unit is Kb/Mb/Gb/Tb (network) or KB/MB/GB/TB (storage).
+
+=back
+
+=head2 convert_bytes_ng
+
+    my $bytes = centreon::plugins::misc::convert_bytes_ng(value => $value, unit => $unit, pattern => $pattern, base => $base);
+
+Convert a value with Kubernetes/storage units to bytes.
+
+=over 4
+
+=item * C<value> - Value to convert (with or without unit suffix)
+
+=item * C<unit> - Explicit unit (Ki, Mi, Gi, Ti, Pi for binary; K, M, G, T, P for decimal). Optional.
+
+=item * C<pattern> - Custom regex pattern to extract value and unit (default: C<^([\d\.]+)(?:([kmgtp]i?)B?)?$>). Optional.
+
+=item * C<base> - Custom base multiplier. Optional.
+
+Returns the value converted to bytes, or 0 if value is empty/undef.
+
+=back
 
 =head1 AUTHOR
 
