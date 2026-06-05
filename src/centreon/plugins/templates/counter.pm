@@ -310,7 +310,7 @@ sub run_global {
     } elsif (defined $options{config}->{cb_prefix_output}) {
         $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) // '';
     }
-    $prefix_output = '' unless defined $prefix_output;
+    $prefix_output //= '';
 
     if (defined $options{config}->{suffix_output}) {
         $suffix_output = $options{config}->{suffix_output};
