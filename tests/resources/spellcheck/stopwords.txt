@@ -207,6 +207,7 @@ Meraki
 MIB
 Microkernel
 Mikrotik
+MMC
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -400,6 +401,7 @@ VMware
 VMWARE
 vpn
 VPN
+VS9
 vSAN
 Vserver
 vSphere
