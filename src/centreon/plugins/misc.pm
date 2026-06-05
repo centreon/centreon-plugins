@@ -2007,7 +2007,7 @@ Convert a value with Kubernetes/storage units to bytes.
 
 =item * C<value> - Value to convert (with or without unit suffix)
 
-=item * C<unit> - Explicit unit (Ki, Mi, Gi, Ti, Pi for binary; K, M, G, T, P for decimal). Optional.
+=item * C<unit> - Explicit unit (ki, Mi, Gi, Ti, Pi for binary; k, M, G, T, P for decimal). Optional.
 
 =item * C<pattern> - Custom regex pattern to extract value and unit (default: C<^([\d\.]+)(?:([kmgtp]i?)B?)?$>). Optional.
 
