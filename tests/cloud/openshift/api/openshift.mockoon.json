@@ -262,6 +262,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "fd0cb16b-2191-428b-aae6-322ff3397867",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "apis/apps/v1/daemonsets",
+      "responses": [
+        {
+          "uuid": "05211070-db5b-4c7c-912c-d69032aa1435",
+          "body": "{\n  \"kind\": \"DaemonSetList\",\n  \"apiVersion\": \"apps/v1\",\n  \"metadata\": {\n    \"resourceVersion\": \"252916\"\n  },\n  \"items\": [\n    {\n      \"metadata\": {\n        \"name\": \"broken-daemonset\",\n        \"namespace\": \"default\",\n        \"uid\": \"12345678-1234-1234-1234-123456789012\",\n        \"resourceVersion\": \"32469\",\n        \"generation\": 1,\n        \"creationTimestamp\": \"2026-05-14T17:07:23Z\",\n        \"labels\": {\n          \"app\": \"broken-app\",\n          \"version\": \"v1\"\n        },\n        \"annotations\": {\n          \"description\": \"DaemonSet with ReplicaFailure condition\"\n        },\n        \"managedFields\": [\n          {\n            \"manager\": \"kubectl-client-side-apply\",\n            \"operation\": \"Update\",\n            \"apiVersion\": \"apps/v1\",\n            \"time\": \"2026-05-14T17:07:23Z\",\n            \"fieldsType\": \"FieldsV1\"\n          },\n          {\n            \"manager\": \"kube-controller-manager\",\n            \"operation\": \"Update\",\n            \"apiVersion\": \"apps/v1\",\n            \"time\": \"2026-06-03T10:00:00Z\",\n            \"fieldsType\": \"FieldsV1\",\n            \"subresource\": \"status\"\n          }\n        ]\n      },\n      \"spec\": {\n        \"selector\": {\n          \"matchLabels\": {\n            \"app\": \"broken-app\",\n            \"tier\": \"backend\"\n          }\n        },\n        \"template\": {\n          \"metadata\": {\n            \"labels\": {\n              \"app\": \"broken-app\",\n              \"tier\": \"backend\"\n            },\n            \"annotations\": {\n              \"prometheus.io/scrape\": \"true\",\n              \"prometheus.io/port\": \"8080\"\n            }\n          },\n          \"spec\": {\n            \"volumes\": [\n              {\n                \"name\": \"config-volume\",\n                \"configMap\": {\n                  \"name\": \"app-config\",\n                  \"defaultMode\": 420\n                }\n              },\n              {\n                \"name\": \"log-volume\",\n                \"emptyDir\": {}\n              }\n            ],\n            \"containers\": [\n              {\n                \"name\": \"app\",\n                \"image\": \"myregistry.azurecr.io/broken-app:v1.0.0\",\n                \"imagePullPolicy\": \"Always\",\n                \"ports\": [\n                  {\n                    \"name\": \"http\",\n                    \"containerPort\": 8080,\n                    \"protocol\": \"TCP\"\n                  }\n                ],\n                \"env\": [\n                  {\n                    \"name\": \"APP_ENV\",\n                    \"value\": \"production\"\n                  },\n                  {\n                    \"name\": \"LOG_LEVEL\",\n                    \"value\": \"info\"\n                  },\n                  {\n                    \"name\": \"NODE_NAME\",\n                    \"valueFrom\": {\n                      \"fieldRef\": {\n                        \"apiVersion\": \"v1\",\n                        \"fieldPath\": \"spec.nodeName\"\n                      }\n                    }\n                  }\n                ],\n                \"resources\": {\n                  \"requests\": {\n                    \"cpu\": \"100m\",\n                    \"memory\": \"128Mi\"\n                  },\n                  \"limits\": {\n                    \"cpu\": \"500m\",\n                    \"memory\": \"512Mi\"\n                  }\n                },\n                \"volumeMounts\": [\n                  {\n                    \"name\": \"config-volume\",\n                    \"mountPath\": \"/etc/app\",\n                    \"readOnly\": true\n                  },\n                  {\n                    \"name\": \"log-volume\",\n                    \"mountPath\": \"/var/log/app\"\n                  }\n                ],\n                \"livenessProbe\": {\n                  \"httpGet\": {\n                    \"path\": \"/health\",\n                    \"port\": 8080,\n                    \"scheme\": \"HTTP\"\n                  },\n                  \"initialDelaySeconds\": 30,\n                  \"timeoutSeconds\": 5,\n                  \"periodSeconds\": 10,\n                  \"successThreshold\": 1,\n                  \"failureThreshold\": 3\n                },\n                \"readinessProbe\": {\n                  \"httpGet\": {\n                    \"path\": \"/ready\",\n                    \"port\": 8080,\n                    \"scheme\": \"HTTP\"\n                  },\n                  \"initialDelaySeconds\": 10,\n                  \"timeoutSeconds\": 3,\n                  \"periodSeconds\": 5,\n                  \"successThreshold\": 1,\n                  \"failureThreshold\": 2\n                },\n                \"terminationMessagePath\": \"/dev/termination-log\",\n                \"terminationMessagePolicy\": \"File\",\n                \"securityContext\": {\n                  \"runAsNonRoot\": true,\n                  \"runAsUser\": 1000,\n                  \"allowPrivilegeEscalation\": false,\n                  \"readOnlyRootFilesystem\": true,\n                  \"capabilities\": {\n                    \"drop\": [\"ALL\"]\n                  }\n                }\n              }\n            ],\n            \"restartPolicy\": \"Always\",\n            \"terminationGracePeriodSeconds\": 30,\n            \"dnsPolicy\": \"ClusterFirst\",\n            \"serviceAccountName\": \"broken-app-sa\",\n            \"serviceAccount\": \"broken-app-sa\",\n            \"nodeSelector\": {\n              \"kubernetes.io/os\": \"linux\"\n            },\n            \"tolerations\": [\n              {\n                \"key\": \"node-role.kubernetes.io/master\",\n                \"operator\": \"Exists\",\n                \"effect\": \"NoSchedule\"\n              }\n            ],\n            \"priorityClassName\": \"system-cluster-critical\",\n            \"securityContext\": {\n              \"fsGroup\": 2000,\n              \"seccompProfile\": {\n                \"type\": \"RuntimeDefault\"\n              }\n            },\n            \"affinity\": {\n              \"nodeAffinity\": {\n                \"requiredDuringSchedulingIgnoredDuringExecution\": {\n                  \"nodeSelectorTerms\": [\n                    {\n                      \"matchExpressions\": [\n                        {\n                          \"key\": \"disktype\",\n                          \"operator\": \"In\",\n                          \"values\": [\"ssd\"]\n                        }\n                      ]\n                    }\n                  ]\n                }\n              },\n              \"podAntiAffinity\": {\n                \"preferredDuringSchedulingIgnoredDuringExecution\": [\n                  {\n                    \"weight\": 100,\n                    \"podAffinityTerm\": {\n                      \"labelSelector\": {\n                        \"matchExpressions\": [\n                          {\n                            \"key\": \"app\",\n                            \"operator\": \"In\",\n                            \"values\": [\"broken-app\"]\n                          }\n                        ]\n                      },\n                      \"topologyKey\": \"kubernetes.io/hostname\"\n                    }\n                  }\n                ]\n              }\n            }\n          }\n        },\n        \"updateStrategy\": {\n          \"type\": \"RollingUpdate\",\n          \"rollingUpdate\": {\n            \"maxUnavailable\": 1,\n            \"maxSurge\": 0\n          }\n        },\n        \"minReadySeconds\": 0,\n        \"revisionHistoryLimit\": 10\n      },\n      \"status\": {\n        \"currentNumberScheduled\": 2,\n        \"numberMisscheduled\": 0,\n        \"desiredNumberScheduled\": 3,\n        \"numberReady\": 1,\n        \"observedGeneration\": 1,\n        \"updatedNumberScheduled\": 2,\n        \"numberAvailable\": 1,\n        \"conditions\": [\n          {\n            \"type\": \"ReplicaFailure\",\n            \"status\": \"True\",\n            \"lastUpdateTime\": \"2026-06-03T10:00:00Z\",\n            \"lastTransitionTime\": \"2026-06-03T10:00:00Z\",\n            \"reason\": \"ImagePullBackOff\",\n            \"message\": \"Failed to pull image 'myregistry.azurecr.io/broken-app:v1.0.0': rpc error: code = Unknown desc = Error response from daemon: manifest not found\"\n          },\n          {\n            \"type\": \"Progressing\",\n            \"status\": \"False\",\n            \"lastUpdateTime\": \"2026-06-03T10:05:30Z\",\n            \"lastTransitionTime\": \"2026-06-03T10:00:00Z\",\n            \"reason\": \"ProgressDeadlineExceeded\",\n            \"message\": \"progress deadline exceeded\"\n          }\n        ]\n      }\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -284,6 +340,10 @@
     {
       "type": "route",
       "uuid": "24697ce8-ec6d-4b39-ba9b-6ac00c13343d"
+    },
+    {
+      "type": "route",
+      "uuid": "fd0cb16b-2191-428b-aae6-322ff3397867"
     }
   ],
   "proxyMode": false,

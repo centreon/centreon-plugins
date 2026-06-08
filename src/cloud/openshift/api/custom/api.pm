@@ -43,8 +43,7 @@ sub new {
             'proto:s'     => { name => 'proto',     default => 'https' },
             'token:s'     => { name => 'token',     default => '' },
             'timeout:s'   => { name => 'timeout',   default => 10 },
-            'limit:s'     => { name => 'limit',     default => 100 },
-            'namespace:s' => { name => 'namespace', default => '' }
+            'limit:s'     => { name => 'limit',     default => 100 }
     }) unless $options{noptions};
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -59,7 +58,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{$_} = $self->{option_results}->{$_}
-        foreach qw/hostname port proto token timeout limit namespace/;
+        foreach qw/hostname port proto token timeout limit/;
 
     $self->{timeout} = $self->{timeout} =~ /(\d+)/ ? $1 : 10;
     $self->{limit} = $self->{limit} =~ /(\d+)/ ? $1 : 100;
@@ -111,10 +110,10 @@ sub request_api {
             no_exit => 1
         );
 
-        my $msg = value_of($decoded, "->{message}");
+        my $msg = value_of($decoded, "->{message}", $self->{http}->get_message() || 'Internal Error');
         $self->{output}->option_exit(short_msg => "OpenShift API returned an error '$msg'")
             if $msg && $self->{http}->get_code() == 401;
-        $self->{output}->option_exit(short_msg => "OpenShift API returned an error code '" . ($decoded->{code} // $self->{http}->get_code()). "' (".($msg || 'Internal Error').") (add --debug option for detailed message)");
+        $self->{output}->option_exit(short_msg => "OpenShift API returned an error code '" . ($decoded->{code} // $self->{http}->get_code()). "': $msg (add --debug option for detailed message)");
     }
 
     my $decoded = json_decode(
@@ -152,7 +151,7 @@ sub request_api_paginate {
 sub openshift_list_routes {
     my ($self, %options) = @_;
 
-    my $url_path = $self->{namespace} ne '' ? '/apis/route.openshift.io/v1/namespaces/' . $self->{namespace} . '/routes' : '/apis/route.openshift.io/v1/routes';
+    my $url_path = $options{namespace} ? '/apis/route.openshift.io/v1/namespaces/' . $options{namespace} . '/routes' : '/apis/route.openshift.io/v1/routes';
 
     my $response = $self->request_api_paginate(
         method => 'GET',
@@ -238,10 +237,6 @@ Set HTTP timeout (default: 10).
 =item B<--limit>
 
 Number of responses to return for each list calls (default: 100).
-
-=item B<--namespace>
-
-Set namespace to get information.
 
 =back
 

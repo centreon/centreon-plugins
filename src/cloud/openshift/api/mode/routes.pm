@@ -24,7 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc qw(is_excluded exprintf is_empty is_not_empty);
+use centreon::plugins::misc qw(is_excluded exprintf is_not_empty flatten_arrays);
+use centreon::common::kubernetes::misc qw/is_excluded_label/;
 use centreon::plugins::constants qw(:counters);
 
 sub custom_options_threshold {
@@ -81,8 +82,8 @@ sub new {
         "exclude-namespace:s"    => { name => 'exclude_namespace', default => '' },
         "include-host:s"         => { name => 'include_host',      default => '' },
         "exclude-host:s"         => { name => 'exclude_host',      default => '' },
-        "include-label:s"        => { name => 'include_label',     default => '' },
-        "exclude-label:s"        => { name => 'exclude_label',     default => '' },
+        "include-label:s@"       => { name => 'include_label' },
+        "exclude-label:s@"       => { name => 'exclude_label' },
         "include-service:s"      => { name => 'include_service',   default => '' },
         "exclude-service:s"      => { name => 'exclude_service',   default => '' },
         "include-termination:s"  => { name => 'include_termination', default => '' },
@@ -198,6 +199,14 @@ sub set_counters {
     ];
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+
+    $self->{option_results}->{$_} = flatten_arrays($self->{option_results}->{$_})
+        foreach qw/include_label exclude_label/;
+}
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -239,7 +248,7 @@ sub manage_selection {
         next if is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
                 || is_excluded($namespace, $self->{option_results}->{include_namespace}, $self->{option_results}->{exclude_namespace}, output => $self->{output})
                 || is_excluded($host, $self->{option_results}->{include_host}, $self->{option_results}->{exclude_host}, output => $self->{output})
-                || is_excluded($labels_str, $self->{option_results}->{include_label}, $self->{option_results}->{exclude_label}, output => $self->{output})
+                || is_excluded_label($route, $self->{option_results}->{include_label}, $self->{option_results}->{exclude_label}, output => $self->{output}, display => $name)
                 || is_excluded($service, $self->{option_results}->{include_service}, $self->{option_results}->{exclude_service}, output => $self->{output})
                 || is_excluded($termination, $self->{option_results}->{include_termination}, $self->{option_results}->{exclude_termination}, output => $self->{output});
         $self->{global}->{total}++;
@@ -353,11 +362,13 @@ Exclude route host (can be a regexp).
 
 =item B<--include-label>
 
-Include route labels in format key=value (can be a regexp).
+Include project labels in format key=value (key and value can be a regexp).
+Comma-separated list of filter values. Format: key or key=value.
 
 =item B<--exclude-label>
 
-Exclude route labels in format key=value (can be a regexp).
+Exclude project labels in format key=value (key and value can be a regexp).
+Comma-separated list of filter values. Format: key or key=value.
 
 =item B<--include-service>
 

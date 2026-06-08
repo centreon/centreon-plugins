@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc qw(is_excluded exprintf flatten_arrays);
 use centreon::plugins::constants qw(:counters);
+use centreon::common::kubernetes::misc qw/is_excluded_label/;
 
 sub custom_options_threshold {
     my ($self, %options) = @_;
@@ -76,9 +77,9 @@ sub new {
     $options{options}->add_options(arguments => {
         "include-name:s"       => { name => 'include_name',       default => '' },
         "exclude-name:s"       => { name => 'exclude_name',       default => '' },
-        "include-label:s"      => { name => 'include_label',      default => '' },
-        "exclude-label:s"      => { name => 'exclude_label',      default => '' },
-        "required-labels:s@"   => { name => 'required_labels' }
+        "include-label:s@"     => { name => 'include_label' },
+        "exclude-label:s@"     => { name => 'exclude_label' },
+        "required-label:s@"   => { name => 'required_label' }
     });
 
     $self->{display_details} = {};
@@ -92,7 +93,8 @@ sub check_options {
 
     $self->{verbose_requested} = $self->{output}->is_verbose();
 
-    $self->{required_labels} = flatten_arrays($self->{option_results}->{required_labels});
+    $self->{$_} = flatten_arrays($self->{option_results}->{$_})
+        foreach qw/include_label exclude_label required_label/;
 }
 
 
@@ -177,7 +179,7 @@ sub manage_selection {
 
         next if is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
                 || is_excluded($display_name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
-                || is_excluded($labels_str, $self->{option_results}->{include_label}, $self->{option_results}->{exclude_label}, output => $self->{output});
+                || is_excluded_label($project, $self->{include_label}, $self->{exclude_label}, output => $self->{output}, display => $name);
         $self->{global}->{total}++;
 
         my $phase = lc($project->{status}->{phase} // '-');
@@ -198,7 +200,7 @@ sub manage_selection {
         }
 
         my $compliant = 1;
-        foreach my $label (@{$self->{option_results}->{required_labels}}) {
+        foreach my $label (@{$self->{option_results}->{required_label}}) {
             if ($label =~ /^([^=]+)=(.*)$/) {
                 my ($key, $value) = ($1, $2 // '');
                 unless (exists $labels->{$key} && $labels->{$key} eq $value) {
@@ -243,16 +245,18 @@ Exclude project name (can be a regexp).
 
 =item B<--include-label>
 
-Include project labels in format key=value (can be a regexp).
+Include project labels in format key=value (key and value can be a regexp).
+Comma-separated list of filter values. Format: key or key=value.
 
 =item B<--exclude-label>
 
-Exclude project labels in format key=value (can be a regexp).
+Exclude project labels in format key=value (key and value can be a regexp).
+Comma-separated list of filter values. Format: key or key=value.
 
-=item B<--required-labels>
+=item B<--required-label>
 
 Comma-separated list of required labels. Format: key or key=value.
-Example: --required-labels="owner" --required-labels="environment=prod"
+Example: --required-label="owner" --required-label="environment=prod"
 
 =item B<--warning-projects-total>
 

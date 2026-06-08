@@ -51,7 +51,7 @@ Projects ${tc}
     ...    --exclude-label=kubernetes.io/metadata.name=openshift
     ...    OK: Total: 5, Active: 5, Terminating: 0, Non-compliant: 0 | 'projects-total'=5;;;0; 'projects-active'=5;;;0; 'projects-terminating'=0;;;0; 'projects-noncompliant'=0;;@1:;0;
     ...    6
-    ...    --required-labels=fake --include-name=openshift-node
+    ...    --required-label=fake --include-name=openshift-node
     ...    CRITICAL: Non-compliant: 1 | 'projects-total'=1;;;0; 'projects-active'=1;;;0; 'projects-terminating'=0;;;0; 'projects-noncompliant'=1;;@1:;0; Projects not respecting label policy (1): openshift-node
     ...    7
     ...    --warning-projects-total=1

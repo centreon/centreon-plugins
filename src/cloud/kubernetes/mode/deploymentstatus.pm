@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::common::kubernetes::misc qw/is_excluded_label/;
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
@@ -56,43 +58,24 @@ sub custom_status_perfdata {
     );
 }
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "Replicas Desired: %s, Current: %s, Available: %s, Ready: %s, Up-to-date: %s",
-        $self->{result_values}->{desired},
-        $self->{result_values}->{current},
-        $self->{result_values}->{available},
-        $self->{result_values}->{ready},
-        $self->{result_values}->{up_to_date}
-    );
-}
-
-sub prefix_deployment_output {
-    my ($self, %options) = @_;
-
-    return "Deployment '" . $options{instance_value}->{namespace} . "/" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'deployments', type => 1, cb_prefix_output => 'prefix_deployment_output',
-            message_multiple => 'All deployments status are ok', skipped_code => { -11 => 1 } },
+        { name => 'deployments', type => COUNTER_TYPE_INSTANCE, prefix_output => "Deployment '%{namespace}/%{name}' ",
+            message_multiple => 'All deployments status are ok' },
     ];
 
     $self->{maps_counters}->{deployments} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_METRIC,
             warning_default => '%{up_to_date} < %{desired}',
             critical_default => '%{available} < %{desired}',
             set => {
                 key_values => [ { name => 'desired' }, { name => 'current' }, { name => 'up_to_date' },
                     { name => 'available' }, { name => 'ready' }, { name => 'name' }, { name => 'namespace' } ],
-                closure_custom_output => $self->can('custom_status_output'),
+                output_template => "Replicas Desired: %{desired}, Current: %{current}, Available: %{available}, Ready: %{ready}, Up-to-date: %{up_to_date}",
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
