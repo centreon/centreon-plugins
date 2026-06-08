@@ -93,7 +93,7 @@ sub manage_selection {
 
     # under `data` should be an array reference with the count values grouped by time slices
     my $data = value_of($result, '->{curves}->[0]->{data}', '');
-    $self->{output}->option_exit("Could not get the count result (.response.curves[0].data is not an array).")
+    $self->{output}->option_exit(short_msg => "Could not get the count result (.response.curves[0].data is not an array).")
         unless ref $data eq 'ARRAY';
 
     # we now have to sum all the slices to get the total number
