@@ -1,5 +1,5 @@
 #
-# Copyright 2026-Present Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,27 +18,23 @@
 # limitations under the License.
 #
 
-package network::opengear::snmp::plugin;
+package apps::centreon::logmanagement::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
+    $self->{version} = '0.1';
     $self->{modes} = {
-        'cpu-detailed'      => 'network::opengear::snmp::mode::cpudetailed',
-        'interfaces'        => 'network::opengear::snmp::mode::interfaces',
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'load'              => 'network::opengear::snmp::mode::load',
-        'memory'            => 'network::opengear::snmp::mode::memory',
-        'serial-ports'      => 'network::opengear::snmp::mode::serialports',
-        'uptime'            => 'network::opengear::snmp::mode::uptime'
+        'log-count' => 'apps::centreon::logmanagement::restapi::mode::logcount'
     };
 
+    $self->{custom_modes}->{api} = 'apps::centreon::logmanagement::restapi::custom::api';
     return $self;
 }
 
@@ -48,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Opengear in SNMP.
+Check Centreon Log Management through HTTP/REST API.
 
 =cut

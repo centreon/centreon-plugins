@@ -37,12 +37,14 @@ our @EXPORT_OK = qw/bool_to_int
                     check_security_command
                     check_security_whitelist
                     convert_bytes
+                    convert_bytes_ng
                     date_xm_ago_utc
                     disco_escape
                     execute
                     exprintf
                     flatten_arrays
                     flatten_to_hash
+                    format_bytes
                     format_opt
                     graphql_escape
                     int_to_bool
@@ -556,6 +558,27 @@ sub scale_bytesbit {
     return $options{value};
 }
 
+sub format_bytes {
+    my (%options) = @_;
+
+    my $value = $options{value};
+    my $divide = defined($options{network}) ? 1000 : 1024;
+    my @units = ('K', 'M', 'G', 'T');
+    my $unit = '';
+    my $sign = '';
+
+    $sign = '-' if ($value != abs($value));
+    $value = abs($value);
+
+    for (my $i = 0; $i < scalar(@units); $i++) {
+        last if (($value / $divide) < 1);
+        $unit = $units[$i];
+        $value = $value / $divide;
+    }
+
+    return (sprintf('%.2f', $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
+}
+
 sub convert_bytes {
     my (%options) = @_;
 
@@ -573,6 +596,43 @@ sub convert_bytes {
     }
 
     return $value;
+}
+
+# Unlike 'convert_bytes' the 'convert_bytes_ng' function automatically determines
+# the appropriate base (1000 or 1024) from the unit
+sub convert_bytes_ng {
+    my (%options) = @_;
+
+    return 0 unless $options{value};
+
+    my %units = (
+        'ki' => 1024,
+        'mi' => 1024**2,
+        'gi' => 1024**3,
+        'ti' => 1024**4,
+        'pi' => 1024**5,
+        'k'  => 1000,
+        'm'  => 1000**2,
+        'g'  => 1000**3,
+        't'  => 1000**4,
+        'p'  => 1024**5
+    );
+
+    my ($value, $unit);
+
+    if (defined $options{unit}) {
+        $unit = $options{unit} =~ s/[bB]$//r;
+        $value = $options{value};
+    } else {
+        my $regexp = $options{pattern} // '^([\d\.]+)(?:([kmgtp]i?)B?)?$';
+        return 0 unless $options{value} =~ /$regexp/i;
+        ($value, $unit) = ($1, $2 // '');
+    }
+    $unit = lc $unit;
+    return $value * $options{base} if defined $options{base};
+
+    return $value unless $unit && exists $units{$unit};
+    return $value * $units{$unit} if exists $units{$unit};
 }
 
 sub convert_fahrenheit {
@@ -1092,6 +1152,10 @@ sub disco_escape($;$) {
     return $value =~ s/[~!\$%\^&\*"'\|<>?,()=]/$sub/gr;
 }
 
+# exprintf replaces placeholders in a string with values from a hash.
+# Placeholders can optionally use the 'storage' or 'network' filter to
+# convert and format values before display.
+# See tests/centreon/plugins/misc/exprintf.t for usage examples
 sub exprintf($$;$) {
     my ($template, $datas, $default) = @_;
 
@@ -1099,7 +1163,16 @@ sub exprintf($$;$) {
 
     $default = '' unless defined $default;
 
-    return $template =~ s!%\{([A-Za-z0-9_]+)\}! $datas->{$1} // $default !ger;
+    return $template =~ s{%\{(\w+)(?:\|(\w+))?\}}{  my $value = $datas->{$1} // $default;
+                                                    if ($2) {
+                                                        if ($2 eq 'network') {
+                                                            $value = join '', format_bytes(value => $value, network => 1);
+                                                        } elsif ($2 eq 'storage') {
+                                                            $value = join '', format_bytes(value => $value);
+                                                        }
+                                                    }
+                                                    $value
+                                                 }ger;
 }
 
 sub bool_to_int {
@@ -1853,11 +1926,13 @@ Replace placeholders in a template string with values from a hash.
 
 =over 4
 
-=item * C<$template> - Template string with placeholders in the form C<%{key}>
+=item * C<$template> - Template string with placeholders in the form C<%{key}> or C<%{key|filter}>
 
 =item * C<$hash_ref> - Hash reference containing the values to substitute
 
 =item * C<$default> - Optional default value to use when a key is not found (default: empty string)
+
+Supported filters: C<storage> (base 1024 units), C<network> (base 1000 units).
 
 =back
 
@@ -1905,6 +1980,42 @@ Returns a date in ISO 8601 UTC format that is X minutes ago from now.
 =back
 
 Returns a string in the format: C<YYYY-MM-DDTHH:MM:SSZ>
+
+=head2 format_bytes
+
+    my ($value, $unit) = centreon::plugins::misc::format_bytes(value => $value, network => $bool);
+
+Format a value into human readable units.
+
+=over 4
+
+=item * C<value> - Value in bytes to format
+
+=item * C<network> - Use network units (Kb, Mb, Gb) if true, storage units (KB, MB, GB) if false. Optional (default: storage).
+
+Returns a list of (formatted_value, unit) where unit is Kb/Mb/Gb/Tb (network) or KB/MB/GB/TB (storage).
+
+=back
+
+=head2 convert_bytes_ng
+
+    my $bytes = centreon::plugins::misc::convert_bytes_ng(value => $value, unit => $unit, pattern => $pattern, base => $base);
+
+Convert a value with Kubernetes/storage units to bytes.
+
+=over 4
+
+=item * C<value> - Value to convert (with or without unit suffix)
+
+=item * C<unit> - Explicit unit (ki, Mi, Gi, Ti, Pi for binary; k, M, G, T, P for decimal). Optional.
+
+=item * C<pattern> - Custom regex pattern to extract value and unit (default: C<^([\d\.]+)(?:([kmgtp]i?)B?)?$>). Optional.
+
+=item * C<base> - Custom base multiplier. Optional.
+
+Returns the value converted to bytes, or 0 if value is empty/undef.
+
+=back
 
 =head1 AUTHOR
 

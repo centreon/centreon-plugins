@@ -1,0 +1,129 @@
+{
+  "uuid": "cd1fa616-2b9c-4ffd-99c6-bd3bba714be0",
+  "lastMigration": 33,
+  "name": "CLM",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "92a39c35-5042-49d6-8768-6b2fdf1ae400",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "v1/orgs/org/datasources/centreon-log/query/metrics",
+      "responses": [
+        {
+          "uuid": "28a57e04-be38-414f-a2aa-a6939caafb31",
+          "body": "{\"curves\":[{\"metric\":\"count\",\"times\":[1779721200000,1779724800000],\"data\":[2.0,0.0],\"attributes\":[]}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "period 3600",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "period",
+              "value": "3600",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "6a65baaa-a069-4492-abd5-4dbef6ed808a",
+          "body": "{\"curves\":[{\"metric\":\"count\",\"times\":[1779976800000,1779980400000],\"data\":[0.0,0.0],\"attributes\":[]}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "period 60",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "period",
+              "value": "60",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "92a39c35-5042-49d6-8768-6b2fdf1ae400"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

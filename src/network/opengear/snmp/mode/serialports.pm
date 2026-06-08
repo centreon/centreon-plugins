@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,10 +21,12 @@
 package network::opengear::snmp::mode::serialports;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw/is_excluded/;
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
@@ -114,7 +116,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', cb_init_counters => 'skip_counters', skipped_code => { -10 => 1 } },
+        { name => 'interfaces', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', cb_init_counters => 'skip_counters', skipped_code => { NO_VALUE() => 1 } },
     ];
 
     $self->{maps_counters}->{interfaces} = [
@@ -143,7 +145,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'   => { name => 'filter_name' },
+        'filter-name:s'   => { redirect => 'include_name' },
+        'include-name:s'  => { name => 'include_name', default => ''},
+        'exclude-name:s'  => { name => 'exclude_name', default => ''},
         'units-traffic:s' => { name => 'units_traffic', default => 'percent_delta' },
         'speed:s'         => { name => 'speed' }
     });
@@ -174,42 +178,62 @@ sub check_options {
     }
 }
 
-my $mapping = {
-    rxBytes => { oid => '.1.3.6.1.4.1.25049.16.1.1.3' }, # ogSerialPortStatusRxBytes
-    txBytes => { oid => '.1.3.6.1.4.1.25049.16.1.1.4' }, # ogSerialPortStatusTxBytes
-    speed   => { oid => '.1.3.6.1.4.1.25049.16.1.1.5' }  # ogSerialPortStatusSpeed
-};
+our @mapping_list = (
+    {
+        oid => '.1.3.6.1.4.1.25049.16.1.1.11', # ogSerialPortStatusLabel
+        data => { rxBytes => { oid => '.1.3.6.1.4.1.25049.16.1.1.3' }, # ogSerialPortStatusRxBytes
+                  txBytes => { oid => '.1.3.6.1.4.1.25049.16.1.1.4' }, # ogSerialPortStatusTxBytes
+                  speed   => { oid => '.1.3.6.1.4.1.25049.16.1.1.5' }  # ogSerialPortStatusSpeed
+                }
+    },
+    {
+        oid => '.1.3.6.1.4.1.25049.10.19.2.2.1.2', # ogOmSerialPortLabel
+        data => { rxBytes => { oid => '.1.3.6.1.4.1.25049.10.19.2.2.1.11' }, # ogOmSerialPortRxBytes
+                  txBytes => { oid => '.1.3.6.1.4.1.25049.10.19.2.2.1.12' }, # ogOmSerialPortTxBytes
+                  speed   => { oid => '.1.3.6.1.4.1.25049.10.19.2.2.1.3' }  # ogOmSerialPortSpeed
+                }
+    }
+);
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    if ($options{snmp}->is_snmpv1()) {
-        $self->{output}->add_option_msg(short_msg => 'Need to use SNMP v2c or v3.');
-        $self->{output}->option_exit();
-    }
-
-    my $oid_label = '.1.3.6.1.4.1.25049.16.1.1.11'; # ogSerialPortStatusLabel
-    my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_label,
-        nothing_quit => 1
-    );
-
     $self->{interfaces} = {};
-    foreach (keys %$snmp_result) {
-        /\.(\d+)$/;
-        my $instance = $1;
+    my $is_disco = $self->{output}->is_disco_show();
 
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result->{$_} !~ /$self->{option_results}->{filter_name}/);
+    $self->{output}->option_exit(short_msg => 'Need to use SNMP v2c or v3.')
+        if $options{snmp}->is_snmpv1() && !$is_disco;
 
-        $self->{interfaces}->{$instance} = { name => $snmp_result->{$_} };
+    my $snmp_result;
+    my $mapping;
+
+    foreach (@mapping_list) {
+        $snmp_result = $options{snmp}->get_table( oid => $_->{oid} );
+        if (ref $snmp_result eq 'HASH' && keys %$snmp_result) {
+          $mapping = $_;
+          last
+        }
     }
 
-    return if (scalar(keys %{$self->{interfaces}}) <= 0);
+    if (ref $snmp_result eq 'HASH' && keys %$snmp_result) {
+        foreach (keys %$snmp_result) {
+            /\.(\d+)$/;
+            my $instance = $1;
+            next if is_excluded($snmp_result->{$_}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name});
+            $self->{interfaces}->{$instance} = { name => $snmp_result->{$_} };
+        }
+    } elsif (!$is_disco) {
+        $self->{output}->option_exit(short_msg => 'No Opengear serial port SNMP entries found')
+    }
+
+    return if $is_disco;
+
+    $self->{output}->option_exit(short_msg => 'No maching Opengear serial port SNMP entries')
+        unless keys %{$self->{interfaces}};
 
     $options{snmp}->load(
         oids => [
-            map($_->{oid}, values(%$mapping))
+            map($_->{oid}, values(%{$mapping->{data}}))
         ],
         instances => [ map($_, keys %{$self->{interfaces}}) ],
         instance_regexp => '^(.*)$'
@@ -217,19 +241,35 @@ sub manage_selection {
     $snmp_result = $options{snmp}->get_leef();
 
     foreach (keys %{$self->{interfaces}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{data}, results => $snmp_result, instance => $_);
 
         $self->{interfaces}->{$_}->{in} = $result->{rxBytes};
         $self->{interfaces}->{$_}->{out} = $result->{txBytes};
-        $self->{interfaces}->{$_}->{speed_in} = defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $result->{speed};
-        $self->{interfaces}->{$_}->{speed_out} = defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $result->{speed};
+        $self->{interfaces}->{$_}->{speed_in} = $self->{option_results}->{speed} // $result->{speed};
+        $self->{interfaces}->{$_}->{speed_out} = $self->{option_results}->{speed} // $result->{speed};
     }
 
     $self->{cache_name} = 'opengear_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : 'all')
+        sha256_hex(
+            ($self->{option_results}->{filter_counters} // 'all') . '_' .
+            ($self->{option_results}->{include_name} ne '' ? $self->{option_results}->{include_name} : 'all') . '_' .
+            ($self->{option_results}->{exclude_name} ne '' ? $self->{option_results}->{exclude_name} : 'all')
         );
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['name']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    $self->{output}->add_disco_entry( name => $_->{name} )
+        foreach sort { $a->{name} cmp $b->{name} }
+                values %{$self->{interfaces}};
 }
 
 1;
@@ -246,18 +286,33 @@ Check serial ports.
 
 Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter serial port name (regexp can be used).
+
+=item B<--exclude-name>
+
+Exclude serial port name (regexp can be used).
 
 =item B<--speed>
 
 Set serial port speed (in Mb).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-traffic-in>
 
-Thresholds.
-Can be: 'traffic-in', 'traffic-out'.
+Threshold.
+
+=item B<--critical-traffic-in>
+
+Threshold.
+
+=item B<--warning-traffic-out>
+
+Threshold.
+
+=item B<--critical-traffic-out>
+
+Threshold.
 
 =back
 

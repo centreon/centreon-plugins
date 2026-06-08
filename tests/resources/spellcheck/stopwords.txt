@@ -207,6 +207,7 @@ Meraki
 MIB
 Microkernel
 Mikrotik
+MMC
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -261,6 +262,7 @@ okta
 OLT
 oneaccess-sys-mib
 OneAPI
+Opengear
 OpenMetrics
 OpenShift
 OpenStack
@@ -400,6 +402,7 @@ VMware
 VMWARE
 vpn
 VPN
+VS9
 vSAN
 Vserver
 vSphere

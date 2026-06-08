@@ -332,9 +332,6 @@ sub get_protection_tasks {
                               %{$options{filters} // { } }
                            };
 
-    $variables->{filter}->{clusterUuid} = $self->{option_results}->{cluster_id}
-        if $self->{option_results}->{cluster_id} && @{$self->{option_results}->{cluster_id}};
-
     my $query = q{
         ($first: Int, $after: String, $filter: TaskDetailFilterInput, $sortBy: TaskDetailSortByEnum, $sortOrder: SortOrder) {
             taskDetailConnection(
@@ -378,6 +375,7 @@ sub request_api_paginate {
     my $filter = $options{filter} // 'filter';
 
     my $cached_data = $self->read_cache(query => $options{description}, identifiers => $variables);
+
     return $cached_data if defined $cached_data;
 
     foreach my $ts (qw/time_gt time_lt registrationTime_gt registrationTime_lt startTimeGt startTimeLt lastUpdatedTimeGt lastUpdatedTimeLt/) {
@@ -709,8 +707,9 @@ sub read_cache {
     my $data = $options{identifiers};
 
     my $cache_file = "rubrik_graphql_" . $query . '_' . json_to_sha256(prefix => $self->get_connection_info(), data => $data);
-
+    $self->{cache}->{datas} = {};
     $self->{cache}->read(statefile => $cache_file);
+
     my $created_at = $self->{cache}->get(name => 'created_at', default => 0);
     my $cached_data = $self->{cache}->get(name => 'items');
 
@@ -764,6 +763,11 @@ sub get_snappable_compliance {
                         }
                     }
                 }
+                pageInfo {
+                    hasNextPage
+                    endCursor
+                }
+
             }
         }
     };

@@ -40,7 +40,9 @@ sub prefix_object_output {
 
     return "object '" . $options{instance_value}->{name} . "' (" . $options{instance_value}->{id} . ") " .
         ( $self->{output}->is_verbose() ?
-            "cluster '" . $options{instance_value}->{cluster_name} . "' " :
+            "cluster '" . $options{instance_value}->{cluster_name} . "' ".
+            "slaDomain '" . $options{instance_value}->{sla_domain_name} . "' ".
+            "objectType '" . $options{instance_value}->{object_type}. "' " :
             '' );
 }
 
@@ -127,20 +129,24 @@ sub manage_selection {
 
     my $cluster_filters = $options{custom}->common_filters();
 
-    # get_snappable_connection does not support native ng by name, so we convert names to UUIDs
+    # get_snappable_connection does not support native filtering by name, so we convert names to UUIDs
     my $cluster_ids = $cluster_filters->{id} // [];
     if ($cluster_filters->{name}) {
         my $other_clusters = $options{custom}->clusters_uuid_from_name(@{$cluster_filters->{name}});
-        push @$cluster_ids, @$other_clusters if $other_clusters;
+
+        $self->{output}->option_exit(short_msg => 'No matching cluster !')
+            unless ref $other_clusters eq 'ARRAY' && @$other_clusters;
+
+        push @$cluster_ids, @$other_clusters;
     }
 
     my %filters;
     $filters{cluster} = { id => $cluster_ids } if $cluster_ids && @$cluster_ids;
-    $filters{complianceStatus} = $self->{option_results}->{compliance_status} if $self->{option_results}->{compliance_status};
-    $filters{objectType} = $self->{option_results}->{object_type} if $self->{option_results}->{object_type};
-    $filters{excludedObjectTypes} = $self->{option_results}->{excluded_object_type} if $self->{option_results}->{excluded_object_type};
-    $filters{objectState} = $self->{option_results}->{object_state} if $self->{option_results}->{object_state};
-    $filters{protectionStatus} = $self->{option_results}->{protection_status} if $self->{option_results}->{protection_status};
+    $filters{complianceStatus} = $self->{option_results}->{compliance_status} if @{$self->{option_results}->{compliance_status}};
+    $filters{objectType} = $self->{option_results}->{object_type} if @{$self->{option_results}->{object_type}};
+    $filters{excludedObjectTypes} = $self->{option_results}->{excluded_object_type} if @{$self->{option_results}->{excluded_object_type}};
+    $filters{objectState} = $self->{option_results}->{object_state} if @{$self->{option_results}->{object_state}};
+    $filters{protectionStatus} = $self->{option_results}->{protection_status} if @{$self->{option_results}->{protection_status}};
 
     $filters{slaTimeRange} = uc $self->{option_results}->{time_range} if $self->{option_results}->{time_range} ne '';
     $filters{slaDomain} = { id => $self->{option_results}->{sla_domain_id} } if $self->{option_results}->{sla_domain_id} ne '';
