@@ -70,7 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      - uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         if: |
           github.event_name == 'pull_request' &&
@@ -155,7 +155,7 @@ jobs:
           fi
         shell: bash
 
-      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
@@ -251,14 +251,14 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
           fail-on-cache-miss: true
 
       - name: Prepare FatPacker
-        uses: shogo82148/actions-setup-perl@b6cfc127f1b0a63ac98797800f641494d80f42f8 # v1.37.1
+        uses: shogo82148/actions-setup-perl@9f8c263975569ff3b4e510cb1f8813115749e146 # v1.41.0
         with:
           perl-version: '5.34'
           install-modules-with: cpm
@@ -271,7 +271,7 @@ jobs:
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
           perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "$VERSION ($COMMIT)"
 
-      - uses: actions/cache/save@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
@@ -293,35 +293,32 @@ jobs:
       matrix:
         include:
           - package_extension: rpm
-            image: packaging-plugins-alma8
+            image: packaging:alma8
             distrib: el8
           - package_extension: rpm
-            image: packaging-plugins-alma9
+            image: packaging:alma9
             distrib: el9
           - package_extension: rpm
-            image: packaging-plugins-alma10
+            image: packaging:alma10
             distrib: el10
           - package_extension: deb
-            image: packaging-plugins-bullseye
+            image: packaging:bullseye
             distrib: bullseye
           - package_extension: deb
-            image: packaging-plugins-bookworm
+            image: packaging:bookworm
             distrib: bookworm
           - package_extension: deb
-            image: packaging-plugins-trixie
+            image: packaging:trixie
             distrib: trixie
           - package_extension: deb
-            image: packaging-plugins-jammy
+            image: packaging:jammy
             distrib: jammy
           - package_extension: deb
-            image: packaging-plugins-noble
+            image: packaging:noble
             distrib: noble
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+      image: ghcr.io/${{ github.repository }}/${{ matrix.image }}
 
     name: "Package ${{ matrix.distrib }}"
 
@@ -329,13 +326,13 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
           fail-on-cache-miss: true
 
-      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
@@ -376,45 +373,45 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing-plugins-alma8, testing-plugins-alma9, testing-plugins-alma10, testing-plugins-jammy, testing-plugins-bullseye, testing-plugins-bookworm, testing-plugins-trixie, testing-plugins-noble, testing-plugins-bullseye-arm64]
+        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bullseye, testing:bookworm, testing:trixie, testing:noble]
         include:
           - skip_robot_tests: false
           - package_extension: rpm
-            image: testing-plugins-alma8
+            image: testing:alma8
             distrib: el8
             arch: amd64
           - package_extension: rpm
-            image: testing-plugins-alma9
+            image: testing:alma9
             distrib: el9
             arch: amd64
           - package_extension: rpm
-            image: testing-plugins-alma10
+            image: testing:alma10
             distrib: el10
             arch: amd64
             skip_robot_tests: true
           - package_extension: deb
-            image: testing-plugins-bullseye
+            image: testing:bullseye
             distrib: bullseye
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-bookworm
+            image: testing:bookworm
             distrib: bookworm
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-trixie
+            image: testing:trixie
             distrib: trixie
             arch: amd64
             skip_robot_tests: true
           - package_extension: deb
-            image: testing-plugins-jammy
+            image: testing:jammy
             distrib: jammy
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-noble
+            image: testing:noble
             distrib: noble
             arch: amd64
           - package_extension: deb
-            image: testing-plugins-bullseye-arm64
+            image: testing:bullseye
             distrib: bullseye
             arch: arm64
 
@@ -432,9 +429,6 @@ jobs:
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
       skip-robot-tests: ${{ matrix.skip_robot_tests }}
       exclude-robot-tags: centreon-generic-snmp
-    secrets:
-      registry_username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-      registry_password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
@@ -487,13 +481,13 @@ jobs:
     if: |
       needs.get-environment.outputs.stability == 'stable' &&
       github.event_name == 'push'
-    runs-on: centreon-common
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}

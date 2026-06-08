@@ -27,7 +27,7 @@ use strict;
 use warnings;
 use centreon::plugins::values;
 use centreon::plugins::constants qw/:counters/;
-use centreon::plugins::misc qw/is_empty/;
+use centreon::plugins::misc qw/is_empty exprintf/;
 use JSON::XS;
 
 my $sort_subs = {
@@ -129,7 +129,7 @@ sub new {
         'list-counters'           => { name => 'list_counters' }
     });
     $self->{statefile_value} = undef;
-    if (defined($options{statefile}) && $options{statefile}) {
+    if ($options{statefile}) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'centreon::plugins::statefile',
@@ -249,9 +249,7 @@ sub check_options {
 
     $self->change_macros(macros => $change_macros_opt) if (scalar(@$change_macros_opt) > 0);
 
-    if (defined($self->{statefile_value})) {
-        $self->{statefile_value}->check_options(%options);
-    }
+    $self->{statefile_value}->check_options(%options) if $self->{statefile_value};
 }
 
 sub run_global {
@@ -307,13 +305,19 @@ sub run_global {
     }
 
     my ($prefix_output, $suffix_output);
-    $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_prefix_output}));
-    $prefix_output = '' if (!defined($prefix_output));
+    if (defined $options{config}->{prefix_output}) {
+        $prefix_output = $options{config}->{prefix_output};
+    } elsif (defined $options{config}->{cb_prefix_output}) {
+        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
+    $prefix_output //= '';
 
-    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_suffix_output}));
-    $suffix_output = '' if (!defined($suffix_output));
+    if (defined $options{config}->{suffix_output}) {
+        $suffix_output = $options{config}->{suffix_output};
+    } elsif (defined $options{config}->{cb_suffix_output}) {
+        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
+    $suffix_output //= '';
 
     if ($called_multiple == 1 && $long_msg ne '') {
         $self->{output}->output_add(long_msg => $options{indent_long_output} . $prefix_output. $long_msg . $suffix_output);
@@ -433,12 +437,18 @@ sub run_instances {
         }
 
         my ($prefix_output, $suffix_output);
-        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
-            if (defined($options{config}->{cb_prefix_output}));
+        if ($options{config}->{prefix_output}) {
+            $prefix_output = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined $options{config}->{cb_prefix_output}) {
+            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
+        }
         $prefix_output = '' if (!defined($prefix_output));
         
-        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
-        if (defined($options{config}->{cb_suffix_output}));
+        if ($options{config}->{suffix_output}) {
+            $suffix_output = exprintf($options{config}->{suffix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined $options{config}->{cb_suffix_output}) {
+            $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output});
+        }
         $suffix_output = '' if (!defined($suffix_output));
 
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
@@ -514,8 +524,11 @@ sub run_group {
             $total_problems += $self->{lproblems};
             
             my $prefix_output;
-            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
-                if (defined($options{config}->{cb_prefix_output}));
+            if (defined($options{config}->{prefix_output})) {
+              $prefix_output = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$id});
+            } elsif (defined($options{config}->{cb_prefix_output})) {
+              $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
+            }
             $prefix_output = '' if (!defined($prefix_output));
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
@@ -642,12 +655,18 @@ sub run_multiple_instances {
         }
 
         my ($prefix_output, $suffix_output);
-        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
-            if (defined($options{config}->{cb_prefix_output}));
+        if (defined($options{config}->{prefix_output})) {
+            $prefix_output = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined($options{config}->{cb_prefix_output})) {
+            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id});
+        }
         $prefix_output = '' if (!defined($prefix_output));
 
-        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
-        if (defined($options{config}->{cb_suffix_output}));
+        if (defined($options{config}->{suffix_output})) {
+            $suffix_output = exprintf($options{config}->{suffix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined($options{config}->{cb_suffix_output})) {
+            $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output});
+        }
         $suffix_output = '' if (!defined($suffix_output));
 
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
@@ -719,8 +738,11 @@ sub run_multiple {
 
         $self->{prefix_multiple_output} = '';
         $self->{prefix_multiple_output_done} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
-        $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $instance, instance_value => $self->{$options{config}->{name}}->{$instance})
-             if (defined($options{config}->{cb_prefix_output}));
+        if (defined($options{config}->{prefix_output})) {
+            $self->{prefix_multiple_output} = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$instance});
+        } elsif (defined($options{config}->{cb_prefix_output})) {
+            $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $instance, instance_value => $self->{$options{config}->{name}}->{$instance})
+        }
         my $indent_long_output = '';
         $indent_long_output = $options{config}->{indent_long_output}
             if (defined($options{config}->{indent_long_output}));

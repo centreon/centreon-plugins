@@ -18,6 +18,7 @@ Alertmanager
 allCapacity
 Alletra
 allsteps
+Alto
 Ansible
 --api-filter-orgs
 api.ip-label.net
@@ -28,6 +29,7 @@ api.meraki.com
 --api-username
 --api-version
 AppearTV
+ARN
 AS400
 ASAM
 Athonet
@@ -122,6 +124,7 @@ frsevent
 FSx
 GCP
 --get-param
+GPON
 GraphQL
 GRAPHQL
 HAProxy
@@ -136,6 +139,7 @@ ifDesc
 ifName
 --ignore-orgs-api-disabled
 IKS
+IMAP
 IMEI
 in-bcast
 in-crc
@@ -203,6 +207,7 @@ Meraki
 MIB
 Microkernel
 Mikrotik
+MMC
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -254,7 +259,10 @@ OID
 --oid-filter
 OIDs
 okta
+OLT
 oneaccess-sys-mib
+OneAPI
+Opengear
 OpenMetrics
 OpenStack
 OpenWSMAN
@@ -265,6 +273,7 @@ out-mcast
 out-ucast
 overprovisioning
 packetloss
+Palo
 partiallyActive
 passthrough
 --patch-redhat
@@ -311,10 +320,12 @@ scenarii
 SCVMM
 SFOS
 sfp.temperature
+SHA256
 SignalR
 sinr
 --skip-ssl-check
 SkyHigh
+SLA
 SMS
 SnapMirrors
 snmp
@@ -390,6 +401,7 @@ VMware
 VMWARE
 vpn
 VPN
+VS9
 vSAN
 Vserver
 vSphere
@@ -406,6 +418,8 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Westermo
+WildFire
 WLAN
 WLC
 WSMAN

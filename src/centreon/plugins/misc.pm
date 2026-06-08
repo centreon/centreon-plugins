@@ -27,23 +27,37 @@ use JSON::XS;
 use Safe;
 use Encode;
 use MIME::Base64;
+use Digest::SHA qw/sha256_hex/;
 
 use Exporter 'import';
 use feature 'state';
 
-our @EXPORT_OK = qw/change_seconds
+our @EXPORT_OK = qw/bool_to_int
+                    change_seconds
+                    check_security_command
                     check_security_whitelist
                     convert_bytes
+                    convert_bytes_ng
+                    date_xm_ago_utc
+                    disco_escape
+                    execute
+                    exprintf
                     flatten_arrays
                     flatten_to_hash
+                    format_bytes
+                    format_opt
                     graphql_escape
+                    int_to_bool
                     is_empty
+                    is_not_empty
                     is_excluded
                     is_local_ip
                     json_encode
                     json_decode
+                    json_to_sha256
+                    mask_secrets
+                    normalize_mac
                     slurp_file
-                    format_opt
                     trim
                     value_of/;
 
@@ -190,6 +204,8 @@ sub unix_execute {
         # On some equipment. Cannot get a pseudo terminal
         if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
             $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(' ', @$args);
+            $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password()) if $options{output}->is_debug();
+
             ($lerror, $stdout, $exit_code) = backtick(
                 command => $cmd,
                 timeout => $options{options}->{timeout},
@@ -197,6 +213,10 @@ sub unix_execute {
                 redirect_stderr => $redirect_stderr
             );
         } else {
+            if ($options{output}->is_debug()) {
+                my $cmd = $cmd . join (' ', [ @$args, $sub_cmd // '']);
+                $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password())
+            }
             ($lerror, $stdout, $exit_code) = backtick(
                 command => $cmd,
                 arguments => [@$args, $sub_cmd],
@@ -210,6 +230,8 @@ sub unix_execute {
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $cmd .= $options{command} if (defined($options{command}));
         $cmd .= ' ' . $options{command_options} if (defined($options{command_options}));
+
+        $options{output}->output_add(long_msg => 'execute command: ' . $cmd, show_password => $options{output}->show_password()) if $options{output}->is_debug();
 
         if (defined($options{no_shell_interpretation}) and $options{no_shell_interpretation} ne '') {
             my @args = split(' ',$cmd);
@@ -356,10 +378,12 @@ sub backtick {
 
 sub is_empty {
     my $value = shift;
-    if (!defined($value) or $value eq '') {
-        return 1;
-    }
-    return 0;
+    return !defined($value) || $value eq '';
+}
+
+sub is_not_empty {
+    my $value = shift;
+    return defined $value && $value ne '';
 }
 
 # Return the value of a complex perl variable (hash, array...) or a default value if it not defined.
@@ -534,6 +558,27 @@ sub scale_bytesbit {
     return $options{value};
 }
 
+sub format_bytes {
+    my (%options) = @_;
+
+    my $value = $options{value};
+    my $divide = defined($options{network}) ? 1000 : 1024;
+    my @units = ('K', 'M', 'G', 'T');
+    my $unit = '';
+    my $sign = '';
+
+    $sign = '-' if ($value != abs($value));
+    $value = abs($value);
+
+    for (my $i = 0; $i < scalar(@units); $i++) {
+        last if (($value / $divide) < 1);
+        $unit = $units[$i];
+        $value = $value / $divide;
+    }
+
+    return (sprintf('%.2f', $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
+}
+
 sub convert_bytes {
     my (%options) = @_;
 
@@ -551,6 +596,43 @@ sub convert_bytes {
     }
 
     return $value;
+}
+
+# Unlike 'convert_bytes' the 'convert_bytes_ng' function automatically determines
+# the appropriate base (1000 or 1024) from the unit
+sub convert_bytes_ng {
+    my (%options) = @_;
+
+    return 0 unless $options{value};
+
+    my %units = (
+        'ki' => 1024,
+        'mi' => 1024**2,
+        'gi' => 1024**3,
+        'ti' => 1024**4,
+        'pi' => 1024**5,
+        'k'  => 1000,
+        'm'  => 1000**2,
+        'g'  => 1000**3,
+        't'  => 1000**4,
+        'p'  => 1024**5
+    );
+
+    my ($value, $unit);
+
+    if (defined $options{unit}) {
+        $unit = $options{unit} =~ s/[bB]$//r;
+        $value = $options{value};
+    } else {
+        my $regexp = $options{pattern} // '^([\d\.]+)(?:([kmgtp]i?)B?)?$';
+        return 0 unless $options{value} =~ /$regexp/i;
+        ($value, $unit) = ($1, $2 // '');
+    }
+    $unit = lc $unit;
+    return $value * $options{base} if defined $options{base};
+
+    return $value unless $unit && exists $units{$unit};
+    return $value * $units{$unit} if exists $units{$unit};
 }
 
 sub convert_fahrenheit {
@@ -767,15 +849,10 @@ sub check_security_command {
     eval {
         $security = JSON::XS->new->utf8->decode($content);
     };
-    if ($@) {
-        $options{output}->add_option_msg(short_msg => 'Cannot decode security file content');
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => 'Cannot decode security file content') if $@;
 
-    if (defined($security->{block_command_overload}) && $security->{block_command_overload} == 1) {
-        $options{output}->add_option_msg(short_msg => 'Cannot overload command (security)');
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => 'Cannot overload command (security)')
+        if $security->{block_command_overload} && $security->{block_command_overload} == 1;
 
     return 0;
 }
@@ -934,19 +1011,26 @@ sub sort_ips($$) {
 }
 
 # function to assess if a string has to be excluded given an include regexp and an exclude regexp
-sub is_excluded($;$;$) {
-    my ($string, $include_regexp, $exclude_regexp) = @_;
+sub is_excluded($;$;$;%) {
+    my ($string, $include_regexp, $exclude_regexp, %options) = @_;
     return 1 unless defined $string;
 
     if (defined $exclude_regexp) {
         $exclude_regexp = [ $exclude_regexp ] unless ref $exclude_regexp eq 'ARRAY';
-        return 1 if grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp;
+        if (grep { defined && $_ ne '' && $string =~ /$_/ } @$exclude_regexp) {
+            $options{output}->output_add(long_msg => "skipping '$string': excluded by a filter.", debug => 1)
+                if %options && $options{output};
+            return 1
+        }
     }
     return 0 unless defined $include_regexp;
     $include_regexp = [ $include_regexp ] unless ref $include_regexp eq 'ARRAY';
     return 0 unless @{$include_regexp};
 
     return 0 if grep { (not defined) || $_ eq '' || $string =~ /$_/ } @$include_regexp;
+
+    $options{output}->output_add(long_msg => "skipping '$string': not included by any filter.", debug => 1)
+        if %options && $options{output};
 
     return 1;
 }
@@ -955,6 +1039,151 @@ sub is_excluded($;$;$) {
 # Eg: 'include_test' becomes 'include-test'
 sub format_opt($) {
     $_[0] =~ s/_/-/gr;
+}
+
+# Attempts to mask secrets in a command line string by replacing them with $mask ( or *** if mask is not defined )
+# Be aware that this is only a try, there is no guarantee that all secrets will be masked!
+sub mask_secrets($;$) {
+    my ($command, $mask) = @_;
+
+    return '' unless $command;
+
+    $mask = '***' unless defined $mask;
+
+    my $masked = $command;
+
+    # Handled cases with examples
+
+    # command -password P@s$W@rD -I100
+    $masked =~ s/(\s+-+password[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # command -token=P@s$W@rD -I100
+    $masked =~ s/(\s+-+token[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # curl --header "api-key: P@s$W@rD" https://test.com' OR curl -api-key P@s$W@rD
+    $masked =~ s/(\s+-+api[_-]?key[=\s:]+)[^\s'"]+/$1$mask/gi;
+    $masked =~ s/(api[_-]?key\s*:\s*)[^\s'"]+/$1$mask/gi;
+
+    # command -secret=P@s$W@rD -I100
+    $masked =~ s/(\s+-+secret[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # curl --header "secret: P@s$W@rD" https://test.com'
+    $masked =~ s/(secret\s*:\s*)[^\s'"]+/$1$mask/gi;
+
+    # command -authent=P@s$W@rD -I100
+    $masked =~ s/(\s+-+auth(ent)?[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # command -cert-password=P@s$W@rD -I100
+    $masked =~ s/(\s+-+cert[_-]?password[=\s:]+)[^\s'"]+/$1$mask/gi;
+    # command -passphrase=P@s$W@rD -I100
+    $masked =~ s/(\s+-+passphrase[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # snmpwalk -snmp-community MyCommunitString123 -v 2c localhost',
+    $masked =~ s/(\s+-+snmp[_-]?community[=\s:]+)[^\s'"]+/$1$mask/gi;
+
+    # snmpwalk --c MyCommunitString123 -v 2c localhost',
+    $masked =~ s/(\s-c\s+)[^\s'"]+/$1$mask/gi;
+
+    # mysql -u root -p PASSWORD database
+    $masked =~ s/(\s+-p\s+)[^\s'"]+/$1$mask/gi;
+
+    # mysql -u root -pPASSWORD database
+    $masked =~ s/(\s+-p)(?!assword\b)([A-Z])[^\s'"]*/$1$mask/gi;
+
+    my $common_auth = 'Bearer|Basic|Negotiate|X-API-Key|ApiKey|NTLM|AWS4-HMAC-SHA256';
+
+    # curl -H "Authorization: Bearer ABCDEF" http://test.com'
+    $masked =~ s/((?:$common_auth)\s+)[^\s'"]+/$1$mask/gi;
+    # curl -H "PVX-Authorization: ABCDEF" http://test.com'
+    $masked =~ s/((?:[\w-]*)Authorization\s*:\s*)(?!$common_auth)[^\s',;"]+/$1$mask/gi;
+
+    # https://admin:password@test.com:8080/api
+    $masked =~ s/([\w.-]+):([\w?!@#$%^&*._-]+)(@)/$1:$mask$3/g;
+
+    return $masked;
+}
+
+sub normalize_mac {
+    my ($mac) = @_;
+
+    return '' unless defined $mac;
+
+    # already in a human readable string format ( AABBCC )
+    return lc join (':', $mac =~ /(..)/g)
+        if $mac =~ /^[0-9A-Fa-f]+$/;
+
+    # other humain-readable string formats ( AA BB CC, AA:BB:CC, AA-BB-CC ... )
+    if ($mac =~ /^[0-9A-Fa-f\s:-]+$/) {
+        $mac =~ s/[\s:-]+/:/g;
+        return lc $mac;
+    }
+
+    # binary format
+    return join(':', unpack('(H2)6', $mac)) if length($mac) == 6;
+
+    # fallback
+    return $mac;
+}
+
+sub json_to_sha256 {
+    my (%options) = @_;
+
+    my $data = $options{data} // '';
+    my $prefix = $options{prefix} // '';
+    $prefix .= '_' if $prefix ne '';
+    my $encoded = eval { JSON::XS->new->utf8->canonical(1)->encode($data) };
+    return undef if $@;
+    return sha256_hex($prefix.$encoded);
+}
+
+sub date_xm_ago_utc {
+    my ($value) = @_;
+    my @t = gmtime(time() - ($value * 60)); # heure en minutes
+    #@t = gmtime(time() - 600); # 24h en secondes
+    return sprintf( "%04d-%02d-%02dT%02d:%02d:%02dZ", $t[5] + 1900, $t[4] + 1, $t[3], $t[2], $t[1], $t[0]);
+}
+
+# Escape a string to be used by the discovery module
+sub disco_escape($;$) {
+    my ($value, $sub) = @_;
+
+    $sub //= '_';
+
+    return $value =~ s/[~!\$%\^&\*"'\|<>?,()=]/$sub/gr;
+}
+
+# exprintf replaces placeholders in a string with values from a hash.
+# Placeholders can optionally use the 'storage' or 'network' filter to
+# convert and format values before display.
+# See tests/centreon/plugins/misc/exprintf.t for usage examples
+sub exprintf($$;$) {
+    my ($template, $datas, $default) = @_;
+
+    return $template unless ref $datas eq 'HASH';
+
+    $default = '' unless defined $default;
+
+    return $template =~ s{%\{(\w+)(?:\|(\w+))?\}}{  my $value = $datas->{$1} // $default;
+                                                    if ($2) {
+                                                        if ($2 eq 'network') {
+                                                            $value = join '', format_bytes(value => $value, network => 1);
+                                                        } elsif ($2 eq 'storage') {
+                                                            $value = join '', format_bytes(value => $value);
+                                                        }
+                                                    }
+                                                    $value
+                                                 }ger;
+}
+
+sub bool_to_int {
+    my $value = shift;
+    return int ($value && $value =~ /(?:true|1)$/i);
+}
+
+sub int_to_bool {
+    my $value = shift;
+
+    return $value ? 'true' : 'false';
 }
 
 1;
@@ -1108,6 +1337,20 @@ Checks if a value is empty.
 =item * C<$value> - The value to check.
 
 =back
+
+=head2 is_not_empty
+
+    my $result = centreon::plugins::misc::is_not_empty($value);
+
+Check if a value is non-empty.
+
+=over 4
+
+=item * C<$value> - The value to check
+
+=back
+
+Returns 1 if the value is defined and not an empty string, 0 otherwise.
 
 =head2 value_of
 
@@ -1592,7 +1835,7 @@ Returns a sorted array.
 
 =head2 is_excluded
 
-    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp);
+    my $excluded = is_excluded($string, $include_regexp, $exclude_regexp, %options);
 
 Determines whether a string should be excluded based on include and exclude regular expressions.
 
@@ -1604,11 +1847,175 @@ Determines whether a string should be excluded based on include and exclude regu
 
 =item * C<$exclude_regexp> - A regular expression to exclude the string. If defined and matches the string, the function returns 1 (excluded).
 
-=back
+=item * C<%options> - An optional hash that allows defining the output module in order to log when the string is excluded.
 
 Returns 1 if the string is excluded, 0 if it is included.
 The string is excluded if $exclude_regexp is defined and matches the string, or if $include_regexp is defined and does
 not match the string. The string will also be excluded if it is undefined.
+
+=back
+
+=head2 mask_secrets
+
+    my $to_print = centreon::plugins::misc::mask_secrets($unsafe_string, $mask);
+
+Attempts to mask secrets in a command line string by replacing them with $mask ( or *** if mask is not defined )
+Be aware that this is only a try, there is no guarantee that all secrets will be masked!
+
+=over 4
+
+=item * C<$unsafe_string> - input string that may contain secrets.
+
+=item * C<$mask> - replacement string used to mask detected secrets.
+
+=back
+
+=head2 normalize_mac
+
+    my $to_print = centreon::plugins::misc::normalize_mac($mac);
+
+Attempts to format a MAC address into a human-readable format
+
+=over 4
+
+=item * C<$mac> - raw MAC address to print
+
+=back
+
+=head2 disco_escape
+
+    my $value = centreon::plugins::misc::disco_escape($value, $sub);
+
+Replace characters not allowed by centengine/discovery with $sub
+
+=over 4
+
+=item * C<$value> - label
+
+=item * C<$sub> - replacement character ( default: '_' )
+
+=back
+
+=head2 json_to_sha256
+
+    my $hash = centreon::plugins::misc::json_to_sha256(%options);
+
+Converts a JSON object to a SHA256 hash.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<data> - The data to encode as JSON and hash.
+
+=item * C<prefix> - Optional prefix to prepend to the encoded JSON before hashing.
+
+=back
+
+Returns the hexadecimal SHA256 hash of the JSON encoded data.
+
+=back
+
+=head2 C<exprintf>
+
+    my $output = centreon::plugins::misc::exprintf($template, $hash_ref, $default);
+
+Replace placeholders in a template string with values from a hash.
+
+=over 4
+
+=item * C<$template> - Template string with placeholders in the form C<%{key}> or C<%{key|filter}>
+
+=item * C<$hash_ref> - Hash reference containing the values to substitute
+
+=item * C<$default> - Optional default value to use when a key is not found (default: empty string)
+
+Supported filters: C<storage> (binary units 1024), C<network> (decimal units 1000).
+
+=back
+
+Returns the template string with all C<%{key}> placeholders replaced by the corresponding hash values.
+If C<$hash_ref> is not a hash reference, returns the template unchanged.
+
+=head2 bool_to_int
+
+    my $int = centreon::plugins::misc::bool_to_int($value);
+
+Convert a boolean-like value to an integer (0 or 1).
+
+=over 4
+
+=item * C<$value> - A value that may be a boolean string (e.g., 'true', 'false', 'True', 'False') or integer
+
+=back
+
+Returns 1 if the value matches C<'true'> or C<'1'> (case-insensitive), 0 otherwise.
+
+=head2 int_to_bool
+
+    my $bool = centreon::plugins::misc::int_to_bool($value);
+
+Convert an integer to a boolean string representation.
+
+=over 4
+
+=item * C<$value> - An integer or value that evaluates to true/false in Perl
+
+=back
+
+Returns 'true' if the value is true, 'false' otherwise.
+
+=head2 date_xm_ago_utc
+
+    my $date = centreon::plugins::misc::date_xm_ago_utc($minutes);
+
+Returns a date in ISO 8601 UTC format that is X minutes ago from now.
+
+=over 4
+
+=item * C<$minutes> - Number of minutes ago to calculate from current time.
+
+=back
+
+Returns a string in the format: C<YYYY-MM-DDTHH:MM:SSZ>
+
+=head2 format_bytes
+
+    my ($value, $unit) = centreon::plugins::misc::format_bytes(value => $value, network => $bool);
+
+Format a value into human readable units.
+
+=over 4
+
+=item * C<value> - Value in bytes to format
+
+=item * C<network> - Use network units (Kb, Mb, Gb) if true, storage units (KB, MB, GB) if false. Optional (default: storage).
+
+Returns a list of (formatted_value, unit) where unit is Kb/Mb/Gb/Tb (network) or KB/MB/GB/TB (storage).
+
+=back
+
+=head2 convert_bytes_ng
+
+    my $bytes = centreon::plugins::misc::convert_bytes_ng(value => $value, unit => $unit, pattern => $pattern, base => $base);
+
+Convert a value with Kubernetes/storage units to bytes.
+
+=over 4
+
+=item * C<value> - Value to convert (with or without unit suffix)
+
+=item * C<unit> - Explicit unit (ki, Mi, Gi, Ti, Pi for binary; k, M, G, T, P for decimal). Optional.
+
+=item * C<pattern> - Custom regex pattern to extract value and unit (default: C<^([\d\.]+)(?:([kmgtp]i?)B?)?$>). Optional.
+
+=item * C<base> - Custom base multiplier. Optional.
+
+Returns the value converted to bytes, or 0 if value is empty/undef.
+
+=back
 
 =head1 AUTHOR
 
