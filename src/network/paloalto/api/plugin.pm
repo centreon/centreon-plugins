@@ -29,11 +29,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
+        'cpu'         => 'network::paloalto::api::mode::cpu',
         'environment' => 'network::paloalto::api::mode::environment',
         'ha'          => 'network::paloalto::api::mode::ha',
         'licenses'    => 'network::paloalto::api::mode::licenses',
+        'memory'      => 'network::paloalto::api::mode::memory',
+        'sessions'    => 'network::paloalto::api::mode::sessions',
         'system'      => 'network::paloalto::api::mode::system',
         'ipsec'       => 'network::paloalto::api::mode::ipsec'
     };
