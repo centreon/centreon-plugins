@@ -88,7 +88,7 @@ sub manage_selection {
 
     # Extract the log count from the API response
     # API response format: {"curves":[{"metric":"count","times":[...],"data":[count_value,...],"attributes":[]}]}
-    $self->{output}->option_exit("curves array is missing from response")
+    $self->{output}->option_exit(short_msg => "curves array is missing from response")
         unless $result->{curves} && ref($result->{curves}) eq 'ARRAY';
 
     # under `data` should be an array reference with the count values grouped by time slices
