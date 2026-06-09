@@ -23,7 +23,7 @@ package apps::centreon::logmanagement::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::misc qw(json_decode json_encode);
+use centreon::plugins::misc qw(json_decode json_encode value_of);
 
 sub new {
     my ($class, %options) = @_;
@@ -41,7 +41,6 @@ sub new {
         $options{options}->add_options(arguments => {
             'hostname:s' => { name => 'hostname', default => 'api.euwest1.obs.mycentreon.com' },
             'org:s'      => { name => 'org', default => '' },
-            'api-path:s' => { name => 'api_path', default => '/v1/orgs/{org}/datasources/centreon-log/query/metrics' },
             'port:i'     => { name => 'port', default => '443', greater_than => 0, less_than => 65536 },
             'proto:s'    => { name => 'proto', default => 'https', regexp_match => '^http[s]?$' },
             'token:s'    => { name => 'token', default => '' },
@@ -96,6 +95,69 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
+sub get_alert_events {
+    my ($self, %options) = @_;
+
+    $self->settings();
+
+    my $query    = $options{query};
+    my $period   = $options{period};
+    my $interval = $options{interval}; # Use the provided interval value
+
+    # Combine authentication header with content-type header
+    my @headers = ("Content-Type: application/json");
+
+    # Add authentication header if token is provided
+    push @headers, "X-Api-Key: " . $self->{token}
+        if $self->{token};
+
+    # statuses must be given as an array of strings (as a string). Eg: '["ok","critical"]'
+    my $accepted_statuses = "[]";
+    $accepted_statuses = '["' . join('","', @{$options{accepted_statuses}}) . '"]'
+        if $options{accepted_statuses} && ref $options{accepted_statuses} eq 'ARRAY' && @{$options{accepted_statuses}};
+
+    my $full_response = [];
+
+    my $page = 1;
+    my $limit = 50;
+    my $last_page;
+    my $total;
+    while (1) {
+        my $json_response = $self->{http}->request(
+            method          => 'GET',
+            proto           => $self->{proto},
+            port            => $self->{port},
+            url_path        => '/v1/orgs/' . $self->{org} . '/alerts/events',
+            get_param       => [
+                'limit=' . $limit,
+                'page=' . $page,
+                'status=' . $accepted_statuses
+            ],
+            header          => \@headers,
+            unknown_status  => '',
+            warning_status  => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+
+        my $response = json_decode($json_response, output => $self->{output});
+
+        $self->{output}->option_exit(short_msg => $response->{message})
+            if $response->{message};
+        $self->{output}->option_exit(short_msg => "No result array in response: " . $json_response)
+            unless ref $response->{results} eq 'ARRAY';
+
+        push @$full_response, @{$response->{results}};
+
+        $total //= value_of($response, '->{meta}->{total}');
+        # the number of pages to get is $total / $limit if the int division is exact, else we add 1 page for the last elements
+        $last_page //= int($total / $limit) + (($total % $limit) ? 1 : 0);
+        last if $page == $last_page;
+        $page++;
+    }
+
+    return $full_response;
+}
+
 sub get_log_count {
     my ($self, %options) = @_;
 
@@ -124,7 +186,7 @@ sub get_log_count {
         method          => 'POST',
         proto           => $self->{proto},
         port            => $self->{port},
-        url_path        => $self->{api_path},
+        url_path        => '/v1/orgs/' . $self->{org} .'/datasources/centreon-log/query/metrics',
         query_form_post => json_encode($request_body, output => $self->{output}),
         header          => \@headers,
         unknown_status => $self->{unknown_http_status},
@@ -161,11 +223,6 @@ Centreon Log Management hostname.
 =item B<--org>
 
 Organization code.
-
-=item B<--api-path>
-
-API path (default: '/v1/orgs/{org}/datasources/centreon-log/query/metrics').
-The {org} placeholder will be replaced with the organization code.
 
 =item B<--proto>
 
