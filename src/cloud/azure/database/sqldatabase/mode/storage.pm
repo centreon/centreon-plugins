@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,9 +114,9 @@ __END__
 
 Check Azure SQL Database storage.
 Metrics are available with:
-- Tier 'DTU based' - Basic, Standard, Premium
-- vCore based model - General purpose & Business critical
-- HyperScale
+- C<Tier DTU based> - Basic, Standard, Premium
+- C<vCore based model> - General purpose & Business critical
+- C<HyperScale>
 
 Example:
 
@@ -136,6 +136,19 @@ Default aggregation: 'maximum', other are not identified as relevant nor availab
 
 =over 8
 
+=item B<--filter-metric>
+
+Define the metrics to query.
+
+By default, the storage mode of this monitoring connector queries the
+C<storage> and C<storage_percent> metrics.
+
+Be aware that the C<storage_percent> metric (Data space used percent) is not
+available for C<data warehouses> and C<hyperscale> databases. Using this metric on
+these environments will cause the plugin to report a "Bad Request" error.
+
+For these environments, you must use C<--filter-metric=storage> to use this mode successfully.
+
 =item B<--resource>
 
 Set resource name or ID (required). It is the database name. 
@@ -148,13 +161,23 @@ Set resource group (required if resource's name is used).
 
 Set server name (required if resource's name is used).
 
-=item B<--warning-*>
+=item B<--warning-usage-bytes>
 
-Warning threshold where '*' can be: 'usage-bytes','usage-percent'.
+Threshold.
 
-=item B<--critical-*>
+=item B<--critical-usage-bytes>
 
-Critical threshold  where '*' can be: 'usage-bytes','usage-percent'.
+Threshold.
+
+=item B<--warning-usage-percent>
+
+Threshold.
+Not applicable to C<data warehouses> or C<hyperscale> databases.
+
+=item B<--critical-usage-percent>
+
+Threshold.
+Not applicable to C<data warehouses> or C<hyperscale> databases.
 
 =back
 
