@@ -120,7 +120,6 @@ sub get_alert_events {
 
     my $page = 1;
     my $limit = 50;
-    my $last_page;
     my $total;
     while (1) {
         my $json_response = $self->{http}->request(
@@ -148,10 +147,8 @@ sub get_alert_events {
 
         push @$full_response, @{$response->{results}};
 
-        $total //= value_of($response, '->{meta}->{total}');
-        # the number of pages to get is $total / $limit if the int division is exact, else we add 1 page for the last elements
-        $last_page //= int($total / $limit) + (($total % $limit) ? 1 : 0);
-        last if $page == $last_page;
+        $total = value_of($response, '->{meta}->{total}', 0);
+        last if @$full_response == $total;
         $page++;
     }
 
