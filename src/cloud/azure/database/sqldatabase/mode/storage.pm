@@ -138,16 +138,16 @@ Default aggregation: 'maximum', other are not identified as relevant nor availab
 
 =item B<--filter-metric>
 
-Define the metrics to query.
+Define metrics to exclude from queries.
 
 By default, the storage mode of this monitoring connector queries the
-C<storage> and C<storage_percent> metrics.
+C<storage> and C<storage_percent> metrics, no metrics are excluded.
 
 Be aware that the C<storage_percent> metric (Data space used percent) is not
 available for C<data warehouses> and C<hyperscale> databases. Using this metric on
 these environments will cause the plugin to report a "Bad Request" error.
 
-For these environments, you must use C<--filter-metric=storage> to use this mode successfully.
+For these environments, you must use C<--filter-metric=storage_percent> to use this mode successfully.
 
 =item B<--resource>
 
