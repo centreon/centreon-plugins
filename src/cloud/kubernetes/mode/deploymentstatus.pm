@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(flatten_arrays);
 use centreon::common::kubernetes::misc qw/is_excluded_label/;
 
 sub custom_status_perfdata {
@@ -89,13 +90,27 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-namespace:s' => { name => 'filter_namespace' }
+        'filter-name:s'       => { redirect => 'include_name' },
+        'filter-namespace:s'  => { redirect => 'exclude_namespace' },
+        'include-name:s'      => { name => 'include_name', default => '' },
+        'exclude-name:s'      => { name => 'exclude_name', default => '' },
+        'include-namespace:s' => { name => 'include_namespace', default => '' },
+        'exclude-namespace:s' => { name => 'exclude_namespace', default => '' },
+        "include-label:s@"    => { name => 'include_label' },
+        "exclude-label:s@"    => { name => 'exclude_label' }
     });
    
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+
+    $self->{option_results}->{$_} = flatten_arrays($self->{option_results}->{$_})
+        foreach qw/include_label exclude_label/;
+}
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -103,20 +118,16 @@ sub manage_selection {
 
     $self->{deployments} = {};
     foreach my $deployment (@{$results}) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $deployment->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter name.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $deployment->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
-            next;
-        }
+        my $name = $deployment->{metadata}->{name};
+        my $namespace = $deployment->{metadata}->{namespace};
+
+        next if is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
+                || is_excluded($namespace, $self->{option_results}->{include_namespace}, $self->{option_results}->{exclude_namespace}, output => $self->{output})
+                || is_excluded_label($deployment, $self->{option_results}->{include_label}, $self->{option_results}->{exclude_label}, output => $self->{output}, display => $name);
 
         $self->{deployments}->{ $deployment->{metadata}->{uid} } = {
-            name => $deployment->{metadata}->{name},
-            namespace => $deployment->{metadata}->{namespace},
+            name => $name,
+            namespace => $namespace,
             desired => $deployment->{spec}->{replicas}
         };
         $self->{deployments}->{ $deployment->{metadata}->{uid} }->{current} =
@@ -145,13 +156,31 @@ Check deployment status.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter deployment name (can be a regexp).
 
-=item B<--filter-namespace>
+=item B<--exclude-name>
+
+Exclude deployment name (can be a regexp).
+
+=item B<--include-namespace>
 
 Filter deployment namespace (can be a regexp).
+
+=item B<--exclude-namespace>
+
+Exclude deployment namespace (can be a regexp).
+
+=item B<--include-label>
+
+Include deployments matching the specified label filters.
+Filters are provided as a comma-separated list in the format key or key=value, where both key and value may be a regexp.
+
+=item B<--exclude-label>
+
+Exclude deployments matching the specified label filters.
+Filters are provided as a comma-separated list in the format key or key=value, where both key and value may be a regexp.
 
 =item B<--warning-status>
 

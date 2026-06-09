@@ -245,13 +245,13 @@ Exclude project name (can be a regexp).
 
 =item B<--include-label>
 
-Include project labels in format key=value (key and value can be a regexp).
-Comma-separated list of filter values. Format: key or key=value.
+Include projects matching the specified label filters.
+Filters are provided as a comma-separated list in the format key or key=value, where both key and value may be a regexp.
 
 =item B<--exclude-label>
 
-Exclude project labels in format key=value (key and value can be a regexp).
-Comma-separated list of filter values. Format: key or key=value.
+Exclude projects matching the specified label filters.
+Filters are provided as a comma-separated list in the format key or key=value, where both key and value may be a regexp.
 
 =item B<--required-label>
 
