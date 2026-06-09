@@ -69,10 +69,11 @@ sub manage_selection {
     my $oid_snsVersion = '.1.3.6.1.4.1.11256.1.18.2.0';
     my $oid_snsSerialNumber = '.1.3.6.1.4.1.11256.1.18.3.0';
     my $oid_snsDate = '.1.3.6.1.4.1.11256.1.10.1.0';
-    my $oid_snsUptime = '.1.3.6.1.4.1.11256.1.10.2.0';
+    my $oid_snsUptime = '.1.3.6.1.4.1.11256.1.10.2.0';             # version < 5.1.0
+    my $oid_snsSysUptime = '.1.3.6.1.4.1.11256.1.10.11.0';         # version >= 5.1.0
 
     my $result = $options{snmp}->get_leef(
-        oids => [ $oid_snsSystemName, $oid_snsSystemNodeName, $oid_snsBiosVersion, $oid_snsModel, $oid_snsVersion, $oid_snsSerialNumber, $oid_snsDate, $oid_snsUptime ],
+        oids => [ $oid_snsSystemName, $oid_snsSystemNodeName, $oid_snsBiosVersion, $oid_snsModel, $oid_snsVersion, $oid_snsSerialNumber, $oid_snsDate, $oid_snsUptime, $oid_snsSysUptime ],
         nothing_quit => 1
     );
 
@@ -94,18 +95,25 @@ sub manage_selection {
         $bios_version = undef;
     }
 
-    my $uptime_raw = $result->{$oid_snsUptime};
+    # $oid_snsUptime is deprecated in version >= 5.1.0 and is replaced by $oid_snsSysUptime which is in TimeTicks instead of String
     my $uptime_seconds = 0;
+    if (!centreon::plugins::misc::minimal_version($version, '5.1.0')) {
+        my $uptime_raw = $result->{$oid_snsUptime};
+        $uptime_seconds = 0;
 
-    if (defined($uptime_raw) && $uptime_raw ne "") {
-        my @parts = split(/:/, $uptime_raw);
-        
-        if (scalar(@parts) == 4) {
-            my ($days, $hours, $minutes, $seconds) = @parts;
-            $uptime_seconds = ($days * 86400) + ($hours * 3600) + ($minutes * 60) + $seconds;
-        } else {
-            $self->{output}->message_add(severity => 'CRITICAL', short_msg => "Unexpected uptime format: $uptime_raw");
+        if (defined($uptime_raw) && $uptime_raw ne "") {
+            my @parts = split(/:/, $uptime_raw);
+            
+            if (scalar(@parts) == 4) {
+                my ($days, $hours, $minutes, $seconds) = @parts;
+                $uptime_seconds = ($days * 86400) + ($hours * 3600) + ($minutes * 60) + $seconds;
+            } else {
+                $self->{output}->message_add(severity => 'CRITICAL', short_msg => "Unexpected uptime format: $uptime_raw");
+            }
         }
+    } else{
+        my $uptime_raw = $result->{$oid_snsSysUptime};
+        $uptime_seconds = $uptime_raw / 100;
     }
 
     my $long_msg = "System Name: " . $result->{$oid_snsSystemName} . "\n";
