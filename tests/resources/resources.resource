@@ -1,7 +1,8 @@
 *** Settings ***
 Documentation       Centreon Plugins for Robot Framework
 
-Library             Process
+Library             Process    
+Library             OperatingSystem
 
 
 *** Variables ***
@@ -25,6 +26,7 @@ Start Mockoon
     Ctn Generic Suite Setup
     Remove File    ${MOCKOON_LOG_FILE}
 
+    File Should Exist     ${MOCKOON_JSON}
     # Thoses variables are accessible in Mockoon templates with {{ getEnvVar 'MOCKOON_HOSTNAME' }} and {{ getEnvVar 'MOCKOON_APIPORT' }}
     Set Environment Variable    MOCKOON_HOSTNAME    ${HOSTNAME}
     Set Environment Variable    MOCKOON_APIPORT    ${APIPORT}
@@ -216,7 +218,10 @@ Ctn Run Command And Check Result As Json
     Dictionaries Should Be Equal
     ...    ${json_output}
     ...    ${json_expected}
+    ...    Wrong JSON result for command:\n${command}\n\nObtained:\n${output}\n\nExpected JSON:\n${expected}\n
+    ...    values=False
     ...    ignore_keys=['end_time', 'start_time', 'duration']
+
     Log Dictionary    ${json_output}
 
 Ctn Run Command And Return Parsed XML

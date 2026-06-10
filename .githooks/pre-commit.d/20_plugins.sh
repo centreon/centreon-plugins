@@ -115,7 +115,7 @@ for file in "${committed_files[@]}"; do
           ;;
         json)
             info "--> Checking JSON validity"
-            jq '' "$file" >/dev/null 2>&1 || error "JSON file $file is not valid"
+            jq '.' "$file" >/dev/null 2>&1 || error "JSON file $file is not valid"
             check_tabs_crlf "$file"
           ;;
         *)

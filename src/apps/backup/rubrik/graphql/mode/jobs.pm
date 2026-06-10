@@ -278,14 +278,27 @@ my @_entities = [ 'jobId', 'jobName', 'jobType', 'locationName' ];
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $cluster_filters = $options{custom}->common_filters();
+
+    # activitySeriesConnection does not support native filtering by name, so we convert names to UUIDs
+    my $cluster_ids = $cluster_filters->{id} // [];
+    if ($cluster_filters->{name}) {
+        my $other_clusters = $options{custom}->clusters_uuid_from_name(@{$cluster_filters->{name}});
+
+        $self->{output}->option_exit(short_msg => 'No matching cluster !')
+            unless ref $other_clusters eq 'ARRAY' && @$other_clusters;
+
+        push @$cluster_ids, @$other_clusters;
+    }
+
     my %filters;
 
     $filters{objectName} = $self->{option_results}->{job_name} if $self->{option_results}->{job_name} ne '';
-    $filters{objectType} = $self->{option_results}->{object_type} if $self->{option_results}->{object_type};
-    $filters{objectFid} = $self->{option_results}->{job_id} if $self->{option_results}->{job_id};
-    $filters{lastActivityType} = $self->{option_results}->{job_type} if $self->{option_results}->{job_type};
-    $filters{lastActivityStatus} = $self->{option_results}->{job_status} if $self->{option_results}->{job_status};
-    $filters{clusterId} = $self->{option_results}->{cluster_id} if $self->{option_results}->{cluster_id};
+    $filters{objectType} = $self->{option_results}->{object_type} if @{$self->{option_results}->{object_type}};
+    $filters{objectFid} = $self->{option_results}->{job_id} if @{$self->{option_results}->{job_id}};
+    $filters{lastActivityType} = $self->{option_results}->{job_type} if @{$self->{option_results}->{job_type}};
+    $filters{lastActivityStatus} = $self->{option_results}->{job_status} if @{$self->{option_results}->{job_status}};
+    $filters{clusterId} = $cluster_ids if $cluster_ids && @$cluster_ids;
 
     $filters{startTimeGt} = $self->{option_results}->{start_time}
         if $self->{option_results}->{start_time} ne '';
