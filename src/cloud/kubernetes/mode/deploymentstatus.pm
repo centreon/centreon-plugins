@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use centreon::plugins::misc qw(flatten_arrays);
+use centreon::plugins::misc qw(flatten_arrays is_excluded);
 use centreon::common::kubernetes::misc qw/is_excluded_label/;
 
 sub custom_status_perfdata {
@@ -70,7 +70,7 @@ sub set_counters {
     $self->{maps_counters}->{deployments} = [
         {
             label => 'status',
-            type => COUNTER_KIND_METRIC,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{up_to_date} < %{desired}',
             critical_default => '%{available} < %{desired}',
             set => {
