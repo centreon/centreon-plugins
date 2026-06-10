@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::constants qw/:values :counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::misc qw/is_excluded convert_bytes_ng/;
+use List::Util qw/uniq/;
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -69,7 +70,7 @@ sub set_counters {
             critical_default => '%{usage_percent} > 90',
             set => {
                 key_values => [ { name => 'usage_percent' }, { name => 'used' }, { name => 'hard' },
-                                { name => 'display_used' }, { name => 'display_hard' },
+                                { name => 'display_used' }, { name => 'display_hard' }, { name => 'uid' },
                                 { name => 'name' }, { name => 'namespace' }, { name => 'resource' } ],
                 output_template => 'Usage: %{display_used}/%{display_hard} (%{usage_percent|%.2f}%%)',
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -127,8 +128,9 @@ sub manage_selection {
 
             my $usage_percent = $hard_value ? ($used_value / $hard_value) * 100 : 0;
 
-            my $uid = $rq->{metadata}->{uid} . '-' . $resource;
-            $self->{quotas}->{$uid} = {
+            my $uid = $rq->{metadata}->{uid};
+            $self->{quotas}->{ $uid . '-' . $resource } = {
+                uid => $uid,
                 name => $name,
                 namespace => $namespace,
                 resource => $resource,
@@ -143,7 +145,28 @@ sub manage_selection {
     }
 
     $self->{output}->option_exit(short_msg => "No ResourceQuotas found.")
-        unless %{$self->{quotas}};
+        unless %{$self->{quotas}} || $self->{output}->is_disco_show();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'namespace']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    my %skip;
+    foreach my $quotas (sort { $a->{name} cmp $b->{name} } values %{$self->{quotas}}) {
+        next if $skip{$quotas->{uid}}++;
+        $self->{output}->add_disco_entry(
+            uid => $quotas->{uid},
+            name => $quotas->{name},
+            namespace => $quotas->{namespace}
+        );
+    }
 }
 
 1;
@@ -183,12 +206,12 @@ Exclude C<ResourceQuota> resource type (can be a regexp).
 =item B<--warning-usage>
 
 Define the conditions to match for the status to be WARNING (default: '%{usage_percent} > 80').
-You can use the following variables: %{name}, %{namespace}, %{resource}, %{used}, %{hard}, %{usage_percent}.
+You can use the following variables: %{name}, %{namespace}, %{resource}, %{used}, %{hard}, %{usage_percent}, %{uid}.
 
 =item B<--critical-usage>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{usage_percent} > 90').
-You can use the following variables: %{name}, %{namespace}, %{resource}, %{used}, %{hard}, %{usage_percent}.
+You can use the following variables: %{name}, %{namespace}, %{resource}, %{used}, %{hard}, %{usage_percent}, %{uid}.
 
 =back
 
