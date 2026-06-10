@@ -4,7 +4,6 @@
     "plugin_name": "centreon_openstack_restapi.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
-        "centreon/common/kubernetes/",
         "cloud/openstack/restapi/"
     ]
 }
