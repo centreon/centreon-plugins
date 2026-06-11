@@ -23,9 +23,7 @@ package cloud::kubernetes::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use DateTime;
 use JSON::XS;
-use URI::Encode;
 
 sub new {
     my ($class, %options) = @_;

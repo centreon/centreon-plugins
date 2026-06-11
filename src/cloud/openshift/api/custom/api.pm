@@ -24,8 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::misc qw(json_decode value_of);
-use DateTime;
-use URI::Encode;
 
 sub new {
     my ($class, %options) = @_;
