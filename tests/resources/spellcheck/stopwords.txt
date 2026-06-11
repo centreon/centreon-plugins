@@ -264,6 +264,7 @@ oneaccess-sys-mib
 OneAPI
 Opengear
 OpenMetrics
+OpenShift
 OpenStack
 OpenWSMAN
 OSPF
