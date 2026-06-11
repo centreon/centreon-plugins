@@ -25,6 +25,7 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::constants qw(:counters);
 use centreon::plugins::misc qw(is_excluded);
+use Digest::SHA qw(sha256_hex);
 
 sub prefix_by_instance_output {
     my ($self, %options) = @_;
@@ -41,9 +42,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{total} = [
-        { label => 'deadlocks', type => COUNTER_KIND_METRIC, nlabel => 'total#mssql.deadlocks.count', set => {
-                key_values => [ { name => 'total' } ],
-                output_template => '%.2f total dead locks/s',
+        { label => 'deadlocks', type => COUNTER_KIND_METRIC, nlabel => 'total#mssql.deadlocks.perminute', set => {
+                key_values => [ { name => 'total', per_minute => 1 } ],
+                output_template => '%.2f total dead locks/min',
                 perfdatas => [
                     { template => '%.2f', min => 0 },
                 ],
@@ -52,9 +53,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{by_instance} = [
-        { label => 'deadlocks-by-instance', nlabel => 'mssql.deadlocks.count', set => {
-                key_values => [ { name => 'value' }, { name => 'display' } ],
-                output_template => '%.2f dead locks/s',
+        { label => 'deadlocks-by-instance', nlabel => 'mssql.deadlocks.perminute', set => {
+                key_values => [ { name => 'value', per_minute => 1 }, { name => 'display' } ],
+                output_template => '%.2f dead locks/min',
                 perfdatas => [
                     { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
@@ -63,10 +64,9 @@ sub set_counters {
     ];
 }
 
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -96,7 +96,6 @@ sub manage_selection {
     my $query_result = $options{sql}->fetchall_arrayref();
     $self->{total}->{total} = 0;
 
-
     foreach my $row (@{$query_result}) {
         my ($instance, $value) = @$row;
         next if $instance eq '_Total';
@@ -109,6 +108,10 @@ sub manage_selection {
     }
     $self->{output}->option_exit(short_msg => "No locks counter found with given filters")
         unless $self->{by_instance} && keys %{$self->{by_instance}};
+
+    $self->{cache_name} = 'mssql_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+        sha256_hex($self->{option_results}->{include_instance}) . '_' .
+        sha256_hex($self->{option_results}->{exclude_instance});
 }
 
 1;
@@ -117,7 +120,7 @@ __END__
 
 =head1 MODE
 
-Check MSSQL dead locks per second
+Check MSSQL dead locks per minute
 
 =over 8
 

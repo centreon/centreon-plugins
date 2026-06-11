@@ -54,6 +54,7 @@ sub new {
     $self->{threshold_crit} = undef;
 
     $self->{per_second} = 0;
+    $self->{per_minute} = 0;
     $self->{manual_keys} = 0;
     $self->{last_timestamp} = undef;
 
@@ -96,14 +97,15 @@ sub calc {
 
     # manage only one value ;)
     foreach my $value (@{$self->{key_values}}) {
-        if (defined($value->{diff}) && $value->{diff} == 1)  {
-            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
-        } elsif (defined($value->{per_second}) && $value->{per_second} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
-        } elsif (defined($value->{per_minute}) && $value->{per_minute} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / ($options{delta_time} / 60);
+        my $instance_name = $self->{instance} . '_' . $value->{name};
+        if ($value->{diff}) {
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name};
+        } elsif ($value->{per_second}) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name}) / $options{delta_time};
+        } elsif ($value->{per_minute}) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name}) / ($options{delta_time} / 60);
         } else {
-            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$instance_name};
         }
     }
 
