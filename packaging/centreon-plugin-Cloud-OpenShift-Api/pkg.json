@@ -1,7 +1,7 @@
 {
     "pkg_name": "centreon-plugin-Cloud-OpenShift-Api",
     "pkg_summary": "Centreon Plugin to monitor OpenShift cluster using RestAPI",
-    "plugin_name": "centreon_kubernetes_api.pl",
+    "plugin_name": "centreon_openshift_api.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
         "centreon/common/kubernetes/",
