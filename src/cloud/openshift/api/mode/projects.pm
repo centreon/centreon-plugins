@@ -200,7 +200,8 @@ sub manage_selection {
         }
 
         my $compliant = 1;
-        foreach my $label (@{$self->{option_results}->{required_label}}) {
+        foreach my $label (@{$self->{required_label}}) {
+            next if $label eq '';
             if ($label =~ /^([^=]+)=(.*)$/) {
                 my ($key, $value) = ($1, $2 // '');
                 unless (exists $labels->{$key} && $labels->{$key} eq $value) {
