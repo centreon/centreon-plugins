@@ -148,7 +148,7 @@ sub get_alert_events {
         push @$full_response, @{$response->{results}};
 
         $total = value_of($response, '->{meta}->{total}', 0);
-        last if @$full_response == $total;
+        last if @$full_response >= $total || !@{$response->{results}};
         $page++;
     }
 
