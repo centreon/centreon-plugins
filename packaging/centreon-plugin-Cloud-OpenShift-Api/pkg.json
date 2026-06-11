@@ -5,6 +5,6 @@
     "files": [
         "centreon/plugins/script_custom.pm",
         "centreon/common/kubernetes/",
-        "cloud/openshift/"
+        "cloud/openshift/api/"
     ]
 }

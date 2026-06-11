@@ -63,7 +63,7 @@ sub custom_output_detail {
     return $msg unless $self->{display_details}->{$id} && ref $self->{$id} eq 'ARRAY' && @{$self->{$id}};
 
     $self->{output}->output_add( long_msg => exprintf($options{title}, $self->{global}) );
-    $self->{output}->output_add( long_msg => join "\n", map { exprintf("    %{name}".($_->{display_name} ne $_->{name} ? " (%{display_name})" : ""), $_) }
+    $self->{output}->output_add( long_msg => join "\n", map { exprintf("    %{name}".($_->{display_name} ne '' && $_->{display_name} ne $_->{name} ? " (%{display_name})" : ""), $_) }
                                                         sort { $a->{name} cmp $b->{name} }
                                                         @{$self->{$id}} );
     return $msg;
@@ -186,9 +186,9 @@ sub manage_selection {
 
         my $hp ={ name => $name,
                   display_name => $display_name,
-                  phase => $phase
+                  phase => $phase,
+                  uid => $project->{metadata}->{uid}
                 };
-
         if ($phase eq 'active') {
             $self->{global}->{active}++;
             push @{$self->{"projects-active"}}, $hp;
@@ -216,12 +216,28 @@ sub manage_selection {
         }
         unless ($compliant) {
             $self->{global}->{noncompliant}++;
-            push @{$self->{"projects-noncompliant"}}, {
-                name => $name,
-                display_name => $display_name,
-                phase => $phase
-            };
+            push @{$self->{"projects-noncompliant"}}, $hp;
         }
+    }
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'display_name', 'phase' ]);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    foreach my $project (sort { $a->{name} cmp $b->{name} } map { @{$self->{"projects-$_"}} } qw/active terminating/) {
+        $self->{output}->add_disco_entry(
+            uid => $project->{uid},
+            name => $project->{name},
+            display_name => $project->{display_name},
+            phase => $project->{phase}
+        );
     }
 }
 

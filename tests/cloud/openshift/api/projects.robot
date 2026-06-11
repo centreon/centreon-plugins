@@ -77,3 +77,9 @@ Projects ${tc}
     ...    14
     ...    --critical-projects-noncompliant=1:
     ...    CRITICAL: Non-compliant: 0 | 'projects-total'=65;;;0; 'projects-active'=65;;;0; 'projects-terminating'=0;;;0; 'projects-noncompliant'=0;;1:;0;
+    ...    15
+    ...    --disco-format
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <element>uid</element> <element>name</element> <element>display_name</element> <element>phase</element> </data>
+    ...    16
+    ...    --disco-show --include-name=openshift-node
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <label display_name="openshift-node" name="openshift-node" phase="active" uid="5f5ca1d2-ae3b-4198-8abc-bdcdd690ebcf"/> </data>

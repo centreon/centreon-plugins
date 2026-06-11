@@ -255,7 +255,8 @@ sub manage_selection {
         my $hr = { name => $name,
                    namespace => $namespace,
                    host => $host,
-                   service => $service
+                   service => $service,
+                   uid => $route->{metadata}->{uid}
                  };
 
         my $is_admitted = $self->_is_route_admitted($route);
@@ -322,6 +323,25 @@ sub _is_route_admitted {
     return 0;
 }
 
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'namespace', 'service']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    foreach my $route (sort { $a->{name} cmp $b->{name} } map { @{$self->{"routes-$_"}} } qw/admitted not-admitted/) {
+        $self->{output}->add_disco_entry(
+            uid => $route->{uid},
+            name => $route->{name},
+            namespace => $route->{namespace},
+            service => $route->{service}
+        );
+    }
+}
 1;
 
 __END__

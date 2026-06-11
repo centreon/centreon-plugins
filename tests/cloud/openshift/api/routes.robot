@@ -128,3 +128,9 @@ Routes ${tc}
     ...    31
     ...    --critical-termination-type=1
     ...    CRITICAL: Termination passthrough: 2 route(s) - Termination reencrypt: 2 route(s) | 'routes-total'=5;;;0; 'routes-admitted'=5;;;0; 'routes-not-admitted'=0;;;0; 'routes-tls'=5;;;0; 'routes-not-tls'=0;;;0; 'hosts-exposed'=5;;;0; 'services-targeted'=5;;;0; 'routes-per-namespace_openshift-authentication'=1;;;0; 'routes-per-namespace_openshift-console'=2;;;0; 'routes-per-namespace_openshift-image-registry'=1;;;0; 'routes-per-namespace_openshift-ingress-canary'=1;;;0; 'termination-type_edge'=1;;0:1;0; 'termination-type_passthrough'=2;;0:1;0; 'termination-type_reencrypt'=2;;0:1;0;
+    ...    32
+    ...    --disco-format
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <element>uid</element> <element>name</element> <element>namespace</element> <element>service</element> </data>
+    ...    33
+    ...    --disco-show
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <label name="canary" namespace="openshift-ingress-canary" service="ingress-canary" uid="cbe7af85-43e4-4d5e-9d2d-8d51bbfd2e4e"/> <label name="console" namespace="openshift-console" service="console" uid="1f4731ca-7ad1-4e2f-9579-d2ddbfdb6f11"/> <label name="default-route" namespace="openshift-image-registry" service="image-registry" uid="beaf4a10-8421-402a-b367-1045937d7fc8"/> <label name="downloads" namespace="openshift-console" service="downloads" uid="1ccd94b7-776a-42b0-b195-f7ef598456ac"/> <label name="oauth-openshift" namespace="openshift-authentication" service="oauth-openshift" uid="63f28c75-6b43-4c4c-8c93-996d068488d1"/> </data>

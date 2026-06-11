@@ -91,7 +91,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s'       => { redirect => 'include_name' },
-        'filter-namespace:s'  => { redirect => 'exclude_namespace' },
+        'filter-namespace:s'  => { redirect => 'include_namespace' },
         'include-name:s'      => { name => 'include_name', default => '' },
         'exclude-name:s'      => { name => 'exclude_name', default => '' },
         'include-namespace:s' => { name => 'include_namespace', default => '' },

@@ -52,8 +52,8 @@ Clusteroperators ${tc}
     ...    --warning-clusteroperators-available=1 --exclude-name=-
     ...    WARNING: Available: 7 | 'clusteroperators-total'=7;;;0; 'clusteroperators-available'=7;0:1;;0; 'clusteroperators-unavailable'=0;;@1:;0; 'clusteroperators-degraded'=0;;;0; 'clusteroperators-progressing'=0;;;0; 'clusteroperators-not-upgradeable'=0;;;0; Available operators (7): authentication console dns etcd ingress marketplace network
     ...    7
-    ...    --critical-clusteroperators-available=1 --include-name=openshift-samples
-    ...    OK: Total: 1, Available: 1, Unavailable: 0, Degraded: 0, Progressing: 0, Not upgradeable: 0 | 'clusteroperators-total'=1;;;0; 'clusteroperators-available'=1;;0:1;0; 'clusteroperators-unavailable'=0;;@1:;0; 'clusteroperators-degraded'=0;;;0; 'clusteroperators-progressing'=0;;;0; 'clusteroperators-not-upgradeable'=0;;;0;
+    ...    --critical-clusteroperators-available=0 --include-name=openshift-samples
+    ...    CRITICAL: Available: 1 | 'clusteroperators-total'=1;;;0; 'clusteroperators-available'=1;;0:0;0; 'clusteroperators-unavailable'=0;;@1:;0; 'clusteroperators-degraded'=0;;;0; 'clusteroperators-progressing'=0;;;0; 'clusteroperators-not-upgradeable'=0;;;0; Available operators (1): openshift-samples
     ...    8
     ...    --warning-clusteroperators-unavailable=1:
     ...    WARNING: Unavailable: 0 | 'clusteroperators-total'=24;;;0; 'clusteroperators-available'=24;;;0; 'clusteroperators-unavailable'=0;1:;@1:;0; 'clusteroperators-degraded'=0;;;0; 'clusteroperators-progressing'=0;;;0; 'clusteroperators-not-upgradeable'=0;;;0;
