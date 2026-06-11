@@ -35,6 +35,65 @@ my $sort_subs = {
     cmp => sub { $a cmp $b },
 };
 
+# There are different ways to configure sorting:
+#
+# Simple sorting on a single key:
+#   sort_attribute => 'key',
+#   sort_method => 'cmp',
+#
+# Sorting on multiple keys using the same comparison method:
+#   sort_attribute => [ 'key1', 'key4' ],
+#   sort_method => 'cmp',
+#
+# Sorting on multiple keys, each using its own comparison method:
+#   sort_attribute => {
+#     key1 => 'cmp',
+#     key4 => 'num'
+#   }
+sub get_sort_sub
+{
+    my ($self, %options) = @_;
+
+    # The default sort method is cmp (string comparison)
+    my $sort_method = 'cmp';
+    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
+    $sort_method = $options{config}->{sort_method}
+        if (defined($options{config}->{sort_method}));
+
+    # In the absence of sort_attribute the sort method is set now
+    my $sort_sub = $sort_subs->{$sort_method};
+
+    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
+    if (defined($options{config}->{sort_attribute})) {
+        my $sort_attribute = $options{config}->{sort_attribute};
+        if (ref $sort_attribute eq 'ARRAY') {
+            $sort_sub = sub {
+                for my $attr (@$sort_attribute) {
+                    my ($item_sort_value, $item_sort_method) = ref $attr eq 'HASH' ? %{$attr} : ( $attr, $sort_method );
+                    my $ordered;
+                    if ($item_sort_method eq 'cmp') {
+                        $ordered = $self->{$options{config}->{name}}->{$a}->{$item_sort_value} cmp $self->{$options{config}->{name}}->{$b}->{$item_sort_value};
+                    } else {
+                        $ordered = $self->{$options{config}->{name}}->{$a}->{$item_sort_value} <=> $self->{$options{config}->{name}}->{$b}->{$item_sort_value};
+                    }
+                    return $ordered if $ordered;
+                 }
+                 return 0;
+            };
+        } else {
+            $sort_sub = sub {
+                if ($sort_method eq 'cmp') {
+                    return $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute};
+                } else {
+                    return $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute};
+                }
+            };
+        }
+    }
+
+    return $sort_sub;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -373,24 +432,8 @@ sub run_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
 
-    # The default sort method is cmp (string comparison)
-    my $sort_method = 'cmp';
-    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
-    $sort_method = $options{config}->{sort_method}
-        if (defined($options{config}->{sort_method}));
-
-    # In the absence of sort_attribute the sort method is set now
-    my $sort_sub = $sort_subs->{$sort_method};
-
-    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
-    if (defined($options{config}->{sort_attribute})) {
-        my $sort_attribute = $options{config}->{sort_attribute};
-        if ($sort_method eq 'cmp') {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        } else {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        }
-    }
+    # Sort values
+    my $sort_sub = $self->get_sort_sub(%options);
 
     # Now the loop begins with the desired sorting method
     foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
@@ -504,7 +547,11 @@ sub run_group {
     my ($global_exit, $total_problems) = ([], 0);
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         $self->{most_critical_instance} = 'ok';
-        if (defined($options{config}->{cb_long_output})) {
+        if (defined($options{config}->{long_output})) {
+            $self->{output}->output_add(
+                long_msg => exprintf($options{config}->{long_output}, $self->{$options{config}->{name}}->{$id})
+            );
+        } elsif (defined($options{config}->{cb_long_output})) {
             $self->{output}->output_add(
                 long_msg => $self->call_object_callback(
                     method_name => $options{config}->{cb_long_output},
@@ -582,24 +629,9 @@ sub run_multiple_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator} : ', ';
 
-    # The default sort method is cmp (string comparison)
-    my $sort_method = 'cmp';
-    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
-    $sort_method = $options{config}->{sort_method}
-        if (defined($options{config}->{sort_method}));
 
-    # In the absence of sort_attribute the sort method is set now
-    my $sort_sub = $sort_subs->{$sort_method};
-
-    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
-    if (defined($options{config}->{sort_attribute})) {
-        my $sort_attribute = $options{config}->{sort_attribute};
-        if ($sort_method eq 'cmp') {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        } else {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        }
-    }
+    # Sort values
+    my $sort_sub = $self->get_sort_sub(%options);
 
     # Now the loop begins with the desired sorting method
     foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
@@ -726,7 +758,11 @@ sub run_multiple {
     }
 
     foreach my $instance (sort keys %{$self->{$options{config}->{name}}}) {
-        if (defined($options{config}->{cb_long_output})) {
+        if (defined($options{config}->{long_output})) {
+            $self->{output}->output_add(
+                long_msg => exprintf($options{config}->{long_output}, $self->{$options{config}->{name}}->{$instance})
+            );
+        } elsif (defined($options{config}->{cb_long_output})) {
             $self->{output}->output_add(
                 long_msg => $self->call_object_callback(
                     method_name => $options{config}->{cb_long_output},
@@ -814,9 +850,9 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # example for snmp
-    #use Digest::MD5 qw(md5_hex);
+    #use Digest::SHA qw(sha255_hex);
     #$self->{cache_name} = "choose_name_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
-    #    (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    #    (defined($self->{option_results}->{filter_counters}) ? sha256_hex($self->{option_results}->{filter_counters}) : sha256_hex('all'));
 }
 
 sub compat_threshold_counter {

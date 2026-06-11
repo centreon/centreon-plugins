@@ -50,9 +50,10 @@ sub new {
         'warning-http-status:s'  => { name => 'warning_http_status' },
         'critical-http-status:s' => { name => 'critical_http_status' },
         'token:s'                => { name => 'token' },
-        'limit'                  => { name => 'limit' },
+        'limit:s'                => { name => 'limit' },
         'disable-cache'          => { name => 'disable_cache' },
-        'cache-ttl'              => { name => 'cache_ttl',            default => 240 }, # 4 hours
+        'cache-ttl:s'            => { name => 'cache_ttl',            default => 240 }, # 4 hours
+        'cache-use'              => { name => 'cache_use' }, # always use cache
 
         # Common cluster filtering options
         'cluster:s@'             => { name => 'cluster' },
@@ -81,9 +82,15 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{$_} = $self->{option_results}->{$_} foreach qw/token service_account secret unknown_http_status warning_http_status critical_http_status/;
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/token service_account secret unknown_http_status warning_http_status critical_http_status cache_use limit/;
 
     $self->{cache_ttl} = $self->{option_results}->{cache_ttl} * 60;
+
+    if ($self->{limit}) {
+        $self->{output}->option_exit(short_msg => '--limit must be a positive number.')
+            unless $self->{limit} =~ /^\d+$/;
+        $self->{limit} = int $self->{limit};
+    }
 
     $self->{output}->option_exit(short_msg => 'Need to specify --hostname option.')
         if $self->{option_results}->{hostname} eq '';
@@ -274,7 +281,7 @@ sub get_cache_file_response {
 sub get_jobs_monitoring {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
 
     my $variables = { };
     $variables->{first} = $first if $first;
@@ -321,7 +328,7 @@ sub get_jobs_monitoring {
 sub get_protection_tasks {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
 
     my $variables = { };
     $variables->{first} = $first if $first;
@@ -518,7 +525,7 @@ sub clusters_uuid_from_name {
 sub get_cluster_stats {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
 
     my $variables = { };
     $variables->{first} = $first if $first;
@@ -570,7 +577,7 @@ sub get_cluster_stats {
 sub get_cluster_storage {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
 
     my $variables = { };
     $variables->{first} = $first if $first;
@@ -612,7 +619,7 @@ sub get_cluster_storage {
 sub get_cluster_nodes {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
 
     my $variables = { };
     $variables->{first} = $first if $first;
@@ -655,7 +662,7 @@ sub get_cluster_nodes {
 sub get_cluster_disks {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
 
     my $variables = { };
     $variables->{first} = $first if $first;
@@ -683,6 +690,7 @@ sub get_cluster_disks {
                                 isEncrypted
                                 raidStatus
                                 raidType
+                                nodeId
                             }
                         }
                     }
@@ -713,7 +721,10 @@ sub read_cache {
     my $created_at = $self->{cache}->get(name => 'created_at', default => 0);
     my $cached_data = $self->{cache}->get(name => 'items');
 
-    return $cached_data if $created_at + $self->{cache_ttl} > time() && ref $cached_data eq 'ARRAY'; # && @{$cached_data};
+    return $cached_data if ($self->{cache_use} || $created_at + $self->{cache_ttl} > time()) && ref $cached_data eq 'ARRAY'; # && @{$cached_data};
+
+    $self->{output}->option_exit(short_msg => "No cached data available. You must provide cache files or remove the --cache-use option.")
+        if $self->{cache_use};
 
     return undef
 }
@@ -729,7 +740,7 @@ sub write_cache {
 sub get_snappable_compliance {
     my ($self, %options) = @_;
 
-    my $first = $options{limit} || $self->{option_results}->{limit};
+    my $first = $options{limit} || $self->{limit};
     my $after;
 
     my $variables = { };
@@ -840,6 +851,10 @@ Disable the cache feature.
 =item B<--cache-ttl>
 
 Cache time to live in minutes (default: 240 = 4 hours).
+
+=item B<--cache-use>
+
+Always use cached data, ignoring the --cache-ttl expiration time.
 
 =item B<--cluster>
 

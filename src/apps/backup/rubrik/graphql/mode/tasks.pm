@@ -29,12 +29,6 @@ use centreon::plugins::misc qw(flatten_arrays is_empty);
 use apps::backup::rubrik::graphql::common qw/timerange_check_options $timerange_filters/;
 use centreon::plugins::constants qw(:counters);
 
-sub prefix_task_output {
-    my ($self, %options) = @_;
-
-    return "task '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
