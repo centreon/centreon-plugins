@@ -20,6 +20,11 @@ contents:
     file_info:
       mode: 0775
 @CONTENTS@
+  - src: "../../LICENSE.md"
+    dst: "/usr/share/doc/@PACKAGE_NAME@/copyright"
+    packager: "deb"
+    file_info:
+      mode: 0644
 
 conflicts:
   [@CONFLICTS@]
@@ -55,6 +60,7 @@ overrides:
       perl(lib),
       perl(sort),
       perl(String::ShellQuote),
+      perl(Digest::SHA),
       tzdata,
       @RPM_DEPENDENCIES@
     ]
@@ -84,6 +90,7 @@ overrides:
       libdatetime-perl,
       libxml-libxml-perl,
       libstring-shellquote-perl,
+      libdigest-sha-perl,
       tzdata,
       @DEB_DEPENDENCIES@
     ]

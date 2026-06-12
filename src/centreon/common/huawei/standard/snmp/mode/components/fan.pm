@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,7 +53,7 @@ sub check {
         
         next if ($self->check_filter(section => 'fan', instance => $instance));
         next if ($result->{hwEntityFanPresent} =~ /absent/i &&
-                 $self->absent_problem(section => 'fan', instance => $instance));
+                 $self->absent_problem(section => 'fan', instance => $instance, always_skip => 1));
         
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(long_msg =>

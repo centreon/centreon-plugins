@@ -45,7 +45,7 @@ pub struct Output {
 }
 
 fn default_ok() -> String {
-    "Everything is OK".to_string()
+    "OK: Everything is ok".to_string()
 }
 fn default_warning() -> String {
     "WARNING: ".to_string()
@@ -142,7 +142,7 @@ impl<'a> OutputFormatter<'a> {
                     let detail = self.build_detail(&self.output_formatter.ok);
                     return format!("{} | {}", detail, metrics);
                 } else {
-                    let parser = Parser::new(&self.collect);
+                    let parser = Parser::new(&self.collect, false);
                     let res = parser.eval_str(&self.output_formatter.ok);
                     let output = match res {
                         Ok(output) => match output {
@@ -208,7 +208,7 @@ impl<'a> OutputFormatter<'a> {
         for m in self.metrics.iter() {
             if let Some(status) = m.status {
                 if status.is_worse_than(self.status) {
-                    v.push(std::format!("{} is {}{}", m.name, m.value, m.uom));
+                    v.push(std::format!("{} is {}{}", m.name, float_string(&m.value), m.uom));
                 }
             }
         }

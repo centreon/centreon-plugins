@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,10 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(flatten_arrays is_excluded);
+use centreon::common::kubernetes::misc qw/is_excluded_label/;
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
@@ -32,67 +35,48 @@ sub custom_status_perfdata {
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.desired.count',
         value => $self->{result_values}->{desired},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.current.count',
         value => $self->{result_values}->{current},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.available.count',
         value => $self->{result_values}->{available},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.ready.count',
         value => $self->{result_values}->{ready},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
     $self->{output}->perfdata_add(
         nlabel => 'deployment.replicas.uptodate.count',
         value => $self->{result_values}->{up_to_date},
-        instances => $self->{result_values}->{name}
+        instances => $self->{result_values}->{namespace} . '/' . $self->{result_values}->{name}
     );
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "Replicas Desired: %s, Current: %s, Available: %s, Ready: %s, Up-to-date: %s",
-        $self->{result_values}->{desired},
-        $self->{result_values}->{current},
-        $self->{result_values}->{available},
-        $self->{result_values}->{ready},
-        $self->{result_values}->{up_to_date}
-    );
-}
-
-sub prefix_deployment_output {
-    my ($self, %options) = @_;
-
-    return "Deployment '" . $options{instance_value}->{name} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'deployments', type => 1, cb_prefix_output => 'prefix_deployment_output',
-            message_multiple => 'All deployments status are ok', skipped_code => { -11 => 1 } },
+        { name => 'deployments', type => COUNTER_TYPE_INSTANCE, prefix_output => "Deployment '%{namespace}/%{name}' ",
+            message_multiple => 'All deployments status are ok' },
     ];
 
     $self->{maps_counters}->{deployments} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{up_to_date} < %{desired}',
             critical_default => '%{available} < %{desired}',
             set => {
                 key_values => [ { name => 'desired' }, { name => 'current' }, { name => 'up_to_date' },
                     { name => 'available' }, { name => 'ready' }, { name => 'name' }, { name => 'namespace' } ],
-                closure_custom_output => $self->can('custom_status_output'),
+                output_template => "Replicas Desired: %{desired}, Current: %{current}, Available: %{available}, Ready: %{ready}, Up-to-date: %{up_to_date}",
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -106,13 +90,27 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s'      => { name => 'filter_name' },
-        'filter-namespace:s' => { name => 'filter_namespace' }
+        'filter-name:s'       => { redirect => 'include_name' },
+        'filter-namespace:s'  => { redirect => 'include_namespace' },
+        'include-name:s'      => { name => 'include_name', default => '' },
+        'exclude-name:s'      => { name => 'exclude_name', default => '' },
+        'include-namespace:s' => { name => 'include_namespace', default => '' },
+        'exclude-namespace:s' => { name => 'exclude_namespace', default => '' },
+        "include-label:s@"    => { name => 'include_label' },
+        "exclude-label:s@"    => { name => 'exclude_label' }
     });
    
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->SUPER::check_options(%options);
+
+    $self->{option_results}->{$_} = flatten_arrays($self->{option_results}->{$_})
+        foreach qw/include_label exclude_label/;
+}
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -120,20 +118,16 @@ sub manage_selection {
 
     $self->{deployments} = {};
     foreach my $deployment (@{$results}) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $deployment->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter name.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $deployment->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
-            next;
-        }
+        my $name = $deployment->{metadata}->{name};
+        my $namespace = $deployment->{metadata}->{namespace};
+
+        next if is_excluded($name, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
+                || is_excluded($namespace, $self->{option_results}->{include_namespace}, $self->{option_results}->{exclude_namespace}, output => $self->{output})
+                || is_excluded_label($deployment, $self->{option_results}->{include_label}, $self->{option_results}->{exclude_label}, output => $self->{output}, display => $name);
 
         $self->{deployments}->{ $deployment->{metadata}->{uid} } = {
-            name => $deployment->{metadata}->{name},
-            namespace => $deployment->{metadata}->{namespace},
+            name => $name,
+            namespace => $namespace,
             desired => $deployment->{spec}->{replicas}
         };
         $self->{deployments}->{ $deployment->{metadata}->{uid} }->{current} =
@@ -162,13 +156,31 @@ Check deployment status.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--include-name>
 
 Filter deployment name (can be a regexp).
 
-=item B<--filter-namespace>
+=item B<--exclude-name>
+
+Exclude deployment name (can be a regexp).
+
+=item B<--include-namespace>
 
 Filter deployment namespace (can be a regexp).
+
+=item B<--exclude-namespace>
+
+Exclude deployment namespace (can be a regexp).
+
+=item B<--include-label>
+
+Include deployments matching the specified label filters.
+Filters are provided as a comma-separated list in the format key or key=value, where both key and value may be a regexp.
+
+=item B<--exclude-label>
+
+Exclude deployments matching the specified label filters.
+Filters are provided as a comma-separated list in the format key or key=value, where both key and value may be a regexp.
 
 =item B<--warning-status>
 

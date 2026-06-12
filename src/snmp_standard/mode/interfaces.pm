@@ -25,7 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::lockfile;
+use Digest::SHA qw(sha256_hex);
 use Safe;
 use File::Copy qw(copy);
 use centreon::plugins::misc qw(is_empty);
@@ -850,7 +851,7 @@ sub set_key_values_out_traffic {
 sub set_oids_label {
     my ($self, %options) = @_;
 
-    $self->{oids_label} = {
+    $self->{oids_label} //= {
         'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
         'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
         'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', get => 'reload_get_simple', cache => 'reload_cache_index_value' },
@@ -1040,6 +1041,7 @@ sub new {
         'force-counters32'         => { name => 'force_counters32' },
         'force-counters64'         => { name => 'force_counters64' },
         'map-speed-dsl:s@'         => { name => 'map_speed_dsl' },
+        'no-cache-lock'            => { name => 'no_cache_lock' },
         'trace'                    => { name => 'trace' }
     });
     if ($self->{no_traffic} == 0) {
@@ -1071,9 +1073,11 @@ sub new {
     }
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $self->{lockfile_cache} = centreon::plugins::lockfile->new(%options);
 
     $self->{safe} = Safe->new();
     $self->{safe}->share('$assign_var');
+    $self->{oids_label} //= $options{oids_label};
 
     return $self;
 }
@@ -1086,6 +1090,7 @@ sub check_options {
     $self->check_oids_label();
 
     $self->{statefile_cache}->check_options(%options);
+    $self->{lockfile_cache}->check_options(%options);
     if (defined($self->{option_results}->{add_traffic})) {
         $self->{option_results}->{units_traffic} = 'percent_delta' if (is_empty($self->{option_results}->{units_traffic}) || $self->{option_results}->{units_traffic} eq '%');
         $self->{option_results}->{units_traffic} = 'bps' if ($self->{option_results}->{units_traffic} eq 'absolute'); # compat
@@ -1202,7 +1207,7 @@ sub reload_get_simple {
 }
 
 sub reload_cache {
-    my ($self) = @_;
+    my ($self, %options) = @_;
 
     my $datas = {};
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
@@ -1222,7 +1227,6 @@ sub reload_cache {
         ($func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_extra_display} }->{get}))) {
         $func->($self, snmp_get => $snmp_get, name => $self->{option_results}->{oid_extra_display});
     }
-
     my $result = $self->{snmp}->get_multiple_table(oids => [ values %$snmp_get ]);
 
     $func = $self->can($self->{oids_label}->{ $self->{option_results}->{oid_filter} }->{cache});
@@ -1232,10 +1236,7 @@ sub reload_cache {
         $custom->($self, datas => $datas);
     }
 
-    if (scalar(@{$datas->{all_ids}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Can't construct cache...") unless @{$datas->{all_ids}};
 
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
         $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_display}}->{cache});
@@ -1247,7 +1248,9 @@ sub reload_cache {
         $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_extra_display});
     }
 
-    $self->{statefile_cache}->write(data => $datas);
+    $self->{statefile_cache}->write(data => $datas) unless %options && $options{do_not_write};
+
+    return $datas;
 }
 
 sub add_selected_interface {
@@ -1256,28 +1259,36 @@ sub add_selected_interface {
     $self->{int}->{$options{id}} = { display => $self->get_display_value(id => $options{id}), extra_display => '' };
     if (defined($self->{option_results}->{oid_extra_display})) {
         my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_extra_display} . '_' . $options{id});
-        $self->{int}->{$options{id}}->{extra_display} = ' [ ' . (defined($name) ? $name : '') . ' ]';
+        $self->{int}->{$options{id}}->{extra_display} = ' [ ' . ($name // '') . ' ]';
     }
 }
 
 sub get_selection {
     my ($self, %options) = @_;
 
+    my $file_name = 'cache_snmpstandard_' . $self->{snmp}->get_hostname() . '_' . $self->{snmp}->get_port() . '_' . $self->{mode};
+
+    # Lock file have same name that statfile with .lck extension
+    my $have_lock = $self->{option_results}->{no_cache_lock} || $self->{lockfile_cache}->try_lock( lockfile => $file_name.'.lck' );
+
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{snmp}->get_hostname() . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
-    if (defined($self->{option_results}->{show_cache})) {
-        $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
-        $self->{output}->option_exit();
-    }
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => $file_name);
+    $self->{output}->option_exit(long_msg => $self->{statefile_cache}->get_string_content())
+        if defined $self->{option_results}->{show_cache};
 
     $self->{int} = {};
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
 
     if ($has_cache_file == 0 || $self->check_oids_options_change() ||
-        !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-        $self->reload_cache();
-        $self->{statefile_cache}->read();
+        !defined($timestamp_cache) || ($have_lock && ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60)))) {
+        # We retrieve new data when:
+        # - the cache is empty
+        # - the cache is expired and we have the lock
+        # We only rewrite the cache when we hold the lock
+        my $datas = $self->reload_cache(do_not_write => !$have_lock);
+        $self->{statefile_cache}->read_from(datas => $datas);
     }
+    $self->{lockfile_cache}->unlock();
 
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{interface})
@@ -1311,7 +1322,7 @@ sub get_selection {
         $self->{map_speed_dsl} = [];
         foreach (@{$self->{option_results}->{map_speed_dsl}}) {
             my ($src, $dst) = split /,/;
-            next if (is_empty($dst) || is_empty($src));
+            next if is_empty($dst) || is_empty($src);
             push @{$self->{map_speed_dsl}}, { src => $src, dst => $dst };
         }
         foreach (@{$all_ids}) {
@@ -1323,10 +1334,7 @@ sub get_selection {
         }
     }
 
-    if (scalar(keys %{$self->{int}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found (maybe you should reload cache file)");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "No entry found (maybe you should reload cache file)") unless keys %{$self->{int}};
 }
 
 sub load_status {
@@ -1465,9 +1473,7 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'snmpstandard_' . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-                          (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-                          (defined($self->{option_results}->{interface}) ? md5_hex($self->{option_results}->{interface}) : md5_hex('all')) . '_' .
-                          md5_hex($self->{checking});
+                          sha256_hex(($self->{option_results}->{filter_counters} // 'all') . '_' . sha256_hex($self->{option_results}->{interface} // 'all') . '_' .  $self->{checking});
 }
 
 sub add_result_global {
@@ -1966,6 +1972,10 @@ Example: adding --display-transform-src='eth' --display-transform-dst='ens'  wil
 =item B<--show-cache>
 
 Display cache interface data.
+
+=item B<--no-cache-lock>
+
+Set to disable locking when accessing cache.
 
 =back
 

@@ -1264,7 +1264,7 @@ Security engine ID, given as a hexadecimal string.
 =item B<--snmp-errors-exit>
 
 Expected status in case of SNMP error or timeout.
-Possible values are warning, critical and unknown (default).
+Possible values are ok, warning, critical and unknown (default).
 
 =item B<--snmp-tls-transport>
 

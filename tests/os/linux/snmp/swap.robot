@@ -100,7 +100,6 @@ swap ${tc}
     ...    '30'
     ...    CRITICAL: Used : 49.97 % | 'used'=511406080B;;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;0:10;0:30;0;100
 
-
 cgs-swap ${tc}
     [Tags]    os    linux    centreon-generic-snmp
     ${command}    Catenate
@@ -121,7 +120,7 @@ cgs-swap ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    OK: Everything is ok | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
     ...    2
     ...    --warning-swap-bytes=0.1
     ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
@@ -130,11 +129,13 @@ cgs-swap ${tc}
     ...    CRITICAL: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;;0.1;0; swap.usage.percent=49.97%;;;0;100
     ...    4
     ...    --warning-swap-prct=0.1
-    ...    WARNING: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
+    ...    WARNING: swap.usage.percent is 49.97% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
     ...    5
     ...    --critical-swap-prct=0.1
-    ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
-
+    ...    CRITICAL: swap.usage.percent is 49.97% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/swap.json' JSON is valid
 
 cgs-swap-64 ${tc}
     [Tags]    os    linux    centreon-generic-snmp
@@ -156,7 +157,7 @@ cgs-swap-64 ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    OK: Everything is ok | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
     ...    2
     ...    --warning-swap-bytes=0.1
     ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
@@ -165,8 +166,10 @@ cgs-swap-64 ${tc}
     ...    CRITICAL: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;;0.1;0; swap.usage.percent=49.97%;;;0;100
     ...    4
     ...    --warning-swap-prct=0.1
-    ...    WARNING: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
+    ...    WARNING: swap.usage.percent is 49.97% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
     ...    5
     ...    --critical-swap-prct=0.1
-    ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
-
+    ...    CRITICAL: swap.usage.percent is 49.97% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/swap-64.json' JSON is valid

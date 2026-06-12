@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package network::fritzbox::upnp::mode::system;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw/:counters/;
 
 use strict;
 use warnings;
@@ -71,13 +72,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL }
     ];
 
     $self->{maps_counters}->{global} = [
         {
             label => 'connection-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{link_status} !~ /^up$/i and %{connection_status} !~ /^connected$/i',
             set => {
                 key_values => [
@@ -145,17 +146,12 @@ Check system.
 
 =over 8
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='uptime'
-
-=item B<--warning-status>
+=item B<--warning-connection-status>
 
 Define the conditions to match for the status to be WARNING.
 Can use special variables like: %{connection_status}, %{link_status}
 
-=item B<--critical-status>
+=item B<--critical-connection-status>
 
 Define the conditions to match for the status to be CRITICAL (default: '%{link_status} !~ /^up$/i and %{connection_status} !~ /^connected$/i').
 Can use special variables like: %{connection_status}, %{link_status}
@@ -165,10 +161,13 @@ Can use special variables like: %{connection_status}, %{link_status}
 Select the unit for uptime threshold. May be 's' for seconds, 'm' for minutes,
 'h' for hours, 'd' for days, 'w' for weeks. Default is days.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-uptime>
 
 Thresholds.
-Can be: 'uptime'.
+
+=item B<--critical-uptime>
+
+Thresholds.
 
 =back
 

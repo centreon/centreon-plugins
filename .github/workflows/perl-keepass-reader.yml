@@ -13,9 +13,7 @@ on:
   push:
     branches:
       - develop
-      - dev-[2-9][0-9].[0-9][0-9].x
       - master
-      - "[2-9][0-9].[0-9][0-9].x"
     paths:
       - ".github/workflows/perl-keepass-reader.yml"
       - "dependencies/perl-keepass-reader/**"
@@ -143,6 +141,7 @@ jobs:
   deliver-packages:
     needs: [get-environment, package]
     if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
