@@ -200,6 +200,23 @@ sub get_vm_nics {
     );
 }
 
+# Retourne les alertes actives (non résolues par défaut)
+sub get_alerts {
+    my ($self, %options) = @_;
+    my @params = ('resolved=false');
+    push @params, 'severity=' . $options{severity} if defined($options{severity});
+    return $self->request_api(
+        endpoint  => '/api/nutanix/v2.0/alerts',
+        get_param => \@params,
+    );
+}
+
+# Retourne les résultats des health checks NCC
+sub get_health_checks {
+    my ($self, %options) = @_;
+    return $self->request_api(endpoint => '/api/nutanix/v2.0/health_checks');
+}
+
 1;
 
 __END__

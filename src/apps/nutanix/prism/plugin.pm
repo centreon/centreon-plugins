@@ -31,14 +31,18 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'alerts'          => 'apps::nutanix::prism::mode::alerts',
+        'capacity'        => 'apps::nutanix::prism::mode::capacity',
         'cluster-status'  => 'apps::nutanix::prism::mode::clusterstatus',
         'disks-status'    => 'apps::nutanix::prism::mode::disksstatus',
+        'health-checks'   => 'apps::nutanix::prism::mode::healthchecks',
         'hosts-usage'     => 'apps::nutanix::prism::mode::hostsusage',
         'snapshots'       => 'apps::nutanix::prism::mode::snapshots',
         'storage-usage'   => 'apps::nutanix::prism::mode::storageusage',
         'vms-count'       => 'apps::nutanix::prism::mode::vmscount',
         'vms-nics'        => 'apps::nutanix::prism::mode::vmsnics',
         'list-hosts'      => 'apps::nutanix::prism::mode::listhosts',
+        'list-nics'       => 'apps::nutanix::prism::mode::listnics',
         'list-vms'        => 'apps::nutanix::prism::mode::listvms',
     };
 
