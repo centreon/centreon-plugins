@@ -32,9 +32,12 @@ sub new {
     $self->{version} = '0.1';
     $self->{modes} = {
         'cluster-status'  => 'apps::nutanix::prism::mode::clusterstatus',
+        'disks-status'    => 'apps::nutanix::prism::mode::disksstatus',
         'hosts-usage'     => 'apps::nutanix::prism::mode::hostsusage',
+        'snapshots'       => 'apps::nutanix::prism::mode::snapshots',
         'storage-usage'   => 'apps::nutanix::prism::mode::storageusage',
         'vms-count'       => 'apps::nutanix::prism::mode::vmscount',
+        'vms-nics'        => 'apps::nutanix::prism::mode::vmsnics',
         'list-hosts'      => 'apps::nutanix::prism::mode::listhosts',
         'list-vms'        => 'apps::nutanix::prism::mode::listvms',
     };

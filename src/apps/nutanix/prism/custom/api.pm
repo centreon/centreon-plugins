@@ -174,6 +174,32 @@ sub get_storage_pools {
     return $self->request_api(endpoint => '/api/nutanix/v2.0/storage_pools');
 }
 
+# Retourne tous les disques physiques du cluster
+sub get_disks {
+    my ($self, %options) = @_;
+    return $self->request_api(endpoint => '/api/nutanix/v2.0/disks');
+}
+
+# Retourne tous les snapshots (ou ceux d'une VM spécifique via vm_uuid)
+sub get_snapshots {
+    my ($self, %options) = @_;
+    if (defined($options{vm_uuid}) && $options{vm_uuid} ne '') {
+        return $self->request_api(
+            endpoint  => '/api/nutanix/v2.0/snapshots',
+            get_param => [ 'vm_uuid=' . $options{vm_uuid} ],
+        );
+    }
+    return $self->request_api(endpoint => '/api/nutanix/v2.0/snapshots');
+}
+
+# Retourne les NICs d'une VM spécifique
+sub get_vm_nics {
+    my ($self, %options) = @_;
+    return $self->request_api(
+        endpoint => '/api/nutanix/v2.0/vms/' . $options{vm_uuid} . '/nics'
+    );
+}
+
 1;
 
 __END__
