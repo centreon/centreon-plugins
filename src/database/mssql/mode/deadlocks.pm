@@ -53,10 +53,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{by_instance} = [
-        { label => 'deadlocks-by-instance', nlabel => 'mssql.deadlocks.perminute', set => {
-                key_values => [ { name => 'value', per_minute => 1 }, { name => 'display' } ],
+        {
+            label => 'deadlocks-by-instance', type => COUNTER_KIND_METRIC, nlabel => 'mssql.deadlocks.perminute',
+            set   => {
+                key_values      => [ { name => 'value', per_minute => 1 }, { name => 'display' } ],
                 output_template => '%.2f dead locks/min',
-                perfdatas => [
+                perfdatas       => [
                     { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }

@@ -43,7 +43,7 @@ Dead-locks ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: 0.00 total dead locks/min | 'total#mssql.deadlocks.perminute'=0.00;;;0; 'AllocUnit#mssql.deadlocks.perminute'=8.00;;;0; 'Application#mssql.deadlocks.perminute'=1.00;;;0; 'Database#mssql.deadlocks.perminute'=5.00;;;0; 'Extent#mssql.deadlocks.perminute'=3.00;;;0; 'File#mssql.deadlocks.perminute'=30.00;;;0; 'HoBT#mssql.deadlocks.perminute'=2.00;;;0; 'Key#mssql.deadlocks.perminute'=51.00;;;0; 'Metadata#mssql.deadlocks.perminute'=7.00;;;0; 'OIB#mssql.deadlocks.perminute'=4.00;;;0; 'Object#mssql.deadlocks.perminute'=1.00;;;0; 'Page#mssql.deadlocks.perminute'=1.00;;;0; 'RID#mssql.deadlocks.perminute'=4.00;;;0; 'RowGroup#mssql.deadlocks.perminute'=4.00;;;0; 'Xact#mssql.deadlocks.perminute'=3.00;;;0;
+    ...    OK: 124.00 total dead locks/min | 'total#mssql.deadlocks.perminute'=124.00;;;0; 'AllocUnit#mssql.deadlocks.perminute'=8.00;;;0; 'Application#mssql.deadlocks.perminute'=1.00;;;0; 'Database#mssql.deadlocks.perminute'=5.00;;;0; 'Extent#mssql.deadlocks.perminute'=3.00;;;0; 'File#mssql.deadlocks.perminute'=30.00;;;0; 'HoBT#mssql.deadlocks.perminute'=2.00;;;0; 'Key#mssql.deadlocks.perminute'=51.00;;;0; 'Metadata#mssql.deadlocks.perminute'=7.00;;;0; 'OIB#mssql.deadlocks.perminute'=4.00;;;0; 'Object#mssql.deadlocks.perminute'=1.00;;;0; 'Page#mssql.deadlocks.perminute'=1.00;;;0; 'RID#mssql.deadlocks.perminute'=4.00;;;0; 'RowGroup#mssql.deadlocks.perminute'=4.00;;;0; 'Xact#mssql.deadlocks.perminute'=3.00;;;0;
     ...    2
     ...    --filter-database=Database
     ...    OK: 45.00 total dead locks/min - 5.00 dead locks/min | 'total#mssql.deadlocks.perminute'=45.00;;;0; 'Database#mssql.deadlocks.perminute'=5.00;;;0;
@@ -52,7 +52,7 @@ Dead-locks ${tc}
     ...    OK: 45.00 total dead locks/min - 5.00 dead locks/min | 'total#mssql.deadlocks.perminute'=45.00;;;0; 'Database#mssql.deadlocks.perminute'=5.00;;;0;
     ...    4
     ...    --exclude-instance=Database
-    ...    OK: 1476.00 total dead locks/min | 'total#mssql.deadlocks.perminute'=1476.00;;;0; 'AllocUnit#mssql.deadlocks.perminute'=8.00;;;0; 'Application#mssql.deadlocks.perminute'=1.00;;;0; 'Extent#mssql.deadlocks.perminute'=3.00;;;0; 'File#mssql.deadlocks.perminute'=30.00;;;0; 'HoBT#mssql.deadlocks.perminute'=2.00;;;0; 'Key#mssql.deadlocks.perminute'=51.00;;;0; 'Metadata#mssql.deadlocks.perminute'=7.00;;;0; 'OIB#mssql.deadlocks.perminute'=4.00;;;0; 'Object#mssql.deadlocks.perminute'=1.00;;;0; 'Page#mssql.deadlocks.perminute'=1.00;;;0; 'RID#mssql.deadlocks.perminute'=4.00;;;0; 'RowGroup#mssql.deadlocks.perminute'=4.00;;;0; 'Xact#mssql.deadlocks.perminute'=3.00;;;0;
+    ...    OK: 79.00 total dead locks/min | 'total#mssql.deadlocks.perminute'=79.00;;;0; 'AllocUnit#mssql.deadlocks.perminute'=8.00;;;0; 'Application#mssql.deadlocks.perminute'=1.00;;;0; 'Extent#mssql.deadlocks.perminute'=3.00;;;0; 'File#mssql.deadlocks.perminute'=30.00;;;0; 'HoBT#mssql.deadlocks.perminute'=2.00;;;0; 'Key#mssql.deadlocks.perminute'=51.00;;;0; 'Metadata#mssql.deadlocks.perminute'=7.00;;;0; 'OIB#mssql.deadlocks.perminute'=4.00;;;0; 'Object#mssql.deadlocks.perminute'=1.00;;;0; 'Page#mssql.deadlocks.perminute'=1.00;;;0; 'RID#mssql.deadlocks.perminute'=4.00;;;0; 'RowGroup#mssql.deadlocks.perminute'=4.00;;;0; 'Xact#mssql.deadlocks.perminute'=3.00;;;0;
     ...    5
     ...    --include-instance=Database --warning-deadlocks-by-instance=1
     ...    WARNING: 5.00 dead locks/min | 'total#mssql.deadlocks.perminute'=45.00;;;0; 'Database#mssql.deadlocks.perminute'=5.00;0:1;;0;
