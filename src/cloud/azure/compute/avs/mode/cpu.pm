@@ -56,7 +56,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'api-version:s'    => { name => 'api_version', default => '2018-01-01' },
+        'api-version:s'    => { name => 'api_version', default => '2024-02-01' },
         'filter-metric:s'  => { name => 'filter_metric' },
         'resource:s'       => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' }
