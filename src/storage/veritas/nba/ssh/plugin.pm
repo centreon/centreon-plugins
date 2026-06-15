@@ -30,7 +30,8 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'hardware'   => 'storage::veritas::nba::ssh::mode::hardware',
+        'hardware' => 'storage::veritas::nba::ssh::mode::hardware',
+        'memory'   => 'storage::veritas::nba::ssh::mode::memory'
     };
 
     $self->{custom_modes}->{ssh} = 'storage::veritas::nba::ssh::custom::cli';
