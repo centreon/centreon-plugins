@@ -47,8 +47,10 @@ sub ssh_execute {
     ($self->{result}) = $options{custom}->execute_scenario(
         request => {
             interactive => 1,
-            rows => 800,
-            cols => 80,
+            pty => {
+                rows => 800,
+                cols => 80
+            },
             scenario => [
                 { "cmd" => "waitfor", "options" => { "Match" =>  'Main_Menu>', "Timeout" => "20" } },
                 { "cmd" => "put", "options" => { "String" => "Monitor\n", "Timeout" => "5" } },

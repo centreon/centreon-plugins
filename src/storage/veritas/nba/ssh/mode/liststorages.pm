@@ -51,8 +51,10 @@ sub manage_selection {
     my ($result) = $options{custom}->execute_scenario(
         request => {
             interactive => 1,
-            rows => 800,
-            cols => 80,
+            pty => {
+                rows => 800,
+                cols => 80
+            },
             scenario => [
                 { "cmd" => "waitfor", "options" => { "Match" =>  'Main_Menu>', "Timeout" => "30" } },
                 { "cmd" => "put", "options" => { "String" => "Manage\n", "Timeout" => "5" } },
