@@ -128,6 +128,20 @@ sub test {
             expected_result  => 'Unknown filter: 100',
             msg              => 'Test unknown filter (no transformation)'
         },
+        {
+            template         => 'Sprintf format percent: %{value|%.2f}%',
+            datas            => { value => 32.12 },
+            default          => '',
+            expected_result  => 'Sprintf format percent: 32.12%',
+            msg              => 'Test unknown filter (no transformation)'
+        },
+        {
+            template         => 'Sprintf format custom: %{value|%.5f}',
+            datas            => { value => 32.123456789 },
+            default          => '',
+            expected_result  => 'Sprintf format custom: 32.12346',
+            msg              => 'Test unknown filter (no transformation)'
+        }
     );
 
     for my $test (@tests) {

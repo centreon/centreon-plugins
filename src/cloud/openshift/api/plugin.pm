@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::logmanagement::restapi::plugin;
+package cloud::openshift::api::plugin;
 
 use strict;
 use warnings;
@@ -29,13 +29,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
     $self->{modes} = {
-        'alert-count' => 'apps::centreon::logmanagement::restapi::mode::alertcount',
-        'log-count'   => 'apps::centreon::logmanagement::restapi::mode::logcount'
+        'routes'           => 'cloud::openshift::api::mode::routes',
+        'clusteroperators' => 'cloud::openshift::api::mode::clusteroperators',
+        'clusterversion'   => 'cloud::openshift::api::mode::clusterversion',
+        'projects'         => 'cloud::openshift::api::mode::projects',
     };
 
-    $self->{custom_modes}->{api} = 'apps::centreon::logmanagement::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'cloud::openshift::api::custom::api';
     return $self;
 }
 
@@ -45,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Centreon Log Management through HTTP/REST API.
+Check OpenShift cluster using RestAPI.
 
 =cut

@@ -439,3 +439,795 @@ cat<<EOF
 }
 EOF
 fi
+
+if [ "$1" = "get" ] && [ "$2" = "resourcequotas" ]; then
+cat<<EOF
+{"kind":"ResourceQuotaList","apiVersion":"v1","metadata":{"resourceVersion":"307176"},"items":[{"metadata":{"name":"host-network-namespace-quotas","namespace":"openshift-host-network","uid":"0c8d5578-3e35-4d15-a39e-783ffe1588bb","resourceVersion":"2846","creationTimestamp":"2026-05-13T16:10:45Z","ownerReferences":[{"apiVersion":"operator.openshift.io/v1","kind":"Network","name":"cluster","uid":"e7d0a2d9-532f-4e10-bd52-ccaffd375b04","controller":true,"blockOwnerDeletion":true}],"managedFields":[{"manager":"cluster-network-operator/operconfig","operation":"Apply","apiVersion":"v1","time":"2026-05-13T16:10:45Z","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:ownerReferences":{"k:{\"uid\":\"e7d0a2d9-532f-4e10-bd52-ccaffd375b04\"}":{}}},"f:spec":{"f:hard":{"f:count/daemonsets.apps":{},"f:count/deployments.apps":{},"f:limits.cpu":{},"f:limits.memory":{},"f:pods":{}}}}},{"manager":"kube-controller-manager","operation":"Update","apiVersion":"v1","time":"2026-05-13T16:10:45Z","fieldsType":"FieldsV1","fieldsV1":{"f:status":{"f:hard":{".":{},"f:count/daemonsets.apps":{},"f:count/deployments.apps":{},"f:limits.cpu":{},"f:limits.memory":{},"f:pods":{}},"f:used":{".":{},"f:count/daemonsets.apps":{},"f:count/deployments.apps":{},"f:limits.cpu":{},"f:limits.memory":{},"f:pods":{}}}},"subresource":"status"}]},"spec":{"hard":{"count/daemonsets.apps":"0","count/deployments.apps":"0","limits.cpu":"0","limits.memory":"0","pods":"0"}},"status":{"hard":{"count/daemonsets.apps":"0","count/deployments.apps":"0","limits.cpu":"0","limits.memory":"0","pods":"0"},"used":{"count/daemonsets.apps":"0","count/deployments.apps":"0","limits.cpu":"0","limits.memory":"0","pods":"0"}}},{"metadata":{"name":"quota-test","namespace":"test-quota","uid":"4edc7c98-4aa9-4e37-92ee-c48085c5e6ae","resourceVersion":"266097","creationTimestamp":"2026-06-04T14:28:46Z","annotations":{"kubectl.kubernetes.io/last-applied-configuration":"{\"apiVersion\":\"v1\",\"kind\":\"ResourceQuota\",\"metadata\":{\"annotations\":{},\"name\":\"quota-test\",\"namespace\":\"test-quota\"},\"spec\":{\"hard\":{\"limits.cpu\":\"4\",\"limits.memory\":\"4Gi\",\"pods\":\"10\",\"requests.cpu\":\"2\",\"requests.memory\":\"2Gi\"}}}\n"},"managedFields":[{"manager":"kube-controller-manager","operation":"Update","apiVersion":"v1","time":"2026-06-04T14:28:46Z","fieldsType":"FieldsV1","fieldsV1":{"f:status":{"f:hard":{".":{},"f:limits.cpu":{},"f:limits.memory":{},"f:pods":{},"f:requests.cpu":{},"f:requests.memory":{}},"f:used":{".":{},"f:limits.cpu":{},"f:limits.memory":{},"f:pods":{},"f:requests.cpu":{},"f:requests.memory":{}}}},"subresource":"status"},{"manager":"kubectl-client-side-apply","operation":"Update","apiVersion":"v1","time":"2026-06-04T14:28:46Z","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{".":{},"f:kubectl.kubernetes.io/last-applied-configuration":{}}},"f:spec":{"f:hard":{".":{},"f:limits.cpu":{},"f:limits.memory":{},"f:pods":{},"f:requests.cpu":{},"f:requests.memory":{}}}}}]},"spec":{"hard":{"limits.cpu":"4","limits.memory":"4Gi","pods":"10","requests.cpu":"2","requests.memory":"2Gi"}},"status":{"hard":{"limits.cpu":"4","limits.memory":"4Gi","pods":"10","requests.cpu":"2","requests.memory":"2Gi"},"used":{"limits.cpu":"0","limits.memory":"0","pods":"0","requests.cpu":"0","requests.memory":"1Gi"}}}]}
+EOF
+fi
+
+if [ "$1" = "get" ] && [ "$2" = "daemonsets" ]; then
+cat<<EOF
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "metadata": {
+                "annotations": {
+                },
+                "creationTimestamp": "2026-05-14T17:07:23Z",
+                "generation": 1,
+                "name": "csi-hostpathplugin",
+                "namespace": "hostpath-provisioner",
+                "resourceVersion": "32469",
+                "uid": "de36767a-dc3f-4692-9c62-35e22fb327fa"
+            },
+            "spec": {
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "app.kubernetes.io/component": "plugin",
+                        "app.kubernetes.io/instance": "hostpath.csi.kubevirt.io",
+                        "app.kubernetes.io/name": "csi-hostpathplugin",
+                        "app.kubernetes.io/part-of": "csi-driver-host-path"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app.kubernetes.io/component": "plugin",
+                            "app.kubernetes.io/instance": "hostpath.csi.kubevirt.io",
+                            "app.kubernetes.io/name": "csi-hostpathplugin",
+                            "app.kubernetes.io/part-of": "csi-driver-host-path"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "args": [
+                                    "--drivername=kubevirt.io.hostpath-provisioner",
+                                    "--v=3"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "CSI_ENDPOINT",
+                                        "value": "unix:///csi/csi.sock"
+                                    },
+                                    {
+                                        "name": "NODE_NAME",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "spec.nodeName"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "PV_DIR",
+                                        "value": "/var/hpvolumes"
+                                    },
+                                    {
+                                        "name": "VERSION",
+                                        "value": "latest"
+                                    }
+                                ],
+                                "image": "registry.redhat.io/container-native-virtualization/hostpath-csi-driver-rhel9:v4.21",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 5,
+                                    "httpGet": {
+                                        "path": "/healthz",
+                                        "port": 9898,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 2,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 3
+                                },
+                                "name": "hostpath-provisioner",
+                                "ports": [
+                                    {
+                                        "containerPort": 9898,
+                                        "name": "healthz",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {},
+                                "securityContext": {
+                                    "privileged": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/csi-data-dir",
+                                        "name": "csi-data-dir"
+                                    },
+                                    {
+                                        "mountPath": "/var/lib/kubelet/plugins",
+                                        "mountPropagation": "Bidirectional",
+                                        "name": "plugins-dir"
+                                    },
+                                    {
+                                        "mountPath": "/var/lib/kubelet/pods",
+                                        "mountPropagation": "Bidirectional",
+                                        "name": "mountpoint-dir"
+                                    },
+                                    {
+                                        "mountPath": "/csi",
+                                        "name": "socket-dir"
+                                    }
+                                ]
+                            },
+                            {
+                                "args": [
+                                    "--v=3",
+                                    "--csi-address=/csi/csi.sock",
+                                    "--kubelet-registration-path=/var/lib/kubelet/plugins/csi-hostpath/csi.sock"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "KUBE_NODE_NAME",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "spec.nodeName"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": "registry.redhat.io/openshift4/ose-csi-node-driver-registrar:latest",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "node-driver-registrar",
+                                "resources": {},
+                                "securityContext": {
+                                    "privileged": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/csi",
+                                        "name": "socket-dir"
+                                    },
+                                    {
+                                        "mountPath": "/registration",
+                                        "name": "registration-dir"
+                                    },
+                                    {
+                                        "mountPath": "/csi-data-dir",
+                                        "name": "csi-data-dir"
+                                    }
+                                ]
+                            },
+                            {
+                                "args": [
+                                    "--csi-address=/csi/csi.sock",
+                                    "--health-port=9898"
+                                ],
+                                "image": "registry.redhat.io/openshift4/ose-csi-livenessprobe:latest",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "liveness-probe",
+                                "resources": {},
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/csi",
+                                        "name": "socket-dir"
+                                    }
+                                ]
+                            },
+                            {
+                                "args": [
+                                    "--v=5",
+                                    "--csi-address=/csi/csi.sock",
+                                    "--feature-gates=Topology=true",
+                                    "--enable-capacity=true",
+                                    "--capacity-for-immediate-binding=true",
+                                    "--extra-create-metadata=true",
+                                    "--immediate-topology=false",
+                                    "--strict-topology=true",
+                                    "--node-deployment=true"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "NAMESPACE",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.namespace"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "POD_NAME",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "metadata.name"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "NODE_NAME",
+                                        "valueFrom": {
+                                            "fieldRef": {
+                                                "apiVersion": "v1",
+                                                "fieldPath": "spec.nodeName"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "image": "registry.redhat.io/openshift4/ose-csi-external-provisioner:latest",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "csi-provisioner",
+                                "resources": {},
+                                "securityContext": {
+                                    "privileged": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "File",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/csi",
+                                        "name": "socket-dir"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "serviceAccount": "csi-hostpath-provisioner-sa",
+                        "serviceAccountName": "csi-hostpath-provisioner-sa",
+                        "terminationGracePeriodSeconds": 30,
+                        "volumes": [
+                            {
+                                "hostPath": {
+                                    "path": "/var/lib/kubelet/plugins/csi-hostpath",
+                                    "type": "DirectoryOrCreate"
+                                },
+                                "name": "socket-dir"
+                            },
+                            {
+                                "hostPath": {
+                                    "path": "/var/lib/kubelet/pods",
+                                    "type": "DirectoryOrCreate"
+                                },
+                                "name": "mountpoint-dir"
+                            },
+                            {
+                                "hostPath": {
+                                    "path": "/var/lib/kubelet/plugins_registry",
+                                    "type": "Directory"
+                                },
+                                "name": "registration-dir"
+                            },
+                            {
+                                "hostPath": {
+                                    "path": "/var/lib/kubelet/plugins",
+                                    "type": "Directory"
+                                },
+                                "name": "plugins-dir"
+                            },
+                            {
+                                "hostPath": {
+                                    "path": "/var/lib/csi-hostpath-data/",
+                                    "type": "DirectoryOrCreate"
+                                },
+                                "name": "csi-data-dir"
+                            }
+                        ]
+                    }
+                },
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "maxSurge": 0,
+                        "maxUnavailable": 1
+                    },
+                    "type": "RollingUpdate"
+                }
+            },
+            "status": {
+                "currentNumberScheduled": 1,
+                "desiredNumberScheduled": 1,
+                "numberAvailable": 1,
+                "numberMisscheduled": 0,
+                "numberReady": 1,
+                "observedGeneration": 1,
+                "updatedNumberScheduled": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "metadata": {
+                "annotations": {
+                    "deprecated.daemonset.template.generation": "1"
+                },
+                "creationTimestamp": "2026-05-13T16:12:10Z",
+                "generation": 1,
+                "labels": {
+                    "dns.operator.openshift.io/owning-dns": "default"
+                },
+                "name": "dns-default",
+                "namespace": "openshift-dns",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "operator.openshift.io/v1",
+                        "controller": true,
+                        "kind": "DNS",
+                        "name": "default",
+                        "uid": "c6c8c0b4-d234-42fe-8b45-c0b3fa159b46"
+                    }
+                ],
+                "resourceVersion": "32788",
+                "uid": "1acdbd2c-1687-4286-8a76-5a876ecef85e"
+            },
+            "spec": {
+                "minReadySeconds": 9,
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "dns.operator.openshift.io/daemonset-dns": "default"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "cluster-autoscaler.kubernetes.io/enable-ds-eviction": "true",
+                            "target.workload.openshift.io/management": "{\"effect\": \"PreferredDuringScheduling\"}"
+                        },
+                        "labels": {
+                            "dns.operator.openshift.io/daemonset-dns": "default"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "args": [
+                                    "-conf",
+                                    "/etc/coredns/Corefile"
+                                ],
+                                "command": [
+                                    "coredns"
+                                ],
+                                "image": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:8ced13f92744806c8576a3dc9c0b60fa0e3f62a2e52afd626343edffdfbe2526",
+                                "imagePullPolicy": "IfNotPresent",
+                                "livenessProbe": {
+                                    "failureThreshold": 5,
+                                    "httpGet": {
+                                        "path": "/health",
+                                        "port": 8080,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 60,
+                                    "periodSeconds": 10,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 5
+                                },
+                                "name": "dns",
+                                "ports": [
+                                    {
+                                        "containerPort": 5353,
+                                        "name": "dns",
+                                        "protocol": "UDP"
+                                    },
+                                    {
+                                        "containerPort": 5353,
+                                        "name": "dns-tcp",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "readinessProbe": {
+                                    "failureThreshold": 3,
+                                    "httpGet": {
+                                        "path": "/ready",
+                                        "port": 8181,
+                                        "scheme": "HTTP"
+                                    },
+                                    "initialDelaySeconds": 10,
+                                    "periodSeconds": 3,
+                                    "successThreshold": 1,
+                                    "timeoutSeconds": 3
+                                },
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "50m",
+                                        "memory": "70Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "readOnlyRootFilesystem": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "FallbackToLogsOnError",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/coredns",
+                                        "name": "config-volume",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/tmp",
+                                        "name": "tmp-dir"
+                                    }
+                                ]
+                            },
+                            {
+                                "args": [
+                                    "--logtostderr",
+                                    "--secure-listen-address=:9154",
+                                    "--tls-cipher-suites=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+                                    "--upstream=http://127.0.0.1:9153/",
+                                    "--tls-cert-file=/etc/tls/private/tls.crt",
+                                    "--tls-private-key-file=/etc/tls/private/tls.key"
+                                ],
+                                "image": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:731316e9d5192651ed8706d614a00dc3cb02dc2c42a208ee2c9ba8426509d329",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "kube-rbac-proxy",
+                                "ports": [
+                                    {
+                                        "containerPort": 9154,
+                                        "name": "metrics",
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "10m",
+                                        "memory": "40Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "readOnlyRootFilesystem": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "FallbackToLogsOnError",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/tls/private",
+                                        "name": "metrics-tls",
+                                        "readOnly": true
+                                    },
+                                    {
+                                        "mountPath": "/tmp",
+                                        "name": "tmp-dir"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "Default",
+                        "nodeSelector": {
+                            "kubernetes.io/os": "linux"
+                        },
+                        "priorityClassName": "system-node-critical",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "serviceAccount": "dns",
+                        "serviceAccountName": "dns",
+                        "terminationGracePeriodSeconds": 30,
+                        "tolerations": [
+                            {
+                                "key": "node-role.kubernetes.io/master",
+                                "operator": "Exists"
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "items": [
+                                        {
+                                            "key": "Corefile",
+                                            "path": "Corefile"
+                                        }
+                                    ],
+                                    "name": "dns-default"
+                                },
+                                "name": "config-volume"
+                            },
+                            {
+                                "name": "metrics-tls",
+                                "secret": {
+                                    "defaultMode": 420,
+                                    "secretName": "dns-default-metrics-tls"
+                                }
+                            },
+                            {
+                                "emptyDir": {},
+                                "name": "tmp-dir"
+                            }
+                        ]
+                    }
+                },
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "maxSurge": "10%",
+                        "maxUnavailable": 0
+                    },
+                    "type": "RollingUpdate"
+                }
+            },
+            "status": {
+                "currentNumberScheduled": 1,
+                "desiredNumberScheduled": 1,
+                "numberAvailable": 1,
+                "numberMisscheduled": 0,
+                "numberReady": 1,
+                "observedGeneration": 1,
+                "updatedNumberScheduled": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "metadata": {
+                "annotations": {
+                    "deprecated.daemonset.template.generation": "1"
+                },
+                "creationTimestamp": "2026-05-13T16:12:11Z",
+                "generation": 1,
+                "name": "node-resolver",
+                "namespace": "openshift-dns",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "operator.openshift.io/v1",
+                        "controller": true,
+                        "kind": "DNS",
+                        "name": "default",
+                        "uid": "c6c8c0b4-d234-42fe-8b45-c0b3fa159b46"
+                    }
+                ],
+                "resourceVersion": "30408",
+                "uid": "9f5c4b85-caed-41eb-94e0-e0c2214bea33"
+            },
+            "spec": {
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "dns.operator.openshift.io/daemonset-node-resolver": ""
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "target.workload.openshift.io/management": "{\"effect\": \"PreferredDuringScheduling\"}"
+                        },
+                        "labels": {
+                            "dns.operator.openshift.io/daemonset-node-resolver": ""
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "command": [
+                                    "/bin/bash",
+                                    "-c"
+                                ],
+                                "env": [
+                                    {
+                                        "name": "SERVICES",
+                                        "value": "image-registry.openshift-image-registry.svc"
+                                    },
+                                    {
+                                        "name": "NAMESERVER",
+                                        "value": "10.217.4.10"
+                                    },
+                                    {
+                                        "name": "CLUSTER_DOMAIN",
+                                        "value": "cluster.local"
+                                    }
+                                ],
+                                "image": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:50b833978643e8bf0e011b3dd34dbb2fd6699fae6717cd6a67f93e1273c3e33f",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "dns-node-resolver",
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "5m",
+                                        "memory": "21Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "privileged": true,
+                                    "readOnlyRootFilesystem": true
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "FallbackToLogsOnError",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/etc/hosts",
+                                        "name": "hosts-file"
+                                    },
+                                    {
+                                        "mountPath": "/tmp",
+                                        "name": "tmp-dir"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "hostNetwork": true,
+                        "nodeSelector": {
+                            "kubernetes.io/os": "linux"
+                        },
+                        "priorityClassName": "system-node-critical",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "serviceAccount": "node-resolver",
+                        "serviceAccountName": "node-resolver",
+                        "terminationGracePeriodSeconds": 30,
+                        "tolerations": [
+                            {
+                                "operator": "Exists"
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "hostPath": {
+                                    "path": "/etc/hosts",
+                                    "type": "File"
+                                },
+                                "name": "hosts-file"
+                            },
+                            {
+                                "emptyDir": {},
+                                "name": "tmp-dir"
+                            }
+                        ]
+                    }
+                },
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "maxSurge": 0,
+                        "maxUnavailable": "33%"
+                    },
+                    "type": "RollingUpdate"
+                }
+            },
+            "status": {
+                "currentNumberScheduled": 1,
+                "desiredNumberScheduled": 1,
+                "numberAvailable": 1,
+                "numberMisscheduled": 0,
+                "numberReady": 1,
+                "observedGeneration": 1,
+                "updatedNumberScheduled": 1
+            }
+        },
+        {
+            "apiVersion": "apps/v1",
+            "kind": "DaemonSet",
+            "metadata": {
+                "annotations": {
+                    "deprecated.daemonset.template.generation": "1",
+                    "operator.openshift.io/spec-hash": "f4b8982f4b083f8b7e0cb4824d33bfdd068d9d00cf14e6fa6a40c7e84af5281b"
+                },
+                "creationTimestamp": "2026-05-13T16:23:05Z",
+                "generation": 1,
+                "name": "node-ca",
+                "namespace": "openshift-image-registry",
+                "resourceVersion": "30537",
+                "uid": "b98ac57a-9bb9-44bd-8cf0-e8347dc74357"
+            },
+            "spec": {
+                "revisionHistoryLimit": 10,
+                "selector": {
+                    "matchLabels": {
+                        "name": "node-ca"
+                    }
+                },
+                "template": {
+                    "metadata": {
+                        "annotations": {
+                            "openshift.io/required-scc": "privileged",
+                            "target.workload.openshift.io/management": "{\"effect\": \"PreferredDuringScheduling\"}"
+                        },
+                        "labels": {
+                            "name": "node-ca"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "command": [
+                                    "/bin/sh",
+                                    "-c"
+                                ],
+                                "image": "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:afdf92dd760966894188d826af2d26123739aa660424541ba7fb13fa16511957",
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "node-ca",
+                                "resources": {
+                                    "requests": {
+                                        "cpu": "10m",
+                                        "memory": "10Mi"
+                                    }
+                                },
+                                "securityContext": {
+                                    "privileged": true,
+                                    "readOnlyRootFilesystem": true,
+                                    "runAsGroup": 0,
+                                    "runAsUser": 1001
+                                },
+                                "terminationMessagePath": "/dev/termination-log",
+                                "terminationMessagePolicy": "FallbackToLogsOnError",
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/tmp/serviceca",
+                                        "name": "serviceca"
+                                    },
+                                    {
+                                        "mountPath": "/etc/docker/certs.d",
+                                        "name": "host"
+                                    }
+                                ]
+                            }
+                        ],
+                        "dnsPolicy": "ClusterFirst",
+                        "hostNetwork": true,
+                        "nodeSelector": {
+                            "kubernetes.io/os": "linux"
+                        },
+                        "priorityClassName": "system-cluster-critical",
+                        "restartPolicy": "Always",
+                        "schedulerName": "default-scheduler",
+                        "securityContext": {},
+                        "serviceAccount": "node-ca",
+                        "serviceAccountName": "node-ca",
+                        "terminationGracePeriodSeconds": 30,
+                        "tolerations": [
+                            {
+                                "operator": "Exists"
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "hostPath": {
+                                    "path": "/etc/docker/certs.d",
+                                    "type": ""
+                                },
+                                "name": "host"
+                            },
+                            {
+                                "configMap": {
+                                    "defaultMode": 420,
+                                    "name": "image-registry-certificates"
+                                },
+                                "name": "serviceca"
+                            }
+                        ]
+                    }
+                },
+                "updateStrategy": {
+                    "rollingUpdate": {
+                        "maxSurge": 0,
+                        "maxUnavailable": "10%"
+                    },
+                    "type": "RollingUpdate"
+                }
+            },
+            "status": {
+                "currentNumberScheduled": 1,
+                "desiredNumberScheduled": 1,
+                "numberAvailable": 1,
+                "numberMisscheduled": 0,
+                "numberReady": 1,
+                "observedGeneration": 1,
+                "updatedNumberScheduled": 1
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
+EOF
+fi
