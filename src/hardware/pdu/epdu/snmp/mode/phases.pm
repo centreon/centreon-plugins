@@ -224,6 +224,11 @@ Check phases current.
 
 =over 8
 
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: C<--filter-counters='active-power'>
+
 =item B<--include-phase>
 
 Filter phase by number (can be a regexp).
