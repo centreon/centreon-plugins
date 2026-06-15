@@ -24,7 +24,7 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::constants qw(:counters);
-use centreon::plugins::misc qw(is_excluded);
+use centreon::plugins::misc qw(is_excluded trim);
 use Digest::SHA qw(sha256_hex);
 
 sub prefix_by_instance_output {
@@ -100,6 +100,8 @@ sub manage_selection {
 
     foreach my $row (@{$query_result}) {
         my ($instance, $value) = @$row;
+        $instance = trim($instance);
+
         next if $instance eq '_Total';
         next if is_excluded($instance, $self->{option_results}->{include_instance}, $self->{option_results}->{exclude_instance}, output => $self->{output});
         $self->{by_instance}->{$instance} = {
