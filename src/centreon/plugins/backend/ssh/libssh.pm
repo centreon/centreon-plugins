@@ -162,6 +162,45 @@ sub execute {
     return ($content, $exit_code);
 }
 
+sub execute_scenario {
+    my ($self, %options) = @_;
+
+    if (defined($options{timeout}) && $options{timeout} =~ /(\d+)/) {
+        $self->{ssh}->options(timeout => $options{timeout});
+    }
+
+    $self->connect(hostname => $options{hostname});
+
+    my $ret = $self->{ssh}->execute_scenario($options{request});
+
+    $self->{output}->output_add(long_msg => $ret->{stdout}, debug => 1) if (defined($ret->{stdout}));
+    $self->{output}->output_add(long_msg => $ret->{stderr}, debug => 1) if (defined($ret->{stderr}));
+
+    my ($content, $exit_code);
+    if ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_OK')) {
+        $content = $ret->{stdout};
+        $exit_code = $ret->{exit_code};
+    } elsif ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_AGAIN')) { # AGAIN means timeout
+        $self->{output}->add_option_msg(short_msg => sprintf('command execution timeout'));
+        $self->{output}->option_exit();
+    } else {
+        $self->{output}->add_option_msg(short_msg =>
+            sprintf(
+                'command execution error: %s',
+                $self->{ssh}->error(GetErrorSession => 1)
+            )
+        );
+        $self->{output}->option_exit();
+    }
+
+    if ($exit_code != 0 && (!defined($options{no_quit}) || $options{no_quit} != 1)) {
+        $self->{output}->add_option_msg(short_msg => sprintf('command execution error [exit code: %s]', $exit_code));
+        $self->{output}->option_exit();
+    }
+
+    return ($content, $exit_code);
+}
+
 1;
 
 __END__
