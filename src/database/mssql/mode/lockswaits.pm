@@ -125,7 +125,7 @@ __END__
 
 =head1 MODE
 
-Check MSSQL locks-waits per second
+Check MSSQL locks-waits per minute
 
 =over 8
 

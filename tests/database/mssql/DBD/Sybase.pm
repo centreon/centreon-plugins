@@ -19,7 +19,6 @@
 package DBD::Sybase;
 use strict;
 use warnings;
-BEGIN {1;}
 1;
 
 
