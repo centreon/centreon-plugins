@@ -171,7 +171,7 @@ sub execute_scenario {
 
     $self->connect(hostname => $options{hostname});
 
-    my $ret = $self->{ssh}->execute_scenario($options{request});
+    my $ret = $self->{ssh}->execute_scenario(%{$options{request}});
 
     $self->{output}->output_add(long_msg => $ret->{stdout}, debug => 1) if (defined($ret->{stdout}));
     $self->{output}->output_add(long_msg => $ret->{stderr}, debug => 1) if (defined($ret->{stderr}));
