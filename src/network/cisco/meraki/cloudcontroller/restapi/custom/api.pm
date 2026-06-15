@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -111,7 +111,7 @@ sub check_options {
 sub get_token {
     my ($self, %options) = @_;
 
-    return md5_hex($self->{api_token});
+    return sha256_hex($self->{api_token});
 }
 
 sub get_shard_hostname {
@@ -230,7 +230,7 @@ sub write_cache_file {
     my ($self, %options) = @_;
 
     $self->{cache}->read(
-        statefile => 'cache_meraki_' . md5_hex(
+        statefile => 'cache_meraki_' . sha256_hex(
             $self->{api_token} . '_' . 
             (defined($self->{option_results}->{api_filter_orgs}) ? $self->{option_results}->{api_filter_orgs} : '')
         )
@@ -244,7 +244,7 @@ sub write_cache_file {
 sub get_cache_file_response {
     my ($self, %options) = @_;
     my $cache_filename = 'cache_meraki_'
-                         . md5_hex($self->{api_token} . '_' .(defined($self->{option_results}->{api_filter_orgs}) ?
+                         . sha256_hex($self->{api_token} . '_' .(defined($self->{option_results}->{api_filter_orgs}) ?
                                                               $self->{option_results}->{api_filter_orgs} : '')
                                   );
 
@@ -496,6 +496,19 @@ sub get_device_clients {
     )
 }
 
+sub get_network_wireless_usage_history {
+    my ($self, %options) = @_;
+
+    return $self->request_api(
+        endpoint => '/networks/' . $options{network_id} . '/wireless/usageHistory',
+        get_param => [ 
+            'deviceSerial ='. $options{serial}, 
+            'timespan=' . $self->{timespan} ],
+        hostname => $self->get_shard_hostname(serial => $options{serial})
+    )
+}
+
+
 sub get_device_switch_port_statuses {
     my ($self, %options) = @_;
 
@@ -524,6 +537,22 @@ sub get_network_device_connection_stats {
     return defined($options{serial}) ?
         $self->{devices_connection_stats}->{ $options{network_id} }->{ $options{serial} } :
         $self->{devices_connection_stats}->{ $options{network_id} };
+}
+
+sub get_device_wireless_connection_stats {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{devices_connection_stats}->{ $options{serial} })) {
+        $self->{devices_connection_stats}->{ $options{serial} } = {};
+        my $datas = $self->request_api(
+            endpoint => '/devices/' . $options{serial} . '/wireless/connectionStats',
+            get_param => [ 'timespan=' . $self->{timespan} ],
+            hostname => $self->get_shard_hostname(network_id => $options{network_id})
+        );
+        $self->{devices_connection_stats}->{ $options{serial} } = $datas->{connectionStats};
+    }
+
+    return $self->{devices_connection_stats}->{ $options{serial} };
 }
 
 sub get_network_device_performance {
@@ -613,6 +642,11 @@ Define the protocol to reach the API (default: 'https').
 =item B<--api-token>
 
 Meraki API token.
+
+=item B<--timespan>
+
+Define he duration, in seconds, of the historical data to fetch. 
+Can be 300, 600, 1200, 3600, 14400, 86400 (default: 300).
 
 =item B<--timeout>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,8 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:values :counters/;
+use Digest::SHA qw(sha256_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -91,16 +92,16 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'devices', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
-                { name => 'device_status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_performance', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_connections', type => 0, cb_prefix_output => 'prefix_connection_output', skipped_code => { -10 => 1 } },
-                { name => 'device_traffic', type => 0, cb_prefix_output => 'prefix_traffic_output', skipped_code => { -10 => 1, -11 => 1 } },
-                { name => 'device_links_counters', type => 0, skipped_code => { -10 => 1, -11 => 1 } },
-                { name => 'device_links', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => 1, skipped_code => { -10 => 1 } },
-                { name => 'device_ports', display_long => 1, cb_prefix_output => 'prefix_port_output',  message_multiple => 'All ports are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'device_status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'device_performance', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'device_connections', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_connection_output', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'device_traffic', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_traffic_output', skipped_code => { NO_VALUE() => 1, -11 => 1 } },
+                { name => 'device_links_counters', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1, -11 => 1 } },
+                { name => 'device_links', display_long => 1, cb_prefix_output => 'prefix_link_output',  message_multiple => 'All links are ok', type => COUNTER_MULTIPLE_SUBINSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'device_ports', display_long => 1, cb_prefix_output => 'prefix_port_output',  message_multiple => 'All ports are ok', type => COUNTER_MULTIPLE_SUBINSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -149,7 +150,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{device_status} = [
-        { label => 'status', type => 2, critical_default => '%{status} =~ /alerting/i', set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, critical_default => '%{status} =~ /alerting/i', set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -245,7 +246,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{device_links} = [
-        { label => 'link-status', type => 2, critical_default => '%{link_status} =~ /failed/i', set => {
+        { label => 'link-status', type => COUNTER_KIND_TEXT, critical_default => '%{link_status} =~ /failed/i', set => {
                 key_values => [ { name => 'link_status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_link_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -271,7 +272,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{device_ports} = [
-        { label => 'port-status', type => 2, critical_default => '%{port_enabled} == 1 and %{port_status} !~ /^connected/i', set => {
+        { label => 'port-status', type => COUNTER_KIND_TEXT, critical_default => '%{port_enabled} == 1 and %{port_status} !~ /^connected/i', set => {
                 key_values => [ { name => 'port_status' }, { name => 'port_enabled' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_port_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -325,16 +326,23 @@ sub new {
 sub add_connection_stats {
     my ($self, %options) = @_;
 
-    my $connections = $options{custom}->get_network_device_connection_stats(
-        serial => $options{serial},
-        network_id => $options{network_id}
-    );
+    my $connections;
+    if ($options{model} =~ /^MG/) {
+        $connections = $options{custom}->get_network_device_connection_stats(
+            serial     => $options{serial},
+            network_id => $options{network_id}
+        );
+    } else {
+        $connections = $options{custom}->get_device_wireless_connection_stats(
+            serial => $options{serial}
+        );
+    }
 
     $self->{devices}->{ $options{serial} }->{device_connections} = {
-        assoc => defined($connections->{assoc}) ? $connections->{assoc} : 0,
-        auth => defined($connections->{auth}) ? $connections->{auth} : 0,
-        dhcp => defined($connections->{dhcp}) ? $connections->{dhcp} : 0,
-        dns => defined($connections->{dns}) ? $connections->{dns} : 0,
+        assoc   => defined($connections->{assoc}) ? $connections->{assoc} : 0,
+        auth    => defined($connections->{auth}) ? $connections->{auth} : 0,
+        dhcp    => defined($connections->{dhcp}) ? $connections->{dhcp} : 0,
+        dns     => defined($connections->{dns}) ? $connections->{dns} : 0,
         success => defined($connections->{success}) ? $connections->{success} : 0
     };
 }
@@ -342,20 +350,36 @@ sub add_connection_stats {
 sub add_clients {
     my ($self, %options) = @_;
 
-    my $clients = $options{custom}->get_device_clients(
-        serial => $options{serial}
-    );
-
+    my $clients;
     $self->{devices}->{ $options{serial} }->{device_traffic} = {
         display => $options{name},
-        traffic_in => 0,
+        traffic_in  => 0,
         traffic_out => 0
     };
+    if ($options{model} =~ /^MR/) {
+        $clients = $options{custom}->get_network_wireless_usage_history(
+            serial     => $options{serial},
+            network_id => $options{network_id}
+        );
 
-    if (defined($clients)) {
-        foreach (@$clients) {
-            $self->{devices}->{ $options{serial} }->{device_traffic}->{traffic_in} += $_->{usage}->{recv} * 8;
-            $self->{devices}->{ $options{serial} }->{device_traffic}->{traffic_out} += $_->{usage}->{sent} * 8;
+        if (defined($clients)) {
+            foreach (@$clients) {
+                $self->{devices}->{ $options{serial} }->{device_traffic}->{traffic_in} += $_->{receivedKbps} * 1000 * 8;
+                $self->{devices}->{ $options{serial} }->{device_traffic}->{traffic_out} += $_->{sentKbps} * 1000 * 8;
+        }
+    }
+
+
+    } else {
+        $clients = $options{custom}->get_device_clients(
+            serial => $options{serial}
+        );
+
+        if (defined($clients)) {
+            foreach (@$clients) {
+                $self->{devices}->{ $options{serial} }->{device_traffic}->{traffic_in} += $_->{usage}->{recv} * 8;
+                $self->{devices}->{ $options{serial} }->{device_traffic}->{traffic_out} += $_->{usage}->{sent} * 8;
+            }
         }
     }
 }
@@ -467,7 +491,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
-        md5_hex(
+        sha256_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
             (defined($self->{option_results}->{filter_device_name}) ? $self->{option_results}->{filter_device_name} : 'all') . '_' .
             (defined($self->{option_results}->{filter_network_id}) ? $self->{option_results}->{filter_network_id} : 'all') . '_' .
@@ -521,14 +545,17 @@ sub manage_selection {
                 custom => $options{custom},
                 serial => $serial,
                 name => $datas->{devices}->{$serial}->{name},
-                network_id => $datas->{devices}->{$serial}->{networkId}
+                network_id => $datas->{devices}->{$serial}->{networkId},
+                model => $datas->{devices}->{$serial}->{model}
             );
         }
         if (!defined($self->{option_results}->{skip_clients}) && $datas->{devices}->{$serial}->{model} =~ /^(?:MS|MG|MR|MX)/) {
             $self->add_clients(
                 custom => $options{custom},
                 serial => $serial,
-                name => $datas->{devices}->{$serial}->{name}
+                name => $datas->{devices}->{$serial}->{name},
+                network_id => $datas->{devices}->{$serial}->{networkId},
+                model => $datas->{devices}->{$serial}->{model}
             );
         }
         if ($datas->{devices}->{$serial}->{model} =~ /^(?:MV|MS|MG|MR|MX)/) {
@@ -678,14 +705,173 @@ You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{port_enabled} == 1 and %{port_status} !~ /^connected/i').
 You can use the following variables: %{port_status}, %{port_enabled}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-connections-assoc>
 
-Thresholds.
-Can be: 'total-online', 'total-online-prct', 'total-offline', 'total-offline-prct', 'total-alerting',
-'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
-'connections-assoc', 'connections-dhcp', 'connections-dns',
-'load', 'links-ineffective', 'link-latency' (ms), ''link-loss' (%),
-'port-traffic-in', 'port-traffic-out'.
+Threshold.
+
+=item B<--critical-connections-assoc>
+
+Threshold.
+
+=item B<--warning-connections-auth>
+
+Threshold.
+
+=item B<--critical-connections-auth>
+
+Threshold.
+
+=item B<--warning-connections-dhcp>
+
+Threshold.
+
+=item B<--critical-connections-dhcp>
+
+Threshold.
+
+=item B<--warning-connections-dns>
+
+Threshold.
+
+=item B<--critical-connections-dns>
+
+Threshold.
+
+=item B<--warning-connections-success>
+
+Threshold.
+
+=item B<--critical-connections-success>
+
+Threshold.
+
+=item B<--warning-link-latency>
+
+Threshold in milliseconds.
+
+=item B<--critical-link-latency>
+
+Threshold in milliseconds.
+
+=item B<--warning-link-loss>
+
+Threshold in percentage.
+
+=item B<--critical-link-loss>
+
+Threshold in percentage.
+
+=item B<--warning-link-status>
+
+Threshold.
+
+=item B<--critical-link-status>
+
+Threshold.
+
+=item B<--warning-links-ineffective>
+
+Threshold.
+
+=item B<--critical-links-ineffective>
+
+Threshold.
+
+=item B<--warning-load>
+
+Threshold.
+
+=item B<--critical-load>
+
+Threshold.
+
+=item B<--warning-port-status>
+
+Threshold.
+
+=item B<--critical-port-status>
+
+Threshold.
+
+=item B<--warning-port-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-port-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-port-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-port-traffic-out>
+
+Threshold in b/s.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-total-alerting>
+
+Threshold.
+
+=item B<--critical-total-alerting>
+
+Threshold.
+
+=item B<--warning-total-offline>
+
+Threshold.
+
+=item B<--critical-total-offline>
+
+Threshold.
+
+=item B<--warning-total-offline-prct>
+
+Threshold in percentage.
+
+=item B<--critical-total-offline-prct>
+
+Threshold in percentage.
+
+=item B<--warning-total-online>
+
+Threshold.
+
+=item B<--critical-total-online>
+
+Threshold.
+
+=item B<--warning-total-online-prct>
+
+Threshold in percentage.
+
+=item B<--critical-total-online-prct>
+
+Threshold in percentage.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
 
 =back
 

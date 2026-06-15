@@ -353,6 +353,7 @@ teampass
 Teldat
 temperatureambient
 timeframe
+timespan
 TiMOS
 TLS
 TLSv1
