@@ -21,6 +21,7 @@
 package centreon::plugins::options;
 
 use Pod::Usage;
+use centreon::plugins::misc qw/exprintf/;
 use strict;
 use warnings;
 
@@ -126,7 +127,7 @@ sub add_options {
         my $opt_name = $options{arguments}->{$arg}->{name};
 
         # handle option validation hints
-        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match') {
+        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match', 'error_message') {
             if (defined($options{arguments}->{$arg}->{$control})) {
                 $self->{validation}->{$opt_name} //= {};
                 # store the control to perform as key and the reference value as value
@@ -171,11 +172,17 @@ sub validate_options {
     my ($self, %options) = @_;
 
     for my $option (sort keys %{$self->{validation}}) {
+        next if $option eq 'error_message';
         for my $validation (sort keys %{$self->{validation}->{$option}} ) {
             my $value = $self->{options_stored}->{$option};
-            $self->{output}->option_exit(short_msg => "Bad value provided for option $option: '$value'. "
-                . "Constraint $value $validation " . $self->{validation}->{$option}->{$validation} . " is not verified.")
-                unless perform_validation($value, $validation,$self->{validation}->{$option}->{$validation});
+            unless (perform_validation($value, $validation, $self->{validation}->{$option}->{$validation})) {
+
+                my $msg = defined $self->{validation}->{$option}->{error_message}
+                              ? exprintf($self->{validation}->{$option}->{error_message}, { option => $option, value => $value, $value => $value })
+                              : "Bad value provided for option $option: '$value'. "
+                                  . "Constraint $value $validation " . $self->{validation}->{$option}->{$validation} . " is not verified.";
+                $self->{output}->option_exit(short_msg => $msg);
+            }
         }
     }
 }

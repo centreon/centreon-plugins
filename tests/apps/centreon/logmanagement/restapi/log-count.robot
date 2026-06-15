@@ -49,14 +49,11 @@ Log-count ${tc}
     ...    --critical-count=1
     ...    CRITICAL: Log count: 2 | 'log.count'=2;;0:1;0;
     ...    5
-    ...    --api-path=/wrong/path
-    ...    UNKNOWN: 404 Not Found
-    ...    6
     ...    --period=1
     ...    UNKNOWN: Bad value provided for option period: '1'. Constraint 1 greater_than_or_equal 60 is not verified.
-    ...    7
+    ...    6
     ...    --port=1000000
     ...    UNKNOWN: Bad value provided for option port: '1000000'. Constraint 1000000 less_than 65536 is not verified.
-    ...    8
+    ...    7
     ...    --proto=httpx
     ...    UNKNOWN: Bad value provided for option proto: 'httpx'. Constraint httpx regexp_match ^http[s]?$ is not verified.

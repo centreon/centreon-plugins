@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'log-count' => 'apps::centreon::logmanagement::restapi::mode::logcount'
+        'alert-count' => 'apps::centreon::logmanagement::restapi::mode::alertcount',
+        'log-count'   => 'apps::centreon::logmanagement::restapi::mode::logcount'
     };
 
     $self->{custom_modes}->{api} = 'apps::centreon::logmanagement::restapi::custom::api';
