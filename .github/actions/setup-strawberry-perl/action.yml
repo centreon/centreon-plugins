@@ -1,0 +1,133 @@
+name: Setup Strawberry Perl
+description: Install or restore Strawberry Perl 5.34 with CPAN modules and libcurl for Windows builds
+
+inputs:
+  lookup-only:
+    description: Only check if cache exists without restoring (set to true for pre-build caching jobs)
+    default: 'false'
+
+outputs:
+  cache-hit:
+    description: Whether the Strawberry Perl cache was found
+    value: ${{ steps.cache-perl.outputs.cache-hit }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check/restore Perl environment cache
+      id: cache-perl
+      uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      with:
+        path: C:\Strawberry
+        key: strawberry-perl-5.34.3.1-v2
+        lookup-only: ${{ inputs.lookup-only }}
+
+    - name: Install Strawberry Perl
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        Invoke-WebRequest `
+          -Uri https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/sp5.34.3.1/strawberry-perl-5.34.3.1-64bit.msi `
+          -OutFile strawberry-perl.msi
+        Start-Process msiexec.exe -ArgumentList '/i strawberry-perl.msi /quiet /norestart' -Wait -NoNewWindow
+        Remove-Item strawberry-perl.msi
+
+    - name: Install PAR::Packer
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+        C:\Strawberry\perl\bin\cpanm --notest PAR::Packer
+
+    - name: Verify PAR::Packer installation
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        $pp = "C:\Strawberry\perl\site\bin\pp"
+        if (-not (Test-Path $pp)) {
+          Write-Error "pp not found at $pp - PAR::Packer installation failed"
+          exit 1
+        }
+        Write-Host "PAR::Packer OK: pp found at $pp"
+
+    - name: Install other CPAN modules
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+        set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
+        set LIBCURL_INCLUDE=C:\Strawberry\c\include
+        set LIBCURL_LIBS=-LC:\Strawberry\c\lib -lcurl
+        C:\Strawberry\perl\bin\cpanm --notest ^
+          Authen::NTLM ^
+          Date::Manip ^
+          Email::Send::SMTP::Gmail ^
+          HTTP::ProxyPAC ^
+          IO::Socket::SSL ^
+          JE ^
+          JSON::XS ^
+          Net::FTPSSL ^
+          Net::NTP ^
+          Net::SSLeay ^
+          Pod::Simple::Search ^
+          Tie::RefHash::Weak ^
+          Win32::Job ^
+          XML::LibXML
+
+    - name: Install libcurl dev files
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        & C:\msys64\usr\bin\bash.exe -lc "pacman -S --noconfirm mingw-w64-x86_64-curl"
+        Copy-Item "C:\msys64\mingw64\include\curl" "C:\Strawberry\c\include\" -Recurse -Force
+        Copy-Item "C:\msys64\mingw64\lib\libcurl.dll.a" "C:\Strawberry\c\lib\" -Force
+        Copy-Item "C:\msys64\mingw64\bin\libcurl-4.dll" "C:\Strawberry\c\bin\" -Force
+        $pc = 'prefix=C:/Strawberry/c',
+          'exec_prefix=${prefix}',
+          'libdir=${exec_prefix}/lib',
+          'includedir=${prefix}/include',
+          '',
+          'Name: libcurl',
+          'Description: Library to transfer files with ftp, http, etc.',
+          'Version: 8.7.1',
+          'Libs: -L${libdir} -lcurl',
+          'Cflags: -I${includedir}'
+        ($pc -join "`n") + "`n" | Set-Content 'C:\Strawberry\c\lib\pkgconfig\libcurl.pc' -Encoding ASCII
+
+    - name: Install CPAN Curl module
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        set PATH=C:\Strawberry\perl\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\c\bin;%PATH%
+        set PKG_CONFIG_PATH=C:\Strawberry\c\lib\pkgconfig
+        set PERL_MM_OPT=DEFINE=-DCURL_DISABLE_TYPECHECK OPTIMIZE=-Wno-deprecated-declarations
+        C:\Strawberry\perl\bin\cpanm --notest Net::Curl
+
+    - name: Copy PAR::Packer source to cpan build directory
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      shell: powershell
+      run: |
+        $parVersion = & C:\Strawberry\perl\bin\perl.exe -MPAR::Packer -e 'print $PAR::Packer::VERSION'
+        $cpanmWork = "$env:USERPROFILE\.cpanm\work"
+        $parDir = Get-ChildItem $cpanmWork -Recurse -Directory -ErrorAction SilentlyContinue |
+          Where-Object { $_.Name -eq "PAR-Packer-$parVersion" } |
+          Select-Object -First 1
+        if (-not $parDir) {
+          Write-Error "PAR::Packer $parVersion source not found in $cpanmWork"
+          exit 1
+        }
+        New-Item "C:\Strawberry\cpan\build" -ItemType Directory -Force | Out-Null
+        Copy-Item $parDir.FullName "C:\Strawberry\cpan\build\PAR-Packer-$parVersion" -Recurse -Force
+        Write-Host "PAR::Packer source saved to C:\Strawberry\cpan\build\PAR-Packer-$parVersion"
+
+    - name: Show cpanm build logs on failure
+      if: ${{ failure() }}
+      shell: powershell
+      run: |
+        $logDir = "$env:USERPROFILE\.cpanm\work"
+        if (Test-Path $logDir) {
+          Get-ChildItem -Path $logDir -Recurse -Filter "build.log" | ForEach-Object {
+            Write-Host "`n=== $($_.FullName) ==="
+            Get-Content $_.FullName | Select-Object -Last 50
+          }
+        }

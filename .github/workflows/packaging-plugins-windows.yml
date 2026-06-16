@@ -1,0 +1,74 @@
+name: packaging-plugins-windows
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - ".github/workflows/packaging-plugins-windows.yml"
+      - ".github/scripts/build_centreon_plugins_64.bat"
+  pull_request:
+    paths:
+      - ".github/workflows/packaging-plugins-windows.yml"
+      - ".github/scripts/build_centreon_plugins_64.bat"
+
+jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  get-environment:
+    needs: [dependency-scan]
+    uses: ./.github/workflows/get-environment.yml
+
+  build:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Strawberry Perl
+        uses: ./.github/actions/setup-strawberry-perl
+
+      - name: Add Strawberry Perl to PATH
+        shell: powershell
+        run: |
+          Add-Content $env:GITHUB_PATH "C:\Strawberry\perl\bin"
+          Add-Content $env:GITHUB_PATH "C:\Strawberry\perl\site\bin"
+          Add-Content $env:GITHUB_PATH "C:\Strawberry\c\bin"
+
+      - name: Setup build directory structure
+        shell: cmd
+        run: |
+          mklink /J ".github\scripts\centreon-plugins" "."
+          mkdir ".github\scripts\resources\scripts\x64\centreon"
+
+      - name: Build Windows executable
+        shell: cmd
+        run: .github\scripts\build_centreon_plugins_64.bat
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: centreon_plugins_windows_x64
+          path: .github\scripts\resources\scripts\x64\centreon\centreon_plugins.exe
+          retention-days: 7
+          if-no-files-found: error
+
+  set-skip-label:
+    needs: [get-environment, build]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

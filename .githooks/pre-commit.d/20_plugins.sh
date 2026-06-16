@@ -59,9 +59,10 @@ function check_md5() {
 }
 
 jq=$(type -p jq) || fatal "Could not locate jq command"
-# Determining the robotidy command
-robocop_path=$(type -p robocop) || fatal "Could not locate robocop. Cannot check robot lint"
-robocop_exe="${robocop_path##*/}"
+# Check the commands are available
+for command in robocop yamllint; do
+    eval "${command}_path=$(type -p $command)" || fatal "Could not locate $command"
+done
 
 # Get list of committed files
 mapfile -t committed_files < <(git diff --cached --name-only --diff-filter=ACMR)
@@ -117,6 +118,10 @@ for file in "${committed_files[@]}"; do
             info "--> Checking JSON validity"
             jq '.' "$file" >/dev/null 2>&1 || error "JSON file $file is not valid"
             check_tabs_crlf "$file"
+          ;;
+        yml|yaml)
+            info "--> Checking YAML validity"
+            $yamllint_path -c ./resources/githooks/yamllint_rules.yml "$file" || error "$file does not comply with yamllint"
           ;;
         *)
             info "File extension '.${file_extension}' has no checks"

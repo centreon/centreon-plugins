@@ -1,0 +1,59 @@
+name: docker-builder-packaging-plugins-windows
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths:
+      - ".github/workflows/docker-builder-packaging-plugins-windows.yml"
+      - ".github/actions/setup-strawberry-perl/action.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/docker-builder-packaging-plugins-windows.yml"
+      - ".github/actions/setup-strawberry-perl/action.yml"
+
+jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  get-environment:
+    needs: [dependency-scan]
+    uses: ./.github/workflows/get-environment.yml
+
+  build-environment:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Strawberry Perl
+        id: setup-perl
+        uses: ./.github/actions/setup-strawberry-perl
+        with:
+          lookup-only: 'true'
+
+      - name: Save environment to cache
+        if: steps.setup-perl.outputs.cache-hit != 'true'
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: C:\Strawberry
+          key: strawberry-perl-5.34.3.1-v2
+
+  set-skip-label:
+    needs: [get-environment, build-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml
