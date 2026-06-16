@@ -29,9 +29,9 @@
   "output": {
     "ok": "All inode partitions are OK",
     "detail_ok": false,
-    "warning": "Inode usage WARNING: ",
+    "warning": "WARNING: ",
     "detail_warning": true,
-    "critical": "Inode usage CRITICAL: ",
+    "critical": "CRITICAL: ",
     "detail_critical": true,
     "instance_separator": " - ",
     "metric_separator": ", "
