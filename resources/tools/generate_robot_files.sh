@@ -1,10 +1,14 @@
 #!/bin/bash
 
 if [[ -z "$1" || "$1" =~ ^--help|-h$ ]] || [[ ! "$1" =~ ^[a-z0-9:]+$ ]]; then
-    echo "Usage: ${0##*/} path::to::plugin [mode]"
+    echo "Usage: ${0##*/} path::to::plugin [mode] [mockoon.json]"
     echo
     echo "Prepare a robot test file for the mode passed as second argument (or all available modes if none provided)."
+    echo "If the last argument ends with '.json', it is used as the Mockoon file."
     echo "Example: ${0##*/} os::linux::snmp::plugin cpu"
+    echo "         ${0##*/} os::linux::snmp::plugin cpu linux.json"
+    echo "         ${0##*/} os::linux::snmp::plugin linux.json"
+
     echo
     exit
 fi
@@ -12,6 +16,15 @@ fi
 # store options
 plugin="$1"
 unique_mode="$2"
+mockoon_file="mockoon.json"
+if [[ "$unique_mode" == *.json ]]; then
+    mockoon_file="$unique_mode"
+    unique_mode=""
+else
+    if [[ "$3" == *.json ]]; then
+        mockoon_file="$3"
+    fi
+fi
 
 # source path is where the script is stored
 source_path="${0%/*}"
@@ -52,7 +65,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-\${MOCKOON_JSON}     \${CURDIR}\${/}mockoon.json
+\${MOCKOON_JSON}     \${CURDIR}\${/}$mockoon_file
 \${CMD}              \${CENTREON_PLUGINS}
 ...                 --plugin=$plugin
 ...                 --mode=$mode
