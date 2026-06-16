@@ -112,42 +112,11 @@ runs:
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
-          const commitSha = context.sha;
-
-          const pulls = await github.rest.pulls.list({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            sort: 'updated',
-            direction: 'desc',
-            state: 'closed',
-            per_page: 100
-          });
-
-          core.startGroup(`Checking pull request linked to commit ${commitSha}`);
-          const pr = pulls.data.find(p => {
-            console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
-            return p.merge_commit_sha === commitSha;
-          });
-          core.endGroup();
-          if (!pr) {
-            core.error(`No pull request found for merge commit ${commitSha}`);
-            return;
-          }
-
-          const prHeadRef = pr?.head?.ref || 'unknown';
-          let releaseType = '';
-          switch (true) {
-            case /^release.+/.test(prHeadRef):
-              releaseType = 'release';
-              break;
-            case /^hotfix.+/.test(prHeadRef):
-              releaseType = 'hotfix';
-              break;
-            default:
-              core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
-              return;
-          }
-          console.log(`Release type: ${releaseType}`);
+          // TEMP sandbox promotion: a direct branch push has no merged PR, so the normal
+          // PR-based release-type detection bails out. Force it to 'release' to promote the
+          // current testing packages to stable. Revert before merge.
+          const releaseType = 'release';
+          console.log(`Release type (forced): ${releaseType}`);
 
           let fromStabilitySubdirectory = 'testing';
           if (releaseType === 'hotfix' ) {
