@@ -12,7 +12,7 @@
 
 [Centreon plugins](https://github.com/centreon/centreon-plugins/) is a free and open source project to monitor systems. The project can be used with Centreon and all monitoring softwares compatible with Nagios plugins.
 
-### Principles
+### Principless
 
 [Centreon plugins](https://github.com/centreon/centreon-plugins/) should comply with [Monitoring Plugins Development Guidelines](https://www.monitoring-plugins.org/doc/guidelines.html).
 
