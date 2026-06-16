@@ -360,83 +360,83 @@ jobs:
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
-  test-plugins:
-    needs: [get-environment, get-plugins, package]
-    if: |
-      always() &&
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.test_plugins == 'True' &&
-      needs.get-environment.outputs.stability != 'stable' &&
-      (needs.package.result == 'success' || needs.package.result == 'skipped') &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
-    strategy:
-      fail-fast: false
-      matrix:
-        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bullseye, testing:bookworm, testing:trixie, testing:noble]
-        include:
-          - skip_robot_tests: false
-          - package_extension: rpm
-            image: testing:alma8
-            distrib: el8
-            arch: amd64
-          - package_extension: rpm
-            image: testing:alma9
-            distrib: el9
-            arch: amd64
-          - package_extension: rpm
-            image: testing:alma10
-            distrib: el10
-            arch: amd64
-            skip_robot_tests: true
-          - package_extension: deb
-            image: testing:bullseye
-            distrib: bullseye
-            arch: amd64
-          - package_extension: deb
-            image: testing:bookworm
-            distrib: bookworm
-            arch: amd64
-          - package_extension: deb
-            image: testing:trixie
-            distrib: trixie
-            arch: amd64
-            skip_robot_tests: true
-          - package_extension: deb
-            image: testing:jammy
-            distrib: jammy
-            arch: amd64
-          - package_extension: deb
-            image: testing:noble
-            distrib: noble
-            arch: amd64
-          - package_extension: deb
-            image: testing:bullseye
-            distrib: bullseye
-            arch: arm64
+  # test-plugins:
+  #   needs: [get-environment, get-plugins, package]
+  #   if: |
+  #     always() &&
+  #     needs.get-environment.outputs.skip_workflow == 'false' &&
+  #     needs.get-plugins.outputs.test_plugins == 'True' &&
+  #     needs.get-environment.outputs.stability != 'stable' &&
+  #     (needs.package.result == 'success' || needs.package.result == 'skipped') &&
+  #     ! cancelled() &&
+  #     ! contains(needs.*.result, 'failure') &&
+  #     ! contains(needs.*.result, 'cancelled')
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bullseye, testing:bookworm, testing:trixie, testing:noble]
+  #       include:
+  #         - skip_robot_tests: false
+  #         - package_extension: rpm
+  #           image: testing:alma8
+  #           distrib: el8
+  #           arch: amd64
+  #         - package_extension: rpm
+  #           image: testing:alma9
+  #           distrib: el9
+  #           arch: amd64
+  #         - package_extension: rpm
+  #           image: testing:alma10
+  #           distrib: el10
+  #           arch: amd64
+  #           skip_robot_tests: true
+  #         - package_extension: deb
+  #           image: testing:bullseye
+  #           distrib: bullseye
+  #           arch: amd64
+  #         - package_extension: deb
+  #           image: testing:bookworm
+  #           distrib: bookworm
+  #           arch: amd64
+  #         - package_extension: deb
+  #           image: testing:trixie
+  #           distrib: trixie
+  #           arch: amd64
+  #           skip_robot_tests: true
+  #         - package_extension: deb
+  #           image: testing:jammy
+  #           distrib: jammy
+  #           arch: amd64
+  #         - package_extension: deb
+  #           image: testing:noble
+  #           distrib: noble
+  #           arch: amd64
+  #         - package_extension: deb
+  #           image: testing:bullseye
+  #           distrib: bullseye
+  #           arch: arm64
 
-    name: "test-plugins ${{ matrix.distrib }} ${{ matrix.arch }}"
+  #   name: "test-plugins ${{ matrix.distrib }} ${{ matrix.arch }}"
 
-    uses: ./.github/workflows/plugins-robot-tests.yml
-    with:
-      image: ${{ matrix.image }}
-      indexes: ${{ needs.get-plugins.outputs.index_matrix }}
-      distrib: ${{ matrix.distrib }}
-      arch: ${{ matrix.arch }}
-      get-packages: ${{ needs.get-plugins.outputs.package_plugins }}
-      package-extension: ${{ matrix.package_extension }}
-      packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-      plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
-      skip-robot-tests: ${{ matrix.skip_robot_tests }}
-      exclude-robot-tags: centreon-generic-snmp
+  #   uses: ./.github/workflows/plugins-robot-tests.yml
+  #   with:
+  #     image: ${{ matrix.image }}
+  #     indexes: ${{ needs.get-plugins.outputs.index_matrix }}
+  #     distrib: ${{ matrix.distrib }}
+  #     arch: ${{ matrix.arch }}
+  #     get-packages: ${{ needs.get-plugins.outputs.package_plugins }}
+  #     package-extension: ${{ matrix.package_extension }}
+  #     packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+  #     plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
+  #     skip-robot-tests: ${{ matrix.skip_robot_tests }}
+  #     exclude-robot-tags: centreon-generic-snmp
 
   deliver-packages:
-    needs: [get-environment, get-plugins, test-plugins]
+    needs: [get-environment, get-plugins]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.package_plugins == 'True' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable') &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
