@@ -88,12 +88,17 @@ sub manage_selection {
 
     # Extract the log count from the API response
     # API response format: {"curves":[{"metric":"count","times":[...],"data":[count_value,...],"attributes":[]}]}
-    $self->{output}->option_exit("curves array is missing from response")
+    $self->{output}->option_exit(short_msg => "curves array is missing from response")
         unless $result->{curves} && ref($result->{curves}) eq 'ARRAY';
 
-    my $count = value_of($result, '->{curves}->[0]->{data}->[0]', 'none');
-    $self->{output}->option_exit("Path .response.curves[0].data[0] could not be found or is '" . $count . "'")
-        unless $count =~ /^[\.\d]+$/;
+    # under `data` should be an array reference with the count values grouped by time slices
+    my $data = value_of($result, '->{curves}->[0]->{data}', '');
+    $self->{output}->option_exit(short_msg => "Could not get the count result (.response.curves[0].data is not an array).")
+        unless ref $data eq 'ARRAY';
+
+    # we now have to sum all the slices to get the total number
+    my $count = 0;
+    $count += $_ foreach @{$data};
 
     $self->{logcount} = {
         count => $count
