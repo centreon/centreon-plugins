@@ -1,0 +1,39 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "inodes",
+        "oid": "1.3.6.1.4.1.2021.9.1",
+        "query": "Walk",
+        "labels": {
+          ".2": "path",
+          ".3": "device",
+          ".10": "percent_used"
+        }
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "prefix": "{inodes.path}",
+        "name": "inodes.usage.percent",
+        "value": "{inodes.percent_used}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "inodes"
+      }
+    ]
+  },
+  "output": {
+    "ok": "All inode partitions are OK",
+    "detail_ok": false,
+    "warning": "Inode usage WARNING: ",
+    "detail_warning": true,
+    "critical": "Inode usage CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
+  }
+}
