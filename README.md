@@ -8,7 +8,7 @@
 [![Forks][forks-shield]][forks-url]
 [![Issues][issues-shield]][issues-url]
 
-## What are Centreon Plugins
+## What are Centreon Pluginss
 
 [Centreon plugins](https://github.com/centreon/centreon-plugins/) is a free and open source project to monitor systems. The project can be used with Centreon and all monitoring softwares compatible with Nagios plugins.
 
