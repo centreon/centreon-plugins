@@ -1155,7 +1155,7 @@ sub disco_escape($;$) {
 # exprintf replaces placeholders in a string with values from a hash.
 # Placeholders can optionally use the 'storage' or 'network' filter to
 # convert and format values before display. Filter can also be a sprintf
-# format string when it begin withs '%'.
+# format string when it begin withs '%' or 'array' to display perl array.
 # See tests/centreon/plugins/misc/exprintf.t for usage examples
 sub exprintf($$;$) {
     my ($template, $datas, $default) = @_;
@@ -1171,7 +1171,9 @@ sub exprintf($$;$) {
                                                         } elsif ($2 eq 'storage') {
                                                             $value = join '', format_bytes(value => $value);
                                                         } elsif (substr($2, 0, 1) eq '%') {
-                                                          $value = sprintf($2, $value);
+                                                            $value = sprintf($2, $value);
+                                                        } elsif ($2 eq 'array' && ref $value eq 'ARRAY') {
+                                                            $value = join ', ', @{$value}
                                                         }
                                                     }
                                                     $value
@@ -1935,7 +1937,7 @@ Replace placeholders in a template string with values from a hash.
 
 =item * C<$default> - Optional default value to use when a key is not found (default: empty string)
 
-Supported filters: C<storage> (base 1024 units), C<network> (base 1000 units), or a sprintf format starting with C<%>.
+Supported filters: C<storage> (base 1024 units), C<network> (base 1000 units), C<array> (perl array) or a sprintf format starting with C<%>.
 
 =back
 

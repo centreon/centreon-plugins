@@ -141,6 +141,27 @@ sub test {
             default          => '',
             expected_result  => 'Sprintf format custom: 32.12346',
             msg              => 'Test unknown filter (no transformation)'
+        },
+        {
+            template         => 'Perl array: %{value|array}',
+            datas            => { value => [ 'VAL1', 'VAL2' ] },
+            default          => '',
+            expected_result  => 'Perl array: VAL1, VAL2',
+            msg              => 'Test perl array'
+        },
+        {
+            template         => 'Undefined Perl array: %{value|array}',
+            datas            => { value => undef },
+            default          => undef,
+            expected_result  => 'Undefined Perl array: ',
+            msg              => 'Test undefined perl array'
+        },
+        {
+            template         => 'Undefined Perl array with default: %{value|array}',
+            datas            => { value => undef },
+            default          => [ 'DEF1', 'DEF2' ],
+            expected_result  => 'Undefined Perl array with default: DEF1, DEF2',
+            msg              => 'Test undefined perl array with default'
         }
     );
 

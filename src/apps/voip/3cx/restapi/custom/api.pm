@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,36 +27,33 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw/json_decode json_encode/;
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    if (!defined($options{output})) {
+    unless ($options{output}) {
         print "Class Custom: Need to specify 'output' argument.\n";
         exit 3;
     }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
+    $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.")
+        unless $options{options};
 
-    if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
-            'hostname:s'             => { name => 'hostname' },
-            'port:s'                 => { name => 'port'},
-            'proto:s'                => { name => 'proto' },
-            'api-username:s'         => { name => 'api_username' },
-            'api-password:s'         => { name => 'api_password' },
-            'auth-mode:s'            => { name => 'auth_mode', default => 'oauth2' },
-            'timeout:s'              => { name => 'timeout', default => 30 },
-            'unknown-http-status:s'  => { name => 'unknown_http_status' },
-            'warning-http-status:s'  => { name => 'warning_http_status' },
-            'critical-http-status:s' => { name => 'critical_http_status' }
-        });
-    }
+    $options{options}->add_options(arguments =>  {
+        'hostname:s'             => { name => 'hostname', not_empty => 1 },
+        'port:s'                 => { name => 'port', default => 443, numeric => 1 },
+        'proto:s'                => { name => 'proto', is_in => [ 'http', 'https' ] },
+        'api-username:s'         => { name => 'api_username', not_empty => 1 },
+        'api-password:s'         => { name => 'api_password', not_empty => 1 },
+        'auth-mode:s'            => { name => 'auth_mode', default => 'oauth2', is_in => [ 'oauth2', 'login' ] },
+        'timeout:s'              => { name => 'timeout', default => 30 },
+        'unknown-http-status:s'  => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+        'warning-http-status:s'  => { name => 'warning_http_status', default => '' },
+        'critical-http-status:s' => { name => 'critical_http_status', default => '' }
+    }) unless $options{noptions};
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
@@ -67,45 +64,12 @@ sub new {
     return $self;
 }
 
-sub set_options {
-    my ($self, %options) = @_;
-
-    $self->{option_results} = $options{option_results};
-}
-
-sub set_defaults {}
-
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname}               = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port}                   = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{proto}                  = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout}                = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{ssl_opt}                = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_username}           = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
-    $self->{api_password}           = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
-    $self->{auth_mode}              = (defined($self->{option_results}->{auth_mode})) ? $self->{option_results}->{auth_mode} : 'oauth2';
-    $self->{unknown_http_status}    = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
-    $self->{warning_http_status}    = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status}   = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
+    $self->{$_} = $self->{option_results}->{$_}
+        foreach qw/hostname port proto timeout ssl_opt api_username api_password auth_mode unknown_http_status warning_http_status critical_http_status/;
 
-    if ($self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
-        $self->{output}->option_exit();
-    }
-    if ($self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
-        $self->{output}->option_exit();
-    }
-    if ($self->{auth_mode} !~ /^(oauth2|login)$/) {
-        $self->{output}->add_option_msg(short_msg => "Invalid --auth-mode value '$self->{auth_mode}'. Must be 'oauth2' or 'login'.");
-        $self->{output}->option_exit();
-    }
     $self->{cache}->check_options(option_results => $self->{option_results});
 
     return 0;
@@ -114,11 +78,8 @@ sub check_options {
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = $self->{hostname};
-    $self->{option_results}->{port} = $self->{port};
-    $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
-    $self->{option_results}->{timeout} = $self->{timeout};
+    $self->{option_results}->{$_} = $self->{$_}
+        foreach qw/hostname port proto ssl_opt timeout/;
 }
 
 sub settings {
@@ -126,16 +87,16 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
-    if (defined($self->{auth_header})) {
-        $self->{http}->add_header(key => 'Authorization', value => $self->{auth_header});
-    }
+    $self->{http}->add_header(key => 'Authorization', value => $self->{auth_header})
+        if $self->{auth_header};
+
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
 sub authenticate {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => '3cx_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    my $has_cache_file = $options{statefile}->read(statefile => '3cx_api_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{api_username}));
     my $auth_header = $options{statefile}->get(name => 'auth_header');
     my $expires_on  = $options{statefile}->get(name => 'expires_on');
 
@@ -148,27 +109,24 @@ sub authenticate {
             # POST /connect/token with client_id / client_secret
             # Requires an API client created in 3CX admin console (/#/office/integrations/api)
             # The API client must have at least the 'Admin' role
-            $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
             $self->{http}->set_options(%{$self->{option_results}});
 
-            my $post_data = 'client_id=' . $self->{api_username} .
-                            '&client_secret=' . $self->{api_password} .
-                            '&grant_type=client_credentials';
-
+            my $post_params = { 'client_id' => $self->{api_username},
+                            'client_secret' => $self->{api_password},
+                            'grant_type' => 'client_credentials' };
             $content = $self->{http}->request(
                 method          => 'POST',
-                query_form_post => $post_data,
+                post_params     => $post_params,
                 url_path        => '/connect/token',
                 unknown_status  => $self->{unknown_http_status},
                 warning_status  => $self->{warning_http_status},
                 critical_status => $self->{critical_http_status}
             );
 
-            eval { $decoded = JSON::XS->new->decode($content); };
-            if ($@ || !defined($decoded) || !defined($decoded->{access_token})) {
-                $self->{output}->add_option_msg(short_msg => "OAuth2 authentication failed. Check client_id/client_secret and ensure the API client has Admin role (add --debug for details).");
-                $self->{output}->option_exit();
-            }
+
+            $decoded = json_decode($content, silence => 1);
+            $self->{output}->option_exit(short_msg => "OAuth2 authentication failed. Check client_id/client_secret and ensure the API client has Admin role (add --debug for details).")
+                unless ref $decoded eq 'HASH' && $decoded->{access_token};
 
             $auth_header = $decoded->{token_type} . ' ' . $decoded->{access_token};
             # expires_in is in seconds for v20
@@ -186,34 +144,25 @@ sub authenticate {
             $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
             $self->{http}->set_options(%{$self->{option_results}});
 
-            my $post_data = '{"Username":"' . $self->{api_username} . '","Password":"' . $self->{api_password} . '"}';
-
+            my $post_params = { "Username" => $self->{api_username},
+                                "Password" => $self->{api_password}
+                              };
             $content = $self->{http}->request(
                 method          => 'POST',
-                query_form_post => $post_data,
+                query_form_post => json_encode($post_params, silence => 1),
                 url_path        => '/webclient/api/Login/GetAccessToken',
                 unknown_status  => $self->{unknown_http_status},
                 warning_status  => $self->{warning_http_status},
                 critical_status => $self->{critical_http_status}
             );
 
-            eval { $decoded = JSON::XS->new->decode($content); };
-            if ($@) {
-                $self->{output}->add_option_msg(short_msg => "Cannot decode login response: $@");
-                $self->{output}->option_exit();
-            }
-            if (!defined($decoded) || !defined($decoded->{Status})) {
-                $self->{output}->add_option_msg(short_msg => "Login failed: unexpected response (add --debug for details).");
-                $self->{output}->option_exit();
-            }
-            if ($decoded->{Status} eq 'Required2FA') {
-                $self->{output}->add_option_msg(short_msg => "Login failed: 2FA is enabled on this account. Please disable 2FA for the monitoring account.");
-                $self->{output}->option_exit();
-            }
-            if ($decoded->{Status} ne 'AuthSuccess' || !defined($decoded->{Token}->{access_token})) {
-                $self->{output}->add_option_msg(short_msg => "Login failed: status=" . $decoded->{Status} . " (add --debug for details).");
-                $self->{output}->option_exit();
-            }
+            $decoded = json_decode($content, output => $self->{output});
+            $self->{output}->option_exit(short_msg => "Login failed: unexpected response (add --debug for details).")
+                unless ref $decoded eq 'HASH' && $decoded->{Status};
+            $self->{output}->option_exit(short_msg => "Login failed: 2FA is enabled on this account. Please disable 2FA for the monitoring account.")
+                if $decoded->{Status} eq 'Required2FA';
+            $self->{output}->option_exit(short_msg => "Login failed: status=" . $decoded->{Status} . " (add --debug for details).")
+                if $decoded->{Status} ne 'AuthSuccess' || !defined($decoded->{Token}->{access_token});
 
             $auth_header = $decoded->{Token}->{token_type} . ' ' . $decoded->{Token}->{access_token};
             # expires_in is in seconds for v20
@@ -233,9 +182,8 @@ sub authenticate {
 sub request_api {
     my ($self, %options) = @_;
 
-    if (!defined($self->{auth_header})) {
-        $self->authenticate(statefile => $self->{cache});
-    }
+    $self->authenticate(statefile => $self->{cache})
+        unless $self->{auth_header};
 
     $self->settings();
 
@@ -246,18 +194,9 @@ sub request_api {
         critical_status => $self->{critical_http_status}
     );
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
-        $self->{output}->option_exit();
-    }
+    my $decoded = json_decode($content, silence => 1);
+    $self->{output}->option_exit(short_msg => "Error while retrieving data (add --debug option for detailed message)")
+        unless ref $decoded eq 'HASH';
 
     return $decoded;
 }
@@ -318,9 +257,8 @@ sub internal_update_checker {
     my $status = $self->request_api(method => 'GET', url_path => '/xapi/v1/GetUpdatesStats()');
     if (ref($status) eq 'HASH') {
         $status = $status->{TcxUpdate};
-        if (ref($status) ne 'ARRAY') {
-            $status = JSON::XS->new->decode($status);
-        }
+        $status = json_decode($status, silence => 1)
+            if ref($status) ne 'ARRAY';
     }
     return $status;
 }
@@ -358,27 +296,27 @@ Define the protocol to reach the API (default: 'https').
 =item B<--api-username>
 
 Define the username for authentication.
-For 'oauth2' mode (Enterprise): the client_id of the API client created in 3CX admin console.
-For 'login' mode (Pro): the email or extension number of a System Owner account (2FA must be disabled).
+For C<oauth2> mode (Enterprise): the client_id of the API client created in 3CX admin console.
+For C<login> mode (Pro): the email or extension number of a System Owner account (C<2FA> must be disabled).
 
 =item B<--api-password>
 
 Define the password for authentication.
-For 'oauth2' mode (Enterprise): the client_secret of the API client.
-For 'login' mode (Pro): the password of the System Owner account.
+For C<oauth2> mode (Enterprise): the client_secret of the API client.
+For C<login> mode (Pro): the password of the System Owner account.
 
 =item B<--auth-mode>
 
-Define the authentication mode (default: 'oauth2').
+Define the authentication mode (default: C<oauth2>).
 
-'oauth2': for 3CX Enterprise edition.
+C<oauth2>: for 3CX Enterprise edition.
 Uses OAuth2 client_credentials flow via POST /connect/token.
 Requires an API client created in 3CX admin console (/#/office/integrations/api).
 The API client must have at least the 'Admin' role.
 
-'login': for 3CX Pro edition.
+C<login>: for 3CX Pro edition.
 Uses username/password login via POST /webclient/api/Login/GetAccessToken.
-Requires a System Owner account with 2FA disabled.
+Requires a System Owner account with C<2FA> disabled.
 IMPORTANT: The poller IP must be whitelisted in 3CX admin console under
 Security > Console Restrictions > Allow access from specific IP addresses.
 Without this, 3CX returns a degraded token causing 403 errors on all API endpoints.
