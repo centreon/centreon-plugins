@@ -288,6 +288,9 @@ impl ExprResult {
                 ExprResult::Str(s) => {
                     *self = ExprResult::Str(s.clone());
                 }
+                ExprResult::Vector(vv) => {
+                    *self = ExprResult::StrVector(vv.iter().map(|n| crate::output::float_string(n)).collect());
+                }
                 _ => panic!("Unable to join objects others than strings"),
             },
             ExprResult::StrVector(v) => match other {
@@ -353,13 +356,36 @@ impl ExprResult {
 }
 
 impl<'input> Expr<'input> {
+    /// Check that all macros exist in the collected results
+    pub fn validate_macros(&self, collect: &Vec<SnmpResult>) -> Result<(), String> {
+        match self {
+            Expr::Id(key) => {
+                let k = str::from_utf8(key).unwrap();
+                for result in collect {
+                    if result.items.contains_key(k) {
+                        return Ok(());
+                    }
+                }
+                Err(format!("Undefined macro in expression: {{{}}}", k))
+            }
+            Expr::Number(_) => Ok(()),
+            Expr::OpPlus(left, right) | Expr::OpMinus(left, right) |
+            Expr::OpStar(left, right) | Expr::OpSlash(left, right) => {
+                left.validate_macros(collect)?;
+                right.validate_macros(collect)?;
+                Ok(())
+            }
+            Expr::Fn(_, expr) => expr.validate_macros(collect),
+        }
+    }
+
     /// Recursively evaluates this expression against the collected SNMP results.
     ///
     /// Resolves identifiers by searching through the `collect` vector, applies
     /// operators element-wise for vectors, and evaluates functions.
-    pub fn eval(&self, collect: &Vec<SnmpResult>) -> ExprResult {
+    pub fn eval(&self, collect: &Vec<SnmpResult>) -> Result<ExprResult, String> {
         match self {
-            Expr::Number(n) => ExprResult::Number(*n),
+            Expr::Number(n) => Ok(ExprResult::Number(*n)),
             Expr::Id(key) => {
                 let k = str::from_utf8(key).unwrap();
                 for result in collect {
@@ -368,10 +394,10 @@ impl<'input> Expr<'input> {
                             ExprResult::Vector(n) => {
                                 if n.len() == 1 {
                                     info!("ID '{}' has value {}", k, n[0]);
-                                    return ExprResult::Number(n[0]);
+                                    return Ok(ExprResult::Number(n[0]));
                                 } else {
                                     info!("ID '{}' has value {:?}", k, n);
-                                    return ExprResult::Vector(n.clone());
+                                    return Ok(ExprResult::Vector(n.clone()));
                                 }
                             }
                             _ => panic!("Should be a number"),
@@ -379,17 +405,17 @@ impl<'input> Expr<'input> {
                         None => continue,
                     }
                 }
-                ExprResult::Number(0.0)
+                Ok(ExprResult::Number(0.0))
             }
-            Expr::OpPlus(left, right) => left.eval(collect) + right.eval(collect),
-            Expr::OpMinus(left, right) => left.eval(collect) - right.eval(collect),
-            Expr::OpStar(left, right) => left.eval(collect) * right.eval(collect),
-            Expr::OpSlash(left, right) => left.eval(collect) / right.eval(collect),
+            Expr::OpPlus(left, right) => Ok(left.eval(collect)? + right.eval(collect)?),
+            Expr::OpMinus(left, right) => Ok(left.eval(collect)? - right.eval(collect)?),
+            Expr::OpStar(left, right) => Ok(left.eval(collect)? * right.eval(collect)?),
+            Expr::OpSlash(left, right) => Ok(left.eval(collect)? / right.eval(collect)?),
             Expr::Fn(func, expr) => {
-                let v = expr.eval(collect);
+                let v = expr.eval(collect)?;
                 match func {
                     Func::Average => match v {
-                        ExprResult::Number(n) => ExprResult::Number(n),
+                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
                         ExprResult::Vector(v) => {
                             let mut sum = 0.0;
                             let mut count = 0;
@@ -400,26 +426,26 @@ impl<'input> Expr<'input> {
                                 }
                             }
                             if count > 0 {
-                                return ExprResult::Number(sum / count as f64);
+                                Ok(ExprResult::Number(sum / count as f64))
                             } else {
-                                return ExprResult::Number(f64::NAN);
+                                Ok(ExprResult::Number(f64::NAN))
                             }
                         }
                         _ => panic!("Invalid operation"),
                     },
                     Func::Min => match v {
-                        ExprResult::Number(n) => ExprResult::Number(n),
+                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
                         ExprResult::Vector(v) => {
                             let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
-                            ExprResult::Number(min)
+                            Ok(ExprResult::Number(min))
                         }
                         _ => panic!("Invalid operation"),
                     },
                     Func::Max => match v {
-                        ExprResult::Number(n) => ExprResult::Number(n),
+                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
                         ExprResult::Vector(v) => {
                             let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-                            ExprResult::Number(max)
+                            Ok(ExprResult::Number(max))
                         }
                         _ => panic!("Invalid operation"),
                     },

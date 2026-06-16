@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,14 +25,22 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw/:values :counters/;
 
 sub custom_cluster_status_output {
     my ($self, %options) = @_;
 
+    if ($self->{result_values}->{replicationStatus} ne '') {
+        return sprintf(
+            'enabled: %s, replication status: %s',
+            $self->{result_values}->{enabled},
+            $self->{result_values}->{replicationStatus}
+        );
+    }
+
     return sprintf(
-        'enabled: %s, replication status: %s',
-         $self->{result_values}->{enabled},
-         $self->{result_values}->{replicationStatus}
+        'state: %s',
+        $self->{result_values}->{state}
     );
 }
 
@@ -55,18 +63,19 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cluster', type => 0, cb_prefix_output => 'prefix_cluster_output' },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'all nodes are ok', skipped_code => { -10 => 1 } },
+        { name => 'cluster', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_cluster_output', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_node_output', message_multiple => 'all nodes are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{cluster} = [
         {
             label => 'cluster-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             unknown_default => '%{replicationStatus} =~ /unknown/i',
-            warning_default => '%{replicationStatus} =~ /not_synchronized/i',
+            warning_default => '%{state} =~ /misconfigured|configured_not_started/i or %{replicationStatus} =~ /not_synchronized/i',
+            critical_default => '%{state} =~ /split_brain|data_mismatch/i',
             set => {
-                key_values => [ { name => 'replicationStatus' }, { name => 'enabled' } ],
+                key_values => [ { name => 'replicationStatus' }, { name => 'enabled' }, { name => 'state' } ],
                 closure_custom_output => $self->can('custom_cluster_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -85,7 +94,7 @@ sub set_counters {
     $self->{maps_counters}->{nodes} = [
         {
             label => 'node-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{status} =~ /disconnected/i',
             set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
@@ -113,17 +122,25 @@ sub manage_selection {
 
     my $cluster = $options{custom}->request_api(endpoint => '/managementCenters/cluster');
 
+    my $enabled = $cluster->{enabled};
+    if (defined($enabled)) {
+        $enabled = ($enabled =~ /true|1/i) ? 'yes' : 'no';
+    }
     $self->{cluster} = {
-        enabled => $cluster->{enabled} =~ /true|1/i ? 'yes' : 'no',
-        replicationStatus => lc($cluster->{replicationStatus}),
+        enabled => defined($enabled) ? $enabled : '',
+        state => defined($cluster->{state}) ? lc($cluster->{state}): '',
+        replicationStatus => defined($cluster->{replicationStatus}) ? lc($cluster->{replicationStatus}) : '',
         synchronizationDone => $cluster->{synchronizePercentageDone}
     };
 
     $self->{nodes} = {};
     foreach (keys %{$cluster->{statusList}}) {
+        my $status = $cluster->{statusList}->{$_};
+        $status = 'connected' if ($status =~ /^(true|1)$/);
+        $status = 'disconnected' if ($status =~ /^(false|0)$/);
         $self->{nodes}->{$_} = {
             name => $_,
-            status => $cluster->{statusList}->{$_} =~ /true|1/i ? 'connected' : 'disconnected'
+            status => $status
         };
     }
 }
@@ -134,24 +151,24 @@ __END__
 
 =head1 MODE
 
-Check MMC cluster status.
+Check Mistral Management Center (MMC) cluster status.
 
 =over 8
 
 =item B<--unknown-cluster-status>
 
-Define the conditions to match for the status to be UNKNOWN  (default: '%{replicationStatus} =~ /unknown/i').
-You can use the following variables: %{enabled}, %{replicationStatus}
+Define the conditions to match for the status to be UNKNOWN (default: '%{replicationStatus} =~ /unknown/i').
+You can use the following variables: %{enabled}, %{replicationStatus}, %{state}
 
 =item B<--warning-cluster-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{replicationStatus} =~ /not_synchronized/i').
-You can use the following variables: %{enabled}, %{replicationStatus}
+Define the conditions to match for the status to be WARNING (default: '%{state} =~ /misconfigured|configured_not_started/i or %{replicationStatus} =~ /not_synchronized/i').
+You can use the following variables: %{enabled}, %{replicationStatus}, %{state}
 
 =item B<--critical-cluster-status>
 
-Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /split_brain|data_mismatch/i').
+You can use the following variables: %{enabled}, %{replicationStatus}, %{state}
 
 =item B<--unknown-node-status>
 
@@ -168,10 +185,13 @@ You can use the following variables: %{status}, %{name}
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{status}, %{name}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-synchronization-done>
 
-Thresholds.
-Can be: 'synchronization-done'.
+Threshold in percentage (API version < 9.2.4.18).
+
+=item B<--critical-synchronization-done>
+
+Threshold in percentage (API version < 9.2.4.18).
 
 =back
 
