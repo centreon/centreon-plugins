@@ -31,7 +31,7 @@ on:
     branches:
       - develop
       - master
-      - release-20260600-tun # TEMP: sandbox branch to reproduce stable run (revert before merge)
+      - tun-release-20260600 # TEMP: sandbox branch to reproduce stable run (revert before merge)
     paths:
       - '.github/workflows/plugins.yml'
       - '.github/workflows/plugins-robot-tests.yml'

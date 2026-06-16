@@ -219,7 +219,7 @@ jobs:
           script: |
             const getStability = (branchName) => {
               switch (true) {
-                case /^release-20260600-tun$/.test(branchName): // TEMP: sandbox branch forced to stable (revert before merge)
+                case /^tun-release-20260600$/.test(branchName): // TEMP: sandbox branch forced to stable (revert before merge)
                   return 'stable';
                 case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)/.test(branchName):
                   return 'unstable';
