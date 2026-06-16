@@ -23,6 +23,25 @@ You'll find examples in the other markdown documentation files.
   This is much more understandable this way: 
   ```skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 }```
 
+### Use the short_msg parameter of option_exit
+
+When you need to display an error message and exit the plugin, it is simpler to use a single `option_exit` call rather than calling `add_opton_msg` followed by `option_exit`.
+For example:
+
+    $self->{output}->option_exit(short_msg => "Cannot encode JSON result");
+
+Instead of:
+
+    $self->{output}->add_option_msg(short_msg => "Cannot encode JSON result"); 
+    $self->{output}->option_exit(); 
+
+
+### Use the functions provided by Misc.pm
+
+In general, before implementing something from scratch, check whether an existing function in [centreon/plugins/misc.pm](../../../src/centreon/plugins/misc.pm) already provides the required functionality.
+
+Please refer to the [misc.pm](../../../src/centreon/plugins/misc.pm) documentation for the list of available functions and examples of their usage.
+
 ## Documentation
 
 - Write the payload in the comments when it's relevant (and not too long). The JSON response of a REST API may be useful
