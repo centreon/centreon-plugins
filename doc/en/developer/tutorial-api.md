@@ -193,10 +193,12 @@ use centreon::plugins::http;
 use base qw(centreon::plugins::templates::counter);
 # Import some functions that will make your life easier
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-# Import constants for counter types and kinds
-use centreon::plugins::constants qw(:counter_types :counter_kinds);
-# We will have to process some JSON, no need to reinvent the wheel, load the lib you installed in a previous section
-use JSON::XS;
+# Import constants for counter types, kinds and skipped values
+use centreon::plugins::constants qw(:counters :values);
+# We need to process some JSON. No need to reinvent the wheel:
+# use the available functions provided by misc.pm, such as
+# json_encode() and json_decode().
+use centreon::plugins::misc qw/json_encode json_decode/;
 ```
 
 Add a `new` function (sub) to initialize the mode: 

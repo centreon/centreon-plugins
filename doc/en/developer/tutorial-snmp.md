@@ -181,7 +181,7 @@ use base qw(centreon::plugins::templates::counter);
 # Needed libraries
 use strict;
 use warnings;
-use centreon::plugins::constants qw(:counter_types);
+use centreon::plugins::constants qw(:counters);
 
 ```
 

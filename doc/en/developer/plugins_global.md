@@ -527,7 +527,7 @@ Since this method had been split in at least two methods :
 
 ```perl
 
-  use centreon::plugins::constants qw(:counter_types);
+use centreon::plugins::constants qw(:counters);
 
   sub set_counters {
     my ($self, %options) = @_;

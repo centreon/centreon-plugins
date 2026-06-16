@@ -979,7 +979,7 @@ We want to develop the following SNMP plugin:
   
   use strict;
   use warnings;
-  use centreon::plugins::constants qw(:counter_types);
+  use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
@@ -1078,7 +1078,7 @@ We want to add the current number of sessions by virtual servers.
   
   use strict;
   use warnings;
-  use centreon::plugins::constants qw(:counter_types);
+  use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
@@ -1190,7 +1190,7 @@ The model can also be used to check strings (not only counters). So we want to c
   
   use strict;
   use warnings;
-  use centreon::plugins::constants qw(:counter_types);
+  use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
