@@ -481,7 +481,7 @@ jobs:
     needs: [get-environment, fatpacker]
     if: |
       needs.get-environment.outputs.stability == 'stable' &&
-      github.event_name == 'push'
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-24.04
 
     steps:

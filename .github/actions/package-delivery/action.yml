@@ -108,7 +108,7 @@ runs:
           }
 
     - name: Download packages from testing
-      if: ${{ inputs.stability == 'stable' && github.event_name == 'push' }}
+      if: ${{ inputs.stability == 'stable' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       with:
         script: |
@@ -140,7 +140,7 @@ runs:
     - name: Publish packages to ${{ inputs.stability }}
       if: |
         contains(fromJson('["testing", "unstable"]'), inputs.stability) ||
-        (inputs.stability == 'stable' && github.event_name == 'push')
+        (inputs.stability == 'stable' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch'))
       uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
       env:
         JF_URL: https://packages.centreon.com
