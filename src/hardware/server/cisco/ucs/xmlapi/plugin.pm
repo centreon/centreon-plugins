@@ -30,11 +30,15 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'audit-logs'      => 'hardware::server::cisco::ucs::xmlapi::mode::auditlogs',
-        'equipment'       => 'hardware::server::cisco::ucs::xmlapi::mode::equipment',
-        'faults'          => 'hardware::server::cisco::ucs::xmlapi::mode::faults',
-        'mgmt-entities'   => 'hardware::server::cisco::ucs::xmlapi::mode::mgmtentities',
-        'service-profile' => 'hardware::server::cisco::ucs::xmlapi::mode::serviceprofile',
+        'audit-logs'          => 'hardware::server::cisco::ucs::xmlapi::mode::auditlogs',
+        'equipment'           => 'hardware::server::cisco::ucs::xmlapi::mode::equipment',
+        'fabric-interconnect' => 'hardware::server::cisco::ucs::xmlapi::mode::fabricinterconnect',
+        'firmware'            => 'hardware::server::cisco::ucs::xmlapi::mode::firmware',
+        'faults'              => 'hardware::server::cisco::ucs::xmlapi::mode::faults',
+        'mgmt-entities'       => 'hardware::server::cisco::ucs::xmlapi::mode::mgmtentities',
+        'ports'               => 'hardware::server::cisco::ucs::xmlapi::mode::ports',
+        'service-profile'     => 'hardware::server::cisco::ucs::xmlapi::mode::serviceprofile',
+        'vhba'                => 'hardware::server::cisco::ucs::xmlapi::mode::vhba',
     };
 
     $self->{custom_modes}->{xmlapi} = 'hardware::server::cisco::ucs::xmlapi::custom::xmlapi';
@@ -48,5 +52,17 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Cisco UCS via UCSM XML API (HTTPS POST to /nuova).
+
+Available modes:
+  equipment           - Hardware components: blade, chassis, fan, psu, cpu, memory,
+                        localdisk, fex, iocard, temperature (use --component to filter)
+  fabric-interconnect - Fabric Interconnect status and HA role
+  firmware            - Firmware versions across all components
+  faults              - Active system faults
+  audit-logs          - UCSM audit log events
+  mgmt-entities       - UCSM HA management entities
+  ports               - Ethernet port status on Fabric Interconnects
+  service-profile     - Service profile association status
+  vhba                - Virtual HBA and physical FC port status
 
 =cut
