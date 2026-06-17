@@ -107,50 +107,19 @@ sub custom_duration_threshold {
     );
 }
 
-sub job_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking job '%s' (%s) [type: %s] [object type: %s] [location: %s] [cluster name: %s]",
-        $options{instance_value}->{name},
-        $options{instance_value}->{fid},
-        $options{instance_value}->{jobType},
-        $options{instance_value}->{objectType},
-        $options{instance_value}->{location},
-        $options{instance_value}->{clusterName}
-    );
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "job '%s' [type: %s] ",
-        $options{instance_value}->{name},
-        $options{instance_value}->{jobType}
-    );
-}
-
-sub prefix_execution_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "last execution started: %s ",
-        $options{instance_value}->{started}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of jobs ' },
         {
-            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
+            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, prefix_output => "job '%{name}' [type: %{jobType}] ",
+            cb_long_output => "checking job '%{name}' (%{fid}) [type: %{jobType}] [object type: %{objectType}] [location: %{location}] [cluster name: %{clusterName}]",
+            indent_long_output => '    ', message_multiple => 'All jobs are ok',
             group => [
                 { name => 'failed', type => COUNTER_MULTIPLE_INSTANCE },
                 { name => 'timers', type => COUNTER_MULTIPLE_INSTANCE },
-                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1 },
+                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, prefix_output => 'last execution started: %{started} ', message_multiple => 'All executions are ok', display_long => 1 },
             ]
         }
     ];
@@ -278,14 +247,27 @@ my @_entities = [ 'jobId', 'jobName', 'jobType', 'locationName' ];
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $cluster_filters = $options{custom}->common_filters();
+
+    # activitySeriesConnection does not support native filtering by name, so we convert names to UUIDs
+    my $cluster_ids = $cluster_filters->{id} // [];
+    if ($cluster_filters->{name}) {
+        my $other_clusters = $options{custom}->clusters_uuid_from_name(@{$cluster_filters->{name}});
+
+        $self->{output}->option_exit(short_msg => 'No matching cluster !')
+            unless ref $other_clusters eq 'ARRAY' && @$other_clusters;
+
+        push @$cluster_ids, @$other_clusters;
+    }
+
     my %filters;
 
     $filters{objectName} = $self->{option_results}->{job_name} if $self->{option_results}->{job_name} ne '';
-    $filters{objectType} = $self->{option_results}->{object_type} if $self->{option_results}->{object_type};
-    $filters{objectFid} = $self->{option_results}->{job_id} if $self->{option_results}->{job_id};
-    $filters{lastActivityType} = $self->{option_results}->{job_type} if $self->{option_results}->{job_type};
-    $filters{lastActivityStatus} = $self->{option_results}->{job_status} if $self->{option_results}->{job_status};
-    $filters{clusterId} = $self->{option_results}->{cluster_id} if $self->{option_results}->{cluster_id};
+    $filters{objectType} = $self->{option_results}->{object_type} if @{$self->{option_results}->{object_type}};
+    $filters{objectFid} = $self->{option_results}->{job_id} if @{$self->{option_results}->{job_id}};
+    $filters{lastActivityType} = $self->{option_results}->{job_type} if @{$self->{option_results}->{job_type}};
+    $filters{lastActivityStatus} = $self->{option_results}->{job_status} if @{$self->{option_results}->{job_status}};
+    $filters{clusterId} = $cluster_ids if $cluster_ids && @$cluster_ids;
 
     $filters{startTimeGt} = $self->{option_results}->{start_time}
         if $self->{option_results}->{start_time} ne '';

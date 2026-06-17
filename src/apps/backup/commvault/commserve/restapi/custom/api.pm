@@ -24,8 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use centreon::plugins::lockfile;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::misc qw/json_encode/;
 use MIME::Base64;
 
@@ -64,7 +63,6 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options, default_backend => 'curl');
     $self->{cache} = centreon::plugins::statefile->new(%options);
     $self->{cache_authent_token} = centreon::plugins::statefile->new(%options);
-    $self->{lock} = centreon::plugins::lockfile->new(%options);
 
     return $self;
 }
@@ -88,7 +86,6 @@ sub check_options {
     $self->{api_password} = $self->{option_results}->{api_password};
 
     $self->{use_authent_token} = $self->{option_results}->{api_username} eq '' && $self->{option_results}->{api_password} eq '';
-
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{user_domain} = (defined($self->{option_results}->{user_domain})) ? $self->{option_results}->{user_domain} : '';
     $self->{cache_create} = $self->{option_results}->{cache_create};
@@ -102,9 +99,6 @@ sub check_options {
 
     $self->{cache}->check_options(option_results => $self->{option_results});
     $self->{cache_authent_token}->check_options(option_results => $self->{option_results});
-    $self->{lock}->check_options(option_results => { %{$self->{option_results}},
-                                                     lockfile => 'commvault_commserve_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}) . '.lock',
-                                                     lock_expiration_timeout => 3600 });
 
     return 0;
 }
@@ -161,14 +155,14 @@ sub settings {
 sub load_authent_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache_authent_token}->read(statefile => 'commvault_commserve_cat_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{instance}));
+    my $has_cache_file = $self->{cache_authent_token}->read(statefile => 'commvault_commserve_cat_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{instance}));
     return (0, '', '') unless $has_cache_file;
 
     my $authent_token = $self->{cache_authent_token}->get(name => 'authentToken') // '';
     my $refresh_token = $self->{cache_authent_token}->get(name => 'refreshToken') // '';
-    my $update_time = $self->{cache_authent_token}->get(name => 'update_time') // 0;
+    my $expiry_time = $self->{cache_authent_token}->get(name => 'expiry_time') // 0;
 
-    return ($update_time, $authent_token, $refresh_token);
+    return ($expiry_time, $authent_token, $refresh_token);
 }
 
 sub refresh_authent_token
@@ -196,25 +190,28 @@ sub refresh_authent_token
         my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
         $self->{output}->option_exit(short_msg => "Cannot refresh token [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
     }
-    my ($accessToken, $refreshToken) = ('', '');
+    my ($accessToken, $refreshToken, $expiryTime) = ('', '', '');
+
     # For some obscure reasons json flux is sometime invalid, so we have to extract values with regexp
     if ($content) {
         $accessToken = $1
             if $content =~ /accessToken\":\s*\"([^\"]+)\"/m;
         $refreshToken = $1
             if $content =~ /refreshToken\":\s*\"([^\"]+)\"/m;
+        $expiryTime = $1
+            if $content =~ /tokenExpiryTimes.amp\":\s*(\d+)/m; # Commvault returns Times}amp instead of Timestamp
     }
 
     $self->{output}->option_exit(short_msg => "Cannot extract tokens !")
         if $exit_on_failed && ($accessToken eq '' || $refreshToken eq '');
 
-    return ($accessToken, $refreshToken);
+    return ($accessToken, $refreshToken, $expiryTime);
 }
 
 sub write_authent_token {
     my ($self, %options) = @_;
     $self->{cache_authent_token}->write(
-        data => { authentToken => $options{authentToken}, refreshToken => $options{refreshToken}, update_time => time() });
+        data => { authentToken => $options{authentToken}, refreshToken => $options{refreshToken}, expiry_time => $options{expiryTime} });
 }
 
 sub clean_legacy_token {
@@ -229,7 +226,7 @@ sub clean_legacy_token {
 sub get_legacy_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'commvault_commserve_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'commvault_commserve_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{api_username}));
     my $legacy_token = $options{statefile}->get(name => 'access_token');
 
     # Token expires every 15 minutes
@@ -278,17 +275,21 @@ sub request_internal {
     my ($self, %options) = @_;
 
     $self->settings();
-    my $authent_token = '';
 
     if ($self->{use_authent_token}) {
 
-        $self->{output}->option_exit(exit_literal => 'unknown', short_msg => 'Unable to acquire lock: will retry on next run')
-            unless $self->{lock}->lock_file();
 
-        (undef, $authent_token, undef) = $self->load_authent_token();
+        my ($expiry_time, $authent_token, undef) = $self->load_authent_token();
 
-        $self->{output}->option_exit(short_msg => 'Tokens where not found. Please use the "token" mode first')
+        $self->{output}->option_exit(short_msg => 'Tokens where not found. This check can be run after next execution of "token" mode')
             if $authent_token eq '';
+
+        $expiry_time -= time;
+        $self->{output}->output_add(long_msg => $expiry_time > 0 ? "Token will expire in $expiry_time seconds" : "Token has expired", debug => 1);
+
+        # No execution when the token expires in less than 5 minutes to ensure that an invalid token is not used
+        $self->{output}->option_exit(short_msg => 'Tokens are going to expire. This check can be run again after next execution of "token" mode')
+            if $expiry_time < 300;
 
         $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $authent_token);
 
@@ -318,9 +319,6 @@ sub request_internal {
         $self->get_legacy_token(statefile => $self->{cache});
     }
 
-    $self->{lock}->unlock()
-        if $self->{lock}->is_locked();
-
     my $decoded = $self->json_decode(content => $content);
 
     $self->{output}->option_exit(short_msg => 'Error while retrieving data (add --debug option for detailed message)')
@@ -337,7 +335,7 @@ sub request_internal {
 sub get_cache_file_response {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{api_username}));
     my $response = $self->{cache}->get(name => 'response');
     my $update_time = $self->{cache}->get(name => 'update_time');
 
@@ -350,7 +348,7 @@ sub get_cache_file_response {
 sub get_cache_file_update {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{api_username}));
     my $update_time = $self->{cache}->get(name => 'update_time');
     return $update_time;
 }
@@ -358,7 +356,7 @@ sub get_cache_file_update {
 sub create_cache_file {
     my ($self, %options) = @_;
 
-    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    $self->{cache}->read(statefile => 'cache_commvault_commserve_' . $options{type} . '_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{api_username}));
     $self->{cache}->write(data => { response => $options{response}, update_time => time() });
     $self->{output}->output_add(
         severity => 'ok',
@@ -408,6 +406,7 @@ sub request_jobs {
             get_param => ['completedJobLookupTime=' . $lookup_time],
             header => [ 'limit: 100', "offset: $offset" ]
         );
+        last unless ref $content->{jobs} eq 'ARRAY';
         push @items, @{$content->{jobs}};
         last if @items >= $content->{totalRecordsWithoutPaging} // 0;
         $offset += 100;
