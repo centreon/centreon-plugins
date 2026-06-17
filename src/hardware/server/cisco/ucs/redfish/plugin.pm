@@ -30,8 +30,10 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'equipment' => 'hardware::server::cisco::ucs::redfish::mode::equipment',
-        'faults'    => 'hardware::server::cisco::ucs::redfish::mode::faults',
+        'equipment'          => 'hardware::server::cisco::ucs::redfish::mode::equipment',
+        'faults'             => 'hardware::server::cisco::ucs::redfish::mode::faults',
+        'firmware'           => 'hardware::server::cisco::ucs::redfish::mode::firmware',
+        'network-interfaces' => 'hardware::server::cisco::ucs::redfish::mode::networkinterfaces',
     };
 
     $self->{custom_modes}->{api} = 'hardware::server::cisco::ucs::redfish::custom::api';
@@ -45,5 +47,13 @@ __END__
 =head1 PLUGIN DESCRIPTION
 
 Check Cisco UCS via Redfish API (standard REST/JSON).
+
+Available modes:
+  equipment           - Hardware components: chassis, cpu, fan, psu, memory, localdisk,
+                        temperature (use --component to filter)
+                        Temperature uses embedded Redfish thresholds as defaults.
+  faults              - System events from LogServices (SEL or FaultList)
+  firmware            - Firmware inventory (UpdateService/FirmwareInventory)
+  network-interfaces  - Network port link status (Systems/NetworkInterfaces)
 
 =cut
