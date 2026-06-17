@@ -36,7 +36,9 @@ sub new {
     # Template for default validation error messages
     $self->{'validation_error_message'} = { DEFAULT => "Bad value provided for option %{option}: '%{value}'. Constraint '%{value}' %{validation} '%{validation_value}' is not verified.",
                                             not_empty => "Need to specify --%{option} option.",
-                                            numeric =>  "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric value."
+                                            numeric =>  "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric value.",
+                                            port => "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric TCP port value between 1 and 65535.",
+                                            protocol_http => "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a valid HTTP protocol ('http' or 'https')."
                                           };
 
     $self->{pod_where_loaded} = 0;
@@ -134,11 +136,14 @@ sub add_options {
         my $opt_name = $options{arguments}->{$arg}->{name};
 
         # handle option validation hints
-        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match', 'is_in', 'error_message', 'not_empty', 'numeric' ) {
+        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match', 'is_in', 'error_message', 'not_empty', 'type', 'numeric', 'port', 'protocol_http' ) {
             if (defined($options{arguments}->{$arg}->{$control})) {
                 $self->{validation}->{$opt_name} //= {};
                 # store the control to perform as key and the reference value as value
-                $self->{validation}->{$opt_name}->{$control} = $options{arguments}->{$arg}->{$control};
+                my $ctl = $control ne 'type'
+                              ? $control
+                              : $options{arguments}->{$arg}->{$control};
+                $self->{validation}->{$opt_name}->{$ctl} = $options{arguments}->{$arg}->{$control};
             }
         }
 
@@ -175,6 +180,8 @@ sub perform_validation {
     return 0 if $operation eq 'regexp_match' && $value !~ /$reference/;
     return 0 if $operation eq 'is_in' && ! any { $value eq $_ } @$reference;
     return 0 if $operation eq 'numeric' && $value !~ /^\d*$/;
+    return 0 if $operation eq 'protocol_http' && ! any { $value eq $_ } qw/http https/;
+    return 0 if $operation eq 'port' && ($value !~ /^\d*$/ || $value < 1 || $value > 65535);
     return 1;
 }
 

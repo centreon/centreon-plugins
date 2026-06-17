@@ -44,12 +44,12 @@ sub new {
 
     $options{options}->add_options(arguments =>  {
         'hostname:s'             => { name => 'hostname', not_empty => 1 },
-        'port:s'                 => { name => 'port', default => 443, numeric => 1 },
-        'proto:s'                => { name => 'proto', is_in => [ 'http', 'https' ] },
+        'port:s'                 => { name => 'port', default => 443, type => 'port', not_empty => 1 },
+        'proto:s'                => { name => 'proto', default => 'https', type => 'protocol_http', not_empty => 1 },
         'api-username:s'         => { name => 'api_username', not_empty => 1 },
         'api-password:s'         => { name => 'api_password', not_empty => 1 },
-        'auth-mode:s'            => { name => 'auth_mode', default => 'oauth2', is_in => [ 'oauth2', 'login' ] },
-        'timeout:s'              => { name => 'timeout', default => 30 },
+        'auth-mode:s'            => { name => 'auth_mode', default => 'oauth2', is_in => [ 'oauth2', 'login' ], not_empty => 1 },
+        'timeout:s'              => { name => 'timeout', default => 30, not_empty => 1 },
         'unknown-http-status:s'  => { name => 'unknown_http_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
         'warning-http-status:s'  => { name => 'warning_http_status', default => '' },
         'critical-http-status:s' => { name => 'critical_http_status', default => '' }
