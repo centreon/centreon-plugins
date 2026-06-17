@@ -1,22 +1,5 @@
-#
 # Copyright 2024 Centreon (http://www.centreon.com/)
-#
-# Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure and application monitoring for
-# service performance.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# Licensed under the Apache License, Version 2.0
 
 package hardware::server::cisco::ucs::redfish::mode::equipment;
 
@@ -47,8 +30,13 @@ sub set_system {
         ],
     };
 
+    # Numeric thresholds for temperature — overridable via --threshold-overload
+    $self->{thresholds}->{temperature} = [
+        ['default', { warning => '75', critical => '85' }],
+    ];
+
     $self->{components_path}   = 'hardware::server::cisco::ucs::redfish::mode::components';
-    $self->{components_module} = ['chassis', 'cpu', 'fan', 'psu', 'memory', 'localdisk'];
+    $self->{components_module} = ['chassis', 'cpu', 'fan', 'psu', 'memory', 'localdisk', 'temperature'];
 }
 
 # Walk the Redfish tree once and store everything into $self->{data}
@@ -58,15 +46,16 @@ sub load_data {
     my $api_path = $options{custom}->{api_path};
 
     $self->{data} = {
-        chassis   => [],
-        cpu       => [],
-        fan       => [],
-        psu       => [],
-        memory    => [],
-        localdisk => [],
+        chassis     => [],
+        cpu         => [],
+        fan         => [],
+        psu         => [],
+        memory      => [],
+        localdisk   => [],
+        temperature => [],
     };
 
-    # --- Chassis collection: fans (Thermal) + PSUs (Power) ---
+    # --- Chassis collection: fans + temperatures (Thermal) + PSUs (Power) ---
     my $chassis_list = $options{custom}->get_collection(endpoint => '/Chassis');
     for my $chassis (@{$chassis_list}) {
         push @{$self->{data}->{chassis}}, $chassis;
@@ -75,7 +64,8 @@ sub load_data {
         if ($thermal_url ne '') {
             $thermal_url =~ s{^\Q$api_path\E}{};
             my $thermal = $options{custom}->request(endpoint => $thermal_url);
-            push @{$self->{data}->{fan}}, @{$thermal->{Fans} // []};
+            push @{$self->{data}->{fan}},         @{$thermal->{Fans}         // []};
+            push @{$self->{data}->{temperature}}, @{$thermal->{Temperatures} // []};
         }
 
         my $power_url = $chassis->{Power}->{'@odata.id'} // '';
