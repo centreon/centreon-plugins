@@ -527,11 +527,13 @@ Since this method had been split in at least two methods :
 
 ```perl
 
+use centreon::plugins::constants qw(:counters);
+
   sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'radios', type => 1, cb_prefix_output => 'prefix_radio_output', message_multiple => 'All raadio interfaces are ok' }
+        { name => 'radios', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_radio_output', message_multiple => 'All raadio interfaces are ok' }
     ];
 
 ```

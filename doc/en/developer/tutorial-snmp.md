@@ -181,6 +181,7 @@ use base qw(centreon::plugins::templates::counter);
 # Needed libraries
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters);
 
 ```
 
@@ -223,10 +224,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        # cpu will receive value for both instances (768 and 769) : the type => 1 explicits that
+        # cpu will receive value for both instances (768 and 769) : the type => COUNTER_TYPE_INSTANCE explicits that
         # You can define a callback (cb) function to manage the output prefix. This function is called 
         # each time a value is passed to the counter and can be shared across multiple counters.
-        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPUs are ok' }
+        { name => 'cpu', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPUs are ok' }
     ];
     
     $self->{maps_counters}->{cpu} = [
