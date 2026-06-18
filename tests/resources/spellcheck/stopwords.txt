@@ -306,6 +306,7 @@ redis-cli
 ReplicaJobSession
 RestAPI
 RFC1628
+RMAN
 RRDCached
 rsrp
 rsrq
