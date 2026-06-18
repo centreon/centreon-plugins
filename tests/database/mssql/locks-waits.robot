@@ -46,19 +46,19 @@ Locks-waits ${tc}
     ...    OK: 124.00 total locks waits/min | 'total#mssql.lockswaits.perminute'=124.00;;;0; 'AllocUnit#mssql.lockswaits.perminute'=8.00;;;0; 'Application#mssql.lockswaits.perminute'=1.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;;0; 'Extent#mssql.lockswaits.perminute'=3.00;;;0; 'File#mssql.lockswaits.perminute'=30.00;;;0; 'HoBT#mssql.lockswaits.perminute'=2.00;;;0; 'Key#mssql.lockswaits.perminute'=51.00;;;0; 'Metadata#mssql.lockswaits.perminute'=7.00;;;0; 'OIB#mssql.lockswaits.perminute'=4.00;;;0; 'Object#mssql.lockswaits.perminute'=1.00;;;0; 'Page#mssql.lockswaits.perminute'=1.00;;;0; 'RID#mssql.lockswaits.perminute'=4.00;;;0; 'RowGroup#mssql.lockswaits.perminute'=4.00;;;0; 'Xact#mssql.lockswaits.perminute'=3.00;;;0;
     ...    2
     ...    --filter-database=Database
-    ...    OK: 45.00 total locks waits/min - 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;;0;
+    ...    OK: 45.00 total locks waits/min - instance Database: 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;;0;
     ...    3
     ...    --include-instance=Database
-    ...    OK: 45.00 total locks waits/min - 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;;0;
+    ...    OK: 45.00 total locks waits/min - instance Database: 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;;0;
     ...    4
     ...    --exclude-instance=Database
     ...    OK: 79.00 total locks waits/min | 'total#mssql.lockswaits.perminute'=79.00;;;0; 'AllocUnit#mssql.lockswaits.perminute'=8.00;;;0; 'Application#mssql.lockswaits.perminute'=1.00;;;0; 'Extent#mssql.lockswaits.perminute'=3.00;;;0; 'File#mssql.lockswaits.perminute'=30.00;;;0; 'HoBT#mssql.lockswaits.perminute'=2.00;;;0; 'Key#mssql.lockswaits.perminute'=51.00;;;0; 'Metadata#mssql.lockswaits.perminute'=7.00;;;0; 'OIB#mssql.lockswaits.perminute'=4.00;;;0; 'Object#mssql.lockswaits.perminute'=1.00;;;0; 'Page#mssql.lockswaits.perminute'=1.00;;;0; 'RID#mssql.lockswaits.perminute'=4.00;;;0; 'RowGroup#mssql.lockswaits.perminute'=4.00;;;0; 'Xact#mssql.lockswaits.perminute'=3.00;;;0;
     ...    5
     ...    --include-instance=Database --warning-lockswaits-by-instance=1
-    ...    WARNING: 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;0:1;;0;
+    ...    WARNING: instance Database: 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;0:1;;0;
     ...    6
     ...    --include-instance=Database --critical-lockswaits-by-instance=1
-    ...    CRITICAL: 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;0:1;0;
+    ...    CRITICAL: instance Database: 5.00 locks waits/min | 'total#mssql.lockswaits.perminute'=45.00;;;0; 'Database#mssql.lockswaits.perminute'=5.00;;0:1;0;
     ...    7
     ...    --include-instance=unexisting
     ...    UNKNOWN: No locks waits counter found with given filters

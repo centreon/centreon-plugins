@@ -27,12 +27,6 @@ use centreon::plugins::constants qw(:counters);
 use centreon::plugins::misc qw(is_excluded trim);
 use Digest::SHA qw(sha256_hex);
 
-sub prefix_by_instance_output {
-    my ($self, %options) = @_;
-
-    return "instance '" . $options{instance_value}->{display} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -57,7 +51,7 @@ sub set_counters {
             label => 'deadlocks-by-instance', type => COUNTER_KIND_METRIC, nlabel => 'mssql.deadlocks.perminute',
             set   => {
                 key_values      => [ { name => 'value', per_minute => 1 }, { name => 'display' } ],
-                output_template => '%.2f dead locks/min',
+                output_template => 'instance %{display}: %.2f dead locks/min',
                 perfdatas       => [
                     { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
@@ -90,7 +84,7 @@ sub manage_selection {
         FROM
             sys.dm_os_performance_counters
         WHERE
-            object_name = 'SQLServer:Locks'
+            object_name LIKE '%:Locks%'
         AND
             counter_name LIKE 'Number of Deadlocks/sec%'
     });
