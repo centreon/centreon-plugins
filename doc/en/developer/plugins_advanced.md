@@ -979,12 +979,13 @@ We want to develop the following SNMP plugin:
   
   use strict;
   use warnings;
+  use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, message_separator => ' - ' },
     ];
     $self->{maps_counters}->{global} = [
         { label => 'sessions', set => {
@@ -1032,7 +1033,7 @@ As you can see, we create two arrays of hash tables in **set_counters** method. 
 * **maps_counters_type**: global configuration. Attributes list:
 
   * *name*: the name is really important. It will be used in hash **map_counters** and also in **manage_selection** as you can see.
-  * *type*: 0 or 1. With 0 value, the output will be written in the short output. With the value 1, it depends if we have one or multiple instances.
+  * *type*: `COUNTER_TYPE_GLOBAL` (0) or `COUNTER_TYPE_INSTANCE` (1), or `COUNTER_TYPE_GROUP` (2) / `COUNTER_TYPE_MULTIPLE` (3) for more complex structures. With `COUNTER_TYPE_GLOBAL`, the output will be written in the short output. With `COUNTER_TYPE_INSTANCE`, it depends if we have one or multiple instances.
   * *message_multiple*: only useful with *type* 1 value. The message will be displayed in short ouput if we have multiple instances selected.
   * *message_separator*: the string displayed between counters (Default: ', ').
   * *cb_prefix_output*, *cb_suffix_output*: name of a method (in a string) to callback. Methods will return a string to be displayed before or after **all** counters.
@@ -1041,11 +1042,9 @@ As you can see, we create two arrays of hash tables in **set_counters** method. 
 * **maps_counters**: complex structure to configure counters. Attributes list:
 
   * *label*: name used for threshold options.
-  * *type*: depend of data dimensions
-    * 0 : global
-    * 1 : instance
-    * 2 : group
-    * 3 : multiple
+  * *type*: counter kind, use constants from `centreon::plugins::constants`
+    * `COUNTER_KIND_METRIC` (1) : numeric counter with thresholds and perfdata (default)
+    * `COUNTER_KIND_TEXT` (2) : text/string counter, status check only, no perfdata
   * *threshold*: if we set the value to 0. There is no threshold check options (can be used if you want to set and check option yourself).
   * *set*: hash table:
   
@@ -1079,13 +1078,14 @@ We want to add the current number of sessions by virtual servers.
   
   use strict;
   use warnings;
+  use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual servers are ok' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'vs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual servers are ok' }
     ];
     $self->{maps_counters}->{global} = [
         { label => 'total-sessions', set => {
@@ -1190,12 +1190,13 @@ The model can also be used to check strings (not only counters). So we want to c
   
   use strict;
   use warnings;
+  use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vs', type => 1, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual server status are ok' }
+        { name => 'vs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual server status are ok' }
     ];    
     $self->{maps_counters}->{vs} = [
         { label => 'status', threshold => 0, set => {
