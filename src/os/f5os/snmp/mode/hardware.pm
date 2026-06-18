@@ -131,7 +131,7 @@ sub manage_selection {
             $result = $options{snmp}->map_instance(mapping => $mapping, results => $results->{$oid_temperatureStatsEntry}, instance => $1);
             for my $key (keys %{$result}) {
                 if ($result->{$key} =~ /\./) {
-                $result->{$key} =~ s/[^0-9.]//g;  # strip guillemets éventuels
+                $result->{$key} =~ s/[^0-9.]//g;  # remove any quotation marks
                 $result->{$key} += 0;  # STRING: "29.0" -> float 29.0 ( F5OS 1.5.4 case)
                 } else {
                     $result->{$key} *= 0.1;    # INTEGER: 316 -> float 31.6
