@@ -252,6 +252,7 @@ NTP
 Nutanix
 NVOS
 OAuth
+OAuth2
 --oid
 OID
 --oid-display
