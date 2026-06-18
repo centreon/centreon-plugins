@@ -2,6 +2,7 @@
 
 # Colors
 RED='\033[0;31m'
+YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
@@ -16,6 +17,11 @@ function info() {
   echo -e "${GREEN}INFO${NC}: $*">&2
 }
 
+# Display an information with green INFO tag
+function warning() {
+  echo -e "${YELLOW}WARN${NC}: $*">&2
+}
+
 # Display an error message with red ERROR tag and increment errors counter if defined
 function error() {
   echo -e "${RED}ERROR${NC}: $*">&2
@@ -28,7 +34,7 @@ function fatal() {
   exit 1
 }
 
-# parse_modes(command_line arg1 arg2 --list-mode): 
+# parse_modes(command_line arg1 arg2 --list-mode):
 # Arguments: command and arguments of a list-mode command
 # Output: declaration of an array variable named modes with the list of modes. Result has to be loaded using eval.
 function parse_modes() {
@@ -36,11 +42,11 @@ function parse_modes() {
   [[ $DEBUG ]] && set -x
   local MODES_OUTPUT=( $(perl "$@" 2>/dev/null ) )
   [[ $DEBUG ]] && set +x
-  
+
   declare -a modes
   # Remove all lines above "Modes Available:"
   [[ $DEBUG ]] && declare -p MODES_OUTPUT
-  
+
   local in_modes=
   local line
   for line in "${MODES_OUTPUT[@]}" ; do
@@ -52,12 +58,12 @@ function parse_modes() {
     # add the current mode to the list
     modes+=($(trim $line))
   done
-  
+
   [[ $DEBUG ]] && declare -p modes >&2
   declare -p modes
 }
 
-# parse_threshold_options_from_help(command_line arg1 arg2 --help): 
+# parse_threshold_options_from_help(command_line arg1 arg2 --help):
 # Arguments: command and arguments of a help command
 # Output: declaration of an array variable named threshold_options with the list of options that are specific to the mode. Result has to be loaded using eval.
 function parse_threshold_options_from_help() {
@@ -65,10 +71,10 @@ function parse_threshold_options_from_help() {
   [[ $DEBUG ]] && set -x
   local HELP_OUTPUT=( $(perl $* 2>/dev/null ) )
   [[ $DEBUG ]] && set +x
-  
+
   declare -a threshold_options
   # Remove all lines above "Mode:"
-  
+
   local in_mode_help=
   local line
   for line in "${HELP_OUTPUT[@]}" ; do
@@ -81,7 +87,67 @@ function parse_threshold_options_from_help() {
     [[ "$line" =~ ^[[:space:]]*--[a-z0-9-]+$ ]] || continue
     threshold_options+=($(trim $line))
   done
-  
+
   [[ $DEBUG ]] && declare -p threshold_options >&2
   declare -p threshold_options
+}
+
+# get_first_custommode(command_line arg1 arg2 --help):
+# Arguments: command and arguments of a help command
+# Output: string containing the first available custom-mode
+function get_first_custommode() {
+  local IFS=$'\n'
+  [[ $DEBUG ]] && set -x
+  local HELP_OUTPUT=( $(perl $* 2>/dev/null ) )
+  [[ $DEBUG ]] && set +x
+
+  declare -a threshold_options
+  # Remove all lines above "Mode:"
+
+  local in_custom_modes=
+  local line
+  for line in "${HELP_OUTPUT[@]}" ; do
+    if [[ "$line" == 'Custom Modes Available:' ]] ; then
+      in_custom_modes=1
+      continue
+    fi
+    [[ -z "$in_custom_modes" ]] && continue
+    trim $line
+    break
+  done
+}
+
+
+# parse_custommode_options_from_help(custommode command_line arg1 arg2 --help):
+# Arguments: command and arguments of a help command
+# Output: declaration of an array variable named custommode_options with the list of options that are specific to the mode. Result has to be loaded using eval.
+function parse_custommode_options_from_help() {
+  local IFS=$'\n'
+  local custommode="$1"
+  shift
+  [[ $DEBUG ]] && set -x
+  local HELP_OUTPUT=( $(perl $* 2>/dev/null ) )
+  [[ $DEBUG ]] && set +x
+
+  declare -a custommode_options
+
+  # Remove all lines above ".* $custommode Options:"
+  local in_custommode_help=
+  local line
+  regex="$custommode Options:"
+  for line in "${HELP_OUTPUT[@]}" ; do
+    if [[ "$line" =~ $regex ]] ; then
+      in_custommode_help=1
+      continue
+    fi
+    [[ -z "$in_custommode_help" ]] && continue
+    [[ "$line" =~ ^[[:space:]] ]] || break
+    [[ "$line" =~ --(warning|critical)-\* ]] && fatal "Not parsing --warning-*/--critical-* thresholds"
+    [[ "$line" =~ ^[[:space:]]*(--[a-z0-9-]+) ]] || continue
+
+    custommode_options+=( ${BASH_REMATCH[1]} )
+  done
+
+  [[ $DEBUG ]] && declare -p custommode_options >&2
+  declare -p custommode_options
 }
