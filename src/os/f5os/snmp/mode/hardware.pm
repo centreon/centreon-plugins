@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,6 +20,7 @@
 
 package os::f5os::snmp::mode::hardware;
 
+use centreon::plugins::constants qw/:counters :values/;
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
@@ -34,8 +35,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'temperature', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'fans', type => 1, cb_prefix_output => 'prefix_fan_output', message_multiple => 'All fans are ok', skipped_code => { -10 => 1 } }
+        { name => 'temperature', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } },
+        { name => 'fans', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_fan_output', message_multiple => 'All fans are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{temperature} = [
@@ -128,7 +129,14 @@ sub manage_selection {
             next unless /^$mapping->{tempCurrent}->{oid}\.(.*)$/;
 
             $result = $options{snmp}->map_instance(mapping => $mapping, results => $results->{$oid_temperatureStatsEntry}, instance => $1);
-            $result->{$_} *= 0.1 for keys %{$result};
+            for my $key (keys %{$result}) {
+                if ($result->{$key} =~ /\./) {
+                $result->{$key} =~ s/[^0-9.]//g;  # strip guillemets éventuels
+                $result->{$key} += 0;  # STRING: "29.0" -> float 29.0 ( F5OS 1.5.4 case)
+                } else {
+                    $result->{$key} *= 0.1;    # INTEGER: 316 -> float 31.6
+                }
+            }
 
             last
         }
