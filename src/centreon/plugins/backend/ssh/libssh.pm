@@ -179,7 +179,7 @@ sub execute_scenario {
     my ($content, $exit_code);
     if ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_OK')) {
         $content = $ret->{stdout};
-        $exit_code = $ret->{exit_code};
+        $exit_code = $ret->{exit};
     } elsif ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_AGAIN')) { # AGAIN means timeout
         $self->{output}->add_option_msg(short_msg => sprintf('command execution timeout'));
         $self->{output}->option_exit();
@@ -190,11 +190,6 @@ sub execute_scenario {
                 $self->{ssh}->error(GetErrorSession => 1)
             )
         );
-        $self->{output}->option_exit();
-    }
-
-    if ($exit_code != 0 && (!defined($options{no_quit}) || $options{no_quit} != 1)) {
-        $self->{output}->add_option_msg(short_msg => sprintf('command execution error [exit code: %s]', $exit_code));
         $self->{output}->option_exit();
     }
 
