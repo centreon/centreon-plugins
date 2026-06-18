@@ -32,6 +32,9 @@ use List::Util qw/any/;
 sub set_counters {
     my ($self, %options) = @_;
 
+    my $call_template = 'active calls usage total: %{calls_max} used: %{calls_used} (%{calls_prct_used|%.2f}%%) free: %{calls_free} (%{calls_prct_free|%.2f}%%)';
+    my $extension_template = 'extensions usage total: %{extensions_max} used: %{extensions_used} (%{extensions_prct_used|%.2f}%%) free: %{extensions_free} (%{extensions_prct_free|%.2f}%%)';
+
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL },
         { name => 'service', type => COUNTER_TYPE_INSTANCE, prefix_output => "3CX '%{service}' ", message_multiple => 'All services are ok', skipped_code => { NO_VALUE() => 1 } }
@@ -39,24 +42,24 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'calls-active-usage', nlabel => 'system.calls.active.usage.count', set => {
-                key_values => [ { name => 'calls_used' }, { name => 'calls_free' }, { name => 'calls_prct_used' }, { name => 'calls_max' } ],
-                output_template => 'active calls usage total: %{calls_max} used: %{calls_used} (%{calls_prct_used|%.2f}%%) free: %{calls_free} (%{calls_prct_used|%.2f}%%)',
+                key_values => [ { name => 'calls_used' }, { name => 'calls_free' }, { name => 'calls_prct_used' }, { name => 'calls_max' }, { name => 'calls_prct_free' } ],
+                output_template => $call_template,
                 perfdatas => [
                     { template => '%d', min => 0, max => 'calls_max' }
                 ]
             }
         },
         { label => 'calls-active-free', nlabel => 'system.calls.active.free.count', display_ok => 0, set => {
-                key_values => [ { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_prct_used' }, { name => 'calls_max' } ],
-                output_template => 'active calls usage total: %{calls_max} used: %{calls_used} (%{calls_prct_used|%.2f}%%) free: %{calls_free} (%{calls_prct_used|%.2f}%%)',
+                key_values => [ { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_prct_used' }, { name => 'calls_max' }, { name => 'calls_prct_free' } ],
+                output_template => $call_template,
                 perfdatas => [
                     { template => '%d', min => 0, max => 'calls_max' }
                 ]
             }
         },
         { label => 'calls-active-usage-prct', nlabel => 'system.calls.active.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'calls_prct_used' }, { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_max' } ],
-                output_template => 'active calls usage total: %{calls_max} used: %{calls_used} (%{calls_prct_used|%.2f}%%) free: %{calls_free} (%{calls_prct_used|%.2f}%%)',
+                key_values => [ { name => 'calls_prct_used' }, { name => 'calls_free' }, { name => 'calls_used' }, { name => 'calls_max' }, { name => 'calls_prct_free' } ],
+                output_template => $call_template,
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 'calls_max' }
                 ]
@@ -71,24 +74,24 @@ sub set_counters {
             }
         },
         { label => 'extensions-usage', nlabel => 'system.extensions.usage.count', set => {
-                key_values => [ { name => 'extensions_used' }, { name => 'extensions_free' }, { name => 'extensions_prct_used' }, { name => 'extensions_max' } ],
-                output_template => 'extensions usage total: %{extensions_max} used: %{extensions_used} (%{extensions_prct_used|%.2f}%%) free: %{extensions_free} (%{extensions_prct_used|%.2f}%%)',
+                key_values => [ { name => 'extensions_used' }, { name => 'extensions_free' }, { name => 'extensions_prct_used' }, { name => 'extensions_max' }, { name => 'extensions_prct_free' } ],
+                output_template => $extension_template,
                 perfdatas => [
                     { template => '%d', min => 0, max => 'extensions_max' }
                 ]
             }
         },
         { label => 'extensions-free', nlabel => 'system.extensions.free.count', display_ok => 0, set => {
-                key_values => [ { name => 'extensions_free' }, { name => 'extensions_used' }, { name => 'extensions_prct_used' }, { name => 'extensions_max' } ],
-                output_template => 'extensions usage total: %{extensions_max} used: %{extensions_used} (%{extensions_prct_used|%.2f}%%) free: %{extensions_free} (%{extensions_prct_used|%.2f}%%)',
+                key_values => [ { name => 'extensions_free' }, { name => 'extensions_used' }, { name => 'extensions_prct_used' }, { name => 'extensions_max' }, { name => 'extensions_prct_free' } ],
+                output_template => $extension_template,
                 perfdatas => [
                     { template => '%d', min => 0, max => 'extensions_max' }
                 ]
             }
         },
         { label => 'extensions-usage-prct', nlabel => 'system.extensions.usage.percentage', display_ok => 0, set => {
-                key_values => [ { name => 'extensions_prct_used' }, { name => 'extensions_free' }, { name => 'extensions_used' }, { name => 'extensions_max' } ],
-                output_template => 'extensions usage total: %{extensions_max} used: %{extensions_used} (%{extensions_prct_used|%.2f}%%) free: %{extensions_free} (%{extensions_prct_used|%.2f}%%)',
+                key_values => [ { name => 'extensions_prct_used' }, { name => 'extensions_free' }, { name => 'extensions_used' }, { name => 'extensions_max' }, { name => 'extensions_prct_free' } ],
+                output_template => $extension_template,
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
@@ -165,17 +168,22 @@ sub manage_selection {
         };
     }
 
+    my $calls_prct_used = $system->{CallsActive} * 100 / $system->{MaxSimCalls};
+    my $extensions_prct_used = $system->{MaxUserExtensions} ? $system->{UserExtensions} * 100 / $system->{MaxUserExtensions} : 100;
+
     $self->{global} = {
         calls_used            => $system->{CallsActive},
         calls_free            => $system->{MaxSimCalls} - $system->{CallsActive},
         calls_max             => $system->{MaxSimCalls},
-        calls_prct_used       => $system->{CallsActive} * 100 / $system->{MaxSimCalls},
+        calls_prct_used       => $calls_prct_used,
+        calls_prct_free       => 100 - $calls_prct_used,
         extensions_registered => $system->{ExtensionsRegistered},
         extensions_total      => $system->{ExtensionsTotal},
         extensions_used       => $system->{UserExtensions},
         extensions_free       => $system->{MaxUserExtensions} - $system->{UserExtensions},
         extensions_max        => $system->{MaxUserExtensions},
-        extensions_prct_used  => $system->{MaxUserExtensions} ? $system->{UserExtensions} * 100 / $system->{MaxUserExtensions} : 100
+        extensions_prct_used  => $extensions_prct_used,
+        extensions_prct_free  => 100 - $extensions_prct_used,
     };
 }
 
