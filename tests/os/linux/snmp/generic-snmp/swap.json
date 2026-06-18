@@ -21,6 +21,7 @@
         "value": "{memAvailSwap}",
         "uom": "B",
         "min": 0,
+        "max_expr": "{memTotalSwap}",
         "threshold-suffix": "swap-free-bytes"
       },
       {
@@ -28,6 +29,7 @@
         "value": "{memTotalSwap} - {memAvailSwap}",
         "uom": "B",
         "min": 0,
+        "max_expr": "{memTotalSwap}",
         "threshold-suffix": "swap-bytes"
       },
       {

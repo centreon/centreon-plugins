@@ -21,6 +21,7 @@
         "value": "{memAvailReal}",
         "uom": "B",
         "min": 0,
+        "max_expr": "{memTotalReal}",
         "threshold-suffix": "memory-free-bytes"
       },
       {
@@ -28,6 +29,7 @@
         "value": "{memTotalReal} - {memAvailReal}",
         "uom": "B",
         "min": 0,
+        "max_expr": "{memTotalReal}",
         "threshold-suffix": "memory-bytes"
       },
       {
