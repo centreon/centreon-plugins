@@ -86,7 +86,7 @@ sub manage_selection {
         FROM
             sys.dm_os_performance_counters
         WHERE
-            object_name LIKE '%:Locks%'
+            object_name LIKE '%Locks%'
         AND
             counter_name LIKE 'Lock Waits/sec%'
     });
