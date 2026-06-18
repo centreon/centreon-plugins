@@ -23,16 +23,28 @@
         "value": "{storage.used} * {storage.allocation_units}",
         "uom": "B",
         "min": 0,
+        "max_expr": "{storage.size} * {storage.allocation_units}",
         "threshold-suffix": "storage-bytes"
+      },
+      {
+        "prefix": "{storage.description}",
+        "name": "storage.usage.percent",
+        "value": "100 * {storage.used} / {storage.size}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "storage-prct"
       }
+    ],
+    "aggregations": [
     ]
   },
   "output": {
     "ok": "All storages are OK",
     "detail_ok": false,
-    "warning": "Storage WARNING: ",
+    "warning": "WARNING: ",
     "detail_warning": true,
-    "critical": "Storage CRITICAL: ",
+    "critical": "CRITICAL: ",
     "detail_critical": true,
     "instance_separator": " - ",
     "metric_separator": ", "

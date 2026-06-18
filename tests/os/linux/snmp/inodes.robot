@@ -69,13 +69,13 @@ cgs-inodes ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    All inode partitions are OK | "/run"#inodes.usage.percent=0%;;;0;100 "/"#inodes.usage.percent=6%;;;0;100 "/dev/shm"#inodes.usage.percent=0%;;;0;100 "/run/lock"#inodes.usage.percent=0%;;;0;100 "/run/user/0"#inodes.usage.percent=0%;;;0;100
+    ...    All inode partitions are OK | '/run#inodes.usage.percent'=0%;;;0;100 '/#inodes.usage.percent'=6%;;;0;100 '/dev/shm#inodes.usage.percent'=0%;;;0;100 '/run/lock#inodes.usage.percent'=0%;;;0;100 '/run/user/0#inodes.usage.percent'=0%;;;0;100
     ...    2
     ...    --check-format
-    ...    Check format of JSON file '/home/omercier/projets/centreon-plugins/tests/os/linux/snmp/generic-snmp/inodes.json' JSON is valid
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/inodes.json' JSON is valid
     ...    3
     ...    --warning-inodes=1
-    ...    WARNING: "/"#inodes.usage.percent is 6% | "/run"#inodes.usage.percent=0%;1;;0;100 "/"#inodes.usage.percent=6%;1;;0;100 "/dev/shm"#inodes.usage.percent=0%;1;;0;100 "/run/lock"#inodes.usage.percent=0%;1;;0;100 "/run/user/0"#inodes.usage.percent=0%;1;;0;100
+    ...    WARNING: '/#inodes.usage.percent' is 6% | '/run#inodes.usage.percent'=0%;1;;0;100 '/#inodes.usage.percent'=6%;1;;0;100 '/dev/shm#inodes.usage.percent'=0%;1;;0;100 '/run/lock#inodes.usage.percent'=0%;1;;0;100 '/run/user/0#inodes.usage.percent'=0%;1;;0;100
     ...    4
     ...    --critical-inodes=1
-    ...    CRITICAL: "/"#inodes.usage.percent is 6% | "/run"#inodes.usage.percent=0%;;1;0;100 "/"#inodes.usage.percent=6%;;1;0;100 "/dev/shm"#inodes.usage.percent=0%;;1;0;100 "/run/lock"#inodes.usage.percent=0%;;1;0;100 "/run/user/0"#inodes.usage.percent=0%;;1;0;100
+    ...    CRITICAL: '/#inodes.usage.percent' is 6% | '/run#inodes.usage.percent'=0%;;1;0;100 '/#inodes.usage.percent'=6%;;1;0;100 '/dev/shm#inodes.usage.percent'=0%;;1;0;100 '/run/lock#inodes.usage.percent'=0%;;1;0;100 '/run/user/0#inodes.usage.percent'=0%;;1;0;100

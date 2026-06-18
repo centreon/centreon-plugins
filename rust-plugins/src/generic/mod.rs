@@ -234,7 +234,7 @@ impl Command {
         target: &str,
         version: &str,
         community: &str,
-        check_format: bool
+        check_format: bool,
     ) -> Vec<SnmpResult> {
         let mut collect: Vec<SnmpResult> = Vec::new();
 
@@ -307,7 +307,7 @@ impl Command {
         community: &str,
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
-        check_format: bool
+        check_format: bool,
     ) -> Result<CmdResult> {
         let mut collect = self.execute_snmp_collect(target, version, community, check_format);
 
@@ -333,21 +333,25 @@ impl Command {
             let value = &metric.value;
             let parser = Parser::new(&collect, check_format);
             let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
-                message: format!("Metric \"{}\", field \"value\": {}", metric.name, e)
+                message: format!("Metric \"{}\", field \"value\": {}", metric.name, e),
             })?;
             let min = if let Some(min_expr) = metric.min_expr.as_ref() {
-                parser.eval(&min_expr).map_err(|e| error::Error::InvalidJSON {
-                    message: format!("Metric \"{}\", field \"min_expr\": {}", metric.name, e)
-                })?
+                parser
+                    .eval(&min_expr)
+                    .map_err(|e| error::Error::InvalidJSON {
+                        message: format!("Metric \"{}\", field \"min_expr\": {}", metric.name, e),
+                    })?
             } else if let Some(min_value) = metric.min {
                 ExprResult::Number(min_value)
             } else {
                 ExprResult::Empty
             };
             let max = if let Some(max_expr) = metric.max_expr.as_ref() {
-                parser.eval(&max_expr).map_err(|e| error::Error::InvalidJSON {
-                    message: format!("Metric \"{}\", field \"max_expr\": {}", metric.name, e)
-                })?
+                parser
+                    .eval(&max_expr)
+                    .map_err(|e| error::Error::InvalidJSON {
+                        message: format!("Metric \"{}\", field \"max_expr\": {}", metric.name, e),
+                    })?
             } else if let Some(max_value) = metric.max {
                 ExprResult::Number(max_value)
             } else {
@@ -362,21 +366,25 @@ impl Command {
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
-                        Some(prefix) => parser.eval_str(prefix).map_err(|e| error::Error::InvalidJSON {
-                            message: format!("Metric \"{}\", field \"prefix\": {}", metric.name, e)
-                        })?,
+                        Some(prefix) => {
+                            parser
+                                .eval_str(prefix)
+                                .map_err(|e| error::Error::InvalidJSON {
+                                    message: format!(
+                                        "Metric \"{}\", field \"prefix\": {}",
+                                        metric.name, e
+                                    ),
+                                })?
+                        }
                         None => ExprResult::Empty,
                     };
                     for (i, item) in v.iter().enumerate() {
-                        let name = match &prefix_str {
-                            ExprResult::StrVector(v) => {
-                                format!("{:?}#{}", v[i], metric.name)
-                            }
-                            ExprResult::Str(s) => {
-                                format!("{}#{}", s, metric.name)
-                            }
+                        // first, compose the instance name
+                        let instance_name = match &prefix_str {
+                            ExprResult::StrVector(v) => v[i].to_string(),
+                            ExprResult::Str(s) => s.to_string(),
                             ExprResult::Empty => {
-                                let res = format!("{}#{}", idx, metric.name);
+                                let res = idx.to_string();
                                 idx += 1;
                                 res
                             }
@@ -384,16 +392,18 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
-                        if !re_in.is_empty() {
-                            if !re_in.iter().any(|re| re.is_match(&name)) {
-                                continue;
-                            }
+                        // then apply filters exclusion and inclusion filters
+                        if !re_out.is_empty() && re_out.iter().any(|re| re.is_match(&instance_name))
+                        {
+                            continue;
                         }
-                        if !re_out.is_empty() {
-                            if re_out.iter().any(|re| re.is_match(&name)) {
-                                continue;
-                            }
+                        if (!re_in.is_empty()
+                            && !re_in.iter().any(|re| re.is_match(&instance_name)))
+                        {
+                            continue;
                         }
+                        // and now concatenate to form the full perfdata
+                        let name = format!("'{}#{}'", instance_name, metric.name);
                         let current_status =
                             compute_status(item, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
@@ -422,7 +432,7 @@ impl Command {
                 ExprResult::Number(s) => {
                     let name = match &metric.prefix {
                         Some(prefix) => {
-                            format!("{:?}#{}", prefix, metric.name)
+                            format!("{}#{}", prefix, metric.name)
                         }
                         None => {
                             let res = format!("{}#{}", idx, metric.name);
@@ -477,9 +487,14 @@ impl Command {
                 let value = &metric.value;
                 let parser = Parser::new(&collect, check_format);
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
-                    let res = parser.eval(&max_expr).map_err(|e| error::Error::InvalidJSON {
-                        message: format!("Aggregation \"{}\", field \"max_expr\": {}", metric.name, e)
-                    })?;
+                    let res = parser
+                        .eval(&max_expr)
+                        .map_err(|e| error::Error::InvalidJSON {
+                            message: format!(
+                                "Aggregation \"{}\", field \"max_expr\": {}",
+                                metric.name, e
+                            ),
+                        })?;
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
@@ -494,9 +509,14 @@ impl Command {
                     None
                 };
                 let min = if let Some(min_expr) = metric.min_expr.as_ref() {
-                    let res = parser.eval(&min_expr).map_err(|e| error::Error::InvalidJSON {
-                        message: format!("Aggregation \"{}\", field \"min_expr\": {}", metric.name, e)
-                    })?;
+                    let res = parser
+                        .eval(&min_expr)
+                        .map_err(|e| error::Error::InvalidJSON {
+                            message: format!(
+                                "Aggregation \"{}\", field \"min_expr\": {}",
+                                metric.name, e
+                            ),
+                        })?;
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
@@ -511,7 +531,7 @@ impl Command {
                     None
                 };
                 let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
-                    message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e)
+                    message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e),
                 })?;
                 match &value {
                     ExprResult::Vector(v) => {
