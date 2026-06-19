@@ -31,12 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'uptime'       => 'hardware::pdu::sentry::snmp::mode::uptime',
+        'infeeds'      => 'hardware::pdu::sentry::snmp::mode::infeeds',
+        'sensors'      => 'hardware::pdu::sentry::snmp::mode::sensors',
         'system-power' => 'hardware::pdu::sentry::snmp::mode::systempower',
-    };
-
-    $self->{modes_options} = {
-        'uptime' => { force_new_perfdata => 1 }
+        'tower-status' => 'hardware::pdu::sentry::snmp::mode::towerstatus',
+        'uptime'       => 'hardware::pdu::sentry::snmp::mode::uptime',
     };
 
     return $self;
