@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,36 +25,78 @@ use base qw(centreon::plugins::templates::hardware);
 use strict;
 use warnings;
 
+my $oid_snsNodeIndex   = '.1.3.6.1.4.1.11256.1.11.7.1.1';
+my $oid_snsFwSerial = '.1.3.6.1.4.1.11256.1.11.7.1.2';
+
 sub set_system {
     my ($self, %options) = @_;
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|temperature)$';
-    
+
+    $self->{cb_hook1} = 'detect_topology';
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
             ['running', 'OK'],
-            ['.*', 'CRITICAL']
+            ['.*',      'CRITICAL']
         ],
         psu => [
-            ['OK', 'OK'],
-            ['.*', 'CRITICAL']
+            ['OK',  'OK'],
+            ['.*',  'CRITICAL']
         ],
-        raid => [
-            ['optimal', 'OK'],
-            ['.*', 'CRITICAL']
+        disk => [
+            ['PASSED',       'OK'],
+            ['NotSupported', 'OK'],
+            ['.*',           'CRITICAL']
         ]
     };
-    
-    $self->{components_path} = 'network::stormshield::snmp::mode::components';
-    $self->{components_module} = ['disk', 'fan', 'psu', 'temperature'];
+
+    $self->{components_path}   = 'network::stormshield::snmp::mode::components';
+    $self->{components_module} = ['temperature', 'fan', 'psu', 'disk'];
+}
+
+sub detect_topology {
+    my ($self, %options) = @_;
+
+    $self->{snmp} = $options{snmp};
+
+    my $ha_result = $options{snmp}->get_table(
+        oid          => $oid_snsNodeIndex,
+        nothing_quit => 0
+    );
+
+    $self->{ha_nodes}   = [];
+    $self->{ha_serials} = {};
+
+    if (!defined $ha_result || scalar(keys %$ha_result) == 0) {
+        # Single Node
+        $self->{is_ha} = 0;
+        push @{$self->{ha_nodes}}, '0';
+        $self->{ha_serials}->{'0'} = 'single';
+        return;
+    }
+
+    # HA
+    $self->{is_ha} = 1;
+    foreach my $oid (sort keys %$ha_result) {
+        if ($oid =~ /^$oid_snsNodeIndex\.(\d+)$/) {
+            push @{$self->{ha_nodes}}, $1;
+        }
+    }
+
+    my @serial_oids = map { "$oid_snsFwSerial.$_" } @{$self->{ha_nodes}};
+    my $serial_res  = $options{snmp}->get_leef(oids => \@serial_oids, nothing_quit => 0);
+    foreach my $node_id (@{$self->{ha_nodes}}) {
+        my $s = $serial_res->{"$oid_snsFwSerial.$node_id"};
+        $self->{ha_serials}->{$node_id} = defined $s ? $s : "node$node_id";
+    }
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
-    $self->{snmp} = $options{snmp};
+
+    $self->{snmp}    = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
 
@@ -74,7 +116,8 @@ __END__
 
 =head1 MODE
 
-Check hardware.
+Check hardware components (temperature, fan, PSU, disk).
+Automatically detects single-node and high-availability (HA) cluster configurations.
 
 =over 8
 
@@ -85,13 +128,14 @@ Can be: 'disk', 'fan', 'psu', 'temperature'.
 
 =item B<--filter>
 
-Exclude the items given as a comma-separated list (example: --filter=fan).
-You can also exclude items from specific instances: --filter=fan,1
+Exclude items given as a comma-separated list (example: --filter=fan).
+You can also exclude specific instances: --filter=fan,1
 
 =item B<--absent-problem>
 
-Return an error if a component is not 'present' (default is skipping).
-It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
+Return an error if a component is not present (default: skip).
+Can be set globally or per instance: --absent-problem='component_name' or
+--absent-problem='component_name,instance_value'.
 
 =item B<--no-component>
 
@@ -99,26 +143,29 @@ Define the expected status if no components are found (default: critical).
 
 =item B<--threshold-overload>
 
-Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
+Override the status returned by the plugin when the status label matches a
+regular expression (syntax: section,[instance,]status,regexp).
 Example: --threshold-overload='disk,WARNING,missing'
 
 =item B<--warning>
 
-Set warning threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
-Example: --warning='temperature,.*,40'
+Set warning threshold for 'temperature' or 'fan' (syntax: type,regexp,threshold).
+Example: --warning='temperature,.*,60'
 
 =item B<--critical>
 
-Set critical threshold for 'temperature', 'fan' (syntax: type,regexp,threshold)
-Example: --critical='temperature,.*,50'
+Set critical threshold for 'temperature' or 'fan' (syntax: type,regexp,threshold).
+Example: --critical='temperature,.*,70'
 
 =item B<--warning-count-*>
 
-Define the warning threshold for the number of components of one type (replace '*' with the component type).
+Define the warning threshold for the number of components of one type
+(replace '*' with the component type).
 
 =item B<--critical-count-*>
 
-Define the critical threshold for the number of components of one type (replace '*' with the component type).
+Define the critical threshold for the number of components of one type
+(replace '*' with the component type).
 
 =back
 
