@@ -22,6 +22,7 @@ package centreon::plugins::options;
 
 use Pod::Usage;
 use centreon::plugins::misc qw/exprintf/;
+use List::Util qw/any/;
 use strict;
 use warnings;
 
@@ -31,6 +32,14 @@ sub new {
     my ($class) = @_;
     my $self  = {};
     bless $self, $class;
+
+    # Template for default validation error messages
+    $self->{'validation_error_message'} = { DEFAULT => "Bad value provided for option %{option}: '%{value}'. Constraint '%{value}' %{validation} '%{validation_value}' is not verified.",
+                                            not_empty => "Need to specify --%{option} option.",
+                                            numeric =>  "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric value.",
+                                            port => "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric TCP port value between 1 and 65535.",
+                                            protocol_http => "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a valid HTTP protocol ('http' or 'https')."
+                                          };
 
     $self->{pod_where_loaded} = 0;
     $self->{sanity} = 0;
@@ -127,11 +136,14 @@ sub add_options {
         my $opt_name = $options{arguments}->{$arg}->{name};
 
         # handle option validation hints
-        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match', 'error_message') {
+        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match', 'is_in', 'error_message', 'not_empty', 'type', 'numeric', 'port', 'protocol_http' ) {
             if (defined($options{arguments}->{$arg}->{$control})) {
                 $self->{validation}->{$opt_name} //= {};
                 # store the control to perform as key and the reference value as value
-                $self->{validation}->{$opt_name}->{$control} = $options{arguments}->{$arg}->{$control};
+                my $ctl = $control ne 'type'
+                              ? $control
+                              : $options{arguments}->{$arg}->{$control};
+                $self->{validation}->{$opt_name}->{$ctl} = $options{arguments}->{$arg}->{$control};
             }
         }
 
@@ -147,6 +159,7 @@ sub add_options {
 sub perform_validation {
     my ($value, $operation, $reference) = @_;
     # if all info is not given, skip the control
+    return 0 if $operation && $operation eq 'not_empty' && (!defined $value || $value eq '');
     return 1 unless defined($value) && $value ne ''
                    && defined($operation) && $operation ne ''
                    && defined($reference) && $reference ne '';
@@ -165,6 +178,10 @@ sub perform_validation {
     }
     # case of regex check
     return 0 if $operation eq 'regexp_match' && $value !~ /$reference/;
+    return 0 if $operation eq 'is_in' && ! any { $value eq $_ } @$reference;
+    return 0 if $operation eq 'numeric' && $value !~ /^\d*$/;
+    return 0 if $operation eq 'protocol_http' && ! any { $value eq $_ } qw/http https/;
+    return 0 if $operation eq 'port' && ($value !~ /^\d*$/ || $value < 1 || $value > 65535);
     return 1;
 }
 
@@ -176,11 +193,17 @@ sub validate_options {
         for my $validation (sort keys %{$self->{validation}->{$option}} ) {
             my $value = $self->{options_stored}->{$option};
             unless (perform_validation($value, $validation, $self->{validation}->{$option}->{$validation})) {
+                my $validation_value = ref $self->{validation}->{$option}->{$validation} eq 'ARRAY'
+                                         ? join ', ', @{$self->{validation}->{$option}->{$validation}}
+                                         : $self->{validation}->{$option}->{$validation};
+                my $data = { option => $option =~ s/_/-/gr, value => $value, $option => $value,
+                             validation => $validation,
+                             validation_value => $validation_value };
+                my $msg = exprintf( $self->{validation}->{$option}->{error_message}
+                                    // $self->{validation_error_message}->{$validation}
+                                    // $self->{validation_error_message}->{'DEFAULT'},
+                                    $data );
 
-                my $msg = defined $self->{validation}->{$option}->{error_message}
-                              ? exprintf($self->{validation}->{$option}->{error_message}, { option => $option, value => $value, $value => $value })
-                              : "Bad value provided for option $option: '$value'. "
-                                  . "Constraint $value $validation " . $self->{validation}->{$option}->{$validation} . " is not verified.";
                 $self->{output}->option_exit(short_msg => $msg);
             }
         }

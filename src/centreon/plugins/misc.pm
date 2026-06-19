@@ -1171,10 +1171,12 @@ sub exprintf($$;$) {
                                                         } elsif ($2 eq 'storage') {
                                                             $value = join '', format_bytes(value => $value);
                                                         } elsif (substr($2, 0, 1) eq '%') {
-                                                          $value = sprintf($2, $value);
+                                                            $value = sprintf($2, $value);
                                                         }
                                                     }
-                                                    $value
+                                                    ref $value ne 'ARRAY'
+                                                        ? $value
+                                                        : join ', ', @{$value}
                                                  }ger;
 }
 
@@ -1935,7 +1937,7 @@ Replace placeholders in a template string with values from a hash.
 
 =item * C<$default> - Optional default value to use when a key is not found (default: empty string)
 
-Supported filters: C<storage> (base 1024 units), C<network> (base 1000 units), or a sprintf format starting with C<%>.
+Supported filters: C<storage> (base 1024 units), C<network> (base 1000 units) or a sprintf format starting with C<%>.
 
 =back
 
