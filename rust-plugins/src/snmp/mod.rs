@@ -620,7 +620,9 @@ impl SnmpResult {
                                 match value {
                                     rasn_smi::v2::ApplicationSyntax::Address(ip_address) => todo!(),
                                     rasn_smi::v2::ApplicationSyntax::Counter(counter) => todo!(),
-                                    rasn_smi::v2::ApplicationSyntax::Ticks(time_ticks) => todo!(),
+                                    rasn_smi::v2::ApplicationSyntax::Ticks(time_ticks) => {
+                                        typ = ValueType::Integer(time_ticks.0.into());
+                                    }
                                     rasn_smi::v2::ApplicationSyntax::Arbitrary(opaque) => todo!(),
                                     rasn_smi::v2::ApplicationSyntax::BigCounter(counter64) => {
                                         typ = ValueType::Counter64(counter64.0);
