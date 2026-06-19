@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use centreon::plugins::misc;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -53,7 +53,8 @@ sub new {
             'api-password:s'      => { name => 'api_password' },
             'realm:s'             => { name => 'realm' },
             'timeout:s'           => { name => 'timeout' },
-            'reload-cache-time:s' => { name => 'reload_cache_time', default => 7200 }
+            'reload-cache-time:s' => { name => 'reload_cache_time', default => 7200, type => 'numeric', not_empty => 1 },
+            'token-lifetime:s'    => { name => 'token_lifetime', default => 5400, type => 'numeric', not_empty => 1 }
         });
     }
     
@@ -142,11 +143,11 @@ sub settings {
 sub get_ticket {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'proxmox_ve_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $expires_on = $options{statefile}->get(name => 'expires_on');
+    my $has_cache_file = $options{statefile}->read(statefile => 'proxmox_ve_api_' . sha256_hex($self->{option_results}->{hostname} . '_' .$self->{option_results}->{api_username}));
+    my $last_timestamp = $options{statefile}->get(name => 'last_timestamp');
     my $ticket = $options{statefile}->get(name => 'ticket');
     
-    if ($has_cache_file == 0 || !defined($ticket) || (($expires_on - time()) < 10)) {
+    if ($has_cache_file == 0 || !defined($ticket) || (time() - $last_timestamp >= $self->{option_results}->{token_lifetime})) {
         my $post_data = 'username=' . $self->{api_username} .
             '&password=' . $self->{api_password} .
             '&realm=' . $self->{realm};
@@ -174,7 +175,7 @@ sub get_ticket {
         }
 
         $ticket = $decoded->{data}->{ticket};
-        my $datas = { last_timestamp => time(), ticket => $ticket, expires_on => time() + 7200 };
+        my $datas = { last_timestamp => time(), ticket => $ticket };
         $options{statefile}->write(data => $datas);
     }
 
@@ -293,7 +294,8 @@ sub cache_vms {
     my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_vm_'.$self->{hostname} . '_' . $self->{port});
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $vms = $options{statefile}->get(name => 'vms');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
+
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || (time() - $timestamp_cache > $self->{option_results}->{reload_cache_time})) {
         $vms = {};
         my $list_vms = $self->internal_api_list_vms();
         foreach my $vm (@$list_vms) {
@@ -303,7 +305,8 @@ sub cache_vms {
                 Name => $vm->{name}
             };
         }
-        $options{statefile}->write(data => $vms);
+        my $datas = { last_timestamp => time(), vms => $vms };
+        $options{statefile}->write(data => $datas);
     }
 
     return $vms;
@@ -315,7 +318,7 @@ sub cache_nodes {
     my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_node_' . $self->{hostname} . '_' . $self->{port});
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $nodes = $options{statefile}->get(name => 'nodes');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || (time() - $timestamp_cache > $self->{option_results}->{reload_cache_time})) {
         $nodes = {};
         my $list_nodes = $self->internal_api_list_nodes();
         foreach my $node (@{$list_nodes}) {
@@ -324,7 +327,8 @@ sub cache_nodes {
                 Name => $node->{node}
             };
         }
-        $options{statefile}->write(data => $nodes);
+        my $datas = { last_timestamp => time(), nodes => $nodes };
+        $options{statefile}->write(data => $datas);
     }
 
     return $nodes;
@@ -336,7 +340,7 @@ sub cache_storages {
     my $has_cache_file = $options{statefile}->read(statefile => 'cache_proxmox_storage_' . $self->{hostname} . '_' . $self->{port});
     my $timestamp_cache = $options{statefile}->get(name => 'last_timestamp');
     my $storages = $options{statefile}->get(name => 'storages');
-    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || (time() - $timestamp_cache > $self->{option_results}->{reload_cache_time})) {
         $storages = {};
         my $list_storages = $self->internal_api_list_storages();
         foreach my $storage (@{$list_storages}) {
@@ -346,7 +350,8 @@ sub cache_storages {
                 Name => $storage->{storage}
             };
         }
-        $options{statefile}->write(data => $storages);
+        my $datas = { last_timestamp => time(), storages => $storages };
+        $options{statefile}->write(data => $datas);
     }
 
     return $storages;
@@ -644,6 +649,14 @@ Set Proxmox VE Realm (C<pam>, C<pve> or C<custom>) (default: C<pam>).
 =item B<--timeout>
 
 Threshold for HTTP timeout.
+
+=item B<--reload-cache-time>
+
+Time to reload the cache (in seconds) (default: '7200').
+
+=item B<--token-lifetime>
+
+Token lifetime in seconds (default: '5400').
 
 =back
 
