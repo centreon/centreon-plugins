@@ -1,0 +1,379 @@
+{
+  "uuid": "1eae4881-fc1f-45d9-841a-aee74ac757eb",
+  "lastMigration": 33,
+  "name": "Voip.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "fb9a20c9-a581-40f7-92e8-316ce048113a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "c224aaac-ea46-4621-aef9-48b3e052ea58",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "e0506576-4140-4dc5-bde5-714fc577b8a0",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "connect/token",
+      "responses": [
+        {
+          "uuid": "461c2601-0525-4254-a417-ae8369e875e4",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\"token_type\":\"Bearer\",\"expires_in\":60,\"access_token\":\"OLE\",\"refresh_token\":null}"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "edc0719e-a62a-4658-a7cf-87bc51ada523",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "webclient/api/Login/GetAccessToken",
+      "responses": [
+        {
+          "uuid": "0c62f9c4-5431-4688-8012-b5981893996a",
+          "body": "{\"Status\":\"AuthSuccess\",\"Token\":{\"token_type\":\"Bearer\",\"expires_in\":60,\"access_token\":\"BBBBBB\",\"refresh_token\":\"AAAAAAA\"},\"TwoFactorAuth\":null}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "dc4ec86a-6424-4a03-9fdc-dcfab85ec20b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "xapi/v1/SystemStatus",
+      "responses": [
+        {
+          "uuid": "c3ae3994-08a2-49db-9320-75880fe50214",
+          "body": "{\"@odata.context\":\"http://localhost.fr/xapi/v1/$metadata#SystemStatus\",\"FQDN\":\"localhost.fr\",\"Version\":\"20.0.8.1131\",\"Activated\":true,\"MaxSimCalls\":24,\"ExtensionsRegistered\":49,\"Ip\":\"1.1.1.1 Static\",\"IpV4\":\"1.1.1.1\",\"IpV6\":\"\",\"LocalIpValid\":true,\"CurrentLocalIp\":\"2.2.2.2\",\"AvailableLocalIps\":\"3.3.3.3\",\"ExtensionsTotal\":53,\"MaxUserExtensions\":120,\"UserExtensions\":53,\"HasUnregisteredSystemExtensions\":false,\"HasNotRunningServices\":false,\"TrunksRegistered\":2,\"TrunksTotal\":2,\"CallsActive\":1,\"DiskUsage\":27,\"FreeDiskSpace\":253909528,\"TotalDiskSpace\":40947412992,\"MaintenanceExpiresAt\":\"2027-04-11T14:48:11Z\",\"Support\":true,\"LicenseActive\":true,\"ExpirationDate\":\"2027-04-11T14:48:11Z\",\"OutboundRules\":12,\"BackupScheduled\":true,\"LastBackupDateTime\":\"2026-06-16T00:00:29.4924927+02:00\",\"ResellerName\":\"IT TI\",\"LicenseKey\":\"AAA-BBB-CCC-DDD\",\"ProductCode\":\"bla\",\"IsAuditLogEnabled\":true,\"IsChatLogEnabled\":true,\"RecordingUsedSpace\":0,\"RecordingQuota\":5368709120,\"RecordingStopped\":false,\"VoicemailStopped\":false,\"VoicemailQuotaReached\":false,\"DBMaintenanceInProgress\":false,\"RecordingQuotaReached\":false,\"IsRecordingArchiveEnabled\":true,\"OS\":\"Linux\",\"AutoUpdateEnabled\":true,\"LastCheckForUpdates\":\"2026-03-23T14:34:41.8630737+01:00\",\"LastSuccessfulUpdate\":\"2026-06-16T11:38:48.1217059+02:00\",\"RemoteStorageEnabled\":true,\"RemoteStorageStatus\":\"Configured\",\"RemoteConfigurationRequired\":false,\"ChatUsedSpace\":0,\"LogUsedSpace\":29607392}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "85a9e659-d364-40b4-9bca-e23a61d7545d",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "xapi/v1/Users",
+      "responses": [
+        {
+          "uuid": "1842a86e-65dc-4428-a101-69c563bf20e7",
+          "body": "{\"@odata.context\":\"https://pierretermier.my3cx.fr/xapi/v1/$metadata#Users(Number,FirstName,LastName,IsRegistered,CurrentProfileName)\",\"value\":[{\"Number\":\"100\",\"FirstName\":\"adm\",\"LastName\":\"test\",\"IsRegistered\":false,\"CurrentProfileName\":\"Available\"},{\"Number\":\"230\",\"FirstName\":\"Centreon\",\"LastName\":\"Test\",\"IsRegistered\":true,\"CurrentProfileName\":\"Available\"},{\"Number\":\"200\",\"FirstName\":\"BBB\",\"LastName\":\"Coordo AAA\",\"IsRegistered\":true,\"CurrentProfileName\":\"Available\"}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "dbd83584-af30-44e4-9e17-be1b8a868d3e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "xapi/v1/ActiveCalls",
+      "responses": [
+        {
+          "uuid": "23add6d7-fb0d-4727-bf17-0fe5db50db29",
+          "body": "{\"@odata.context\":\"http://localhost.fr/xapi/v1/$metadata#ActiveCalls\",\"value\":[{\"Id\":11,\"Caller\":\"xx Robot\",\"Callee\":\"230 Centreon Test\",\"Status\":\"Talking\",\"LastChangeStatus\":\"2026-06-16T11:55:51Z\",\"EstablishedAt\":\"2026-06-16T11:55:51Z\",\"ServerNow\":\"2026-06-16T12:01:03.7507313Z\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "8b672119-939c-4ca0-8404-db05d09755bb",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "xapi/v1/GetUpdatesStats\\(\\)",
+      "responses": [
+        {
+          "uuid": "ab77e0aa-539d-4988-9e3f-0d5589ff3589",
+          "body": "{\"@odata.context\":\"http://localhost.fr/xapi/v1/$metadata#Pbx.UpdatesStats\",\"TcxUpdate\":[],\"PerPage\":[]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "fb9a20c9-a581-40f7-92e8-316ce048113a"
+    },
+    {
+      "type": "route",
+      "uuid": "e0506576-4140-4dc5-bde5-714fc577b8a0"
+    },
+    {
+      "type": "route",
+      "uuid": "edc0719e-a62a-4658-a7cf-87bc51ada523"
+    },
+    {
+      "type": "route",
+      "uuid": "dc4ec86a-6424-4a03-9fdc-dcfab85ec20b"
+    },
+    {
+      "type": "route",
+      "uuid": "85a9e659-d364-40b4-9bca-e23a61d7545d"
+    },
+    {
+      "type": "route",
+      "uuid": "dbd83584-af30-44e4-9e17-be1b8a868d3e"
+    },
+    {
+      "type": "route",
+      "uuid": "8b672119-939c-4ca0-8404-db05d09755bb"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
