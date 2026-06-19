@@ -54,8 +54,7 @@ sub set_system {
     };
 
     $self->{components_path} = 'hardware::pdu::sentry::snmp::mode::components';
-    # $self->{components_module} = [ 'humidity', 'temperature'];
-    $self->{components_module} = [  'temperature'];
+    $self->{components_module} = [ 'humidity', 'temperature'];
 }
 
 sub snmp_execute {
