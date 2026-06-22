@@ -91,7 +91,7 @@ sub get_access_token {
     $self->{cache}->read(statefile => 'centreon_opentickets_' . sha256_hex($self->{option_results}->{hostname} . '_' . $self->{option_results}->{username}));
     my $token = $self->{cache}->get(name => 'token');
     my $expire = $self->{cache}->get(name => 'expire_at', default => 0);
-    return $token if $token && !$self->{option_results}->{disable_cache} && $expire - 30 < time();
+    return $token if $token && !$self->{option_results}->{disable_cache} && time() < $expire - 30;
 
     my $response = $self->{http}->request(  method => 'POST',
                                             url_path => $self->{option_results}->{endpoint}.'oauth/token',
