@@ -152,6 +152,16 @@ Check tower.
 
 =over 8
 
+=item B<--include-tower>
+
+Filter C<tower> by number (can be a regexp).
+Example: C<--include-tower='Master'>
+
+=item B<--exclude-tower>
+
+Exclude C<tower> by number (can be a regexp).
+Example: C<--exclude-tower='Master'>
+
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.

@@ -94,11 +94,6 @@ Can be: 'humidity', 'temperature'.
 Exclude the items given as a comma-separated list (example: --filter=temperature --filter=humidity).
 You can also exclude items from specific instances: --filter=temperature,1
 
-=item B<--absent-problem>
-
-Return an error if an entity is not 'present' (default is skipping) (comma separated list)
-Can be specific or global: --absent-problem=humidity
-
 =item B<--no-component>
 
 Define the expected status if no components are found (default: critical).

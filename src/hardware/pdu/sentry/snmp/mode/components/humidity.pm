@@ -74,7 +74,7 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("Humidity '%s' status is '%s' [instance: %s, value: %s]",
                                     $result->{tempHumidSensorName}, $result->{tempHumidSensorHumidStatus},
-                                    $result->{tempHumidSensorID}, $result->{tempHumidSensorHumidValue} / 10));
+                                    $result->{tempHumidSensorID}, $result->{tempHumidSensorHumidValue}));
         my $exit = $self->get_severity(section => 'humidity', instance => $result->{tempHumidSensorID}, value => $result->{tempHumidSensorHumidStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -83,7 +83,7 @@ sub check {
         }
         
         if (defined($result->{tempHumidSensorHumidValue}) && $result->{tempHumidSensorHumidValue} =~ /[0-9]/) {
-            my $value = $result->{tempHumidSensorHumidValue} / 10;
+            my $value = $result->{tempHumidSensorHumidValue};
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $result->{tempHumidSensorID}, value => $value);
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,

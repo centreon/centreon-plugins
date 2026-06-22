@@ -269,7 +269,7 @@ Warning threshold. (V)
 
 =item B<--critical-voltage>
 
-Warning threshold. (V)
+Critical threshold. (V)
 
 =item B<--warning-load>
 
