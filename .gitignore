@@ -7,3 +7,11 @@ report.html
 tests/resources/__pycache__
 src/lib
 node_modules
+
+# VMware Perl SDK archives — proprietary Broadcom license, cannot be stored in this open-source repo.
+# Download from https://developer.broadcom.com and place in sdks-vmware/ before building with WITH_SDK=true.
+sdks-vmware/*.tar.gz
+sdks-vmware/*.zip
+
+# Docker build context directories (generated at CI time)
+packages-centreon/
