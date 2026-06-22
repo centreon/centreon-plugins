@@ -18,41 +18,21 @@
 # limitations under the License.
 #
 
-package apps::voip::3cx::restapi::plugin;
+package database::oracle::common;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_custom);
 
-sub new {
-    my ($class, %options) = @_;
+use Exporter 'import';
 
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+our @EXPORT_OK = qw/convert_to_rman/;
 
-    $self->{version} = '1.0';
-    $self->{modes} = {
-        'extension' => 'apps::voip::3cx::restapi::mode::extension',
-        'license'   => 'apps::voip::3cx::restapi::mode::license',
-        'system'    => 'apps::voip::3cx::restapi::mode::system'
-    };
+# Naively converts an Oracle query into an RMAN query by replacing v$ with rc_
+sub convert_to_rman($)
+{
+    my ($sql) = @_;
 
-    $self->{custom_modes}->{api} = 'apps::voip::3cx::restapi::custom::api';
-    return $self;
+    $sql =~ s/v\$/rc_/gr
 }
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Monitor 3CX resources through its HTTPS API.
-
-Requirements: at least 3CX 20.0.
-
-=over 8
-
-=back
-
-=cut

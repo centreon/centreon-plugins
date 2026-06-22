@@ -18,41 +18,20 @@
 # limitations under the License.
 #
 
-package apps::voip::3cx::restapi::plugin;
-
-use strict;
-use warnings;
-use base qw(centreon::plugins::script_custom);
-
-sub new {
-    my ($class, %options) = @_;
-
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-
-    $self->{version} = '1.0';
-    $self->{modes} = {
-        'extension' => 'apps::voip::3cx::restapi::mode::extension',
-        'license'   => 'apps::voip::3cx::restapi::mode::license',
-        'system'    => 'apps::voip::3cx::restapi::mode::system'
-    };
-
-    $self->{custom_modes}->{api} = 'apps::voip::3cx::restapi::custom::api';
-    return $self;
-}
-
-1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Monitor 3CX resources through its HTTPS API.
-
-Requirements: at least 3CX 20.0.
-
-=over 8
-
-=back
-
-=cut
+[
+    [ '_Total', 317 ],
+    [ 'Xact', 18 ],
+    [ 'RowGroup', 5 ],
+    [ 'OIB', 56 ],
+    [ 'AllocUnit', 19 ],
+    [ 'HoBT', 39 ],
+    [ 'Metadata', 38 ],
+    [ 'Application', 512 ],
+    [ 'RID', 24 ],
+    [ 'Extent', 7 ],
+    [ 'Key', 101 ],
+    [ 'Page', 41 ],
+    [ 'Object', 54 ],
+    [ 'File', 562 ],
+    [ 'Database', 45 ],
+]
