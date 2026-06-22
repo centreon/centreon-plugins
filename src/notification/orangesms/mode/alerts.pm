@@ -71,9 +71,6 @@ sub check_options {
 
     $self->SUPER::init(%options);
 
-    $self->{output}->option_exit(short_msg => 'Please specify at least one recipient using the --to parameter.')
-        unless $self->{option_results}->{to} && @{$self->{option_results}->{to}};
-
     foreach (@{$self->{option_results}->{to}}) {
         $self->{output}->option_exit(short_msg => "Invalid phone number '$_' in the --to parameter.")
             unless /^\+?\d+$/;
