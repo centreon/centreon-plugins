@@ -509,9 +509,8 @@ Use the debug option for more details.
         } else {
             my $fault_string = $self->{client}->fault_string();
             $error_msg = $prefix . ((defined($fault_string)) ? $fault_string : 'use the debug option for more details');
-            # Essayer d'obtenir plus de détails si disponible
-            if (defined($result)) {
-                # Essayer de récupérer le XML brut de la réponse de faute
+            # Try to display XML fault response in debug mode
+            if (defined($result) && defined($self->{wsman_params}->{wsman_debug})) {
                 my $fault_detail = eval { $result->root()->string() };
                 if (defined($fault_detail) && $fault_detail ne '') {
                     $error_msg .= "\nFault details:\n" . $fault_detail;
