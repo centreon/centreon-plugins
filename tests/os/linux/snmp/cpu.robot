@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
+${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
 
 
 *** Test Cases ***
@@ -50,7 +50,7 @@ cpu ${tc}
     ...    CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
 
 cgs-cpu ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
     ...    --hostname=${HOSTNAME}
