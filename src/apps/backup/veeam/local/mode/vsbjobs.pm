@@ -24,10 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::common::powershell::veeam::functions qw/veeam_to_psexec/;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psexec veeam_error_message/;
 use centreon::common::powershell::veeam::vsbjobs;
 use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -61,8 +62,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', },
-        { name => 'jobs', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All SureBackup jobs are ok', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', },
+        { name => 'jobs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All SureBackup jobs are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -101,7 +102,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{jobs} = [
-        { label => 'status', type => 2, critical_default => 'not %{status} =~ /success/i', set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, critical_default => 'not %{status} =~ /success/i', set => {
                 key_values => [
                     { name => 'name' }, { name => 'type' },
                     { name => 'status' }, { name => 'duration' }
@@ -175,7 +176,8 @@ sub manage_selection {
         options => $self->{option_results},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+        command_options => $self->{option_results}->{command_options},
+        error_message => veeam_error_message($self->{option_results}->{veeam_version})
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(

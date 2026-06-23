@@ -102,7 +102,7 @@ sub windows_execute {
                        { stdin => 'NUL',
                          stdout => \*TO_PARENT,
                          stderr => $stderr }))) {
-        $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
+        $options{output}->add_option_msg(short_msg => $options{error_message} // "Internal error: execution issue: $^E");
         $options{output}->option_exit();
     }
     close TO_PARENT;
@@ -271,7 +271,7 @@ sub unix_execute {
 
     if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->add_option_msg(short_msg => $options{error_message} // "Command error: $stdout");
         $options{output}->option_exit();
     }
 
