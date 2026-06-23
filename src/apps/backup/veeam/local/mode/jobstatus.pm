@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::powershell::veeam::functions qw/veeam_to_psexec veeam_error_message/;
-use centreon::common::powershell::veeam::jobstatus;
+use centreon::common::powershell::veeam::jobstatus qw/:job_source/;
 use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::constants qw(:values :counters);
