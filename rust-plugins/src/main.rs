@@ -105,7 +105,10 @@ fn main() -> Result<(), Error> {
                         filter_out.push(f);
                     }
                     Short('h') | Long("help") => {
-                        println!("Usage: plugin [OPTIONS]\n");
+                        let prog = std::env::args()
+                            .next()
+                            .unwrap_or_else(|| "plugin".to_string());
+                        println!("Usage: {} [OPTIONS]\n", prog);
                         println!("OPTIONS:");
                         println!("  -H, --hostname <HOST>            Hostname or IP address (default: localhost)");
                         println!("  -p, --port <PORT>                SNMP port (default: 161)");
