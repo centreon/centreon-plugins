@@ -32,7 +32,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'total', type => COUNTER_TYPE_GLOBAL },
-        { name => 'by_instance', type => COUNTER_TYPE_INSTANCE, prefix_output => "instance '%{display}': "}
+        { name => 'by_instance', type => COUNTER_TYPE_INSTANCE, prefix_output => "instance %{display}: "}
     ];
 
     $self->{maps_counters}->{total} = [
