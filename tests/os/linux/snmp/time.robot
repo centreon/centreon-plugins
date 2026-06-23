@@ -16,7 +16,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --hostname=${HOSTNAME}
 ...                 --snmp-port=${SNMPPORT}
 ...                 --snmp-community=os/linux/snmp/linux
-${CGS_CMD}          ${CENTREON_GENERIC_SNMP}
+${CGS_CMD}          ${CENTREON_PLUGIN_RUST_SNMP}
 
 
 *** Test Cases ***

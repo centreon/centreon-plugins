@@ -52,9 +52,9 @@ processcount ${tc}
     ...    OK: Number of current processes running: 1 | 'nbproc'=1;;;0; Process '3534' [name: Anonymized 228] [status: unHandled#-2]
 
 cgs-processcount ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CENTREON_GENERIC_SNMP}
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
     ...    -j ${CURDIR}/generic-snmp/processcount.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}

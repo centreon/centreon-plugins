@@ -7,7 +7,7 @@ Library             OperatingSystem
 
 *** Variables ***
 ${CENTREON_PLUGINS}         perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
-${CENTREON_GENERIC_SNMP}    ${CURDIR}${/}..${/}..${/}rust-plugins/target/release/centreon-generic-snmp
+${CENTREON_PLUGIN_RUST_SNMP}    ${CURDIR}${/}..${/}..${/}rust-plugins/target/release/centreon-plugin-rust-snmp
 
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.

@@ -40,9 +40,9 @@ uptime ${tc}
     ...    10    --unit='s'    OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
 
 cgs-storage ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CENTREON_GENERIC_SNMP}
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
     ...    -j ${CURDIR}/generic-snmp/uptime.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}

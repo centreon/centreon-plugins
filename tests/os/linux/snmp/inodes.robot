@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
+${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP}
 
 
 *** Test Cases ***
@@ -50,7 +50,7 @@ inodes ${tc}
     ...    OK: All inode partitions are ok | 'used_/'=6%;;;0;100 'used_/dev/shm'=0%;;;0;100 'used_/run'=0%;;;0;100 'used_/run/lock'=0%;;;0;100 'used_/run/user/0'=0%;;;0;100
 
 cgs-inodes ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
     ...    -j ${CURDIR}/generic-snmp/inodes.json
