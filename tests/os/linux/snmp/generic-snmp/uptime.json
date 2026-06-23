@@ -1,0 +1,30 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "hrSystemUptime",
+        "oid": ".1.3.6.1.2.1.25.1.1.0",
+        "query": "Get"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [],
+    "aggregations": [
+      {
+        "name": "system.uptime.seconds",
+        "value": "{hrSystemUptime} / 100",
+        "uom": "s",
+        "min": 0,
+        "threshold-suffix": "seconds"
+      }
+    ]
+  },
+  "output": {
+    "ok": "OK: Uptime: {aggregations.system.uptime.seconds}s",
+    "warning": "WARNING: ",
+    "detail_warning": true,
+    "critical": "CRITICAL: ",
+    "detail_critical": true
+  }
+}
