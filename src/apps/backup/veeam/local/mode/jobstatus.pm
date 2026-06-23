@@ -24,8 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::common::powershell::veeam::functions qw/veeam_to_psexec/;
-use centreon::common::powershell::veeam::jobstatus qw/:job_source/;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psexec veeam_error_message/;
+use centreon::common::powershell::veeam::jobstatus;
 use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::constants qw(:values :counters);
@@ -166,7 +166,8 @@ sub manage_selection {
         options => $self->{option_results},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+        command_options => $self->{option_results}->{command_options},
+        error_message => veeam_error_message($self->{option_results}->{veeam_version})
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(

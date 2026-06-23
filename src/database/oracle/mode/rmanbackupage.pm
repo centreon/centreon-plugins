@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,8 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+
+use database::oracle::common qw/convert_to_rman/;
 use DateTime;
 
 sub new {
@@ -99,6 +101,9 @@ sub run {
             GROUP BY object_type
         };
     }
+
+    $query = convert_to_rman($query) if $options{sql}->is_rman();
+
     $options{sql}->query(query => $query);
     my $result = $options{sql}->fetchall_arrayref();
     $options{sql}->disconnect();
@@ -165,7 +170,7 @@ sub run {
                 min => 0
             );
             my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical-' . $label, exit_litteral => 'critical' }, { label => 'warning-' . $label, exit_litteral => 'warning' } ]);
-            
+
             if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
                     severity => $exit_code,
@@ -173,7 +178,7 @@ sub run {
                 );
             }
         }
-        
+
         if ($executed == 0 && !defined($self->{option_results}->{'no-' . $label})) {
             $self->{output}->output_add(
                 severity => 'CRITICAL',
@@ -199,29 +204,62 @@ __END__
 
 =head1 MODE
 
-Check Oracle rman backup age.
+Check Oracle RMAN backup age.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-db-incr>
 
 Warning threshold in seconds.
-Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
-=item B<--critical-*>
+=item B<--critical-db-incr>
 
 Critical threshold in seconds.
-Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
 
-=item B<  --no-*>
+=item B<--warning-db-full>
+
+Warning threshold in seconds.
+
+=item B<--critical-db-full>
+
+Critical threshold in seconds.
+
+=item B<--warning-archivelog>
+
+Warning threshold in seconds.
+
+=item B<--critical-archivelog>
+
+Critical threshold in seconds.
+
+=item B<--warning-crontrolfile>
+
+Warning threshold in seconds.
+
+=item B<--critical-crontrolfile>
+
+Critical threshold in seconds.
+
+=item B<--no-db-incr>
 
 Skip error if never executed.
-Can be: 'db-incr', 'db-full', 'archivelog', 'controlfile'.
+
+=item B<--no-db-full>
+
+Skip error if never executed.
+
+=item B<--no-archivelog*>
+
+Skip error if never executed.
+
+=item B<--no-crontrolfile>
+
+Skip error if never executed.
 
 =item B<--filter-type>
 
 Filter backup type.
-(type can be : 'DB INCR', 'DB FULL', 'ARCHIVELOG')
+(type can be : C<DB INCR>, C<DB FULL>, C<ARCHIVELOG>)
 
 =item B<--skip-no-backup>
 
