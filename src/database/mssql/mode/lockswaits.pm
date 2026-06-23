@@ -32,7 +32,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'total', type => COUNTER_TYPE_GLOBAL },
-        { name => 'by_instance', type => COUNTER_TYPE_INSTANCE}
+        { name => 'by_instance', type => COUNTER_TYPE_INSTANCE, prefix_output => "instance '%{display}': "}
     ];
 
     $self->{maps_counters}->{total} = [
@@ -53,7 +53,7 @@ sub set_counters {
             label => 'lockswaits-by-instance', type => COUNTER_KIND_METRIC, nlabel => 'mssql.lockswaits.perminute',
             set   => {
                 key_values      => [ { name => 'value', per_minute => 1 }, { name => 'display' } ],
-                output_template => 'instance %{display}: %.2f locks waits/min',
+                output_template => '%.2f locks waits/min',
                 perfdatas       => [
                     { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
