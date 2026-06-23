@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Notification-Orangesms",
+    "pkg_summary": "Centreon Plugin to send SMS notifications using Orange Contact Everyone",
+    "plugin_name": "centreon_notification_orangesms.pl",
+    "files": [
+        "centreon/plugins/script_simple.pm",
+        "notification/orangesms/"
+    ]
+}
