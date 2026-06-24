@@ -36,6 +36,7 @@ sub custom_status_output {
 
     if ($self->{output}->is_verbose()) {
         $status .= ", path: '". $self->{result_values}->{path}."'";
+        $status .= ", serial: '".$self->{result_values}->{serial}."'" if $self->{result_values}->{serial} ne '';
         $status .= ', encrypted: '. $self->{result_values}->{is_encrypted};
         $status .= ', raid: '. $self->{result_values}->{raid_type};
         $status .= ' ('.$self->{result_values}->{raid_status}.')' if $self->{result_values}->{raid_type} ne 'none';
@@ -44,43 +45,22 @@ sub custom_status_output {
     return $status;
 }
 
-sub cluster_long_output {
-    my ($self, %options) = @_;
-
-    return "Checking cluster '" . $options{instance_value}->{name} . "'";
-}
-
-sub prefix_cluster_output {
-    my ($self, %options) = @_;
-
-    return "Cluster '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_disk_output {
-    my ($self, %options) = @_;
-
-    return "Disk '" . $options{instance_value}->{id} . "' ";
-}
-
-sub prefix_global_cluster_output {
-    my ($self, %options) = @_;
-
-    return 'disks ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'clusters', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All disks are ok',
+        {   name => 'clusters', type => COUNTER_TYPE_MULTIPLE, prefix_output => "Cluster '%{name}' ", long_output => "Checking cluster '%{name}'",
+            indent_long_output => '    ', message_multiple => 'All disks are ok',
             group => [
-                { name => 'cluster', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_global_cluster_output' },
-                { name => 'disks', type => COUNTER_MULTIPLE_SUBINSTANCE, display_long => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'disks are ok', skipped_code => { NO_VALUE() => 1 } }
+                { name => 'cluster', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'disks ' },
+                { name => 'disks', type => COUNTER_MULTIPLE_SUBINSTANCE, display_long => 1, prefix_output => "Node '%{node_id}' Disk '%{id}' ",
+                  sort_attribute => [  'node_id', 'id' ],
+                  message_multiple => 'disks are ok', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
     $self->{maps_counters}->{cluster} = [
-        { label => 'cluster-disks-total', nlabel => 'cluster.disks.total.count', display_ok => 0, set => {
+        {   label => 'cluster-disks-total', nlabel => 'cluster.disks.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'disks_total' }, { name => 'name'} ],
                 output_template => 'total %d',
                 perfdatas => [
@@ -88,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'cluster-disks-active', nlabel => 'cluster.disks.active.count', display_ok => 0, set => {
+        {   label => 'cluster-disks-active', nlabel => 'cluster.disks.active.count', display_ok => 0, set => {
                 key_values => [ { name => 'disks_active' }, { name => 'disks_total' }, { name => 'name'} ],
                 output_template => 'active %d',
                 perfdatas => [
@@ -100,7 +80,7 @@ sub set_counters {
 
     $self->{maps_counters}->{disks} = [
         { label => 'disk-status', type => COUNTER_KIND_TEXT, critical_default => '%{status} !~ /active/', set => {
-                key_values => [ { name => 'status' }, { name => 'id' }, { name => 'raid_type' }, { name => 'raid_status' }, { name => 'path' }, { name => 'is_encrypted' } ],
+                key_values => [ { name => 'status' }, { name => 'id' }, { name => 'raid_type' }, { name => 'raid_status' }, { name => 'path' }, { name => 'is_encrypted' }, { name => 'serial' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -118,6 +98,8 @@ sub new {
         'filter-disk-id:s'       => { redirect => 'include_disk_id' },
         'include-disk-id:s'      => { name => 'include_disk_id',      default => '' },
         'exclude-disk-id:s'      => { name => 'exclude_disk_id',      default => '' },
+        'include-node-id:s'      => { name => 'include_node_id',      default => '' },
+        'exclude-node-id:s'      => { name => 'exclude_node_id',      default => '' },
         'include-disk-path:s'    => { name => 'include_disk_path',    default => '' },
         'exclude-disk-path:s'    => { name => 'exclude_disk_path',    default => '' }
     });
@@ -149,6 +131,7 @@ sub manage_selection {
 
     $self->{clusters} = {};
 
+    my $counter = 0;
     foreach my $cluster (@{$result}) {
         my $cluster_id = $cluster->{id} // '';
         my $cluster_name = $cluster->{name} // '';
@@ -169,11 +152,14 @@ sub manage_selection {
 
         foreach my $disk (@{$cluster->{clusterDiskConnection}->{nodes}}) {
             next if is_excluded($disk->{diskId}, $self->{option_results}->{include_disk_id}, $self->{option_results}->{exclude_disk_id}, output => $self->{output}) ||
+                    is_excluded($disk->{nodeId}, $self->{option_results}->{include_node_id}, $self->{option_results}->{exclude_node_id}, output => $self->{output}) ||
                     is_excluded($disk->{path}, $self->{option_results}->{include_disk_path}, $self->{option_results}->{exclude_disk_path}, output => $self->{output});
             my $disk_status = lc $disk->{status};
 
-            $cluster_item->{disks}->{ $disk->{diskId} } = {
+            $cluster_item->{disks}->{ $counter++ } = {
                 id => $disk->{diskId},
+                node_id => $disk->{nodeId} =~ s/^cluster::://r,
+                serial => $disk->{serial} // '',
                 raid_type => $disk->{raidType} // 'none',
                 raid_status => lc($disk->{raidStatus}),
                 status => $disk_status,
@@ -223,6 +209,14 @@ Include disk ID (can be a regexp).
 =item B<--exclude-disk-id>
 
 Exclude disk ID (can be a regexp).
+
+=item B<--include-node-id>
+
+Include node ID (can be a regexp).
+
+=item B<--exclude-node-id>
+
+Exclude node ID (can be a regexp).
 
 =item B<--include-disk-path>
 

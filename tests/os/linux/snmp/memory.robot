@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
 
 
 *** Test Cases ***
@@ -199,3 +200,89 @@ memory ${tc}
     ...    2c
     ...    --patch-redhat='1'
     ...    OK: Ram Total: 5.91 TB Used (-buffers/cache): 5.89 TB (99.68%) Free: 19.12 GB (0.32%), Buffer: 694.54 MB, Cached: 219.41 GB, Shared: 9.31 GB | 'used'=6472685486080B;;;0;6493217484800 'free'=20531998720B;;;0;6493217484800 'used_prct'=99.68%;;;0;100 'buffer'=728276992B;;;0; 'cached'=235591376896B;;;0; 'shared'=9997410304B;;;0;
+
+cgs-mem ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
+    ${command}    Catenate
+    ...    ${CGS_CMD}
+    ...    -j ${CURDIR}/generic-snmp/memory.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/linux
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK: Memory Used: 1266544B - Free: 747712 - Total: 2014256 | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    2
+    ...    --warning-memory-bytes=0.1
+    ...    WARNING: memory.usage.bytes is 1266544B | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;0.1;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    3
+    ...    --critical-memory-bytes=0.1
+    ...    CRITICAL: memory.usage.bytes is 1266544B | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;0.1;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    4
+    ...    --warning-memory-prct=0.1
+    ...    WARNING: memory.usage.percent is 62.88% | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;0.1;;0;100
+    ...    5
+    ...    --critical-memory-prct=0.1
+    ...    CRITICAL: memory.usage.percent is 62.88% | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;0.1;0;100
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/memory.json' JSON is valid
+    ...    7
+    ...    --warning-memory-free-bytes=1
+    ...    WARNING: memory.free.bytes is 747712B | memory.free.bytes=747712B;1;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    8
+    ...    --critical-memory-free-bytes=1
+    ...    CRITICAL: memory.free.bytes is 747712B | memory.free.bytes=747712B;;1;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
+
+cgs-mem-64 ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
+    ${command}    Catenate
+    ...    ${CGS_CMD}
+    ...    -j ${CURDIR}/generic-snmp/memory-64.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/linux
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK: Memory Used: 6320981920B - Free: 20050780 - Total: 6341032700 | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    2
+    ...    --warning-memory-bytes=0.1
+    ...    WARNING: memory.usage.bytes is 6320981920B | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;0.1;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    3
+    ...    --critical-memory-bytes=0.1
+    ...    CRITICAL: memory.usage.bytes is 6320981920B | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;0.1;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    4
+    ...    --warning-memory-prct=0.1
+    ...    WARNING: memory.usage.percent is 99.68% | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;0.1;;0;100
+    ...    5
+    ...    --critical-memory-prct=0.1
+    ...    CRITICAL: memory.usage.percent is 99.68% | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;0.1;0;100
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CURDIR}/generic-snmp/memory-64.json' JSON is valid
+    ...    7
+    ...    --warning-memory-free-bytes=1
+    ...    WARNING: memory.free.bytes is 20050780B | memory.free.bytes=20050780B;1;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    8
+    ...    --critical-memory-free-bytes=1
+    ...    CRITICAL: memory.free.bytes is 20050780B | memory.free.bytes=20050780B;;1;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100

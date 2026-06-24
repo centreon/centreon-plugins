@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,18 +24,17 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw/is_excluded is_not_empty int_to_bool/;
 use Date::Parse;
 
-sub custom_status_output { 
+sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = '';
-    if ($self->{result_values}->{registered} eq 'true') {
-        $msg .= 'registered';
-    } else {
-        $msg .= 'unregistered';
-    }
+    my $msg = $self->{result_values}->{registered} eq 'true'
+                ? 'registered'
+                : 'unregistered';
     if ($self->{result_values}->{dnd} eq 'true') {
         $msg .= ', in DND';
     } else {
@@ -53,14 +52,14 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'extension', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'All extensions are ok' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'extension', type => COUNTER_TYPE_INSTANCE, prefix_output => "Extension '%{extension}' ", message_multiple => 'All extensions are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'count', nlabel => '3cx.extensions.count', display_ok => 0, set => {
                 key_values => [ { name => 'count' } ],
-                output_template => 'Extensions count : %d',
+                output_template => 'Extensions count : %{count}',
                 perfdatas => [
                     { template => '%d', min => 0 }
                 ]
@@ -69,23 +68,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{extension} = [
-        { label => 'status', type => 2, set => {
+        { label => 'status', type => COUNTER_KIND_TEXT, set => {
                 key_values => [
                     { name => 'extension' }, { name => 'registered' }, { name => 'dnd' },
                     { name => 'profile' }, { name => 'status' }, { name => 'duration' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
-}
-
-sub prefix_service_output {
-    my ($self, %options) = @_;
-
-    return "Extension '" . $options{instance_value}->{extension} ."' ";
 }
 
 sub new {
@@ -94,7 +87,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-extension:s' => { name => 'filter_extension' }
+        'filter-extension:s'   => { redirect => 'include_extension' },
+        'include-extension:s'  => { name => 'include_extension', default => '' },
+        'exclude-extension:s'  => { name => 'exclude_extension', default => '' },
+        'dnd-profile-name:s'   => { name => 'dnd_profile_name', default => 'DND' }
     });
 
     return $self;
@@ -105,45 +101,47 @@ sub manage_selection {
 
     my %status;
     my $activecalls = $options{custom}->api_activecalls();
+
     foreach my $item (@$activecalls) {
         $status{$item->{Caller}} = {
-            Status => $item->{Status},
-            Duration => $item->{Duration},
+            Status        => $item->{Status},
             EstablishedAt => $item->{EstablishedAt},
         };
         $status{$item->{Callee}} = {
-            Status => $item->{Status},
-            Duration => $item->{Duration},
+            Status        => $item->{Status},
             EstablishedAt => $item->{EstablishedAt},
         };
     }
 
+    $self->{global} = { count => 0 };
     my $extension = $options{custom}->api_extension_list();
     $self->{extension} = {};
     foreach my $item (@$extension) {
-        if (!defined($item->{_str})) { # 3CX >= 16.0.6.641
-            $item->{_str} = $item->{Number} . (length($item->{FirstName}) ? ' ' . $item->{FirstName} : '') . (length($item->{LastName}) ? ' ' . $item->{LastName} : '');
-        }
-        if (defined($self->{option_results}->{filter_extension}) && $self->{option_results}->{filter_extension} ne '' &&
-            $item->{_str} !~ /$self->{option_results}->{filter_extension}/) {
-            $self->{output}->output_add(long_msg => "skipping extension '" . $item->{_str} . "': no matching filter.", debug => 1);
-            next;
-        }
+        # v20: build display string from Number + FirstName + LastName
+        $item->{_str} = $item->{Number}
+            . (is_not_empty($item->{FirstName}) ? ' ' . $item->{FirstName} : '')
+            . (is_not_empty($item->{LastName})  ? ' ' . $item->{LastName}  : '');
+
+        next if is_excluded($item->{_str}, $self->{option_results}->{include_extension}, $self->{option_results}->{exclude_extension}, output => $self->{output});
 
         $self->{global}->{count}++;
 
+        # v20: DND boolean field no longer exists, derive it from CurrentProfileName
+        my $profile  = $item->{CurrentProfileName} // '';
+        my $dnd_name = $self->{option_results}->{dnd_profile_name};
+        my $is_dnd   = int_to_bool(lc($profile) eq lc($dnd_name));
+
         $self->{extension}->{$item->{_str}} = {
-            extension => $item->{_str},
-            registered => $item->{IsRegistered} ? 'true' : 'false',
-            dnd => $item->{DND} ? 'true' : 'false',
-            profile => $item->{CurrentProfile},
-            status => $status{$item->{_str}}->{Status} ? $status{$item->{_str}}->{Status} : '',
-            duration => 0
+            extension  => $item->{_str},
+            registered => int_to_bool($item->{IsRegistered}),
+            dnd        => $is_dnd,
+            profile    => $profile,
+            status     => $status{$item->{_str}}->{Status} // '',
+            duration   => 0
         };
-        if (defined($status{$item->{_str}}->{EstablishedAt})) { # 3CX >= 16.0.6.641 (#2020-09-08T08:26:05+00:00)
-            $self->{extension}->{$item->{_str}}->{duration} = time - Date::Parse::str2time($status{$item->{_str}}->{EstablishedAt});
-        } elsif (defined($status{$item->{_str}}->{Duration}) && $status{$item->{_str}}->{Duration} =~ /(\d\d):(\d\d):(\d\d).*/) {
-            $self->{extension}->{$item->{_str}}->{duration} = $1 * 3600 + $2 * 60 + $3;
+
+        if (exists $status{$item->{_str}} && $status{$item->{_str}}->{EstablishedAt}) {
+            $self->{extension}->{$item->{_str}}->{duration} = time - str2time($status{$item->{_str}}->{EstablishedAt});
         }
     }
 }
@@ -154,13 +152,25 @@ __END__
 
 =head1 MODE
 
-Check extentions status
+Check extensions status (3CX v20+)
 
 =over 8
 
-=item B<--filter-extension>
+=item B<--include-extension>
 
-Filter extension.
+Filter extension (by number, first name or last name).
+
+=item B<--exclude-extension>
+
+Exclude extension (by number, first name or last name).
+
+=item B<--dnd-profile-name>
+
+Name of the profile to consider as C<DND> (Do Not Disturb). Default: C<DND>.
+In 3CX version 20, the C<DND> boolean field no longer exists. C<DND> status is derived
+from the C<CurrentProfileName> field. Use this option to specify the exact
+profile name configured in your 3CX instance for C<DND>.
+Example: --dnd-profile-name='Do not disturb'
 
 =item B<--unknown-status>
 
@@ -170,16 +180,20 @@ You can use the following variables: %{extension}, %{registered}, %{dnd}, %{prof
 =item B<--warning-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{extension}, %{registered}, %{dnd}, %{profile}, %{status}, %{duration}
+You can use the following variables: C<extension>, C<registered>, C<dnd>, C<profile>, C<status>, C<duration>
 
 =item B<--critical-status>
 
 Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{extension}, %{registered}, %{dnd}, %{profile}, %{status}, %{duration}
+You can use the following variables: C<extension>, C<registered>, C<dnd>, C<profile>, C<status>, C<duration>
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-count>
 
-Thresholds (can be: 'count').
+Threshold for extensions count.
+
+=item B<--critical-count>
+
+Threshold for extensions count.
 
 =back
 

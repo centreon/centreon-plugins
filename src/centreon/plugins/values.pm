@@ -22,7 +22,7 @@ package centreon::plugins::values;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/exprintf/;
 use centreon::plugins::constants qw(:values :unit_conversion);
 
 # Warning message with sprintf and too much arguments.
@@ -54,6 +54,7 @@ sub new {
     $self->{threshold_crit} = undef;
 
     $self->{per_second} = 0;
+    $self->{per_minute} = 0;
     $self->{manual_keys} = 0;
     $self->{last_timestamp} = undef;
 
@@ -96,14 +97,15 @@ sub calc {
 
     # manage only one value ;)
     foreach my $value (@{$self->{key_values}}) {
-        if (defined($value->{diff}) && $value->{diff} == 1)  {
-            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
-        } elsif (defined($value->{per_second}) && $value->{per_second} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
-        } elsif (defined($value->{per_minute}) && $value->{per_minute} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / ($options{delta_time} / 60);
+        my $instance_name = $self->{instance} . '_' . $value->{name};
+        if ($value->{diff}) {
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name};
+        } elsif ($value->{per_second}) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name}) / $options{delta_time};
+        } elsif ($value->{per_minute}) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name}) / ($options{delta_time} / 60);
         } else {
-            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$instance_name};
         }
     }
 
@@ -166,8 +168,7 @@ sub output {
         }
     }
 
-    my $output_template = $self->{output_template} =~ s!%\{([A-Za-z0-9_]+)\}! $self->{result_values}->{$1} // '' !ger;
-    return sprintf($output_template, $value, $unit);
+    return sprintf(exprintf($self->{output_template}, $self->{result_values}), $value, $unit);
 }
 
 sub use_instances {
@@ -194,8 +195,8 @@ sub perfdata {
         my ($label, $extra_label, $min, $max, $th_total) = ($self->{label}, '');
         my $cast_int = (defined($perf->{cast_int}) && $perf->{cast_int} == 1) ? 1 : 0;
         my $template = '%s';
-        
-        $template = $perf->{template}=~ s!%\{([A-Za-z0-9_]+)\}! $self->{result_values}->{$1} // '' !ger
+
+        $template = exprintf($perf->{template}, $self->{result_values})
             if defined $perf->{template};
 
         $label = $perf->{label} if (defined($perf->{label}));
