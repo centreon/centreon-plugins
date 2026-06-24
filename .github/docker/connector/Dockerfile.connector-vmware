@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # PACKAGE_SOURCE=mount (default, CI): extract from .deb bind-mounted via packages-centreon/
 # PACKAGE_SOURCE=repo  (prod):        download from Centreon apt repo (requires VERSION + STABILITY)
 # PACKAGE_SOURCE=local (dev):         copy from local repo source (connectors/vmware/src/)
@@ -10,22 +12,28 @@ ARG WITH_SDK=false
 #############################################
 FROM debian:13-slim AS extractor-mount
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    dpkg \
-    && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    bash -e <<'EOF'
+apt-get update
+apt-get install -y --no-install-recommends dpkg
+EOF
 
+# Extract .deb packages (mounted via --mount during build)
 RUN --mount=type=bind,source=packages-centreon,target=/packages \
-    DEBVER=$(. /etc/os-release && echo $VERSION_ID) && \
-    mkdir -p /extracted && \
-    cd /packages && \
-    for deb in centreon-plugin-Virtualization-VMWare-daemon*deb${DEBVER}*.deb; do \
-        echo "Extracting $deb..."; \
-        dpkg-deb -x "$deb" /extracted/; \
-    done && \
-    echo "=== Extracted Perl modules ===" && \
-    ls -lah /extracted/usr/share/perl5/centreon/ || true && \
-    echo "=== Extracted binaries ===" && \
-    ls -lah /extracted/usr/bin/ || true
+    bash -e <<'EOF'
+DEBVER=$(. /etc/os-release && echo $VERSION_ID)
+mkdir -p /extracted
+cd /packages
+for deb in centreon-plugin-Virtualization-VMWare-daemon*deb${DEBVER}*.deb; do
+    echo "Extracting $deb..."
+    dpkg-deb -x "$deb" /extracted/
+done
+echo "=== Extracted Perl modules ==="
+ls -lah /extracted/usr/share/perl5/centreon/ || true
+echo "=== Extracted binaries ==="
+ls -lah /extracted/usr/bin/ || true
+EOF
 
 #############################################
 # Stage 1b: Download from Centreon apt repo (PACKAGE_SOURCE=repo)
@@ -35,32 +43,33 @@ FROM debian:13-slim AS extractor-repo
 ARG VERSION
 ARG STABILITY=stable
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    dpkg \
-    gnupg \
-    wget \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    bash -e <<'EOF'
+apt-get update
+apt-get install -y --no-install-recommends dpkg gnupg wget ca-certificates
+EOF
 
-RUN set -e && \
-    CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) && \
-    DEBVER=$(. /etc/os-release && echo $VERSION_ID) && \
-    echo "deb https://packages.centreon.com/apt-plugins-${STABILITY}/ ${CODENAME} main" \
-        > /etc/apt/sources.list.d/centreon-plugins.list && \
-    wget -O- https://apt-key.centreon.com | gpg --dearmor \
-        | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1 && \
-    apt-get update && \
-    mkdir -p /extracted && \
-    apt-get install -y --no-install-recommends --download-only \
-        "centreon-plugin-virtualization-vmware-daemon" && \
-    for deb in /var/cache/apt/archives/centreon-plugin-virtualization-vmware-daemon*.deb; do \
-        echo "Extracting $deb..."; \
-        dpkg-deb -x "$deb" /extracted/; \
-    done && \
-    echo "=== Extracted Perl modules ===" && \
-    ls -lah /extracted/usr/share/perl5/centreon/ && \
-    echo "=== Extracted binaries ===" && \
-    ls -lah /extracted/usr/bin/
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    STABILITY=${STABILITY} bash -e <<'EOF'
+. /etc/os-release
+echo "deb https://packages.centreon.com/apt-plugins-${STABILITY}/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/centreon-plugins.list
+wget -O- https://apt-key.centreon.com | gpg --dearmor \
+    | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+apt-get update
+mkdir -p /extracted
+cd /tmp
+apt-get download centreon-plugin-virtualization-vmware-daemon
+for deb in centreon-plugin-virtualization-vmware-daemon*.deb; do
+    echo "Extracting $deb..."
+    dpkg-deb -x "$deb" /extracted/
+done
+echo "=== Extracted Perl modules ==="
+ls -lah /extracted/usr/share/perl5/centreon/
+echo "=== Extracted binaries ==="
+ls -lah /extracted/usr/bin/
+EOF
 
 #############################################
 # Stage 1c/d/e: Perl modules source selector
@@ -69,10 +78,10 @@ RUN set -e && \
 # local → local repo source (dev/testing)
 #############################################
 FROM scratch AS vmware-perl-mount
-COPY --from=extractor-mount /extracted/usr/share/perl5/centreon /centreon-modules/
+COPY --link --from=extractor-mount /extracted/usr/share/perl5/centreon /centreon-modules/
 
 FROM scratch AS vmware-perl-repo
-COPY --from=extractor-repo /extracted/usr/share/perl5/centreon /centreon-modules/
+COPY --link --from=extractor-repo /extracted/usr/share/perl5/centreon /centreon-modules/
 
 FROM scratch AS vmware-perl-local
 COPY connectors/vmware/src/centreon/ /centreon-modules/
@@ -85,12 +94,12 @@ FROM vmware-perl-${PACKAGE_SOURCE} AS vmware-perl-selected
 # Stage 1f/g/h: Binary source selector
 #############################################
 FROM scratch AS vmware-bin-mount
-COPY --from=extractor-mount /extracted/usr/bin/centreon_vmware.pl /centreon_vmware.pl
-COPY --from=extractor-mount /extracted/usr/bin/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
+COPY --link --from=extractor-mount /extracted/usr/bin/centreon_vmware.pl /centreon_vmware.pl
+COPY --link --from=extractor-mount /extracted/usr/bin/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
 
 FROM scratch AS vmware-bin-repo
-COPY --from=extractor-repo /extracted/usr/bin/centreon_vmware.pl /centreon_vmware.pl
-COPY --from=extractor-repo /extracted/usr/bin/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
+COPY --link --from=extractor-repo /extracted/usr/bin/centreon_vmware.pl /centreon_vmware.pl
+COPY --link --from=extractor-repo /extracted/usr/bin/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
 
 FROM scratch AS vmware-bin-local
 COPY connectors/vmware/src/centreon_vmware.pl /centreon_vmware.pl
@@ -109,34 +118,36 @@ FROM vmware-bin-${PACKAGE_SOURCE} AS vmware-bin-selected
 #############################################
 FROM debian:13-slim AS sdk-true
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    perl \
-    make \
-    patch \
-    unzip \
-    && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    bash -e <<'EOF'
+apt-get update
+apt-get install -y --no-install-recommends perl make patch unzip
+EOF
 
 COPY .github/docker/connector/VICommon.patch /tmp/VICommon.patch
 
 RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
-    set -e && \
-    cd /tmp && \
-    tar zxf /sdks/VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz && \
-    cd vmware-vsphere-cli-distrib && \
-    patch --backup lib/VMware/share/VMware/VICommon.pm /tmp/VICommon.patch && \
-    perl Makefile.PL && \
-    make pure_install && \
-    echo "=== vSphere SDK installed ===" && \
-    ls -lah /usr/local/share/perl/
+    bash -e <<'EOF'
+cd /tmp
+tar zxf /sdks/VMware-vSphere-Perl-SDK-7.0.0-17698549.x86_64.tar.gz
+cd vmware-vsphere-cli-distrib
+patch --backup lib/VMware/share/VMware/VICommon.pm /tmp/VICommon.patch
+perl Makefile.PL
+make pure_install
+echo "=== vSphere SDK installed ==="
+ls -lah /usr/local/share/perl/
+EOF
 
 RUN --mount=type=bind,source=sdks-vmware,target=/sdks \
-    set -e && \
-    cd /tmp && \
-    unzip /sdks/vsan-sdk-perl.zip && \
-    mkdir -p /usr/local/share/perl5/VMware && \
-    cp ./vsan-sdk-perl/bindings/VIM25Vsanmgmt* /usr/local/share/perl5/VMware/ && \
-    echo "=== vSAN SDK installed ===" && \
-    ls -lah /usr/local/share/perl5/VMware/
+    bash -e <<'EOF'
+cd /tmp
+unzip /sdks/vsan-sdk-perl.zip
+mkdir -p /usr/local/share/perl5/VMware
+cp ./vsan-sdk-perl/bindings/VIM25Vsanmgmt* /usr/local/share/perl5/VMware/
+echo "=== vSAN SDK installed ==="
+ls -lah /usr/local/share/perl5/VMware/
+EOF
 
 #############################################
 # Stage 2b: VMware SDK — without SDK (WITH_SDK=false, default)
@@ -151,6 +162,38 @@ RUN mkdir -p /usr/local/share/perl/5.36.0/VMware /usr/local/share/perl5/VMware
 FROM sdk-${WITH_SDK} AS sdk-installer
 
 #############################################
+# Stage 2c: arm64 Perl modules builder
+# Compiles CPAN modules unavailable as arm64 packages.
+# amd64: uses Centreon apt repo packages instead (see cpanm-deps-amd64 below).
+#############################################
+FROM debian:13-slim AS cpanm-builder
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    --mount=type=cache,target=/root/.cpanm \
+    bash -e <<'EOF'
+apt-get update
+apt-get install -y --no-install-recommends \
+    cpanminus \
+    build-essential \
+    libzmq3-dev \
+    perl
+cpanm --notest --configure-timeout 300 -L /opt/perl-modules \
+    ZMQ::LibZMQ4
+EOF
+
+# arm64: inject pre-compiled modules into runtime
+FROM scratch AS cpanm-deps-arm64
+COPY --from=cpanm-builder /opt/perl-modules/ /opt/perl-modules/
+
+# amd64: packages come from Centreon apt repo — nothing to copy from builder
+FROM scratch AS cpanm-deps-amd64
+
+ARG TARGETARCH
+# hadolint ignore=DL3006
+FROM cpanm-deps-${TARGETARCH} AS cpanm-deps-selected
+
+#############################################
 # Stage 3: Runtime - Debian 13 slim image (trixie)
 #############################################
 FROM debian:13-slim AS centreon-vmware
@@ -158,92 +201,98 @@ FROM debian:13-slim AS centreon-vmware
 ARG VERSION
 ARG STABILITY
 
+LABEL org.opencontainers.image.title="centreon-vmware" \
+      org.opencontainers.image.source="https://github.com/centreon/centreon-plugins" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.version="${VERSION}"
+
+COPY <<EOF /etc/apt/apt.conf.d/99custom
+APT::Install-Recommends "false";
+APT::Install-Suggests "false";
+EOF
+
 # Create users and groups
-RUN groupadd -g 33 www-data 2>/dev/null || true && \
-    groupadd -g 900 centreon && \
-    useradd -u 900 -g centreon -m -r -d /var/spool/centreon -s /bin/bash centreon && \
-    groupadd -g 901 centreon-engine && \
-    useradd -u 901 -g centreon-engine -m -r -d /var/lib/centreon-engine -s /bin/bash centreon-engine && \
-    groupadd -g 903 centreon-gorgone && \
-    useradd -u 903 -g centreon-gorgone -m -r -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone && \
-    usermod -aG centreon-engine centreon && \
-    usermod -aG centreon-gorgone centreon
+RUN bash -e <<'EOF'
+groupadd -g 33 www-data 2>/dev/null || true
+groupadd -g 900 centreon
+useradd -u 900 -g centreon -m -r -d /var/spool/centreon -s /bin/bash centreon
+groupadd -g 901 centreon-engine
+useradd -u 901 -g centreon-engine -m -r -d /var/lib/centreon-engine -s /bin/bash centreon-engine
+groupadd -g 903 centreon-gorgone
+useradd -u 903 -g centreon-gorgone -m -r -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone
+usermod -aG centreon-engine centreon
+usermod -aG centreon-gorgone centreon
+EOF
 
-# Add Centreon plugins-stable repository on amd64 only.
-# On arm64 the repo is skipped — amd64-only packages are handled by cpanm.
-RUN ARCH=$(dpkg --print-architecture) && \
-    if [ "$ARCH" = "amd64" ]; then \
-        apt-get update && apt-get install -y --no-install-recommends gnupg wget ca-certificates && \
-        CODENAME=$(. /etc/os-release && echo $VERSION_CODENAME) && \
-        echo "deb [arch=amd64] https://packages.centreon.com/apt-plugins-stable/ ${CODENAME} main" \
-            > /etc/apt/sources.list.d/centreon-plugins.list && \
-        wget -O- https://apt-key.centreon.com | gpg --dearmor \
-            | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1 && \
-        rm -rf /var/lib/apt/lists/*; \
-    fi
-
-# Install runtime dependencies
-# libcrypt-openssl-aes-perl, libzmq-constants-perl, libzmq-libzmq4-perl, libnet-curl-perl: amd64-only in trixie repos
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install runtime dependencies — one update, arch-conditional Centreon repo + packages
+ARG TARGETARCH
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    bash -e <<'EOF'
+ARCH=$(dpkg --print-architecture)
+apt-get update
+apt-get install -y --no-install-recommends gnupg wget ca-certificates
+. /etc/os-release
+echo "deb https://packages.centreon.com/apt-plugins-stable/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/centreon-plugins.list
+wget -O- https://apt-key.centreon.com | gpg --dearmor \
+    | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
+apt-get update
+apt-get install -y --no-install-recommends \
     perl \
     libclass-methodmaker-perl \
+    libcrypt-openssl-aes-perl \
     libcrypt-ssleay-perl \
+    libcurl4t64 \
     libio-socket-inet6-perl \
     libjson-xs-perl \
     liblwp-protocol-https-perl \
+    libnet-curl-perl \
     libsoap-lite-perl \
+    libssl3 \
     libtext-template-perl \
     libuuid-perl \
     libzmq5 \
+    libzmq-constants-perl \
     libxml-libxml-perl \
     libjson-perl \
     inotify-tools \
-    && rm -rf /var/lib/apt/lists/*
+    netcat-openbsd
+if [ "$ARCH" = "amd64" ]; then
+    apt-get install -y --no-install-recommends \
+        libzmq-libzmq4-perl
+fi
+rm -rf /tmp/* /var/tmp/* /usr/share/doc/* /usr/share/man/*
+EOF
 
-# amd64-only packages (Centreon repo): cpanm fallback for arm64
-RUN ARCH=$(dpkg --print-architecture) && \
-    if [ "$ARCH" = "amd64" ]; then \
-        apt-get update && apt-get install -y --no-install-recommends \
-            libzmq-constants-perl \
-            libcrypt-openssl-aes-perl \
-            libzmq-libzmq4-perl \
-            libnet-curl-perl && \
-        rm -rf /var/lib/apt/lists/*; \
-    else \
-        apt-get update && apt-get install -y --no-install-recommends \
-            cpanminus \
-            build-essential \
-            libzmq3-dev \
-            libcurl4-openssl-dev \
-            libssl-dev && \
-        rm -rf /var/lib/apt/lists/* && \
-        cpanm --notest --configure-timeout 300 ZMQ::Constants ZMQ::LibZMQ4 Crypt::OpenSSL::AES Net::Curl; \
-    fi
+# arm64: inject pre-compiled Perl modules from cpanm-builder (amd64: FROM scratch — no-op)
+COPY --link --from=cpanm-deps-selected / /
 
 # Create directory structure
-RUN mkdir -p \
-        /etc/centreon \
-        /tmp/centreon_vmware \
-        /etc/centreon-engine/ \
-        /usr/local/lib/centreon-vmware && \
-    chown -R centreon-gorgone:centreon /etc/centreon && \
-    chown centreon-engine:centreon-engine /etc/centreon-engine &&\
-    chmod -R 775 /etc/centreon /etc/centreon-engine && \
-    chown centreon:centreon /tmp/centreon_vmware && \
-    chmod 775 /tmp/centreon_vmware
+RUN bash -e <<'EOF'
+mkdir -p \
+    /etc/centreon \
+    /tmp/centreon_vmware \
+    /etc/centreon-engine/ \
+    /usr/local/lib/centreon-vmware
+chown -R centreon-gorgone:centreon /etc/centreon
+chown centreon-engine:centreon-engine /etc/centreon-engine
+chmod -R 775 /etc/centreon /etc/centreon-engine
+chown centreon:centreon /tmp/centreon_vmware
+chmod 775 /tmp/centreon_vmware
+EOF
 
 # Copy VMware SDK from installer stage
 # vSphere SDK: make pure_install puts modules in the versioned site path
-COPY --from=sdk-installer /usr/local/share/perl/ /usr/local/share/perl/
+COPY --link --from=sdk-installer /usr/local/share/perl/ /usr/local/share/perl/
 # vSAN SDK: copied directly to /usr/local/share/perl5/VMware/
-COPY --from=sdk-installer /usr/local/share/perl5/VMware/ /usr/local/share/perl5/VMware/
+COPY --link --from=sdk-installer /usr/local/share/perl5/VMware/ /usr/local/share/perl5/VMware/
 
 # Copy Perl modules from selector (centreon vmware modules + script modules)
-COPY --from=vmware-perl-selected /centreon-modules/ /usr/share/perl5/centreon/
+COPY --link --from=vmware-perl-selected /centreon-modules/ /usr/share/perl5/centreon/
 
 # Copy executables from selector
-COPY --from=vmware-bin-selected --chmod=755 /centreon_vmware.pl /usr/bin/centreon_vmware.pl
-COPY --from=vmware-bin-selected --chmod=755 /centreon_vmware_convert_config_file /usr/bin/centreon_vmware_convert_config_file
+COPY --link --from=vmware-bin-selected --chmod=755 /centreon_vmware.pl /usr/bin/centreon_vmware.pl
+COPY --link --from=vmware-bin-selected --chmod=755 /centreon_vmware_convert_config_file /usr/bin/centreon_vmware_convert_config_file
 
 # Copy default configuration (template with placeholder vCenter URLs)
 COPY --chown=centreon-gorgone:centreon --chmod=660 \
@@ -251,17 +300,24 @@ COPY --chown=centreon-gorgone:centreon --chmod=660 \
     /etc/centreon/centreon_vmware.json
 
 # Verify critical files exist
-RUN echo "=== Verification ===" && \
-    ls -lah /usr/bin/centreon_vmware.pl && \
-    ls -lah /usr/bin/centreon_vmware_convert_config_file && \
-    ls -lah /usr/share/perl5/centreon/ && \
-    ls -lah /usr/local/share/perl5/VMware/ && \
-    ls -lah /etc/centreon/ && \
-    echo "=== Files verified ==="
+RUN bash -e <<'EOF'
+echo "=== Verification ==="
+ls -lah /usr/bin/centreon_vmware.pl
+ls -lah /usr/bin/centreon_vmware_convert_config_file
+ls -lah /usr/share/perl5/centreon/
+ls -lah /usr/local/share/perl5/VMware/
+ls -lah /etc/centreon/
+echo "=== Files verified ==="
+EOF
 
 COPY --chmod=755 .github/docker/connector/entrypoint /usr/local/lib/centreon-vmware/
 
-ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
+ENV PERL5LIB=/opt/perl-modules/lib/perl5:/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
+
+EXPOSE 5700
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=300s --retries=3 \
+    CMD nc -z localhost 5700 || exit 1
 
 WORKDIR /etc/centreon
 
