@@ -379,9 +379,7 @@
     },
     {
       "name": "UUID",
-      "rpm": {
-        "version": "0.31"
-      }
+      "rpm": {}
     },
     {
       "name": "UUID::URandom",
