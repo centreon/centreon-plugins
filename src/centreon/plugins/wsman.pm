@@ -186,7 +186,6 @@ sub execute_winshell_commands {
         $data = new openwsman::XmlDoc::('CommandLine', $namespace)
             or $self->internal_exit(msg => 'Could not create XmlDoc');
         $data->root()->add($namespace, 'Command', $command->{value});
-
         $result = $self->{client}->invoke(
             $client_options, $uri, 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Command',
             $data
@@ -331,7 +330,15 @@ sub execute_powershell {
     # To keep compatibility we use powershell.exe by default
     my $pwsh = $options{powershell_version} >= 7 ? 'pwsh.exe' : 'powershell.exe';
 
-    $options{content} = encode_base64($options{content}, '');
+    if ($options{can_trim} && !$self->{wsman_params}->{wsman_debug}) {
+
+    }
+
+    # Trim leading whitespaces when we are not in debug and can_trim is set
+    $options{content} = encode_base64( $options{can_trim} && !$self->{wsman_params}->{wsman_debug}
+                                           ? $options{content} =~s/^\s+//gmr
+                                           : $options{content},
+                                       '' );
 
     my $chunk = 8000;
     my $base = 'C:/Windows/Temp/';
@@ -368,7 +375,6 @@ sub execute_powershell {
                          label => 'del-' . $options{label},
                          value => qq($pwsh -NoProfile -Command "Remove-Item '$ps1_filename','$b64_filename' -Force")
                      };
-
     return $self->execute_winshell_commands(
         commands => $commands,
         keep_open => 1

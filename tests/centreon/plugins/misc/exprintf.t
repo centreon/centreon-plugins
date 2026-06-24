@@ -155,6 +155,13 @@ sub test {
             default          => [ 'DEF1', 'DEF2' ],
             expected_result  => 'Undefined Perl array with default: DEF1, DEF2',
             msg              => 'Test undefined perl array with default'
+        },
+        {
+            template         => 'change_seconds usage: %{value|change_seconds}',
+            datas            => { value => 123456789 },
+            default          => undef,
+            expected_result  => 'change_seconds usage: 3y 10M 4w 19h 16m 21s',
+            msg              => 'Test change_seconds filter'
         }
     );
 
