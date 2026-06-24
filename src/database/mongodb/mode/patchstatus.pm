@@ -381,11 +381,18 @@ sub find_branch_entry {
     return undef;
 }
 
+sub nvd_url_for_cve {
+    my ($self, $id) = @_;
+    return if (!defined $id || $id !~ /^CVE-\d{4}-\d+/);
+    return 'https://nvd.nist.gov/vuln/detail/' . $id;
+}
+
 sub outstanding_cves {
     my ($self, %options) = @_;
 
     my $member_packed = $self->pack_version($options{version});
-    return { count => 0, max_severity => 'NONE' } if (!defined($member_packed));
+    return { count => 0, max_severity => 'NONE', max_rank => 0, cves => [] }
+        if (!defined($member_packed));
 
     my $entry = $options{entry};
     my $cves = defined($entry->{cves}) && ref($entry->{cves}) eq 'ARRAY' ? $entry->{cves} : [];
@@ -393,6 +400,7 @@ sub outstanding_cves {
     my $count = 0;
     my $max_rank = 0;
     my $max_name = 'NONE';
+    my @outstanding;
 
     foreach my $cve (@$cves) {
         my $fix_packed = $self->pack_version($cve->{fixed_in});
@@ -406,6 +414,13 @@ sub outstanding_cves {
             $max_rank = $rank;
             $max_name = $sev;
         }
+        push @outstanding, {
+            id           => $cve->{id},
+            severity     => $sev,
+            fixed_in     => $cve->{fixed_in},
+            advisory_url => $cve->{advisory_url},
+            nvd_url      => $self->nvd_url_for_cve($cve->{id}),
+        };
     }
 
     # Empty (or unhelpful) CVE list: fall back to the branch's
@@ -416,12 +431,30 @@ sub outstanding_cves {
         if (defined($fix_packed) && $member_packed < $fix_packed) {
             my $sev = defined($entry->{default_severity}) ? uc($entry->{default_severity}) : 'HIGH';
             my $rank = defined($SEVERITY_RANK{$sev}) ? $SEVERITY_RANK{$sev} : 3;
-            return { count => 1, max_severity => $sev, max_rank => $rank };
+            push @outstanding, {
+                id           => undef,
+                severity     => $sev,
+                fixed_in     => $entry->{fixed_version},
+                advisory_url => $entry->{source_advisory} // $DEFAULT_CATALOG->{source}->{vendor_advisory},
+                nvd_url      => undef,
+                reason       => 'below_fixed_version',
+            };
+            return {
+                count        => 1,
+                max_severity => $sev,
+                max_rank     => $rank,
+                cves         => \@outstanding,
+            };
         }
-        return { count => 0, max_severity => 'NONE', max_rank => 0 };
+        return { count => 0, max_severity => 'NONE', max_rank => 0, cves => [] };
     }
 
-    return { count => $count, max_severity => $max_name, max_rank => $max_rank };
+    return {
+        count        => $count,
+        max_severity => $max_name,
+        max_rank     => $max_rank,
+        cves         => \@outstanding,
+    };
 }
 
 sub get_member_version {
@@ -552,8 +585,26 @@ sub manage_selection {
             patched          => $patched,
             branch_known     => 'yes',
             cve_count        => $cve_info->{count},
-            cve_max_severity => $cve_info->{max_severity}
+            cve_max_severity => $cve_info->{max_severity},
+            outstanding_cves => $cve_info->{cves},
         };
+    }
+
+    foreach my $member (sort keys %{$self->{members}}) {
+        my $info = $self->{members}->{$member};
+        my $cves = $info->{outstanding_cves};
+        next if (!defined($cves) || ref($cves) ne 'ARRAY' || !@$cves);
+        foreach my $cve (@$cves) {
+            $self->{output}->output_add(
+                long_msg => 'PATCHSTATUS-CVE '
+                    . encode_json(
+                    {
+                        host => $member,
+                        %$cve,
+                    }
+                    )
+            );
+        }
     }
 }
 
