@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use base qw(centreon::plugins::templates::counter);
 sub set_counters {
     my ($self, %options) = @_;
 
-    # type => 0 : compteur global (pas d'instance multiple)
+    # type => 0: single global counter (no per-instance loop)
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 }
     ];
@@ -83,8 +83,10 @@ sub manage_selection {
     my $entities = $result->{entities} // [];
 
     my $total = scalar(@{$entities});
-    my $on    = scalar(grep { ($_->{power_state} // '') eq 'on' } @{$entities});
-    my $off   = $total - $on;
+    # Prism v2.0 returns power_state as uppercase "ON"/"OFF" — use lc() for a
+    # case-insensitive comparison so the mode works across API versions.
+    my $on  = scalar(grep { lc($_->{power_state} // '') eq 'on' } @{$entities});
+    my $off = $total - $on;
 
     $self->{global} = {
         total => $total,
