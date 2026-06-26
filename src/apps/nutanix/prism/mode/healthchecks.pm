@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,8 +25,8 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# Les health checks NCC de Nutanix ont un champ execution_results[] qui contient
-# les résultats par nœud. Le statut global se lit dans health_check_series.state :
+# Nutanix NCC health checks expose per-node results in execution_results[].
+# The overall state is read from health_check_series[].state (last entry) or state:
 #   PASS, FAIL, WARNING, INFO, ERROR, SCHEDULED, RUNNING, ABORTED
 
 my %STATE_SEVERITY = (
@@ -52,9 +52,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        # Résumé global (comptages par résultat)
+        # Global summary: check counts by result state
         { name => 'global', type => 0 },
-        # Résultat individuel par health check
+        # Individual result per health check
         {
             name             => 'checks',
             type             => 1,
@@ -137,7 +137,7 @@ sub new {
         arguments => {
             'filter-name:s'     => { name => 'filter_name' },
             'filter-category:s' => { name => 'filter_category' },
-            # N'affiche que les checks non-PASS (utile pour réduire le bruit)
+            # Only report non-PASS checks to reduce noise on large clusters
             'only-failing'      => { name => 'only_failing' },
         }
     );
@@ -158,7 +158,6 @@ sub manage_selection {
         my $name     = $check->{name}     // $check->{check_id} // 'unknown';
         my $category = $check->{category} // 'N/A';
 
-        # Filtrage
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '') {
             next if $name !~ /$self->{option_results}->{filter_name}/i;
         }
@@ -166,8 +165,7 @@ sub manage_selection {
             next if $category !~ /$self->{option_results}->{filter_category}/i;
         }
 
-        # Le statut global du check est dans health_check_series[].state
-        # ou directement dans state (selon la version de Prism)
+        # Overall state from health_check_series[].state (last entry) or state field
         my $state = 'UNKNOWN';
         if (defined($check->{health_check_series}) && ref($check->{health_check_series}) eq 'ARRAY'
                 && @{$check->{health_check_series}}) {
@@ -178,7 +176,7 @@ sub manage_selection {
 
         next if defined($self->{option_results}->{only_failing}) && $state eq 'PASS';
 
-        # Message de détail (causes + resolutions concaténés)
+        # Detail message: concatenate execution result messages when available
         my $message = $check->{message} // '';
         if (!$message && defined($check->{health_check_series}) && @{$check->{health_check_series}}) {
             my $last = $check->{health_check_series}->[-1];
@@ -187,9 +185,9 @@ sub manage_selection {
         }
         $message = 'no detail' if $message eq '';
 
-        # Comptage global (FAIL, ERROR, WARNING, PASS)
+        # Increment the matching global bucket (error stays in its own bucket,
+        # not merged into fail — otherwise healthchecks.error.count would always be 0).
         my $bucket = lc($state);
-        $bucket = 'fail' if $bucket eq 'error';   # ERROR → même bucket que FAIL pour les seuils globaux
         $self->{global}->{$bucket}++ if exists $self->{global}->{$bucket};
 
         $self->{checks}->{$name} = {
