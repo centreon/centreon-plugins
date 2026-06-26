@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,8 +26,7 @@ use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use POSIX qw(floor);
 
-# ─── Correspondance des sévérités Nutanix → niveau Centreon ──────────────────
-# L'API Prism v2.0 retourne kCritical, kWarning, kInfo
+# Nutanix Prism v2.0 API severity values and their Centreon equivalents
 my %SEVERITY_MAP = (
     kCritical => 'critical',
     kWarning  => 'warning',
@@ -60,9 +59,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        # Compteurs globaux : nombre d'alertes par sévérité
+        # Global counters: alert count per severity
         { name => 'global', type => 0 },
-        # Compteur par alerte : statut individuel (pour long output)
+        # Per-alert counters: individual status for long output
         {
             name             => 'alerts',
             type             => 1,
@@ -115,7 +114,7 @@ sub set_counters {
         {
             label  => 'alert-status',
             type   => 2,
-            # Par défaut : chaque alerte critique déclenche CRITICAL, warning → WARNING
+            # Default: each critical alert triggers CRITICAL, warning triggers WARNING
             warning_default  => '%{severity} eq "warning"',
             critical_default => '%{severity} eq "critical"',
             set    => {
@@ -148,7 +147,7 @@ sub new {
             'filter-severity:s' => { name => 'filter_severity' },
             'filter-title:s'    => { name => 'filter_title' },
             'filter-entity:s'   => { name => 'filter_entity' },
-            # Âge minimum en secondes pour ignorer les alertes trop récentes
+            # Minimum alert age in seconds; younger alerts are ignored
             'min-age:s'         => { name => 'min_age', default => 0 },
         }
     );
@@ -168,14 +167,14 @@ sub manage_selection {
     my $now = time();
 
     for my $alert (@{$entities}) {
-        # Sévérité normalisée (kCritical → critical)
+        # Normalize severity: kCritical → critical
         my $raw_sev  = $alert->{severity} // 'kInfo';
         my $severity = $SEVERITY_MAP{$raw_sev} // 'info';
 
-        # Titre : reconstruit depuis alert_title ou message
+        # Title: reconstructed from alert_title, message, or check_id
         my $title    = $alert->{alert_title}  // $alert->{message} // $alert->{check_id} // 'N/A';
 
-        # Entité affectée : context_types[i] = "vm_name" → context_values[i]
+        # Affected entity: scan context_types for a recognizable entity name key
         my $entity = 'cluster';
         my $types  = $alert->{context_types}  // [];
         my $values = $alert->{context_values} // [];
@@ -186,14 +185,13 @@ sub manage_selection {
             }
         }
 
-        # Âge en secondes (created_time_stamp_in_usecs est en microsecondes)
+        # Age in seconds (created_time_stamp_in_usecs is in microseconds)
         my $created_usec = $alert->{created_time_stamp_in_usecs} // 0;
         my $age_s        = ($created_usec > 0) ? ($now - int($created_usec / 1_000_000)) : 0;
         $age_s           = 0 if $age_s < 0;
 
         my $id = $alert->{id} // $alert->{alert_type_uuid} // "$severity-$title";
 
-        # Filtrage
         next if defined($self->{option_results}->{filter_severity})
              && $self->{option_results}->{filter_severity} ne ''
              && $severity !~ /$self->{option_results}->{filter_severity}/i;
