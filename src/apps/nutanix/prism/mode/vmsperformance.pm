@@ -27,11 +27,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    return sprintf(
-        "VM '%s' power state is '%s'",
-        $self->{result_values}->{name},
-        $self->{result_values}->{power_state}
-    );
+    return sprintf("power state is '%s'", $self->{result_values}->{power_state});
 }
 
 sub set_counters {
@@ -144,8 +140,7 @@ sub manage_selection {
         my $stats = $vm->{stats} // {};
         # CPU: hypervisor_cpu_usage_ppm in parts-per-million → divide by 10000 for %.
         my $cpu_pct = ($stats->{hypervisor_cpu_usage_ppm} // 0) / 10000;
-        # Memory: try guest_memory_usage_ppm (guest OS view) then memory_usage_ppm (hypervisor view).
-        my $mem_pct = ($stats->{guest_memory_usage_ppm} // $stats->{memory_usage_ppm} // 0) / 10000;
+        my $mem_pct = ($stats->{hypervisor_memory_usage_ppm} // 0) / 10000;
 
         # Key on UUID for uniqueness; fall back to name if uuid is absent.
         my $key = $vm->{uuid} // $name;
