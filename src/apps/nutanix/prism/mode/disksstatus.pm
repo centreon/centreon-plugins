@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,6 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# ─── output personnalisé pour le statut du disque ───────────────────────────
 sub custom_status_output {
     my ($self, %options) = @_;
     return sprintf(
@@ -52,13 +51,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{disks} = [
-        # ── Statut opérationnel ──────────────────────────────────────────────
+        # Operational status (type 2 evaluates a threshold expression against key_values)
         {
-            label           => 'status',
-            type            => 2,
-            # Un disque sain a disk_status "NORMAL" et online true
+            label            => 'status',
+            type             => 2,
             critical_default => '%{state} ne "NORMAL" or %{online} ne "true"',
-            set             => {
+            set              => {
                 key_values => [
                     { name => 'id'     },
                     { name => 'node'   },
@@ -70,7 +68,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        # ── Capacité totale (octets) ─────────────────────────────────────────
+        # Total disk capacity in bytes
         {
             label  => 'capacity',
             nlabel => 'disk.capacity.bytes',
@@ -80,16 +78,16 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas           => [
                     {
-                        template         => '%d',
-                        unit             => 'B',
-                        min              => 0,
+                        template             => '%d',
+                        unit                 => 'B',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'id',
+                        instance_use         => 'id',
                     }
                 ]
             }
         },
-        # ── Espace libre (octets) ────────────────────────────────────────────
+        # Free space in bytes
         {
             label  => 'free',
             nlabel => 'disk.free.bytes',
@@ -99,16 +97,16 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas           => [
                     {
-                        template         => '%d',
-                        unit             => 'B',
-                        min              => 0,
+                        template             => '%d',
+                        unit                 => 'B',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'id',
+                        instance_use         => 'id',
                     }
                 ]
             }
         },
-        # ── Utilisation en pourcentage ───────────────────────────────────────
+        # Usage percentage
         {
             label  => 'usage-prct',
             nlabel => 'disk.usage.percentage',
@@ -117,12 +115,12 @@ sub set_counters {
                 output_template => 'usage: %.2f%%',
                 perfdatas       => [
                     {
-                        template         => '%.2f',
-                        unit             => '%',
-                        min              => 0,
-                        max              => 100,
+                        template             => '%.2f',
+                        unit                 => '%',
+                        min                  => 0,
+                        max                  => 100,
                         label_extra_instance => 1,
-                        instance_use     => 'id',
+                        instance_use         => 'id',
                     }
                 ]
             }
@@ -142,8 +140,8 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-node:s'  => { name => 'filter_node' },
-            'filter-id:s'    => { name => 'filter_id' },
+            'filter-node:s' => { name => 'filter_node' },
+            'filter-id:s'   => { name => 'filter_id' },
         }
     );
 
@@ -158,8 +156,8 @@ sub manage_selection {
 
     $self->{disks} = {};
     for my $disk (@{$entities}) {
-        my $id   = $disk->{id}            // $disk->{disk_uuid} // 'unknown';
-        my $node = $disk->{node_name}     // $disk->{host_name} // 'N/A';
+        my $id   = $disk->{id}        // $disk->{disk_uuid} // 'unknown';
+        my $node = $disk->{node_name} // $disk->{host_name} // 'N/A';
 
         if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '') {
             next if $id !~ /$self->{option_results}->{filter_id}/;
@@ -168,23 +166,30 @@ sub manage_selection {
             next if $node !~ /$self->{option_results}->{filter_node}/;
         }
 
-        my $capacity = $disk->{disk_size}      // 0;
-        my $free     = $disk->{free_space}     // 0;
-        # free_space peut être absent selon la version ; on calcule depuis usage si dispo
-        if ($free == 0 && defined($disk->{usage_stats})) {
+        my $capacity = $disk->{disk_size} // 0;
+        my $free     = $disk->{free_space};
+
+        # Fall back to usage_stats only when free_space is absent from the API response.
+        # Do NOT trigger on free_space == 0: that is a legitimately full disk.
+        if (!defined($free) && defined($disk->{usage_stats})) {
             my $used = $disk->{usage_stats}->{'storage.usage_bytes'} // 0;
             $free = $capacity - $used;
         }
+        $free //= 0;
+
+        # Clamp free to 0 before computing percentage so pct stays in [0, 100].
+        $free = 0 if $free < 0;
         my $pct = ($capacity > 0) ? (($capacity - $free) / $capacity * 100) : 0;
 
         $self->{disks}->{$id} = {
             id             => $id,
             node           => $node,
-            serial         => $disk->{disk_hardware_config}->{serial_number} // 'N/A',
-            state          => $disk->{disk_status}    // 'UNKNOWN',
+            # Guard against absent disk_hardware_config (logical/virtual disks, older API).
+            serial         => ($disk->{disk_hardware_config} // {})->{serial_number} // 'N/A',
+            state          => $disk->{disk_status} // 'UNKNOWN',
             online         => defined($disk->{online}) ? ($disk->{online} ? 'true' : 'false') : 'true',
             capacity_bytes => $capacity,
-            free_bytes     => ($free >= 0) ? $free : 0,
+            free_bytes     => $free,
             usage_pct      => $pct,
         };
     }
