@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,19 +25,17 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use POSIX qw(floor);
 
-# ─── Regroupe les snapshots par VM et calcule l'âge du plus vieux ────────────
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        # Compteurs globaux (toutes VMs confondues)
+        # Global counters (all VMs combined)
         {
             name => 'global',
             type => 0,
             skipped_code => { -10 => 1 },
         },
-        # Compteurs par VM (une ligne de résultat par VM)
+        # Per-VM counters
         {
             name             => 'vms',
             type             => 1,
@@ -48,7 +46,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        # Nombre total de snapshots sur le cluster
+        # Total snapshot count across the cluster
         {
             label  => 'total-count',
             nlabel => 'snapshots.total.count',
@@ -63,7 +61,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{vms} = [
-        # Nombre de snapshots par VM
+        # Snapshot count per VM
         {
             label  => 'vm-count',
             nlabel => 'vm.snapshots.count',
@@ -72,29 +70,28 @@ sub set_counters {
                 output_template => 'snapshots: %d',
                 perfdatas       => [
                     {
-                        template         => '%d',
-                        min              => 0,
+                        template             => '%d',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'vm_name',
+                        instance_use         => 'vm_name',
                     }
                 ]
             }
         },
-        # Âge du snapshot le plus vieux pour cette VM (en secondes)
+        # Age of the oldest snapshot for this VM (in seconds)
         {
             label  => 'oldest-age',
             nlabel => 'vm.snapshot.oldest.age.seconds',
             set    => {
-                key_values      => [ { name => 'oldest_age_seconds' }, { name => 'vm_name' } ],
-                # output_template utilise une closure pour un affichage lisible
+                key_values            => [ { name => 'oldest_age_seconds' }, { name => 'vm_name' } ],
                 closure_custom_output => \&custom_oldest_age_output,
                 perfdatas             => [
                     {
-                        template         => '%d',
-                        unit             => 's',
-                        min              => 0,
+                        template             => '%d',
+                        unit                 => 's',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'vm_name',
+                        instance_use         => 'vm_name',
                     }
                 ]
             }
@@ -102,7 +99,7 @@ sub set_counters {
     ];
 }
 
-# Affiche l'âge en jours/heures plutôt qu'en secondes brutes
+# Display age in human-readable days/hours/minutes instead of raw seconds
 sub custom_oldest_age_output {
     my ($self, %options) = @_;
     my $age_s = $self->{result_values}->{oldest_age_seconds};
@@ -133,10 +130,9 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-vm-name:s'       => { name => 'filter_vm_name' },
-            # Seuil d'âge max en heures (pratique pour les alertes métier)
-            'warning-oldest-age:s'   => { name => 'warning_oldest_age' },
-            'critical-oldest-age:s'  => { name => 'critical_oldest_age' },
+            'filter-vm-name:s' => { name => 'filter_vm_name' },
+            # Note: --warning-oldest-age and --critical-oldest-age are auto-generated
+            # by the counter framework from label => 'oldest-age'. Do not declare them here.
         }
     );
 
@@ -146,11 +142,10 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Récupère tous les snapshots d'un coup
     my $result   = $options{custom}->get_snapshots();
     my $entities = $result->{entities} // [];
 
-    # On regroupe par VM
+    # Group snapshots by VM name
     my %by_vm;
     for my $snap (@{$entities}) {
         my $vm_name = $snap->{vm_name} // $snap->{vm_uuid} // 'unknown';
@@ -170,13 +165,13 @@ sub manage_selection {
         my $count  = scalar(@snaps);
         $total    += $count;
 
-        # Cherche le snapshot le plus vieux.
-        # created_time est en microsecondes depuis l'epoch.
+        # Find the oldest snapshot.
+        # created_time_in_usecs is microseconds since epoch (Prism v2.0 field name).
         my $oldest_epoch = undef;
         for my $snap (@snaps) {
-            my $ts = $snap->{created_time};   # µs
+            my $ts = $snap->{created_time_in_usecs};
             next unless defined($ts) && $ts > 0;
-            $ts = int($ts / 1000000);         # → secondes
+            $ts = int($ts / 1_000_000);  # microseconds → seconds
             $oldest_epoch = $ts if !defined($oldest_epoch) || $ts < $oldest_epoch;
         }
 
