@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,6 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# ─── Output du statut NIC ────────────────────────────────────────────────────
 sub custom_nic_status_output {
     my ($self, %options) = @_;
     return sprintf(
@@ -52,13 +51,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{nics} = [
-        # ── Statut de connexion du NIC ───────────────────────────────────────
+        # NIC connection status
         {
-            label            => 'status',
-            type             => 2,
-            # Un NIC non connecté est en warning par défaut
-            warning_default  => '%{connected} ne "connected"',
-            set              => {
+            label           => 'status',
+            type            => 2,
+            warning_default => '%{connected} ne "connected"',
+            set             => {
                 key_values => [
                     { name => 'vm_name'   },
                     { name => 'nic_id'    },
@@ -70,40 +68,40 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        # ── Trafic entrant (octets/s) — disponible via stats de la VM ────────
+        # Inbound traffic (B/s) from VM-level stats
         {
             label  => 'traffic-in',
             nlabel => 'vm.nic.traffic.in.bytespersecond',
             set    => {
-                key_values      => [ { name => 'rx_bytes_rate' }, { name => 'nic_id' }, { name => 'vm_name' } ],
-                output_template => 'traffic in: %s/s',
+                key_values          => [ { name => 'rx_bytes_rate' }, { name => 'nic_id' }, { name => 'vm_name' } ],
+                output_template     => 'traffic in: %s/s',
                 output_change_bytes => 1,
                 perfdatas           => [
                     {
-                        template         => '%.2f',
-                        unit             => 'B/s',
-                        min              => 0,
+                        template             => '%.2f',
+                        unit                 => 'B/s',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'nic_id',
+                        instance_use         => 'nic_id',
                     }
                 ]
             }
         },
-        # ── Trafic sortant (octets/s) ────────────────────────────────────────
+        # Outbound traffic (B/s)
         {
             label  => 'traffic-out',
             nlabel => 'vm.nic.traffic.out.bytespersecond',
             set    => {
-                key_values      => [ { name => 'tx_bytes_rate' }, { name => 'nic_id' }, { name => 'vm_name' } ],
-                output_template => 'traffic out: %s/s',
+                key_values          => [ { name => 'tx_bytes_rate' }, { name => 'nic_id' }, { name => 'vm_name' } ],
+                output_template     => 'traffic out: %s/s',
                 output_change_bytes => 1,
                 perfdatas           => [
                     {
-                        template         => '%.2f',
-                        unit             => 'B/s',
-                        min              => 0,
+                        template             => '%.2f',
+                        unit                 => 'B/s',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'nic_id',
+                        instance_use         => 'nic_id',
                     }
                 ]
             }
@@ -135,9 +133,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # On itère sur toutes les VMs pour récupérer leurs NICs.
-    # L'API v2.0 expose les NICs dans la réponse de la liste des VMs
-    # via le champ vm_nics[] — pas besoin d'un appel par VM.
+    # NIC data is embedded in the VM list response under vm_nics[] — no per-VM call needed.
     my $vms_result = $options{custom}->get_vms();
     my $vms        = $vms_result->{entities} // [];
 
@@ -145,48 +141,47 @@ sub manage_selection {
 
     for my $vm (@{$vms}) {
         my $vm_name = $vm->{name} // $vm->{uuid} // 'unknown';
-        my $vm_uuid = $vm->{uuid} // '';
 
         if (defined($self->{option_results}->{filter_vm_name}) && $self->{option_results}->{filter_vm_name} ne '') {
             next if $vm_name !~ /$self->{option_results}->{filter_vm_name}/;
         }
 
-        my $nics = $vm->{vm_nics} // [];
-        my $stats = $vm->{stats} // {};
+        my $nics  = $vm->{vm_nics} // [];
+        my $stats = $vm->{stats}   // {};
 
-        # Les stats réseau sont agrégées au niveau VM dans v2.0.
-        # network_received_bytes et network_transmitted_bytes sont en octets cumulés ;
-        # Centreon n'a pas d'état persistant ici, on utilise les valeurs "rate" si dispo.
-        # Si absent, on met 0 (non disponible).
-        my $rx_rate = $stats->{'nic.received_bytes_rate'}      // 0;
-        my $tx_rate = $stats->{'nic.transmitted_bytes_rate'}   // 0;
+        # In API v2.0, network traffic stats are VM-level aggregates, not per-NIC.
+        # Attribute the rate to the first physical NIC (index 0); others get 0.
+        my $rx_rate = $stats->{'nic.received_bytes_rate'}    // 0;
+        my $tx_rate = $stats->{'nic.transmitted_bytes_rate'} // 0;
 
         my $nic_index = 0;
         for my $nic (@{$nics}) {
-            my $mac     = $nic->{mac_address}   // 'unknown';
-            my $network = $nic->{network_name}  // $nic->{vlan_id} // 'N/A';
-            my $nic_id  = $vm_name . '_nic' . $nic_index;
+            my $mac     = $nic->{mac_address}  // 'unknown';
+            my $network = $nic->{network_name} // $nic->{vlan_id} // 'N/A';
 
+            # Filters: skipped NICs still advance nic_index to preserve physical position.
             if (defined($self->{option_results}->{filter_mac}) && $self->{option_results}->{filter_mac} ne '') {
-                $nic_index++;
-                next if $mac !~ /$self->{option_results}->{filter_mac}/i;
+                if ($mac !~ /$self->{option_results}->{filter_mac}/i) {
+                    $nic_index++;
+                    next;
+                }
             }
             if (defined($self->{option_results}->{filter_network}) && $self->{option_results}->{filter_network} ne '') {
-                $nic_index++;
-                next if $network !~ /$self->{option_results}->{filter_network}/;
+                if ($network !~ /$self->{option_results}->{filter_network}/) {
+                    $nic_index++;
+                    next;
+                }
             }
 
-            # is_connected est un booléen dans l'API Nutanix v2.0
+            my $nic_id    = $vm_name . '_nic' . $nic_index;
             my $connected = (defined($nic->{is_connected}) && $nic->{is_connected}) ? 'connected' : 'disconnected';
 
             $self->{nics}->{$nic_id} = {
-                vm_name      => $vm_name,
-                nic_id       => $nic_id,
-                mac          => $mac,
-                network      => $network,
-                connected    => $connected,
-                # Les rates réseau ne sont pas par NIC dans v2.0 — on les attribue
-                # au premier NIC de la VM (index 0). Les autres NIC ont 0.
+                vm_name       => $vm_name,
+                nic_id        => $nic_id,
+                mac           => $mac,
+                network       => $network,
+                connected     => $connected,
                 rx_bytes_rate => ($nic_index == 0) ? $rx_rate : 0,
                 tx_bytes_rate => ($nic_index == 0) ? $tx_rate : 0,
             };
