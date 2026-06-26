@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -48,18 +48,21 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{hosts} = [
-        # Statut de l'hôte
+        # Host operational state
         {
             label           => 'status',
             type            => 2,
             warning_default => '%{state} ne "NORMAL"',
             set             => {
-                key_values                     => [ { name => 'name' }, { name => 'state' } ],
+                key_values => [
+                    { name => 'name'  },
+                    { name => 'state' },
+                ],
                 closure_custom_output          => $self->can('custom_status_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        # Utilisation CPU en pourcentage
+        # CPU usage percentage (stats field is in parts-per-million; divide by 10000)
         {
             label  => 'cpu-usage',
             nlabel => 'host.cpu.usage.percentage',
@@ -68,17 +71,17 @@ sub set_counters {
                 output_template => 'CPU usage: %.2f%%',
                 perfdatas       => [
                     {
-                        template         => '%.2f',
-                        unit             => '%',
-                        min              => 0,
-                        max              => 100,
+                        template             => '%.2f',
+                        unit                 => '%',
+                        min                  => 0,
+                        max                  => 100,
                         label_extra_instance => 1,
-                        instance_use     => 'name',
+                        instance_use         => 'name',
                     }
                 ]
             }
         },
-        # Utilisation RAM en pourcentage
+        # Memory usage percentage
         {
             label  => 'memory-usage',
             nlabel => 'host.memory.usage.percentage',
@@ -87,17 +90,17 @@ sub set_counters {
                 output_template => 'memory usage: %.2f%%',
                 perfdatas       => [
                     {
-                        template         => '%.2f',
-                        unit             => '%',
-                        min              => 0,
-                        max              => 100,
+                        template             => '%.2f',
+                        unit                 => '%',
+                        min                  => 0,
+                        max                  => 100,
                         label_extra_instance => 1,
-                        instance_use     => 'name',
+                        instance_use         => 'name',
                     }
                 ]
             }
         },
-        # Nombre de VMs sur cet hôte
+        # Number of VMs running on this host
         {
             label  => 'vms-count',
             nlabel => 'host.vms.count',
@@ -106,10 +109,10 @@ sub set_counters {
                 output_template => 'VMs: %d',
                 perfdatas       => [
                     {
-                        template         => '%d',
-                        min              => 0,
+                        template             => '%d',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'name',
+                        instance_use         => 'name',
                     }
                 ]
             }
@@ -139,7 +142,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_hosts();
+    my $result   = $options{custom}->get_hosts();
     my $entities = $result->{entities} // [];
 
     $self->{hosts} = {};
@@ -150,19 +153,25 @@ sub manage_selection {
             next if $name !~ /$self->{option_results}->{filter_name}/;
         }
 
-        # L'API v2.0 retourne des stats dans host->{stats}
-        # cpu_usage_ppm = parties par million (diviser par 10000 pour avoir %)
-        my $stats        = $host->{stats} // {};
-        my $cpu_ppm      = $stats->{hypervisor_cpu_usage_ppm} // 0;
-        my $cpu_pct      = $cpu_ppm / 10000;
+        my $stats   = $host->{stats} // {};
+        # PPM (parts per million): divide by 10000 to get a percentage.
+        my $cpu_pct = ($stats->{hypervisor_cpu_usage_ppm} // 0) / 10000;
+        my $mem_pct = ($stats->{hypervisor_memory_usage_ppm} // 0) / 10000;
 
-        # memory_usage_ppm également en ppm
-        my $mem_ppm      = $stats->{hypervisor_memory_usage_ppm} // 0;
-        my $mem_pct      = $mem_ppm / 10000;
+        # Derive host state from both the maintenance flag and the hypervisor state
+        # so that crashed or degraded hosts are not silently reported as NORMAL.
+        my $state;
+        if ($host->{host_in_maintenance_mode}) {
+            $state = 'MAINTENANCE';
+        } elsif (defined($host->{hypervisor_state}) && $host->{hypervisor_state} ne 'NORMAL') {
+            $state = $host->{hypervisor_state};
+        } else {
+            $state = 'NORMAL';
+        }
 
         $self->{hosts}->{$name} = {
             name             => $name,
-            state            => $host->{host_in_maintenance_mode} ? 'MAINTENANCE' : 'NORMAL',
+            state            => $state,
             cpu_usage_pct    => $cpu_pct,
             memory_usage_pct => $mem_pct,
             num_vms          => $host->{num_vms} // 0,
