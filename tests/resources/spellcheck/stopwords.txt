@@ -66,6 +66,7 @@ cpu-utilization
 cpu-utilization-1m
 cpu-utilization-5m
 cpu-utilization-5s
+crc
 CX
 CXF
 Cyberoam
@@ -316,6 +317,7 @@ rssi
 RTT
 Rubrik
 µs
+rx
 Sansymphony
 SAS
 scenarii
@@ -337,10 +339,12 @@ space-usage-prct
 Splunk
 --sql-errors-exit
 SRX
+snr
 SSDCapacity
 SSG
 SSH
 Stackdriver
+ssid
 standAlone
 statefile
 --statefile-concat-cwd
@@ -369,7 +373,6 @@ total-oper-up
 tower-cli
 TrendMicro
 tsdb-version
-TWAMP
 UCD
 UDP
 unicast
@@ -425,6 +428,7 @@ Westermo
 WildFire
 WLAN
 WLC
+wifi
 WSMAN
 XPath
 ZDX
