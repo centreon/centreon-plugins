@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,8 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
 
-# Ce mode agrège la capacité CPU, RAM et stockage à l'échelle du cluster
-# en consolidant les données des hôtes et des storage pools.
+# Aggregates cluster-wide CPU, RAM, and storage capacity
+# by consolidating data from all hosts and storage pools.
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -36,7 +36,7 @@ sub set_counters {
         { name => 'storage', type => 0, message_separator => ' - ' },
     ];
 
-    # ── CPU (vCPU alloués vs capacité physique) ───────────────────────────────
+    # CPU (allocated vCPUs vs physical core capacity)
     $self->{maps_counters}->{cpu} = [
         {
             label  => 'cpu-capacity',
@@ -69,7 +69,7 @@ sub set_counters {
         },
     ];
 
-    # ── Mémoire (octets) ──────────────────────────────────────────────────────
+    # Memory (bytes)
     $self->{maps_counters}->{memory} = [
         {
             label  => 'memory-capacity',
@@ -104,7 +104,7 @@ sub set_counters {
         },
     ];
 
-    # ── Stockage (octets) ─────────────────────────────────────────────────────
+    # Storage (bytes)
     $self->{maps_counters}->{storage} = [
         {
             label  => 'storage-capacity',
@@ -160,7 +160,7 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # ── Données CPU et RAM : agrégation depuis les hôtes ─────────────────────
+    # Aggregate CPU and RAM data from all hosts
     my $hosts_result = $options{custom}->get_hosts();
     my $hosts        = $hosts_result->{entities} // [];
 
@@ -169,20 +169,17 @@ sub manage_selection {
     my $host_count = scalar(@{$hosts});
 
     for my $host (@{$hosts}) {
-        # num_cpu_cores = cœurs physiques par hôte
-        $total_cores     += $host->{num_cpu_cores}    // 0;
-        # num_vms est un proxy de l'allocation vCPU (on utilisera num_cpu_threads si dispo)
-        $allocated_vcpus += $host->{num_cpu_threads}  // 0;
-
-        # Mémoire : memory_capacity_in_bytes
+        $total_cores     += $host->{num_cpu_cores}           // 0;
+        # num_cpu_threads is the best available proxy for allocated vCPU count in v2.0
+        $allocated_vcpus += $host->{num_cpu_threads}          // 0;
         $mem_total       += $host->{memory_capacity_in_bytes} // 0;
 
-        # CPU usage en PPM → %
-        my $stats = $host->{stats} // {};
-        my $cpu_ppm = $stats->{hypervisor_cpu_usage_ppm} // 0;
+        my $stats   = $host->{stats} // {};
+        # CPU: PPM (parts per million) → percentage
+        my $cpu_ppm = $stats->{hypervisor_cpu_usage_ppm}    // 0;
         $cpu_usage_sum += $cpu_ppm / 10000;
 
-        # RAM used : memory_size_bytes (capacité) - memory_usage_ppm
+        # Memory used = capacity × (usage_ppm / 1_000_000)
         my $mem_ppm = $stats->{hypervisor_memory_usage_ppm} // 0;
         $mem_used_sum += ($host->{memory_capacity_in_bytes} // 0) * ($mem_ppm / 1_000_000);
     }
@@ -201,7 +198,7 @@ sub manage_selection {
         memory_usage_pct   => $mem_usage_pct,
     };
 
-    # ── Données stockage : agrégation depuis les storage pools ───────────────
+    # Aggregate storage data from all storage pools
     my $pools_result    = $options{custom}->get_storage_pools();
     my $pools           = $pools_result->{entities} // [];
 
