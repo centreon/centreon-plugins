@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -64,7 +64,7 @@ sub run {
     $self->{output}->exit();
 }
 
-# Appelé par le framework Centreon pour la découverte automatique
+# Called by the Centreon framework for automatic service discovery
 sub disco_format {
     my ($self, %options) = @_;
     $self->{output}->add_disco_format(elements => ['name', 'uuid', 'ip', 'model', 'num_vms']);
