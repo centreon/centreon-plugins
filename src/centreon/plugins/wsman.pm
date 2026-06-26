@@ -25,6 +25,8 @@ use warnings;
 use openwsman;
 use MIME::Base64;
 
+use constant WS_LASTERR_LOGIN_DENIED => 26;
+
 my %auth_method_map = (
     noauth       => $openwsman::NO_AUTH_STR,
     basic        => $openwsman::BASIC_AUTH_STR,
@@ -61,17 +63,18 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'hostname|host:s'        => { name => 'host' },
-        'wsman-port:s'           => { name => 'wsman_port', default => 5985 },
+        'wsman-port:s'           => { name => 'wsman_port', default => 5985, type => 'port', not_empty => 1 },
         'wsman-path:s'           => { name => 'wsman_path', default => '/wsman' },
-        'wsman-scheme:s'         => { name => 'wsman_scheme', default => 'http' },
-        'wsman-username:s'       => { name => 'wsman_username' },
-        'wsman-password:s'       => { name => 'wsman_password' },
-        'wsman-timeout:s'        => { name => 'wsman_timeout', default => 30 },
+        'wsman-scheme:s'         => { name => 'wsman_scheme', default => 'http', type => 'protocol_http', not_empty => 1 },
+        'wsman-username:s'       => { name => 'wsman_username', default => '' },
+        'wsman-password:s'       => { name => 'wsman_password', default => '' },
+        'wsman-timeout:s'        => { name => 'wsman_timeout', default => 30, type => 'numeric', not_empty => 1 },
         'wsman-proxy-url:s'      => { name => 'wsman_proxy_url' },
         'wsman-proxy-username:s' => { name => 'wsman_proxy_username' },
         'wsman-proxy-password:s' => { name => 'wsman_proxy_password' },
         'wsman-debug:s'          => { name => 'wsman_debug' },
-        'wsman-auth-method:s'    => { name => 'wsman_auth_method', default => 'basic' },
+        'wsman-auth-method:s'    => { name => 'wsman_auth_method', default => 'basic', not_empty => 1,
+                                      is_in => [ 'noauth', 'basic', 'digest', 'pass', 'ntlm', 'gssnegotiate' ] },
         'wsman-errors-exit:s'    => { name => 'wsman_errors_exit', default => 'unknown' }
     });
     $options{options}->add_help(package => __PACKAGE__, sections => 'WSMAN OPTIONS');
@@ -186,7 +189,6 @@ sub execute_winshell_commands {
         $data = new openwsman::XmlDoc::('CommandLine', $namespace)
             or $self->internal_exit(msg => 'Could not create XmlDoc');
         $data->root()->add($namespace, 'Command', $command->{value});
-
         $result = $self->{client}->invoke(
             $client_options, $uri, 'http://schemas.microsoft.com/wbem/wsman/1/windows/shell/Command',
             $data
@@ -331,7 +333,15 @@ sub execute_powershell {
     # To keep compatibility we use powershell.exe by default
     my $pwsh = $options{powershell_version} >= 7 ? 'pwsh.exe' : 'powershell.exe';
 
-    $options{content} = encode_base64($options{content}, '');
+    if ($options{can_trim} && !$self->{wsman_params}->{wsman_debug}) {
+
+    }
+
+    # Trim leading whitespaces when we are not in debug and can_trim is set
+    $options{content} = encode_base64( $options{can_trim} && !$self->{wsman_params}->{wsman_debug}
+                                           ? $options{content} =~s/^\s+//gmr
+                                           : $options{content},
+                                       '' );
 
     my $chunk = 8000;
     my $base = 'C:/Windows/Temp/';
@@ -368,7 +378,6 @@ sub execute_powershell {
                          label => 'del-' . $options{label},
                          value => qq($pwsh -NoProfile -Command "Remove-Item '$ps1_filename','$b64_filename' -Force")
                      };
-
     return $self->execute_winshell_commands(
         commands => $commands,
         keep_open => 1
@@ -472,22 +481,10 @@ sub check_options {
     }
     $self->{wsman_params}->{host} = $options{option_results}->{host};
 
-    if (!defined($options{option_results}->{wsman_scheme}) || $options{option_results}->{wsman_scheme} !~ /^(http|https)$/) {
-        $self->{output}->add_option_msg(short_msg => "Wrong scheme parameter. Must be 'http' or 'https'.");
-        $self->{output}->option_exit();
-    }
     $self->{wsman_params}->{wsman_scheme} = $options{option_results}->{wsman_scheme};
-    
-    if (!defined($options{option_results}->{wsman_auth_method}) || !defined($auth_method_map{$options{option_results}->{wsman_auth_method}})) {
-        $self->{output}->add_option_msg(short_msg => "Wrong wsman auth method parameter. Must be 'basic', 'noauth', 'digest', 'pass', 'ntlm' or 'gssnegotiate'.");
-        $self->{output}->option_exit();
-    }
+
     $self->{wsman_params}->{wsman_auth_method} = $options{option_results}->{wsman_auth_method};
 
-    if (!defined($options{option_results}->{wsman_port}) || $options{option_results}->{wsman_port} !~ /^([0-9]+)$/) {
-        $self->{output}->add_option_msg(short_msg => "Wrong wsman port parameter. Must be an integer.");
-        $self->{output}->option_exit();
-    }
     $self->{wsman_params}->{wsman_port} = $options{option_results}->{wsman_port};    
     
     $self->{wsman_params}->{wsman_path} = $options{option_results}->{wsman_path};
@@ -503,17 +500,35 @@ sub check_options {
 sub handle_dialog_fault {
     my ($self, %options) = @_;
     my $result = $options{result};
-    my $msg = $options{msg};
+    my $prefix = $options{msg} // 'Error: ';
 
     unless($result && $result->is_fault eq 0) {
-        my $fault_string = $self->{client}->fault_string();
-        my $msg = 'Could not enumerate instances: ' . ((defined($fault_string)) ? $fault_string : 'use debug option to have details');
+        my $error_msg;
+        if ($self->{wsman_params}->{wsman_auth_method} eq 'gssnegotiate' && $self->{client}->last_error() == WS_LASTERR_LOGIN_DENIED) {
+            $error_msg = qq~Failed to authenticate using 'gssnegotiate'.
+Please verify that:
+- a valid Kerberos ticket is available on the machine running the plugin (check with the 'klist' command),
+- the target host name is correct,
+- the Kerberos configuration is valid.
+Use the debug option for more details.
+~;
+        } else {
+            my $fault_string = $self->{client}->fault_string();
+            $error_msg = $prefix . ((defined($fault_string)) ? $fault_string : 'use the debug option for more details');
+            # Try to display XML fault response in debug mode
+            if (defined($result) && defined($self->{wsman_params}->{wsman_debug})) {
+                my $fault_detail = eval { $result->root()->string() };
+                if (defined($fault_detail) && $fault_detail ne '') {
+                    $error_msg .= "\nFault details:\n" . $fault_detail;
+                }
+            }
+        }
+
         if ($options{dont_quit} == 1) {
-            $self->set_error(error_status => -1, error_msg => $msg);
+            $self->set_error(error_status => -1, error_msg => $error_msg);
             return 1;
         }
-        $self->{output}->add_option_msg(short_msg => $msg);
-        $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit});
+        $self->{output}->option_exit(exit_litteral => $self->{wsman_errors_exit}, short_msg => $error_msg);
     }
 
     return 0;

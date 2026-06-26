@@ -24,10 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::common::powershell::veeam::functions qw/veeam_to_psexec/;
+use centreon::common::powershell::veeam::functions qw/veeam_to_psexec veeam_error_message/;
 use centreon::common::powershell::veeam::repositories;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use apps::backup::veeam::local::mode::resources::types qw($repository_type $repository_status);
+use centreon::plugins::constants qw/:counters :values/;
 use JSON::XS;
 
 sub custom_status_output {
@@ -77,11 +78,11 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'repositories', type => 3, cb_prefix_output => 'prefix_repository_output', cb_long_output => 'repository_long_output',
+        { name => 'repositories', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_repository_output', cb_long_output => 'repository_long_output',
           indent_long_output => '    ', message_multiple => 'All repositories are ok',
             group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'space', type => 0, skipped_code => { -10 => 1 } }
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'space', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -89,7 +90,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => 'not %{status} =~ /ordinal|maintenance/i',
             set => {
                 key_values => [
@@ -191,7 +192,8 @@ sub manage_selection {
         options => $self->{option_results},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+        command_options => $self->{option_results}->{command_options},
+        error_message => veeam_error_message($self->{option_results}->{veeam_version})
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(

@@ -1,0 +1,58 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "processes",
+        "oid": "1.3.6.1.2.1.25.4.2.1",
+        "query": "Walk",
+        "labels": {
+          ".2": "name",
+          ".4": "path",
+          ".5": "args",
+          ".7": "status"
+        }
+      },
+      {
+        "name": "processMem",
+        "oid": "1.3.6.1.2.1.25.5.1.1.2",
+        "query": "Walk"
+      },
+      {
+        "name": "processCPU",
+        "oid": "1.3.6.1.2.1.25.5.1.1.1",
+        "query": "Walk"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "prefix": "{processes.name}",
+        "name": "process.memory.bytes",
+        "value": "{processMem} * 1024",
+        "uom": "B",
+        "min": 0,
+        "threshold-suffix": "process-memory"
+      },
+      {
+        "prefix": "{processes.name}",
+        "name": "process.cpu.percent",
+        "value": "{processCPU}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "process-cpu"
+      }
+    ]
+  },
+  "output": {
+    "ok": "All processes are OK",
+    "detail_ok": false,
+    "warning": "Process WARNING: ",
+    "detail_warning": true,
+    "critical": "Process CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
+  }
+}

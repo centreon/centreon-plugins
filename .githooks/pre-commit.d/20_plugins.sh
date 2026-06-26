@@ -60,8 +60,7 @@ function check_md5() {
 
 jq=$(type -p jq) || fatal "Could not locate jq command"
 # Determining the robotidy command
-robocop_path=$(type -p robocop) || fatal "Could not locate robocop. Cannot check robot lint"
-robocop_exe="${robocop_path##*/}"
+robocop_path=$(type -p robocop)
 
 # Get list of committed files
 mapfile -t committed_files < <(git diff --cached --name-only --diff-filter=ACMR)
@@ -102,6 +101,9 @@ for file in "${committed_files[@]}"; do
             ;;
         robot)
             info "--> Checking robot format"
+            if [[ -z "$robocop_path" ]] ; then
+                fatal "Could not locate robocop. Cannot check robot lint"
+            fi
             check_tabs_crlf "$file"
             cp "$file" "$tmpfile" && $robocop_path format "$tmpfile" >/dev/null 2>&1
             diff -q "$file" "$tmpfile" >/dev/null 2>&1

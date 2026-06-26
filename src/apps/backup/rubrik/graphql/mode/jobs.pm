@@ -107,50 +107,19 @@ sub custom_duration_threshold {
     );
 }
 
-sub job_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking job '%s' (%s) [type: %s] [object type: %s] [location: %s] [cluster name: %s]",
-        $options{instance_value}->{name},
-        $options{instance_value}->{fid},
-        $options{instance_value}->{jobType},
-        $options{instance_value}->{objectType},
-        $options{instance_value}->{location},
-        $options{instance_value}->{clusterName}
-    );
-}
-
-sub prefix_job_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "job '%s' [type: %s] ",
-        $options{instance_value}->{name},
-        $options{instance_value}->{jobType}
-    );
-}
-
-sub prefix_execution_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "last execution started: %s ",
-        $options{instance_value}->{started}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of jobs ' },
         {
-            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_job_output', cb_long_output => 'job_long_output', indent_long_output => '    ', message_multiple => 'All jobs are ok',
+            name => 'jobs', type => COUNTER_TYPE_MULTIPLE, prefix_output => "job '%{name}' [type: %{jobType}] ",
+            long_output => "checking job '%{name}' (%{fid}) [type: %{jobType}] [object type: %{objectType}] [location: %{location}] [cluster name: %{clusterName}]",
+            indent_long_output => '    ', message_multiple => 'All jobs are ok',
             group => [
                 { name => 'failed', type => COUNTER_MULTIPLE_INSTANCE },
                 { name => 'timers', type => COUNTER_MULTIPLE_INSTANCE },
-                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_execution_output', message_multiple => 'executions are ok', display_long => 1 },
+                { name => 'executions', type => COUNTER_MULTIPLE_SUBINSTANCE, prefix_output => 'last execution started: %{started} ', message_multiple => 'All executions are ok', display_long => 1 },
             ]
         }
     ];

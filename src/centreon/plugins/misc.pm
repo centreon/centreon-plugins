@@ -102,7 +102,7 @@ sub windows_execute {
                        { stdin => 'NUL',
                          stdout => \*TO_PARENT,
                          stderr => $stderr }))) {
-        $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
+        $options{output}->add_option_msg(short_msg => $options{error_message} // "Internal error: execution issue: $^E");
         $options{output}->option_exit();
     }
     close TO_PARENT;
@@ -271,7 +271,7 @@ sub unix_execute {
 
     if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->add_option_msg(short_msg => $options{error_message} // "Command error: $stdout");
         $options{output}->option_exit();
     }
 
@@ -1153,8 +1153,9 @@ sub disco_escape($;$) {
 }
 
 # exprintf replaces placeholders in a string with values from a hash.
-# Placeholders can optionally use the 'storage' or 'network' filter to
-# convert and format values before display.
+# Placeholders can optionally use the 'storage', 'network' or 'change_seconds' filter to
+# convert and format values before display. Filter can also be a sprintf
+# format string when it begin withs '%'.
 # See tests/centreon/plugins/misc/exprintf.t for usage examples
 sub exprintf($$;$) {
     my ($template, $datas, $default) = @_;
@@ -1163,15 +1164,21 @@ sub exprintf($$;$) {
 
     $default = '' unless defined $default;
 
-    return $template =~ s{%\{(\w+)(?:\|(\w+))?\}}{  my $value = $datas->{$1} // $default;
+    return $template =~ s{%\{(\w+)(?:\|(%?[\w\.]+))?\}}{  my $value = $datas->{$1} // $default;
                                                     if ($2) {
                                                         if ($2 eq 'network') {
                                                             $value = join '', format_bytes(value => $value, network => 1);
                                                         } elsif ($2 eq 'storage') {
                                                             $value = join '', format_bytes(value => $value);
+                                                        } elsif ($2 eq 'change_seconds') {
+                                                            $value = change_seconds(value => $value);
+                                                        } elsif (substr($2, 0, 1) eq '%') {
+                                                            $value = sprintf($2, $value);
                                                         }
                                                     }
-                                                    $value
+                                                    ref $value ne 'ARRAY'
+                                                        ? $value
+                                                        : join ', ', @{$value}
                                                  }ger;
 }
 
@@ -1932,7 +1939,7 @@ Replace placeholders in a template string with values from a hash.
 
 =item * C<$default> - Optional default value to use when a key is not found (default: empty string)
 
-Supported filters: C<storage> (binary units 1024), C<network> (decimal units 1000).
+Supported filters: C<storage> (base 1024 units), C<network> (base 1000 units), C<change_seconds> or a sprintf format starting with C<%>.
 
 =back
 
@@ -1991,9 +1998,9 @@ Format a value into human readable units.
 
 =item * C<value> - Value in bytes to format
 
-=item * C<network> - Use network units (Kb, Mb, Gb) if true, storage units (KB, MB, GB) if false. Optional (default: storage).
+=item * C<network> - Use network units (C<Kb>, C<Mb>, C<Gb>) if true, storage units (C<KB>, C<MB>, C<GB>) if false. Optional (default: storage).
 
-Returns a list of (formatted_value, unit) where unit is Kb/Mb/Gb/Tb (network) or KB/MB/GB/TB (storage).
+Returns a list of (formatted_value, unit) where unit is C<Kb/Mb/Gb/Tb> (network) or C<KB/MB/GB/TB> (storage).
 
 =back
 

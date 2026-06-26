@@ -2,9 +2,9 @@
   "collect": {
     "snmp": [
       {
-	"name": "cpu",
+        "name": "cpu",
         "oid": "1.3.6.1.2.1.25.3.3.1.2",
-	"query": "Walk"
+        "query": "Walk"
       }
     ]
   },
@@ -13,21 +13,31 @@
       {
         "name": "core.cpu.usage.percent",
         "value": "{cpu}",
-	"uom": "%",
-	"min": 0,
-	"max": 100,
-	"threshold-suffix": "cpu"
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "cpu"
       }
     ],
     "aggregations": [
       {
         "name": "avg.cpu.usage.percent",
-	"value": "Average({cpu})",
-	"uom": "%",
-	"min": 0,
-	"max": 100,
-	"threshold-suffix": "avg"
+        "value": "Average({cpu})",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "avg"
       }
     ]
+  },
+  "output": {
+    "ok": "OK: avg.cpu.usage.percent is {aggregations.avg.cpu.usage.percent}%",
+    "detail_ok": false,
+    "warning": "WARNING: ",
+    "detail_warning": true,
+    "critical": "CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
   }
 }

@@ -73,12 +73,124 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "a2525268-c393-49a5-a1b1-f89bbf51871e",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "v1/orgs/org/alerts/events",
+      "responses": [
+        {
+          "uuid": "fadd5167-bb87-47c8-9d63-2311a1fbdebc",
+          "body": "{\n  \"results\": [\n    {\n      \"id\": \"123\",\n      \"ruleId\": \"id123\",\n      \"runId\": \"543\",\n      \"updatedAt\": \"2026-06-09T12:00:00.060Z\",\n      \"status\": \"ok\",\n      \"message\": \"Event generated with status: Ok\",\n      \"attributes\": {\n        \"alert_rule.name\": \"Apache errors \",\n        \"alert_rule.frequency\": 300\n      }\n    },\n    {\n      \"id\": \"234\",\n      \"ruleId\": \"id234\",\n      \"runId\": \"654\",\n      \"updatedAt\": \"2026-06-09T12:00:00.055Z\",\n      \"status\": \"unknown\",\n      \"message\": \"Error during flow execution\",\n      \"attributes\": {\n        \"alert_rule.name\": \"Apache error\",\n        \"alert_rule.frequency\": 300\n      }\n    },\n    {\n      \"id\": \"345\",\n      \"ruleId\": \"id345\",\n      \"runId\": \"765\",\n      \"updatedAt\": \"2026-06-09T12:00:00.053Z\",\n      \"status\": \"ok\",\n      \"message\": \"Event generated with status: Ok\",\n      \"attributes\": {\n        \"alert_rule.name\": \"Test\",\n        \"alert_rule.frequency\": 300\n      }\n    },\n    {\n      \"id\": \"456\",\n      \"ruleId\": \"id456\",\n      \"runId\": \"876\",\n      \"updatedAt\": \"2026-06-09T12:00:00.049Z\",\n      \"status\": \"ok\",\n      \"message\": \"Event generated with status: Ok\",\n      \"attributes\": {\n        \"alert_rule.name\": \"MySQL slow queries\",\n        \"alert_rule.frequency\": 300\n      }\n    },\n    {\n      \"id\": \"567\",\n      \"ruleId\": \"id567\",\n      \"runId\": \"987\",\n      \"updatedAt\": \"2026-06-09T12:00:00.037Z\",\n      \"status\": \"ok\",\n      \"message\": \"Event generated with status: Ok\",\n      \"attributes\": {\n        \"alert_rule.name\": \"Watchdog\",\n        \"alert_rule.frequency\": 300\n      }\n    }\n  ],\n  \"meta\": {\n    \"total\": 5,\n    \"page\": 1,\n    \"limit\": 10,\n    \"first\": \"https://api.euwest1.obs.mycentreon.com/orgs/mbe-org/alerts/events?sortBy=%7B%22updated_at%22%3A%22DESC%22%7D&search=&status=%5B%5D&page=1&limit=10\",\n    \"last\": \"https://api.euwest1.obs.mycentreon.com/orgs/mbe-org/alerts/events?sortBy=%7B%22updated_at%22%3A%22DESC%22%7D&search=&status=%5B%5D&page=1&limit=10\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Default response",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "71eb7642-1181-49cb-ab97-563548dbcca7",
+          "body": "{\n  \"results\": [\n    {\n      \"id\": \"234\",\n      \"ruleId\": \"id234\",\n      \"runId\": \"654\",\n      \"updatedAt\": \"2026-06-09T12:00:00.055Z\",\n      \"status\": \"unknown\",\n      \"message\": \"Error during flow execution\",\n      \"attributes\": {\n        \"alert_rule.name\": \"Apache error\",\n        \"alert_rule.frequency\": 300\n      }\n    }\n  ],\n  \"meta\": {\n    \"total\": 1,\n    \"page\": 1,\n    \"limit\": 10,\n    \"first\": \"https://api.euwest1.obs.mycentreon.com/orgs/mbe-org/alerts/events?sortBy=%7B%22updated_at%22%3A%22DESC%22%7D&search=&status=%5B%5D&page=1&limit=10\",\n    \"last\": \"https://api.euwest1.obs.mycentreon.com/orgs/mbe-org/alerts/events?sortBy=%7B%22updated_at%22%3A%22DESC%22%7D&search=&status=%5B%5D&page=1&limit=10\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "accept only unknown statuses",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "status",
+              "value": "[\"unknown\"]",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
     {
       "type": "route",
       "uuid": "92a39c35-5042-49d6-8768-6b2fdf1ae400"
+    },
+    {
+      "type": "route",
+      "uuid": "a2525268-c393-49a5-a1b1-f89bbf51871e"
     }
   ],
   "proxyMode": false,
