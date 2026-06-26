@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,23 +49,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{clusters} = [
-        # Compteur de type "status" (type => 2) : vérifie un état via une expression
+        # Status counter (type 2 evaluates a threshold expression)
+        # Prism v2.0 returns cluster_state="NORMAL" for a healthy cluster.
         {
-            label => 'status',
-            type  => 2,
-            # Seuil warning par défaut : état différent de "COMPLETE"
-            warning_default => '%{state} ne "COMPLETE"',
-            set   => {
+            label           => 'status',
+            type            => 2,
+            warning_default => '%{state} ne "NORMAL"',
+            set             => {
                 key_values => [
-                    { name => 'name' },
-                    { name => 'state' },
+                    { name => 'name'    },
+                    { name => 'state'   },
                     { name => 'version' },
                 ],
                 closure_custom_output          => $self->can('custom_status_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
             }
         },
-        # Compteur numérique : nombre de nœuds
+        # Node count
         {
             label  => 'nodes-count',
             nlabel => 'cluster.nodes.count',
@@ -74,10 +74,10 @@ sub set_counters {
                 output_template => 'nodes: %d',
                 perfdatas       => [
                     {
-                        template      => '%d',
+                        template             => '%d',
                         label_extra_instance => 1,
-                        instance_use  => 'name',
-                        min           => 0,
+                        instance_use         => 'name',
+                        min                  => 0,
                     }
                 ]
             }
@@ -107,29 +107,25 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Appel au module custom (api.pm) via $options{custom}
-    my $result = $options{custom}->get_clusters();
-
-    # L'API v2.0 retourne { entities => [...], metadata => {...} }
+    my $result   = $options{custom}->get_clusters();
     my $entities = $result->{entities} // [];
 
     $self->{clusters} = {};
     for my $cluster (@{$entities}) {
         my $name = $cluster->{name} // 'unknown';
 
-        # Filtrage optionnel par nom (regex)
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '') {
             next if $name !~ /$self->{option_results}->{filter_name}/;
         }
 
-        # On stocke les données dans le hash $self->{clusters}
-        # La clé est unique par instance (ici le nom du cluster)
-        $self->{clusters}->{$name} = {
+        # Key on cluster_uuid to avoid silent overwrites when two clusters share the same name.
+        my $key = $cluster->{cluster_uuid} // $name;
+
+        $self->{clusters}->{$key} = {
             name      => $name,
-            # cluster_state est dans les stats internes de Prism v2
             state     => $cluster->{cluster_state} // 'UNKNOWN',
-            version   => $cluster->{version} // 'N/A',
-            num_nodes => $cluster->{num_nodes} // 0,
+            version   => $cluster->{version}       // 'N/A',
+            num_nodes => $cluster->{num_nodes}      // 0,
         };
     }
 
@@ -156,7 +152,7 @@ Filter clusters by name (regexp). Example: C<--filter-name='^Prod'>
 =item B<--warning-status>
 
 Warning threshold for cluster state.
-Default: C<%{state} ne "COMPLETE">
+Default: C<%{state} ne "NORMAL">
 
 Variables: C<%{name}>, C<%{state}>, C<%{version}>
 
