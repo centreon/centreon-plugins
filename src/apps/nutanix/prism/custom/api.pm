@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -100,7 +100,7 @@ sub _get_auth_header {
 sub request_api {
     my ($self, %options) = @_;
 
-    # Prism utilise le port 9440 par défaut et un préfixe /api/nutanix/v2.0
+    # Prism REST API base: port 9440, prefix /api/nutanix/v2.0
     my $url = $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port};
 
     $self->{option_results}->{hostname}        = $self->{hostname};
@@ -126,7 +126,7 @@ sub request_api {
         header          => \@headers,
         get_param       => $options{get_param},
         query_form_post => $options{query_form_post},
-        insecure        => 1,  # Les déploiements Nutanix utilisent souvent des certs auto-signés
+        insecure        => 1,  # Nutanix deployments commonly use self-signed certificates
     );
 
     if (!defined($content) || $content eq '') {
@@ -150,37 +150,37 @@ sub request_api {
     return $decoded;
 }
 
-# Retourne les infos du/des clusters Nutanix
+# Returns cluster information
 sub get_clusters {
     my ($self, %options) = @_;
     return $self->request_api(endpoint => '/api/nutanix/v2.0/clusters');
 }
 
-# Retourne la liste des hôtes physiques
+# Returns the list of physical hosts
 sub get_hosts {
     my ($self, %options) = @_;
     return $self->request_api(endpoint => '/api/nutanix/v2.0/hosts');
 }
 
-# Retourne la liste des VMs
+# Returns the list of virtual machines (includes stats fields)
 sub get_vms {
     my ($self, %options) = @_;
     return $self->request_api(endpoint => '/api/nutanix/v2.0/vms');
 }
 
-# Retourne les pools de stockage
+# Returns storage pools
 sub get_storage_pools {
     my ($self, %options) = @_;
     return $self->request_api(endpoint => '/api/nutanix/v2.0/storage_pools');
 }
 
-# Retourne tous les disques physiques du cluster
+# Returns all physical disks in the cluster
 sub get_disks {
     my ($self, %options) = @_;
     return $self->request_api(endpoint => '/api/nutanix/v2.0/disks');
 }
 
-# Retourne tous les snapshots (ou ceux d'une VM spécifique via vm_uuid)
+# Returns snapshots — optionally filtered by vm_uuid
 sub get_snapshots {
     my ($self, %options) = @_;
     if (defined($options{vm_uuid}) && $options{vm_uuid} ne '') {
@@ -192,7 +192,7 @@ sub get_snapshots {
     return $self->request_api(endpoint => '/api/nutanix/v2.0/snapshots');
 }
 
-# Retourne les NICs d'une VM spécifique
+# Returns NICs for a specific VM
 sub get_vm_nics {
     my ($self, %options) = @_;
     return $self->request_api(
@@ -200,7 +200,7 @@ sub get_vm_nics {
     );
 }
 
-# Retourne les alertes actives (non résolues par défaut)
+# Returns active (unresolved) alerts; optional severity filter
 sub get_alerts {
     my ($self, %options) = @_;
     my @params = ('resolved=false');
@@ -211,10 +211,31 @@ sub get_alerts {
     );
 }
 
-# Retourne les résultats des health checks NCC
+# Returns NCC health check results
 sub get_health_checks {
     my ($self, %options) = @_;
     return $self->request_api(endpoint => '/api/nutanix/v2.0/health_checks');
+}
+
+# Returns protection domains and their replication status
+sub get_protection_domains {
+    my ($self, %options) = @_;
+    return $self->request_api(endpoint => '/api/nutanix/v2.0/protection_domains/');
+}
+
+# Returns storage containers with capacity and savings stats
+sub get_storage_containers {
+    my ($self, %options) = @_;
+    return $self->request_api(endpoint => '/api/nutanix/v2.0/storage_containers/');
+}
+
+# Returns recent top-level tasks (subtasks excluded, limited to 100)
+sub get_tasks {
+    my ($self, %options) = @_;
+    return $self->request_api(
+        endpoint  => '/api/nutanix/v2.0/tasks/',
+        get_param => [ 'includeSubtasks=false', 'count=100' ],
+    );
 }
 
 1;
