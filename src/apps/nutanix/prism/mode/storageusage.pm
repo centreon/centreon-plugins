@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,27 +38,26 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{storage_pools} = [
-        # Capacité totale en octets
+        # Used bytes
         {
             label  => 'usage',
             nlabel => 'storage.pool.usage.bytes',
             set    => {
-                key_values      => [ { name => 'usage_bytes' }, { name => 'name' } ],
-                output_template => 'used: %s',
-                # Conversion automatique d'octets vers l'unité lisible (KB, MB, GB...)
+                key_values          => [ { name => 'usage_bytes' }, { name => 'name' } ],
+                output_template     => 'used: %s',
                 output_change_bytes => 1,
                 perfdatas           => [
                     {
-                        template         => '%d',
-                        unit             => 'B',
-                        min              => 0,
+                        template             => '%d',
+                        unit                 => 'B',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'name',
+                        instance_use         => 'name',
                     }
                 ]
             }
         },
-        # Capacité libre en octets
+        # Free bytes
         {
             label  => 'free',
             nlabel => 'storage.pool.free.bytes',
@@ -68,16 +67,16 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas           => [
                     {
-                        template         => '%d',
-                        unit             => 'B',
-                        min              => 0,
+                        template             => '%d',
+                        unit                 => 'B',
+                        min                  => 0,
                         label_extra_instance => 1,
-                        instance_use     => 'name',
+                        instance_use         => 'name',
                     }
                 ]
             }
         },
-        # Utilisation en pourcentage (calculée)
+        # Computed usage percentage
         {
             label  => 'usage-prct',
             nlabel => 'storage.pool.usage.percentage',
@@ -86,12 +85,12 @@ sub set_counters {
                 output_template => 'usage: %.2f%%',
                 perfdatas       => [
                     {
-                        template         => '%.2f',
-                        unit             => '%',
-                        min              => 0,
-                        max              => 100,
+                        template             => '%.2f',
+                        unit                 => '%',
+                        min                  => 0,
+                        max                  => 100,
                         label_extra_instance => 1,
-                        instance_use     => 'name',
+                        instance_use         => 'name',
                     }
                 ]
             }
@@ -132,11 +131,13 @@ sub manage_selection {
             next if $name !~ /$self->{option_results}->{filter_name}/;
         }
 
-        # capacity_bytes et usage_bytes sont fournis directement par l'API v2.0
         my $capacity = $pool->{capacity_bytes} // 0;
         my $used     = $pool->{usage_bytes}    // 0;
-        my $free     = $capacity - $used;
-        my $pct      = ($capacity > 0) ? ($used / $capacity * 100) : 0;
+
+        # Clamp free to 0 to avoid negative perfdata under thin-provisioning overcommit.
+        my $free = $capacity - $used;
+        $free = 0 if $free < 0;
+        my $pct = ($capacity > 0) ? ($used / $capacity * 100) : 0;
 
         $self->{storage_pools}->{$name} = {
             name        => $name,
