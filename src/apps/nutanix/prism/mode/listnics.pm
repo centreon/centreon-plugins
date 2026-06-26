@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,8 +31,8 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'filter-vm-name:s'  => { name => 'filter_vm_name' },
-            'filter-network:s'  => { name => 'filter_network' },
+            'filter-vm-name:s' => { name => 'filter_vm_name' },
+            'filter-network:s' => { name => 'filter_network' },
         }
     );
 
@@ -44,7 +44,7 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-# Collecte tous les NICs depuis la liste des VMs (vm_nics[] est inclus dans v2.0)
+# Collect all NICs from the VM list (vm_nics[] is included in v2.0 responses).
 sub _collect_nics {
     my ($self, %options) = @_;
 
@@ -64,9 +64,14 @@ sub _collect_nics {
         for my $nic (@{ $vm->{vm_nics} // [] }) {
             my $network = $nic->{network_name} // $nic->{vlan_id} // 'N/A';
 
+            # nic_index tracks the physical position in the VM's NIC array.
+            # Skipped NICs still consume an index so nic_id stays stable
+            # whether or not --filter-network is active.
             if (defined($self->{option_results}->{filter_network}) && $self->{option_results}->{filter_network} ne '') {
-                $nic_index++;
-                next if $network !~ /$self->{option_results}->{filter_network}/;
+                if ($network !~ /$self->{option_results}->{filter_network}/) {
+                    $nic_index++;
+                    next;
+                }
             }
 
             push @nics, {
@@ -74,7 +79,7 @@ sub _collect_nics {
                 vm_uuid   => $vm_uuid,
                 nic_index => $nic_index,
                 nic_id    => $vm_name . '_nic' . $nic_index,
-                mac       => $nic->{mac_address}  // 'N/A',
+                mac       => $nic->{mac_address} // 'N/A',
                 network   => $network,
                 connected => (defined($nic->{is_connected}) && $nic->{is_connected}) ? 'true' : 'false',
                 ip        => (defined($nic->{ip_address}) && $nic->{ip_address} ne '') ? $nic->{ip_address} : 'N/A',
