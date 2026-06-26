@@ -1,5 +1,5 @@
 #
-# Copyright 2025-Present Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,8 +26,13 @@ use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
 use MIME::Base64;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::misc qw/json_encode json_decode is_empty/;
+
+my %resource_types = (
+    'VM'   => 'VirtualMachine',
+    'HOST' => 'HostSystem'
+);
 
 sub new {
     my ($class, %options) = @_;
@@ -133,7 +138,7 @@ sub get_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $self->{token_cache}->read(
-            statefile => 'vsphere8_api_token_' . md5_hex(
+            statefile => 'vsphere8_api_token_' . sha256_hex(
                     $self->{hostname}
                     . ':' . $self->{port}
                     . '_' . $self->{username})
@@ -274,7 +279,7 @@ sub get_all_acq_specs {
 
     # if we can get it from the cache, we return it
     if ($self->{acq_specs_cache}->read(
-        statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . md5_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
+        statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . sha256_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
     )) {
         $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
         return $self->{all_acq_specs};
@@ -476,6 +481,32 @@ sub get_stats {
     # FIXME: handle arrays in get_stats and check_acq_specs
 }
 
+sub get_tags_for_resource {
+    my ($self, %options) = @_;
+
+    if (is_empty($options{rsrc_id})) {
+        $self->{output}->option_exit(short_msg => "get_tags_for_resource method called without rsrc_id, won't query");
+    }
+    my $type = $resource_types{ $self->compose_type_from_rsrc_id($options{rsrc_id}) } // 'unknownType';
+
+    my $result = $self->request_api(
+        method   => 'POST',
+        endpoint => '/cis/tagging/tag-association?action=list-attached-tags',
+        query_form_post     => '{ "object_id": { "id": "' . $options{rsrc_id} . '", "type": "' . $type . '" } }'
+    );
+
+    return [] if ref $result ne "ARRAY";
+
+    my @tags;
+    for my $tag_id (@$result) {
+        my $tag_data = $self->request_api(
+        method   => 'GET',
+        endpoint => '/cis/tagging/tag/' . $tag_id
+        );
+        push @tags, $tag_data->{name} if ref $tag_data eq 'HASH' && $tag_data->{name};
+    }
+    return \@tags;
+}
 1;
 __END__
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,6 +34,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'prettify'              => { name => 'prettify' },
         'no-identity'           => { name => 'no_identity' },
+        'no-tags'               => { name => 'no_tags' },
         'filter-power-states:s' => { name => 'filter_power_states' },
         'filter-folders:s'      => { name => 'filter_folders' },
     });
@@ -77,7 +78,9 @@ sub run {
     foreach my $vm (@results) {
         # if the VM is POWERED_ON and if the tools are available, the vcenter can provide system information
         # we skip this if the --no-identity option has been used
-        my $identity = $options{custom}->get_vm_guest_identity(vm_id => $vm->{vmw_vm_id}) if ($vm->{power_state} eq 'POWERED_ON' && !$self->{option_results}->{no_identity});
+        my $identity = $options{custom}->get_vm_guest_identity(vm_id => $vm->{vmw_vm_id})
+            if ($vm->{power_state} eq 'POWERED_ON' && !$self->{option_results}->{no_identity}); # off VMs have no details
+
         # The GuestOSFamily enumerated type defines the valid guest operating system family types reported by a virtual machine.
         # WINDOWS : Windows operating system
         # LINUX : Linux operating system
@@ -91,6 +94,9 @@ sub run {
         $vm->{guest_os}      = $identity->{name} // '';
         $vm->{ip_address}    = $identity->{ip_address} // '';
         $vm->{guest_os_full} = $identity->{full_name}->{default_message} // '';
+
+        $vm->{tags} = $options{custom}->get_tags_for_resource(rsrc_id => $vm->{vmw_vm_id})
+            unless $self->{option_results}->{no_tags};
     }
     # Record the metadata
     $disco_stats->{end_time} = time();
@@ -120,7 +126,7 @@ __END__
 
 =head1 MODE
 
-Discover VMware8 virtual machines.
+Discover VMware 8+ virtual machines.
 
 =over 8
 

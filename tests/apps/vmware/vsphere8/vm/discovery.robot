@@ -25,12 +25,20 @@ Discovery ${tc}
 
     Ctn Run Command And Check Result As Json    ${command}    ${expected_result}
 
-    Examples:    tc    extra_options    expected_result    --
-    ...          1     ${EMPTY}
-    ...          {"discovered_items":3,"duration":0,"end_time":1756740577,"results":[{"family":"","guest_os":"","guest_os_full":"","ip_address":"","power_state":"POWERED_OFF","vm_name":"web-server-01","vmw_vm_id":"vm-7657"},{"family":"LINUX","guest_os":"DEBIAN_12_64","guest_os_full":"Debian GNU/Linux 12 (64-bit)","ip_address":"172.16.2.1","power_state":"POWERED_ON","vm_name":"db-server-01","vmw_vm_id":"vm-7722"},{"family":"WINDOWS","guest_os":"WINDOWS_SERVER_2021","guest_os_full":"Microsoft Windows Server 2022 (64-bit)","ip_address":"172.16.2.12","power_state":"POWERED_ON","vm_name":"web-server-02","vmw_vm_id":"vm-1234"}],"start_time":1756740577}
-    ...          2     --filter-power-states=POWERED_ON
-    ...          {"discovered_items":2,"duration":0,"end_time":1756740577,"results":[{"family":"LINUX","guest_os":"DEBIAN_12_64","guest_os_full":"Debian GNU/Linux 12 (64-bit)","ip_address":"172.16.2.1","power_state":"POWERED_ON","vm_name":"db-server-01","vmw_vm_id":"vm-7722"},{"family":"WINDOWS","guest_os":"WINDOWS_SERVER_2021","guest_os_full":"Microsoft Windows Server 2022 (64-bit)","ip_address":"172.16.2.12","power_state":"POWERED_ON","vm_name":"web-server-02","vmw_vm_id":"vm-1234"}],"start_time":1756740577}
-    ...          3     --filter-power-states=POWERED_OFF
-    ...          {"discovered_items":1,"duration":0,"end_time":1756740577,"results":[{"family":"","guest_os":"","guest_os_full":"","ip_address":"","power_state":"POWERED_OFF","vm_name":"web-server-01","vmw_vm_id":"vm-7657"}],"start_time":1756740577}
-    ...          4     --filter-folders=My_Dir
-    ...          {"discovered_items":1,"duration":0,"end_time":1756740577,"results":[{"family":"LINUX","guest_os":"DEBIAN_12_64","guest_os_full":"Debian GNU/Linux 12 (64-bit)","ip_address":"172.16.2.1","power_state":"POWERED_ON","vm_name":"db-server-01","vmw_vm_id":"vm-7722"}],"start_time":1756740577}
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    {"discovered_items":3,"duration":0,"end_time":1782467337,"results":[{"family":"","guest_os":"","guest_os_full":"","ip_address":"","power_state":"POWERED_OFF","tags":["TAG_1"],"vm_name":"web-server-01","vmw_vm_id":"vm-7657"},{"family":"LINUX","guest_os":"DEBIAN_12_64","guest_os_full":"Debian GNU/Linux 12 (64-bit)","ip_address":"172.16.2.1","power_state":"POWERED_ON","tags":["TAG_2"],"vm_name":"db-server-01","vmw_vm_id":"vm-7722"},{"family":"WINDOWS","guest_os":"WINDOWS_SERVER_2021","guest_os_full":"Microsoft Windows Server 2022 (64-bit)","ip_address":"172.16.2.12","power_state":"POWERED_ON","tags":["TAG_DEFAULT"],"vm_name":"web-server-02","vmw_vm_id":"vm-1234"}],"start_time":1782467337}
+    ...    2
+    ...    --filter-power-states=POWERED_ON
+    ...    {"discovered_items":2,"duration":0,"end_time":1782467392,"results":[{"family":"LINUX","guest_os":"DEBIAN_12_64","guest_os_full":"Debian GNU/Linux 12 (64-bit)","ip_address":"172.16.2.1","power_state":"POWERED_ON","tags":["TAG_2"],"vm_name":"db-server-01","vmw_vm_id":"vm-7722"},{"family":"WINDOWS","guest_os":"WINDOWS_SERVER_2021","guest_os_full":"Microsoft Windows Server 2022 (64-bit)","ip_address":"172.16.2.12","power_state":"POWERED_ON","tags":["TAG_DEFAULT"],"vm_name":"web-server-02","vmw_vm_id":"vm-1234"}],"start_time":1782467392}
+    ...    3
+    ...    --filter-power-states=POWERED_OFF
+    ...    {"discovered_items":1,"duration":0,"end_time":1782467392,"results":[{"family":"","guest_os":"","guest_os_full":"","ip_address":"","power_state":"POWERED_OFF","tags":["TAG_1"],"vm_name":"web-server-01","vmw_vm_id":"vm-7657"}],"start_time":1782467392}
+    ...    4
+    ...    --filter-folders=My_Dir
+    ...    {"discovered_items":1,"duration":0,"end_time":1782467392,"results":[{"family":"LINUX","guest_os":"DEBIAN_12_64","guest_os_full":"Debian GNU/Linux 12 (64-bit)","ip_address":"172.16.2.1","power_state":"POWERED_ON","tags":["TAG_2"],"vm_name":"db-server-01","vmw_vm_id":"vm-7722"}],"start_time":1782467392}
