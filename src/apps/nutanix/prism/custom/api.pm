@@ -165,7 +165,10 @@ sub get_hosts {
 # Returns the list of virtual machines (includes stats fields)
 sub get_vms {
     my ($self, %options) = @_;
-    return $self->request_api(endpoint => '/api/nutanix/v2.0/vms');
+    return $self->request_api(
+        endpoint  => '/api/nutanix/v2.0/vms',
+        get_param => [ 'count=2147483647' ],
+    );
 }
 
 # Returns storage pools
