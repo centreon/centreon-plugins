@@ -2095,6 +2095,230 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "13fafc42-4b9b-4c35-856a-df6c9a26a3d8",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/cis/tagging/tag-association",
+      "responses": [
+        {
+          "uuid": "56b789fe-09a6-4c67-90e0-89c8a4a5dffb",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "vm-7657",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "[\n    \"urn:vmomi:InventoryServiceTag:id_of_tag1:GLOBAL\"\n]"
+        },
+        {
+          "uuid": "7b2c49bd-3fdc-4ecb-b47b-3ae040d1d144",
+          "latency": 0,
+          "statusCode": 200,
+          "label": " (copy)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "vm-7722",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "[\n    \"urn:vmomi:InventoryServiceTag:id_of_tag2:GLOBAL\"\n]"
+        },
+        {
+          "uuid": "96e5b0c8-f0cc-4efc-9a69-b9e6cc1ce8c9",
+          "latency": 0,
+          "statusCode": 200,
+          "label": " (copy) (copy)",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "",
+              "value": "vm-1234",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "[\n    \"urn:vmomi:InventoryServiceTag:id_of_tag3:GLOBAL\"\n]"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "dbdc3c02-ac52-4bc6-bce6-b532c536ff59",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/cis/tagging/tag/:tag_id",
+      "responses": [
+        {
+          "uuid": "9cab77dc-d741-4d16-8c4b-347d7f049ab0",
+          "body": "{\n    \"category_id\": \"urn:vmomi:InventoryServiceCategory:id_of_category:GLOBAL\",\n    \"name\": \n    {{#switch (urlParam 'tag_id')}}\n      {{#case 'urn:vmomi:InventoryServiceTag:id_of_tag1:GLOBAL'}}\"TAG_1\"{{/case}}\n      {{#case 'urn:vmomi:InventoryServiceTag:id_of_tag2:GLOBAL'}}\"TAG_2\"{{/case}}\n      {{#default}}\"TAG_DEFAULT\"{{/default}}\n    {{/switch}},\n    \"description\": \"not mandatory\",\n    \"id\": \"{{urlParam 'tag_id'}}\",\n    \"used_by\": []\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -2169,6 +2393,14 @@
     {
       "type": "route",
       "uuid": "315979dc-3c39-4f3d-9606-f963e3c80c4c"
+    },
+    {
+      "type": "route",
+      "uuid": "13fafc42-4b9b-4c35-856a-df6c9a26a3d8"
+    },
+    {
+      "type": "route",
+      "uuid": "dbdc3c02-ac52-4bc6-bce6-b532c536ff59"
     }
   ],
   "proxyMode": false,
