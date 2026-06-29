@@ -43,7 +43,7 @@ function check_constants() {
     grep -nH -- "-\(1\|2\|10\)[[:space:]]*=>[[:space:]]*1" "$file" > "$tmpfile"
     grep -nH "\<type[[:space:]]*=>[[:space:]]*[0-9]" "$file" >> "$tmpfile"
     if [ -s "$tmpfile" ] ; then
-        error "It seems that some counters are not using constants defined in centreon/plugins/constants.pm."
+        error "It seems that some counters are not using constants defined in centreon/plugins/constants.pm. You may also need to add `use centreon::plugins::constants qw(:counters);` in your file."
         cat $tmpfile
     fi
 }
