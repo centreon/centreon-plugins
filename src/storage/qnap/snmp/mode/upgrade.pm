@@ -69,20 +69,39 @@ sub new {
 }
 
 my $mapping = {
-    model   => { oid => '.1.3.6.1.4.1.55062.1.12.3' }, # systemModel
-    version => { oid => '.1.3.6.1.4.1.55062.1.12.6' }, # firmwareVersion
-    upgrade => { oid => '.1.3.6.1.4.1.55062.1.12.7' }  # firmwareUpgradeAvailable
+
+    qts => {
+        model   => { oid => '.1.3.6.1.4.1.55062.1.12.3' }, # systemModel
+        version => { oid => '.1.3.6.1.4.1.55062.1.12.6' }, # firmwareVersion
+        upgrade => { oid => '.1.3.6.1.4.1.55062.1.12.7' }  # firmwareUpgradeAvailable
+    },
+    quts => {
+        model   => { oid => '.1.3.6.1.4.1.55062.2.12.3' }, # systemModel
+        version => { oid => '.1.3.6.1.4.1.55062.2.12.6' }, # firmwareVersion
+        upgrade => { oid => '.1.3.6.1.4.1.55062.2.12.7' }  # firmwareUpgradeAvailable
+    }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        oids => [
+            map(
+                $_->{oid} . '.0',
+                values(%{$mapping->{qts}}),
+                values(%{$mapping->{quts}})
+            )
+        ],
         nothing_quit => 1
     );
-    $snmp_result->{$mapping->{version}->{oid} . '.0'} =~ s/\r*\n*$//;
-    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
+
+    my $type = defined($snmp_result->{ $mapping->{quts}->{model}->{oid} . '.0' }) ? 'quts' : 'qts';
+
+    $snmp_result->{$mapping->{$type}->{version}->{oid} . '.0'} =~ s/\r*\n*$//
+        if defined($snmp_result->{$mapping->{$type}->{version}->{oid} . '.0'});
+
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping->{$type}, results => $snmp_result, instance => 0);
     $self->{global}->{upgrade} = $self->{global}->{upgrade} ? 'available' : 'unavailable';
 }
 
@@ -92,7 +111,7 @@ __END__
 
 =head1 MODE
 
-Check upgrade status (only works with QTS OS).
+Check upgrade status (only works with QTS or QuTS hero OS).
 
 =over 8
 
