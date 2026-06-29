@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::plugin;
+package network::extreme::mlx::snmp::plugin;
 
 use strict;
 use warnings;
@@ -29,14 +29,25 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
+    $self->{version} = '0.5';
     $self->{modes} = {
-        'cpu'             => 'network::extreme::snmp::mode::cpu',
-        'hardware'        => 'network::extreme::snmp::mode::hardware',
-        'interfaces'      => 'network::extreme::snmp::mode::interfaces',
+        'cpu'             => 'network::extreme::mlx::snmp::mode::cpu',
+        'hardware'        => 'network::extreme::mlx::snmp::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'memory'          => 'network::extreme::snmp::mode::memory',
-        'stack'           => 'network::extreme::snmp::mode::stack'
+        'list-sfp-ports'  => 'network::extreme::mlx::snmp::mode::listsfpports',
+        'memory'          => 'network::extreme::mlx::snmp::mode::memory',
+        'sfp-port'        => 'network::extreme::mlx::snmp::mode::sfpport',
+        'tcp-con'         => 'snmp_standard::mode::tcpcon',
+        'udp-con'         => 'snmp_standard::mode::udpcon',
+        'uptime'          => 'snmp_standard::mode::uptime',
+    };
+
+    $self->{modes_options} = {
+        'interfaces'      => { force_new_perfdata => 1 },
+        'tcpcon'          => { force_new_perfdata => 1 },
+        'udpcon'          => { force_new_perfdata => 1 },
+        'uptime'          => { force_new_perfdata => 1 }
     };
 
     return $self;
@@ -48,6 +59,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Extreme Networks equipments in SNMP.
+Check Extreme Networks MLXe series in SNMP.
 
 =cut
