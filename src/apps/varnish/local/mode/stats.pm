@@ -148,7 +148,9 @@ sub configure_varnish_stats {
         { entry => 'n_wrk_lqueue', nlabel => 'workers.requests.queue.length.count', display_ok => 0, diff => 1 },
         { entry => 'n_wrk_queued', nlabel => 'workers.requests.queued.count', display_ok => 0, diff => 1 },
         { entry => 'n_wrk_drop', nlabel => 'workers.requests.dropped.count', display_ok => 0, diff => 1 },
-
+        
+        { entry => 'Transient.g_space', category => 'SMA', nlabel => 'storage.transient.space.free.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
+        { entry => 'Transient.g_bytes', category => 'SMA', nlabel => 'storage.transient.space.used.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
         { entry => 's0.g_space', category => 'SMA', nlabel => 'storage.space.free.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
     ];
 }
