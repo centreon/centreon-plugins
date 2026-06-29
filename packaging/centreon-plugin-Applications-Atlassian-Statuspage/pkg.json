@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Atlassian-Statuspage",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_atlassian_statuspage.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/atlassian/statuspage/"
+    ]
+}
