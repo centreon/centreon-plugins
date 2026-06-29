@@ -1149,6 +1149,51 @@ sub azure_list_sqlvms {
     return $full_response;
 }
 
+sub azure_list_resource_metrics_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint};
+    $url .=  "/" . $options{resource} . "/providers/microsoft.insights/metricDefinitions";
+    $url .= (defined($options{force_api_version}) && $options{force_api_version} ne '') ? "?api-version=" . $options{force_api_version} : "?api-version=" . $self->{api_version};
+    return $url;
+}
+
+sub azure_list_resource_metrics {
+    my ($self, %options) = @_;
+
+    my $full_response = [];
+    my $full_url = $self->azure_list_resource_metrics_set_url(%options);
+    while (1) {
+        my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+        foreach (@{$response->{value}}) {
+            push @$full_response, $_;
+        }
+
+        last if (!defined($response->{nextLink}));
+        $full_url = $response->{nextLink};
+    }
+
+    return $full_response;
+}
+
+sub azure_list_virtualhubs_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+        $options{resource_group} . "/providers/Microsoft.Network/virtualHubs?api-version=" . $self->{api_version};
+
+    return $url;
+}
+
+sub azure_list_virtualhubs {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_list_virtualhubs_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response->{value};
+}
+
 sub azure_list_sqlelasticpools_set_url {
     my ($self, %options) = @_;
 
