@@ -344,8 +344,7 @@ sub manage_selection {
     # check if at the end of parsing the result table isn't empty.
     # If it's the case, add a message for user to explain the filter doesn't match.
     if (scalar(keys %{$self->{cpu}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No processor ID matching with filter found.");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "No processor ID matching with filter found.");
     }
 }
 ```

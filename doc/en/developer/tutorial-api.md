@@ -219,10 +219,12 @@ sub new {
         # define that this options takes a value.  
         # On the right, it's the code name for this option, optionally you can define a default value so the user 
         # doesn't have to set it
-         'hostname:s'           => { name => 'hostname' },
-         'proto:s'              => { name => 'proto', default => 'https' },
-         'port:s'               => { name => 'port', default => 443 },
-         'timeout:s'            => { name => 'timeout' },
+         'hostname:s'           => { name => 'hostname', not_empty => 1 },
+         'proto:s'              => { name => 'proto', default => 'https', type => 'protocol_http', not_empty => 1  },
+         'port:s'               => { name => 'port', default => 443, type => 'port', not_empty => 1 },
+         'timeout:s'            => { name => 'timeout', type => 'numeric' },
+         'data:s'               => { name => 'data', regexp_match => '^\d\.\d{3}$',
+                                     error_message => 'Value %{data} does not match our custom format !' },
         # These options are here to defined conditions about which status the plugin will return regarding HTTP response code
          'unknown-status:s'     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
          'warning-status:s'     => { name => 'warning_status' },
@@ -237,8 +239,8 @@ sub new {
 }
 ```
 
-Add a `check_options` function. This sub will execute right after `new` and allow you to check that the user passed
- mandatory parameter(s) and in some case check that the format is correct. 
+As you can see, many argument validation checks can be configured simply and quickly in `add_options` (see [Options](plugins_global.md#options)).
+For all other cases, you can implement a `check_options` function to perform additional, more specific validation checks.
 
 ```perl
 sub check_options {
@@ -247,8 +249,7 @@ sub check_options {
 
     # Check if the user provided a value for --hostname option. If not, display a message and exit
     if (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Please set hostname option');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Please set hostname option');
     }
     # Set parameters for http module, note that the $self->{option_results} is a hash containing 
     # all your options key/value pairs.
@@ -285,7 +286,7 @@ sub set_counters {
         # health and queries are global metric, they don't refer to a specific instance. 
         # In other words, you cannot get several values for health or queries
         # That's why the type is COUNTER_TYPE_GLOBAL.
-        { name => 'health', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_health_output' },
+        { name => 'health', type => COUNTER_TYPE_GLOBAL, prefix_output => "A custom prefix output %{value1} %{value2}" },
         { name => 'queries', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_queries_output' },
         # app_metrics groups connections and errors and each will receive value for both instances (my-awesome-frontend and my-awesome-db)
         # the type => COUNTER_TYPE_INSTANCE explicits that
@@ -322,9 +323,9 @@ sub set_counters {
             nlabel => 'myawesomeapp.db.queries.select.count', 
             set => {
             # Key value name is the name we will use to pass the data to this counter. You can have several ones.
-                key_values => [ { name => 'select' } ],
+                key_values => [ { name => 'select' }, { name => 'extra' } ],
                 # Output template describe how the value will display
-                output_template => 'select: %s',
+                output_template => 'select: %{select} %{extra}',
                 # Perfdata array allow you to define relevant metrics properties (min, max) and its sprintf template format
                 perfdatas => [
                     { template => '%d', min => 0 }
@@ -389,18 +390,31 @@ OK: status : skipped (no value(s)) - select : skipped (no value(s)), update : sk
 You can see some of your counters with the `skipped (no value(s))`, it's normal, this is because we
 just created the counters definition and structure but didn't push any values into it.
 
-### 4.3 Create prefix callback functions
+### 4.3 Customize counter prefix output
 
-These functions are not mandatory but help to make the output more readable for a human. We will create
-it now but as you have noticed the mode compiles so you can choose to keep those for the polishing moment.
+Customizing prefix output is optional but helps make the output more readable for humans. There are **two approaches** available:
 
-During counters definitions, we associated a callback function to each of them:
+1. **Direct string with placeholders** - simple static or template-based prefixes
+2. **Callback functions** - dynamic prefixes that require Perl logic
 
-- `cb_prefix_output => 'prefix_health_output'`
-- `cb_prefix_output => 'prefix_queries_output'`
-- `cb_prefix_output => 'prefix_app_output'`
+#### Method 1: Direct string with placeholders
 
-Define those functions by adding it to our `appmetrics.pm` file. They are self-explanatory.
+Use `prefix_output` with a static string or template containing `%{}` placeholders:
+
+```perl
+$self->{maps_counters_type} = [
+    { name => 'health', type => COUNTER_TYPE_GLOBAL, prefix_output => 'My-awesome-app health %{name}' },
+    { name => 'queries', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Database queries' },
+];
+```
+
+**When to use:** Simple, static prefixes or when you just need basic variable substitution.
+
+#### Method 2: Callback functions
+
+Use `cb_prefix_output` to reference a Perl function that returns the prefix dynamically. This is useful when you need complex logic or to access instance data.
+
+First, define your callback functions at the end of your `appmetrics.pm` file:
 
 ```perl
 sub prefix_health_output {
@@ -420,6 +434,56 @@ sub prefix_app_output {
 
     # This notation allows you to return the value of the instance (the display key_value)
     # to bring some context to the output.
+    return "A value to display '" . $options{instance_value}->{display} . "' ";
+    
+    # Alternatively, you could use exprintf for more complex formatting:
+    # use centreon::plugins::misc qw(exprintf);
+    # return exprintf("A value to display '%{display}' ", $options{instance_value});
+}
+
+1;
+```
+
+Then, reference these callbacks in your counter type definitions:
+
+```perl
+$self->{maps_counters_type} = [
+    { name => 'health', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_health_output' },
+    { name => 'queries', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_queries_output' },
+    { name => 'app_metrics', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_app_output' }
+];
+```
+
+**When to use:** Complex logic, conditional formatting, or when you need access to `instance_value` or other options passed to the callback.
+
+#### Complete Example using callbacks
+
+Update the `set_counters` function to use callbacks:
+
+```perl
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'health', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_health_output' },
+        { name => 'queries', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_queries_output' },
+        { name => 'app_metrics', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_app_output' }
+    ];
+    # ... rest of counter definitions
+}
+
+sub prefix_health_output {
+    my ($self, %options) = @_;
+    return 'My-awesome-app:';
+}
+
+sub prefix_queries_output {
+    my ($self, %options) = @_;
+    return 'Queries:';
+}
+
+sub prefix_app_output {
+    my ($self, %options) = @_;
     return "'" . $options{instance_value}->{display} . "' ";
 }
 
@@ -516,14 +580,10 @@ sub manage_selection {
     my ($content) = $self->{http}->request(url_path => '/v3/da8d5aa7-abb4-4a5f-a31c-6700dd34a656');
     
     # Declare a scalar deserialize the JSON content string into a perl data structure
-    my $decoded_content;
-    eval {
-        $decoded_content = JSON::XS->new->decode($content);
-    };
+    my $decoded_content = json_decode($content);
     # Catch the error that may arise in case the data received is not JSON
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode JSON result");
-        $self->{output}->option_exit();    
+        $self->{output}->option_exit(short_msg => "Cannot encode JSON result");
     }
     use Data::Dumper; 
     print Dumper($decoded_content);
@@ -588,15 +648,9 @@ sub manage_selection {
     # print $content;
 
     # Declare a scalar deserialize the JSON content string into a perl data structure
-    my $decoded_content;
-    eval {
-        $decoded_content = JSON::XS->new->decode($content);
-    };
-    # Catch the error that may arise in case the data received is not JSON
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode JSON result");
-        $self->{output}->option_exit();    
-    }
+    # Errors are automatically caught by json_decode when the output parameter is used.
+    my $decoded_content = json_decode($content, output => $self->{output});
+
     # Uncomment the lines below when you reached this part of the tutorial.
     # use Data::Dumper; 
     # print Dumper($decoded_content);
@@ -665,15 +719,9 @@ sub manage_selection {
     # print $content;
 
     # Declare a scalar deserialize the JSON content string into a perl data structure
-    my $decoded_content;
-    eval {
-        $decoded_content = JSON::XS->new->decode($content);
-    };
-    # Catch the error that may arise in case the data received is not JSON
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode JSON result");
-        $self->{output}->option_exit();    
-    }
+    # Errors are automatically caught by json_decode when the output parameter is used.
+    my $decoded_content = json_decode$content, output => $self->{output});
+
     # Uncomment the lines below when you reached this part of the tutorial.
     # use Data::Dumper; 
     # print Dumper($decoded_content);
@@ -981,8 +1029,7 @@ sub new {
     }
     # Check if options are avaliable
     if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
+        $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.");
     }
 
     if (!defined($options{noptions})) {
@@ -1087,18 +1134,10 @@ sub request_api {
     my ($content) = $self->{http}->request(url_path => '/v3/da8d5aa7-abb4-4a5f-a31c-6700dd34a656');
 
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode JSON result");
-        $self->{output}->option_exit();
-    }
+    my $decoded = json_decode($content, output => $self->{output});
 
     return $decoded;
 }
