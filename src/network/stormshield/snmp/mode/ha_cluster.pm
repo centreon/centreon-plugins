@@ -207,7 +207,7 @@ my %mapping = (
     snsNodeIndex        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.1' },
     snsFwSerial         => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.2' },
     snsOnline           => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.3' },
-    snsOnline           => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.4' },
+    snsModel            => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.4' },
     snsVersion          => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.5' },
     snsHALicence        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.6' },
     snsHAQuality        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.7' },
@@ -216,7 +216,7 @@ my %mapping = (
     snsHAActive         => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.10' },
 );
 
-my %map_online = ( 0 => 'False', 1 => 'True' );
+my %map_online = ( 2 => 'False', 1 => 'True' );
 my %map_status = ( 0 => 'False', 1 => 'True' );
 my %map_act_pass = ( 2 => 'Passive', 1 => 'Active' );
 my %map_sync = ( 0 => 'False', 1 => 'True' );
@@ -291,7 +291,7 @@ sub manage_selection {
         my $n = $nodes{$idx}; 
               
         my $serial = $n->{snsFwSerial} // 'N/A';
-        my $model = $n->{snsOnline} // 'N/A';
+        my $model = $n->{snsModel} // 'N/A';
         my $version = $n->{snsVersion} // 'N/A';
         my $status_f = $map_status{$n->{snsHAStatusForced} // 0 } // 'UNKNOWN';
         my $act_pass = $map_act_pass{$n->{snsHAActive} // 0 } // 'UNKNOWN';
