@@ -220,6 +220,18 @@ sub try_request_api {
     return $decoded;
 }
 
+sub format_error {
+    my ($self, %options) = @_;
+
+    return '' unless $options{api_response};
+    my $full_message = '';
+    for my $error_item (@{ $options{api_response}->{messages} }) {
+        $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
+    }
+
+    return "API returned an error of type " . $options{api_response}->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
@@ -237,16 +249,37 @@ sub request_api {
     }
 
     # if we could not authenticate, we exit (unless no_fail option is true)
-    if (ref($api_response) eq 'HASH' && defined($api_response->{error_type}) && ! $options{no_fail}) {
-        my $full_message = '';
-        for my $error_item (@{$api_response->{messages}}) {
-            $full_message .= '[Id: ' . $error_item->{id} . ' - Msg: ' . $error_item->{default_message} . ' (' . join(', ', @{$error_item->{args}}) . ')]';
-        }
-        $self->{output}->option_exit(short_msg => "API returned an error of type " . $api_response->{error_type} . " when requesting endpoint'" . $options{endpoint} . "': " . $full_message);
-    }
-
+    $self->{output}->option_exit(short_msg => $self->format_error(api_response => $api_response, %options))
+        if (ref($api_response) eq 'HASH' && defined($api_response->{error_type}) && ! $options{no_fail});
 
     return $api_response;
+}
+
+sub get_vms {
+    my ($self, %options) = @_;
+
+    return $self->request_api('endpoint' => '/vcenter/vm', 'method' => 'GET', %options);
+}
+
+sub get_vms_by_host {
+    my ($self, %options) = @_;
+
+    my %all_vms;
+    my $all_hosts = $self->get_hosts();
+    my $get_param = $options{get_param} // [];
+    for my $host (sort {$a->{host} cmp $b->{host}} @$all_hosts) {
+        my $host_vms = $self->get_vms(get_param => [ @$get_param, 'hosts=' . $host->{host}] );
+        foreach my $vm (@$host_vms) {
+            $all_vms{$vm->{vm}} = { %$vm, host => $host->{host} };
+        }
+    }
+    return \%all_vms;
+}
+
+sub get_hosts {
+    my ($self, %options) = @_;
+
+    return $self->request_api('endpoint' => '/vcenter/host', 'method' => 'GET');
 }
 
 sub get_folder_ids_by_names {
@@ -647,6 +680,96 @@ Calls try_request_api and recalls it forcing authentication if the first call fa
 =back
 
 =back
+
+=head2 format_error
+
+    my $message = $api->format_error(api_response => $response, endpoint => $endpoint);
+
+Formats an API error response into a human-readable string. Returns an empty string if no C<api_response> is provided.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<api_response> - A hash reference representing the API error response. Expected keys:
+
+=over 12
+
+=item * C<error_type> - A string identifying the category of the error (e.g. C<UNAUTHENTICATED>, C<NOT_FOUND>).
+
+=item * C<messages> - An array reference of message objects, each containing C<id>, C<default_message>, and C<args>.
+
+=back
+
+=item * C<endpoint> - The API endpoint that triggered the error, included in the returned message.
+
+=back
+
+=back
+
+Returns a formatted string of the form:
+C<API returned an error of type {error_type} when requesting endpoint '{endpoint}': [Id: {id} - Msg: {msg} ({args})]...>
+
+=head2 get_vms
+
+    my $vms = $api->get_vms(%options);
+    my $vms = $api->get_vms(get_param => ['power_states=POWERED_ON']);
+
+Retrieves the list of virtual machines from the C</vcenter/vm> endpoint. Accepts any option
+supported by C<request_api>, notably C<get_param> to pass query parameters such as C<hosts>,
+C<power_states>, or C<folders>.
+
+=over 4
+
+=item * C<%options> - Passed through to C<request_api>. Useful keys:
+
+=over 8
+
+=item * C<get_param> - An array reference of query parameters (e.g. C<['hosts=host-35']>).
+
+=back
+
+=back
+
+Returns an array reference of VM objects, each containing: C<vm>, C<name>, C<power_state>,
+C<cpu_count>, C<memory_size_MiB>.
+
+=head2 get_hosts
+
+    my $hosts = $api->get_hosts();
+
+Retrieves the list of ESX hosts from the C</vcenter/host> endpoint.
+
+Returns an array reference of host objects, each containing at minimum: C<host> (the host ID,
+e.g. C<host-35>), C<name>, C<connection_state>, C<power_state>.
+
+=head2 get_vms_by_host
+
+    my $vms = $api->get_vms_by_host();
+    my $vms = $api->get_vms_by_host(get_param => ['power_states=POWERED_ON']);
+
+Retrieves all virtual machines grouped by ESX host, working around the 4000-element limit of
+the C</vcenter/vm> endpoint. Internally calls C<get_hosts> once, then calls C<get_vms> once
+per host with C<hosts=E<lt>host_idE<gt>> appended to C<get_param>.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<get_param> - An array reference of extra query parameters forwarded to each per-host
+C<get_vms> call (e.g. C<['power_states=POWERED_ON']>).
+
+=back
+
+=back
+
+Returns a hash reference keyed by VM ID (C<vm> field). Each value is the VM object returned by
+the API, enriched with a C<host> key containing the host ID (e.g. C<host-35>) the VM runs on.
+Fields per entry: C<vm>, C<name>, C<power_state>, C<cpu_count>, C<memory_size_MiB>, C<host>.
 
 =head2 get_folder_ids_by_names
 
