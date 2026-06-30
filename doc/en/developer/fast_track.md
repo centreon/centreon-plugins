@@ -8,7 +8,7 @@ from the latest features made available in the codebase. Please find below some 
 ### Declaring options with `add_options()`
   
   - Use `default` option in `add_options()` method to avoid useless code in `check_options()`.
-  - Use greater_than, less_than_or_equal, regexp_match, and other validation options to avoid implementing check_options() (see [Options](plugins_global.md#options)).
+  - Use greater_than, less_than_or_equal, regexp_match, and other validation options to avoid implementing check_options() (see [Plugins Options](plugins_global.md#options)).
 
 ### Declaring counters with constants
 
@@ -41,7 +41,7 @@ Instead of:
 
 ### Prefer Placeholder-Based Functions Instead of Callback Functions
 
-When declaring counters, if you only need to display the value of variables, it is often simpler and faster to use the `prefix_output`, `suffix_output`, and `long_output` functions with %{} placeholders rather than implementing `cb_prefix_output`, `cb_suffix_output`, `cb_long_output`, and other callback functions.
+When declaring counters, if you only need to display the value of variables, it is often simpler and faster to use the `prefix_output`, `suffix_output`, and `long_output` functions with `%{}` placeholders rather than implementing `cb_prefix_output`, `cb_suffix_output`, `cb_long_output`, and other callback functions.
 For example:
 
 ```perl

@@ -218,7 +218,7 @@ sub new {
         # On the left it's the option name that will be used in the command line. The ':s' at the end is to 
         # define that this options takes a value.  
         # On the right, it's the code name for this option, optionally you can define a default value so the user 
-        # doesn't have to set it
+        # doesn't have to set it, as well as argument validation constaints.
          'hostname:s'           => { name => 'hostname', not_empty => 1 },
          'proto:s'              => { name => 'proto', default => 'https', type => 'protocol_http', not_empty => 1  },
          'port:s'               => { name => 'port', default => 443, type => 'port', not_empty => 1 },
@@ -239,7 +239,7 @@ sub new {
 }
 ```
 
-As you can see, many argument validation checks can be configured simply and quickly in `add_options` (see [Options](plugins_global.md#options)).
+As you can see, many argument validation checks can be configured simply and quickly in `add_options` (see [Plugins Options](plugins_global.md#options)).
 For all other cases, you can implement a `check_options` function to perform additional, more specific validation checks.
 
 ```perl
@@ -412,7 +412,7 @@ $self->{maps_counters_type} = [
 
 #### Method 2: Callback functions
 
-Use `cb_prefix_output` to reference a Perl function that returns the prefix dynamically. This is useful when you need complex logic or to access instance data.
+Use `cb_prefix_output` to reference a Perl function that returns the prefix dynamically. This is useful when you need complex logic or dynamic output, where the displayed variables are not always the same.
 
 First, define your callback functions at the end of your `appmetrics.pm` file:
 

@@ -608,6 +608,8 @@ This example change bytes to human readable unit:
 
 ```perl
 
+use centreon::plugins::misc qw(format_bytes);
+
 my ($value, $unit) = format_bytes(value => 100000);
 
 print $value.' '.$unit."\n";
@@ -783,10 +785,10 @@ Replace placeholders in a string with values from a hash. Supports optional filt
 **Placeholder syntax**
 
 - `%{key}` - Simple placeholder replacement
-- `%{key\|storage}` - Format as human-readable storage size (KB, MB, GB, etc.)
-- `%{key\|network}` - Format as human-readable network bandwidth
-- `%{key\|change_seconds}` - Convert seconds to human-readable time format (e.g., "1h 2m 30s")
-- `%{key\|%format}` - Use sprintf format (must start with %)
+- `%{key|storage}` - Format as human-readable storage size (KB, MB, GB, etc.)
+- `%{key|network}` - Format as human-readable network bandwidth
+- `%{key|change_seconds}` - Convert seconds to human-readable time format (e.g., "1h 2m 30s")
+- `%{key|%format}` - Use sprintf format (must start with %)
 
 **Examples**
 
