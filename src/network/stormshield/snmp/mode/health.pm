@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,26 +25,39 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw/:counters :values/;
+
+our $GLOBAL_PROBLEM;
 
 sub custom_service_status_output {
     my ($self, %options) = @_;
 
-    return sprintf(
+    my $msg = sprintf(
         "health: %s",
         $self->{result_values}->{health}
     );
+
+    my $health = $self->{result_values}->{health};
+
+    if ($health !~ /minor/i && $health !~ /major/i) {
+        if (!$GLOBAL_PROBLEM) {
+            $self->{output}->output_add(
+                long_msg => "service '" . $self->{result_values}->{service} . "' " . $msg
+            );
+        }
+    }
+
+    return $msg;
 }
 
 sub firewall_long_output {
     my ($self, %options) = @_;
+    my $display = $options{instance_value}->{display};
 
-    return "checking firewall '" . $options{instance_value}->{display} . "'";
-}
-
-sub prefix_firewall_output {
-    my ($self, %options) = @_;
-
-    return "firewall '" . $options{instance_value}->{display} . "' ";
+    if (defined $display && $display ne '') {
+        return "--------------Firewall $display--------------";
+    }
+    return "------------------------------------------------------------";
 }
 
 sub prefix_service_output {
@@ -57,10 +70,16 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'firewalls', type => 3, cb_prefix_output => 'prefix_firewall_output', cb_long_output => 'firewall_long_output',
-          indent_long_output => '    ', message_multiple => 'All firewalls are ok',
+        { name => 'firewalls', type => COUNTER_TYPE_GROUP, cb_long_output => 'firewall_long_output',
+          message_multiple => 'All firewalls are ok',
             group => [
-                 { name => 'services', display_long => 1, cb_prefix_output => 'prefix_service_output',  message_multiple => 'All services are ok', type => 1, skipped_code => { -10 => 1 } }
+                 {
+                    name => 'services',
+                    display_long => 1,
+                    cb_prefix_output => 'prefix_service_output',
+                    message_multiple => 'All services are ok',
+                    type => COUNTER_TYPE_INSTANCE,
+                    skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -68,7 +87,7 @@ sub set_counters {
     $self->{maps_counters}->{services} = [
         {
             label => 'service-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{health} =~ /minor/i',
             critical_default => '%{health} =~ /major/i',
             set => {
@@ -94,18 +113,21 @@ sub new {
 }
 
 my $mapping = {
+    hamode          => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.3' },  # snsHaModeHealth
     link            => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.4' },  # snsHaLinkHealth
     powersupply     => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.5' },  # snsPowerSupplyHealth
     fan             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.6' },  # snsFanHealth
-    cpu             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.7' },  # snsFanHealth
+    cpu             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.7' },  # snsCpuHealth
     memory          => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.8' },  # snsMemHealth
     disk            => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.9' },  # snsDiskHealth
     raid            => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.10' }, # snsRaidHealth
     certificate     => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.11' }, # snsCertHealth
     CRL             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.12' }, # snsCRLHealth
-    #password        => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.13' }, # snsPasswdHealth
-    #cpu_temperature => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.14' }, # snsCpuTempHealth
-    #TPM             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.15' }  # snsTPMHealth
+    TPM             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.13' }, # snsTPMHealth
+    password        => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.14' }, # snsPasswdHealth
+    cpu_temperature => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.15' }, # snsCpuTempHealth
+    router          => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.16' }, # snsRouterHealth
+    NTP             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.17' }, # snsNTPHealth
 };
 my $oid_snsSerialHealth = '.1.3.6.1.4.1.11256.1.16.2.1.2';
 
@@ -130,12 +152,19 @@ sub manage_selection {
         }
 
         $self->{firewalls}->{$instance} = {
-            display => $serial,
+            display  => $serial,
             services => {}
         };
     }
 
     return if (scalar(keys %{$self->{firewalls}}) <= 0);
+
+    $GLOBAL_PROBLEM = 0;
+
+    my @instances = keys %{$self->{firewalls}};
+    if (scalar(@instances) == 1) {
+        $self->{firewalls}->{ $instances[0] }->{display} = '';
+    }
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
@@ -147,9 +176,13 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
         foreach my $service (keys %$result) {
+            my $health = $result->{$service};
+            if (defined $health && ($health =~ /minor/i || $health =~ /major/i)) {
+                $GLOBAL_PROBLEM = 1;
+            }
             $self->{firewalls}->{$_}->{services}->{$service} = {
                 service => $service,
-                health => $result->{$service}
+                health  => $health
             };
         }
     }
