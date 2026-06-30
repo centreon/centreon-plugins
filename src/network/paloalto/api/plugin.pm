@@ -29,13 +29,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $self->{modes} = {
-        'environment' => 'network::paloalto::api::mode::environment',
-        'ha'          => 'network::paloalto::api::mode::ha',
-        'licenses'    => 'network::paloalto::api::mode::licenses',
-        'system'      => 'network::paloalto::api::mode::system',
-        'ipsec'       => 'network::paloalto::api::mode::ipsec'
+        'cpu'              => 'network::paloalto::api::mode::cpu',
+        'environment'      => 'network::paloalto::api::mode::environment',
+        'ha'               => 'network::paloalto::api::mode::ha',
+        'interfaces'       => 'network::paloalto::api::mode::interfaces',
+        'ipsec'            => 'network::paloalto::api::mode::ipsec',
+        'licenses'         => 'network::paloalto::api::mode::licenses',
+        'list-interfaces'  => 'network::paloalto::api::mode::listinterfaces',
+        'memory'           => 'network::paloalto::api::mode::memory',
+        'sessions'         => 'network::paloalto::api::mode::sessions',
+        'system'           => 'network::paloalto::api::mode::system'
     };
 
     $self->{custom_modes}->{api} = 'network::paloalto::api::custom::api';
