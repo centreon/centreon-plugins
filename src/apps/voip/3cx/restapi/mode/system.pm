@@ -168,7 +168,7 @@ sub manage_selection {
         };
     }
 
-    my $calls_prct_used = $system->{CallsActive} * 100 / $system->{MaxSimCalls};
+    my $calls_prct_used = $system->{MaxSimCalls} ? $system->{CallsActive} * 100 / $system->{MaxSimCalls} : 100;
     my $extensions_prct_used = $system->{MaxUserExtensions} ? $system->{UserExtensions} * 100 / $system->{MaxUserExtensions} : 100;
 
     $self->{global} = {
@@ -208,7 +208,7 @@ Exclude updates by category (can be a regexp).
 =item B<--include-service>
 
 Services to include in checks (can be a regexp).
-Available services: C<HasUnregisteredTrunks>, HasNotRunningServices>,
+Available services: C<HasUnregisteredTrunks>, C<HasNotRunningServices>,
 C<HasUnregisteredSystemExtensions>, C<HasUpdatesAvailable>.
 
 =item B<--exclude-service>
