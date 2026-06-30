@@ -46,7 +46,7 @@ sub set_counters {
         {
             label => 'certificate-status',
             type  => COUNTER_KIND_TEXT,
-            critical_default => '%{cert_status} !~ /valid|ok/i',
+            critical_default => '%{cert_status} !~ /valid/i',
             set => {
                 key_values => [ { name => 'cert_status' }, { name => 'serial' }, { name => 'hostname' }, { name => 'connected' } ],
                 output_template => 'certificate status: %{cert_status}',
@@ -134,7 +134,7 @@ sub manage_selection {
             serial              => $serial,
             hostname            => $hostname,
             connected           => $connected,
-            cert_status         => $device->{'certificate-status'} // '',
+            cert_status         => $device->{'device-cert-present'} // '',
             cert_subject        => $device->{'certificate-subject-name'} // '',
             cert_expiry_days    => $cert_expiry_days,
             custom_cert_usage   => $device->{'custom-certificate-usage'} // '',
@@ -148,7 +148,7 @@ sub _calculate_days_until_expiry {
     return -1 if is_empty($expiry_str);
 
     my $parser = DateTime::Format::Strptime->new(
-        pattern => '%b %d, %Y',
+        pattern => '%Y/%m/%d %H:%M:%S',
         on_error => 'undef',
         time_zone => 'UTC'
     );
@@ -206,7 +206,7 @@ You can use the following variables: %{cert_status}, %{serial}, %{hostname}, %{c
 
 =item B<--critical-certificate-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{cert_status} !~ /valid|ok/i').
+Define the conditions to match for the status to be CRITICAL (default: '%{cert_status} !~ /valid/i').
 You can use the following variables: %{cert_status}, %{serial}, %{hostname}, %{connected}
 
 =item B<--unknown-certificate-subject>
