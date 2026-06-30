@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,19 +24,22 @@ use base qw(apps::vmware::vsphere8::vcenter::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters);
+use centreon::plugins::misc qw(is_excluded);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'host', type => COUNTER_TYPE_INSTANCE, prefix_output => "host %{display}: " },
     ];
 
     $self->{maps_counters}->{global} = [
         {
             label  => 'on-count',
             nlabel => 'vm.poweredon.count',
-            type   => 1,
+            type   => COUNTER_KIND_METRIC,
             set    => {
                 key_values      => [ { name => 'POWERED_ON' }, { name => 'total' } ],
                 output_template => '%s VM(s) powered on',
@@ -48,7 +51,7 @@ sub set_counters {
         {
             label  => 'off-count',
             nlabel => 'vm.poweredoff.count',
-            type   => 1,
+            type   => COUNTER_KIND_METRIC,
             set    => {
                 key_values      => [ { name => 'POWERED_OFF' }, { name => 'total' } ],
                 output_template => '%s VM(s) powered off',
@@ -60,7 +63,7 @@ sub set_counters {
         {
             label  => 'suspended-count',
             nlabel => 'vm.suspended.count',
-            type   => 1,
+            type   => COUNTER_KIND_METRIC,
             set    => {
                 key_values      => [ { name => 'SUSPENDED' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
@@ -72,13 +75,27 @@ sub set_counters {
         {
             label           => 'total-count',
             nlabel          => 'vm.total.count',
-            type            => 1,
+            type            => COUNTER_KIND_METRIC,
             warning_default => '1:',
             set             => {
                 key_values      => [ { name => 'total' } ],
                 output_template => '%s VM(s) in total',
                 perfdatas       => [
                     { label => 'total', template => '%s', min => 0 }
+                ]
+            }
+        }
+    ];
+    $self->{maps_counters}->{host} = [
+        {
+            label  => 'count-by-host',
+            nlabel => 'host.vm.poweredon.count',
+            type   => COUNTER_KIND_METRIC,
+            set    => {
+                key_values      => [ { name => 'count' }, { name => 'display' } ],
+                output_template => '%s running VM(s)',
+                perfdatas       => [
+                    { label => 'count', template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -105,9 +122,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # get the response from /api/vcenter/vm endpoint
-    my $response = $self->get_vms(%options);
-
     $self->{global} = {
         'POWERED_ON'  => 0,
         'POWERED_OFF' => 0,
@@ -116,34 +130,41 @@ sub manage_selection {
         'UNKNOWN'     => 0
     };
 
-    for my $vm (@{$response}) {
+    # get the response from /api/vcenter/vm endpoint
+    my $vms_by_host = $self->get_vms_by_host(%options);
+
+    for my $vm (values %$vms_by_host) {
         # avoid undef values
         my $entry = {
             vm              => $vm->{vm},
             name            => $vm->{name},
             cpu_count       => $vm->{cpu_count} // 0,
             power_state     => $vm->{power_state} // 'UNKNOWN',
-            memory_size_MiB => $vm->{memory_size_MiB} // 0
+            memory_size_MiB => $vm->{memory_size_MiB} // 0,
+            host            => $vm->{host}
         };
 
+        $self->{host}->{ $entry->{host} } //= { display => $entry->{host}, count => 0 };
+
         my $entry_desc = sprintf(
-            "VM '%s' (%s) which is %s, has %d CPUs and %d MiB of RAM",
+            "VM '%s' (%s) which is %s, has %d CPUs and %d MiB of RAM and runs on %s",
             $entry->{name},
             $entry->{vm},
             $entry->{power_state},
             $entry->{cpu_count},
-            $entry->{memory_size_MiB}
+            $entry->{memory_size_MiB},
+            $entry->{host}
         );
-        if ( centreon::plugins::misc::is_excluded($entry->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name})
-            || centreon::plugins::misc::is_excluded($entry->{power_state}, $self->{option_results}->{include_state}, $self->{option_results}->{exclude_state}) ) {
+        if (is_excluded($entry->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name})
+            || is_excluded($entry->{power_state}, $self->{option_results}->{include_state}, $self->{option_results}->{exclude_state})) {
             $self->{output}->output_add(long_msg => "skipping VM " . $entry_desc . " (excluded)", debug => 1);
             next;
         }
 
         $self->{output}->output_add(long_msg => $entry_desc);
+        $self->{host}->{ $entry->{host} }->{count}++ if $entry->{power_state} eq 'POWERED_ON';
         $self->{global}->{ $entry->{power_state} }++;
         $self->{global}->{total}++;
-
     }
 }
 

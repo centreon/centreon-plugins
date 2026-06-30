@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use JSON::XS;
+use centreon::plugins::misc qw(json_encode is_empty);
 
 sub new {
     my ($class, %options) = @_;
@@ -53,31 +53,25 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my @params;
-    if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_power_states})) {
-        push @params, 'power_states=' . $self->{option_results}->{filter_power_states};
-    }
+    push @params, 'power_states=' . $self->{option_results}->{filter_power_states}
+        unless is_empty($self->{option_results}->{filter_power_states});
 
-    if (!centreon::plugins::misc::is_empty($self->{option_results}->{filter_folders})) {
+    if ( !is_empty($self->{option_results}->{filter_folders}) ) {
         my $folder_ids = $options{custom}->get_folder_ids_by_names('names' => $self->{option_results}->{filter_folders});
         push @params, 'folders=' . $folder_ids;
     }
 
-    my $url_params = '';
-    $url_params = '?' . join('&', @params) if (@params > 0);
-    # Retrieve the data
-    my $response = $options{custom}->request_api('endpoint' => '/vcenter/vm' . $url_params, 'method' => 'GET');
+    # Retrieve the vms
+    my $vms_by_host = $options{custom}->get_vms_by_host(get_param => \@params);
 
-    # Format the data for vm discovery
-    my @results = map {
-        'vm_name' => $_->{name},
-        'vmw_vm_id' => $_->{vm},
-        'power_state' => $_->{power_state},
-    }, @{$response};
-
-    foreach my $vm (@results) {
+    foreach my $vm (sort {$a->{vm} cmp $b->{vm}} values %$vms_by_host) {
+        # change the keys to match the host discovery provider's attributes
+        $vm->{vm_name} = delete $vm->{name};
+        $vm->{vmw_vm_id} = delete $vm->{vm};
         # if the VM is POWERED_ON and if the tools are available, the vcenter can provide system information
         # we skip this if the --no-identity option has been used
-        my $identity = $options{custom}->get_vm_guest_identity(vm_id => $vm->{vmw_vm_id}) if ($vm->{power_state} eq 'POWERED_ON' && !$self->{option_results}->{no_identity});
+        my $identity = $options{custom}->get_vm_guest_identity(vm_id => $vm->{vmw_vm_id})
+            if ($vm->{power_state} eq 'POWERED_ON' && !$self->{option_results}->{no_identity});
         # The GuestOSFamily enumerated type defines the valid guest operating system family types reported by a virtual machine.
         # WINDOWS : Windows operating system
         # LINUX : Linux operating system
@@ -95,20 +89,15 @@ sub run {
     # Record the metadata
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-    $disco_stats->{results}  = \@results;
-    $disco_stats->{discovered_items} = scalar(@results);
+    $disco_stats->{results}  = [values %$vms_by_host];
+    $disco_stats->{discovered_items} = scalar(keys %$vms_by_host);
 
-    my $encoded_data;
-    eval {
-        if (defined($self->{option_results}->{prettify})) {
-            $encoded_data = JSON::XS->new->utf8->canonical(1)->pretty->encode($disco_stats);
-        } else {
-            $encoded_data = JSON::XS->new->utf8->canonical(1)->encode($disco_stats);
-        }
-    };
-    if ($@) {
-        $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
-    }
+    my $encoded_data = json_encode(
+        $disco_stats,
+        prettify => $self->{option_results}->{prettify},
+        errstr   => '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}',
+        output   => $self->{output}
+    );
 
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
@@ -120,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Discover VMware8 virtual machines.
+Discover VMware 8 virtual machines.
 
 =over 8
 
