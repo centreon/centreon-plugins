@@ -2095,6 +2095,62 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "8a47299b-4dfd-414f-b9fb-b23d5e046074",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/vcenter/host",
+      "responses": [
+        {
+          "uuid": "5c30b014-aaa7-4674-ab66-4aae955ce37c",
+          "body": "[{\"host\":\"host-22\",\"name\":\"esx1.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_ON\"},{\"host\":\"host-28\",\"name\":\"esx2.acme.com\",\"connection_state\":\"CONNECTED\",\"power_state\":\"POWERED_OFF\"},{\"host\":\"host-35\",\"name\":\"esx3.acme.com\",\"connection_state\":\"DISCONNECTED\",\"power_state\":\"POWERED_ON\"}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -2169,6 +2225,10 @@
     {
       "type": "route",
       "uuid": "315979dc-3c39-4f3d-9606-f963e3c80c4c"
+    },
+    {
+      "type": "route",
+      "uuid": "8a47299b-4dfd-414f-b9fb-b23d5e046074"
     }
   ],
   "proxyMode": false,
