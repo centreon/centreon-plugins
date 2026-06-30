@@ -54,8 +54,8 @@ sub custom_support_status_output {
     if ($self->{result_values}->{support}) {
         $label = exprintf('Support enabled (expires on %{maintenance_expires_date})', $self->{result_values});
     } else {
-        if ($self->{result_values}->{maintenance_expires_date} < 0) {
-            $label = sprintf('Support expired %d day(s) ago', - $self->{result_values}->{maintenance_expires_date});
+        if ($self->{result_values}->{maintenance_expires_in} < 0) {
+            $label = sprintf('Support expired %d day(s) ago', - $self->{result_values}->{maintenance_expires_in});
         } else {
             $label = 'Support disabled';
         }
