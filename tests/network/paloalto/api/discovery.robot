@@ -39,10 +39,10 @@ discovery ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    {"discovered_items":3,"duration":0,"end_time":1779952768,"results":[{"Connected":"yes","HostName":"fw-nyc.example.com","IpAddress":"192.168.1.1","Model":"PA-850","Serial":"FW-NYC"},{"Connected":"yes","HostName":"fw-london.example.com","IpAddress":"192.168.1.2","Model":"PA-850","Serial":"FW-LONDON"},{"Connected":"no","HostName":"fw-tokyo.example.com","IpAddress":"192.168.1.3","Model":"PA-VM","Serial":"FW-TOKYO"}],"start_time":1779952768}
+    ...    {"discovered_items":3,"duration":0,"end_time":1779952768,"results":[{"Connected":"yes","HostName":"fw-nyc.example.com","IpAddress":"192.168.1.1","Model":"PA-850","Serial":"FW-NYC"},{"Connected":"yes","HostName":"fw-london.example.com","IpAddress":"192.168.1.2","Model":"PA-850","Serial":"FW-LONDON"},{"Connected":"yes","HostName":"fw-tokyo.example.com","IpAddress":"192.168.1.3","Model":"PA-VM","Serial":"FW-TOKYO"}],"start_time":1779952768}
     ...    2
     ...    --include-model=PA-VM
-    ...    {"discovered_items":1,"duration":0,"end_time":1779952789,"results":[{"Connected":"no","HostName":"fw-tokyo.example.com","IpAddress":"192.168.1.3","Model":"PA-VM","Serial":"FW-TOKYO"}],"start_time":1779952789}
+    ...    {"discovered_items":1,"duration":0,"end_time":1779952789,"results":[{"Connected":"yes","HostName":"fw-tokyo.example.com","IpAddress":"192.168.1.3","Model":"PA-VM","Serial":"FW-TOKYO"}],"start_time":1779952789}
     ...    3
     ...    --exclude-model=PA-VM
     ...    {"discovered_items":2,"duration":0,"end_time":1779952792,"results":[{"Connected":"yes","HostName":"fw-nyc.example.com","IpAddress":"192.168.1.1","Model":"PA-850","Serial":"FW-NYC"},{"Connected":"yes","HostName":"fw-london.example.com","IpAddress":"192.168.1.2","Model":"PA-850","Serial":"FW-LONDON"}],"start_time":1779952792}
@@ -51,4 +51,4 @@ discovery ${tc}
     ...    {"discovered_items":1,"duration":0,"end_time":1779952818,"results":[{"Connected":"yes","HostName":"fw-london.example.com","IpAddress":"192.168.1.2","Model":"PA-850","Serial":"FW-LONDON"}],"start_time":1779952818}
     ...    5
     ...    --exclude-ip-address=192.168.1.2
-    ...    {"discovered_items":2,"duration":0,"end_time":1779952822,"results":[{"Connected":"yes","HostName":"fw-nyc.example.com","IpAddress":"192.168.1.1","Model":"PA-850","Serial":"FW-NYC"},{"Connected":"no","HostName":"fw-tokyo.example.com","IpAddress":"192.168.1.3","Model":"PA-VM","Serial":"FW-TOKYO"}],"start_time":1779952822}
+    ...    {"discovered_items":2,"duration":0,"end_time":1779952822,"results":[{"Connected":"yes","HostName":"fw-nyc.example.com","IpAddress":"192.168.1.1","Model":"PA-850","Serial":"FW-NYC"},{"Connected":"yes","HostName":"fw-tokyo.example.com","IpAddress":"192.168.1.3","Model":"PA-VM","Serial":"FW-TOKYO"}],"start_time":1779952822}
