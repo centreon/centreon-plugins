@@ -170,16 +170,9 @@
               "value": "<system>",
               "invert": false,
               "operator": "regex"
-            },
-            {
-              "target": "query",
-              "modifier": "target",
-              "value": "",
-              "invert": false,
-              "operator": "null"
             }
           ],
-          "rulesOperator": "AND",
+          "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": false,
@@ -220,7 +213,7 @@
         },
         {
           "uuid": "046ba2be-d382-4255-a575-dd5894136b30",
-          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <devices>\n      <entry name=\"FW-NYC\">\n        <serial>FW-NYC</serial>\n        <connected>yes</connected>\n        <hostname>fw-nyc.example.com</hostname>\n        <ip-address>192.168.1.1</ip-address>\n        <model>PA-850</model>\n        <sw-version>10.1.3</sw-version>\n        <certificate-status>Valid</certificate-status>\n        <certificate-subject-name>CN=fw-nyc.example.com,O=Palo Alto Networks</certificate-subject-name>\n        <certificate-expiry>Dec 15, 2025</certificate-expiry>\n        <custom-certificate-usage>No</custom-certificate-usage>\n        <ha>\n          <state>active</state>\n          <peer>\n            <serial>FW-NYC-HA</serial>\n          </peer>\n        </ha>\n        <vsys>\n          <entry name=\"vsys1\">\n            <display-name>Root</display-name>\n            <shared-policy-status>In Sync</shared-policy-status>\n            <shared-policy-md5sum>abc123def456</shared-policy-md5sum>\n          </entry>\n        </vsys>\n      </entry>\n      <entry name=\"FW-LONDON\">\n        <serial>FW-LONDON</serial>\n        <connected>yes</connected>\n        <hostname>fw-london.example.com</hostname>\n        <ip-address>192.168.1.2</ip-address>\n        <model>PA-850</model>\n        <sw-version>10.0.5</sw-version>\n        <certificate-status>Valid</certificate-status>\n        <certificate-subject-name>CN=fw-london.example.com,O=Palo Alto Networks</certificate-subject-name>\n        <certificate-expiry>Mar 22, 2024</certificate-expiry>\n        <custom-certificate-usage>Yes</custom-certificate-usage>\n        <ha>\n          <state>passive</state>\n          <peer>\n            <serial>FW-LONDON-HA</serial>\n          </peer>\n        </ha>\n        <vsys>\n          <entry name=\"vsys1\">\n            <display-name>Root</display-name>\n            <shared-policy-status>Out of Sync</shared-policy-status>\n            <shared-policy-md5sum>xyz789uvw012</shared-policy-md5sum>\n          </entry>\n        </vsys>\n      </entry>\n      <entry name=\"FW-TOKYO\">\n        <serial>FW-TOKYO</serial>\n        <connected>no</connected>\n        <hostname>fw-tokyo.example.com</hostname>\n        <ip-address>192.168.1.3</ip-address>\n        <model>PA-VM</model>\n        <sw-version>10.1.1</sw-version>\n        <certificate-status>Expired</certificate-status>\n        <certificate-subject-name>CN=fw-tokyo.example.com,O=Palo Alto Networks</certificate-subject-name>\n        <certificate-expiry>Jan 10, 2024</certificate-expiry>\n        <custom-certificate-usage>No</custom-certificate-usage>\n        <ha>\n          <state>unknown</state>\n          <peer>\n            <serial>unknown</serial>\n          </peer>\n        </ha>\n        <vsys>\n          <entry name=\"vsys1\">\n            <display-name>Root</display-name>\n            <shared-policy-status>unknown</shared-policy-status>\n            <shared-policy-md5sum/>\n          </entry>\n        </vsys>\n      </entry>\n    </devices>\n  </result>\n</response>",
+          "body": "<response status=\"success\"><result><devices><entry name=\"FW-NYC\"><serial>FW-NYC</serial><connected>yes</connected><hostname>fw-nyc.example.com</hostname><ip-address>192.168.1.1</ip-address><model>PA-850</model><device-cert-present>Valid</device-cert-present><device-cert-expiry-date>2026/01/14 00:00:00 CEST</device-cert-expiry-date><custom-certificate-usage>no</custom-certificate-usage><sw-version>10.1.3</sw-version><ha-state>active</ha-state></entry><entry name=\"FW-LONDON\"><serial>FW-LONDON</serial><connected>yes</connected><hostname>fw-london.example.com</hostname><ip-address>192.168.1.2</ip-address><model>PA-850</model><device-cert-present>Valid</device-cert-present><device-cert-expiry-date>2024/07/01 00:00:00 CEST</device-cert-expiry-date><custom-certificate-usage>yes</custom-certificate-usage><sw-version>10.0.5</sw-version><ha-state>passive</ha-state></entry><entry name=\"FW-TOKYO\"><serial>FW-TOKYO</serial><connected>yes</connected><hostname>fw-tokyo.example.com</hostname><ip-address>192.168.1.3</ip-address><model>PA-VM</model><device-cert-present>Valid</device-cert-present><device-cert-expiry-date>2026/01/14 00:00:00 CEST</device-cert-expiry-date><custom-certificate-usage>no</custom-certificate-usage><sw-version>10.1.1</sw-version><ha-state>active</ha-state></entry></devices></result></response>",
           "latency": 0,
           "statusCode": 200,
           "label": "LIST PANORAMA FIREWALL",
@@ -246,83 +239,12 @@
           "callbacks": []
         },
         {
-          "uuid": "bcff18d8-0202-46ed-816a-82de046dee3e",
-          "body": "<response status=\"success\">\n  <result>\n    <system>\n      <hostname>firewall</hostname>\n      <ip-address>10.41.0.8</ip-address>\n      <netmask>255.255.224.0</netmask>\n      <default-gateway>10.41.0.1</default-gateway>\n      <is-dhcp>no</is-dhcp>\n      <ipv6-address>unknown</ipv6-address>\n      <ipv6-link-local-address>fe80::21c:17cf:feff:c04a/64</ipv6-link-local-address>\n      <ipv6-default-gateway/>\n      <mac-address>00:1b:17:fc:c0:4a</mac-address>\n      <time>Tue Oct 27 13:39:09 2015</time>\n      <uptime>12 days, 0:05:26</uptime>\n      <devicename>pm-firewall</devicename>\n      <family>3000</family>\n      <model>PA-3020</model>\n      <serial>001802000104</serial>\n      <sw-version>1.PANORAMA</sw-version>\n      <global-protect-client-package-version>2.0.0</global-protect-client-package-version>\n      <app-version>537-2965</app-version>\n      <app-release-date>2015/10/26 18:10:48</app-release-date>\n      <av-version>2149-2586</av-version>\n      <av-release-date>2015/10/26 15:31:55</av-release-date>\n      <threat-version>537-2965</threat-version>\n      <threat-release-date>2015/10/26 18:10:48</threat-release-date>\n      <wf-private-version>0</wf-private-version>\n      <wf-private-release-date>unknown</wf-private-release-date>\n      <url-db>paloaltonetworks</url-db>\n      <wildfire-version>80683-89773</wildfire-version>\n      <wildfire-release-date>unknown</wildfire-release-date>\n      <url-filtering-version>2015.10.27.226</url-filtering-version>\n      <global-protect-datafile-version>1445974904</global-protect-datafile-version>\n      <global-protect-datafile-release-date>2015/10/27 19:41:44</global-protect-datafile-release-date>\n      <logdb-version>7.0.9</logdb-version>\n      <platform-family>3000</platform-family>\n      <vpn-disable-mode>off</vpn-disable-mode>\n      <multi-vsys>on</multi-vsys>\n      <operational-mode>normal</operational-mode>\n      <device-certificate-status>Valid</device-certificate-status>\n    </system>\n  </result>\n</response>",
+          "uuid": "047ca3cf-e493-5366-b686-ee9a05deb931",
+          "body": "<response status=\"success\"><result><plugins><entry name=\"1\"><status>ok</status><version>1.0.0</version></entry></plugins></result></response>",
           "latency": 0,
           "statusCode": 200,
-          "label": "SYSTEM PANORAMA",
+          "label": "LIST PANORAMA PLUGINS",
           "headers": [],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [
-            {
-              "target": "query",
-              "modifier": "cmd",
-              "value": "<system>",
-              "invert": false,
-              "operator": "regex"
-            },
-            {
-              "target": "query",
-              "modifier": "target",
-              "value": "",
-              "invert": true,
-              "operator": "null"
-            }
-          ],
-          "rulesOperator": "AND",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        },
-        {
-          "uuid": "f4e5d6c7-8a9b-4c0d-1e2f-3a4b5c6d7e8f",
-          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <template>\n      <entry name=\"template-prod\">\n        <description>Production Template</description>\n        <devices>\n          <entry name=\"FW-NYC\"/>\n          <entry name=\"FW-LONDON\"/>\n        </devices>\n      </entry>\n      <entry name=\"template-dev\">\n        <description>Development Template</description>\n        <devices>\n          <entry name=\"FW-TOKYO\"/>\n        </devices>\n      </entry>\n    </template>\n  </result>\n</response>",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "LIST PANORAMA TEMPLATES",
-          "headers": [
-            {
-              "key": "Content-Type",
-              "value": "application/xml"
-            }
-          ],
-          "bodyType": "INLINE",
-          "filePath": "",
-          "databucketID": "",
-          "sendFileAsBody": false,
-          "rules": [
-            {
-              "target": "query",
-              "modifier": "xpath",
-              "value": "/config/devices/entry//template",
-              "invert": false,
-              "operator": "regex"
-            }
-          ],
-          "rulesOperator": "OR",
-          "disableTemplating": false,
-          "fallbackTo404": false,
-          "default": false,
-          "crudKey": "id",
-          "callbacks": []
-        },
-        {
-          "uuid": "d5c6e7f8-9a0b-4c1d-2e3f-4a5b6c7d8e9f",
-          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <plugins>\n      <entry name=\"cisco\">\n        <version>2.1.0</version>\n        <status>success</status>\n      </entry>\n      <entry name=\"nutanix\">\n        <version>1.0.3</version>\n        <status>success</status>\n      </entry>\n      <entry name=\"vmware\">\n        <version>1.5.2</version>\n        <status>failed</status>\n      </entry>\n    </plugins>\n  </result>\n</response>",
-          "latency": 0,
-          "statusCode": 200,
-          "label": "LIST PLUGINS",
-          "headers": [
-            {
-              "key": "Content-Type",
-              "value": "application/xml"
-            }
-          ],
           "bodyType": "INLINE",
           "filePath": "",
           "databucketID": "",
@@ -344,17 +266,12 @@
           "callbacks": []
         },
         {
-          "uuid": "e6d7f8a9-b1c2-4d3e-4f5a-6b7c8d9e0f10",
-          "body": "<?xml version=\"1.0\"?>\n<response status=\"success\">\n  <result>\n    <job>\n      <id>123</id>\n      <type>CommitAll</type>\n      <status>FIN</status>\n      <result>OK</result>\n      <tfin>2024/12/15 14:30:25</tfin>\n      <tdeq>2024/12/15 14:25:10</tdeq>\n    </job>\n    <job>\n      <id>124</id>\n      <type>Push</type>\n      <status>FIN</status>\n      <result>OK</result>\n      <tfin>2024/12/16 08:45:30</tfin>\n      <tdeq>2024/12/16 08:40:15</tdeq>\n    </job>\n  </result>\n</response>",
+          "uuid": "e23d9eaf-ec80-46a3-8fbb-d66eda7fb3a0",
+          "body": "<response status=\"success\"><result><jobs><entry name=\"1\"><id>1</id><type>Commit</type><status>FIN</status><result>OK</result><progress>100</progress><queued>Jul/11/2024 12:00:00</queued><started>Jul/11/2024 12:00:01</started><completed>Jul/11/2024 12:00:01</completed><warnings></warnings></entry></jobs></result></response>",
           "latency": 0,
           "statusCode": 200,
-          "label": "LIST JOBS",
-          "headers": [
-            {
-              "key": "Content-Type",
-              "value": "application/xml"
-            }
-          ],
+          "label": "LIST PANORAMA JOBS",
+          "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
           "databucketID": "",

@@ -185,7 +185,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'job-result', type => COUNTER_KIND_TEXT, critical_default =>'%{result} !~ /OK/i',
+        { label => 'job-result', type => COUNTER_KIND_TEXT,
           set => {
                 key_values => [ { name => 'result' }, { name => 'status' }, { name => 'type' }, { name => 'id' }, { name => 'running_time'}],
                 output_template => 'result: %{result}',
@@ -251,7 +251,7 @@ sub check_options {
         foreach qw/warning_missing_plugin critical_missing_plugin/;
 
     $self->{output}->option_exit(short_msg => "Cannot use --filter-counters/--filter-counters-block together with --check.")
-        if $self->{option_results}->{check} && ($self->{option_results}->{filter_counters} || $self->{option_results}->{filter_counters_block});
+        if $self->{option_results}->{check} ne 'all' && ($self->{option_results}->{filter_counters} || $self->{option_results}->{filter_counters_block});
 
     $self->{check_devices} = $self->{option_results}->{check} =~ /(?:all|devices)/;
     $self->{check_templates} = $self->{option_results}->{check} =~ /(?:all|templates)/;
@@ -677,7 +677,7 @@ You can use the following variables: %{result}, %{status}, %{type}, %{id}, %{run
 
 =item B<--critical-job-result>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{result} !~ /OK/i').
+Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{result}, %{status}, %{type}, %{id}, %{running_time}
 
 =item B<--unknown-job-has-warnings>

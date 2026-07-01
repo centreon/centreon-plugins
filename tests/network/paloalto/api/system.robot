@@ -72,7 +72,7 @@ paloalto-system ${tc}
     ...    CRITICAL: System WildFire mode: Disabled | 'system.uptime.seconds'=8552549s;;;0; 'system.sessions.packet.rate.persecond'=0p/s;;;0; 'system.sessions.throughput.bitspersecond'=0b/s;;;0; 'system.sessions.total.count'=0;;;0;
     ...    12
     ...    --target=001802000104
-    ...    OK: System uptime: 1037126 seconds, certificate status: Valid, operational mode: normal, packet rate: 0 p/s, throughput: 0.00 b/s, total active sessions: 0 | 'system.uptime.seconds'=1037126s;;;0; 'system.sessions.packet.rate.persecond'=0p/s;;;0; 'system.sessions.throughput.bitspersecond'=0b/s;;;0; 'system.sessions.total.count'=0;;;0;
+    ...    OK: System uptime: 8552549 seconds, certificate status: Valid, operational mode: normal, packet rate: 0 p/s, throughput: 0.00 b/s, total active sessions: 0 | 'system.uptime.seconds'=8552549s;;;0; 'system.sessions.packet.rate.persecond'=0p/s;;;0; 'system.sessions.throughput.bitspersecond'=0b/s;;;0; 'system.sessions.total.count'=0;;;0;
     ...    13
     ...    --warning-active-sessions=1:
     ...    WARNING: System total active sessions: 0 | 'system.uptime.seconds'=8552549s;;;0; 'system.sessions.packet.rate.persecond'=0p/s;;;0; 'system.sessions.throughput.bitspersecond'=0b/s;;;0; 'system.sessions.total.count'=0;1:;;0;
