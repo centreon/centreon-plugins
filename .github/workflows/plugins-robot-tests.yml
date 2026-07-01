@@ -69,14 +69,14 @@ jobs:
 
       - name: Get the cached plugins
         if: ${{ inputs.get-packages == 'True' }}
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ./*.${{ inputs.package-extension }}
           key: ${{ inputs.packages-cache-key }}
           fail-on-cache-miss: true
 
       - name: Get the cached plugins.json
-        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ./plugins.json
           key: ${{ inputs.plugins-json-cache-key }}
