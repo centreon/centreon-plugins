@@ -53,7 +53,7 @@ jobs:
         shell: bash
 
       - name: Save binary to cache
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: rust-plugins/target/release/
           key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
@@ -138,7 +138,7 @@ jobs:
           stability: ${{ needs.get-environment.outputs.stability }}
 
       - name: Save to cache
-        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ./*.${{ matrix.package_extension }}
           key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
