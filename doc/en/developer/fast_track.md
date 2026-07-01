@@ -48,7 +48,9 @@ For example:
 sub set_counters {
     my ($self, %options) = @_;
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE, prefix_output => "'%{display}' ", long_output => "Checking '%{display}' ",
+        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE,
+          prefix_output => "'%{display}' ",
+          long_output => "Checking '%{display}' ",
 ```
 
 Instead of:
@@ -67,7 +69,9 @@ sub long_output {
 sub set_counters {
     my ($self, %options) = @_;
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE,
+          cb_prefix_output => 'prefix_metric_output',
+          cb_long_output => 'long_output',
 ```
 
 | Callback-based function | Placeholder-based equivalent  |
