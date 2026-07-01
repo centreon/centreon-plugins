@@ -29,7 +29,7 @@ use XML::Simple;
 use MIME::Base64 qw(encode_base64);
 use URI::Escape qw(uri_escape);
 use Digest::SHA qw(sha256_hex);
-use centreon::plugins::misc qw(is_empty);
+use centreon::plugins::misc qw(is_empty value_of);
 
 sub new {
     my ($class, %options) = @_;
@@ -53,6 +53,7 @@ sub new {
             'username:s'             => { name => 'username',             default => '' },
             'password:s'             => { name => 'password',             default => '' },
             'timeout:s'              => { name => 'timeout',              default => 30 },
+            'target:s'               => { name => 'target',               default => '' },
             'unknown-http-status:s'  => { name => 'unknown_http_status',  default => '%{http_code} < 200 or %{http_code} >= 300' },
             'warning-http-status:s'  => { name => 'warning_http_status',  default => '' },
             'critical-http-status:s' => { name => 'critical_http_status', default => '' }
@@ -78,17 +79,10 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname}             = $self->{option_results}->{hostname};
-    $self->{port}                 = $self->{option_results}->{port};
-    $self->{proto}                = $self->{option_results}->{proto};
-    $self->{auth_type}            = $self->{option_results}->{auth_type};
-    $self->{api_key}              = $self->{option_results}->{api_key};
-    $self->{username}             = $self->{option_results}->{username};
-    $self->{password}             = $self->{option_results}->{password};
-    $self->{timeout}              = $self->{option_results}->{timeout};
-    $self->{unknown_http_status}  = $self->{option_results}->{unknown_http_status};
-    $self->{warning_http_status}  = $self->{option_results}->{warning_http_status};
-    $self->{critical_http_status} = $self->{option_results}->{critical_http_status};
+    $self->{$_} = $self->{option_results}->{$_} foreach qw/hostname port proto timeout
+                                                           auth_type api_key username password
+                                                           target
+                                                           unknown_http_status warning_http_status critical_http_status/;
 
     $self->{output}->option_exit(short_msg => "Need to specify --hostname option.")
         if $self->{hostname} eq '';
@@ -135,9 +129,9 @@ sub generate_api_key {
     my $content = $self->{http}->request(
         url_path        => '/api/',
         method          => 'POST',
-        get_param       => ['type=keygen'],
+        get_param       => [ 'type=keygen' ],
         query_form_post => 'user=' . uri_escape($self->{username}) . '&password=' . uri_escape($self->{password}),
-        header          => ['Content-Type: application/x-www-form-urlencoded'],
+        header          => [ 'Content-Type: application/x-www-form-urlencoded' ],
         unknown_status  => '',
         warning_status  => '',
         critical_status => ''
@@ -191,12 +185,17 @@ sub _build_auth_header {
 sub _http_request {
     my ($self, %options) = @_;
 
+    my %params = (
+        'type' => $options{type}
+    );
+    $params{'cmd'} = $options{cmd} if $options{cmd};
+    $params{'action'} = $options{action} if $options{action};
+    $params{'xpath'} = $options{xpath} if $options{xpath};
+    $params{'target'} = $self->{target} if $self->{target};
+
     return $self->{http}->request(
         url_path  => '/api/',
-        get_params => {
-            'type' => $options{type},
-            'cmd' => $options{cmd}
-        },
+        get_params => \%params,
         header => [
             $self->_build_auth_header(),
             'Accept: application/xml'
@@ -215,19 +214,16 @@ sub _parse_xml {
     $self->{output}->option_exit( short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']")
         if is_empty($content);
 
-    $self->{output}->option_exit(short_msg => "Cannot find XML response in API reply.")
-        unless $content =~ /(<response status=["'](.*?)["']>.*<\/response>)/ms;
-
-    my ($xml, $status) = ($1, $2);
-    $self->{output}->option_exit(short_msg => "API response status: $status")
-        unless $status eq 'success';
-
     my $result;
     eval {
-        $result = XMLin($xml, ForceArray => $options{ForceArray} // [], KeyAttr => []);
+        $result = XMLin($content, ForceArray => $options{ForceArray} // [], KeyAttr => []);
     };
+
     $self->{output}->option_exit(short_msg => "Cannot decode XML response: $@")
         if $@;
+
+    $self->{output}->option_exit(short_msg => "API response status: ".value_of($result, "->{status}", "UNKNOWN"))
+        unless ref $result eq 'HASH' && $result->{status} && $result->{status} eq 'success';
 
     return $result->{result};
 }
@@ -303,6 +299,10 @@ Also used with --auth-type=api-key to auto-generate or regenerate the API key.
 =item B<--password>
 
 Password.
+
+=item B<--target>
+
+Firewall serial number to monitor. Only applicable when the hostname points to Panorama.
 
 =item B<--timeout>
 

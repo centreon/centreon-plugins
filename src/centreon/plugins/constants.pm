@@ -40,7 +40,7 @@ use constant {
 
     # Only used with COUNTER_TYPE_MULTIPLE counters
     COUNTER_MULTIPLE_INSTANCE    => 0, # counter global to the instance
-    COUNTER_MULTIPLE_SUBINSTANCE => 1, # counter defined per subinstance
+    COUNTER_MULTIPLE_SUBINSTANCE => 1, # counter defined per sub instance
 
     # Define the nature of a counter ( numeric or text )
     COUNTER_KIND_METRIC  => 1, # numeric counter with thesholds and perfdata

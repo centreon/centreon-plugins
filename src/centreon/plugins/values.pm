@@ -195,7 +195,7 @@ sub perfdata {
         my ($label, $extra_label, $min, $max, $th_total) = ($self->{label}, '');
         my $cast_int = (defined($perf->{cast_int}) && $perf->{cast_int} == 1) ? 1 : 0;
         my $template = '%s';
-        
+
         $template = exprintf($perf->{template}, $self->{result_values})
             if defined $perf->{template};
 

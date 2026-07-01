@@ -59,12 +59,9 @@ sub api_execute {
     $self->{data} = {};
 
     # Process temperature data
-    if (defined($result->{thermal}->{Slot1}->{entry})) {
-        my $entries = $result->{thermal}->{Slot1}->{entry};
-        $entries = [$entries] unless ref($entries) eq 'ARRAY';
-
+    if ($result->{thermal}->{Slot1}->{entry}) {
         my $temp_idx = 0;
-        foreach my $entry (@$entries) {
+        foreach my $entry (@{$result->{thermal}->{Slot1}->{entry}}) {
             $temp_idx++;
             my $instance = "thermal_slot" . ($entry->{slot} // 1) . "_index" . $temp_idx;
             $self->{data}->{temperatures}->{$instance} = {
@@ -78,12 +75,9 @@ sub api_execute {
     }
 
     # Process fan data
-    if (defined($result->{fan}->{Slot1}->{entry})) {
-        my $entries = $result->{fan}->{Slot1}->{entry};
-        $entries = [$entries] unless ref($entries) eq 'ARRAY';
-
+    if ($result->{fan}->{Slot1}->{entry}) {
         my $fan_idx = 0;
-        foreach my $entry (@$entries) {
+        foreach my $entry (@{$result->{fan}->{Slot1}->{entry}}) {
             $fan_idx++;
             my $instance = "fan_slot" . ($entry->{slot} // 1) . "_index" . $fan_idx;
             $self->{data}->{fans}->{$instance} = {
@@ -96,12 +90,9 @@ sub api_execute {
     }
 
     # Process voltage (power) data
-    if (defined($result->{power}->{Slot1}->{entry})) {
-        my $entries = $result->{power}->{Slot1}->{entry};
-        $entries = [$entries] unless ref($entries) eq 'ARRAY';
-
+    if ($result->{power}->{Slot1}->{entry}) {
         my $voltage_idx = 0;
-        foreach my $entry (@$entries) {
+        foreach my $entry (@{$result->{power}->{Slot1}->{entry}}) {
             $voltage_idx++;
             my $instance = "voltage_slot" . ($entry->{slot} // 1) . "_index" . $voltage_idx;
             $self->{data}->{voltages}->{$instance} = {
@@ -115,12 +106,9 @@ sub api_execute {
     }
 
     # Process PSU (power supply) data
-    if (defined($result->{'power-supply'}->{Slot1}->{entry})) {
-        my $entries = $result->{'power-supply'}->{Slot1}->{entry};
-        $entries = [$entries] unless ref($entries) eq 'ARRAY';
-
+    if ($result->{'power-supply'}->{Slot1}->{entry}) {
         my $psu_idx = 0;
-        foreach my $entry (@$entries) {
+        foreach my $entry (@{$result->{'power-supply'}->{Slot1}->{entry}}) {
             $psu_idx++;
             my $instance = "psu_slot" . ($entry->{slot} // 1) . "_index" . $psu_idx;
             $self->{data}->{psus}->{$instance} = {

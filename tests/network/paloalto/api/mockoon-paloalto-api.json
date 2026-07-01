@@ -210,6 +210,87 @@
           "default": false,
           "crudKey": "id",
           "callbacks": []
+        },
+        {
+          "uuid": "046ba2be-d382-4255-a575-dd5894136b30",
+          "body": "<response status=\"success\"><result><devices><entry name=\"FW-NYC\"><serial>FW-NYC</serial><connected>yes</connected><hostname>fw-nyc.example.com</hostname><ip-address>192.168.1.1</ip-address><model>PA-850</model><device-cert-present>Valid</device-cert-present><device-cert-expiry-date>2026/01/14 00:00:00 CEST</device-cert-expiry-date><custom-certificate-usage>no</custom-certificate-usage><sw-version>10.1.3</sw-version><ha-state>active</ha-state></entry><entry name=\"FW-LONDON\"><serial>FW-LONDON</serial><connected>yes</connected><hostname>fw-london.example.com</hostname><ip-address>192.168.1.2</ip-address><model>PA-850</model><device-cert-present>Valid</device-cert-present><device-cert-expiry-date>2024/07/01 00:00:00 CEST</device-cert-expiry-date><custom-certificate-usage>yes</custom-certificate-usage><sw-version>10.0.5</sw-version><ha-state>passive</ha-state></entry><entry name=\"FW-TOKYO\"><serial>FW-TOKYO</serial><connected>yes</connected><hostname>fw-tokyo.example.com</hostname><ip-address>192.168.1.3</ip-address><model>PA-VM</model><device-cert-present>Valid</device-cert-present><device-cert-expiry-date>2026/01/14 00:00:00 CEST</device-cert-expiry-date><custom-certificate-usage>no</custom-certificate-usage><sw-version>10.1.1</sw-version><ha-state>active</ha-state></entry></devices></result></response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "LIST PANORAMA FIREWALL",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<show><devices>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "047ca3cf-e493-5366-b686-ee9a05deb931",
+          "body": "<response status=\"success\"><result><plugins><entry name=\"1\"><status>ok</status><version>1.0.0</version></entry></plugins></result></response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "LIST PANORAMA PLUGINS",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<show><plugins>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e23d9eaf-ec80-46a3-8fbb-d66eda7fb3a0",
+          "body": "<response status=\"success\"><result><jobs><entry name=\"1\"><id>1</id><type>Commit</type><status>FIN</status><result>OK</result><progress>100</progress><queued>Jul/11/2024 12:00:00</queued><started>Jul/11/2024 12:00:01</started><completed>Jul/11/2024 12:00:01</completed><warnings></warnings></entry></jobs></result></response>",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "LIST PANORAMA JOBS",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cmd",
+              "value": "<show><jobs>",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
         }
       ],
       "responseMode": null,
