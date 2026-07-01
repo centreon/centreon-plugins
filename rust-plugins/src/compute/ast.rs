@@ -357,6 +357,16 @@ impl ExprResult {
             }
         }
     }
+
+    pub fn values(&self) -> Vec<String> {
+        match self {
+            ExprResult::Vector(v) => v.iter().map(ToString::to_string).collect(),
+            ExprResult::Number(v) => vec![v.to_string()],
+            ExprResult::Str(v) => vec![v.clone()],
+            ExprResult::StrVector(v) => v.clone(),
+            ExprResult::Empty => Vec::new(),
+        }
+    }
 }
 
 impl<'input> Expr<'input> {
