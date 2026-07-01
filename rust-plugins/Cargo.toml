@@ -1,5 +1,5 @@
 [package]
-name = "centreon-generic-snmp"
+name = "centreon-plugin-rust-snmp"
 version = "1.0.0"
 edition = "2024"
 

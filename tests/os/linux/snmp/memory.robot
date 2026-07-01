@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
+${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP}
 
 
 *** Test Cases ***
@@ -202,7 +202,7 @@ memory ${tc}
     ...    OK: Ram Total: 5.91 TB Used (-buffers/cache): 5.89 TB (99.68%) Free: 19.12 GB (0.32%), Buffer: 694.54 MB, Cached: 219.41 GB, Shared: 9.31 GB | 'used'=6472685486080B;;;0;6493217484800 'free'=20531998720B;;;0;6493217484800 'used_prct'=99.68%;;;0;100 'buffer'=728276992B;;;0; 'cached'=235591376896B;;;0; 'shared'=9997410304B;;;0;
 
 cgs-mem ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
     ...    -j ${CURDIR}/generic-snmp/memory.json
@@ -245,7 +245,7 @@ cgs-mem ${tc}
     ...    CRITICAL: memory.free.bytes is 747712B | memory.free.bytes=747712B;;1;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
 
 cgs-mem-64 ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
     ...    -j ${CURDIR}/generic-snmp/memory-64.json

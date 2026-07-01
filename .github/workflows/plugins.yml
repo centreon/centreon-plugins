@@ -428,7 +428,7 @@ jobs:
       packages-cache-key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
       plugins-json-cache-key: plugins-${{ github.sha }}-${{ github.run_id }}
       skip-robot-tests: ${{ matrix.skip_robot_tests }}
-      exclude-robot-tags: centreon-generic-snmp
+      exclude-robot-tags: centreon-plugin-rust-snmp
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]

@@ -49,9 +49,9 @@ storage ${tc}
     ...    OK: All storages are ok | 'count'=11;;;0; 'used_Physical memory'=1296941056B;;;0;2062598144 'used_Available memory'=0B;;;0;1143980032 'used_Virtual memory'=1296941056B;;;0;2062598144 'used_/run'=532480B;;;0;206262272 'used_/'=7394013184B;;;0;105088212992 'used_/dev/shm'=0B;;;0;1031299072 'used_/run/lock'=0B;;;0;5242880 'used_/run/user/0'=0B;;;0;206258176 'used_Memory buffers'=37601280B;;;0;2062598144 'used_Cached memory'=523030528B;;;0;523030528 'used_Shared memory'=30310400B;;;0;30310400
 
 cgs-storage ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CENTREON_GENERIC_SNMP}
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
     ...    -j ${CURDIR}/generic-snmp/storage.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}

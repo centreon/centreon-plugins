@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
+${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP}
 
 
 *** Test Cases ***
@@ -101,7 +101,7 @@ swap ${tc}
     ...    CRITICAL: Used : 49.97 % | 'used'=511406080B;;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;0:10;0:30;0;100
 
 cgs-swap ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
     ...    -j ${CURDIR}/generic-snmp/swap.json
@@ -144,7 +144,7 @@ cgs-swap ${tc}
     ...    CRITICAL: swap.free.bytes is 500000B | swap.free.bytes=500000B;;1;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
 
 cgs-swap-64 ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CGS_CMD}
     ...    -j ${CURDIR}/generic-snmp/swap-64.json
