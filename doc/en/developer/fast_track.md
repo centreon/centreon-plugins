@@ -8,7 +8,7 @@ from the latest features made available in the codebase. Please find below some 
 ### Declaring options with `add_options()`
   
   - Use `default` option in `add_options()` method to avoid useless code in `check_options()`.
-  - Use `greater_than`, `less_than_or_equal`, `regexp_match` to make declaration of `check_options()` avoidable.
+  - Use greater_than, less_than_or_equal, regexp_match, and other validation options to avoid implementing check_options() (see [Plugins Options](plugins_global.md#options)).
 
 ### Declaring counters with constants
 
@@ -28,12 +28,58 @@ You'll find examples in the other markdown documentation files.
 When you need to display an error message and exit the plugin, it is simpler to use a single `option_exit` call rather than calling `add_opton_msg` followed by `option_exit`.
 For example:
 
+```perl
     $self->{output}->option_exit(short_msg => "Cannot encode JSON result");
+```
 
 Instead of:
 
+```perl
     $self->{output}->add_option_msg(short_msg => "Cannot encode JSON result"); 
     $self->{output}->option_exit(); 
+```
+
+### Prefer Placeholder-Based Functions Instead of Callback Functions
+
+When declaring counters, if you only need to display the value of variables, it is often simpler and faster to use the `prefix_output`, `suffix_output`, and `long_output` functions with `%{}` placeholders rather than implementing `cb_prefix_output`, `cb_suffix_output`, `cb_long_output`, and other callback functions.
+For example:
+
+```perl
+sub set_counters {
+    my ($self, %options) = @_;
+    $self->{maps_counters_type} = [
+        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE,
+          prefix_output => "'%{display}' ",
+          long_output => "Checking '%{display}' ",
+```
+
+Instead of:
+
+```perl
+sub prefix_metric_output {
+    my ($self, %options) = @_;
+    return "'" . $options{instance_value}->{display} . "' ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+    return "Checking '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    $self->{maps_counters_type} = [
+        { name => 'metrics', type => COUNTER_TYPE_MULTIPLE,
+          cb_prefix_output => 'prefix_metric_output',
+          cb_long_output => 'long_output',
+```
+
+| Callback-based function | Placeholder-based equivalent  |
+|-------------------------|-------------------------------|
+| cb_prefix_output        | prefix_output                 |
+| cb_suffix_output        | suffix_output                 |
+| cb_long_output          | long_output                   |
+| closure_custom_output   | output_template               |
 
 
 ### Use the functions provided by Misc.pm
