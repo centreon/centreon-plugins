@@ -27,14 +27,42 @@ uptime ${tc}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                   expected_result    --
-            ...      1     --warning-uptime='2'            WARNING: System uptime is: 38m 39s | 'uptime'=2319.00s;0:2;;0;
-            ...      2     --warning-uptime='1'            WARNING: System uptime is: 38m 39s | 'uptime'=2319.00s;0:1;;0;
-            ...      3     --critical-uptime='2'           CRITICAL: System uptime is: 38m 39s | 'uptime'=2319.00s;;0:2;0;
-            ...      4     --add-sysdesc                   OK: System uptime is: 38m 39s, Anonymized 023 | 'uptime'=2319.00s;;;0;
-            ...      5     --critical-uptime='1'           CRITICAL: System uptime is: 38m 39s | 'uptime'=2319.00s;;0:1;0;
-            ...      6     --check-overload                OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
-            ...      7     --reboot-window                 OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
-            ...      8     --unit='h'                      OK: System uptime is: 38m 39s | 'uptime'=0.64h;;;0;
-            ...      9     --unit='m'                      OK: System uptime is: 38m 39s | 'uptime'=38.65m;;;0;
-            ...      10    --unit='s'                      OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
+    Examples:    tc    extra_options    expected_result    --
+    ...    1    --warning-uptime='2'    WARNING: System uptime is: 38m 39s | 'uptime'=2319.00s;0:2;;0;
+    ...    2    --warning-uptime='1'    WARNING: System uptime is: 38m 39s | 'uptime'=2319.00s;0:1;;0;
+    ...    3    --critical-uptime='2'    CRITICAL: System uptime is: 38m 39s | 'uptime'=2319.00s;;0:2;0;
+    ...    4    --add-sysdesc    OK: System uptime is: 38m 39s, Anonymized 023 | 'uptime'=2319.00s;;;0;
+    ...    5    --critical-uptime='1'    CRITICAL: System uptime is: 38m 39s | 'uptime'=2319.00s;;0:1;0;
+    ...    6    --check-overload    OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
+    ...    7    --reboot-window    OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
+    ...    8    --unit='h'    OK: System uptime is: 38m 39s | 'uptime'=0.64h;;;0;
+    ...    9    --unit='m'    OK: System uptime is: 38m 39s | 'uptime'=38.65m;;;0;
+    ...    10    --unit='s'    OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
+
+cgs-storage ${tc}
+    [Tags]    os    linux    centreon-generic-snmp
+    ${command}    Catenate
+    ...    ${CENTREON_GENERIC_SNMP}
+    ...    -j ${CURDIR}/generic-snmp/uptime.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/linux
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK: Uptime: 2319.87s | system.uptime.seconds=2319.87s;;;0;
+    ...    2
+    ...    --warning-seconds=1800
+    ...    WARNING: system.uptime.seconds is 2319.87s | system.uptime.seconds=2319.87s;1800;;0;
+    ...    3
+    ...    --critical-seconds=1800
+    ...    CRITICAL: system.uptime.seconds is 2319.87s | system.uptime.seconds=2319.87s;;1800;0;

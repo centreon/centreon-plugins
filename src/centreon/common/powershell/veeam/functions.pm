@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT_OK = qw/veeam_to_psversion veeam_to_psexec/;
+our @EXPORT_OK = qw/veeam_to_psversion veeam_to_psexec veeam_error_message/;
 
 # Veeam version 13 and later require Powershell 7 (psw.exe, previous versions require Powershell 5
 sub veeam_to_psversion {
@@ -37,6 +37,15 @@ sub veeam_to_psexec {
     my ($veeam_version) = @_;
 
     return $veeam_version >= 13 ? 'pwsh.exe' : 'powershell.exe';
+}
+
+sub veeam_error_message {
+    my ($veeam_version) = @_;
+
+    my $msg = "Internal error: execution issue: $^E";
+    $msg .= ". Please verify that PowerShell 7 (pwsh.exe) is installed and available in the system PATH."
+        if $veeam_version >= 13;
+    return $msg;
 }
 
 sub powershell_init {
