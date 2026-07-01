@@ -175,7 +175,7 @@ Example: --dnd-profile-name='Do not disturb'
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{extension}, %{registered}, %{dnd}, %{profile}, %{status}, %{duration}
+You can use the following variables: C<extension>, C<registered>, C<dnd>, C<profile>, C<status>, C<duration>
 
 =item B<--warning-status>
 
