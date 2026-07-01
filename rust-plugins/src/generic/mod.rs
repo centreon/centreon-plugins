@@ -228,6 +228,30 @@ impl Command {
         }
     }
 
+    /// Formats raw SNMP response for simple display
+    fn format_raw_response(&self, collect: &Vec<SnmpResult>) -> Result<CmdResult> {
+        let mut lines = Vec::new();
+
+        for result in collect.iter() {
+            for (name, expr_result) in &result.items {
+                for val in expr_result.values() {
+                    lines.push(format!("{}: {}", name, val));
+                }
+            }
+        }
+
+        let output = if lines.len() <= 1 {
+            format!("OK: {}", lines.first().unwrap_or(&"No response".to_string()))
+        } else {
+            format!("OK: Response received\n{}", lines.join("\n"))
+        };
+
+        Ok(CmdResult {
+            status: Status::Ok,
+            output,
+        })
+    }
+
     /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
     fn execute_snmp_collect(
         &self,
@@ -297,6 +321,7 @@ impl Command {
     /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
     /// * `check_format` - Dry-run mode ( validate macros )
+    /// * `check_response` - Display raw SNMP response without metrics computation
     ///
     /// # Returns
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
@@ -308,8 +333,13 @@ impl Command {
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
         check_format: bool,
+        check_response: bool,
     ) -> Result<CmdResult> {
         let mut collect = self.execute_snmp_collect(target, version, community, check_format);
+
+        if check_response {
+            return self.format_raw_response(&collect);
+        }
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];

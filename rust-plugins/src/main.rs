@@ -64,6 +64,7 @@ fn main() -> Result<(), Error> {
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
     let mut check_format = false;
+    let mut check_response = false;
     let mut json_file: Option<String> = None;
     let mut cmd: Option<Command> = None;
     let mut warnings: Vec<(String, String)> = Vec::new();
@@ -120,11 +121,15 @@ fn main() -> Result<(), Error> {
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
+                        println!("  --check-response                 Display raw SNMP response");
                         println!("  -h, --help                       Print this help message");
                         std::process::exit(0);
                     }
                     Long("check-format") => {
                         check_format = true;
+                    }
+                    Long("check-response") => {
+                        check_response = true;
                     }
                     t => {
                         match t {
@@ -217,6 +222,7 @@ fn main() -> Result<(), Error> {
         &filter_in,
         &filter_out,
         check_format,
+        check_response,
     ).unwrap_or_else(|e| {
         if check_format {
             eprintln!("JSON is INVALID: {}", e);
