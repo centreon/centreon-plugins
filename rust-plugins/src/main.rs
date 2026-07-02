@@ -92,8 +92,12 @@ fn main() -> Result<(), Error> {
                         trace!("snmp_version: {}", snmp_version);
                     }
                     Short('c') | Long("snmp-community") => {
-                        snmp_community = parser.value()?.into_string()?;
-                        trace!("snmp_community: {}", snmp_community);
+                        /// For backward compatibility 'public' is used when the SNMP community is empty
+                        let s = parser.value()?.into_string()?;
+                        if !s.is_empty() {
+                            snmp_community = s;
+                            trace!("snmp_community: {}", snmp_community);
+                        }
                     }
                     Short('i') | Long("filter-in") => {
                         let f = parser.value()?.into_string()?;

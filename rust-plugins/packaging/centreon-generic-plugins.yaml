@@ -22,8 +22,8 @@ contents:
       owner: "root"
       group: "root"
 
-  - src: "../rs-collections/centreon-plugin-rust-snmp/*.json"
-    dst: "/usr/lib/centreon/plugins/rs-collections/centreon-plugin-rust-snmp/"
+  - src: "../rs-collections/rust-snmp/*.json"
+    dst: "/usr/lib/centreon/plugins/rs-collections/rust-snmp/"
     file_info:
       mode: 0644
       owner: "root"

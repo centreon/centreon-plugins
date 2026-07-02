@@ -1,0 +1,15 @@
+{
+    "pkg_name": "centreon-plugin-operatingsystems-linux-snmp-rs",
+    "pkg_summary": "Centreon Plugin (Rust)",
+    "plugin_name": "centreon-plugin-rust-snmp",
+    "files": [
+    ],
+    "package_files": [
+        {
+            "src": "../../rust-plugins/rs-collections/operatingsystems-linux-snmp/",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        }
+    ],
+    "skip_default_dependencies": true
+}
