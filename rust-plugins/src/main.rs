@@ -65,6 +65,7 @@ fn main() -> Result<(), Error> {
     let mut filter_out = Vec::new();
     let mut check_format = false;
     let mut check_response = false;
+    let mut list_counters = false;
     let mut json_file: Option<String> = None;
     let mut cmd: Option<Command> = None;
     let mut warnings: Vec<(String, String)> = Vec::new();
@@ -126,6 +127,7 @@ fn main() -> Result<(), Error> {
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
                         println!("  --check-response                 Display raw SNMP response");
+                        println!("  --list-counters                  List all available metrics");
                         println!("  -h, --help                       Print this help message");
                         std::process::exit(0);
                     }
@@ -134,6 +136,9 @@ fn main() -> Result<(), Error> {
                     }
                     Long("check-response") => {
                         check_response = true;
+                    }
+                    Long("list-counters") => {
+                        list_counters = true;
                     }
                     t => {
                         match t {
@@ -199,7 +204,6 @@ fn main() -> Result<(), Error> {
         println!("JSON file is required (use -j or --json argument)");
         std::process::exit(3);
     }
-
     if let Some(ref mut cmd) = cmd {
         for (metric, value) in warnings {
             cmd.add_warning(&metric, value);
@@ -216,6 +220,11 @@ fn main() -> Result<(), Error> {
             std::process::exit(3);
         }
     };
+
+    if list_counters {
+        cmd.list_counters();
+        std::process::exit(0);
+    }
 
     let url = format!("{}:{}", hostname, port);
 

@@ -641,4 +641,26 @@ impl Command {
         let output = output_formatter.to_string();
         Ok(CmdResult { status, output })
     }
+
+    /// Lists all available metrics
+    pub fn list_counters(&self) {
+        println!("Available metrics:");
+
+        if !self.compute.metrics.is_empty() {
+            for metric in &self.compute.metrics {
+                let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
+                println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+            }
+        }
+
+        if let Some(aggregations) = self.compute.aggregations.as_ref() {
+            if !aggregations.is_empty() {
+                println!("Aggregations:");
+                for metric in aggregations {
+                    let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
+                    println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                }
+            }
+        }
+    }
 }
