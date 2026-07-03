@@ -1,5 +1,0 @@
-{
-    "dependencies": [
-        "centreon-plugin-rust-snmp"
-    ]
-}
