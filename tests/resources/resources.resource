@@ -213,6 +213,12 @@ Ctn Run Command And Check Result As Json
     [Arguments]    ${command}    ${expected}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
+    Should Not Contain    
+    ...    ${output}
+    ...    UNKNOWN
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nDoes not seem to be parsable as JSON\n
+    ...    values=False
+
     ${json_output}    evaluate    json.loads('''${output}''')    json
     ${json_expected}    evaluate    json.loads('''${expected}''')    json
     Dictionaries Should Be Equal
