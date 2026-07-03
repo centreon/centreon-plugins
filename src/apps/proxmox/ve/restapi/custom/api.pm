@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_excluded);
 use JSON::XS;
 use Digest::SHA qw(sha256_hex);
 
@@ -236,7 +236,8 @@ sub api_list_vms {
             Type => $type,
             Vmid => $vmid,
             Node => $vm->{node},
-            Name => $vm->{name}
+            Name => $vm->{name},
+            Tags => $vm->{tags} // ''
         };
     }
 
@@ -302,7 +303,8 @@ sub cache_vms {
             $vms->{$vm->{id}} = {
                 State => $vm->{status},
                 Node => $vm->{node},
-                Name => $vm->{name}
+                Name => $vm->{name},
+                Tags => $vm->{tags} // ''
             };
         }
         my $datas = { last_timestamp => time(), vms => $vms };
@@ -510,22 +512,9 @@ sub api_get_vms {
         while (my ($vm_id, $vm_data) = each %$content_total) {
 
             # Apply inclusion/exclusion filters here to avoid unnecessary api_get_vm_stats calls
-            if ($options{filter_name} ne '' && $vm_data->{Name} !~ /$options{filter_name}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Name} . "': no including filter match.", debug => 1);
-                next;
-            }
-            if ($options{include_node_name} ne '' && $vm_data->{Node} !~ /$options{include_node_name}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Node} . "': no including filter match.", debug => 1);
-                next;
-            }
-            if ($options{exclude_name} ne '' && $vm_data->{Name} =~ /$options{exclude_name}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Name} . "': excluding filter match.", debug => 1);
-                next;
-            }
-            if ($options{exclude_node_name} ne '' && $vm_data->{Node} =~ /$options{exclude_node_name}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $vm_data->{Node} . "': excluding filter match.", debug => 1);
-                next;
-            }
+            next if ( is_excluded($vm_data->{Name}, $options{include_name}, $options{exclude_name}, output => $self->{output}) );
+            next if ( is_excluded($vm_data->{Tags}, $options{include_tags}, $options{exclude_tags}, output => $self->{output}) );
+            next if ( is_excluded($vm_data->{Node}, $options{include_node_name}, $options{exclude_node_name}, output => $self->{output}) );
 
             $content_total->{$vm_id}->{Stats} = $self->internal_api_get_vm_stats(node_id => $content_total->{$vm_id}->{Node}, vm_id => $vm_id);
         }
