@@ -155,7 +155,7 @@ jobs:
           fi
         shell: bash
 
-      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ./plugins.json
           key: plugins-${{ github.sha }}-${{ github.run_id }}
@@ -271,7 +271,7 @@ jobs:
           COMMIT=$(git log -1 HEAD --pretty=format:%h)
           perl .github/scripts/fatpack-plugins.pl "$(jq -r 'to_entries[] | select(.value.build == true) | .key' plugins.json | tr '\n' ' ')" "$VERSION ($COMMIT)"
 
-      - uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ./build/
           key: fatpacked-plugins-${{ github.sha }}-${{ github.run_id }}
