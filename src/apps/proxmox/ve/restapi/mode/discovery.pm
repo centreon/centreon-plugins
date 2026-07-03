@@ -32,7 +32,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'resource-type:s' => { name => 'resource_type' },
+        'resource-type:s' => {
+            name => 'resource_type',
+            default => 'node',
+            regexp_match => '^node|vm$',
+            error_message => 'Unknown resource type. Accepted values: node, vm.' },
         'prettify'        => { name => 'prettify' }
     });
 
@@ -42,14 +46,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{option_results}->{resource_type} = 'nodes';
-    }
-    if ($self->{option_results}->{resource_type} !~ /^node|vm$/) {
-        $self->{output}->add_option_msg(short_msg => 'unknown resource type');
-        $self->{output}->option_exit();
-    }
 }
 
 sub discovery_vm {
@@ -64,7 +60,7 @@ sub discovery_vm {
         $vm->{name} = $vms->{$vm_id}->{Name};
         $vm->{state} = $vms->{$vm_id}->{State};
         $vm->{node_name} = $vms->{$vm_id}->{Node};
-        $vm->{tags} = $vms->{$vm_id}->{Tags};
+        $vm->{tags} = [ sort split(/;/, $vms->{$vm_id}->{Tags}) ];
 
         my ($network_ips, $network_interfaces, $osinfo);
 

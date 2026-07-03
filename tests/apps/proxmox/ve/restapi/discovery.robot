@@ -41,7 +41,7 @@ Discovery ${tc}
     ...    "discovered_items":3
     ...    2
     ...    --resource-type=vm
-    ...    .*"tags":"production;linux".*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\].*"os_info_name":"XXXXX GNU/Linux"
+    ...    .*"ip_addresses":\\\\["123.321.123.321","127.0.0.1"\\\\].*"os_info_name":"XXXXX GNU/Linux".*"tags":\\\\["dev","linux"\\\\]
     ...    3
     ...    --resource-type=node
     ...    ^(?!.*(ip_addresses|os_info_name)).*$
