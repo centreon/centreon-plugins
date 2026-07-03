@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
-# Pre-commit dispatcher: runs all executable scripts in pre-commit.d/.
+# Pre-push dispatcher: runs all executable scripts in pre-push.d/.
 #
-# Each script receives the same stdin (list of refs being committed) and the
+# Each script receives the same stdin (list of refs being pushed) and the
 # same arguments. A non-zero exit from any script aborts the push.
 
 hook_dir="$(cd "$(dirname "$0")" && pwd)"
-script_dir="${hook_dir}/pre-commit.d"
+script_dir="${hook_dir}/pre-push.d"
 
 # Check if directory exist
 if [ ! -d "$script_dir" ]; then
