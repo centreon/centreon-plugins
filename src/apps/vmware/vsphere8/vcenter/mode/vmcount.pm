@@ -202,6 +202,14 @@ Filter by excluding the VMs whose state matches the regular expression provided 
 
 Example : C<--exclude-name='^POWERED_OFF|SUSPENDED$'>
 
+=item B<--warning-count-by-host>
+
+Threshold.
+
+=item B<--critical-count-by-host>
+
+Threshold.
+
 =item B<--warning-on-count>
 
 Threshold.
