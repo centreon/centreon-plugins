@@ -150,7 +150,7 @@ sub custom_packetloss_output {
         );
     }
 
-    return join(', ', @bad);
+    return join(', ', @bad) . '.';
 }
 
 sub custom_packetloss_perfdata {
@@ -220,7 +220,7 @@ sub custom_latency_output {
         );
     }
 
-    return join(', ', @bad);
+    return join(', ', @bad) . '.';
 }
 
 sub custom_latency_perfdata {
