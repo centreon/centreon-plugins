@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -84,11 +84,6 @@ Can be: C<fan>, C<temperature>, C<voltage>.
 
 Exclude the items given as a comma-separated list (example: --filter=temperature --filter=fan).
 You can also exclude items from specific instances: --filter=fan,1
-
-=item B<--absent-problem>
-
-Return an error if a component is not 'present' (default is skipping).
-It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
 
 =item B<--no-component>
 

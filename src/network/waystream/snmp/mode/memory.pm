@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -178,58 +178,6 @@ Units of thresholds (default: '%') ('%', 'absolute') (deprecated. Please use new
 
 Thresholds are on free space left (deprecated. Please use new counters directly)
 
-=item B<--swap>
-
-Check swap also.
-
-=item B<--warning-buffer>
-
-Threshold in bytes.
-
-=item B<--critical-buffer>
-
-Threshold in bytes.
-
-=item B<--warning-cached>
-
-Threshold in bytes.
-
-=item B<--critical-cached>
-
-Threshold in bytes.
-
-=item B<--warning-shared>
-
-Threshold in bytes.
-
-=item B<--critical-shared>
-
-Threshold in bytes.
-
-=item B<--warning-swap>
-
-Threshold in bytes.
-
-=item B<--critical-swap>
-
-Threshold in bytes.
-
-=item B<--warning-swap-free>
-
-Threshold in bytes.
-
-=item B<--critical-swap-free>
-
-Threshold in bytes.
-
-=item B<--warning-swap-prct>
-
-Threshold in percentage.
-
-=item B<--critical-swap-prct>
-
-Threshold in percentage.
-
 =item B<--warning-usage>
 
 Threshold in bytes.
@@ -253,20 +201,6 @@ Threshold in percentage.
 =item B<--critical-usage-prct>
 
 Threshold in percentage.
-
-=item B<--patch-redhat>
-
-If using Red Hat distribution with net-snmp >= 5.7.2-43 and net-snmp < 5.7.2-47. But you should update net-snmp!!!!
-
-This version: used = C<wsMemoryTotal - memAvailReal // free = memAvailReal>
-
-Others versions: used = C<wsMemoryTotal - memAvailReal - memBuffer - memCached // free = total - used>
-
-=item B<--force-64bits-counters>
-
-Use this option to monitor a server/device that has more than 2 TB of RAM, the maximum size of a signed 32 bits integer.
-If you omit it you'll get the remainder of the Euclidean division of the actual value by 2 TB.
-NB: it cannot work with version 1 of SNMP protocol. 64 bits counters are supported starting version 2c.
 
 =back
 

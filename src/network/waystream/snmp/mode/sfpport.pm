@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -116,7 +116,6 @@ sub set_counters {
                         { name => 'volt_status' }
                     ],
                     closure_custom_output          => $self->can('custom_status_output'),
-                    closure_custom_perfdata        => sub {return 0;},
                     closure_custom_threshold_check => \&catalog_status_threshold_ng
                 }
         }
@@ -463,7 +462,7 @@ Excludes ports by interface name (can be a regexp). Can be used only together wi
 
 =item B<--add-interface-name>
 
-Add the corresponding interface name when set. Used for the instance name in perf data, too.
+Add the corresponding interface name when set. Used for the instance name in performance data, too.
 
 =item B<--unknown-status>
 
@@ -480,69 +479,77 @@ You can use the following variables: %{status}, %{temp_status}, %{tx_power_statu
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /invalid/ || %{temp_status} =~ /alarm/ || %{tx_power_status} =~ /alarm/ || %{rx_power_status} =~ /alarm/ || %{bias_status} =~ /alarm/ || %{volt_status} =~ /alarm/').
 You can use the following variables: %{status}, %{temp_status}, %{tx_power_status}, %{rx_power_status}, %{bias_status}, %{volt_status}
 
-=item B<--warning-rx-input-power>
-
-Thresholds. (mW)
-
-=item B<--critical-rx-input-power>
-
-Thresholds. (mW)
-
-=item B<--warning-rx-input-power-dbm>
-
-Thresholds. (dBm)
-
-=item B<--critical-rx-input-power-dbm>
-
-Thresholds. (dBm)
-
-=item B<--warning-tx-output-power>
-
-Thresholds. (mW)
-
-=item B<--critical-tx-output-power>
-
-Thresholds. (mW)
-
-=item B<--warning-tx-output-power-dbm>
-
-Thresholds. (dBm)
-
-=item B<--critical-tx-output-power-dbm>
-
-Thresholds. (dBm)
-
 =item B<--warning-bias-current>
 
-Thresholds. (mA)
+Threshold in mA.
 
 =item B<--critical-bias-current>
 
-Thresholds. (mA)
-
-=item B<--warning-temperature>
-
-Thresholds. (C)
-
-=item B<--critical-temperature>
-
-Thresholds. (C)
-
-=item B<--warning-voltage>
-
-Thresholds. (V)
-
-=item B<--critical-voltage>
-
-Thresholds. (V)
+Threshold in mA.
 
 =item B<--warning-bitrate>
 
-Thresholds. (b/s)
+Threshold in b/s.
 
 =item B<--critical-bitrate>
 
-Thresholds. (b/s)
+Threshold in b/s.
+
+=item B<--warning-rx-input-power>
+
+Threshold in mW.
+
+=item B<--critical-rx-input-power>
+
+Threshold in mW.
+
+=item B<--warning-rx-input-power-dbm>
+
+Threshold in decibel-milliwatts.
+
+=item B<--critical-rx-input-power-dbm>
+
+Threshold in decibel-milliwatts.
+
+=item B<--warning-status>
+
+Threshold.
+
+=item B<--critical-status>
+
+Threshold.
+
+=item B<--warning-temperature>
+
+Threshold in C.
+
+=item B<--critical-temperature>
+
+Threshold in C.
+
+=item B<--warning-tx-output-power>
+
+Threshold in mW.
+
+=item B<--critical-tx-output-power>
+
+Threshold in mW.
+
+=item B<--warning-tx-output-power-dbm>
+
+Threshold in decibel-milliwatts.
+
+=item B<--critical-tx-output-power-dbm>
+
+Threshold in decibel-milliwatts.
+
+=item B<--warning-volt>
+
+Threshold in Volts.
+
+=item B<--critical-volt>
+
+Threshold in Volts.
 
 =item B<--reload-cache-time>
 

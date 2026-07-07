@@ -207,6 +207,8 @@ Meraki
 MIB
 Microkernel
 Mikrotik
+milliwatt
+milliwatts
 MMC
 module-cellradio-csq
 module-cellradio-rscp
@@ -229,6 +231,7 @@ MQTT
 MSSQL
 MTU
 multiple
+mW
 MX
 nagios
 Nagios
@@ -422,6 +425,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Waystream
 Westermo
 WildFire
 WLAN

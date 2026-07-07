@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::constants qw(:counters :values);
 
 sub custom_cpu_calc {
@@ -192,8 +192,8 @@ sub manage_selection {
 
     $self->{cache_name} = "snmpstandard_" . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ?
-            md5_hex($self->{option_results}->{filter_counters}) :
-            md5_hex('all'));
+            sha256_hex($self->{option_results}->{filter_counters}) :
+            sha256_hex('all'));
 
     $self->{global} = { %$result };
 }
