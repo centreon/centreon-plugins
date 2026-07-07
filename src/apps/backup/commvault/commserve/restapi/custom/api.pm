@@ -187,7 +187,7 @@ sub refresh_authent_token
     if ($code != 200) {
         $self->{cache_authent_token}->remove_file() if $code == 450 || $code == 500;
         return ('', '') unless $exit_on_failed;
-        my $message = $content && $content =~ /Message":"([^\"]+)"/ ? $1 : $self->{http}->get_message();
+        my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
         $self->{output}->option_exit(short_msg => "Cannot refresh token [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
     }
     my ($accessToken, $refreshToken, $expiryTime) = ('', '', '');
