@@ -187,7 +187,7 @@ sub refresh_authent_token
     if ($code != 200) {
         $self->{cache_authent_token}->remove_file() if $code == 450 || $code == 500;
         return ('', '') unless $exit_on_failed;
-        my $message = $content && $content =~ /Message\":\"([^\"]+)\"/ ? $1 : $self->{http}->get_message();
+        my $message = $content && $content =~ /Message":"([^\"]+)"/ ? $1 : $self->{http}->get_message();
         $self->{output}->option_exit(short_msg => "Cannot refresh token [code: '" . $self->{http}->get_code() . "'] [message: '$message']");
     }
     my ($accessToken, $refreshToken, $expiryTime) = ('', '', '');
@@ -198,8 +198,19 @@ sub refresh_authent_token
             if $content =~ /accessToken\":\s*\"([^\"]+)\"/m;
         $refreshToken = $1
             if $content =~ /refreshToken\":\s*\"([^\"]+)\"/m;
-        $expiryTime = $1
-            if $content =~ /tokenExpiryTimes.amp\":\s*(\d+)/m; # Commvault returns Times}amp instead of Timestamp
+
+        my $token_expiry_timestamp = $1
+            if $content =~ /"tokenExpiryTimestamp"\s*:\s*(-?\d+)/m;
+        my $expires_in = $1
+            if $content =~ /"expiresIn"\s*:\s*(\d+)/m;
+        if (defined($token_expiry_timestamp) && $token_expiry_timestamp ne '') {
+            $expiryTime = $token_expiry_timestamp;
+        } elsif (defined($expires_in) && $expires_in ne '') {
+            $expiryTime = time() + $expires_in;
+        } else {
+            $expiryTime = $1
+                if $content =~ /tokenExpiryTimes\.amp"\s*:\s*(\d+)/m; # Commvault returns Times}amp instead of Timestamp
+        }
     }
 
     $self->{output}->option_exit(short_msg => "Cannot extract tokens !")
@@ -284,6 +295,7 @@ sub request_internal {
         $self->{output}->option_exit(short_msg => 'Tokens where not found. This check can be run after next execution of "token" mode')
             if $authent_token eq '';
 
+        $expiry_time = 0 if !defined($expiry_time) || $expiry_time !~ /^\d+$/;
         $expiry_time -= time;
         $self->{output}->output_add(long_msg => $expiry_time > 0 ? "Token will expire in $expiry_time seconds" : "Token has expired", debug => 1);
 
