@@ -469,11 +469,40 @@ my $mapping = {
     snsRouteActive            => { oid => '.1.3.6.1.4.1.11256.1.14.1.1.11' },
     snsRouteLatency           => { oid => '.1.3.6.1.4.1.11256.1.14.1.1.18' },
     snsRouteJitter            => { oid => '.1.3.6.1.4.1.11256.1.14.1.1.19' },
+    snsRoutePacketLossPrctOld => { oid => '.1.3.6.1.4.1.11256.1.14.1.1.20' },
     snsRoutePacketLossPrctRaw => { oid => '.1.3.6.1.4.1.11256.1.14.1.1.23' }
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    my $oid_snsVersion = '.1.3.6.1.4.1.11256.1.18.2.0';
+    
+    my $snmp_result_version = $options{snmp}->get_leef(
+        oids => [ $oid_snsVersion ],
+        nothing_quit => 0,
+    );
+
+    my $use_old_packet_loss_oid = 0;
+    my $version_clean = '';
+
+    if (defined $snmp_result_version && defined $snmp_result_version->{$oid_snsVersion}) {
+        $version_clean = $snmp_result_version->{$oid_snsVersion};
+        $version_clean =~ s/([0-9]+(?:\.[0-9]+)*).*/$1/;
+
+        if (!centreon::plugins::misc::minimal_version($version_clean, '5.1.0')) {
+            $use_old_packet_loss_oid = 1;
+        }
+    } else {
+        $use_old_packet_loss_oid = 1;
+    }
+
+    my %packet_loss_oid_map = (
+        use_old => $mapping->{snsRoutePacketLossPrctOld}->{oid},
+        use_new => $mapping->{snsRoutePacketLossPrctRaw}->{oid}
+    );
+
+    my $packet_loss_oid = $use_old_packet_loss_oid ? $packet_loss_oid_map{use_old} : $packet_loss_oid_map{use_new};
 
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
@@ -485,7 +514,7 @@ sub manage_selection {
             { oid => $mapping->{snsRouteActive}->{oid} },
             { oid => $mapping->{snsRouteLatency}->{oid} },
             { oid => $mapping->{snsRouteJitter}->{oid} },
-            { oid => $mapping->{snsRoutePacketLossPrctRaw}->{oid} }
+            { oid => $packet_loss_oid }
         ],
         nothing_quit => 1
     );
@@ -527,8 +556,23 @@ sub manage_selection {
                 || $result->{snsRouteLatency} == 0
             ) ? 1 : 0;
         }
+        
+        my $packet_loss_value;
+        my $raw = $result->{ $use_old_packet_loss_oid ? 'snsRoutePacketLossPrctOld' : 'snsRoutePacketLossPrctRaw' };
 
-        my $raw = $result->{snsRoutePacketLossPrctRaw};
+        if (defined $raw) {
+            if ($use_old_packet_loss_oid) {
+                if ($raw =~ /^-?[0-9]+(\.[0-9]+)?$/) {
+                    $packet_loss_value = $raw;
+                } else {
+                    $packet_loss_value = undef;
+                }
+            } else {
+                $packet_loss_value = ($raw < 0 ? undef : $raw / 10);
+            }
+        } else {
+            $packet_loss_value = undef;
+        }
 
         push @{ $self->{router}->{$router_name}->{gateways} }, {
             display => $result->{snsRouteGatewayName},
@@ -538,7 +582,7 @@ sub manage_selection {
             active => $result->{snsRouteActive},
             latency => $result->{snsRouteLatency},
             jitter => $result->{snsRouteJitter},
-            packet_loss_prct => ($raw < 0 ? undef : $raw / 10),
+            packet_loss_prct => $packet_loss_value,
             is_down => $is_down
         };
     }
