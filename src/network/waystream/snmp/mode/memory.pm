@@ -26,19 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
 
-sub custom_usage_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'Ram Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)',
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
-        $self->{result_values}->{prct_used},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
-        $self->{result_values}->{prct_free}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -56,7 +43,7 @@ sub set_counters {
                     { name => 'prct_free' },
                     { name => 'total' }
                 ],
-            closure_custom_output => $self->can('custom_usage_output'),
+            output_template       => 'Ram Total: %{total|storage} Used: %{used|storage} (%{prct_used|%.2f}%%) Free: %{free|storage} (%{prct_free|%.2f}%%)',
             perfdatas             =>
                 [
                     { label => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
@@ -72,7 +59,7 @@ sub set_counters {
                     { name => 'prct_free' },
                     { name => 'total' }
                 ],
-            closure_custom_output => $self->can('custom_usage_output'),
+            output_template       => 'Ram Total: %{total|storage} Used: %{used|storage} (%{prct_used|%.2f}%%) Free: %{free|storage} (%{prct_free|%.2f}%%)',
             perfdatas             =>
                 [
                     { label => 'free', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
@@ -88,7 +75,7 @@ sub set_counters {
                     { name => 'prct_free' },
                     { name => 'total' }
                 ],
-            closure_custom_output => $self->can('custom_usage_output'),
+            output_template       => 'Ram Total: %{total|storage} Used: %{used|storage} (%{prct_used|%.2f}%%) Free: %{free|storage} (%{prct_free|%.2f}%%)',
             perfdatas             =>
                 [
                     { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }

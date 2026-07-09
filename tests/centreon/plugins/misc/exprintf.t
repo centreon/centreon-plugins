@@ -97,28 +97,28 @@ sub test {
             template         => 'Bytes (storage): %{bytes|storage}',
             datas            => { bytes => 1024 },
             default          => '',
-            expected_result  => 'Bytes (storage): 1.00KB',
+            expected_result  => 'Bytes (storage): 1.00 KB',
             msg              => 'Test storage filter (binary 1024)'
         },
         {
             template         => 'Bytes (network): %{bytes|network}',
             datas            => { bytes => 1000 },
             default          => '',
-            expected_result  => 'Bytes (network): 1.00Kb',
+            expected_result  => 'Bytes (network): 1.00 Kb',
             msg              => 'Test network filter (decimal 1000)'
         },
         {
             template         => 'Large storage: %{bytes|storage}',
             datas            => { bytes => 1048576 },
             default          => '',
-            expected_result  => 'Large storage: 1.00MB',
+            expected_result  => 'Large storage: 1.00 MB',
             msg              => 'Test storage filter with larger value'
         },
         {
             template         => 'Multiple filters: %{a|storage} and %{b|network}',
             datas            => { a => 1024, b => 1000 },
             default          => '',
-            expected_result  => 'Multiple filters: 1.00KB and 1.00Kb',
+            expected_result  => 'Multiple filters: 1.00 KB and 1.00 Kb',
             msg              => 'Test multiple different filters'
         },
         {

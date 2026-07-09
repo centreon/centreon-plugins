@@ -30,10 +30,10 @@ use centreon::plugins::constants qw(:counters :values);
 sub custom_cpu_calc {
     my ($self, %options) = @_;
 
-    return -10 if (!defined($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}));
+    return NO_VALUE() if (!defined($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}));
     if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
         $self->{error_msg} = "Buffer creation";
-        return -1;
+        return BUFFER_CREATION();
     }
 
     if (!defined($self->{instance_mode}->{total_cpu})) {
@@ -77,7 +77,7 @@ sub set_counters {
         {
             name => 'global',
             type => COUNTER_TYPE_GLOBAL,
-            cb_prefix_output => 'prefix_cpu_output',
+            prefix_output => 'CPU Usage: ',
             skipped_code => { NO_VALUE() => 1 }
         },
     ];
@@ -152,12 +152,6 @@ sub set_counters {
         }
         }
     ];
-}
-
-sub prefix_cpu_output {
-    my ($self, %options) = @_;
-
-    return 'CPU Usage: ';
 }
 
 sub new {
