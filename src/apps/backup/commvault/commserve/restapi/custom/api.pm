@@ -25,7 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use Digest::SHA qw(sha256_hex);
-use centreon::plugins::misc qw/json_encode/;
+use centreon::plugins::misc qw/json_encode is_not_empty/;
 use MIME::Base64;
 
 sub new {
@@ -203,9 +203,9 @@ sub refresh_authent_token
             if $content =~ /"tokenExpiryTimestamp"\s*:\s*(-?\d+)/m;
         my $expires_in = $1
             if $content =~ /"expiresIn"\s*:\s*(\d+)/m;
-        if (defined($token_expiry_timestamp) && $token_expiry_timestamp ne '') {
+        if ( is_not_empty($token_expiry_timestamp) ) {
             $expiryTime = $token_expiry_timestamp;
-        } elsif (defined($expires_in) && $expires_in ne '') {
+        } elsif ( is_not_empty($expires_in) ) {
             $expiryTime = time() + $expires_in;
         } else {
             $expiryTime = $1
