@@ -362,7 +362,7 @@ sub get_gateway_resource {
     my $response = {};
     if (ref($data) eq 'HASH') {
         $response = {
-            containers_stats => $data->{containers_stats},
+            container_stats => $data->{containers_stats}->{container_stats},
             system_stats => $data->{system_stats},
             hourly_stat_last => $data->{average_values}->{hourly_stats}->[0],
             uptime => $data->{device_uptime},
