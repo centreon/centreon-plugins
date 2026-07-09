@@ -58,20 +58,6 @@ sub prefix_sfp_output {
     );
 }
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "status : %s (Temp: %s, RX: %s, TX: %s, Bias: %s, Volt: %s)",
-        $self->{result_values}->{status},
-        $self->{result_values}->{temp_status},
-        $self->{result_values}->{tx_power_status},
-        $self->{result_values}->{rx_power_status},
-        $self->{result_values}->{bias_status},
-        $self->{result_values}->{volt_status}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -115,7 +101,7 @@ sub set_counters {
                         { name => 'bias_status' },
                         { name => 'volt_status' }
                     ],
-                    closure_custom_output          => $self->can('custom_status_output'),
+                    output_template                => 'status : %{status} (Temp: %{temp_status}, RX: %{rx_power_status}, TX: %{tx_power_status}, Bias: %{bias_status}, Volt: %{volt_status})',
                     closure_custom_threshold_check => \&catalog_status_threshold_ng
                 }
         }
@@ -327,8 +313,8 @@ sub get_selection {
             $self->{option_results}->{include_serial},
             $self->{option_results}->{exclude_serial}
         );
-        next if defined($self->{option_results}->{add_interface_name}) &&
-            is_excluded(
+        next if defined($self->{option_results}->{add_interface_name})
+            && is_excluded(
                 $sfp_ports->{$_}->[1],
                 $self->{option_results}->{include_interface},
                 $self->{option_results}->{exclude_interface}
@@ -367,12 +353,13 @@ sub manage_selection {
             instance => $instance
         );
 
-        my $display = defined($self->{option_results}->{add_interface_name}) ?
-            $instance . '-' . exists($sfp_ports->{$instance}->[1]) ? $sfp_ports->{$instance}->[1] : '' : $instance;
+        my $display = defined($self->{option_results}->{add_interface_name})
+            ? $instance . '-' . (exists($sfp_ports->{$instance}->[1]) ? $sfp_ports->{$instance}->[1] : '')
+            : $instance;
         $display = $self->get_display_value(value => $display);
 
-        $self->{sfp}->{$instance}->{interface} = defined($self->{option_results}->{add_interface_name}) &&
-            exists($sfp_ports->{$instance}->[1]) ?
+        $self->{sfp}->{$instance}->{interface} = defined($self->{option_results}->{add_interface_name})
+            && exists($sfp_ports->{$instance}->[1]) ?
             $sfp_ports->{$instance}->[1] :
             '';
 
@@ -397,7 +384,7 @@ sub manage_selection {
         $self->{sfp}->{$instance}->{perf}->{rx_input_dbm} /= 1000 if defined($self->{sfp}->{$instance}->{perf}->{rx_input_dbm});
         $self->{sfp}->{$instance}->{perf}->{bias_current} = $1 if ($result->{sfpTxBiasCurrent} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
         $self->{sfp}->{$instance}->{perf}->{bitrate} = $1 if ($result->{sfpBitRate} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
-        $self->{sfp}->{$instance}->{perf}->{bitrate} *= 1000000 if defined($self->{sfp}->{$instance}->{perf}->{bitrate});#Mbps
+        $self->{sfp}->{$instance}->{perf}->{bitrate} *= 1000000 if defined($self->{sfp}->{$instance}->{perf}->{bitrate}); # Mbps
         $self->{sfp}->{$instance}->{perf}->{display} = $display;
 
         $self->{sfp}->{$instance}->{temperature}->{temperature} = $1 if ($result->{sfpTemp} =~ /([-+]?[0-9]+(?:\.[0-9]+)?)/);
