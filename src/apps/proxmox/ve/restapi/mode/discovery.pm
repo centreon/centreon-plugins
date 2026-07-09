@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -58,12 +58,13 @@ sub discovery_vm {
     my $vms = $options{custom}->api_list_vms();
 
     my $disco_data = [];
-    foreach my $vm_id (keys %$vms) {
+    foreach my $vm_id (sort keys %$vms) {
         my $vm = {};
         $vm->{uuid} = $vm_id;
         $vm->{name} = $vms->{$vm_id}->{Name};
         $vm->{state} = $vms->{$vm_id}->{State};
         $vm->{node_name} = $vms->{$vm_id}->{Node};
+        $vm->{tags} = $vms->{$vm_id}->{Tags};
 
         my ($network_ips, $network_interfaces, $osinfo);
 
@@ -144,9 +145,9 @@ sub run {
     my $encoded_data;
     eval {
         if (defined($self->{option_results}->{prettify})) {
-            $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
+            $encoded_data = JSON::XS->new->utf8->canonical->pretty->encode($disco_stats);
         } else {
-            $encoded_data = JSON::XS->new->utf8->encode($disco_stats);
+            $encoded_data = JSON::XS->new->utf8->canonical->encode($disco_stats);
         }
     };
     if ($@) {

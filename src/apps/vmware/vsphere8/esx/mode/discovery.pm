@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,7 +50,7 @@ sub run {
     $disco_stats->{start_time} = time();
 
     # Retrieve the data
-    my $response = $options{custom}->request_api('endpoint' => '/vcenter/host', 'method' => 'GET');
+    my $response = $options{custom}->get_hosts();
 
     # Format the data for host discovery
     my @results = map {

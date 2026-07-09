@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,11 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+use centreon::plugins::constants qw/:values :counters/;
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'system', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
+        { name => 'system', type => COUNTER_TYPE_GLOBAL, message_separator => ' - ', skipped_code => { NO_VALUE() => 1 } }
     ];
     
     $self->{maps_counters}->{system} = [
@@ -99,6 +101,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'unavailable-sdcard-status:s' => { name => 'unavailable_sdcard_status', default => 'ignore',
+                                           not_empty => 1,
+                                           is_in => [ 'ignore', 'warning', 'critical', 'unknown' ] }
     });
 
     return $self;
@@ -121,7 +126,13 @@ sub manage_selection {
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );
-    $self->{system} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
+
+    my $data = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
+    $self->{output}->output_add(severity => $self->{option_results}->{unavailable_sdcard_status}, short_msg => 'SD card not available')
+        if $self->{option_results}->{unavailable_sdcard_status} ne 'ignore'
+           && ( ref $data ne 'HASH' || !defined $data->{storageArchiveBufferFillLevel} || $data->{storageArchiveBufferFillLevel} == -1 );
+
+    $self->{system} = $data;
 }
 
 1;
@@ -134,11 +145,66 @@ Check system.
 
 =over 8
 
-=item B<--warning-*> B<--critical-*>
+=item B<--unavailable-sdcard-status>
 
-Thresholds.
-Can be: 'sdcard-usage', 'temperature-internal', 'temperature-external',
-'temperature-gps', 'illumination-right', 'illumination-left', 'video-framerate'.
+Status to report when the SD card is unavailable. With 'ignore', no status change is applied (default: 'ignore').
+Can be: 'ignore', 'warning', 'critical', 'unknown'.
+
+=item B<--warning-illumination-left>
+
+Threshold in lx.
+
+=item B<--critical-illumination-left>
+
+Threshold in lx.
+
+=item B<--warning-illumination-right>
+
+Threshold in lx.
+
+=item B<--critical-illumination-right>
+
+Threshold in lx.
+
+=item B<--warning-sdcard-usage>
+
+Threshold in percentage.
+
+=item B<--critical-sdcard-usage>
+
+Threshold in percentage.
+
+=item B<--warning-temperature-external>
+
+Threshold in C.
+
+=item B<--critical-temperature-external>
+
+Threshold in C.
+
+=item B<--warning-temperature-gps>
+
+Threshold in C.
+
+=item B<--critical-temperature-gps>
+
+Threshold in C.
+
+=item B<--warning-temperature-internal>
+
+Threshold in C.
+
+=item B<--critical-temperature-internal>
+
+Threshold in C.
+
+=item B<--warning-video-framerate>
+
+Threshold in fps.
+
+=item B<--critical-video-framerate>
+
+Threshold in fps.
 
 =back
 

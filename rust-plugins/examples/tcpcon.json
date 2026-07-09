@@ -1,0 +1,42 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "tcpConnectionState",
+        "oid": "1.3.6.1.2.1.6.19.1.7",
+        "query": "Walk"
+      },
+      {
+        "name": "tcpListenerProcess",
+        "oid": "1.3.6.1.2.1.6.20.1.4",
+        "query": "Walk"
+      },
+      {
+        "name": "tcpConnState",
+        "oid": "1.3.6.1.2.1.6.13.1.1",
+        "query": "Walk"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "name": "tcp.connections",
+        "value": "Average({tcpConnectionState})",
+        "uom": "",
+        "min": 0,
+        "threshold-suffix": "tcp-connections"
+      }
+    ]
+  },
+  "output": {
+    "ok": "TCP connections are OK",
+    "detail_ok": false,
+    "warning": "TCP connections WARNING: ",
+    "detail_warning": true,
+    "critical": "TCP connections CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
+  }
+}

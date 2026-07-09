@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,14 +25,34 @@ use warnings;
 use centreon::common::powershell::functions;
 use centreon::common::powershell::veeam::functions;
 
+use Exporter 'import';
+
+use constant {
+    VEEAM_JOB_SOURCE_ALL => 'all',
+    VEEAM_JOB_SOURCE_STANDARD => 'standard',
+    VEEAM_JOB_SOURCE_AGENT => 'agent',
+};
+
+our %EXPORT_TAGS = (
+    job_source => [ qw(VEEAM_JOB_SOURCE_ALL
+                       VEEAM_JOB_SOURCE_STANDARD
+                       VEEAM_JOB_SOURCE_AGENT) ],
+);
+
+our @EXPORT_OK = ( @{ $EXPORT_TAGS{job_source} } );
+
+
 sub get_powershell {
     my (%options) = @_;
+
+
+    my $job_source = $options{job_source} // VEEAM_JOB_SOURCE_ALL;
 
     my $ps = '
 $ProgressPreference = "SilentlyContinue"
 $WarningPreference = "SilentlyContinue"
 
-$culture = new-object "System.Globalization.CultureInfo" "en-us"    
+$culture = new-object "System.Globalization.CultureInfo" "en-us"
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
 ';
 
@@ -40,88 +60,95 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
     $ps .= centreon::common::powershell::veeam::functions::powershell_init();
 
-    $ps .= '
+    $ps .= q~
+Try {
+    $ErrorActionPreference = "Stop"
 
-Try { 
-    $ErrorActionPreference = "Stop" 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
 
-    $items = New-Object System.Collections.Generic.List[Hashtable]; 
+    $jobIds = @{}
+~;
 
-    $isVeeamAgent=$false 
-    $vbrJob=Get-VBRJob 
+    if ( $job_source ne VEEAM_JOB_SOURCE_AGENT) {
 
-    if (($vbrJob | Select-Object -first 1).JobType -like "*Agent*") { 
-        $isVeeamAgent=$true 
-    } else { 
-        $isVeeamAgent=$false 
-    } 
+        $ps .= '
+        Get-VBRJob | ForEach-Object {
+            $guid = $_.Id.Guid.toString()
+            $jobIds[$guid] = $true
 
-    $sessions = @{} 
+            $item = @{}
+            $item.name = $_.Name
+            $item.type = $_.JobType.value
+            $item.isRunning = $_.isRunning
+            $item.scheduled = $_.IsScheduleEnabled
+            $item.isContinuous = 0
 
-    if ($isVeeamAgent) { 
-        Get-VBRComputerBackupJob | ForEach-Object { 
-            $item = @{} 
-            $item.name = $_.Name 
-            $item.type = $_.Type.value__ 
-            $item.isRunning = $false 
-            $item.scheduled = $_.ScheduleEnabled 
-            $item.isContinuous = 0 
+            if ($_.isContinuous -eq $true) {
+                $item.isContinuous = 1
+            }
 
-            if ($_.isContinuous -eq $true) { 
-                $item.isContinuous = 1 
-            } 
+            $item.sessions = New-Object System.Collections.Generic.List[Hashtable];
+            [Veeam.Backup.Core.CBackupSession]::GetByJob($guid) | Sort-Object CreationTimeUTC -Descending | Select-Object -First 2 | ForEach-Object {
+                $session = @{}
+                $session.result = $_.Result.value
+                $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+                $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
+                $item.sessions.Add($session)
+            }
 
-            $item.sessions = New-Object System.Collections.Generic.List[Hashtable]; 
-            $id = $_.Id.toString() 
-            Get-VBRComputerBackupJobSession -name $item.name | Sort-Object CreationTime -Descending | Select-Object -First 2 | ForEach-Object { 
-                $session = @{} 
-                $session.result = $_.Result.value__ - 1
-                $session.creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $session.endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $item.sessions.Add($session) 
-            } 
-
-            $items.Add($item) 
-        } 
-
-    } else { 
-        $vbrJob | ForEach-Object { 
-            $item = @{} 
-            $item.name = $_.Name 
-            $item.type = $_.JobType.value__ 
-            $item.isRunning = $_.isRunning 
-            $item.scheduled = $_.IsScheduleEnabled 
-            $item.isContinuous = 0 
-
-            if ($_.isContinuous -eq $true) { 
-                $item.isContinuous = 1 
-            } 
-
-            $item.sessions = New-Object System.Collections.Generic.List[Hashtable]; 
-            $guid = $_.Id.Guid.toString() 
-            [Veeam.Backup.Core.CBackupSession]::GetByJob($guid) | Sort-Object CreationTimeUTC -Descending | Select-Object -First 2 | ForEach-Object { 
-                $session = @{} 
-                $session.result = $_.Result.value__ 
-                $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ') 
-                $item.sessions.Add($session) 
-            } 
-
-            $items.Add($item) 
-        } 
-    } 
-
-    $jsonString = $items | ConvertTo-JSON-20 -forceArray $true 
-    Write-Host $jsonString 
-} Catch { 
-    Write-Host $Error[0].Exception 
-    exit 1 
-} 
-
-exit 0 
+            $items.Add($item)
+        }
 ';
+    }
 
-    return $ps;
+
+    if ( $job_source ne VEEAM_JOB_SOURCE_STANDARD) {
+        $ps .= '
+        Get-VBRComputerBackupJob | ForEach-Object {
+            $id = $_.Id.toString()
+            if ($jobIds.ContainsKey($id)) {
+                return
+            }
+
+            $item = @{}
+            $item.name = $_.Name
+            $item.mode = $_.Mode.ToString()
+            $item.isRunning = $false
+            $item.scheduled = $_.ScheduleEnabled
+            $item.isContinuous = 0
+
+            if ($_.isContinuous -eq $true) {
+                $item.isContinuous = 1
+            }
+
+            $item.sessions = New-Object System.Collections.Generic.List[Hashtable];
+            try {
+                Get-VBRComputerBackupJobSession -name $item.name | Sort-Object CreationTime -Descending | Select-Object -First 2 | ForEach-Object {
+                    $session = @{}
+                    $session.result = $_.Result.value__ - 1
+                    $session.creationTimeUTC = (get-date -date $_.CreationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+                    $session.endTimeUTC = (get-date -date $_.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+                    $item.sessions.Add($session)
+                }
+            } catch { }
+
+            $items.Add($item)
+        }
+';
+    }
+
+    $ps .= q~
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray $true
+    Write-Host $jsonString
+} Catch {
+    Write-Host $Error[0].Exception
+    exit 1
+}
+
+exit 0
+~;
+
+    return $ps =~ s/^\s+//mr;
 }
 
 1;

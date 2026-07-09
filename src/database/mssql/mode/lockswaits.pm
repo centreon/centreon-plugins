@@ -27,18 +27,12 @@ use centreon::plugins::constants qw(:counters);
 use centreon::plugins::misc qw(is_excluded trim);
 use Digest::SHA qw(sha256_hex);
 
-sub prefix_by_instance_output {
-    my ($self, %options) = @_;
-
-    return "instance '" . $options{instance_value}->{display} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         { name => 'total', type => COUNTER_TYPE_GLOBAL },
-        { name => 'by_instance', type => COUNTER_TYPE_INSTANCE}
+        { name => 'by_instance', type => COUNTER_TYPE_INSTANCE, prefix_output => "instance %{display}: "}
     ];
 
     $self->{maps_counters}->{total} = [
@@ -92,7 +86,7 @@ sub manage_selection {
         FROM
             sys.dm_os_performance_counters
         WHERE
-            object_name = 'SQLServer:Locks'
+            object_name LIKE '%Locks%'
         AND
             counter_name LIKE 'Lock Waits/sec%'
     });

@@ -168,8 +168,7 @@ This example checks if warning threshold is correct:
 ```perl
 
 if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-  $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-  $self->{output}->option_exit();
+  $self->{output}->option_exit(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
 }
 ```
 
@@ -212,33 +211,7 @@ Output displays :
 
 #### 2.4 change_bytes
 
-**Description**
-
-Convert bytes to human readable unit.
-Return value and unit.
-
-**Parameters**
-
-| Parameter | Type | Default | Description                        |
-|-----------|------|---------|------------------------------------|
-| value     | Int  |         | Performance data value to convert. |
-| network   |      | 1024    | Unit to divide (1000 if defined).  |
-
-**Example**
-
-This example change bytes to human readable unit:
-
-```perl
-
-my ($value, $unit) = $self->{perfdata}->change_bytes(value => 100000);
-
-print $value.' '.$unit."\n";
-```
-Output displays :
-
-```
-  100 KB
-```
+> This function is deprecated. Please use `format_bytes` from `centreon/plugins/misc.pm` which provides the same functionality.
 
 <div id='lib_snmp'/>
 
@@ -456,6 +429,13 @@ To use it, you can directly use the path of the method:
 ```perl
 centreon::plugins::misc::<my_method>;
 ```
+
+Or more commonly import the required functions with `qw`:
+
+```perl
+use centreon::plugins::misc qw(<my_method> <another_method>);
+```
+
 --------------
 #### 4.1 trim
 
@@ -608,6 +588,263 @@ my $stdout = centreon::plugins::misc::windows_execute(output => $self->{output},
 ```
 Output displays IP configuration on a Windows host.
 
+#### 4.6 format_bytes
+
+**Description**
+
+Convert bytes to human readable unit.
+Return value and unit.
+
+**Parameters**
+
+| Parameter | Type | Default | Description                        |
+|-----------|------|---------|------------------------------------|
+| value     | Int  |         | Performance data value to convert. |
+| network   |      | 1024    | Unit to divide (1000 if defined).  |
+
+**Example**
+
+This example change bytes to human readable unit:
+
+```perl
+
+use centreon::plugins::misc qw(format_bytes);
+
+my ($value, $unit) = format_bytes(value => 100000);
+
+print $value.' '.$unit."\n";
+```
+Output displays :
+
+```
+  100 KB
+```
+
+#### 4.7 is_empty and is_not_empty
+
+**Description**
+
+Check if a value is empty (undefined or empty string) or not empty.
+
+**Parameters**
+
+| Parameter | Type   | Default | Description     |
+|-----------|--------|---------|-----------------|
+| **value** | String |         | Value to check. |
+
+**Examples**
+
+```perl
+use centreon::plugins::misc qw(is_empty is_not_empty);
+
+my $value = '';
+if (is_empty($value)) {
+    print "Value is empty\n";
+}
+
+my $name = 'John';
+if (is_not_empty($name)) {
+    print "Name is: $name\n";
+}
+
+# Can be used in conditional expressions
+my $result = is_not_empty($data) ? 'has data' : 'no data';
+```
+
+#### 4.8 json_decode and json_encode
+
+**Description**
+
+Decode JSON string to Perl data structure and encode Perl data structure to JSON string.
+
+**Parameters for json_decode**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| **content** | String | | JSON string to decode. |
+| booleans_as_strings | Int | 0 | Convert booleans to strings "true"/"false" instead of Perl booleans. |
+| silence | Int | 0 | Don't print errors to STDERR. |
+| no_exit | Int | 0 | Don't exit on error (requires output parameter). |
+| output | Object | | Output object for error handling. |
+| errstr | String | | Custom error message. |
+
+**Parameters for json_encode**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| **object** | Ref | | Perl data structure to encode. |
+| prettify | Int | 0 | Pretty print the JSON output. |
+| silence | Int | 0 | Don't print errors to STDERR. |
+| no_exit | Int | 0 | Don't exit on error (requires output parameter). |
+| output | Object | | Output object for error handling. |
+| errstr | String | | Custom error message. |
+
+**Examples**
+
+```perl
+use centreon::plugins::misc qw(json_decode json_encode);
+
+# Decoding JSON
+my $json_string = '{"name":"John","age":30,"city":"New York"}';
+my $data = json_decode($json_string);
+
+print $data->{name} . "\n";  # Output: John
+print $data->{age} . "\n";   # Output: 30
+
+# With error handling
+my $data = json_decode($json_string, 
+                      output => $self->{output},
+                      errstr => 'Failed to parse API response');
+
+# Encoding to JSON
+my $perl_hash = {
+    name => 'Alice',
+    age => 25,
+    skills => ['Perl', 'Python', 'Go']
+};
+
+my $json = json_encode($perl_hash);
+print $json . "\n";
+
+# Pretty printed JSON
+my $pretty_json = json_encode($perl_hash, prettify => 1);
+print $pretty_json . "\n";
+```
+
+#### 4.9 is_excluded
+
+**Description**
+
+Check if a string should be excluded based on include and exclude regular expression filters. Useful for filtering instance names, hostnames, etc.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| **string** | String | | String to check. |
+| include_regexp | String/Array | | Include filter (regex or array of regexes). Include all if undefined. |
+| exclude_regexp | String/Array | | Exclude filter (regex or array of regexes). |
+| output | Object | | Output object for debug logging. |
+
+**Return value**
+
+Returns 1 if the string should be excluded, 0 if it should be included.
+
+**Examples**
+
+```perl
+use centreon::plugins::misc qw(is_excluded);
+
+# Simple exclude filter
+my $interface = 'eth0';
+if (is_excluded($interface, undef, 'lo')) {
+    print "Interface $interface is excluded\n";
+} else {
+    print "Interface $interface is included\n";
+}
+
+# Include and exclude filters
+my $disk = 'sda';
+if (is_excluded($disk, ['sd.*', 'vd.*'], 'dm-.*')) {
+    print "Disk is excluded\n";
+} else {
+    print "Disk is included\n";
+}
+
+# With output for debug logging
+if (is_excluded($service, 'mysql.*', 'mysql-backup', output => $self->{output})) {
+    # Will log debug message if excluded
+}
+
+# Using multiple filters
+my @services = ('apache2', 'mysql', 'mongodb', 'postfix');
+my $include = '.*';
+my $exclude = ['mongodb', 'backup'];
+
+foreach my $svc (@services) {
+    unless (is_excluded($svc, $include, $exclude)) {
+        print "Will monitor: $svc\n";
+    }
+}
+```
+
+#### 4.10 exprintf
+
+**Description**
+
+Replace placeholders in a string with values from a hash. Supports optional filters for formatting (storage size, network bandwidth, time duration, or sprintf format).
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| **template** | String | | String with placeholders like `%{key}` or `%{key\|filter}`. |
+| **datas** | Hash ref | | Hash containing the values for placeholders. |
+| default | String | '' | Default value if placeholder key is not found. |
+
+**Placeholder syntax**
+
+- `%{key}` - Simple placeholder replacement
+- `%{key|storage}` - Format as human-readable storage size (KB, MB, GB, etc.)
+- `%{key|network}` - Format as human-readable network bandwidth
+- `%{key|change_seconds}` - Convert seconds to human-readable time format (e.g., "1h 2m 30s")
+- `%{key|%format}` - Use sprintf format (must start with %)
+
+**Examples**
+
+```perl
+use centreon::plugins::misc qw(exprintf);
+
+# Simple placeholder replacement
+my $template = "Host %{hostname} has %{cpu_count} CPUs";
+my $datas = { hostname => 'server1', cpu_count => 8 };
+my $result = exprintf($template, $datas);
+print $result . "\n";
+# Output: Host server1 has 8 CPUs
+
+# With default value
+my $template = "User: %{user}, Group: %{group}";
+my $datas = { user => 'alice' };
+my $result = exprintf($template, $datas, 'unknown');
+print $result . "\n";
+# Output: User: alice, Group: unknown
+
+# Format storage size
+my $template = "Disk usage: %{usage_bytes|storage} of %{total_bytes|storage}";
+my $datas = { usage_bytes => 10737418240, total_bytes => 107374182400 };
+my $result = exprintf($template, $datas);
+print $result . "\n";
+# Output: Disk usage: 10.00 GB of 100.00 GB
+
+# Format network bandwidth
+my $template = "Interface speed: %{bandwidth|network}";
+my $datas = { bandwidth => 1000000000 };
+my $result = exprintf($template, $datas);
+print $result . "\n";
+# Output: Interface speed: 1000.00 Mb
+
+# Format time duration
+my $template = "Uptime: %{uptime_seconds|change_seconds}";
+my $datas = { uptime_seconds => 3750 };
+my $result = exprintf($template, $datas);
+print $result . "\n";
+# Output: Uptime: 1h 2m 30s
+
+# Using sprintf format
+my $template = "Temperature: %{temp|%.1f}°C";
+my $datas = { temp => 45.67 };
+my $result = exprintf($template, $datas);
+print $result . "\n";
+# Output: Temperature: 45.7°C
+
+# With array values (automatically joined with comma)
+my $template = "Services: %{services}";
+my $datas = { services => ['apache', 'mysql', 'redis'] };
+my $result = exprintf($template, $datas);
+print $result . "\n";
+# Output: Services: apache, mysql, redis
+```
+
 <div id='lib_statefile'/>
 
 ### 5.Statefile
@@ -657,9 +894,10 @@ Get data from cache file.
 
 **Parameters**
 
-| Parameter | Type   | Default | Description                  |
-|-----------|--------|---------|------------------------------|
-| name      | String |         | Get a value from cache file. |
+| Parameter | Type            | Default | Description                                        |
+|-----------|-----------------|---------|----------------------------------------------------|
+| name      | String          |         | Get a value from cache file.                       |
+| default   | Arbitrary data  |         | Value to return if the requested key is undefined. |
 
 **Example**
 
@@ -674,8 +912,10 @@ $self->{statefile_value}->read(statefile => 'my_cache_file',
 
 my $value = $self->{statefile_value}->get(name => 'property1');
 print $value."\n";
+my $value2 = $self->{statefile_value}->get(name => 'property2', 'default data');
+print $value2."\n";
 ```
-Output displays value for 'property1' of the cache file.
+Output displays value for 'property1' and 'property2' of the cache file.
 
 #### 5.3 write
 
@@ -990,7 +1230,7 @@ We want to develop the following SNMP plugin:
     $self->{maps_counters}->{global} = [
         { label => 'sessions', set => {
                 key_values => [ { name => 'sessions' } ],
-                output_template => 'Current sessions : %s',
+                output_template => 'Current sessions : %{sessions}',
                 perfdatas => [
                     { label => 'sessions', template => '%s', min => 0 },
                 ],
@@ -998,7 +1238,7 @@ We want to develop the following SNMP plugin:
         },
         { label => 'sessions-ssl', set => {
                 key_values => [ { name => 'sessions_ssl' } ],
-                output_template => 'Current ssl sessions : %s',
+                output_template => 'Current ssl sessions : %{sessions_ssl}',
                 perfdatas => [
                     { label => 'sessions_ssl', template => '%s', min => 0 },
                 ],
@@ -1084,13 +1324,13 @@ We want to add the current number of sessions by virtual servers.
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => "Virtual server '%{display}' " },
         { name => 'vs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual servers are ok' }
     ];
     $self->{maps_counters}->{global} = [
         { label => 'total-sessions', set => {
                 key_values => [ { name => 'sessions' } ],
-                output_template => 'current sessions : %s',
+                output_template => 'current sessions : %{sessions}',
                 perfdatas => [
                     { label => 'total_sessions', template => '%s', min => 0 },
                 ],
@@ -1098,7 +1338,7 @@ We want to add the current number of sessions by virtual servers.
         },
         { label => 'total-sessions-ssl', set => {
                 key_values => [ { name => 'sessions_ssl' } ],
-                output_template => 'current ssl sessions : %s',
+                output_template => 'current ssl sessions : %{sessions_ssl}',
                 perfdatas => [
                     { label => 'total_sessions_ssl', template => '%s', min => 0 },
                 ],
@@ -1109,7 +1349,7 @@ We want to add the current number of sessions by virtual servers.
     $self->{maps_counters}->{vs} = [
         { label => 'sessions', set => {
                 key_values => [ { name => 'sessions' }, { name => 'display' } ],
-                output_template => 'current sessions : %s',
+                output_template => 'current sessions : %{sessions}',
                 perfdatas => [
                     { label => 'sessions', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display' },
@@ -1118,7 +1358,7 @@ We want to add the current number of sessions by virtual servers.
         },
         { label => 'sessions-ssl', set => {
                 key_values => [ { name => 'sessions_ssl' }, { name => 'display' } ],
-                output_template => 'current ssl sessions : %s',
+                output_template => 'current ssl sessions : %{sessions_ssl}',
                 perfdatas => [
                     { label => 'sessions_ssl', template => '%s', 
                       min => 0, label_extra_instance => 1, instance_use => 'display' },
@@ -1126,12 +1366,6 @@ We want to add the current number of sessions by virtual servers.
             }
         },
     ];
-  }
-  
-  sub prefix_vs_output {
-    my ($self, %options) = @_;
-    
-    return "Virtual server '" . $options{instance_value}->{display} . "' ";
   }
   
   sub prefix_global_output {
@@ -1190,21 +1424,28 @@ The model can also be used to check strings (not only counters). So we want to c
   
   use strict;
   use warnings;
+  use centreon::plugins::misc qw(exprintf);
   use centreon::plugins::constants qw(:counters);
   
   sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vs', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_vs_output', message_multiple => 'All Virtual server status are ok' }
+        { name => 'vs', type => COUNTER_TYPE_INSTANCE, prefix_output => "Virtual server '%{display}' ", message_multiple => 'All Virtual server status are ok' }
     ];    
     $self->{maps_counters}->{vs} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
+                key_values => [ { name => 'status' }, { name => 'other_data'}, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
+                output_template => "status is '%{status}' and data is '%{other_data}'",
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_threshold_output')
+            }
+        },
+        { label => 'value2', threshold => 0, set => {
+                key_values => [ { name => 'value2' } ],
+                closure_custom_output => $self->can('custom_value2_output'),
+                closure_custom_perfdata => sub { return 0; },
             }
         }
     ];
@@ -1219,26 +1460,20 @@ The model can also be used to check strings (not only counters). So we want to c
     }
     return $status;
   }
-  
-  sub custom_status_output {
+
+  sub custom_value2_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("status is '%s'", $self->{result_values}->{status});
+    my $msg = exprintf("value is '%{value2}'", $self->{result_values});
     return $msg;
   }
-  
+
   sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
-  }
-  
-  sub prefix_vs_output {
-    my ($self, %options) = @_;
-    
-    return "Virtual server '" . $options{instance_value}->{display} . "' ";
   }
   
   sub check_options {
@@ -1272,9 +1507,13 @@ The model can also be used to check strings (not only counters). So we want to c
 The following example show 4 new attributes:
 
 * *closure_custom_calc*: should be used to do more complex calculation.
-* *closure_custom_output*: should be used to have a more complex output (An example: want to display the total, free and used value at the same time).
+* *closure_custom_output*: should be used to have a more complex output.
 * *closure_custom_perfdata*: should be used to manage yourself the perfdata.
 * *closure_custom_threshold_check*: should be used to manage yourself the threshold check.
+
+There is also an example showing how output_template can be used to display multiple values using %{} placeholders.
+
+` output_template => "status is '%{status}' and data is '%{other_data}'", `
 
 [Table of content (1)](#table_of_contents)
 

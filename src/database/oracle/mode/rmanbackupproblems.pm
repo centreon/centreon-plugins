@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,9 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+use centreon::plugins::constants qw/:counters :values/;
+use database::oracle::common qw/convert_to_rman/;
+
 sub prefix_global_output {
     my ($self, %options) = @_;
     
@@ -38,7 +41,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', skipped_code => { NO_VALUE() => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -101,6 +104,8 @@ sub manage_selection {
         GROUP BY status
     };
 
+    $query = convert_to_rman($query) if $options{sql}->is_rman();
+
     $options{sql}->query(query => $query);
     my $result = $options{sql}->fetchall_arrayref();
     $options{sql}->disconnect();
@@ -125,7 +130,7 @@ __END__
 
 =head1 MODE
 
-Check Oracle rman backup problems.
+Check Oracle RMAN backup problems.
 
 =over 8
 
@@ -133,10 +138,37 @@ Check Oracle rman backup problems.
 
 Retention in days (default: 3).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-completed>
 
-Thresholds.
-Can be: 'completed', 'failed', 'completed-warnings', 'completed-errors'.
+Threshold.
+
+=item B<--critical-completed>
+
+Threshold.
+
+=item B<--warning-completed-errors>
+
+Threshold.
+
+=item B<--critical-completed-errors>
+
+Threshold.
+
+=item B<--warning-completed-warnings>
+
+Threshold.
+
+=item B<--critical-completed-warnings>
+
+Threshold.
+
+=item B<--warning-failed>
+
+Threshold.
+
+=item B<--critical-failed>
+
+Threshold.
 
 =back
 
