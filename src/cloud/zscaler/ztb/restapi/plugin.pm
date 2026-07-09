@@ -31,6 +31,8 @@ sub new {
 
     $self->{modes} = {
         'cache'          => 'cloud::zscaler::ztb::restapi::mode::cache',
+        'gateway-cpu'    => 'cloud::zscaler::ztb::restapi::mode::gatewaycpu',
+        'gateway-disk'   => 'cloud::zscaler::ztb::restapi::mode::gatewaydisk',
         'gateway-memory' => 'cloud::zscaler::ztb::restapi::mode::gatewaymemory',
         'gateway-status' => 'cloud::zscaler::ztb::restapi::mode::gatewaystatus'
     };

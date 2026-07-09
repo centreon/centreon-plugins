@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::zscaler::ztb::restapi::mode::gatewaymemory;
+package cloud::zscaler::ztb::restapi::mode::gatewaydisk;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 
-sub custom_memory_perfdata {
+sub custom_disk_perfdata {
     my ($self) = @_;
 
     my $instances = [];
@@ -47,14 +47,14 @@ sub custom_memory_perfdata {
     );
 }
 
-sub custom_memory_usage_output {
+sub custom_disk_usage_output {
     my ($self, %options) = @_;
 
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
-        "memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
+        "disk usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -65,17 +65,6 @@ sub prefix_global_output {
     my ($self, %options) = @_;
 
     return 'Number of gateways ';
-}
-
-sub gateway_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking gateway '%s' [site: %s, cluster: %s]",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
-    );
 }
 
 sub prefix_gateway_output {
@@ -94,13 +83,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        {
-            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
-            group => [
-                { name => 'memory', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
-                { name => 'swap', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
-            ]
-        }
+        { name => 'gateways', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_gateway_output', message_multiple => 'All gateways are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -116,26 +99,26 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{memory} = [
-          { label => 'memory-usage', nlabel => 'gateway.memory.usage.bytes', set => {
+    $self->{maps_counters}->{gateways} = [
+          { label => 'disk-usage', nlabel => 'gateway.disk.usage.bytes', set => {
                 key_values => [
                     { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' },
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
-                closure_custom_output => $self->can('custom_memory_usage_output'),
-                closure_custom_perfdata => $self->can('custom_memory_perfdata')
+                closure_custom_output => $self->can('custom_disk_usage_output'),
+                closure_custom_perfdata => $self->can('custom_disk_perfdata')
             }
         },
-        { label => 'memory-usage-free', display_ok => 0, nlabel => 'gateway.memory.free.bytes', set => {
+        { label => 'disk-usage-free', display_ok => 0, nlabel => 'gateway.disk.free.bytes', set => {
                 key_values => [
                     { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' },
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                  ],
-                closure_custom_output => $self->can('custom_memory_usage_output'),
-                closure_custom_perfdata => $self->can('custom_memory_perfdata')
+                closure_custom_output => $self->can('custom_disk_usage_output'),
+                closure_custom_perfdata => $self->can('custom_disk_perfdata')
             }
         },
-        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'gateway.memory.usage.percentage', set => {
+        { label => 'disk-usage-prct', display_ok => 0, nlabel => 'gateway.disk.usage.percentage', set => {
                 key_values => [
                     { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' },
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
@@ -158,36 +141,6 @@ sub set_counters {
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0,
                         max => 100
-                    );
-                }
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{swap} = [
-        {   label => 'swap-usage', nlabel => 'gateway.swap.usage.bytes',
-            set => {
-                key_values => [
-                    { name => 'used' }, { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
-                ],
-                output_template => 'swap used: %s %s',
-                output_change_bytes => 1,
-                closure_custom_perfdata => sub {
-                    my ($self, %options) = @_;
-                    
-                    my $instances = [];
-                    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
-                        push @$instances, $self->{result_values}->{$_};
-                    }
-
-                    $self->{output}->perfdata_add(
-                        nlabel => $self->{nlabel},
-                        unit => 'B',
-                        instances => $instances,
-                        value => sprintf('%d', $self->{result_values}->{used}),
-                        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-                        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-                        min => 0
                     );
                 }
             }
@@ -251,27 +204,14 @@ sub manage_selection {
         
         my $resource = $options{custom}->get_gateway_resource(gateway_id => $gw->{gw_id});
         if (defined($resource->{system_stats})) {
-            my $total = $resource->{system_stats}->{memory}->{total} * 1024 * 1024 * 1024;
-            my $free = $resource->{system_stats}->{memory}->{free} * 1024 * 1024 * 1024;
-            my $used = $resource->{system_stats}->{memory}->{used} * 1024 * 1024 * 1024;
-            $self->{gateways}->{ $gw->{gw_id} }->{memory} = {
-                gatewayName => $gw->{gw_name},
-                clusterName => $gw->{cluster_name},
-                siteName => $gw->{site_name},
-                total => $total,
-                used => $used,
-                free => $free,
-                prct_used => 100 - ($free * 100 / $total),
-                prct_free => $free * 100 / $total
-            };
- 
-            my $swap_used = $resource->{system_stats}->{swap}->{used} * 1024 * 1024 * 1024;
-            $self->{gateways}->{ $gw->{gw_id} }->{swap} = {
-                gatewayName => $gw->{gw_name},
-                clusterName => $gw->{cluster_name},
-                siteName => $gw->{site_name},
-                used => $swap_used
-            };
+            my $total = $resource->{system_stats}->{disk}->{total} * 1024 * 1024 * 1024;
+            my $free = $resource->{system_stats}->{disk}->{free} * 1024 * 1024 * 1024;
+            my $used = $resource->{system_stats}->{disk}->{used} * 1024 * 1024 * 1024;
+            $self->{gateways}->{ $gw->{gw_id} }->{total} = $total;
+            $self->{gateways}->{ $gw->{gw_id} }->{used} = $used;
+            $self->{gateways}->{ $gw->{gw_id} }->{free} = $free;
+            $self->{gateways}->{ $gw->{gw_id} }->{prct_used} = 100 - ($free * 100 / $total);
+            $self->{gateways}->{ $gw->{gw_id} }->{prct_free} = $free * 100 / $total;
         }
 
         $self->{global}->{detected}++;
@@ -284,7 +224,7 @@ __END__
 
 =head1 MODE
 
-Check gateway memory.
+Check gateway disk.
 
 =over 8
 
@@ -332,37 +272,29 @@ Threshold.
 
 Threshold.
 
-=item B<--warning-memory-usage>
+=item B<--warning-disk-usage>
 
 Threshold in bytes.
 
-=item B<--critical-memory-usage>
+=item B<--critical-disk-usage>
 
 Threshold in bytes.
 
-=item B<--warning-memory-usage-free>
+=item B<--warning-disk-usage-free>
 
 Threshold in bytes.
 
-=item B<--critical-memory-usage-free>
+=item B<--critical-disk-usage-free>
 
 Threshold in bytes.
 
-=item B<--warning-memory-usage-prct>
+=item B<--warning-disk-usage-prct>
 
 Threshold in percentage.
 
-=item B<--critical-memory-usage-prct>
+=item B<--critical-disk-usage-prct>
 
 Threshold in percentage.
-
-=item B<--warning-swap-usage>
-
-Threshold in bytes.
-
-=item B<--critical-swap-usage>
-
-Threshold in bytes.
 
 =back
 
