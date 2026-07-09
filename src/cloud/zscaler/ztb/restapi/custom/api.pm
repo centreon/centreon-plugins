@@ -325,6 +325,7 @@ sub get_gateways {
     foreach my $site (@{$data->{rows}}) {
         my $item = {
             site_id => $site->{cluster_info}->{site_id},
+            site_name => $site->{location},
             cluster_id => $site->{cluster_info}->{cluster_id},
             cluster_name => $site->{cluster_info}->{cluster_name},
         };
@@ -358,17 +359,15 @@ sub get_gateway_resource {
         forceReturn => { 400 => 1 }
     );
 
-    my $response = [];
+    my $response = {};
     if (ref($data) eq 'HASH') {
-        foreach (@{$data->{result}->{rows}}) {
-            push @$response, {
-                containers_stats => $_->{containers_stats},
-                system_stats => $_->{system_stats},
-                hourly_stat_last => $_->{average_values}->{hourly_stats}->[0],
-                uptime => $_->{device_uptime},
-                wanmon_avg_values_last => $_->{wanmon_avg_values}->[0]
-            };
-        }
+        $response = {
+            containers_stats => $data->{containers_stats},
+            system_stats => $data->{system_stats},
+            hourly_stat_last => $data->{average_values}->{hourly_stats}->[0],
+            uptime => $data->{device_uptime},
+            wanmon_avg_values_last => $data->{wanmon_avg_values}->[0]
+        };
     }
 
     return $response;
