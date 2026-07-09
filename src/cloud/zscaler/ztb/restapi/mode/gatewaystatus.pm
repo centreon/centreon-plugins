@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::backup::veeam::vone::restapi::mode::repositories;
+package cloud::zscaler::ztb::restapi::mode::gatewaystatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,63 +28,41 @@ use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-my $map_repository_state_numeric = {
-    unknown => 0,
-    ok => 1,
-    inaccessible => 2,
-    disconnected => 3,
-    outOfDate => 4,
-    warning => 5
-};
-
-sub custom_space_usage_output {
+sub custom_status_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
-        "space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
-        $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
-    );
-}
-
-sub custom_status_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel => 'repository.state.count',
-        instances => $self->{result_values}->{name},
-        value => $map_repository_state_numeric->{ $self->{result_values}->{state} },
-        min => 0
+        "operational state: %s [desired state: %s]",
+        $self->{result_values}->{operationalState},
+        $self->{result_values}->{desiredState}
     );
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Number of repositories ';
+    return 'Number of gateways ';
 }
 
-sub repository_long_output {
+sub gateway_long_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "checking repository '%s' [type: %s]",
-        $options{instance_value}->{name},
-        $options{instance_value}->{type}
+        "checking gateway '%s' [site: %s, cluster: %s]",
+        $options{instance_value}->{gatewayName},
+        $options{instance_value}->{siteName},
+        $options{instance_value}->{clusterName}
     );
 }
 
-sub prefix_repository_output {
+sub prefix_gateway_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "repository '%s' [type: %s] ",
-        $options{instance_value}->{name},
-        $options{instance_value}->{type}
+        "gateway '%s' [site: %s, cluster: %s] ",
+        $options{instance_value}->{gatewayName},
+        $options{instance_value}->{siteName},
+        $options{instance_value}->{clusterName}
     );
 }
 
@@ -94,16 +72,17 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'repositories', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_repository_output', cb_long_output => 'repository_long_output', indent_long_output => '    ', message_multiple => 'All repositories are ok',
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
             group => [
-                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE  },
-                { name => 'space', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'health', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'vrrp', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
 
     $self->{maps_counters}->{global} = [
-        {   label => 'repositories-detected', display_ok => 0, nlabel => 'repositories.detected.count',
+        {   label => 'gateways-detected', display_ok => 0, nlabel => 'gateways.detected.count',
             unknown_default => '@0',
             set => {
                 key_values => [ { name => 'detected' } ],
@@ -115,46 +94,52 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{space} = [
-         { label => 'space-usage', nlabel => 'repository.space.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'name' }
-                ]
+    $self->{maps_counters}->{status} = [
+        {
+            label => 'gateway-status',
+            type => COUNTER_KIND_TEXT,
+            critical_default => '%{desiredState} ne %{operationalState}',
+            set => {
+                key_values => [
+                    { name => 'desiredState' }, { name => 'operationalState' },
+                    { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
+                ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
-        { label => 'space-usage-free', display_ok => 0, nlabel => 'repository.space.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'name' }
-                ]
-            }
-        },
-        { label => 'space-usage-prct', display_ok => 0, nlabel => 'repository.space.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'name' } ],
-                closure_custom_output => $self->can('custom_space_usage_output'),
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name' }
-                ]
+        }
+    ];
+    
+    $self->{maps_counters}->{health} = [
+        {
+            label => 'gateway-health',
+            type => COUNTER_KIND_TEXT,
+            critical_default => '%{healthColor} !~ /green/',
+            set => {
+                key_values => [
+                    { name => 'healthColor' },
+                    { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
+                ],
+                output_template => 'health color: %s',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
 
-    $self->{maps_counters}->{status} = [
+    $self->{maps_counters}->{vrrp} = [
         {
-            label => 'repository-status',
+            label => 'gateway-vrrp-status',
             type => COUNTER_KIND_TEXT,
-            unknown_default => '%{state} =~ /unknown/',
-            warning_default => '%{state} =~ /warning|outofdate/',
-            critical_default => '%{state} =~ /inaccessible|disconnected/',
+            critical_default => '%{vrrpState} =~ /fault/i',
             set => {
                 key_values => [
-                    { name => 'state' }, { name => 'name' }, { name => 'type' }
+                    { name => 'vrrpState' },
+                    { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
-                output_template => 'state: %s',
-                closure_custom_perfdata => $self->can('custom_status_perfdata'),
+                output_template => 'VRRP state: %s',
+                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -167,8 +152,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-uid:s'  => { name => 'filter_uid', default => '' },
-        'filter-name:s' => { name => 'filter_name', default => '' }
+        'include-site-name:s'         => { name => 'include_site_name',  default => '' },
+        'exclude-site-name:s'         => { name => 'exclude_site_name',  default => '' },
+        'include-cluster-name:s'      => { name => 'include_cluster_name',  default => '' },
+        'exclude-cluster-name:s'      => { name => 'exclude_cluster_name',  default => '' },
+        'include-gateway-name:s'      => { name => 'include_gateway_name',  default => '' },
+        'exclude-gateway-name:s'      => { name => 'exclude_gateway_name',  default => '' },
+        'include-gateway-id:s'        => { name => 'include_gateway_id',  default => '' },
+        'exclude-gateway-id:s'        => { name => 'exclude_gateway_id',  default => '' },
     });
 
     return $self;
@@ -177,49 +168,42 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $repositories = $options{custom}->get_repositories();
+    my $gateways = $options{custom}->get_gateways();
 
     $self->{global} = { detected => 0 };
-    $self->{repositories} = {};
+    $self->{gateways} = {};
+    foreach my $gw (@$gateways) {
+        next if is_excluded($gw->{site_name}, $self->{option_results}->{include_site_name}, $self->{option_results}->{exclude_site_name});
+        next if is_excluded($gw->{cluster_name}, $self->{option_results}->{include_cluster_name}, $self->{option_results}->{exclude_cluster_name});
+        next if is_excluded($gw->{gw_name}, $self->{option_results}->{include_gateway_name}, $self->{option_results}->{exclude_gateway_name});
+        next if is_excluded($gw->{gw_id}, $self->{option_results}->{include_gateway_id}, $self->{option_results}->{exclude_gateway_id});
 
-    foreach my $repo (@{$repositories->{items}}) {
-        next if is_excluded($repo->{repositoryUidInVbr}, $self->{option_results}->{filter_uid});
-        next if is_excluded($repo->{name}, $self->{option_results}->{filter_name});
-
-        $self->{repositories}->{ $repo->{name} } = {
-            name => $repo->{name},
-            type => $repo->{type},
-            uid => $repo->{repositoryUidInVbr},
-            space => {
-                name => $repo->{name},
-                total => $repo->{capacityBytes},
-                free => $repo->{freeSpaceBytes},
-                used => $repo->{capacityBytes} - $repo->{freeSpaceBytes},
-                prct_used => 100 - ($repo->{freeSpaceBytes} * 100 / $repo->{capacityBytes}),
-                prct_free => $repo->{freeSpaceBytes} * 100 / $repo->{capacityBytes}
-            },
+        $self->{gateways}->{ $gw->{gw_id} } = {
+            gatewayName => $gw->{gw_name},
+            clusterName => $gw->{cluster_name},
+            siteName => $gw->{site_name},
             status => {
-                name => $repo->{name},
-                type => $repo->{type},
-                state => lc $repo->{state}
+                gatewayName => $gw->{gw_name},
+                clusterName => $gw->{cluster_name},
+                siteName => $gw->{site_name},
+                operationalState => $gw->{gw_operational_state},
+                desiredState => $gw->{gw_desired_state}
+            },
+            health => {
+                gatewayName => $gw->{gw_name},
+                clusterName => $gw->{cluster_name},
+                siteName => $gw->{site_name},
+                healthColor => $gw->{gw_health_color}
+            },
+            vrrp => {
+                gatewayName => $gw->{gw_name},
+                clusterName => $gw->{cluster_name},
+                siteName => $gw->{site_name},
+                vrrpState => $gw->{gw_vrrp_state}
             }
         };
+
         $self->{global}->{detected}++;
-    }
-}
-
-sub disco_format {
-    my ($self, %options) = @_;
-
-    $self->{output}->add_disco_format(elements => ['uid', 'name', 'type', 'state']);
-}
-
-sub disco_show {
-    my ($self, %options) = @_;
-
-    my $repos = $self->manage_selection(custom => $options{custom});
-    foreach (values %{$self->{repositories}}) {
-        $self->{output}->add_disco_entry(uid => $_->{uid}, name => $_->{name}, type => $_->{type}, state => $_->{status}->{state});
     }
 }
 
@@ -229,64 +213,94 @@ __END__
 
 =head1 MODE
 
-Check repositories.
+Check gateway status.
 
 =over 8
 
-=item B<--filter-uid>
+=item B<--include-site-name>
 
-Filter repositories by UID (can be a regexp).
+Include site names (regexp).
 
-=item B<--filter-name>
+=item B<--exclude-site-name>
 
-Filter repositories by name (can be a regexp).
+Exclude site names (regexp).
 
-=item B<--unknown-repository-status>
+=item B<--include-cluster-name>
 
-Define the conditions to match for the status to be UNKNOWN (default: '%{state} =~ /unknown/').
-You can use the following variables: %{state}, %{name}, %{type}
+Include cluster names (regexp).
 
-=item B<--warning-repository-status>
+=item B<--exclude-cluster-name>
 
-Define the conditions to match for the status to be WARNING (default: '%{state} =~ /warning|outofdate/').
-You can use the following variables: %{state}, %{name}, %{type}
+Exclude cluster names (regexp).
 
-=item B<--critical-repository-status>
+=item B<--include-gateway-name>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{state} =~ /inaccessible|disconnected/').
-You can use the following variables: %{state}, %{name}, %{type}
+Include gateway names (regexp).
 
-=item B<--warning-repositories-detected>
+=item B<--exclude-gateway-name>
+
+Exclude gateway names (regexp).
+
+=item B<--include-gateway-id>
+
+Include gateway IDs (regexp).
+
+=item B<--exclude-gateway-id>
+
+Exclude gateway IDs (regexp).
+
+=item B<--warning-gateways-detected>
 
 Threshold.
 
-=item B<--critical-repositories-detected>
+=item B<--critical-gateways-detected>
 
 Threshold.
 
-=item B<--warning-space-usage>
+=item B<--unknown-gateway-status>
 
-Threshold in bytes.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
 
-=item B<--critical-space-usage>
+=item B<--warning-gateway-status>
 
-Threshold in bytes.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
 
-=item B<--warning-space-usage-free>
+=item B<--critical-gateway-status>
 
-Threshold in bytes.
+Define the conditions to match for the status to be CRITICAL (default: '%{desiredState} ne %{operationalState}').
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
 
-=item B<--critical-space-usage-free>
+=item B<--unknown-gateway-health>
 
-Threshold in bytes.
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{healthColor}
 
-=item B<--warning-space-usage-prct>
+=item B<--warning-gateway-health>
 
-Threshold in percentage.
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{healthColor}
 
-=item B<--critical-space-usage-prct>
+=item B<--critical-gateway-health>
 
-Threshold in percentage.
+Define the conditions to match for the status to be CRITICAL (default: '%{healthColor} !~ /green/').
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{healthColor}
+
+=item B<--unknown-gateway-vrrp-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
+
+=item B<--warning-gateway-vrrp-status>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
+
+=item B<--critical-gateway-vrrp-status>
+
+Define the conditions to match for the status to be CRITICAL (default: '%{vrrpState} =~ /fault/i').
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
 
 =back
 
