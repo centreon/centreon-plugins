@@ -330,6 +330,41 @@ You can use single line if conditional:
     next if ($i == 1);
 ```
 
+5.6 Line Breaks for Logical Operators
+
+When a conditional expression spans multiple lines, place the logical operators (&& and ||) at the beginning of the following line rather than at the end of the previous one.
+
+Good:
+
+```perl
+    if (
+        $condition1
+        && $condition2
+        && $condition3
+    ) {
+        ...
+    }
+    
+    if (
+        $condition1
+        || $condition2
+    ) {
+        ...
+    }
+```
+
+Bad:
+
+```perl
+    if (
+        $condition1 &&
+        $condition2 &&
+        $condition3
+    ) {
+        ...
+    }
+```
+
 [Table of contents](#table_of_contents)
 
 <div id='create_plugin'/>
@@ -473,19 +508,19 @@ Several options can be declared in the **new** constructor:
 
   $options{options}->add_options(arguments => {
       "option1:s" => { name => 'option1' },
-      "option2:s" => { name => 'option2', default => 'value1' },
-      "option3"   => { name => 'option3' },
+      "option2:s" => { name => 'option2', default => 'value1', not_empty => 1 },
+      "option3"   => { name => 'option3', },
   });
 
 ```
 Here is the description of arguments used in this example:
 
 * option1 : String value
-* option2 : String value with default value "value1"
+* option2 : String value with default value "value1", cannot be empty
 * option3 : Boolean value
 
 > **TIP 1** : Options are boolean as default and string if set ":s", no other type are allowed in this argument descriptions. 
-The actual type of the argument, if it is other than a string, can be checked and interpreted in ```check_option()``` function defined below.
+The actual type of an argument, can be validated using the options described below or by implementing a check_option() function, as shown below.
 
 > **TIP 2** : You can have more informations about options format here: http://perldoc.perl.org/Getopt/Long.html
 
@@ -506,12 +541,10 @@ For example, Warning and Critical thresholds can be validated in
 ```perl
 
   if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+       $self->{output}->option_exit(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
   }
   if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+       $self->{output}->option_exit(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
   }
 
 ```
@@ -842,6 +875,135 @@ Option management is a central piece of a successful plugin. You should:
 * For a given option, there are two possible behaviours (but only one can apply to a given option): flag (boolean) to enable an option and value, where an additional argument must be provided to set the option's value.
 * Always **check** the values supplied by the user and print a **clear message** when they do not fit with plugin requirements
 * Set the option to a default value when relevant
+
+### 11.1 Option declaration with validation
+
+Options are declared in the mode's `new` constructor using `add_options`. The validation framework in `centreon/plugins/options.pm` provides a declarative approach to validate options automatically.
+
+#### 11.1.1 Basic declaration
+
+```perl
+$options{options}->add_options(arguments => {
+    'hostname:s' => { name => 'hostname', not_empty => 1 },
+    'port:s'     => { name => 'port', default => 443, type => 'port' },
+    'timeout:s'  => { name => 'timeout', type => 'numeric', default => 10 },
+    'verbose'    => { name => 'verbose' },
+});
+```
+
+The `:s` suffix means the option takes a string value. No suffix means the option is a boolean flag.
+
+#### 11.1.2 Available Validators
+
+You can declare multiple validators on the same option:
+
+| Validator | Description | Example | Error Message |
+|-----------|-------------|---------|----------------|
+| `not_empty` | Option must not be empty/undefined | `not_empty => 1` | "Need to specify --{option} option." |
+| `numeric` | Option must be a numeric value | `numeric => 1` | "'{value}' must be a numeric value." |
+| `port` | Option must be a valid TCP port (1-65535) | `port => 1` | "'{value}' must be a numeric TCP port value between 1 and 65535." |
+| `protocol_http` | Option must be 'http' or 'https' | `protocol_http => 1` | "'{value}' must be a valid HTTP protocol ('http' or 'https')." |
+| `greater_than` | Numeric value must be > reference | `greater_than => 0` | "Constraint '>' is not verified." |
+| `greater_than_or_equal` | Numeric value must be >= reference | `greater_than_or_equal => 0` | "Constraint '>=' is not verified." |
+| `less_than` | Numeric value must be < reference | `less_than => 100` | "Constraint '<' is not verified." |
+| `less_than_or_equal` | Numeric value must be <= reference | `less_than_or_equal => 100` | "Constraint '<=' is not verified." |
+| `regexp_match` | Option must match a regex pattern | `regexp_match => '^\d{1,3}\.\d{1,3}$'` | "Does not match pattern." |
+| `is_in` | Option must be one of allowed values | `is_in => ['http', 'https', 'ws']` | "'{value}' not in allowed list." |
+| `type` | Alias for built-in type validators | `type => 'port'` or `type => 'protocol_http'` | (uses built-in error message) |
+| `default` | Default value if option not provided | `default => 'value'` | (not a validator) |
+| `error_message` | Custom error message with placeholders | `error_message => "Custom: %{value} not valid"` | (custom message) |
+
+#### 11.1.3 Using the `type` parameter
+
+The `type` parameter simplifies validation by using predefined types:
+
+```perl
+'port:s'           => { name => 'port', type => 'port', default => 443 },
+'proto:s'          => { name => 'proto', type => 'protocol_http', default => 'https' },
+'timeout:s'        => { name => 'timeout', type => 'numeric', default => 10 },
+```
+
+Built-in types: `port`, `protocol_http`, `numeric`
+
+#### 11.1.4 Combined validators
+
+You can combine multiple validators on a single option:
+
+```perl
+'data:s' => {
+    name => 'data',
+    regexp_match => '^\d\.\d{3}$',
+    error_message => 'Value %{data} does not match our custom format (expected: X.XXX)!'
+},
+
+'port:s' => {
+    name => 'port',
+    type => 'port',
+    not_empty => 1
+},
+
+'retries:s' => {
+    name => 'retries',
+    numeric => 1,
+    greater_than_or_equal => 0,
+    less_than => 100,
+    error_message => 'Retries must be between 0 and 99'
+},
+
+'allowed_protocols:s' => {
+    name => 'allowed_protocols',
+    is_in => ['http', 'https', 'ws', 'wss']
+},
+```
+
+#### 11.1.5 Custom error messages
+
+Use the `error_message` parameter with placeholders to provide user-friendly messages:
+
+```perl
+'data:s' => {
+    name => 'data',
+    regexp_match => '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$',
+    error_message => 'Invalid IP address: %{data}. Expected format: XXX.XXX.XXX.XXX'
+},
+
+'port:s' => {
+    name => 'port',
+    greater_than => 0,
+    less_than => 65536,
+    error_message => 'Port %{port} is not valid. Must be between 1 and 65535.'
+},
+```
+
+Available placeholders: `%{option}` (option name), `%{value}` (provided value), and any custom placeholder matching your option name `%{option_name}`
+
+#### 11.1.6 Complete example from tutorial
+
+```perl
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'hostname:s'           => { name => 'hostname', not_empty => 1 },
+        'proto:s'              => { name => 'proto', default => 'https', type => 'protocol_http', not_empty => 1 },
+        'port:s'               => { name => 'port', default => 443, type => 'port', not_empty => 1 },
+        'timeout:s'            => { name => 'timeout', type => 'numeric' },
+        'data:s'               => { name => 'data', regexp_match => '^\d\.\d{3}$',
+                                    error_message => 'Value %{data} does not match our custom format!' },
+        'unknown-status:s'     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+        'warning-status:s'     => { name => 'warning_status' },
+        'critical-status:s'    => { name => 'critical_status', default => '' }
+    });
+
+    $self->{http} = centreon::plugins::http->new(%options);
+    return $self;
+}
+
+```
+
+All validations are performed automatically when `parse_options()` is called. If validation fails, the plugin exits with status UNKNOWN and displays the error message.
 
 [Table of contents](#table_of_contents)
 

@@ -252,6 +252,7 @@ NTP
 Nutanix
 NVOS
 OAuth
+OAuth2
 --oid
 OID
 --oid-display
@@ -306,6 +307,7 @@ redis-cli
 ReplicaJobSession
 RestAPI
 RFC1628
+RMAN
 RRDCached
 rsrp
 rsrq

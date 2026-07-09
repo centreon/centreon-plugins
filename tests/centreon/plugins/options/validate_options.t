@@ -132,6 +132,127 @@ subtest 'regexp_match' => sub {
 };
 
 # --------------------------------------------------------------------------
+# not_empty
+# --------------------------------------------------------------------------
+subtest 'not_empty' => sub {
+    my @cases = (
+        # nominal
+        { value => 'something', expect => 1, msg => '"something" is not empty' },
+        { value => '0',         expect => 1, msg => '"0" is not empty (numeric zero is valid)' },
+        { value => ' ',         expect => 1, msg => 'space character is not empty' },
+        # edge: empty and undef
+        { value => '',          expect => 0, msg => 'empty string is empty' },
+        { value => undef,       expect => 0, msg => 'undef value is empty' },
+    );
+    for my $case (@cases) {
+        is($pv->($case->{value}, 'not_empty', 1), $case->{expect}, $case->{msg});
+    }
+};
+
+# --------------------------------------------------------------------------
+# numeric
+# --------------------------------------------------------------------------
+subtest 'numeric' => sub {
+    my @cases = (
+        # nominal
+        { value => '0',   expect => 1, msg => '"0" is numeric' },
+        { value => '123', expect => 1, msg => '"123" is numeric' },
+        { value => '999', expect => 1, msg => '"999" is numeric' },
+        # edge: non-numeric
+        { value => '-1',   expect => 0, msg => '"-1" is not numeric (contains minus sign)' },
+        { value => '12.3', expect => 0, msg => '"12.3" is not numeric (contains decimal point)' },
+        { value => '',     expect => 1, msg => 'empty string skips validation' },
+        { value => 'abc',  expect => 0, msg => '"abc" is not numeric' },
+        { value => '3abc', expect => 0, msg => '"3abc" is not numeric (mixed alphanumeric)' },
+        { value => 'a1b2', expect => 0, msg => '"a1b2" is not numeric' },
+        { value => undef,  expect => 1, msg => 'undef skips validation' },
+    );
+    for my $case (@cases) {
+        is($pv->($case->{value}, 'numeric', 1), $case->{expect}, $case->{msg});
+    }
+};
+
+# --------------------------------------------------------------------------
+# port
+# --------------------------------------------------------------------------
+subtest 'port' => sub {
+    my @cases = (
+        # nominal
+        { value => '1',     expect => 1, msg => 'port 1 is valid (minimum)' },
+        { value => '80',    expect => 1, msg => 'port 80 is valid (http)' },
+        { value => '443',   expect => 1, msg => 'port 443 is valid (https)' },
+        { value => '8080',  expect => 1, msg => 'port 8080 is valid' },
+        { value => '65535', expect => 1, msg => 'port 65535 is valid (maximum)' },
+        # edge: out of range
+        { value => '0',     expect => 0, msg => 'port 0 is invalid (below minimum)' },
+        { value => '65536', expect => 0, msg => 'port 65536 is invalid (above maximum)' },
+        { value => '-1',    expect => 0, msg => 'port -1 is invalid (negative)' },
+        { value => '99999', expect => 0, msg => 'port 99999 is invalid (out of range)' },
+        # edge: non-numeric
+        { value => 'abc',   expect => 0, msg => 'port "abc" is invalid (non-numeric)' },
+        { value => '8080a', expect => 0, msg => 'port "8080a" is invalid (mixed alphanumeric)' },
+        { value => '80.5',  expect => 0, msg => 'port "80.5" is invalid (decimal)' },
+        { value => '',      expect => 1, msg => 'empty string skips validation' },
+        { value => undef,   expect => 1, msg => 'undef skips validation' },
+    );
+    for my $case (@cases) {
+        is($pv->($case->{value}, 'port', 1), $case->{expect}, $case->{msg});
+    }
+};
+
+# --------------------------------------------------------------------------
+# protocol_http
+# --------------------------------------------------------------------------
+subtest 'protocol_http' => sub {
+    my @cases = (
+        # nominal
+        { value => 'http',  expect => 1, msg => '"http" is valid' },
+        { value => 'https', expect => 1, msg => '"https" is valid' },
+        # edge: case sensitivity
+        { value => 'HTTP',  expect => 0, msg => '"HTTP" (uppercase) is invalid' },
+        { value => 'HTTPS', expect => 0, msg => '"HTTPS" (uppercase) is invalid' },
+        { value => 'Http',  expect => 0, msg => '"Http" (mixed case) is invalid' },
+        # edge: invalid values
+        { value => 'ftp',   expect => 0, msg => '"ftp" is invalid' },
+        { value => 'ws',    expect => 0, msg => '"ws" is invalid' },
+        { value => 'http:', expect => 0, msg => '"http:" is invalid (extra char)' },
+        { value => 'http ', expect => 0, msg => '"http " (trailing space) is invalid' },
+        { value => '',      expect => 1, msg => 'empty string skips validation' },
+        { value => undef,   expect => 1, msg => 'undef skips validation' },
+    );
+    for my $case (@cases) {
+        is($pv->($case->{value}, 'protocol_http', 1), $case->{expect}, $case->{msg});
+    }
+};
+
+# --------------------------------------------------------------------------
+# is_in
+# --------------------------------------------------------------------------
+subtest 'is_in' => sub {
+    my @cases = (
+        # nominal
+        { value => 'red',    ref => ['red', 'green', 'blue'], expect => 1, msg => '"red" in [red, green, blue]' },
+        { value => 'green',  ref => ['red', 'green', 'blue'], expect => 1, msg => '"green" in [red, green, blue]' },
+        { value => 'blue',   ref => ['red', 'green', 'blue'], expect => 1, msg => '"blue" in [red, green, blue]' },
+        # edge: not in list
+        { value => 'yellow', ref => ['red', 'green', 'blue'], expect => 0, msg => '"yellow" not in [red, green, blue]' },
+        { value => 'RED',    ref => ['red', 'green', 'blue'], expect => 0, msg => '"RED" (uppercase) not in list' },
+        # edge: numeric values in list
+        { value => '1',      ref => ['1', '2', '3'],          expect => 1, msg => '"1" in ["1", "2", "3"]' },
+        { value => '5',      ref => ['1', '2', '3'],          expect => 0, msg => '"5" not in ["1", "2", "3"]' },
+        { value => 1,        ref => ['1', '2', '3'],          expect => 1, msg => 'numeric 1 matches string "1" via eq' },
+        # edge: empty list
+        { value => 'red',    ref => [],                       expect => 0, msg => '"red" not in empty list' },
+        # edge: empty string and undef
+        { value => '',       ref => ['', 'a', 'b'],           expect => 1, msg => 'empty string in list' },
+        { value => undef,    ref => ['a', 'b'],               expect => 1, msg => 'undef skips validation' },
+    );
+    for my $case (@cases) {
+        is($pv->($case->{value}, 'is_in', $case->{ref}), $case->{expect}, $case->{msg});
+    }
+};
+
+# --------------------------------------------------------------------------
 # validate_options: integration via the options object
 # --------------------------------------------------------------------------
 subtest 'validate_options: valid value does not call option_exit' => sub {

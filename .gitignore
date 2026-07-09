@@ -7,3 +7,7 @@ report.html
 tests/resources/__pycache__
 src/lib
 node_modules
+
+# VMware proprietary SDK archives (Broadcom license — download manually)
+sdks-vmware/*.tar.gz
+sdks-vmware/*.zip

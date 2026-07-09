@@ -379,9 +379,7 @@
     },
     {
       "name": "UUID",
-      "rpm": {
-        "version": "0.31"
-      }
+      "rpm": {}
     },
     {
       "name": "UUID::URandom",
@@ -419,7 +417,7 @@
         "rpm_dependencies": "zeromq"
       },
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64",
+        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64,bookworm-arm64,trixie-arm64",
         "use_dh_make_perl": "false",
         "version": "0.01",
         "deb_dependencies": "libzmq5"

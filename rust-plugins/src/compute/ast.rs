@@ -1,7 +1,7 @@
 //! Abstract syntax tree and expression evaluation.
 
 use crate::snmp::SnmpResult;
-use log::{info, warn};
+use log::{info, trace, warn};
 use std::str;
 
 /// An expression node in the AST.
@@ -280,6 +280,7 @@ impl ExprResult {
     /// the numbers to strings before concatenation, padding to match lengths
     /// where necessary.
     pub fn join(&mut self, other: &ExprResult) {
+        trace!("[join] self: {:?} - other: {:?}", &self, &other);
         match self {
             ExprResult::Empty => match other {
                 ExprResult::StrVector(vv) => {
@@ -289,7 +290,9 @@ impl ExprResult {
                     *self = ExprResult::Str(s.clone());
                 }
                 ExprResult::Vector(vv) => {
-                    *self = ExprResult::StrVector(vv.iter().map(|n| crate::output::float_string(n)).collect());
+                    *self = ExprResult::StrVector(
+                        vv.iter().map(|n| crate::output::float_string(n)).collect(),
+                    );
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
@@ -344,13 +347,24 @@ impl ExprResult {
                     *s = format!("{}{}", s, ss);
                 }
                 ExprResult::Number(n) => {
-                    *s = format!("{}{:.2}", s, crate::output::float_string(n));
+                    trace!("[join] n: {:?}", &n);
+                    *s = format!("{}{}", s, crate::output::float_string(n));
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
             _ => {
                 panic!("Unable to join objects that are not strings");
             }
+        }
+    }
+
+    pub fn values(&self) -> Vec<String> {
+        match self {
+            ExprResult::Vector(v) => v.iter().map(ToString::to_string).collect(),
+            ExprResult::Number(v) => vec![v.to_string()],
+            ExprResult::Str(v) => vec![v.clone()],
+            ExprResult::StrVector(v) => v.clone(),
+            ExprResult::Empty => Vec::new(),
         }
     }
 }
@@ -369,8 +383,10 @@ impl<'input> Expr<'input> {
                 Err(format!("Undefined macro in expression: {{{}}}", k))
             }
             Expr::Number(_) => Ok(()),
-            Expr::OpPlus(left, right) | Expr::OpMinus(left, right) |
-            Expr::OpStar(left, right) | Expr::OpSlash(left, right) => {
+            Expr::OpPlus(left, right)
+            | Expr::OpMinus(left, right)
+            | Expr::OpStar(left, right)
+            | Expr::OpSlash(left, right) => {
                 left.validate_macros(collect)?;
                 right.validate_macros(collect)?;
                 Ok(())
