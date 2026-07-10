@@ -242,6 +242,76 @@ sub custom_latency_perfdata {
 }
 
 
+sub custom_jitter_threshold {
+    my ($self, %options) = @_;
+
+    my $severity_rank = { ok => 0, warning => 1, unknown => 2, critical => 3 };
+    my $worst_status = 'ok';
+
+    foreach my $gateway (@{ $self->{result_values}->{gateways} }) {
+        # if latency 0 jitter is not valid
+        next if ($gateway->{latency} == 0);
+
+        my $gw_status = $self->{perfdata}->threshold_check(
+            value => $gateway->{jitter},
+            threshold => [
+                { label => 'critical-jitter', exit_litteral => 'critical' },
+                { label => 'warning-jitter', exit_litteral => 'warning' }
+            ]
+        );
+
+        if ($severity_rank->{$gw_status} > $severity_rank->{$worst_status}) {
+            $worst_status = $gw_status;
+        }
+    }
+
+    return $worst_status;
+}
+
+sub custom_jitter_output {
+    my ($self, %options) = @_;
+
+    my @bad;
+    foreach my $gateway (@{ $self->{result_values}->{gateways} }) {
+        next if ($gateway->{latency} == 0);
+
+        my $gw_status = $self->{perfdata}->threshold_check(
+            value => $gateway->{jitter},
+            threshold => [
+                { label => 'critical-jitter', exit_litteral => 'critical' },
+                { label => 'warning-jitter', exit_litteral => 'warning' }
+            ]
+        );
+        next if ($gw_status eq 'ok');
+
+        push @bad, sprintf(
+            "jitter: gateway '%s' %s ms (%s)",
+            $gateway->{display}, $gateway->{jitter}, $gw_status
+        );
+    }
+
+    return join(', ', @bad) . '.';
+}
+
+sub custom_jitter_perfdata {
+    my ($self, %options) = @_;
+
+    foreach my $gateway (@{ $self->{result_values}->{gateways} }) {
+        next if ($gateway->{latency} == 0);
+
+        $self->{output}->perfdata_add(
+            nlabel => 'router.gateway.jitter.milliseconds',
+            instances => [$self->{result_values}->{display}, $gateway->{display}],
+            value => $gateway->{jitter},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-jitter'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-jitter'),
+            unit => 'ms',
+            min => 0
+        );
+    }
+}
+
+
 sub custom_principal_count_calc {
     my ($self, %options) = @_;
 
@@ -387,6 +457,19 @@ sub set_counters {
             }
         },
         {
+            label => 'jitter',
+            nlabel => 'router.gateway.jitter.milliseconds',
+            type => COUNTER_KIND_METRIC,
+            threshold => 0,
+            set => {
+                key_values => [ { name => 'display' }, { name => 'gateways' } ],
+                closure_custom_calc => $self->can('custom_gateways_calc'),
+                closure_custom_output => $self->can('custom_jitter_output'),
+                closure_custom_perfdata => $self->can('custom_jitter_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_jitter_threshold')
+            }
+        },
+        {
             label => 'principal-down-count',
             nlabel => 'router.gateway.principal.down.count',
             type => COUNTER_KIND_METRIC,
@@ -425,6 +508,8 @@ sub new {
         'critical-packet-loss:s'     => { name => 'critical_packet_loss' },
         'warning-latency:s'          => { name => 'warning_latency' },
         'critical-latency:s'         => { name => 'critical_latency' },
+        'warning-jitter:s'           => { name => 'warning_jitter' },
+        'critical-jitter:s'          => { name => 'critical_jitter' },
         'warning-principal-count:s'  => { name => 'warning_principal_count' },
         'critical-principal-count:s' => { name => 'critical_principal_count' },
         'warning-backup-count:s'     => { name => 'warning_backup_count' },
@@ -444,6 +529,8 @@ sub check_options {
         ['critical-packet-loss', 'critical_packet_loss'],
         ['warning-latency', 'warning_latency'],
         ['critical-latency', 'critical_latency'],
+        ['warning-jitter', 'warning_jitter'],
+        ['critical-jitter', 'critical_jitter'],
         ['warning-principal-count', 'warning_principal_count'],
         ['critical-principal-count', 'critical_principal_count'],
         ['warning-backup-count', 'warning_backup_count'],
@@ -672,11 +759,11 @@ Critical threshold on the number of Backup gateways currently DOWN for the route
 
 =item B<--warning-packet-loss>
 
-Warning threshold on packet loss (in percent), applied to C<snsRoutePacketLossPrctRaw> for each gateway of the router.
+Warning threshold on packet loss (in percent), applied to C<snsRoutePacketLossPrctRaw> / C<snsRoutePacketLossPrctOld> for each gateway of the router.
 
 =item B<--critical-packet-loss>
 
-Critical threshold on packet loss (in percent), applied to C<snsRoutePacketLossPrctRaw> for each gateway of the router.
+Critical threshold on packet loss (in percent), applied to C<snsRoutePacketLossPrctRaw> / C<snsRoutePacketLossPrctOld> for each gateway of the router.
 
 =item B<--warning-latency>
 
@@ -687,6 +774,14 @@ Gateways with a latency of 0 (unreachable) are excluded from this check, since t
 
 Critical threshold on latency (in milliseconds), applied to C<snsRouteLatency> for each gateway of the router.
 Gateways with a latency of 0 (unreachable) are excluded from this check, since they are already covered by the down logic above.
+
+=item B<--warning-jitter>
+
+Warning threshold on jitter (in milliseconds), applied to C<snsRouteJitter> for each gateway of the router.
+
+=item B<--critical-jitter>
+
+Critical threshold on jitter (in milliseconds), applied to C<snsRouteJitter> for each gateway of the router.
 
 =item B<--filter-name>
 
