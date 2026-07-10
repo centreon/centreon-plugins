@@ -1,4 +1,5 @@
 tests/cloud/google/gcp/gcp_config.json:private-key:5
+tests/centreon/plugins/mask_secrets.t:generic-api-key:41
 tests/centreon/plugins/mask_secrets.t:generic-api-key:44
 tests/centreon/plugins/mask_secrets.t:curl-auth-header:17
 tests/centreon/plugins/mask_secrets.t:curl-auth-header:41
