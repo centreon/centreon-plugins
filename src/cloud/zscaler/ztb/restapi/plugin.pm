@@ -30,14 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cache'              => 'cloud::zscaler::ztb::restapi::mode::cache',
-        'discovery'          => 'cloud::zscaler::ztb::restapi::mode::discovery',
-        'gateway-containers' => 'cloud::zscaler::ztb::restapi::mode::gatewaycontainers',
-        'gateway-cpu'        => 'cloud::zscaler::ztb::restapi::mode::gatewaycpu',
-        'gateway-disk'       => 'cloud::zscaler::ztb::restapi::mode::gatewaydisk',
-        'gateway-interfaces' => 'cloud::zscaler::ztb::restapi::mode::gatewayinterfaces',
-        'gateway-memory'     => 'cloud::zscaler::ztb::restapi::mode::gatewaymemory',
-        'gateway-status'     => 'cloud::zscaler::ztb::restapi::mode::gatewaystatus'
+        'cache'                => 'cloud::zscaler::ztb::restapi::mode::cache',
+        'cluster-appconnector' => 'cloud::zscaler::ztb::restapi::mode::clusterappconnector',
+        'cluster-ipsec'        => 'cloud::zscaler::ztb::restapi::mode::clusteripsec',
+        'discovery'            => 'cloud::zscaler::ztb::restapi::mode::discovery',
+        'gateway-containers'   => 'cloud::zscaler::ztb::restapi::mode::gatewaycontainers',
+        'gateway-cpu'          => 'cloud::zscaler::ztb::restapi::mode::gatewaycpu',
+        'gateway-disk'         => 'cloud::zscaler::ztb::restapi::mode::gatewaydisk',
+        'gateway-interfaces'   => 'cloud::zscaler::ztb::restapi::mode::gatewayinterfaces',
+        'gateway-memory'       => 'cloud::zscaler::ztb::restapi::mode::gatewaymemory',
+        'gateway-status'       => 'cloud::zscaler::ztb::restapi::mode::gatewaystatus'
     };
 
     $self->{custom_modes}->{api} = 'cloud::zscaler::ztb::restapi::custom::api';
