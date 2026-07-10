@@ -34,6 +34,7 @@ sub new {
         'gateway-containers' => 'cloud::zscaler::ztb::restapi::mode::gatewaycontainers',
         'gateway-cpu'        => 'cloud::zscaler::ztb::restapi::mode::gatewaycpu',
         'gateway-disk'       => 'cloud::zscaler::ztb::restapi::mode::gatewaydisk',
+        'gateway-interfaces' => 'cloud::zscaler::ztb::restapi::mode::gatewayinterfaces',
         'gateway-memory'     => 'cloud::zscaler::ztb::restapi::mode::gatewaymemory',
         'gateway-status'     => 'cloud::zscaler::ztb::restapi::mode::gatewaystatus'
     };
