@@ -91,13 +91,18 @@ PULP_LABELS=$(jq -cn \
   --arg workflow   "${GITHUB_WORKFLOW:-}" \
   '{"module": $mod, "git_commit": $git_commit, "git_ref": $git_ref, "github_run_id": $run_id, "github_actor": $actor, "github_workflow": $workflow}')
 
+# the upload tasks are awaited as a batch after the loop: pulp serializes the
+# tasks of the shared repository server-side, so waiting for each task before
+# sending the next upload would pay the task-queue latency once per package
+# instead of once per delivery.
+TASK_HREFS=()
 for FILE in "${FILES[@]}"; do
   assert_not_in_stable "$FILE"
   echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME)"
   # packages are labeled with their module so that promote-to-stable can identify
   # which packages belong to this module, pulp-cli does not allow to set labels nor
   # the relative path of deb packages so the api is used directly
-  TASK_HREF=$(
+  TASK_HREFS+=("$(
     pulp_upload \
       -F "file=@\"$FILE\"" \
       -F "relative_path=$POOL_PATH/$FILE" \
@@ -106,8 +111,7 @@ for FILE in "${FILES[@]}"; do
       -F "repository=$REPOSITORY_HREF" \
       -F "pulp_labels=$PULP_LABELS" \
       "$PULP_URL/api/v3/content/deb/packages/"
-  )
-  wait_task "$TASK_HREF"
+  )")
 
   # record the uploaded package in the manifest for the verification step
   name=$(dpkg-deb -f "$FILE" Package)
@@ -120,6 +124,9 @@ for FILE in "${FILES[@]}"; do
     --arg base_path "$BASE_PATH" --arg suite "$SUITE" --arg relative_path "$POOL_PATH/$FILE" \
     '{filename:$filename,name:$name,version:$version,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path,suite:$suite,relative_path:$relative_path}')"
 done
+
+echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
+wait_tasks "${TASK_HREFS[@]}"
 
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
 pulp deb publication create --repository "$REPOSITORY_NAME" --structured >/dev/null

@@ -27,6 +27,45 @@ wait_task() {
   return 1
 }
 
+# wait for a batch of pulp api tasks, polling the still-pending ones in sweeps.
+# unlike wait_task, the guard aborts only when NO task completes for ~10 min:
+# tasks of a repository are serialized server-side, so a long-but-draining
+# queue is expected under concurrent deliveries and must not be mistaken for a
+# hang.
+wait_tasks() {
+  local pending=("$@")
+  local next=() stall=0 state href
+  while ((${#pending[@]} > 0)); do
+    next=()
+    for href in "${pending[@]}"; do
+      state=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$href" 2>/dev/null | jq -r '.state' 2>/dev/null) || state=""
+      case "$state" in
+        completed) ;;
+        failed|canceled)
+          echo "::error::Task $href $state: $(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$href" | jq -c '.error')"
+          return 1
+          ;;
+        *)
+          next+=("$href")
+          ;;
+      esac
+    done
+    if ((${#next[@]} == ${#pending[@]})); then
+      stall=$((stall + 1))
+      if ((stall >= 200)); then
+        echo "::error::${#pending[@]} task(s) still pending with no progress for ~10 min, e.g. ${pending[0]}"
+        return 1
+      fi
+    else
+      stall=0
+    fi
+    pending=("${next[@]+"${next[@]}"}")
+    if ((${#pending[@]} > 0)); then
+      sleep 3
+    fi
+  done
+}
+
 # upload a package through the pulp api, with retry on transient failures
 # (concurrent deliveries can race on artifact creation), echoes the task href
 pulp_upload() {

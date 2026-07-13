@@ -100,17 +100,21 @@ for ARCH in noarch x86_64; do
   # so the upload cannot be decoupled from the repository association. Packages
   # are labeled with their module so that promote-to-stable can identify them;
   # pulp-cli does not allow to set labels on upload so the api is used directly.
+  # The upload tasks are awaited as a batch after the loop: pulp serializes the
+  # tasks of a repository server-side, so waiting for each task before sending
+  # the next upload would pay the task-queue latency once per package instead
+  # of once per delivery.
+  TASK_HREFS=()
   for FILE in "${ARCH_FILES[@]}"; do
     assert_not_in_stable "$FILE" "$ARCH"
     echo "[INFO] Uploading $(basename "$FILE") to $REPOSITORY_NAME (module $MODULE_NAME)"
-    TASK_HREF=$(
+    TASK_HREFS+=("$(
       pulp_upload \
         -F "file=@\"$FILE\"" \
         -F "repository=$REPOSITORY_HREF" \
         -F "pulp_labels=$PULP_LABELS" \
         "$PULP_URL/api/v3/content/rpm/packages/"
-    )
-    wait_task "$TASK_HREF"
+    )")
 
     # record the uploaded package in the manifest (name-version-release parsed
     # the same way as assert_not_in_stable) for the verification step
@@ -128,6 +132,9 @@ for ARCH in noarch x86_64; do
       --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
       '{filename:$filename,name:$name,version:$version,release:$release,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path}')"
   done
+
+  echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
+  wait_tasks "${TASK_HREFS[@]}"
 
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
   pulp rpm publication create --repository "$REPOSITORY_NAME" >/dev/null
