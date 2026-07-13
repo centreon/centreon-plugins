@@ -434,13 +434,8 @@ jobs:
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.package_plugins == 'True' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # TEMP(test-pulp-unstable): Pulp-only test, Artifactory delivery disabled
+    if: false
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -479,11 +474,12 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-packages-pulp:
-    needs: [get-environment, get-plugins, test-plugins]
+    # TEMP(test-pulp-unstable): decouple from test-plugins so the Pulp delivery
+    # runs regardless of the PR stability (canary)
+    needs: [get-environment, get-plugins, package]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.package_plugins == 'True' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
@@ -566,7 +562,7 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+        # TEMP(test-pulp-unstable): run on the PR (canary) stability too
         id: deliver_pulp
         continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
@@ -576,7 +572,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           version: ""
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+          stability: unstable # TEMP(test-pulp-unstable): force unstable Pulp delivery
           release_type: ${{ needs.get-environment.outputs.release_type }}
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
