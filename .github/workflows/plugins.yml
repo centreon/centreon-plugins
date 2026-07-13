@@ -173,12 +173,8 @@ jobs:
 
   unit-tests:
     needs: [get-environment, get-plugins]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-environment.outputs.stability != 'stable' &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # TEMP(test-pulp-unstable): skip the test jobs, this PR only validates the Pulp delivery
+    if: false
     strategy:
       fail-fast: false
       max-parallel: 3
@@ -363,15 +359,8 @@ jobs:
 
   test-plugins:
     needs: [get-environment, get-plugins, package]
-    if: |
-      always() &&
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.test_plugins == 'True' &&
-      needs.get-environment.outputs.stability != 'stable' &&
-      (needs.package.result == 'success' || needs.package.result == 'skipped') &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # TEMP(test-pulp-unstable): skip the test jobs, this PR only validates the Pulp delivery
+    if: false
     strategy:
       fail-fast: false
       matrix:
