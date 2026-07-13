@@ -29,16 +29,11 @@ use centreon::plugins::constants qw(:counters);
 use DateTime::Format::Strptime;
 use centreon::plugins::misc qw(is_excluded is_empty);
 
-sub prefix_device_output {
-    my ($self, %options) = @_;
-    return "Device '" . $options{instance_value}->{hostname} . "' (" . $options{instance_value}->{serial} . ") ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'devices', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_device_output',
+        { name => 'devices', type => COUNTER_TYPE_INSTANCE, prefix_output => "Device '%{hostname}' (%{serial}) ",
           message_multiple => 'All device certificates are OK' }
     ];
 
@@ -67,7 +62,7 @@ sub set_counters {
             label => 'certificate-expiry',
             nlabel => 'device.certificate.expiry.days',
             set => {
-                key_values => [ { name => 'cert_expiry_days' }, { name => 'serial' }, { name => 'hostname' }, { name => 'connected' } ],
+                key_values => [ { name => 'cert_expiry_days', no_value => -1 }, { name => 'serial' }, { name => 'hostname' }, { name => 'connected' } ],
                 output_template => 'expires in: %{cert_expiry_days} days',
                 perfdatas => [
                     { template => '%s', unit => 'd', min => 0, instance_use => 'hostname', label_extra_instance => 1 }
@@ -129,6 +124,8 @@ sub manage_selection {
         my $cert_expiry_days = -1;
         $cert_expiry_days = $self->_calculate_days_until_expiry($device->{'certificate-expiry'})
             if exists $device->{'certificate-expiry'};
+        $cert_expiry_days = $self->_calculate_days_until_expiry($device->{'device-cert-expiry-date'})
+            if exists $device->{'device-cert-expiry-date'};
 
         $self->{devices}->{$serial} = {
             serial              => $serial,

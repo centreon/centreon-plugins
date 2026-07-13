@@ -6,7 +6,7 @@ package fixed_date;
 use DateTime;
 
 BEGIN {
-   $now = 1738368000;
+   $now = 1714521600;
    *CORE::GLOBAL::time = sub { $now };
    *DateTime::now = sub { DateTime->from_epoch(epoch => $now) };
 }
