@@ -49,6 +49,47 @@ assert_not_in_stable() {
   fi
 }
 
+# TEMP(test-pulp-unstable): wait for a repository-less upload task and emit
+# the created content href. A task that did not produce one (content already
+# existing on a job re-run) is resolved by the package sha256 instead of
+# failing the delivery.
+resolve_uploaded_content() {
+  local task_href=$1 sha256=$2
+  local body state content attempt
+  for ((attempt = 0; attempt < 200; attempt++)); do
+    refresh_pulp_token
+    body=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
+    state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
+    case "$state" in
+      completed)
+        content=$(echo "$body" | jq -r '.created_resources[0] // empty')
+        if [[ -n "$content" ]]; then
+          echo "$content"
+          return 0
+        fi
+        break
+        ;;
+      failed | canceled)
+        break
+        ;;
+      *)
+        sleep 3
+        ;;
+    esac
+  done
+  content=$(
+    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+      --data-urlencode "sha256=$sha256" \
+      --data-urlencode "limit=1" \
+      "$PULP_URL/api/v3/content/rpm/packages/" | jq -r '.results[0].pulp_href // empty'
+  )
+  if [[ -z "$content" ]]; then
+    echo "::error::Cannot resolve the uploaded content for task $task_href (sha256 $sha256)" >&2
+    return 1
+  fi
+  echo "$content"
+}
+
 FILES=(*.rpm)
 if [[ ${#FILES[@]} -eq 0 ]]; then
   echo "::error::No rpm package found to deliver"
@@ -95,23 +136,23 @@ for ARCH in noarch x86_64; do
 
   REPOSITORY_HREF=$(pulp rpm repository show --name "$REPOSITORY_NAME" | jq -r '.pulp_href')
 
-  # Packages are uploaded straight into the repository: pulpcore requires
-  # non-admin accounts to provide the destination repository on content upload,
-  # so the upload cannot be decoupled from the repository association. Packages
-  # are labeled with their module so that promote-to-stable can identify them;
-  # pulp-cli does not allow to set labels on upload so the api is used directly.
-  # The upload tasks are awaited as a batch after the loop: pulp serializes the
-  # tasks of a repository server-side, so waiting for each task before sending
-  # the next upload would pay the task-queue latency once per package instead
-  # of once per delivery.
+  # TEMP(test-pulp-unstable) experimental batched delivery: packages are
+  # uploaded as unassociated content (repository-less, so the create tasks
+  # parallelize across the pulp workers instead of serializing on the
+  # repository lock), then the whole batch is added to the repository with a
+  # single modify task. Requires the reconciled rpm/packages access policy
+  # (delivery-tooling#209). Packages are labeled with their module so that
+  # promote-to-stable can identify them.
   TASK_HREFS=()
+  SHA256S=()
   for FILE in "${ARCH_FILES[@]}"; do
     assert_not_in_stable "$FILE" "$ARCH"
-    echo "[INFO] Uploading $(basename "$FILE") to $REPOSITORY_NAME (module $MODULE_NAME)"
+    echo "[INFO] Uploading $(basename "$FILE") (module $MODULE_NAME)"
+    sha256=$(sha256sum "$FILE" | cut -d' ' -f1)
+    SHA256S+=("$sha256")
     TASK_HREFS+=("$(
       pulp_upload \
         -F "file=@\"$FILE\"" \
-        -F "repository=$REPOSITORY_HREF" \
         -F "pulp_labels=$PULP_LABELS" \
         "$PULP_URL/api/v3/content/rpm/packages/"
     )")
@@ -125,7 +166,6 @@ for ARCH in noarch x86_64; do
     base=${base%-*}
     version=${base##*-}
     name=${base%-*}
-    sha256=$(sha256sum "$FILE" | cut -d' ' -f1)
     manifest_add "$(jq -cn \
       --arg filename "$FILENAME" --arg name "$name" --arg version "$version" \
       --arg release "$release" --arg arch "$ARCH" --arg sha256 "$sha256" \
@@ -133,8 +173,21 @@ for ARCH in noarch x86_64; do
       '{filename:$filename,name:$name,version:$version,release:$release,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path}')"
   done
 
-  echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
-  wait_tasks "${TASK_HREFS[@]}"
+  echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) and resolving the content"
+  CONTENT_HREFS=()
+  for i in "${!TASK_HREFS[@]}"; do
+    CONTENT_HREFS+=("$(resolve_uploaded_content "${TASK_HREFS[$i]}" "${SHA256S[$i]}")")
+  done
+
+  echo "[INFO] Adding ${#CONTENT_HREFS[@]} package(s) to $REPOSITORY_NAME in a single task"
+  ADD_BODY=$(printf '%s\n' "${CONTENT_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}')
+  MODIFY_TASK=$(
+    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+      -X POST -H "Content-Type: application/json" \
+      -d "$ADD_BODY" \
+      "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
+  )
+  wait_task "$MODIFY_TASK"
 
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
   pulp rpm publication create --repository "$REPOSITORY_NAME" >/dev/null
