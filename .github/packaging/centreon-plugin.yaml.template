@@ -106,3 +106,4 @@ rpm:
   signature:
     key_file: ${RPM_SIGNING_KEY_FILE}
     key_id: ${RPM_SIGNING_KEY_ID}
+# TEMP(test-pulp-unstable): touch the common template so every plugin is packaged for the Pulp delivery load test; revert before merge
