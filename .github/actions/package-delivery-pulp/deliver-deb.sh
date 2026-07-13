@@ -97,6 +97,10 @@ PULP_LABELS=$(jq -cn \
 # instead of once per delivery.
 TASK_HREFS=()
 for FILE in "${FILES[@]}"; do
+  # refresh from the parent shell: pulp_upload runs in a command substitution
+  # (subshell), so its internal refresh cannot update this shell's token — the
+  # token inherited by the subshells must be kept fresh from here.
+  refresh_pulp_token
   assert_not_in_stable "$FILE"
   echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME)"
   # packages are labeled with their module so that promote-to-stable can identify

@@ -106,6 +106,11 @@ for ARCH in noarch x86_64; do
   # of once per delivery.
   TASK_HREFS=()
   for FILE in "${ARCH_FILES[@]}"; do
+    # refresh from the parent shell: pulp_upload runs in a command substitution
+    # (subshell), so its internal refresh cannot update this shell's token —
+    # the guardrail curl below and the token inherited by the subshells must
+    # be kept fresh from here.
+    refresh_pulp_token
     assert_not_in_stable "$FILE" "$ARCH"
     echo "[INFO] Uploading $(basename "$FILE") to $REPOSITORY_NAME (module $MODULE_NAME)"
     TASK_HREFS+=("$(
