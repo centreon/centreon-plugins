@@ -35,7 +35,8 @@ sub new {
         'ha'          => 'network::paloalto::api::mode::ha',
         'licenses'    => 'network::paloalto::api::mode::licenses',
         'system'      => 'network::paloalto::api::mode::system',
-        'ipsec'       => 'network::paloalto::api::mode::ipsec'
+        'ipsec'       => 'network::paloalto::api::mode::ipsec',
+        'edl-capacity' => 'network::paloalto::api::mode::edlcapacity'
     };
 
     $self->{custom_modes}->{api} = 'network::paloalto::api::custom::api';
