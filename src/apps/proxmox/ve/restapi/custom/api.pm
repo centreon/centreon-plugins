@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use centreon::plugins::misc qw(is_excluded);
+use centreon::plugins::misc qw(is_excluded is_local_ip);
 use JSON::XS;
 use Digest::SHA qw(sha256_hex);
 
@@ -422,7 +422,7 @@ sub api_get_network_interfaces {
 
             my $ip_loopback = ($ip->{'ip-address'} =~ /^127\./ || $name =~ /^lo$/i) ? 1 : 0;
 
-            my $ip_local = $ip_loopback || centreon::plugins::misc::is_local_ip($ip->{'ip-address'});
+            my $ip_local = $ip_loopback || is_local_ip($ip->{'ip-address'});
 
             $hash_ips_by_interface{$name} = { address => $ip->{'ip-address'}, local => $ip_local, loopback => $ip_loopback }
                 unless $hash_ips_by_interface{$name};
