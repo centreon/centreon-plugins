@@ -27,7 +27,9 @@ refresh_pulp_token() {
   fi
   PULP_TOKEN="$token"
   PULP_TOKEN_ISSUED_AT="$now"
-  echo "::add-mask::$token"
+  # written to stderr: this function also runs inside command substitutions
+  # (pulp_upload), where a stdout echo would corrupt the captured output
+  echo "::add-mask::$token" >&2
   if [[ -n "${GITHUB_ENV:-}" ]]; then
     {
       echo "PULP_TOKEN=$token"
