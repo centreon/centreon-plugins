@@ -105,6 +105,9 @@ for ARCH in noarch x86_64; do
   # the next upload would pay the task-queue latency once per package instead
   # of once per delivery.
   TASK_HREFS=()
+  # TEMP(test-pulp-unstable): profile the first upload task (server must run
+  # image 3.114.0-3 with TASK_DIAGNOSTICS enabled)
+  DIAG_ARGS=(-H "X-TASK-DIAGNOSTICS: memory,pyinstrument")
   for FILE in "${ARCH_FILES[@]}"; do
     # refresh from the parent shell: pulp_upload runs in a command substitution
     # (subshell), so its internal refresh cannot update this shell's token —
@@ -115,11 +118,13 @@ for ARCH in noarch x86_64; do
     echo "[INFO] Uploading $(basename "$FILE") to $REPOSITORY_NAME (module $MODULE_NAME)"
     TASK_HREFS+=("$(
       pulp_upload \
+        "${DIAG_ARGS[@]+"${DIAG_ARGS[@]}"}" \
         -F "file=@\"$FILE\"" \
         -F "repository=$REPOSITORY_HREF" \
         -F "pulp_labels=$PULP_LABELS" \
         "$PULP_URL/api/v3/content/rpm/packages/"
     )")
+    DIAG_ARGS=()
 
     # record the uploaded package in the manifest (name-version-release parsed
     # the same way as assert_not_in_stable) for the verification step
@@ -140,6 +145,22 @@ for ARCH in noarch x86_64; do
 
   echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
   wait_tasks "${TASK_HREFS[@]}"
+
+  # TEMP(test-pulp-unstable): stash the profile artifacts of the first task
+  # for the workflow artifact upload
+  PROFILED_TASK="${TASK_HREFS[0]}"
+  PROFILE_TAG="${DISTRIB:-unknown}-$ARCH"
+  PROFILE_DIR="${GITHUB_WORKSPACE:-$PWD}/pulp-task-profile"
+  mkdir -p "$PROFILE_DIR"
+  echo "[INFO] Profiled task: $PROFILED_TASK"
+  refresh_pulp_token
+  pulp task profile-artifact-urls --href "$PROFILED_TASK" > "$PROFILE_DIR/urls-$PROFILE_TAG.json" 2>/dev/null || echo "[WARN] no profile artifacts (server not rolled out yet?)"
+  cat "$PROFILE_DIR/urls-$PROFILE_TAG.json" 2>/dev/null || true
+  i=0
+  for url in $(jq -r '.. | strings | select(startswith("http"))' "$PROFILE_DIR/urls-$PROFILE_TAG.json" 2>/dev/null); do
+    curl -fsSL "$url" -o "$PROFILE_DIR/profile-$PROFILE_TAG-$i.out" || true
+    i=$((i + 1))
+  done
 
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
   pulp rpm publication create --repository "$REPOSITORY_NAME" >/dev/null

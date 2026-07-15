@@ -96,6 +96,9 @@ PULP_LABELS=$(jq -cn \
 # sending the next upload would pay the task-queue latency once per package
 # instead of once per delivery.
 TASK_HREFS=()
+# TEMP(test-pulp-unstable): profile the first upload task (server must run
+# image 3.114.0-3 with TASK_DIAGNOSTICS enabled)
+DIAG_ARGS=(-H "X-TASK-DIAGNOSTICS: memory,pyinstrument")
 for FILE in "${FILES[@]}"; do
   # refresh from the parent shell: pulp_upload runs in a command substitution
   # (subshell), so its internal refresh cannot update this shell's token — the
@@ -108,6 +111,7 @@ for FILE in "${FILES[@]}"; do
   # the relative path of deb packages so the api is used directly
   TASK_HREFS+=("$(
     pulp_upload \
+      "${DIAG_ARGS[@]+"${DIAG_ARGS[@]}"}" \
       -F "file=@\"$FILE\"" \
       -F "relative_path=$POOL_PATH/$FILE" \
       -F "distribution=$SUITE" \
@@ -116,6 +120,7 @@ for FILE in "${FILES[@]}"; do
       -F "pulp_labels=$PULP_LABELS" \
       "$PULP_URL/api/v3/content/deb/packages/"
   )")
+  DIAG_ARGS=()
 
   # record the uploaded package in the manifest for the verification step
   name=$(dpkg-deb -f "$FILE" Package)
@@ -131,6 +136,22 @@ done
 
 echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
 wait_tasks "${TASK_HREFS[@]}"
+
+# TEMP(test-pulp-unstable): stash the profile artifacts of the first task
+# for the workflow artifact upload
+PROFILED_TASK="${TASK_HREFS[0]}"
+PROFILE_TAG="${DISTRIB:-unknown}-deb"
+PROFILE_DIR="${GITHUB_WORKSPACE:-$PWD}/pulp-task-profile"
+mkdir -p "$PROFILE_DIR"
+echo "[INFO] Profiled task: $PROFILED_TASK"
+refresh_pulp_token
+pulp task profile-artifact-urls --href "$PROFILED_TASK" > "$PROFILE_DIR/urls-$PROFILE_TAG.json" 2>/dev/null || echo "[WARN] no profile artifacts (server not rolled out yet?)"
+cat "$PROFILE_DIR/urls-$PROFILE_TAG.json" 2>/dev/null || true
+i=0
+for url in $(jq -r '.. | strings | select(startswith("http"))' "$PROFILE_DIR/urls-$PROFILE_TAG.json" 2>/dev/null); do
+  curl -fsSL "$url" -o "$PROFILE_DIR/profile-$PROFILE_TAG-$i.out" || true
+  i=$((i + 1))
+done
 
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
 pulp deb publication create --repository "$REPOSITORY_NAME" --structured >/dev/null
