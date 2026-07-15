@@ -290,30 +290,14 @@ jobs:
       max-parallel: 5
       matrix:
         include:
-          - package_extension: rpm
-            image: packaging:alma8
-            distrib: el8
-          - package_extension: rpm
-            image: packaging:alma9
-            distrib: el9
+          # TEMP(test-pulp-unstable): restrict the load test to one rpm and one
+          # deb distrib (el10 + trixie)
           - package_extension: rpm
             image: packaging:alma10
             distrib: el10
           - package_extension: deb
-            image: packaging:bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: packaging:bookworm
-            distrib: bookworm
-          - package_extension: deb
             image: packaging:trixie
             distrib: trixie
-          - package_extension: deb
-            image: packaging:jammy
-            distrib: jammy
-          - package_extension: deb
-            image: packaging:noble
-            distrib: noble
 
     container:
       image: ghcr.io/${{ github.repository }}/${{ matrix.image }}
@@ -482,21 +466,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - distrib: el8
-            package_extension: rpm
-          - distrib: el9
-            package_extension: rpm
+          # TEMP(test-pulp-unstable): restrict the load test to one rpm and
+          # one deb distrib (el10 + trixie)
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
-          - distrib: bookworm
-            package_extension: deb
           - distrib: trixie
-            package_extension: deb
-          - distrib: jammy
-            package_extension: deb
-          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }} on pulp
