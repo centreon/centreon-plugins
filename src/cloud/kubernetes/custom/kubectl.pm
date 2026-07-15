@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,7 +22,7 @@ package cloud::kubernetes::custom::kubectl;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/is_not_empty/;
 use JSON::XS;
 
 sub new {
@@ -307,7 +307,19 @@ sub kubernetes_list_pvs {
     $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
 
     my $response = $self->execute(cmd_options => $cmd);
-    
+
+    return $response;
+}
+
+sub kubernetes_list_resourcequotas {
+    my ($self, %options) = @_;
+
+    my $cmd = "get resourcequotas $self->{namespace_option} --output='json' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if is_not_empty($self->{context});
+
+    my $response = $self->execute(cmd_options => $cmd);
+
     return $response;
 }
 

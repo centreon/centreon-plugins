@@ -41,38 +41,14 @@ sub custom_status_output {
     return $status;
 }
 
-sub cluster_long_output {
-    my ($self, %options) = @_;
-
-    return "Checking cluster '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_cluster_output {
-    my ($self, %options) = @_;
-
-    return "Cluster '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_node_output {
-    my ($self, %options) = @_;
-
-    return "Node '" . $options{instance_value}->{id} . "' ";
-}
-
-sub prefix_global_cluster_output {
-    my ($self, %options) = @_;
-
-    return 'node ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'clusters', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_cluster_output', cb_long_output => 'cluster_long_output', indent_long_output => '    ', message_multiple => 'All nodes are ok',
+        { name => 'clusters', type => COUNTER_TYPE_MULTIPLE, prefix_output => "Cluster '%{name}' ", long_output => "Checking cluster '%{name}' ", indent_long_output => '    ', message_multiple => 'All nodes are ok',
             group => [
-                { name => 'cluster', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_global_cluster_output' },
-                { name => 'nodes', type => COUNTER_MULTIPLE_SUBINSTANCE, display_long => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'nodes are ok', skipped_code => { NO_VALUE() => 1 } }
+                { name => 'cluster', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'node ' },
+                { name => 'nodes', type => COUNTER_MULTIPLE_SUBINSTANCE, display_long => 1, prefix_output => "Node '%{id}' ", message_multiple => 'nodes are ok', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];

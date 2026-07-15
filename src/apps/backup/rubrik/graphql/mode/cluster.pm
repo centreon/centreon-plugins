@@ -45,17 +45,11 @@ sub custom_status_output {
     return $status;
 }
 
-sub prefix_cluster_output {
-    my ($self, %options) = @_;
-
-    return "Cluster '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'clusters', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' }
+        { name => 'clusters', type => COUNTER_TYPE_INSTANCE, prefix_output => "Cluster '%{name}' ", message_multiple => 'All clusters are ok' }
     ];
 
     $self->{maps_counters}->{clusters} = [

@@ -97,28 +97,28 @@ sub test {
             template         => 'Bytes (storage): %{bytes|storage}',
             datas            => { bytes => 1024 },
             default          => '',
-            expected_result  => 'Bytes (storage): 1.00KB',
+            expected_result  => 'Bytes (storage): 1.00 KB',
             msg              => 'Test storage filter (binary 1024)'
         },
         {
             template         => 'Bytes (network): %{bytes|network}',
             datas            => { bytes => 1000 },
             default          => '',
-            expected_result  => 'Bytes (network): 1.00Kb',
+            expected_result  => 'Bytes (network): 1.00 Kb',
             msg              => 'Test network filter (decimal 1000)'
         },
         {
             template         => 'Large storage: %{bytes|storage}',
             datas            => { bytes => 1048576 },
             default          => '',
-            expected_result  => 'Large storage: 1.00MB',
+            expected_result  => 'Large storage: 1.00 MB',
             msg              => 'Test storage filter with larger value'
         },
         {
             template         => 'Multiple filters: %{a|storage} and %{b|network}',
             datas            => { a => 1024, b => 1000 },
             default          => '',
-            expected_result  => 'Multiple filters: 1.00KB and 1.00Kb',
+            expected_result  => 'Multiple filters: 1.00 KB and 1.00 Kb',
             msg              => 'Test multiple different filters'
         },
         {
@@ -128,6 +128,41 @@ sub test {
             expected_result  => 'Unknown filter: 100',
             msg              => 'Test unknown filter (no transformation)'
         },
+        {
+            template         => 'Sprintf format percent: %{value|%.2f}%',
+            datas            => { value => 32.12 },
+            default          => '',
+            expected_result  => 'Sprintf format percent: 32.12%',
+            msg              => 'Test unknown filter (no transformation)'
+        },
+        {
+            template         => 'Sprintf format custom: %{value|%.5f}',
+            datas            => { value => 32.123456789 },
+            default          => '',
+            expected_result  => 'Sprintf format custom: 32.12346',
+            msg              => 'Test unknown filter (no transformation)'
+        },
+        {
+            template         => 'Perl array: %{value}',
+            datas            => { value => [ 'VAL1', 'VAL2' ] },
+            default          => '',
+            expected_result  => 'Perl array: VAL1, VAL2',
+            msg              => 'Test perl array'
+        },
+        {
+            template         => 'Undefined Perl array with default: %{value}',
+            datas            => { value => undef },
+            default          => [ 'DEF1', 'DEF2' ],
+            expected_result  => 'Undefined Perl array with default: DEF1, DEF2',
+            msg              => 'Test undefined perl array with default'
+        },
+        {
+            template         => 'change_seconds usage: %{value|change_seconds}',
+            datas            => { value => 123456789 },
+            default          => undef,
+            expected_result  => 'change_seconds usage: 3y 10M 4w 19h 16m 21s',
+            msg              => 'Test change_seconds filter'
+        }
     );
 
     for my $test (@tests) {

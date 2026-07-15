@@ -12,7 +12,7 @@ use self::ast::ExprResult;
 use self::lexer::{LexicalError, Tok};
 use crate::snmp::SnmpResult;
 use lalrpop_util::{ParseError, lalrpop_mod};
-use log::debug;
+use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 
@@ -71,7 +71,7 @@ pub struct Compute {
 pub struct Parser<'a> {
     collect: &'a Vec<SnmpResult>,
     parser: grammar::ExprParser,
-    check_format: bool
+    check_format: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -80,7 +80,7 @@ impl<'a> Parser<'a> {
         Parser {
             collect,
             parser: grammar::ExprParser::new(),
-            check_format
+            check_format,
         }
     }
 
@@ -88,10 +88,7 @@ impl<'a> Parser<'a> {
     ///
     /// Supports arithmetic operations, identifiers in braces (e.g., `{metric_name}`),
     /// and functions like `Average()`, `Min()`, `Max()`.
-    pub fn eval(
-        &self,
-        expr: &'a str,
-    ) -> Result<ExprResult, String> {
+    pub fn eval(&self, expr: &'a str) -> Result<ExprResult, String> {
         debug!("Parsing expression: {}", expr);
         let lexer = lexer::Lexer::new(expr);
         let res = self.parser.parse(lexer);
@@ -110,13 +107,11 @@ impl<'a> Parser<'a> {
     ///
     /// Replaces `{identifier}` with values from SNMP results, handling both
     /// scalar and vector values appropriately.
-    pub fn eval_str(
-        &self,
-        expr: &'a str,
-    ) -> Result<ExprResult, String> {
+    pub fn eval_str(&self, expr: &'a str) -> Result<ExprResult, String> {
         let re = Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").unwrap();
         let mut suffix = expr;
         let mut result: ExprResult = ExprResult::Empty;
+        trace!("[eval_str] suffix: {:?} - re: {:?}", &suffix, &re);
         loop {
             let found = re.find(suffix);
             if let Some(m) = found {
