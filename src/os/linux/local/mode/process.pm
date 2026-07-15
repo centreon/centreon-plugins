@@ -407,7 +407,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
-        join '_', map { sha256_hex($self->{option_results}->{$_}  || 'all') } qw(filter_counters filter_command filter_arg filter_state filter_ppid);
+        sha256_hex(join '_', map { $self->{option_results}->{$_}  || 'all' } qw(filter_counters filter_command filter_arg filter_state filter_ppid));
     $self->parse_output(custom => $options{custom});
 
     $self->add_extra_metrics(custom => $options{custom});
