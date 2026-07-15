@@ -114,7 +114,7 @@ sub new {
 
 my $mapping = {
     hamode          => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.3' },  # snsHaModeHealth
-    link            => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.4' },  # snsHaLinkHealth
+    halink          => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.4' },  # snsHaLinkHealth
     powersupply     => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.5' },  # snsPowerSupplyHealth
     fan             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.6' },  # snsFanHealth
     cpu             => { oid => '.1.3.6.1.4.1.11256.1.16.2.1.7' },  # snsCpuHealth
