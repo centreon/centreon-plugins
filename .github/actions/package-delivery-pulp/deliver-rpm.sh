@@ -146,6 +146,11 @@ for ARCH in noarch x86_64; do
   TASK_HREFS=()
   SHA256S=()
   for FILE in "${ARCH_FILES[@]}"; do
+    # refresh from the parent shell: pulp_upload runs in a command substitution
+    # (subshell), so its internal refresh cannot update this shell's token —
+    # the guardrail curl below and the token inherited by the subshells must
+    # be kept fresh from here.
+    refresh_pulp_token
     assert_not_in_stable "$FILE" "$ARCH"
     echo "[INFO] Uploading $(basename "$FILE") (module $MODULE_NAME)"
     sha256=$(sha256sum "$FILE" | cut -d' ' -f1)

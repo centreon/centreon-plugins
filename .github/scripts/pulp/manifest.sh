@@ -24,21 +24,22 @@ manifest_add() {
 manifest_write() {
   local module=$1 distrib=$2 package_type=$3 stability=$4 mode=$5 content_url=$6
   local file="${GITHUB_WORKSPACE:-$PWD}/pulp-delivery-manifest.json"
-  local packages="[]"
-  if ((${#MANIFEST_ENTRIES[@]})); then
-    packages=$(printf '%s\n' "${MANIFEST_ENTRIES[@]}" | jq -s '.')
-  fi
 
+  # the packages array is slurped from stdin: with hundreds of packages an
+  # --argjson argument would exceed the kernel argv size limit (E2BIG).
   # NB: the jq variable is named module_name, not module — `module` is a reserved
   # jq keyword and `$module` fails to parse on stricter jq builds (the CI runner)
-  jq -n \
+  {
+    if ((${#MANIFEST_ENTRIES[@]})); then
+      printf '%s\n' "${MANIFEST_ENTRIES[@]}"
+    fi
+  } | jq -s \
     --arg module_name "$module" \
     --arg distrib "$distrib" \
     --arg package_type "$package_type" \
     --arg stability "$stability" \
     --arg mode "$mode" \
     --arg content_url "$content_url" \
-    --argjson packages "$packages" \
     '{
       "module": $module_name,
       distrib: $distrib,
@@ -46,10 +47,10 @@ manifest_write() {
       stability: $stability,
       mode: $mode,
       pulp_content_url: $content_url,
-      packages: $packages
+      packages: .
     }' > "$file"
 
-  echo "[INFO] Wrote delivery manifest ($(echo "$packages" | jq 'length') package(s)) to $file"
+  echo "[INFO] Wrote delivery manifest ($(jq '.packages | length' "$file") package(s)) to $file"
   if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     echo "manifest=$file" >> "$GITHUB_OUTPUT"
   fi
