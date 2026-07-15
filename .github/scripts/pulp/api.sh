@@ -73,7 +73,9 @@ wait_task() {
 # hang.
 wait_tasks() {
   local pending=("$@")
-  local next=() stall=0 state href
+  local total=$#
+  local next=() stall=0 state href now last_report
+  last_report=$(date +%s)
   while ((${#pending[@]} > 0)); do
     refresh_pulp_token
     next=()
@@ -100,6 +102,13 @@ wait_tasks() {
       stall=0
     fi
     pending=("${next[@]+"${next[@]}"}")
+    # progress heartbeat, at most every 30s: shows how fast the server queue
+    # drains (sweeps over large batches can take minutes on their own)
+    now=$(date +%s)
+    if ((${#pending[@]} > 0 && now - last_report >= 30)); then
+      echo "[INFO] $((total - ${#pending[@]}))/$total task(s) completed"
+      last_report=$now
+    fi
     if ((${#pending[@]} > 0)); then
       sleep 3
     fi
