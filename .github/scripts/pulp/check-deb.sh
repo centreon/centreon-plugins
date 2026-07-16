@@ -32,15 +32,17 @@ mapfile -t E_RELPATH    < <(echo "$PACKAGES_JSON" | jq -r '.[].relative_path')
 # has been seen: the shared plugins repository holds 10k+ module packages and
 # deep offset pagination both costs the server dearly and eventually fails,
 # while the freshly delivered packages are the newest content by construction.
-declare -A PRESENT_BY_REPO
+# The listing goes to a file and grep reads the file: piping it into grep -q
+# would SIGPIPE the writer on the (early-exiting) first match, and pipefail
+# then turns every successful match into a false negative.
+declare -A PRESENT_BY_REPO   # repo -> file holding one relative_path per line
 for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
+  PRESENT_BY_REPO[$repo]=$(mktemp)
   version_href=$(pulp deb repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
   if [[ -z "$version_href" ]]; then
     echo "[WARN] Repository $repo does not exist or has no version"
-    PRESENT_BY_REPO[$repo]=""
     continue
   fi
-  PRESENT_BY_REPO[$repo]=""
   url="$PULP_URL/api/v3/content/deb/packages/?$(
     printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
       "$(jq -rn --arg v "$version_href" '$v | @uri')" \
@@ -52,13 +54,15 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
       echo "[WARN] presence page fetch failed for $repo ($url)" >&2
       break
     }
-    ((pages == 0)) && echo "[INFO] Repository $repo holds $(echo "$page" | jq -r '.count') module package(s) in its latest version"
-    PRESENT_BY_REPO[$repo]+=$(echo "$page" | jq -r '.results[].relative_path')$'\n'
+    if ((pages == 0)); then
+      echo "[INFO] Repository $repo holds $(echo "$page" | jq -r '.count') module package(s) in its latest version"
+    fi
+    echo "$page" | jq -r '.results[].relative_path' >> "${PRESENT_BY_REPO[$repo]}"
     pages=$((pages + 1))
     all_found=true
     for i in "${!E_FILENAME[@]}"; do
       [[ "${E_REPOSITORY[$i]}" == "$repo" ]] || continue
-      if ! printf '%s\n' "${PRESENT_BY_REPO[$repo]}" | grep -Fxq "${E_RELPATH[$i]}"; then
+      if ! grep -Fxq "${E_RELPATH[$i]}" "${PRESENT_BY_REPO[$repo]}"; then
         all_found=false
         break
       fi
@@ -70,7 +74,7 @@ done
 
 declare -A PRESENT_IDX
 for i in "${!E_FILENAME[@]}"; do
-  if printf '%s\n' "${PRESENT_BY_REPO[${E_REPOSITORY[$i]}]:-}" | grep -Fxq "${E_RELPATH[$i]}"; then
+  if grep -Fxq "${E_RELPATH[$i]}" "${PRESENT_BY_REPO[${E_REPOSITORY[$i]}]}"; then
     PRESENT_IDX[$i]=true
   else
     PRESENT_IDX[$i]=false
