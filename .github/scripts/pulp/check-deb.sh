@@ -36,13 +36,19 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
     PRESENT_BY_REPO[$repo]=""
     continue
   fi
+  # paginate: a single page silently truncates once the repository holds more
+  # module packages than the page size
   PRESENT_BY_REPO[$repo]=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-      --data-urlencode "repository_version=$version_href" \
-      --data-urlencode "pulp_label_select=module=$MODULE_NAME" \
-      --data-urlencode "limit=1000" \
-      "$PULP_URL/api/v3/content/deb/packages/" 2>/dev/null \
-      | jq -r '.results[].relative_path'
+    url="$PULP_URL/api/v3/content/deb/packages/?$(
+      printf 'repository_version=%s&pulp_label_select=%s&limit=1000' \
+        "$(jq -rn --arg v "$version_href" '$v | @uri')" \
+        "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
+    )"
+    while [[ -n "$url" ]]; do
+      page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url" 2>/dev/null) || break
+      echo "$page" | jq -r '.results[].relative_path'
+      url=$(echo "$page" | jq -r '.next // empty')
+    done
   )
 done
 
