@@ -20,8 +20,13 @@ mapfile -t E_REPOSITORY < <(echo "$PACKAGES_JSON" | jq -r '.[].repository')
 mapfile -t E_BASEPATH   < <(echo "$PACKAGES_JSON" | jq -r '.[].base_path')
 
 # --- physical presence: content units in each repository's latest version --
+# newest first, stopping as soon as every expected package of the repository
+# has been seen: a large repository makes deep offset pagination costly and
+# flaky, while the freshly delivered packages are the newest content by
+# construction.
 declare -A PRESENT_BY_REPO
 declare -A EXPECTED_COUNT_BY_REPO
+declare -A TOTAL_COUNT_BY_REPO
 
 for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
   version_href=$(pulp rpm repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
@@ -30,20 +35,35 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
     PRESENT_BY_REPO[$repo]=""
     continue
   fi
-  # paginate: a single page silently truncates once the repository holds more
-  # module packages than the page size
-  PRESENT_BY_REPO[$repo]=$(
-    url="$PULP_URL/api/v3/content/rpm/packages/?$(
-      printf 'repository_version=%s&pulp_label_select=%s&limit=1000' \
-        "$(jq -rn --arg v "$version_href" '$v | @uri')" \
-        "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
-    )"
-    while [[ -n "$url" ]]; do
-      page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url" 2>/dev/null) || break
-      echo "$page" | jq -r '.results[].location_href' | awk -F/ '{print $NF}'
-      url=$(echo "$page" | jq -r '.next // empty')
+  PRESENT_BY_REPO[$repo]=""
+  url="$PULP_URL/api/v3/content/rpm/packages/?$(
+    printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
+      "$(jq -rn --arg v "$version_href" '$v | @uri')" \
+      "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
+  )"
+  pages=0
+  while [[ -n "$url" ]] && ((pages < 20)); do
+    page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url") || {
+      echo "[WARN] presence page fetch failed for $repo ($url)" >&2
+      break
+    }
+    if ((pages == 0)); then
+      TOTAL_COUNT_BY_REPO[$repo]=$(echo "$page" | jq -r '.count')
+      echo "[INFO] Repository $repo holds ${TOTAL_COUNT_BY_REPO[$repo]} module package(s) in its latest version"
+    fi
+    PRESENT_BY_REPO[$repo]+=$(echo "$page" | jq -r '.results[].location_href' | awk -F/ '{print $NF}')$'\n'
+    pages=$((pages + 1))
+    all_found=true
+    for i in "${!E_FILENAME[@]}"; do
+      [[ "${E_REPOSITORY[$i]}" == "$repo" ]] || continue
+      if ! printf '%s\n' "${PRESENT_BY_REPO[$repo]}" | grep -Fxq "${E_FILENAME[$i]}"; then
+        all_found=false
+        break
+      fi
     done
-  )
+    [[ "$all_found" == "true" ]] && break
+    url=$(echo "$page" | jq -r '.next // empty')
+  done
 done
 
 declare -A PRESENT_IDX   # idx -> true|false
@@ -57,21 +77,14 @@ for i in "${!E_FILENAME[@]}"; do
   fi
 done
 
-# right number (delivery only): flag content-unit filenames present under the
-# module that were not expected (e.g. a stale package left behind). the testing
-# and unstable repositories retain a single version per package, so any extra is
-# suspect; the stable repository legitimately keeps the full version history of
-# previous releases, so this sweep would flag every past release on promotion.
+# right number (delivery only): warn when the repository holds more module
+# packages than expected. Count-based only: with shared repositories and the
+# daily develop deliveries, listing every extra name is noise (and the full
+# listing is what the bounded pagination above avoids).
 [[ "${CHECK_MODE:-delivery}" == "delivery" ]] && for repo in "${!EXPECTED_COUNT_BY_REPO[@]}"; do
-  present_count=$(printf '%s\n' "${PRESENT_BY_REPO[$repo]:-}" | grep -c . || true)
-  if [[ "$present_count" -gt "${EXPECTED_COUNT_BY_REPO[$repo]}" ]]; then
-    echo "::warning::Repository $repo holds $present_count module packages but only ${EXPECTED_COUNT_BY_REPO[$repo]} were expected (unexpected extras)"
-    while read -r fn; do
-      [[ -z "$fn" ]] && continue
-      if ! printf '%s\n' "${E_FILENAME[@]}" | grep -Fxq "$fn"; then
-        record_row "$fn" "?" "false" "false" "false"
-      fi
-    done < <(printf '%s\n' "${PRESENT_BY_REPO[$repo]:-}")
+  total=${TOTAL_COUNT_BY_REPO[$repo]:-0}
+  if [[ "$total" -gt "${EXPECTED_COUNT_BY_REPO[$repo]}" ]]; then
+    echo "::warning::Repository $repo holds $total module packages, ${EXPECTED_COUNT_BY_REPO[$repo]} delivered by this run (older builds and other modules accumulate until cleanup)"
   fi
 done
 

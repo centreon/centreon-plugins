@@ -28,6 +28,10 @@ mapfile -t E_SUITE      < <(echo "$PACKAGES_JSON" | jq -r '.[].suite')
 mapfile -t E_RELPATH    < <(echo "$PACKAGES_JSON" | jq -r '.[].relative_path')
 
 # --- physical presence: content units in the repository's latest version ----
+# newest first, stopping as soon as every expected package of the repository
+# has been seen: the shared plugins repository holds 10k+ module packages and
+# deep offset pagination both costs the server dearly and eventually fails,
+# while the freshly delivered packages are the newest content by construction.
 declare -A PRESENT_BY_REPO
 for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
   version_href=$(pulp deb repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
@@ -36,20 +40,32 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
     PRESENT_BY_REPO[$repo]=""
     continue
   fi
-  # paginate: a single page silently truncates once the repository holds more
-  # module packages than the page size
-  PRESENT_BY_REPO[$repo]=$(
-    url="$PULP_URL/api/v3/content/deb/packages/?$(
-      printf 'repository_version=%s&pulp_label_select=%s&limit=1000' \
-        "$(jq -rn --arg v "$version_href" '$v | @uri')" \
-        "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
-    )"
-    while [[ -n "$url" ]]; do
-      page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url" 2>/dev/null) || break
-      echo "$page" | jq -r '.results[].relative_path'
-      url=$(echo "$page" | jq -r '.next // empty')
+  PRESENT_BY_REPO[$repo]=""
+  url="$PULP_URL/api/v3/content/deb/packages/?$(
+    printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
+      "$(jq -rn --arg v "$version_href" '$v | @uri')" \
+      "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
+  )"
+  pages=0
+  while [[ -n "$url" ]] && ((pages < 20)); do
+    page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url") || {
+      echo "[WARN] presence page fetch failed for $repo ($url)" >&2
+      break
+    }
+    ((pages == 0)) && echo "[INFO] Repository $repo holds $(echo "$page" | jq -r '.count') module package(s) in its latest version"
+    PRESENT_BY_REPO[$repo]+=$(echo "$page" | jq -r '.results[].relative_path')$'\n'
+    pages=$((pages + 1))
+    all_found=true
+    for i in "${!E_FILENAME[@]}"; do
+      [[ "${E_REPOSITORY[$i]}" == "$repo" ]] || continue
+      if ! printf '%s\n' "${PRESENT_BY_REPO[$repo]}" | grep -Fxq "${E_RELPATH[$i]}"; then
+        all_found=false
+        break
+      fi
     done
-  )
+    [[ "$all_found" == "true" ]] && break
+    url=$(echo "$page" | jq -r '.next // empty')
+  done
 done
 
 declare -A PRESENT_IDX
