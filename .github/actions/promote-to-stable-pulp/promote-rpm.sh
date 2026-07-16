@@ -98,7 +98,7 @@ for ARCH in noarch x86_64; do
   wait_task "$TASK_HREF"
 
   echo "[INFO] Publishing repository $STABLE_REPOSITORY_NAME"
-  pulp rpm publication create --repository "$STABLE_REPOSITORY_NAME" >/dev/null
+  create_publication rpm "$STABLE_REPOSITORY_NAME"
 
   # record the promoted packages (with their stable target coordinates) so the
   # verification step verifies exactly this set against the stable repo
