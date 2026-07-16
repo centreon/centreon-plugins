@@ -101,7 +101,6 @@ sub check {
 
             my $smart  = $disk->{smartResult} // 'N/A';
             my $name   = $label_prefix . $disk->{name}        // $instance;
-
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "disk '%s' smart result is '%s' [isRaid: %s, raidStatus: %s, position: %s]",
@@ -122,18 +121,26 @@ sub check {
             }
 
             if (defined $disk->{isRaid} && $disk->{isRaid} == 1
-                && defined $disk->{raidStatus} && $disk->{raidStatus} ne ''
-                && $disk->{raidStatus} ne 'optimal')
+                && defined $disk->{raidStatus} && $disk->{raidStatus} ne '')
             {
-                $self->{output}->output_add(
-                    severity  => 'WARNING',
-                    short_msg => sprintf(
-                        "Disk '%s' RAID status is '%s'", $name, $disk->{raidStatus}
-                    )
-                );
+                if ($disk->{raidStatus} eq 'missing'){
+                    $self->{output}->output_add(
+                        severity  => 'WARNING',
+                        short_msg => sprintf(
+                            "Disk '%s' RAID status is '%s'", $name, $disk->{raidStatus}
+                        )
+                    );
+                } elsif ($disk->{raidStatus} eq 'degraded') {
+                    $self->{output}->output_add(
+                        severity  => 'CRITICAL',
+                        short_msg => sprintf(
+                            "Disk '%s' RAID status is '%s'", $name, $disk->{raidStatus}
+                        )
+                    );
+                }
             }
         }
     }
 }
 
-1;
+1; 

@@ -42,8 +42,9 @@ sub set_system {
             ['.*',      'CRITICAL']
         ],
         psu => [
-            ['OK',  'OK'],
-            ['.*',  'CRITICAL']
+            ['FAILED',  'CRITICAL'],
+            ['NOTFOUND',  'WARNING'],
+            ['.*',  'OK']
         ],
         disk => [
             ['PASSED',       'OK'],
