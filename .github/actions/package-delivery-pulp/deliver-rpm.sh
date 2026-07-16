@@ -171,22 +171,42 @@ for ARCH in noarch x86_64; do
   # promote-to-stable can identify them.
   TASK_HREFS=()
   SHA256S=()
-  for FILE in "${ARCH_FILES[@]}"; do
-    # refresh from the parent shell: pulp_upload runs in a command substitution
-    # (subshell), so its internal refresh cannot update this shell's token —
-    # the guardrail curl below and the token inherited by the subshells must
-    # be kept fresh from here.
-    refresh_pulp_token
-    assert_not_in_stable "$FILE" "$ARCH"
-    echo "[INFO] Uploading $(basename "$FILE") (module $MODULE_NAME)"
-    sha256=$(sha256sum "$FILE" | cut -d' ' -f1)
-    SHA256S+=("$sha256")
-    TASK_HREFS+=("$(
+  # TEMP(test-pulp-unstable): the uploads are parallelized client-side (the
+  # repository-less create tasks already parallelize server-side). A bounded
+  # pool of background subshells posts the files, each writing its task href
+  # to a marker file; the parent refreshes the OIDC token between spawn
+  # chunks so the workers always inherit a fresh token. Worker failures are
+  # detected through missing/empty marker files after the wait.
+  UPLOAD_DIR=$(mktemp -d)
+  MAX_PARALLEL_UPLOADS=8
+  for i in "${!ARCH_FILES[@]}"; do
+    FILE=${ARCH_FILES[$i]}
+    if ((i % 40 == 0)); then
+      refresh_pulp_token
+    fi
+    (
+      assert_not_in_stable "$FILE" "$ARCH"
+      echo "[INFO] Uploading $(basename "$FILE") (module $MODULE_NAME)"
       pulp_upload \
         -F "file=@\"$FILE\"" \
         -F "pulp_labels=$PULP_LABELS" \
-        "$PULP_URL/api/v3/content/rpm/packages/"
-    )")
+        "$PULP_URL/api/v3/content/rpm/packages/" > "$UPLOAD_DIR/$i.task"
+    ) &
+    while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+      wait -n || true
+    done
+  done
+  wait || true
+
+  for i in "${!ARCH_FILES[@]}"; do
+    FILE=${ARCH_FILES[$i]}
+    if [[ ! -s "$UPLOAD_DIR/$i.task" ]]; then
+      echo "::error::Upload failed for $(basename "$FILE") (no task href, see the worker error above)"
+      exit 1
+    fi
+    TASK_HREFS+=("$(cat "$UPLOAD_DIR/$i.task")")
+    sha256=$(sha256sum "$FILE" | cut -d' ' -f1)
+    SHA256S+=("$sha256")
 
     # record the uploaded package in the manifest (name-version-release parsed
     # the same way as assert_not_in_stable) for the verification step
@@ -203,6 +223,7 @@ for ARCH in noarch x86_64; do
       --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
       '{filename:$filename,name:$name,version:$version,release:$release,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path}')"
   done
+  rm -rf "$UPLOAD_DIR"
 
   echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) and resolving the content"
   CONTENT_HREFS=()
