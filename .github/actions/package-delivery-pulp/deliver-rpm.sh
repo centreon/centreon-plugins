@@ -136,34 +136,6 @@ for ARCH in noarch x86_64; do
 
   REPOSITORY_HREF=$(pulp rpm repository show --name "$REPOSITORY_NAME" | jq -r '.pulp_href')
 
-  # TEMP(test-pulp-unstable): one-off purge of the 20260714-1 leftovers of an
-  # earlier test round - they outrank the 20260700-<timestamp> test builds in
-  # RPM version comparison, so the retention policy evicts every freshly
-  # delivered package sharing their name. No-op once purged.
-  refresh_pulp_token
-  LATEST_VERSION=$(pulp rpm repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
-  PURGE_RESPONSE=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-      --data-urlencode "repository_version=$LATEST_VERSION" \
-      --data-urlencode "version=20260714" \
-      --data-urlencode "release=1.el10" \
-      --data-urlencode "limit=200" \
-      "$PULP_URL/api/v3/content/rpm/packages/"
-  )
-  echo "[INFO] Purge query on $LATEST_VERSION matched $(echo "$PURGE_RESPONSE" | jq -r '.count // "?"') package(s) at 20260714-1.el10"
-  PURGE_HREFS=$(echo "$PURGE_RESPONSE" | jq -r '.results[].pulp_href')
-  if [[ -n "$PURGE_HREFS" ]]; then
-    echo "[INFO] Purging $(wc -l <<< "$PURGE_HREFS") leftover 20260714-1 package(s) from $REPOSITORY_NAME"
-    PURGE_BODY=$(printf '%s\n' "$PURGE_HREFS" | jq -R . | jq -cs '{remove_content_units: .}')
-    PURGE_TASK=$(
-      curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
-        -X POST -H "Content-Type: application/json" \
-        -d "$PURGE_BODY" \
-        "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
-    )
-    wait_task "$PURGE_TASK"
-  fi
-
   # TEMP(test-pulp-unstable) experimental batched delivery: packages are
   # uploaded as unassociated content (repository-less, so the create tasks
   # parallelize across the pulp workers instead of serializing on the

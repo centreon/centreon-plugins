@@ -259,19 +259,29 @@ for i in "${!ORPHAN_FILES[@]}"; do
   PACKAGE_HREFS+=("$(cat "$UPLOAD_DIR/$i.content")")
 done
 
-# associate every uploaded package with the suite component: one small task
-# per association, parallelized (no repository lock involved)
+# associate every uploaded package with the suite component. The
+# package_release_components create is a plain synchronous DRF create (201
+# with the created unit, no task), so the href comes straight out of the
+# response; a failed create (unit already existing on a job re-run) falls
+# back to a lookup.
 echo "[INFO] Associating ${#PACKAGE_HREFS[@]} package(s) with $SUITE/main"
 for i in "${!PACKAGE_HREFS[@]}"; do
   if ((i % 40 == 0)); then
     refresh_pulp_token
   fi
   (
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
-      -X POST -H "Content-Type: application/json" \
-      -d "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}" \
-      "$PULP_URL/api/v3/content/deb/package_release_components/" \
-      | jq -r '.task // empty' > "$UPLOAD_DIR/$i.prctask"
+    response=$(
+      curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+        -X POST -H "Content-Type: application/json" \
+        -d "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}" \
+        "$PULP_URL/api/v3/content/deb/package_release_components/"
+    ) || response=""
+    href=$(echo "$response" | jq -r '.pulp_href // .task // empty')
+    if [[ -z "$href" ]]; then
+      href=$(lookup_deb_content "package_release_components" \
+        "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
+    fi
+    printf '%s' "$href" > "$UPLOAD_DIR/$i.prc"
   ) &
   while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
     wait -n || true
@@ -279,33 +289,19 @@ for i in "${!PACKAGE_HREFS[@]}"; do
 done
 wait || true
 
-for i in "${!PACKAGE_HREFS[@]}"; do
-  if [[ ! -s "$UPLOAD_DIR/$i.prctask" ]]; then
-    echo "::error::Suite association failed for ${ORPHAN_FILES[$i]} (no task href)"
-    exit 1
-  fi
-done
-for i in "${!PACKAGE_HREFS[@]}"; do
-  if ((i % 40 == 0)); then
-    refresh_pulp_token
-  fi
-  (
-    resolve_task_content "$(cat "$UPLOAD_DIR/$i.prctask")" "package_release_components" \
-      "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF" \
-      > "$UPLOAD_DIR/$i.prc"
-  ) &
-  while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
-    wait -n || true
-  done
-done
-wait || true
 PRC_HREFS=()
 for i in "${!PACKAGE_HREFS[@]}"; do
-  if [[ ! -s "$UPLOAD_DIR/$i.prc" ]]; then
-    echo "::error::Cannot resolve the suite association of ${ORPHAN_FILES[$i]} (see the worker error above)"
+  href=""
+  [[ -s "$UPLOAD_DIR/$i.prc" ]] && href=$(cat "$UPLOAD_DIR/$i.prc")
+  if [[ "$href" == */tasks/* ]]; then
+    href=$(resolve_task_content "$href" "package_release_components" \
+      "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
+  fi
+  if [[ -z "$href" ]]; then
+    echo "::error::Suite association failed for ${ORPHAN_FILES[$i]} (see the worker error above)"
     exit 1
   fi
-  PRC_HREFS+=("$(cat "$UPLOAD_DIR/$i.prc")")
+  PRC_HREFS+=("$href")
 done
 rm -rf "$UPLOAD_DIR"
 
