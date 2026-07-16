@@ -83,7 +83,9 @@ if __name__ == '__main__':
     if common:
         cmd = ["find", "packaging", "-type", "f", "-name", "pkg.json"]
         res = subprocess.run(cmd, capture_output=True, text=True, check=False)
-        for filepath in res.stdout.strip().split('\n'):
+        # TEMP(test-pulp-unstable): cap the delivery to 50 plugins, matching
+        # the batch-method test run for a fair comparison
+        for filepath in sorted(res.stdout.strip().split('\n'))[:50]:
             add_package_info(filepath)
     else:
         with open('packages_directories.json') as packages_directories_file:
