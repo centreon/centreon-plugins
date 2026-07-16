@@ -136,3 +136,26 @@ pulp_upload() {
   echo "::error::Upload failed after 3 attempts (HTTP ${http_code:-network-error})" >&2
   return 1
 }
+
+# create a publication in the background and wait for it with re-authenticating
+# polling: pulp-cli reads its token once at startup, so its built-in wait fails
+# with "Authentication failed for tasks_read" as soon as the publication of a
+# large repository outlives the OIDC token validity (~5 minutes)
+create_publication() {
+  local plugin=$1 repository=$2
+  shift 2
+  local out task
+  refresh_pulp_token
+  out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) || {
+    echo "$out"
+    echo "::error::Cannot start the publication of repository $repository"
+    return 1
+  }
+  task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
+  if [[ -z "$task" ]]; then
+    echo "$out"
+    echo "::error::Cannot find the publication task of repository $repository in the pulp-cli output"
+    return 1
+  fi
+  wait_task "$task"
+}

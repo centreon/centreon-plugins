@@ -142,7 +142,7 @@ for ARCH in noarch x86_64; do
   wait_tasks "${TASK_HREFS[@]}"
 
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
-  pulp rpm publication create --repository "$REPOSITORY_NAME" >/dev/null
+  create_publication rpm "$REPOSITORY_NAME"
 
   echo "::notice::Packages are available at $PULP_CONTENT_URL/$BASE_PATH/"
 done

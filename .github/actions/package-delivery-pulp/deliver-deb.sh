@@ -133,7 +133,7 @@ echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
 wait_tasks "${TASK_HREFS[@]}"
 
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
-pulp deb publication create --repository "$REPOSITORY_NAME" --structured >/dev/null
+create_publication deb "$REPOSITORY_NAME" --structured
 
 echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$BASE_PATH/ $SUITE main"
 
