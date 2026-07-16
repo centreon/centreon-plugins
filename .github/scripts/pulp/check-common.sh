@@ -39,15 +39,30 @@ load_expected() {
 
 # wait_for_metadata — repeatedly call the sourcing script's resolve_pending (one
 # resolution round over the still-unresolved packages, returning 0 once none
-# remain) until everything resolves or METADATA_TIMEOUT is reached.
+# remain) until everything resolves, METADATA_TIMEOUT is reached, or the
+# resolution stalls. The retry window only covers publication propagation: once
+# a round reads the published metadata and resolves nothing new while some
+# packages already resolved, the remaining ones are not in the publication at
+# all (e.g. evicted by the retention policy) and no amount of waiting will
+# surface them - report them right away instead of burning the whole window.
 wait_for_metadata() {
   local deadline=$(( SECONDS + METADATA_TIMEOUT ))
+  local resolved previous_resolved=-1
   until resolve_pending; do
-    if [[ "$SECONDS" -ge "$deadline" ]]; then
-      echo "[WARN] Metadata resolution timed out after ${METADATA_TIMEOUT}s"
+    resolved=0
+    for i in "${!E_FILENAME[@]}"; do
+      [[ "${META_IDX[$i]}" == "true" ]] && resolved=$((resolved + 1))
+    done
+    if ((resolved > 0 && resolved == previous_resolved)); then
+      echo "[WARN] ${resolved}/${#E_FILENAME[@]} package(s) resolvable in the published metadata and no progress in the last round; the remaining ones are not part of the publication, giving up early"
       break
     fi
-    echo "[INFO] Waiting ${METADATA_INTERVAL}s for metadata to publish..."
+    previous_resolved=$resolved
+    if [[ "$SECONDS" -ge "$deadline" ]]; then
+      echo "[WARN] Metadata resolution timed out after ${METADATA_TIMEOUT}s (${resolved}/${#E_FILENAME[@]} resolvable)"
+      break
+    fi
+    echo "[INFO] ${resolved}/${#E_FILENAME[@]} package(s) resolvable, waiting ${METADATA_INTERVAL}s for the metadata to propagate..."
     sleep "$METADATA_INTERVAL"
   done
 }
