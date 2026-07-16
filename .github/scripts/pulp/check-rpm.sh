@@ -24,18 +24,20 @@ mapfile -t E_BASEPATH   < <(echo "$PACKAGES_JSON" | jq -r '.[].base_path')
 # has been seen: a large repository makes deep offset pagination costly and
 # flaky, while the freshly delivered packages are the newest content by
 # construction.
-declare -A PRESENT_BY_REPO
+# The listing goes to a file and grep reads the file: piping it into grep -q
+# would SIGPIPE the writer on the (early-exiting) first match, and pipefail
+# then turns every successful match into a false negative.
+declare -A PRESENT_BY_REPO   # repo -> file holding one filename per line
 declare -A EXPECTED_COUNT_BY_REPO
 declare -A TOTAL_COUNT_BY_REPO
 
 for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
+  PRESENT_BY_REPO[$repo]=$(mktemp)
   version_href=$(pulp rpm repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
   if [[ -z "$version_href" ]]; then
     echo "[WARN] Repository $repo does not exist or has no version"
-    PRESENT_BY_REPO[$repo]=""
     continue
   fi
-  PRESENT_BY_REPO[$repo]=""
   url="$PULP_URL/api/v3/content/rpm/packages/?$(
     printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
       "$(jq -rn --arg v "$version_href" '$v | @uri')" \
@@ -51,12 +53,12 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
       TOTAL_COUNT_BY_REPO[$repo]=$(echo "$page" | jq -r '.count')
       echo "[INFO] Repository $repo holds ${TOTAL_COUNT_BY_REPO[$repo]} module package(s) in its latest version"
     fi
-    PRESENT_BY_REPO[$repo]+=$(echo "$page" | jq -r '.results[].location_href' | awk -F/ '{print $NF}')$'\n'
+    echo "$page" | jq -r '.results[].location_href' | awk -F/ '{print $NF}' >> "${PRESENT_BY_REPO[$repo]}"
     pages=$((pages + 1))
     all_found=true
     for i in "${!E_FILENAME[@]}"; do
       [[ "${E_REPOSITORY[$i]}" == "$repo" ]] || continue
-      if ! printf '%s\n' "${PRESENT_BY_REPO[$repo]}" | grep -Fxq "${E_FILENAME[$i]}"; then
+      if ! grep -Fxq "${E_FILENAME[$i]}" "${PRESENT_BY_REPO[$repo]}"; then
         all_found=false
         break
       fi
@@ -70,7 +72,7 @@ declare -A PRESENT_IDX   # idx -> true|false
 for i in "${!E_FILENAME[@]}"; do
   repo=${E_REPOSITORY[$i]}
   EXPECTED_COUNT_BY_REPO[$repo]=$(( ${EXPECTED_COUNT_BY_REPO[$repo]:-0} + 1 ))
-  if printf '%s\n' "${PRESENT_BY_REPO[$repo]:-}" | grep -Fxq "${E_FILENAME[$i]}"; then
+  if grep -Fxq "${E_FILENAME[$i]}" "${PRESENT_BY_REPO[$repo]}"; then
     PRESENT_IDX[$i]=true
   else
     PRESENT_IDX[$i]=false
