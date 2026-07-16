@@ -39,11 +39,15 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
         "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
     )"
     while [[ -n "$url" ]]; do
-      page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url" 2>/dev/null) || break
+      page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url") || {
+        echo "[WARN] presence page fetch failed for $repo ($url)" >&2
+        break
+      }
       echo "$page" | jq -r '.results[].location_href' | awk -F/ '{print $NF}'
       url=$(echo "$page" | jq -r '.next // empty')
     done
   )
+  echo "[INFO] Repository $repo holds $(printf '%s\n' "${PRESENT_BY_REPO[$repo]}" | grep -c .) module package(s) in its latest version"
 done
 
 declare -A PRESENT_IDX   # idx -> true|false
