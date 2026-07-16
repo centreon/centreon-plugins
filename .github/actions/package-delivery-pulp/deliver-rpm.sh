@@ -142,14 +142,16 @@ for ARCH in noarch x86_64; do
   # delivered package sharing their name. No-op once purged.
   refresh_pulp_token
   LATEST_VERSION=$(pulp rpm repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
-  PURGE_HREFS=$(
+  PURGE_RESPONSE=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
       --data-urlencode "repository_version=$LATEST_VERSION" \
       --data-urlencode "version=20260714" \
       --data-urlencode "release=1.el10" \
       --data-urlencode "limit=200" \
-      "$PULP_URL/api/v3/content/rpm/packages/" | jq -r '.results[].pulp_href'
+      "$PULP_URL/api/v3/content/rpm/packages/"
   )
+  echo "[INFO] Purge query on $LATEST_VERSION matched $(echo "$PURGE_RESPONSE" | jq -r '.count // "?"') package(s) at 20260714-1.el10"
+  PURGE_HREFS=$(echo "$PURGE_RESPONSE" | jq -r '.results[].pulp_href')
   if [[ -n "$PURGE_HREFS" ]]; then
     echo "[INFO] Purging $(wc -l <<< "$PURGE_HREFS") leftover 20260714-1 package(s) from $REPOSITORY_NAME"
     PURGE_BODY=$(printf '%s\n' "$PURGE_HREFS" | jq -R . | jq -cs '{remove_content_units: .}')
@@ -226,12 +228,36 @@ for ARCH in noarch x86_64; do
   rm -rf "$UPLOAD_DIR"
 
   echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) and resolving the content"
+  # TEMP(test-pulp-unstable): the resolutions are parallelized like the
+  # uploads - sequential, they paid one task GET per package (~6 min at 675)
+  RESOLVE_DIR=$(mktemp -d)
+  for i in "${!TASK_HREFS[@]}"; do
+    if ((i % 40 == 0)); then
+      refresh_pulp_token
+    fi
+    (
+      resolve_uploaded_content "${TASK_HREFS[$i]}" "${SHA256S[$i]}" > "$RESOLVE_DIR/$i.content"
+    ) &
+    while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+      wait -n || true
+    done
+  done
+  wait || true
+
   CONTENT_HREFS=()
   for i in "${!TASK_HREFS[@]}"; do
-    CONTENT_HREFS+=("$(resolve_uploaded_content "${TASK_HREFS[$i]}" "${SHA256S[$i]}")")
+    if [[ ! -s "$RESOLVE_DIR/$i.content" ]]; then
+      echo "::error::Cannot resolve the uploaded content of task ${TASK_HREFS[$i]} (see the worker error above)"
+      exit 1
+    fi
+    CONTENT_HREFS+=("$(cat "$RESOLVE_DIR/$i.content")")
   done
+  rm -rf "$RESOLVE_DIR"
 
   echo "[INFO] Adding ${#CONTENT_HREFS[@]} package(s) to $REPOSITORY_NAME in a single task"
+  # refresh from the parent shell: the resolutions above ran in subshells, so
+  # their refreshes never updated this shell's token (the 401 trap, again)
+  refresh_pulp_token
   ADD_BODY=$(printf '%s\n' "${CONTENT_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}')
   MODIFY_TASK=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \

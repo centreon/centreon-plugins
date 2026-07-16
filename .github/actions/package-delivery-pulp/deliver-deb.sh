@@ -228,7 +228,6 @@ done
 wait || true
 
 echo "[INFO] Resolving ${#ORPHAN_FILES[@]} uploaded package(s)"
-PACKAGE_HREFS=()
 ORPHAN_SHA256S=()
 for i in "${!ORPHAN_FILES[@]}"; do
   FILE=${ORPHAN_FILES[$i]}
@@ -236,12 +235,28 @@ for i in "${!ORPHAN_FILES[@]}"; do
     echo "::error::Upload failed for $FILE (no task href, see the worker error above)"
     exit 1
   fi
+  ORPHAN_SHA256S+=("$(sha256sum "$FILE" | cut -d' ' -f1)")
+done
+for i in "${!ORPHAN_FILES[@]}"; do
   if ((i % 40 == 0)); then
     refresh_pulp_token
   fi
-  sha256=$(sha256sum "$FILE" | cut -d' ' -f1)
-  ORPHAN_SHA256S+=("$sha256")
-  PACKAGE_HREFS+=("$(resolve_task_content "$(cat "$UPLOAD_DIR/$i.task")" "packages" "--data-urlencode sha256=$sha256")")
+  (
+    resolve_task_content "$(cat "$UPLOAD_DIR/$i.task")" "packages" \
+      "--data-urlencode sha256=${ORPHAN_SHA256S[$i]}" > "$UPLOAD_DIR/$i.content"
+  ) &
+  while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+    wait -n || true
+  done
+done
+wait || true
+PACKAGE_HREFS=()
+for i in "${!ORPHAN_FILES[@]}"; do
+  if [[ ! -s "$UPLOAD_DIR/$i.content" ]]; then
+    echo "::error::Cannot resolve the uploaded content for ${ORPHAN_FILES[$i]} (see the worker error above)"
+    exit 1
+  fi
+  PACKAGE_HREFS+=("$(cat "$UPLOAD_DIR/$i.content")")
 done
 
 # associate every uploaded package with the suite component: one small task
@@ -264,17 +279,33 @@ for i in "${!PACKAGE_HREFS[@]}"; do
 done
 wait || true
 
-PRC_HREFS=()
 for i in "${!PACKAGE_HREFS[@]}"; do
   if [[ ! -s "$UPLOAD_DIR/$i.prctask" ]]; then
     echo "::error::Suite association failed for ${ORPHAN_FILES[$i]} (no task href)"
     exit 1
   fi
+done
+for i in "${!PACKAGE_HREFS[@]}"; do
   if ((i % 40 == 0)); then
     refresh_pulp_token
   fi
-  PRC_HREFS+=("$(resolve_task_content "$(cat "$UPLOAD_DIR/$i.prctask")" "package_release_components" \
-    "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")")
+  (
+    resolve_task_content "$(cat "$UPLOAD_DIR/$i.prctask")" "package_release_components" \
+      "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF" \
+      > "$UPLOAD_DIR/$i.prc"
+  ) &
+  while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+    wait -n || true
+  done
+done
+wait || true
+PRC_HREFS=()
+for i in "${!PACKAGE_HREFS[@]}"; do
+  if [[ ! -s "$UPLOAD_DIR/$i.prc" ]]; then
+    echo "::error::Cannot resolve the suite association of ${ORPHAN_FILES[$i]} (see the worker error above)"
+    exit 1
+  fi
+  PRC_HREFS+=("$(cat "$UPLOAD_DIR/$i.prc")")
 done
 rm -rf "$UPLOAD_DIR"
 
