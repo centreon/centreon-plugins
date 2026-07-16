@@ -52,7 +52,12 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
       echo "[WARN] presence page fetch failed for $repo ($url)" >&2
       break
     }
-    ((pages == 0)) && echo "[INFO] Repository $repo holds $(echo "$page" | jq -r '.count') module package(s) in its latest version"
+    if ((pages == 0)); then
+      echo "[INFO] Repository $repo holds $(echo "$page" | jq -r '.count') module package(s) in its latest version"
+      # TEMP(test-pulp-unstable): compare the api shape with the manifest
+      echo "[DEBUG] first result: $(echo "$page" | jq -c '.results[0] | {relative_path, pulp_created}')"
+      echo "[DEBUG] first expected relative_path: ${E_RELPATH[0]}"
+    fi
     PRESENT_BY_REPO[$repo]+=$(echo "$page" | jq -r '.results[].relative_path')$'\n'
     pages=$((pages + 1))
     all_found=true
