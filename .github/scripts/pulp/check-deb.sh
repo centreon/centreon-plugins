@@ -58,12 +58,15 @@ done
 # --- metadata resolvability + fetchability, with a bounded retry window -----
 # resolve a package's published Filename from a suite Packages index by sha256
 resolve_filename() {
-  local packages=$1 sha=$2
-  printf '%s' "$packages" | awk -v sha="$sha" '
+  # read the Packages index from a file: awk exits on the first match, and a
+  # pipe writer would take a SIGPIPE ("printf: write error: Broken pipe" noise)
+  local packages_file=$1 sha=$2
+  [[ -s "$packages_file" ]] || return 0
+  awk -v sha="$sha" '
     BEGIN { RS = ""; FS = "\n" }
     index($0, "SHA256: " sha) {
       for (i = 1; i <= NF; i++) if ($i ~ /^Filename: /) { sub(/^Filename: /, "", $i); print $i; exit }
-    }'
+    }' "$packages_file"
 }
 
 declare -A META_IDX      # idx -> true|false
@@ -73,9 +76,9 @@ for i in "${!E_FILENAME[@]}"; do META_IDX[$i]=false; done
 # one resolution round: fetch each suite's Packages indexes once, then resolve
 # each pending package's published Filename by sha256
 resolve_pending() {
-  local -A pkg_cache=()    # key: base_path|suite|arch -> Packages body
+  local -A pkg_cache=()    # key: base_path|suite|arch -> Packages index file
   local -A arches_cache=() # key: base_path|suite -> space separated arches
-  local all_resolved=true i base_path suite arch search_arches sk ck a filename
+  local all_resolved=true i base_path suite arch search_arches sk ck a filename cache_file
   for i in "${!E_FILENAME[@]}"; do
     [[ "${META_IDX[$i]}" == "true" ]] && continue
     base_path=${E_BASEPATH[$i]}; suite=${E_SUITE[$i]}; arch=${E_ARCH[$i]}
@@ -96,7 +99,9 @@ resolve_pending() {
     for a in $search_arches; do
       ck="$base_path|$suite|$a"
       if [[ -z "${pkg_cache[$ck]+set}" ]]; then
-        pkg_cache[$ck]=$(curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/main/binary-$a/Packages" 2>/dev/null || true)
+        cache_file=$(mktemp)
+        curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/main/binary-$a/Packages" 2>/dev/null > "$cache_file" || true
+        pkg_cache[$ck]=$cache_file
       fi
       filename=$(resolve_filename "${pkg_cache[$ck]}" "${E_SHA256[$i]}")
       [[ -n "$filename" ]] && break
@@ -109,6 +114,7 @@ resolve_pending() {
       all_resolved=false
     fi
   done
+  rm -f "${pkg_cache[@]}"
   [[ "$all_resolved" == "true" ]]
 }
 

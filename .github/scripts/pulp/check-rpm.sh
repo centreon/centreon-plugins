@@ -78,8 +78,11 @@ for i in "${!E_FILENAME[@]}"; do META_IDX[$i]=false; done
 # matches, from a primary.xml body: matching by checksum (not filename) binds
 # the verification to the exact delivered content, like the DEB by-sha256 match
 resolve_href() {
-  local primary=$1 sha=$2
-  printf '%s' "$primary" | awk -v sha="$sha" '
+  # read the primary.xml from a file: awk exits on the first match, and a pipe
+  # writer would take a SIGPIPE ("printf: write error: Broken pipe" noise)
+  local primary_file=$1 sha=$2
+  [[ -s "$primary_file" ]] || return 0
+  awk -v sha="$sha" '
     BEGIN { RS = "</package>" }
     index($0, ">" sha "</checksum>") {
       if (match($0, /<location[^>]*href="[^"]+"/)) {
@@ -87,26 +90,26 @@ resolve_href() {
         sub(/.*href="/, "", s); sub(/"$/, "", s)
         print s; exit
       }
-    }'
+    }' "$primary_file"
 }
 
 # one resolution round: fetch each base_path's primary.xml once, then resolve
 # each pending package's published href by sha256
 resolve_pending() {
   local -A primary_cache=()
-  local all_resolved=true i base_path repomd primary_href href
+  local all_resolved=true i base_path repomd primary_href href cache_file
   for i in "${!E_FILENAME[@]}"; do
     [[ "${META_IDX[$i]}" == "true" ]] && continue
     base_path=${E_BASEPATH[$i]}
 
     if [[ -z "${primary_cache[$base_path]+set}" ]]; then
+      cache_file=$(mktemp)
       repomd=$(curl -fsSL "$PULP_CONTENT_URL/$base_path/repodata/repomd.xml" 2>/dev/null || true)
       primary_href=$(printf '%s' "$repomd" | grep -oP '<location href="\K[^"]+primary\.xml[^"]*' | head -1 || true)
       if [[ -n "$primary_href" ]]; then
-        primary_cache[$base_path]=$(curl -fsSL "$PULP_CONTENT_URL/$base_path/$primary_href" 2>/dev/null | gunzip -c 2>/dev/null || true)
-      else
-        primary_cache[$base_path]=""
+        curl -fsSL "$PULP_CONTENT_URL/$base_path/$primary_href" 2>/dev/null | gunzip -c 2>/dev/null > "$cache_file" || true
       fi
+      primary_cache[$base_path]=$cache_file
     fi
 
     href=$(resolve_href "${primary_cache[$base_path]}" "${E_SHA256[$i]}")
@@ -117,6 +120,7 @@ resolve_pending() {
       all_resolved=false
     fi
   done
+  rm -f "${primary_cache[@]}"
   [[ "$all_resolved" == "true" ]]
 }
 
