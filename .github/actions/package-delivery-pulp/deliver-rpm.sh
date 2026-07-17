@@ -159,6 +159,9 @@ for ARCH in noarch x86_64; do
       refresh_pulp_token
     fi
     (
+      # subshell-local refresh: under server slowdowns the inherited token can
+      # outlive its validity between two parent refreshes
+      refresh_pulp_token
       assert_not_in_stable "$FILE" "$ARCH"
       echo "[INFO] Uploading $(basename "$FILE") (module $MODULE_NAME)"
       pulp_upload \

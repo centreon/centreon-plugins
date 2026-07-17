@@ -36,9 +36,14 @@ while [[ -n "$url" ]]; do
   url=$(echo "$page" | jq -r '.next // empty')
 done
 
+# only the LATEST version of each package is promoted: the testing suite
+# accumulates every delivered build (deb has no retention mechanism), and
+# our version schemes embed a monotonic date/timestamp so the plain string
+# max is the newest build
 PACKAGES=$(
   jq -s --arg testing_path "$TESTING_POOL_PATH/" --arg distrib_name "$PACKAGE_DISTRIB_NAME" \
-    '[.[] | select((.relative_path | startswith($testing_path)) and (.relative_path | contains($distrib_name)))]' \
+    '[.[] | select((.relative_path | startswith($testing_path)) and (.relative_path | contains($distrib_name)))]
+     | group_by(.package, .architecture) | map(max_by(.version))' \
     "$RESULTS_FILE"
 )
 rm -f "$RESULTS_FILE"
@@ -160,6 +165,7 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
       refresh_pulp_token
     fi
     (
+      refresh_pulp_token
       package_href=$(echo "${BATCH_PACKAGES[$i]}" | jq -r '.pulp_href')
       response=$(
         curl -fsSL -H "Authorization: Github $PULP_TOKEN" \

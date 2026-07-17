@@ -213,6 +213,9 @@ for i in "${!ORPHAN_FILES[@]}"; do
     refresh_pulp_token
   fi
   (
+    # subshell-local refresh: under server slowdowns the inherited token can
+    # outlive its validity between two parent refreshes
+    refresh_pulp_token
     assert_not_in_stable "$FILE"
     echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME)"
     pulp_upload \
@@ -270,6 +273,7 @@ for i in "${!PACKAGE_HREFS[@]}"; do
     refresh_pulp_token
   fi
   (
+    refresh_pulp_token
     response=$(
       curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
         -X POST -H "Content-Type: application/json" \
