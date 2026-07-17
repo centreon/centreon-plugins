@@ -106,7 +106,7 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   # layout, not their upload relative_path, so resolve the published location
   # from the testing suite Packages indexed by checksum to download the file
   FILENAME=$(
-    curl -fsSL "$PULP_CONTENT_URL/$BASE_PATH/dists/$TESTING_SUITE/main/binary-$ARCH/Packages" |
+    curl -fsSL --retry 3 --retry-delay 5 "$PULP_CONTENT_URL/$BASE_PATH/dists/$TESTING_SUITE/main/binary-$ARCH/Packages" |
       awk -v sha="$SHA256" 'BEGIN { RS = ""; FS = "\n" } index($0, "SHA256: " sha) { for (i = 1; i <= NF; i++) if ($i ~ /^Filename: /) { sub(/^Filename: /, "", $i); print $i } }'
   )
   if [[ -z "$FILENAME" ]]; then
@@ -115,7 +115,7 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   fi
 
   echo "[INFO] Downloading $PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
-  curl -fsSL -o "$FILE" "$PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
+  curl -fsSL --retry 3 --retry-delay 5 -o "$FILE" "$PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
 
   # re-upload the same bytes with the SAME relative_path: pulp reuses the
   # existing content unit and only adds the stable suite association,
@@ -199,12 +199,14 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
 
   echo "[INFO] Adding ${#BATCH_PACKAGES[@]} package(s) and their suite associations to $REPOSITORY_NAME in a single task"
   refresh_pulp_token
-  ADD_BODY=$(jq -R . "$ADD_UNITS_FILE" | jq -cs '{add_content_units: [.[] | select(. != "")]}')
+  # body through a file: thousands of hrefs exceed the argv limit
+  ADD_BODY_FILE=$(mktemp)
+  jq -R . "$ADD_UNITS_FILE" | jq -cs '{add_content_units: [.[] | select(. != "")]}' > "$ADD_BODY_FILE"
   rm -f "$ADD_UNITS_FILE"
   MODIFY_TASK=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
       -X POST -H "Content-Type: application/json" \
-      -d "$ADD_BODY" \
+      -d @"$ADD_BODY_FILE" \
       "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
   )
   wait_task "$MODIFY_TASK"

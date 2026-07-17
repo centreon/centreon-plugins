@@ -32,7 +32,7 @@ assert_not_in_stable() {
   # endpoint error cannot let an already-stable version slip through and evict it
   # (the rpm guardrail is likewise fail-closed).
   pkg_file=$(mktemp)
-  http_code=$(curl -sSL -o "$pkg_file" -w '%{http_code}' \
+  http_code=$(curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
     "$PULP_CONTENT_URL/$BASE_PATH/dists/$STABLE_SUITE/main/binary-$arch/Packages" 2>/dev/null || echo 000)
   case "$http_code" in
     404) rm -f "$pkg_file"; return 0 ;;
@@ -308,11 +308,13 @@ rm -rf "$UPLOAD_DIR"
 if ((${#PACKAGE_HREFS[@]} > 0)); then
   echo "[INFO] Adding ${#PACKAGE_HREFS[@]} package(s) and their suite associations to $REPOSITORY_NAME in a single task"
   refresh_pulp_token
-  ADD_BODY=$(printf '%s\n' "${PACKAGE_HREFS[@]}" "${PRC_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}')
+  # body through a file: thousands of hrefs exceed the argv limit
+  ADD_BODY_FILE=$(mktemp)
+  printf '%s\n' "${PACKAGE_HREFS[@]}" "${PRC_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
   MODIFY_TASK=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
       -X POST -H "Content-Type: application/json" \
-      -d "$ADD_BODY" \
+      -d @"$ADD_BODY_FILE" \
       "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
   )
   wait_task "$MODIFY_TASK"

@@ -34,7 +34,7 @@ assert_not_in_stable() {
   repository_version=$(pulp rpm repository show --name "$stable_repository" | jq -r '.latest_version_href')
 
   count=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+    curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
       --data-urlencode "repository_version=$repository_version" \
       --data-urlencode "name=$name" \
       --data-urlencode "version=$version" \
@@ -230,11 +230,13 @@ for ARCH in noarch x86_64; do
   # refresh from the parent shell: the resolutions above ran in subshells, so
   # their refreshes never updated this shell's token (the 401 trap, again)
   refresh_pulp_token
-  ADD_BODY=$(printf '%s\n' "${CONTENT_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}')
+  # body through a file: thousands of hrefs exceed the argv limit
+  ADD_BODY_FILE=$(mktemp)
+  printf '%s\n' "${CONTENT_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
   MODIFY_TASK=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
       -X POST -H "Content-Type: application/json" \
-      -d "$ADD_BODY" \
+      -d @"$ADD_BODY_FILE" \
       "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
   )
   wait_task "$MODIFY_TASK"

@@ -93,7 +93,7 @@ for ARCH in noarch x86_64; do
   TASK_HREF=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
       -X POST -H "Content-Type: application/json" \
-      -d "{\"add_content_units\": $CONTENT}" \
+      -d @<(echo "$CONTENT" | jq -c '{add_content_units: .}') \
       "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" | jq -r '.task'
   )
   wait_task "$TASK_HREF"
