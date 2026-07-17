@@ -63,7 +63,39 @@ mkdir -p promoted-packages
 # module label, built with jq (safe escaping) — consistent with the delivery scripts
 PULP_LABELS=$(jq -cn --arg mod "$MODULE_NAME" '{"module": $mod}')
 
+lookup_prcs() {
+  # emit the release_component hrefs of a package's suite associations
+  local package_href=$1
+  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+    --data-urlencode "package=$package_href" \
+    --data-urlencode "limit=100" \
+    "$PULP_URL/api/v3/content/deb/package_release_components/" \
+    | jq -r '.results[].release_component'
+}
+
+# batched promote, mirroring the batched delivery: the packages already exist
+# as content units in the repository (testing suite), so promoting is only a
+# matter of stable suite associations. The FIRST package of each architecture
+# is promoted through the legacy re-upload path - it get_or_creates the stable
+# ReleaseComponent and ReleaseArchitecture, which the ci user cannot create
+# nor list directly - then the stable release-component href is deduced from
+# its associations, every other association is created synchronously, and one
+# modify adds the whole batch to the repository.
+declare -A ARCH_SEEN=()
+LEGACY_PACKAGES=()
+BATCH_PACKAGES=()
 while read -r PACKAGE; do
+  ARCH=$(echo "$PACKAGE" | jq -r '.architecture')
+  if [[ -z "${ARCH_SEEN[$ARCH]+set}" ]]; then
+    ARCH_SEEN[$ARCH]=1
+    LEGACY_PACKAGES+=("$PACKAGE")
+  else
+    BATCH_PACKAGES+=("$PACKAGE")
+  fi
+done < <(echo "$PACKAGES" | jq -c '.[]')
+
+refresh_pulp_token
+for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   RELATIVE_PATH=$(echo "$PACKAGE" | jq -r '.relative_path')
   SHA256=$(echo "$PACKAGE" | jq -r '.sha256')
   ARCH=$(echo "$PACKAGE" | jq -r '.architecture')
@@ -86,11 +118,9 @@ while read -r PACKAGE; do
   curl -fsSL -o "$FILE" "$PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
 
   # re-upload the same bytes with the SAME relative_path: pulp reuses the
-  # existing content unit (a different relative_path would create a second unit
-  # that evicts the first, as pulp deduplicates by name+version+architecture
-  # repository wide) and only adds the stable suite association. an upload is
-  # required because pulp_deb rejects direct PackageReleaseComponent creation.
-  echo "[INFO] Promoting $FILE_NAME to $STABLE_SUITE/main"
+  # existing content unit and only adds the stable suite association,
+  # creating the stable ReleaseComponent/ReleaseArchitecture on the way
+  echo "[INFO] Promoting $FILE_NAME to $STABLE_SUITE/main [legacy path]"
   TASK_HREF=$(
     pulp_upload \
       -F "file=@\"$FILE\"" \
@@ -102,16 +132,91 @@ while read -r PACKAGE; do
       "$PULP_URL/api/v3/content/deb/packages/"
   )
   wait_task "$TASK_HREF"
+done
 
-  # record the promoted package (with its stable suite coordinates) so the
-  # verification step verifies exactly this set against the stable suite
-  NAME=$(echo "$PACKAGE" | jq -r '.package')
-  VERSION=$(echo "$PACKAGE" | jq -r '.version')
-  manifest_add "$(jq -cn \
-    --arg filename "$FILE_NAME" --arg name "$NAME" --arg version "$VERSION" \
-    --arg arch "$ARCH" --arg sha256 "$SHA256" --arg repository "$REPOSITORY_NAME" \
-    --arg base_path "$BASE_PATH" --arg suite "$STABLE_SUITE" --arg relative_path "$RELATIVE_PATH" \
-    '{filename:$filename,name:$name,version:$version,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path,suite:$suite,relative_path:$relative_path}')"
+if ((${#BATCH_PACKAGES[@]} > 0)); then
+  # deduce the stable release-component href: the batch packages only carry
+  # their testing association, the just-promoted legacy package carries the
+  # stable one on top of it
+  refresh_pulp_token
+  FIRST_BATCH_HREF=$(echo "${BATCH_PACKAGES[0]}" | jq -r '.pulp_href')
+  LEGACY_HREF=$(echo "${LEGACY_PACKAGES[0]}" | jq -r '.pulp_href')
+  TESTING_RC=$(lookup_prcs "$FIRST_BATCH_HREF" | head -1)
+  STABLE_RC=$(lookup_prcs "$LEGACY_HREF" | grep -Fxv "$TESTING_RC" | head -1)
+  if [[ -z "$STABLE_RC" ]]; then
+    echo "::error::Cannot deduce the $STABLE_SUITE/main release component from the legacy-promoted package"
+    exit 1
+  fi
+  echo "[INFO] Release component of $STABLE_SUITE/main: $STABLE_RC"
+
+  # create the stable suite associations: synchronous creates (201 with the
+  # unit, no task), parallelized; a failed create (existing association on a
+  # re-run) falls back to a lookup
+  echo "[INFO] Associating ${#BATCH_PACKAGES[@]} package(s) with $STABLE_SUITE/main"
+  PRC_DIR=$(mktemp -d)
+  MAX_PARALLEL=8
+  for i in "${!BATCH_PACKAGES[@]}"; do
+    if ((i % 40 == 0)); then
+      refresh_pulp_token
+    fi
+    (
+      package_href=$(echo "${BATCH_PACKAGES[$i]}" | jq -r '.pulp_href')
+      response=$(
+        curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+          -X POST -H "Content-Type: application/json" \
+          -d "{\"package\": \"$package_href\", \"release_component\": \"$STABLE_RC\"}" \
+          "$PULP_URL/api/v3/content/deb/package_release_components/"
+      ) || response=""
+      href=$(echo "$response" | jq -r '.pulp_href // empty')
+      if [[ -z "$href" ]]; then
+        href=$(
+          curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+            --data-urlencode "package=$package_href" \
+            --data-urlencode "release_component=$STABLE_RC" \
+            --data-urlencode "limit=1" \
+            "$PULP_URL/api/v3/content/deb/package_release_components/" \
+            | jq -r '.results[0].pulp_href // empty'
+        )
+      fi
+      printf '%s\n%s' "$package_href" "$href" > "$PRC_DIR/$i.pair"
+    ) &
+    while (($(jobs -rp | wc -l) >= MAX_PARALLEL)); do
+      wait -n || true
+    done
+  done
+  wait || true
+
+  ADD_UNITS_FILE=$(mktemp)
+  for i in "${!BATCH_PACKAGES[@]}"; do
+    if [[ ! -s "$PRC_DIR/$i.pair" ]] || [[ -z "$(sed -n '2p' "$PRC_DIR/$i.pair")" ]]; then
+      echo "::error::Stable suite association failed for package $(echo "${BATCH_PACKAGES[$i]}" | jq -r '.package') (see the worker error above)"
+      exit 1
+    fi
+    cat "$PRC_DIR/$i.pair" >> "$ADD_UNITS_FILE"
+    echo >> "$ADD_UNITS_FILE"
+  done
+  rm -rf "$PRC_DIR"
+
+  echo "[INFO] Adding ${#BATCH_PACKAGES[@]} package(s) and their suite associations to $REPOSITORY_NAME in a single task"
+  refresh_pulp_token
+  ADD_BODY=$(jq -R . "$ADD_UNITS_FILE" | jq -cs '{add_content_units: [.[] | select(. != "")]}')
+  rm -f "$ADD_UNITS_FILE"
+  MODIFY_TASK=$(
+    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+      -X POST -H "Content-Type: application/json" \
+      -d "$ADD_BODY" \
+      "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
+  )
+  wait_task "$MODIFY_TASK"
+fi
+
+# record the promoted packages (with their stable suite coordinates) so the
+# verification step verifies exactly this set against the stable suite
+while read -r PACKAGE; do
+  manifest_add "$(echo "$PACKAGE" | jq -c \
+    --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
+    --arg suite "$STABLE_SUITE" \
+    '{filename: (.relative_path | sub(".*/"; "")), name: .package, version, arch: .architecture, sha256, repository: $repository, base_path: $base_path, suite: $suite, relative_path}')"
 done < <(echo "$PACKAGES" | jq -c '.[]')
 
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
