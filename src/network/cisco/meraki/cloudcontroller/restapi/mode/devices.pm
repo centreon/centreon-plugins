@@ -593,7 +593,9 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{devices}}) <= 0) {
-        $self->{output}->output_add(short_msg => 'no devices found');
+        $self->{output}->add_option_msg(short_msg => 'no devices found');
+        $self->{output}->option_exit();
+        
     }
 
     if ($self->{global}->{total} > 0) {

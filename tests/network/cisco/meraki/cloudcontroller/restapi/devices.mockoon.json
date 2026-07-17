@@ -1,11 +1,11 @@
 {
     "uuid": "05d4e801-fda9-4df8-bb11-72a9561d1df5",
-    "lastMigration": 32,
+    "lastMigration": 33,
     "name": "Meraki Simpl",
     "endpointPrefix": "api/v1",
     "latency": 0,
     "port": 3000,
-    "hostname": "",
+    "hostname": "0.0.0.0",
     "folders": [],
     "routes": [
         {
@@ -35,7 +35,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "14d04e40-8fab-4271-a156-e2d1ce2f6989",
@@ -64,7 +66,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "9119bc50-621d-48e5-b396-6ee4974bc1f9",
@@ -75,7 +79,7 @@
             "responses": [
                 {
                     "uuid": "467e877d-ff39-4b89-bef3-9dd07f4b99e0",
-                    "body": "[\r\n    {\r\n        \"name\": \"My AP\",\r\n        \"lat\": 37.4180951010362,\r\n        \"lng\": -122.098531723022,\r\n        \"address\": \"1600 Pennsylvania Ave\",\r\n        \"notes\": \"My AP's note\",\r\n        \"tags\": [ \"recently-added\" ],\r\n        \"networkId\": \"NETWORKID\",\r\n        \"serial\": \"DEVICESERIAL\",\r\n        \"model\": \"MR34\",\r\n        \"imei\": \"123456789000000\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"lanIp\": \"1.2.3.4\",\r\n        \"firmware\": \"wireless-25-14\",\r\n        \"productType\": \"wireless\",\r\n        \"details\": [\r\n            {\r\n                \"name\": \"Catalyst serial\",\r\n                \"value\": \"123ABC\"\r\n            }\r\n        ]\r\n    }\r\n]",
+                    "body": "[\r\n    {\r\n        \"name\": \"My AP MR\",\r\n        \"lat\": 37.4180951010362,\r\n        \"lng\": -122.098531723022,\r\n        \"address\": \"Rue Chateau des rentiers\",\r\n        \"notes\": \"My AP's note\",\r\n        \"tags\": [ \"recently-added\" ],\r\n        \"networkId\": \"NETWORKID\",\r\n        \"serial\": \"MRID\",\r\n        \"model\": \"MRXX\",\r\n        \"imei\": \"123456789000000\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"lanIp\": \"1.2.3.4\",\r\n        \"firmware\": \"wireless-25-14\",\r\n        \"productType\": \"wireless\",\r\n        \"details\": [\r\n            {\r\n                \"name\": \"Catalyst serial\",\r\n                \"value\": \"123ABC\"\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"name\": \"My AP MG\",\r\n        \"lat\": 37.4180951010361,\r\n        \"lng\": -122.098531723021,\r\n        \"address\": \"Rue Chateau des rentiers\",\r\n        \"notes\": \"My AP's note\",\r\n        \"tags\": [ \"recently-added\" ],\r\n        \"networkId\": \"NETWORKID\",\r\n        \"serial\": \"MGID\",\r\n        \"model\": \"MGXX\",\r\n        \"imei\": \"123456789000001\",\r\n        \"mac\": \"00:11:22:33:44:56\",\r\n        \"lanIp\": \"1.2.3.5\",\r\n        \"firmware\": \"wireless-25-14\",\r\n        \"productType\": \"wireless\",\r\n        \"details\": [\r\n            {\r\n                \"name\": \"Catalyst serial\",\r\n                \"value\": \"123ABC\"\r\n            }\r\n        ]\r\n    }\r\n]",
                     "latency": 0,
                     "statusCode": 200,
                     "label": "",
@@ -101,7 +105,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "f15a0d35-efa0-4167-9d62-ed591cf2a38d",
@@ -130,7 +136,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "9a8ba0fb-9403-4f9f-9b0f-29e98fb08b80",
@@ -141,7 +149,7 @@
             "responses": [
                 {
                     "uuid": "d13c5d3f-813c-4cdb-b6ca-f45a0788e94c",
-                    "body": "[\r\n    {\r\n        \"name\": \"My AP\",\r\n        \"serial\": \"DEVICESERIAL\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"publicIp\": \"123.123.123.1\",\r\n        \"networkId\": \"NETWORKID\",\r\n        \"status\": \"online\",\r\n        \"lastReportedAt\": \"2018-02-11T00:00:00.090210Z\",\r\n        \"lanIp\": \"1.2.3.4\",\r\n        \"gateway\": \"1.2.3.5\",\r\n        \"ipType\": \"dhcp\",\r\n        \"primaryDns\": \"8.8.8.8\",\r\n        \"secondaryDns\": \"8.8.4.4\",\r\n        \"productType\": \"wireless\",\r\n        \"components\": {\r\n            \"powerSupplies\": [\r\n                {\r\n                    \"slot\": 1,\r\n                    \"serial\": \"QABC-1234-5678\",\r\n                    \"model\": \"PWR-MS320-1025WAC\",\r\n                    \"status\": \"powering\",\r\n                    \"poe\": {\r\n                        \"unit\": \"watts\",\r\n                        \"maximum\": 740\r\n                    }\r\n                }\r\n            ]\r\n        },\r\n        \"model\": \"MR34\",\r\n        \"tags\": [ \"tag1\", \"tag2\" ]\r\n    }\r\n]",
+                    "body": "[\r\n    {\r\n        \"name\": \"My AP MR\",\r\n        \"serial\": \"MRID\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"publicIp\": \"123.123.123.1\",\r\n        \"networkId\": \"NETWORKID\",\r\n        \"status\": \"online\",\r\n        \"lastReportedAt\": \"2018-02-11T00:00:00.090210Z\",\r\n        \"lanIp\": \"1.2.3.4\",\r\n        \"gateway\": \"1.2.3.6\",\r\n        \"ipType\": \"dhcp\",\r\n        \"primaryDns\": \"8.8.8.8\",\r\n        \"secondaryDns\": \"8.8.4.4\",\r\n        \"productType\": \"wireless\",\r\n        \"components\": {\r\n            \"powerSupplies\": [\r\n                {\r\n                    \"slot\": 1,\r\n                    \"serial\": \"QABC-1234-5678\",\r\n                    \"model\": \"PWR-MS320-1025WAC\",\r\n                    \"status\": \"powering\",\r\n                    \"poe\": {\r\n                        \"unit\": \"watts\",\r\n                        \"maximum\": 740\r\n                    }\r\n                }\r\n            ]\r\n        },\r\n        \"model\": \"MRXX\",\r\n        \"tags\": [ \"tag1\", \"tag2\" ]\r\n    },\r\n    {\r\n        \"name\": \"My AP MG\",\r\n        \"serial\": \"MGID\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"publicIp\": \"123.123.123.1\",\r\n        \"networkId\": \"NETWORKID\",\r\n        \"status\": \"online\",\r\n        \"lastReportedAt\": \"2018-02-11T00:00:00.090210Z\",\r\n        \"lanIp\": \"1.2.3.5\",\r\n        \"gateway\": \"1.2.3.6\",\r\n        \"ipType\": \"dhcp\",\r\n        \"primaryDns\": \"8.8.8.8\",\r\n        \"secondaryDns\": \"8.8.4.4\",\r\n        \"productType\": \"wireless\",\r\n        \"components\": {\r\n            \"powerSupplies\": [\r\n                {\r\n                    \"slot\": 1,\r\n                    \"serial\": \"QABC-1234-5678\",\r\n                    \"model\": \"PWR-MS320-1025WAC\",\r\n                    \"status\": \"powering\",\r\n                    \"poe\": {\r\n                        \"unit\": \"watts\",\r\n                        \"maximum\": 740\r\n                    }\r\n                }\r\n            ]\r\n        },\r\n        \"model\": \"MGXX\",\r\n        \"tags\": [ \"tag1\", \"tag2\" ]\r\n    }\r\n]",
                     "latency": 0,
                     "statusCode": 200,
                     "label": "",
@@ -159,7 +167,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "6f8f9b77-06ea-4aec-98e8-6f65b3610208",
@@ -188,7 +198,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "a83e89c3-d3e3-4158-9f29-3711508988da",
@@ -217,7 +229,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "e5a4597f-3d84-4277-9bd7-c695676fd030",
@@ -228,7 +242,7 @@
             "responses": [
                 {
                     "uuid": "236cf15c-860c-47a4-a3b5-15fdb78e0346",
-                    "body": "[\r\n    {\r\n        \"serial\": \"DEVICESERIAL\",\r\n        \"connectionStats\": {\r\n            \"assoc\": 0,\r\n            \"auth\": 1,\r\n            \"dhcp\": 0,\r\n            \"dns\": 0,\r\n            \"success\": 43\r\n        }\r\n    }\r\n]",
+                    "body": "[\r\n    {\r\n        \"serial\": \"MGID\",\r\n        \"connectionStats\": {\r\n            \"assoc\": 0,\r\n            \"auth\": 1,\r\n            \"dhcp\": 0,\r\n            \"dns\": 0,\r\n            \"success\": 43\r\n        }\r\n    }\r\n]",
                     "latency": 0,
                     "statusCode": 200,
                     "label": "",
@@ -246,14 +260,16 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "98befe4b-bc35-4f34-81a7-9b426e62b2e9",
             "type": "http",
             "documentation": "",
             "method": "get",
-            "endpoint": "devices/DEVICESERIAL/clients",
+            "endpoint": "devices/MGID/clients",
             "responses": [
                 {
                     "uuid": "e475ed9a-3361-40a0-b778-1c75c72caf40",
@@ -313,18 +329,20 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": "SEQUENTIAL"
+            "responseMode": "SEQUENTIAL",
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "3424a53e-4c34-4997-8db2-17ddf7154810",
             "type": "http",
             "documentation": "",
             "method": "get",
-            "endpoint": "devices/DEVICESERIAL/wireless/connectionStats",
+            "endpoint": "devices/MRID/wireless/connectionStats",
             "responses": [
                 {
                     "uuid": "a8113f77-d9a7-4531-aa87-6123a3b800f8",
-                    "body": "{\r\n    \"serial\": \"DEVICESERIAL\",\r\n    \"connectionStats\": {\r\n        \"assoc\": 0,\r\n        \"auth\": 1,\r\n        \"dhcp\": 0,\r\n        \"dns\": 0,\r\n        \"success\": 40\r\n    }\r\n}",
+                    "body": "{\r\n    \"serial\": \"MRXX\",\r\n    \"connectionStats\": {\r\n        \"assoc\": 0,\r\n        \"auth\": 1,\r\n        \"dhcp\": 0,\r\n        \"dns\": 0,\r\n        \"success\": 40\r\n    }\r\n}",
                     "latency": 0,
                     "statusCode": 200,
                     "label": "",
@@ -342,7 +360,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": null
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
         },
         {
             "uuid": "654bf7e0-b226-406d-9a2d-e5f26d3d7474",
@@ -409,7 +429,9 @@
                     "callbacks": []
                 }
             ],
-            "responseMode": "SEQUENTIAL"
+            "responseMode": "SEQUENTIAL",
+            "streamingMode": null,
+            "streamingInterval": 0
         }
     ],
     "rootChildren": [
