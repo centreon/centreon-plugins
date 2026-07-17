@@ -83,13 +83,18 @@ record_row() {
 # record every package's result row. Uses the E_FILENAME/E_ARCH/E_BASEPATH,
 # PRESENT_IDX, META_IDX and RESOLVED_IDX arrays filled by the sourcing script.
 check_fetchable_and_record() {
-  local i url code fetchable
+  local i url code fetchable attempt
   for i in "${!E_FILENAME[@]}"; do
     fetchable=false
     if [[ "${META_IDX[$i]}" == "true" ]]; then
       url="${PULP_CONTENT_URL}/${E_BASEPATH[$i]}/${RESOLVED_IDX[$i]}"
-      code=$(curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
-      [[ "$code" == "200" ]] && fetchable=true
+      # retry: one flaky HEAD out of hundreds (content-app/S3 hiccup) must not
+      # fail the whole verification
+      for attempt in 1 2 3; do
+        code=$(curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
+        [[ "$code" == "200" ]] && { fetchable=true; break; }
+        sleep 2
+      done
     fi
     record_row "${E_FILENAME[$i]}" "${E_ARCH[$i]}" "${PRESENT_IDX[$i]}" "${META_IDX[$i]}" "$fetchable"
   done
