@@ -20,28 +20,28 @@ VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.late
 
 # packages of the module are identified by the label set at delivery time,
 # the testing pool path scopes the stability and the package distrib name
-# scopes the distribution as the apt repository holds all the suites
-RESPONSE=$(
-  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-    --data-urlencode "repository_version=$VERSION_HREF" \
-    --data-urlencode "pulp_label_select=module=$MODULE_NAME" \
-    --data-urlencode "limit=1000" \
-    "$PULP_URL/api/v3/content/deb/packages/"
-)
-
-# fail on a truncated page (checked before the pool-path filtering): silently
-# promoting a subset of the module's packages would publish an incomplete
-# stable suite
-if [[ $(echo "$RESPONSE" | jq '.count > (.results | length)') == "true" ]]; then
-  echo "::error::Package query on $REPOSITORY_NAME is truncated ($(echo "$RESPONSE" | jq -r '.results | length')/$(echo "$RESPONSE" | jq -r '.count') results); pagination is required"
-  exit 1
-fi
+# scopes the distribution as the apt repository holds all the suites.
+# Paginated: the shared repository keeps every delivered version across all
+# suites, so the module listing exceeds a single page.
+RESULTS_FILE=$(mktemp)
+url="$PULP_URL/api/v3/content/deb/packages/?$(
+  printf 'repository_version=%s&pulp_label_select=%s&limit=1000' \
+    "$(jq -rn --arg v "$VERSION_HREF" '$v | @uri')" \
+    "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
+)"
+while [[ -n "$url" ]]; do
+  refresh_pulp_token
+  page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url")
+  echo "$page" | jq -c '.results[]' >> "$RESULTS_FILE"
+  url=$(echo "$page" | jq -r '.next // empty')
+done
 
 PACKAGES=$(
-  echo "$RESPONSE" | \
-    jq --arg testing_path "$TESTING_POOL_PATH/" --arg distrib_name "$PACKAGE_DISTRIB_NAME" \
-      '[.results[] | select((.relative_path | startswith($testing_path)) and (.relative_path | contains($distrib_name)))]'
+  jq -s --arg testing_path "$TESTING_POOL_PATH/" --arg distrib_name "$PACKAGE_DISTRIB_NAME" \
+    '[.[] | select((.relative_path | startswith($testing_path)) and (.relative_path | contains($distrib_name)))]' \
+    "$RESULTS_FILE"
 )
+rm -f "$RESULTS_FILE"
 PACKAGES_COUNT=$(echo "$PACKAGES" | jq 'length')
 
 if [[ "$PACKAGES_COUNT" -eq 0 ]]; then
