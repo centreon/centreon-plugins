@@ -45,7 +45,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'hostname:s'    => { name => 'hostname',    not_empty => 1 },
         'port:s'        => { name => 'port',        default => 443, type => 'port' },
-        'proto:s'       => { name => 'proto',       default => 'https', type => 'http_protocol' },
+        'proto:s'       => { name => 'proto',       default => 'https', type => 'protocol_http' },
         'username:s'    => { name => 'username',    not_empty => 1 },
         'password:s'    => { name => 'password',    not_empty => 1 },
         'group-id:s'    => { name => 'group_id',    not_empty => 1 },
