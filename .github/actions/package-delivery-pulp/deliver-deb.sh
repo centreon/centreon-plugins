@@ -82,38 +82,6 @@ fi
 
 REPOSITORY_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.pulp_href')
 
-# TEMP(test-pulp-unstable): purge the packages delivered by the pull-request
-# test rounds (label git_ref=refs/pull/...) - they pile up in the shared
-# repository (14k+ module packages, no deb retention) and slow every
-# finalization and publication down. The develop deliveries
-# (git_ref=refs/heads/develop) are the real pipeline and are preserved. Paged
-# removals: re-querying page 1 after each remove avoids deep offsets.
-for ((round = 0; round < 30; round++)); do
-  refresh_pulp_token
-  LATEST_VERSION=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
-  PURGE_PAGE=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-      --data-urlencode "repository_version=$LATEST_VERSION" \
-      --data-urlencode "pulp_label_select=git_ref~pull" \
-      --data-urlencode "limit=1000" \
-      "$PULP_URL/api/v3/content/deb/packages/"
-  )
-  PURGE_COUNT=$(echo "$PURGE_PAGE" | jq -r '.count')
-  if ((round == 0)); then
-    echo "[INFO] Purging $PURGE_COUNT pull-request test package(s) from $REPOSITORY_NAME"
-  fi
-  ((PURGE_COUNT == 0)) && break
-  PURGE_BODY=$(echo "$PURGE_PAGE" | jq -c '{remove_content_units: [.results[].pulp_href]}')
-  PURGE_TASK=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
-      -X POST -H "Content-Type: application/json" \
-      -d "$PURGE_BODY" \
-      "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
-  )
-  wait_task "$PURGE_TASK"
-  echo "[INFO] Purge round $((round + 1)): removed $(echo "$PURGE_PAGE" | jq -r '.results | length') package(s), $PURGE_COUNT were matching"
-done
-
 PULP_LABELS=$(jq -cn \
   --arg mod        "$MODULE_NAME" \
   --arg git_commit "${GITHUB_SHA:-}" \
