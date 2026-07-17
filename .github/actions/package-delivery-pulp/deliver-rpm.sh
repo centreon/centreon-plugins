@@ -27,11 +27,22 @@ assert_not_in_stable() {
   name=${base%-*}
 
   stable_repository="$STABLE_REPOSITORY_PREFIX-$arch"
+  # fail closed on an unreachable api (a transient 5xx must not bypass the
+  # guard nor silently kill the calling worker), fail open only on the repo
+  # genuinely not existing yet
+  local repo_page
+  repo_page=$(
+    curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+      --data-urlencode "name=$stable_repository" \
+      --data-urlencode "limit=1" \
+      "$PULP_URL/api/v3/repositories/rpm/rpm/"
+  ) || {
+    echo "::error::Cannot check the stable repository $stable_repository to guard $name $version-$release ($arch); refusing to deliver. Retry once the api is reachable."
+    return 1
+  }
+  repository_version=$(echo "$repo_page" | jq -r '.results[0].latest_version_href // empty')
   # no stable repository yet => nothing can be in stable
-  if ! pulp rpm repository show --name "$stable_repository" >/dev/null 2>&1; then
-    return 0
-  fi
-  repository_version=$(pulp rpm repository show --name "$stable_repository" | jq -r '.latest_version_href')
+  [[ -z "$repository_version" ]] && return 0
 
   count=$(
     curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
@@ -42,7 +53,10 @@ assert_not_in_stable() {
       --data-urlencode "arch=$arch" \
       --data-urlencode "limit=1" \
       "$PULP_URL/api/v3/content/rpm/packages/" | jq -r '.count'
-  )
+  ) || {
+    echo "::error::Cannot check the stable repository $stable_repository content to guard $name $version-$release ($arch); refusing to deliver. Retry once the api is reachable."
+    return 1
+  }
   if [[ "$count" -gt 0 ]]; then
     echo "::error::$name $version-$release ($arch) is already published in the stable repository $stable_repository; refusing to deliver it to $REPOSITORY_NAME. Bump the package version for a new build."
     return 1
