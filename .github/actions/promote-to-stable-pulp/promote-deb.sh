@@ -168,7 +168,7 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
       refresh_pulp_token
       package_href=$(echo "${BATCH_PACKAGES[$i]}" | jq -r '.pulp_href')
       response=$(
-        curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+        curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" \
           -X POST -H "Content-Type: application/json" \
           -d "{\"package\": \"$package_href\", \"release_component\": \"$STABLE_RC\"}" \
           "$PULP_URL/api/v3/content/deb/package_release_components/"

@@ -144,13 +144,18 @@ pulp_upload() {
 create_publication() {
   local plugin=$1 repository=$2
   shift 2
-  local out task
-  refresh_pulp_token
-  out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) || {
-    echo "$out"
+  local out task attempt
+  for attempt in 1 2 3; do
+    refresh_pulp_token
+    out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) && break
+    echo "[WARN] publication start attempt $attempt/3 failed for $repository, retrying..." >&2
+    sleep $((attempt * 10))
+    out=""
+  done
+  if [[ -z "$out" ]]; then
     echo "::error::Cannot start the publication of repository $repository"
     return 1
-  }
+  fi
   task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
   if [[ -z "$task" ]]; then
     echo "$out"

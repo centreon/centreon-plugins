@@ -275,7 +275,7 @@ for i in "${!PACKAGE_HREFS[@]}"; do
   (
     refresh_pulp_token
     response=$(
-      curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+      curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" \
         -X POST -H "Content-Type: application/json" \
         -d "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}" \
         "$PULP_URL/api/v3/content/deb/package_release_components/"
