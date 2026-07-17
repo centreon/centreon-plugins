@@ -290,14 +290,30 @@ jobs:
       max-parallel: 5
       matrix:
         include:
-          # TEMP(test-pulp-unstable): restrict the load test to one rpm and one
-          # deb distrib (el10 + trixie)
+          - package_extension: rpm
+            image: packaging:alma8
+            distrib: el8
+          - package_extension: rpm
+            image: packaging:alma9
+            distrib: el9
           - package_extension: rpm
             image: packaging:alma10
             distrib: el10
           - package_extension: deb
+            image: packaging:bullseye
+            distrib: bullseye
+          - package_extension: deb
+            image: packaging:bookworm
+            distrib: bookworm
+          - package_extension: deb
             image: packaging:trixie
             distrib: trixie
+          - package_extension: deb
+            image: packaging:jammy
+            distrib: jammy
+          - package_extension: deb
+            image: packaging:noble
+            distrib: noble
 
     container:
       image: ghcr.io/${{ github.repository }}/${{ matrix.image }}
@@ -414,11 +430,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # TEMP(test-pulp-unstable): restrict the load test to one rpm and
-          # one deb distrib (el10 + trixie)
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
           - distrib: el10
             package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
           - distrib: trixie
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }}
@@ -456,11 +482,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # TEMP(test-pulp-unstable): restrict the load test to one rpm and
-          # one deb distrib (el10 + trixie)
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
           - distrib: el10
             package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
           - distrib: trixie
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
+          - distrib: noble
             package_extension: deb
 
     name: deliver ${{ matrix.distrib }} on pulp
@@ -525,7 +561,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           version: ""
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: unstable # TEMP(test-pulp-unstable): force unstable Pulp delivery
+          stability: testing # TEMP(test-pulp-unstable): force testing so the promote step has a source
           release_type: ${{ needs.get-environment.outputs.release_type }}
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
@@ -533,7 +569,9 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
+        # TEMP(test-pulp-unstable): promote right after the testing delivery
+        # with a forced release type, to validate the promote path at scale
+        if: ${{ steps.deliver_pulp.outcome == 'success' }}
         id: promote_pulp
         continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
@@ -543,7 +581,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           major_version: ""
           stability: stable
-          release_type: ${{ steps.get_release_type.outputs.release_type }}
+          release_type: release # TEMP(test-pulp-unstable): forced
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
