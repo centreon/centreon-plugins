@@ -28,22 +28,26 @@ for ARCH in noarch x86_64; do
   # packages of the module are identified by the label set at delivery time;
   # keep both the href list (for the content modify call) and the package
   # identity (name/version/release/arch/filename) to feed the promotion manifest
-  RESPONSE=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-      --data-urlencode "repository_version=$VERSION_HREF" \
-      --data-urlencode "pulp_label_select=module=$MODULE_NAME" \
-      --data-urlencode "limit=1000" \
-      "$PULP_URL/api/v3/content/rpm/packages/"
-  )
+  # paginate: the testing repository keeps every delivered version, so the
+  # module listing can exceed a single page
+  RESULTS_FILE=$(mktemp)
+  url="$PULP_URL/api/v3/content/rpm/packages/?$(
+    printf 'repository_version=%s&pulp_label_select=%s&limit=1000' \
+      "$(jq -rn --arg v "$VERSION_HREF" '$v | @uri')" \
+      "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
+  )"
+  while [[ -n "$url" ]]; do
+    refresh_pulp_token
+    page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url")
+    echo "$page" | jq -c '.results[]' >> "$RESULTS_FILE"
+    url=$(echo "$page" | jq -r '.next // empty')
+  done
 
-  # fail on a truncated page: silently promoting a subset of the module's
-  # packages would publish an incomplete stable repository
-  if [[ $(echo "$RESPONSE" | jq '.count > (.results | length)') == "true" ]]; then
-    echo "::error::Package query on $TESTING_REPOSITORY_NAME is truncated ($(echo "$RESPONSE" | jq -r '.results | length')/$(echo "$RESPONSE" | jq -r '.count') results); pagination is required"
-    exit 1
-  fi
-
-  RESULTS=$(echo "$RESPONSE" | jq '[.results[] | {pulp_href, name, version, release, arch, location_href, sha256}]')
+  # only the LATEST build of each package is promoted: the version schemes
+  # embed a monotonic date/timestamp so the plain string max is the newest
+  RESULTS=$(jq -s '[.[] | {pulp_href, name, version, release, arch, location_href, sha256}]
+    | group_by(.name, .arch) | map(max_by([.version, .release]))' "$RESULTS_FILE")
+  rm -f "$RESULTS_FILE"
   CONTENT=$(echo "$RESULTS" | jq '[.[].pulp_href]')
   ARCH_PACKAGES_COUNT=$(echo "$CONTENT" | jq 'length')
 
@@ -92,7 +96,7 @@ for ARCH in noarch x86_64; do
   TASK_HREF=$(
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
       -X POST -H "Content-Type: application/json" \
-      -d "{\"add_content_units\": $CONTENT}" \
+      -d @<(echo "$CONTENT" | jq -c '{add_content_units: .}') \
       "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" | jq -r '.task'
   )
   wait_task "$TASK_HREF"

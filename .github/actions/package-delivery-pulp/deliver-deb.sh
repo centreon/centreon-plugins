@@ -32,7 +32,7 @@ assert_not_in_stable() {
   # endpoint error cannot let an already-stable version slip through and evict it
   # (the rpm guardrail is likewise fail-closed).
   pkg_file=$(mktemp)
-  http_code=$(curl -sSL -o "$pkg_file" -w '%{http_code}' \
+  http_code=$(curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
     "$PULP_CONTENT_URL/$BASE_PATH/dists/$STABLE_SUITE/main/binary-$arch/Packages" 2>/dev/null || echo 000)
   case "$http_code" in
     404) rm -f "$pkg_file"; return 0 ;;
@@ -91,22 +91,84 @@ PULP_LABELS=$(jq -cn \
   --arg workflow   "${GITHUB_WORKFLOW:-}" \
   '{"module": $mod, "git_commit": $git_commit, "git_ref": $git_ref, "github_run_id": $run_id, "github_actor": $actor, "github_workflow": $workflow}')
 
-# the upload tasks are awaited as a batch after the loop: pulp serializes the
-# tasks of the shared repository server-side, so waiting for each task before
-# sending the next upload would pay the task-queue latency once per package
-# instead of once per delivery.
-TASK_HREFS=()
+# Batched delivery, deb flavor. Unlike
+# rpm, a repository-less deb upload ignores the distribution/component
+# parameters (pulp_deb only creates the suite association inside the
+# repository code path), so the suite association is created explicitly as
+# PackageReleaseComponent content units. The release_components api is not
+# listable by the OIDC ci-user, so the FIRST package of each architecture is
+# delivered through the legacy repository code path - that also
+# get_or_creates the ReleaseComponent and the ReleaseArchitecture of the
+# suite - and its PackageReleaseComponent (listable) yields the release
+# component href for the whole batch. Everything else is uploaded as
+# unassociated content in a client-side pool, associated in parallel tasks
+# (no repository lock), then added to the repository with a single modify.
+lookup_deb_content() {
+  # emit the href of a deb content unit matching the query, empty if absent
+  local endpoint=$1 query=$2
+  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+    --data-urlencode "limit=1" \
+    $query \
+    "$PULP_URL/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty'
+}
+
+resolve_task_content() {
+  # wait for a content-create task and emit its created content href; fall
+  # back to a lookup (content already existing on a job re-run)
+  local task_href=$1 endpoint=$2 fallback_query=$3
+  local body state content attempt
+  for ((attempt = 0; attempt < 200; attempt++)); do
+    refresh_pulp_token
+    body=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
+    state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
+    case "$state" in
+      completed)
+        content=$(echo "$body" | jq -r '.created_resources[0] // empty')
+        if [[ -n "$content" ]]; then
+          echo "$content"
+          return 0
+        fi
+        break
+        ;;
+      failed | canceled)
+        break
+        ;;
+      *)
+        sleep 3
+        ;;
+    esac
+  done
+  content=$(lookup_deb_content "$endpoint" "$fallback_query")
+  if [[ -z "$content" ]]; then
+    echo "::error::Cannot resolve the created deb content for task $task_href" >&2
+    return 1
+  fi
+  echo "$content"
+}
+
+# group the files by architecture: the first file of each arch goes through
+# the legacy path so the suite association targets of that arch exist
+declare -A ARCH_SEEN=()
+LEGACY_FILES=()
+ORPHAN_FILES=()
+FILE_ARCHS=()
 for FILE in "${FILES[@]}"; do
-  # refresh from the parent shell: pulp_upload runs in a command substitution
-  # (subshell), so its internal refresh cannot update this shell's token — the
-  # token inherited by the subshells must be kept fresh from here.
-  refresh_pulp_token
+  arch=$(dpkg-deb -f "$FILE" Architecture)
+  FILE_ARCHS+=("$arch")
+  if [[ -z "${ARCH_SEEN[$arch]+set}" ]]; then
+    ARCH_SEEN[$arch]=1
+    LEGACY_FILES+=("$FILE")
+  else
+    ORPHAN_FILES+=("$FILE")
+  fi
+done
+
+refresh_pulp_token
+LEGACY_TASKS=()
+for FILE in "${LEGACY_FILES[@]}"; do
   assert_not_in_stable "$FILE"
-  echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME)"
-  # packages are labeled with their module so that promote-to-stable can identify
-  # which packages belong to this module, pulp-cli does not allow to set labels nor
-  # the relative path of deb packages so the api is used directly
-  TASK_HREFS+=("$(
+  echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME) [legacy path]"
+  LEGACY_TASKS+=("$(
     pulp_upload \
       -F "file=@\"$FILE\"" \
       -F "relative_path=$POOL_PATH/$FILE" \
@@ -116,8 +178,154 @@ for FILE in "${FILES[@]}"; do
       -F "pulp_labels=$PULP_LABELS" \
       "$PULP_URL/api/v3/content/deb/packages/"
   )")
+done
+echo "[INFO] Waiting for ${#LEGACY_TASKS[@]} legacy upload task(s)"
+wait_tasks "${LEGACY_TASKS[@]}"
 
-  # record the uploaded package in the manifest for the verification step
+# the release component href of the suite, through the first legacy package
+refresh_pulp_token
+first_sha256=$(sha256sum "${LEGACY_FILES[0]}" | cut -d' ' -f1)
+FIRST_PACKAGE_HREF=$(lookup_deb_content "packages" "--data-urlencode sha256=$first_sha256")
+if [[ -z "$FIRST_PACKAGE_HREF" ]]; then
+  echo "::error::Cannot find the legacy-delivered package ${LEGACY_FILES[0]} (sha256 $first_sha256)"
+  exit 1
+fi
+# the legacy package is a fresh build (unique per-build version), so its only
+# suite association is the one the legacy upload just created for $SUITE/main
+RELEASE_COMPONENT_HREF=$(
+  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+    --data-urlencode "package=$FIRST_PACKAGE_HREF" \
+    "$PULP_URL/api/v3/content/deb/package_release_components/" \
+    | jq -r '.results[0].release_component // empty'
+)
+if [[ -z "$RELEASE_COMPONENT_HREF" ]]; then
+  echo "::error::Cannot resolve the $SUITE/main release component from the legacy-delivered package"
+  exit 1
+fi
+echo "[INFO] Release component of $SUITE/main: $RELEASE_COMPONENT_HREF"
+
+# parallel repository-less uploads (pool of 8), marker-file based like rpm
+UPLOAD_DIR=$(mktemp -d)
+MAX_PARALLEL_UPLOADS=8
+for i in "${!ORPHAN_FILES[@]}"; do
+  FILE=${ORPHAN_FILES[$i]}
+  if ((i % 40 == 0)); then
+    refresh_pulp_token
+  fi
+  (
+    # subshell-local refresh: under server slowdowns the inherited token can
+    # outlive its validity between two parent refreshes
+    refresh_pulp_token
+    assert_not_in_stable "$FILE"
+    echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME)"
+    pulp_upload \
+      -F "file=@\"$FILE\"" \
+      -F "relative_path=$POOL_PATH/$FILE" \
+      -F "pulp_labels=$PULP_LABELS" \
+      "$PULP_URL/api/v3/content/deb/packages/" > "$UPLOAD_DIR/$i.task"
+  ) &
+  while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+    wait -n || true
+  done
+done
+wait || true
+
+echo "[INFO] Resolving ${#ORPHAN_FILES[@]} uploaded package(s)"
+ORPHAN_SHA256S=()
+for i in "${!ORPHAN_FILES[@]}"; do
+  FILE=${ORPHAN_FILES[$i]}
+  if [[ ! -s "$UPLOAD_DIR/$i.task" ]]; then
+    echo "::error::Upload failed for $FILE (no task href, see the worker error above)"
+    exit 1
+  fi
+  ORPHAN_SHA256S+=("$(sha256sum "$FILE" | cut -d' ' -f1)")
+done
+for i in "${!ORPHAN_FILES[@]}"; do
+  if ((i % 40 == 0)); then
+    refresh_pulp_token
+  fi
+  (
+    resolve_task_content "$(cat "$UPLOAD_DIR/$i.task")" "packages" \
+      "--data-urlencode sha256=${ORPHAN_SHA256S[$i]}" > "$UPLOAD_DIR/$i.content"
+  ) &
+  while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+    wait -n || true
+  done
+done
+wait || true
+PACKAGE_HREFS=()
+for i in "${!ORPHAN_FILES[@]}"; do
+  if [[ ! -s "$UPLOAD_DIR/$i.content" ]]; then
+    echo "::error::Cannot resolve the uploaded content for ${ORPHAN_FILES[$i]} (see the worker error above)"
+    exit 1
+  fi
+  PACKAGE_HREFS+=("$(cat "$UPLOAD_DIR/$i.content")")
+done
+
+# associate every uploaded package with the suite component. The
+# package_release_components create is a plain synchronous DRF create (201
+# with the created unit, no task), so the href comes straight out of the
+# response; a failed create (unit already existing on a job re-run) falls
+# back to a lookup.
+echo "[INFO] Associating ${#PACKAGE_HREFS[@]} package(s) with $SUITE/main"
+for i in "${!PACKAGE_HREFS[@]}"; do
+  if ((i % 40 == 0)); then
+    refresh_pulp_token
+  fi
+  (
+    refresh_pulp_token
+    response=$(
+      curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" \
+        -X POST -H "Content-Type: application/json" \
+        -d "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}" \
+        "$PULP_URL/api/v3/content/deb/package_release_components/"
+    ) || response=""
+    href=$(echo "$response" | jq -r '.pulp_href // .task // empty')
+    if [[ -z "$href" ]]; then
+      href=$(lookup_deb_content "package_release_components" \
+        "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
+    fi
+    printf '%s' "$href" > "$UPLOAD_DIR/$i.prc"
+  ) &
+  while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
+    wait -n || true
+  done
+done
+wait || true
+
+PRC_HREFS=()
+for i in "${!PACKAGE_HREFS[@]}"; do
+  href=""
+  [[ -s "$UPLOAD_DIR/$i.prc" ]] && href=$(cat "$UPLOAD_DIR/$i.prc")
+  if [[ "$href" == */tasks/* ]]; then
+    href=$(resolve_task_content "$href" "package_release_components" \
+      "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
+  fi
+  if [[ -z "$href" ]]; then
+    echo "::error::Suite association failed for ${ORPHAN_FILES[$i]} (see the worker error above)"
+    exit 1
+  fi
+  PRC_HREFS+=("$href")
+done
+rm -rf "$UPLOAD_DIR"
+
+if ((${#PACKAGE_HREFS[@]} > 0)); then
+  echo "[INFO] Adding ${#PACKAGE_HREFS[@]} package(s) and their suite associations to $REPOSITORY_NAME in a single task"
+  refresh_pulp_token
+  # body through a file: thousands of hrefs exceed the argv limit
+  ADD_BODY_FILE=$(mktemp)
+  printf '%s\n' "${PACKAGE_HREFS[@]}" "${PRC_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
+  MODIFY_TASK=$(
+    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
+      -X POST -H "Content-Type: application/json" \
+      -d @"$ADD_BODY_FILE" \
+      "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
+  )
+  wait_task "$MODIFY_TASK"
+fi
+
+# record every delivered package in the manifest for the verification step
+for FILE in "${FILES[@]}"; do
   name=$(dpkg-deb -f "$FILE" Package)
   version=$(dpkg-deb -f "$FILE" Version)
   arch=$(dpkg-deb -f "$FILE" Architecture)
@@ -128,9 +336,6 @@ for FILE in "${FILES[@]}"; do
     --arg base_path "$BASE_PATH" --arg suite "$SUITE" --arg relative_path "$POOL_PATH/$FILE" \
     '{filename:$filename,name:$name,version:$version,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path,suite:$suite,relative_path:$relative_path}')"
 done
-
-echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) to complete"
-wait_tasks "${TASK_HREFS[@]}"
 
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
 create_publication deb "$REPOSITORY_NAME" --structured

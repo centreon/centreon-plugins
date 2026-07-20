@@ -121,7 +121,7 @@ wait_tasks() {
 # (concurrent deliveries can race on artifact creation), echoes the task href
 pulp_upload() {
   local attempt response http_code body
-  for attempt in 1 2 3; do
+  for attempt in 1 2 3 4 5; do
     refresh_pulp_token
     response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' "$@" 2>/dev/null) || response=""
     http_code=${response##*$'\n'}
@@ -130,10 +130,10 @@ pulp_upload() {
       echo "$body" | jq -r '.task'
       return 0
     fi
-    echo "[WARN] upload attempt $attempt/3 failed (HTTP ${http_code:-network-error}), retrying..." >&2
-    sleep $((attempt * 3))
+    echo "[WARN] upload attempt $attempt/5 failed (HTTP ${http_code:-network-error}), retrying..." >&2
+    sleep $((attempt * 5))
   done
-  echo "::error::Upload failed after 3 attempts (HTTP ${http_code:-network-error})" >&2
+  echo "::error::Upload failed after 5 attempts (HTTP ${http_code:-network-error})" >&2
   return 1
 }
 
@@ -144,13 +144,18 @@ pulp_upload() {
 create_publication() {
   local plugin=$1 repository=$2
   shift 2
-  local out task
-  refresh_pulp_token
-  out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) || {
-    echo "$out"
+  local out task attempt
+  for attempt in 1 2 3; do
+    refresh_pulp_token
+    out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) && break
+    echo "[WARN] publication start attempt $attempt/3 failed for $repository, retrying..." >&2
+    sleep $((attempt * 10))
+    out=""
+  done
+  if [[ -z "$out" ]]; then
     echo "::error::Cannot start the publication of repository $repository"
     return 1
-  }
+  fi
   task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
   if [[ -z "$task" ]]; then
     echo "$out"
