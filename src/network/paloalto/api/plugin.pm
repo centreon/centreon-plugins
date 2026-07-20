@@ -29,6 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
+    $self->{version} = '1.0';
     $self->{modes} = {
         'environment' => 'network::paloalto::api::mode::environment',
         'ha'          => 'network::paloalto::api::mode::ha',
