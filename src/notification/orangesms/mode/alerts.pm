@@ -127,7 +127,7 @@ sub create_sms_diffusion {
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json' );
     my $response = $self->{http}->request(  method => 'POST',
-                                            url_path => $self->{option_results}->{endpoint}.uri_escape($self->{option_results}->{group_id}).'/diffusion-requests',
+                                            url_path => $self->{option_results}->{endpoint}.'groups/'.uri_escape($self->{option_results}->{group_id}).'/diffusion-requests',
                                             header => [ 'Accept: application/json',
                                                         'Content-Type: application/json',
                                                         'Authorization: Bearer ' . $options{token}
