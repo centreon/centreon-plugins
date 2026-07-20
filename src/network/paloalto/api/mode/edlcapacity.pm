@@ -19,54 +19,12 @@
 #
 
 package network::paloalto::api::mode::edlcapacity;
-
 use base qw(centreon::plugins::templates::counter);
-
 use strict;
 use warnings;
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-    return sprintf(
-        'capacity usage: %d/%d entries (%.2f%%)',
-        $self->{result_values}->{used},
-        $self->{result_values}->{total},
-        $self->{result_values}->{prct_used}
-    );
-}
-
-sub custom_usage_perfdata {
-    my ($self, %options) = @_;
-
-    $self->{output}->perfdata_add(
-        nlabel    => 'edl.entries.usage.count',
-        instances => $self->{result_values}->{display},
-        value     => $self->{result_values}->{used},
-        min       => 0,
-        max       => $self->{result_values}->{total}
-    );
-    $self->{output}->perfdata_add(
-        nlabel    => 'edl.entries.usage.percentage',
-        unit      => '%',
-        instances => $self->{result_values}->{display},
-        value     => sprintf('%.2f', $self->{result_values}->{prct_used}),
-        warning   => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical  => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
-        min       => 0,
-        max       => 100
-    );
-}
-
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-    return $self->{perfdata}->threshold_check(
-        value     => $self->{result_values}->{prct_used},
-        threshold => [
-            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
-            { label => 'warning-'  . $self->{thlabel}, exit_litteral => 'warning'  }
-        ]
-    );
-}
+use centreon::plugins::misc qw(is_excluded);
+use centreon::plugins::constants qw(:counters);
+use Digest::SHA qw(sha256_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -74,25 +32,36 @@ sub set_counters {
     $self->{maps_counters_type} = [
         {
             name             => 'edl',
-            type             => 1,
+            type             => COUNTER_TYPE_INSTANCE,
             cb_prefix_output => 'prefix_edl_output',
-            message_multiple => 'All External Dynamic Lists are within capacity limits'
+            message_multiple => 'All External Dynamic Lists are ok'
         }
     ];
 
     $self->{maps_counters}->{edl} = [
         {
-            label => 'usage',
-            set   => {
+            label         => 'usage',
+            set           => {
                 key_values => [
-                    { name => 'used' },
-                    { name => 'total' },
-                    { name => 'prct_used' },
-                    { name => 'display' }
+                    { name => 'display' },
+                    { name => 'prct_used' }
                 ],
-                closure_custom_output    => $self->can('custom_usage_output'),
-                closure_custom_perfdata  => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold => $self->can('custom_usage_threshold')
+                output_template => 'capacity usage: (%.2f%%)',
+                output_use      => 'prct_used',
+                threshold_use   => 'prct_used',
+                perfdatas       => [
+                    {
+                        nlabel              => 'edl.entries.usage.percentage',
+                        label               => 'usage-percentage',
+                        value               => 'prct_used',
+                        template            => '%.2f',
+                        unit                => '%',
+                        min                 => 0,
+                        max                 => 100,
+                        label_extra_instance => 1,
+                        instance_use        => 'display'
+                    }
+                ]
             }
         }
     ];
@@ -109,9 +78,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-type:s'    => { name => 'filter_type' },
-        'warning-usage:s'  => { name => 'warning_usage',  default => '80:' },
-        'critical-usage:s' => { name => 'critical_usage', default => '90:' }
+        'include-type:s'   => { name => 'include_type', default => '' },
+        'exclude-type:s'   => { name => 'exclude_type', default => '' },
+        'warning-usage:s'  => { name => 'warning_usage',  default => '~:80' },
+        'critical-usage:s' => { name => 'critical_usage', default => '~:90' }
     });
 
     return $self;
@@ -136,16 +106,13 @@ sub manage_selection {
     $self->{edl} = {};
 
     foreach my $type (keys %$result) {
+        next if is_excluded($type, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type});
 
         my $used  = $result->{$type}->{'running-cap'};
         my $total = $result->{$type}->{'total-cap'};
 
         next unless defined($used)  && $used  =~ /^\d+$/;
         next unless defined($total) && $total =~ /^\d+$/ && $total > 0;
-
-        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '') {
-            next if $type !~ /$self->{option_results}->{filter_type}/;
-        }
 
         $self->{edl}->{$type} = {
             display   => $type,
@@ -156,14 +123,16 @@ sub manage_selection {
     }
 
     if (!%{$self->{edl}}) {
-        $self->{output}->add_option_msg(
-            short_msg => 'No External Dynamic List capacity found.'
-        );
+        $self->{output}->add_option_msg(short_msg => 'No External Dynamic List capacity found.');
         $self->{output}->option_exit();
     }
 
-    $self->{cache_name} = "paloalto_api_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
-        ($self->{option_results}->{filter_type} // 'all');
+    $self->{cache_name} = 'paloalto_api_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
+        sha256_hex(
+            (defined($self->{option_results}->{include_type}) ? $self->{option_results}->{include_type} : 'all') . '_' .
+            (defined($self->{option_results}->{exclude_type}) ? $self->{option_results}->{exclude_type} : 'none')
+        );
+
 }
 
 1;
@@ -176,17 +145,21 @@ Check Palo Alto External Dynamic Lists (EDL) capacity.
 
 =over 8
 
-=item B<--filter-type>
+=item B<--include-type>
 
-Filter EDL entries by type (regexp). Only matching EDL types are checked.
+Include EDL types matching this regexp.
+
+=item B<--exclude-type>
+
+Exclude EDL types matching this regexp.
 
 =item B<--warning-usage>
 
-Warning threshold as a percentage of total capacity (default: '80:').
+Warning threshold as a percentage of total capacity (default: '~:80').
 
 =item B<--critical-usage>
 
-Critical threshold as a percentage of total capacity (default: '90:').
+Critical threshold as a percentage of total capacity (default: '~:90').
 
 =back
 
