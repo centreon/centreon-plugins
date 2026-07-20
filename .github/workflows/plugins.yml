@@ -480,10 +480,6 @@ jobs:
       pull-requests: read
     strategy:
       fail-fast: false
-      # bounded concurrency: a full-matrix delivery saturates the pulp
-      # database (postgres dropped connections, api pods crash-looped) when
-      # the 8 legs upload/associate/poll at once
-      max-parallel: 4
       matrix:
         include:
           - distrib: el8
