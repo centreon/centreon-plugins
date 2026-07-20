@@ -27,6 +27,43 @@ use warnings;
 use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use POSIX;
+use DateTime;
+
+my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
+my $unitdiv_long = { s => 'seconds', w => 'weeks', d => 'days', h => 'hours', m => 'minutes' };
+
+sub custom_last_update_perfdata {
+    my ($self, %options) = @_;
+
+    my $instances = [];
+    foreach (@{$self->{instance_mode}->{custom_perfdata_instances}}) {
+        push @$instances, $self->{result_values}->{$_};
+    }
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel} . '.' . $unitdiv_long->{ $self->{instance_mode}->{option_results}->{unit} },
+        unit => $self->{instance_mode}->{option_results}->{unit},
+        instances => $instances,
+        value => $self->{result_values}->{lastUpdateTime} >= 0 ? floor($self->{result_values}->{lastUpdateTime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }) : $self->{result_values}->{lastUpdateTime},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_last_update_threshold {
+    my ($self, %options) = @_;
+
+    return $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{lastUpdateTime} >= 0 ? floor($self->{result_values}->{lastUpdateTime} / $unitdiv->{ $self->{instance_mode}->{option_results}->{unit} }) : $self->{result_values}->{lastUpdateTime},
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' },
+            { label => 'unknown-'. $self->{thlabel}, exit_litteral => 'unknown' }
+        ]
+    );
+}
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -108,6 +145,17 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
+        },
+        { label => 'last-update-time', nlabel => 'gateway.update.time.last', set => {
+                key_values  => [
+                    { name => 'lastUpdateTime' }, { name => 'lastUpdateTimeHuman' }, 
+                    { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
+                ],
+                output_template => 'last update: %s',
+                output_use => 'lastUpdateTimeHuman',
+                closure_custom_perfdata => $self->can('custom_last_update_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_last_update_threshold')
+            }
         }
     ];
     
@@ -160,14 +208,36 @@ sub new {
         'exclude-gateway-name:s'      => { name => 'exclude_gateway_name',  default => '' },
         'include-gateway-id:s'        => { name => 'include_gateway_id',  default => '' },
         'exclude-gateway-id:s'        => { name => 'exclude_gateway_id',  default => '' },
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' },
+        'unit:s'                      => { name => 'unit', default => 's' }
     });
 
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
+        $self->{option_results}->{custom_perfdata_instances} = '%(gatewayName)';
+    }
+
+    $self->{custom_perfdata_instances} = $self->custom_perfdata_instances(
+        option_name => '--custom-perfdata-instances',
+        instances => $self->{option_results}->{custom_perfdata_instances},
+        labels => { siteName => 1, clusterName => 1, gatewayName => 1 }
+    );
+
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 's';
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $ctime = time();
     my $gateways = $options{custom}->get_gateways();
 
     $self->{global} = { detected => 0 };
@@ -202,6 +272,14 @@ sub manage_selection {
                 vrrpState => $gw->{gw_vrrp_state}
             }
         };
+
+        if ($gw->{gw_last_poll_update} =~ /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/) {
+            my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, time_zone  => 'UTC');
+            $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTime} = $ctime - $dt->epoch();
+            $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTimeHuman} =  centreon::plugins::misc::change_seconds(
+                value => $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTime}
+            );
+        }
 
         $self->{global}->{detected}++;
     }
@@ -248,6 +326,14 @@ Include gateway IDs (regexp).
 =item B<--exclude-gateway-id>
 
 Exclude gateway IDs (regexp).
+
+=item B<--custom-perfdata-instances>
+
+Define perfdatas instance (default: '%(gatewayName)')
+
+=item B<--unit>
+
+Select the time unit for update thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks (default: 's').
 
 =item B<--warning-gateways-detected>
 
@@ -301,6 +387,14 @@ You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}
 
 Define the conditions to match for the status to be CRITICAL (default: '%{vrrpState} =~ /fault/i').
 You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
+
+=item B<--warning-last-update-time>
+
+Threshold.
+
+=item B<--critical-last-update-time>
+
+Threshold.
 
 =back
 
