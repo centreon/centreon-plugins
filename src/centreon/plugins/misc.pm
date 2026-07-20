@@ -1167,9 +1167,9 @@ sub exprintf($$;$) {
     return $template =~ s{%\{(\w+)(?:\|(%?[\w\.]+))?\}}{  my $value = $datas->{$1} // $default;
                                                     if ($2) {
                                                         if ($2 eq 'network') {
-                                                            $value = join '', format_bytes(value => $value, network => 1);
+                                                            $value = join ' ', format_bytes(value => $value, network => 1);
                                                         } elsif ($2 eq 'storage') {
-                                                            $value = join '', format_bytes(value => $value);
+                                                            $value = join ' ', format_bytes(value => $value);
                                                         } elsif ($2 eq 'change_seconds') {
                                                             $value = change_seconds(value => $value);
                                                         } elsif (substr($2, 0, 1) eq '%') {

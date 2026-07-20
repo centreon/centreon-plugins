@@ -147,6 +147,133 @@ jobs:
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
+  deliver-packages-pulp:
+    needs: [get-environment, package]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    runs-on: centreon-ubuntu-22.04
+    continue-on-error: true
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distrib: el8
+            package_extension: rpm
+          - distrib: el9
+            package_extension: rpm
+          - distrib: el10
+            package_extension: rpm
+          - distrib: bullseye
+            package_extension: deb
+          - distrib: bookworm
+            package_extension: deb
+          - distrib: trixie
+            package_extension: deb
+          - distrib: jammy
+            package_extension: deb
+          - distrib: noble
+            package_extension: deb
+
+    name: deliver ${{ matrix.distrib }} on pulp
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: Get release type
+        if: ${{ needs.get-environment.outputs.stability == 'stable' }}
+        id: get_release_type
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const commitSha = context.sha;
+
+            const pulls = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sort: 'updated',
+              direction: 'desc',
+              state: 'closed',
+              per_page: 100
+            });
+
+            core.startGroup(`Checking pull request linked to commit ${commitSha}`);
+            const pr = pulls.data.find(p => {
+              console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
+              return p.merge_commit_sha === commitSha;
+            });
+            core.endGroup();
+            if (!pr) {
+              core.error(`No pull request found for merge commit ${commitSha}`);
+              core.setOutput('release_type', '');
+              return;
+            }
+
+            const prHeadRef = pr?.head?.ref || 'unknown';
+            let releaseType = '';
+            switch (true) {
+              case /^release.+/.test(prHeadRef):
+                releaseType = 'release';
+                break;
+              case /^hotfix.+/.test(prHeadRef):
+                releaseType = 'hotfix';
+                break;
+              default:
+                core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
+                core.setOutput('release_type', '');
+                return;
+            }
+            console.log(`Release type: ${releaseType}`);
+            core.setOutput('release_type', releaseType);
+
+      - name: Deliver packages on Pulp
+        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+        id: deliver_pulp
+        continue-on-error: true
+        uses: ./.github/actions/package-delivery-pulp
+        with:
+          module_name: connector-vmware
+          repository_name: plugins
+          distrib: ${{ matrix.distrib }}
+          version: ""
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+          release_type: ${{ needs.get-environment.outputs.release_type }}
+          is_cloud: "false"
+          pulp_url: ${{ vars.PULP_API_URL }}
+          pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
+          audience: ${{ vars.PULP_OIDC_AUDIENCE }}
+
+      - name: Promote packages on Pulp
+        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
+        id: promote_pulp
+        continue-on-error: true
+        uses: ./.github/actions/promote-to-stable-pulp
+        with:
+          module_name: connector-vmware
+          repository_name: plugins
+          distrib: ${{ matrix.distrib }}
+          major_version: ""
+          stability: stable
+          release_type: ${{ steps.get_release_type.outputs.release_type }}
+          is_cloud: "false"
+          pulp_url: ${{ vars.PULP_API_URL }}
+          pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
+          audience: ${{ vars.PULP_OIDC_AUDIENCE }}
+
+      - name: Warn if the Pulp delivery failed
+        if: steps.deliver_pulp.outcome == 'failure' || steps.promote_pulp.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::warning::Pulp delivery/promotion failed (non-blocking during the Artifactory-to-Pulp migration; Artifactory delivery remains authoritative). See the 'Deliver packages on Pulp' / 'Promote packages on Pulp' step."
+
   docker-build:
     needs: [get-environment, package]
     if: |

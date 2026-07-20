@@ -192,17 +192,94 @@ EOF
     done
 }
 
-# if $2 is provided, then only this mode will be tested
+# generates a robot file that only checks "--mode=X --help" succeeds for every mode
+# useful for plugins whose modes just wrap already-tested generic modes and don't need full functional tests
+# (see tests/network/forcepoint/sdwan/snmp/standard.robot for a hand-written example of this convention)
+function print_help_robot() {
+    local plugin="$1" ; shift
+    local modes=( "$@" )
+
+    local only_colons="${plugin//[^:]}"
+    local path_depth=$(( ${#only_colons} / 2 ))
+
+    local slash='${/}'
+    local recursive_path=
+    for (( i=0 ; i < path_depth ; i++ )); do
+        recursive_path="${recursive_path}..$slash"
+    done
+
+    cat <<EOF
+*** Settings ***
+Documentation       $plugin
+
+Resource            \${CURDIR}\${/}${recursive_path}resources/import.resource
+
+Suite Setup         Ctn Generic Suite Setup
+Suite Teardown      Ctn Generic Suite Teardown
+Test Timeout        120s
+
+
+*** Variables ***
+\${CMD}      \${CENTREON_PLUGINS} --plugin=$plugin
+
+
+EOF
+
+    # split the plugin's perl path to pick the tags from
+    local tags=( ${plugin//::/ } )
+    # pick only the first two elements (category and subcategory) and the penultimate (protocol)
+    local tags_str="${tags[0]}    ${tags[1]}    ${tags[${#tags[@]} - 2]}"
+    cat <<EOF
+*** Test Cases ***
+Standard \${tc} - \${mode}
+    [Tags]    $tags_str
+    \${command}    Catenate
+    ...    \${CMD}
+    ...    --mode=\${mode}
+    ...    --help
+
+    Ctn Run Command And Check Result As Regexp    \${command}    \${expected_result}    flags=IGNORECASE
+
+EOF
+    # init test case counter
+    local tc=1
+    local line_prefix='    ...    '
+    echo -e "    Examples:\n${line_prefix}tc\n${line_prefix}mode\n${line_prefix}expected_result\n${line_prefix}--"
+    for mode in "${modes[@]}"; do
+        echo "${line_prefix}${tc}"
+        echo "${line_prefix}${mode}"
+        local mode_text="${mode//-/.}"
+        echo "${line_prefix}Mode:\n.*${mode_text}"
+        # increment the test case counter
+        : $((tc++))
+    done
+}
+
+# format a robot file in place so it already complies with the pre-commit robot-lint check
+function format_with_robocop() {
+    local file="$1"
+    if [[ -n "$robocop_path" ]] ; then
+        info "Formatting $file with robocop"
+        "$robocop_path" format "$file"
+    else
+        warning "robocop not found in PATH, skipping formatting of $file"
+    fi
+}
+
+robocop_path=$(type -p robocop)
+
+# list every mode the plugin exposes: help.robot always covers all of them,
+# whether or not $2 restricts the functional robot files generated below
+eval $(parse_modes $base_cmd --list-mode)
+all_modes=( "${modes[@]}" )
+
+# if $2 is provided, then only this mode gets a full functional robot file generated
 if [[ -n "$unique_mode" ]]; then
     $base_cmd --mode=$unique_mode | grep "UNKNOWN: mode '$unique_mode'" >/dev/null && fatal "Mode '$unique_mode' not found for plugin $plugin"
     modes=( $unique_mode )
-else
-    # if no $2, list all the plugin's modes: eval will evaluate the declaration returned by parse_modes
-    eval $(parse_modes $base_cmd --list-mode)
-    # now we have an array of available modes in the variable named "modes"
 fi
 
-[[ $DEBUG ]] && declare -p modes
+[[ $DEBUG ]] && declare -p modes all_modes
 
 for mode in "${modes[@]}"; do
     info "Generating tests for mode $mode"
@@ -230,6 +307,20 @@ for mode in "${modes[@]}"; do
     info "Writing test file ${robot_file}"
     # print the robot content into the file
     print_robot "$plugin" "$mode" "$plugin_fs_path" ${threshold_options[*]} > "${tests_path}/${mode}.robot"
+    format_with_robocop "$robot_file"
     unset threshold_options robot_file robot_backup
 done
+
+# also generate/refresh a help.robot checking that "--help" succeeds for every mode
+help_robot_file="${tests_path}/help.robot"
+if [[ -f "$help_robot_file" ]] ; then
+    help_robot_backup="${help_robot_file}_$(date  +%F_%H-%M-%S).${RANDOM}"
+    warning "$help_robot_file already exists! Backing it up to $help_robot_backup"
+    cp "$help_robot_file" "$help_robot_backup"
+fi
+info "Writing test file ${help_robot_file}"
+print_help_robot "$plugin" "${all_modes[@]}" > "$help_robot_file"
+format_with_robocop "$help_robot_file"
+unset help_robot_file help_robot_backup
+
 info "Tests have been generated in $tests_path"
