@@ -96,7 +96,8 @@ sub run {
     my $msg = 'Token available';
     my $severity = 'OK';
     if ($self->{option_results}->{api_token} ne '') {
-        if ($expiry_time < $self->{option_results}->{refresh_before} || $self->{option_results}->{force_refresh}) {
+        my $time_remaining = $expiry_time - time();
+        if ($time_remaining < $self->{option_results}->{refresh_before} || $self->{option_results}->{force_refresh}) {
             if ($authent_token eq '') {
                 $authent_token = $self->{option_results}->{api_token};
                 $refresh_token = $self->{option_results}->{refresh_token};

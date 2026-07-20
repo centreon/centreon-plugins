@@ -1,0 +1,214 @@
+{
+  "uuid": "10194bb5-028b-4c21-ba31-f095835e58d8",
+  "lastMigration": 33,
+  "name": "Orangesms.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "d51d4cbf-172d-4810-8bd1-5d32c43659b3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "",
+      "responses": [
+        {
+          "uuid": "54937572-e4ea-4171-a6b5-8a54c34f728c",
+          "body": "{}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c8d953f5-d298-4e02-80c1-1386d8aab3c4",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/v1.2/oauth/token",
+      "responses": [
+        {
+          "uuid": "4afd4da2-7919-4402-a278-7b8910bb36e0",
+          "body": "{\n    \"access_token\":\"da_t@k3n\",\n    \"token_type\":\"Bearer\",\n    \"scope\":\"api\",\n    \"ttl\":3600\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "b919c728-cf98-42cf-8f1c-463254105fd2",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/v1.2/\\d+/diffusion-requests",
+      "responses": [
+        {
+          "uuid": "b1e555a6-7fd5-4939-beb9-78d214cdafbf",
+          "body": "{\n    \"id\": \"4a0c8b08-cc7e-4cee-a6a5-2407c9cba5d4\",\n    \"name\": \"mon nom de diffusion\",\n    \"msisdns\": [\"+33699832919\"],\n    \"emails\": [],\n    \"contactIds\": [],\n    \"mailingListIds\": [\"81eb68cb-051b-4e9a-9ac2-aa774583f0f4\"],\n    \"excludedContactIds\": [],\n    \"smsParam\": {\n        \"encoding\": \"GSM7\",\n        \"body\": \"mon contenu SMS\",\n        \"estimatedMsgCount\": 1\n    },\n    \"createdAt\": \"2018-04-27T16:50:42.625+02:00\",\n    \"updatedAt\": \"2018-04-27T16:50:42.625+02:00\"\n}",
+          "latency": 0,
+          "statusCode": 201,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "d51d4cbf-172d-4810-8bd1-5d32c43659b3"
+    },
+    {
+      "type": "route",
+      "uuid": "c8d953f5-d298-4e02-80c1-1386d8aab3c4"
+    },
+    {
+      "type": "route",
+      "uuid": "b919c728-cf98-42cf-8f1c-463254105fd2"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

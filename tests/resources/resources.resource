@@ -7,7 +7,7 @@ Library             OperatingSystem
 
 *** Variables ***
 ${CENTREON_PLUGINS}         perl ${CURDIR}${/}..${/}..${/}src${/}centreon_plugins.pl
-${CENTREON_GENERIC_SNMP}    ${CURDIR}${/}..${/}..${/}rust-plugins/target/release/centreon-generic-snmp
+${CENTREON_PLUGIN_RUST_SNMP}    ${CURDIR}${/}..${/}..${/}rust-plugins/target/release/centreon-plugin-rust-snmp
 
 # one we use package, we need to remove the "perl" part to be sure the plugin is executable and is correctly formated
 # with a shebang at the top.
@@ -83,7 +83,7 @@ Ctn Stop Connector
     Remove File    /tmp/connector.log
 
 Ctn Run Command Without Connector And Check Result As Regexp
-    [Arguments]    ${command}    ${expected_result}
+    [Arguments]    ${command}    ${expected_result}    ${flags}=${EMPTY}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
     Should Match Regexp
@@ -91,6 +91,7 @@ Ctn Run Command Without Connector And Check Result As Regexp
     ...    ${expected_result}
     ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
     ...    values=False
+    ...    flags=${flags}
 
 Ctn Run Command Without Connector And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}
@@ -165,7 +166,7 @@ Ctn Run Command With Connector And Check Result As Strings
     ...    collapse_spaces=True
 
 Ctn Run Command With Connector And Check Result As Regexp
-    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}    ${flags}=${EMPTY}
     ${output}    Ctn Run Command With Connector And Return Result    ${tc}    ${command}    ${timeout}
 
     # 3. Compare with expected
@@ -174,6 +175,7 @@ Ctn Run Command With Connector And Check Result As Regexp
     ...    ${expected_result}
     ...    Wrong output result WITH CONNECTOR for command:\n${command}\n\nObtained:\n${output}\n\nExpected regular expression:\n${expected_result}\n
     ...    values=False
+    ...    flags=${flags}
 
 Ctn Run Command And Check Result As Strings
     [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
@@ -193,26 +195,33 @@ Ctn Run Command And Check Result As Strings
     END
 
 Ctn Run Command And Check Result As Regexp
-    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}
+    [Arguments]    ${command}    ${expected_result}    ${tc}=0    ${timeout}=${TIMEOUT}    ${flags}=${EMPTY}
     Remove File    /tmp/connector.output
     Remove File    /tmp/connector.command.log
     IF    '${tc}' == '0'
         ${tc}    Evaluate    random.randint(0, 999999999)    random,sys
     END
     IF    "centreon_plugins.pl" in $command
-        Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
+        Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}    ${flags}
     ELSE
         Ctn Run Command With Connector And Check Result As Regexp
         ...    ${command}
         ...    ${expected_result}
         ...    ${tc}
         ...    ${timeout}
+        ...    ${flags}
     END
 
 Ctn Run Command And Check Result As Json
     [Arguments]    ${command}    ${expected}
     ${output}    Run    ${command}
     ${output}    Strip String    ${output}
+    Should Not Contain    
+    ...    ${output}
+    ...    UNKNOWN
+    ...    Wrong output result for command:\n${command}\n\nObtained:\n${output}\n\nDoes not seem to be parsable as JSON\n
+    ...    values=False
+
     ${json_output}    evaluate    json.loads('''${output}''')    json
     ${json_expected}    evaluate    json.loads('''${expected}''')    json
     Dictionaries Should Be Equal

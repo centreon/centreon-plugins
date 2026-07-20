@@ -30,16 +30,14 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'cpu'              => 'network::paloalto::api::mode::cpu',
-        'environment'      => 'network::paloalto::api::mode::environment',
-        'ha'               => 'network::paloalto::api::mode::ha',
-        'interfaces'       => 'network::paloalto::api::mode::interfaces',
-        'ipsec'            => 'network::paloalto::api::mode::ipsec',
-        'licenses'         => 'network::paloalto::api::mode::licenses',
-        'list-interfaces'  => 'network::paloalto::api::mode::listinterfaces',
-        'memory'           => 'network::paloalto::api::mode::memory',
-        'sessions'         => 'network::paloalto::api::mode::sessions',
-        'system'           => 'network::paloalto::api::mode::system'
+        'environment' => 'network::paloalto::api::mode::environment',
+        'ha'          => 'network::paloalto::api::mode::ha',
+        'licenses'    => 'network::paloalto::api::mode::licenses',
+        'system'      => 'network::paloalto::api::mode::system',
+        'ipsec'       => 'network::paloalto::api::mode::ipsec',
+        'discovery'   => 'network::paloalto::api::mode::discovery',
+        'health'      => 'network::paloalto::api::mode::health',
+        'certificate' => 'network::paloalto::api::mode::certificate'
     };
 
     $self->{custom_modes}->{api} = 'network::paloalto::api::custom::api';
