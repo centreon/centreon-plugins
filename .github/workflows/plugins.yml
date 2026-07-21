@@ -173,12 +173,8 @@ jobs:
 
   unit-tests:
     needs: [get-environment, get-plugins]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-environment.outputs.stability != 'stable' &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # TEMP(test-pulp-only): skip the test jobs, this PR only validates the Pulp delivery
+    if: false
     strategy:
       fail-fast: false
       max-parallel: 3
@@ -363,15 +359,8 @@ jobs:
 
   test-plugins:
     needs: [get-environment, get-plugins, package]
-    if: |
-      always() &&
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.test_plugins == 'True' &&
-      needs.get-environment.outputs.stability != 'stable' &&
-      (needs.package.result == 'success' || needs.package.result == 'skipped') &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # TEMP(test-pulp-only): skip the test jobs, this PR only validates the Pulp delivery
+    if: false
     strategy:
       fail-fast: false
       matrix:
@@ -434,13 +423,8 @@ jobs:
 
   deliver-packages:
     needs: [get-environment, get-plugins, test-plugins]
-    if: |
-      needs.get-environment.outputs.skip_workflow == 'false' &&
-      needs.get-plugins.outputs.package_plugins == 'True' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
-      ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    # TEMP(test-pulp-only): Pulp-only test, Artifactory delivery disabled
+    if: false
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -479,16 +463,16 @@ jobs:
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
   deliver-packages-pulp:
-    needs: [get-environment, get-plugins, test-plugins]
+    # TEMP(test-pulp-only): decouple from test-plugins so the Pulp delivery
+    # runs regardless of the PR stability (canary)
+    needs: [get-environment, get-plugins, package]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-plugins.outputs.package_plugins == 'True' &&
-      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || (needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     runs-on: centreon-ubuntu-22.04
-    continue-on-error: true
     permissions:
       contents: read
       id-token: write
@@ -566,9 +550,8 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
+        # TEMP(test-pulp-only): run on the PR (canary) stability too
         id: deliver_pulp
-        continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
         with:
           module_name: plugins
@@ -576,7 +559,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           version: ""
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+          stability: testing # TEMP(test-pulp-only): force testing so the promote step has a source
           release_type: ${{ needs.get-environment.outputs.release_type }}
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
@@ -584,9 +567,10 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
+        # TEMP(test-pulp-only): promote right after the testing delivery
+        # with a forced release type, to validate the promote path at scale
+        if: ${{ steps.deliver_pulp.outcome == 'success' }}
         id: promote_pulp
-        continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
         with:
           module_name: plugins
@@ -594,7 +578,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           major_version: ""
           stability: stable
-          release_type: ${{ steps.get_release_type.outputs.release_type }}
+          release_type: release # TEMP(test-pulp-only): forced
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
@@ -608,9 +592,8 @@ jobs:
 
   deliver-sources:
     needs: [get-environment, fatpacker]
-    if: |
-      needs.get-environment.outputs.stability == 'stable' &&
-      github.event_name == 'push'
+    # TEMP(test-pulp-only): no delivery to download.centreon.com from this test PR
+    if: false
     runs-on: ubuntu-24.04
 
     steps:
