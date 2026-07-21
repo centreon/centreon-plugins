@@ -7,6 +7,10 @@
 # and only then is a non-zero status returned if anything failed. Source this
 # file, call load_expected, verify the packages, then call render_summary.
 
+# authenticated content fetches (content_curl) and token refresh
+# shellcheck source=.github/scripts/pulp/api.sh
+source "$(dirname "${BASH_SOURCE[0]}")/api.sh"
+
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
 METADATA_TIMEOUT="${METADATA_TIMEOUT:-300}"
@@ -91,7 +95,7 @@ check_fetchable_and_record() {
       # retry: one flaky HEAD out of hundreds (content-app/S3 hiccup) must not
       # fail the whole verification
       for attempt in 1 2 3; do
-        code=$(curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
+        code=$(content_curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
         [[ "$code" == "200" ]] && { fetchable=true; break; }
         sleep 2
       done

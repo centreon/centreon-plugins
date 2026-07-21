@@ -115,7 +115,7 @@ resolve_pending() {
     if [[ "$arch" == "all" ]]; then
       sk="$base_path|$suite"
       if [[ -z "${arches_cache[$sk]+set}" ]]; then
-        arches_cache[$sk]=$(curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/Release" 2>/dev/null \
+        arches_cache[$sk]=$(content_curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/Release" 2>/dev/null \
           | awk -F': ' '/^Architectures:/ { print $2; exit }')
       fi
       search_arches="${arches_cache[$sk]:-amd64 arm64 all}"
@@ -126,7 +126,7 @@ resolve_pending() {
       ck="$base_path|$suite|$a"
       if [[ -z "${pkg_cache[$ck]+set}" ]]; then
         cache_file=$(mktemp)
-        curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/main/binary-$a/Packages" 2>/dev/null > "$cache_file" || true
+        content_curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/main/binary-$a/Packages" 2>/dev/null > "$cache_file" || true
         pkg_cache[$ck]=$cache_file
       fi
       filename=$(resolve_filename "${pkg_cache[$ck]}" "${E_SHA256[$i]}")
