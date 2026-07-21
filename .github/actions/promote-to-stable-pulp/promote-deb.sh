@@ -18,30 +18,50 @@ fi
 
 VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
 
-refresh_pulp_token
-TESTING_RC=$(lookup_release_component "$VERSION_HREF" "$TESTING_SUITE")
-if [[ -z "$TESTING_RC" ]]; then
-  echo "::error::Nothing to promote, the $TESTING_SUITE suite does not exist in $REPOSITORY_NAME"
-  exit 1
-fi
-echo "[INFO] Release component of $TESTING_SUITE/main: $TESTING_RC"
+# fetch a published index into a file: 0=ok, 2=absent (404), 1=error
+fetch_index() {
+  local url=$1 out=$2 code
+  code=$(curl -sSL --retry 3 --retry-delay 5 -o "$out" -w '%{http_code}' "$url") || return 1
+  [[ "$code" == "200" ]] && return 0
+  [[ "$code" == "404" ]] && return 2
+  return 1
+}
 
-# membership in the testing suite comes from its PackageReleaseComponent
-# associations, NOT from the packages' relative_path: content reused across
-# suites (identical bytes first delivered to another suite) keeps its
-# original upload path, which a path-prefix filter would miss.
-TESTING_HREFS_FILE=$(mktemp)
-url="$PULP_URL/api/v3/content/deb/package_release_components/?$(
-  printf 'repository_version=%s&release_component=%s&limit=1000' \
-    "$(jq -rn --arg v "$VERSION_HREF" '$v | @uri')" \
-    "$(jq -rn --arg v "$TESTING_RC" '$v | @uri')"
-)"
-while [[ -n "$url" ]]; do
-  refresh_pulp_token
-  page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url")
-  echo "$page" | jq -r '.results[].package' >> "$TESTING_HREFS_FILE"
-  url=$(echo "$page" | jq -r '.next // empty')
-done
+# collect the sha256 set of every package published in a suite. The served
+# dists/ indexes are the source of truth for suite membership: the packages'
+# relative_path cannot be trusted for that (content reused across suites
+# keeps its original upload path) and the release_components api is not
+# listable by the OIDC ci-user. A missing Release (404) is an empty suite;
+# any other fetch failure aborts, a partial set must not drive a promotion.
+suite_sha_file() {
+  local suite=$1 out release_file arches arch pkg_file rc
+  out=$(mktemp)
+  release_file=$(mktemp)
+  fetch_index "$PULP_CONTENT_URL/$BASE_PATH/dists/$suite/Release" "$release_file" && rc=0 || rc=$?
+  if [[ $rc -eq 2 ]]; then
+    echo "$out"
+    return 0
+  elif [[ $rc -ne 0 ]]; then
+    echo "::error::Cannot fetch the $suite Release index; refusing to promote from a partial view." >&2
+    return 1
+  fi
+  arches=$(awk -F': ' '/^Architectures:/ {print $2}' "$release_file")
+  for arch in $arches; do
+    pkg_file=$(mktemp)
+    if ! fetch_index "$PULP_CONTENT_URL/$BASE_PATH/dists/$suite/main/binary-$arch/Packages" "$pkg_file"; then
+      echo "::error::Cannot fetch the $suite binary-$arch Packages index; refusing to promote from a partial view." >&2
+      return 1
+    fi
+    awk -F': ' '/^SHA256:/ {print $2}' "$pkg_file" >> "$out"
+    rm -f "$pkg_file"
+  done
+  rm -f "$release_file"
+  sort -u "$out" -o "$out"
+  echo "$out"
+}
+
+TESTING_SHAS_FILE=$(suite_sha_file "$TESTING_SUITE")
+STABLE_SHAS_FILE=$(suite_sha_file "$STABLE_SUITE")
 
 # packages of the module are identified by the label set at delivery time.
 # Paginated: the shared repository keeps every delivered version across all
@@ -64,14 +84,14 @@ done
 # our version schemes embed a monotonic date/timestamp so the plain string
 # max is the newest build
 TESTING_SET_FILE=$(mktemp)
-jq -R . "$TESTING_HREFS_FILE" | jq -s 'map({key: ., value: true}) | from_entries' > "$TESTING_SET_FILE"
+jq -R . "$TESTING_SHAS_FILE" | jq -s 'map({key: ., value: true}) | from_entries' > "$TESTING_SET_FILE"
 PACKAGES=$(
   jq -s --slurpfile testing_set "$TESTING_SET_FILE" \
-    '[.[] | select($testing_set[0][.pulp_href])]
+    '[.[] | select($testing_set[0][.sha256])]
      | group_by(.package, .architecture) | map(max_by(.version))' \
     "$RESULTS_FILE"
 )
-rm -f "$RESULTS_FILE" "$TESTING_HREFS_FILE" "$TESTING_SET_FILE"
+rm -f "$RESULTS_FILE" "$TESTING_SHAS_FILE" "$TESTING_SET_FILE"
 PACKAGES_COUNT=$(echo "$PACKAGES" | jq 'length')
 
 if [[ "$PACKAGES_COUNT" -eq 0 ]]; then
@@ -92,6 +112,41 @@ mkdir -p promoted-packages
 
 # module label, built with jq (safe escaping) — consistent with the delivery scripts
 PULP_LABELS=$(jq -cn --arg mod "$MODULE_NAME" '{"module": $mod}')
+
+# emit the release-component hrefs a package is associated with
+lookup_prcs() {
+  local package_href=$1
+  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+    --data-urlencode "package=$package_href" \
+    --data-urlencode "limit=100" \
+    "$PULP_URL/api/v3/content/deb/package_release_components/" \
+    | jq -r '.results[].release_component'
+}
+
+# candidates already published in the stable suite need no new association;
+# when EVERYTHING already reached stable (a rerun after the modify), only the
+# publication may be missing: republish and stop.
+UNPROMOTED_HREFS=()
+while read -r PACKAGE; do
+  sha=$(echo "$PACKAGE" | jq -r '.sha256')
+  if ! grep -qxF "$sha" "$STABLE_SHAS_FILE"; then
+    UNPROMOTED_HREFS+=("$(echo "$PACKAGE" | jq -r '.pulp_href')")
+  fi
+done < <(echo "$PACKAGES" | jq -c '.[]')
+rm -f "$STABLE_SHAS_FILE"
+if ((${#UNPROMOTED_HREFS[@]} == 0)); then
+  echo "[INFO] All $PACKAGES_COUNT package(s) are already published in $STABLE_SUITE; republishing only"
+  while read -r PACKAGE; do
+    manifest_add "$(echo "$PACKAGE" | jq -c \
+      --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
+      --arg suite "$STABLE_SUITE" \
+      '{filename: (.relative_path | sub(".*/"; "")), name: .package, version, arch: .architecture, sha256, repository: $repository, base_path: $base_path, suite: $suite, relative_path}')"
+  done < <(echo "$PACKAGES" | jq -c '.[]')
+  create_publication deb "$REPOSITORY_NAME" --structured
+  echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$BASE_PATH/ $STABLE_SUITE main"
+  manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "$STABILITY" "promote" "$PULP_CONTENT_URL"
+  exit 0
+fi
 
 # batched promote, mirroring the batched delivery: the packages already exist
 # as content units in the repository (testing suite), so promoting is only a
@@ -114,7 +169,13 @@ while read -r PACKAGE; do
   fi
 done < <(echo "$PACKAGES" | jq -c '.[]')
 
+# the stable release component is deduced from the association the legacy
+# re-upload of the FIRST reference creates: capture its association set
+# before the upload so the new one stands out as the difference.
 refresh_pulp_token
+LEGACY_REF_HREF=$(echo "${LEGACY_PACKAGES[0]}" | jq -r '.pulp_href')
+LEGACY_REF_BEFORE=$(lookup_prcs "$LEGACY_REF_HREF" | sort)
+
 for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   RELATIVE_PATH=$(echo "$PACKAGE" | jq -r '.relative_path')
   SHA256=$(echo "$PACKAGE" | jq -r '.sha256')
@@ -155,14 +216,27 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
 done
 
 if ((${#BATCH_PACKAGES[@]} > 0)); then
-  # the legacy re-uploads above created the stable suite structures
-  # (get_or_create through the repository code path), resolve the stable
-  # release component directly from the resulting repository version
+  # the stable release component is the association the legacy re-upload just
+  # added to the reference package. On a rerun the association pre-exists and
+  # the difference is empty: the reference then carries every suite it belongs
+  # to (stable, testing, possibly unstable for reused content), and the
+  # stable one is isolated by subtracting the associations of not-yet-promoted
+  # candidates - those belong to every suite of the reference EXCEPT stable.
   refresh_pulp_token
-  NEW_VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
-  STABLE_RC=$(lookup_release_component "$NEW_VERSION_HREF" "$STABLE_SUITE")
-  if [[ -z "$STABLE_RC" ]]; then
-    echo "::error::Cannot resolve the $STABLE_SUITE/main release component in $REPOSITORY_NAME"
+  LEGACY_REF_AFTER=$(lookup_prcs "$LEGACY_REF_HREF" | sort)
+  STABLE_RC_SET=$(comm -13 <(echo "$LEGACY_REF_BEFORE") <(echo "$LEGACY_REF_AFTER") | grep . || true)
+  if [[ $(echo "$STABLE_RC_SET" | grep -c .) -ne 1 ]]; then
+    STABLE_RC_SET=$(echo "$LEGACY_REF_AFTER" | grep . || true)
+    for u_href in "${UNPROMOTED_HREFS[@]}"; do
+      [[ "$u_href" == "$LEGACY_REF_HREF" ]] && continue
+      [[ $(echo "$STABLE_RC_SET" | grep -c .) -le 1 ]] && break
+      u_prcs=$(lookup_prcs "$u_href" | sort)
+      STABLE_RC_SET=$(comm -23 <(echo "$STABLE_RC_SET") <(echo "$u_prcs") | grep . || true)
+    done
+  fi
+  STABLE_RC=$(echo "$STABLE_RC_SET" | grep . | head -1)
+  if [[ -z "$STABLE_RC" || $(echo "$STABLE_RC_SET" | grep -c .) -ne 1 ]]; then
+    echo "::error::Cannot deduce the $STABLE_SUITE/main release component from the reference package associations (got: ${STABLE_RC_SET:-none})"
     exit 1
   fi
   echo "[INFO] Release component of $STABLE_SUITE/main: $STABLE_RC"
