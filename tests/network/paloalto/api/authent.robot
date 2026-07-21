@@ -9,6 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
+${INJECT_PERL}      -Mfixed_date -I${CURDIR}
 ${MOCKOON_JSON}     ${CURDIR}${/}mockoon-paloalto-api.json
 ${HOSTNAME}         127.0.0.1
 ${APIPORT}          3000
@@ -17,20 +18,38 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --hostname=${HOSTNAME}
 ...                 --port=${APIPORT}
 ...                 --proto=http
-...                 --mode=system     
+...                 --mode=system
+
 
 *** Test Cases ***
-paloalto-environment ${tc}
+authent ${tc}
     [Tags]    network    paloalto    api    environment
+    ${OLD_PERL5OPT}=    Get Environment Variable    PERL5OPT    default=
+    Set Environment Variable    PERL5OPT    ${INJECT_PERL} ${OLD_PERL5OPT}
+
     ${command}    Catenate
     ...    ${CMD}
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    extra_options                                             expected_result    --
-            ...      1     ${EMPTY}                                                  UNKNOWN: With --auth-type=api-key: specify --api-key or --username/--password to auto-generate it.
-            ...      2     --auth-type=api-key                                       UNKNOWN: With --auth-type=api-key: specify --api-key or --username/--password to auto-generate it.
-            ...      3     --auth-type=api-key --username=AA --password=BB           OK: System uptime: 8552549 seconds, certificate status: Valid, operational mode: normal, software version: 10.1.12, WildFire mode: Disabled | 'system.uptime.seconds'=8552549s;;;0;
-            ...      4     --auth-type=basic                                         UNKNOWN: Need to specify --username/--password options with --auth-type=basic.
-            ...      5     --auth-type=basic --username=AA --password=BB             OK: System uptime: 8552549 seconds, certificate status: Valid, operational mode: normal, software version: 10.1.12, WildFire mode: Disabled | 'system.uptime.seconds'=8552549s;;;0;
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    UNKNOWN: With --auth-type=api-key: specify --api-key or --username/--password to auto-generate it.
+    ...    2
+    ...    --auth-type=api-key
+    ...    UNKNOWN: With --auth-type=api-key: specify --api-key or --username/--password to auto-generate it.
+    ...    3
+    ...    --auth-type=api-key --username=AA --password=BB
+    ...    OK: System uptime: 8552549 seconds, certificate status: Valid, operational mode: normal, packet rate: 0 p/s, throughput: 0.00 b/s, total active sessions: 0 | 'system.uptime.seconds'=8552549s;;;0; 'system.sessions.packet.rate.persecond'=0p/s;;;0; 'system.sessions.throughput.bitspersecond'=0b/s;;;0; 'system.sessions.total.count'=0;;;0;
+    ...    4
+    ...    --auth-type=basic
+    ...    UNKNOWN: Need to specify --username/--password options with --auth-type=basic.
+    ...    5
+    ...    --auth-type=basic --username=AA --password=BB
+    ...    OK: System uptime: 8552549 seconds, certificate status: Valid, operational mode: normal, packet rate: 0 p/s, throughput: 0.00 b/s, total active sessions: 0 | 'system.uptime.seconds'=8552549s;;;0; 'system.sessions.packet.rate.persecond'=0p/s;;;0; 'system.sessions.throughput.bitspersecond'=0b/s;;;0; 'system.sessions.total.count'=0;;;0;

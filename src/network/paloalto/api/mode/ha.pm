@@ -191,6 +191,9 @@ sub manage_selection {
     my $ha_mode = lc($group->{mode} // '');
     my $platform_model = $local->{'platform-model'} // '';
 
+    $self->{output}->option_exit(short_msg => "No matching device !")
+        unless $platform_model;
+
     $self->{ha} = {
         platform_model       => $platform_model,
         local_state          => $local_state,

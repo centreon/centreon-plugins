@@ -114,7 +114,7 @@ sub set_counters {
         { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of jobs ' },
         {
             name => 'jobs', type => COUNTER_TYPE_MULTIPLE, prefix_output => "job '%{name}' [type: %{jobType}] ",
-            cb_long_output => "checking job '%{name}' (%{fid}) [type: %{jobType}] [object type: %{objectType}] [location: %{location}] [cluster name: %{clusterName}]",
+            long_output => "checking job '%{name}' (%{fid}) [type: %{jobType}] [object type: %{objectType}] [location: %{location}] [cluster name: %{clusterName}]",
             indent_long_output => '    ', message_multiple => 'All jobs are ok',
             group => [
                 { name => 'failed', type => COUNTER_MULTIPLE_INSTANCE },
