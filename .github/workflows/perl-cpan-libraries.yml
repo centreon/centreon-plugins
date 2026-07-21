@@ -129,9 +129,10 @@ jobs:
         env:
           STABILITY: ${{ needs.get-environment.outputs.stability }}
         run: |
+          # TEMP(test-pulp-only): no filtering against the already-delivered
+          # packages, so the whole library set builds and tests the Pulp delivery
           python3 .github/scripts/perl-cpan-libraries/generate-matrices.py \
             --partial-matrices-dir official-repos \
-            --artifactory-url https://packages.centreon.com \
             --stability "$STABILITY" \
             .github/packaging/cpan-libraries.json
         shell: bash

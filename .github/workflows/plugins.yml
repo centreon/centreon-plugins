@@ -62,7 +62,7 @@ jobs:
     needs: [get-environment]
     runs-on: ubuntu-24.04
     outputs:
-      changes_common: ${{ steps.filter.outputs.common || 'true' }}
+      changes_common: 'true' # TEMP(test-pulp-only): build the full plugin set on the PR
       changes_packages: ${{ steps.filter.outputs.packages || 'false' }}
       changes_plugins: ${{ steps.filter.outputs.plugins || 'false' }}
       changes_tests: ${{ steps.filter.outputs.tests || 'false' }}
