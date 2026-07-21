@@ -647,7 +647,11 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        # TEMP(test-pulp-only): run on the PR stability, fail loudly
+        # TEMP(test-pulp-only): promote-only validation round. The previous
+        # rounds delivered these exact versions to testing and promoted part
+        # of them; redelivering the same versions is blocked by the stable
+        # guard, and the promotion sweep is what this round validates.
+        if: false
         id: deliver_pulp
         uses: ./.github/actions/package-delivery-pulp
         with:
@@ -664,8 +668,8 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        # TEMP(test-pulp-only): promote right after the testing delivery
-        if: ${{ steps.deliver_pulp.outcome == 'success' }}
+        # TEMP(test-pulp-only): promote-only validation round
+        if: ${{ !cancelled() }}
         id: promote_pulp
         uses: ./.github/actions/promote-to-stable-pulp
         with:
