@@ -45,7 +45,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'hostname:s'    => { name => 'hostname',    not_empty => 1 },
         'port:s'        => { name => 'port',        default => 443, type => 'port' },
-        'proto:s'       => { name => 'proto',       default => 'https', type => 'http_protocol' },
+        'proto:s'       => { name => 'proto',       default => 'https', type => 'protocol_http' },
         'username:s'    => { name => 'username',    not_empty => 1 },
         'password:s'    => { name => 'password',    not_empty => 1 },
         'group-id:s'    => { name => 'group_id',    not_empty => 1 },
@@ -127,7 +127,7 @@ sub create_sms_diffusion {
 
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json' );
     my $response = $self->{http}->request(  method => 'POST',
-                                            url_path => $self->{option_results}->{endpoint}.uri_escape($self->{option_results}->{group_id}).'/diffusion-requests',
+                                            url_path => $self->{option_results}->{endpoint}.'groups/'.uri_escape($self->{option_results}->{group_id}).'/diffusion-requests',
                                             header => [ 'Accept: application/json',
                                                         'Content-Type: application/json',
                                                         'Authorization: Bearer ' . $options{token}

@@ -4,7 +4,7 @@
   "name": "Orangesms.mockoon",
   "endpointPrefix": "",
   "latency": 0,
-  "port": 3003,
+  "port": 3000,
   "hostname": "",
   "folders": [],
   "routes": [
@@ -100,7 +100,7 @@
       "type": "http",
       "documentation": "",
       "method": "post",
-      "endpoint": "api/v1.2/\\d+/diffusion-requests",
+      "endpoint": "api/v1.2/groups/:id/diffusion-requests",
       "responses": [
         {
           "uuid": "b1e555a6-7fd5-4939-beb9-78d214cdafbf",
