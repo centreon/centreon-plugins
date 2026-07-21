@@ -41,27 +41,35 @@ jobs:
           - package_extension: rpm
             image: packaging-plugins-java-alma8
             distrib: el8
+            java_major_version: "17"
           - package_extension: rpm
             image: packaging-plugins-java-alma9
             distrib: el9
+            java_major_version: "17"
           - package_extension: rpm
             image: packaging-plugins-java-alma10
             distrib: el10
+            java_major_version: "21"
           - package_extension: deb
             image: packaging-plugins-java-bullseye
             distrib: bullseye
+            java_major_version: "17"
           - package_extension: deb
             image: packaging-plugins-java-bookworm
             distrib: bookworm
+            java_major_version: "17"
           - package_extension: deb
             image: packaging-plugins-java-trixie
             distrib: trixie
+            java_major_version: "21"
           - package_extension: deb
             image: packaging-plugins-java-jammy
             distrib: jammy
+            java_major_version: "17"
           - package_extension: deb
             image: packaging-plugins-java-noble
             distrib: noble
+            java_major_version: "17"
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -92,8 +100,11 @@ jobs:
           {} ';'
         shell: bash
 
-      - name: Set JAVA_HOME
-        run: export JAVA_HOME=$( java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home' | tr -s ' ' | cut -d ' ' -f 4)
+      - name: Set JAVA_HOME and set Java major version for packaging
+        run: |
+          export JAVA_HOME=$( java -XshowSettings:properties -version 2>&1 > /dev/null | grep 'java.home' | tr -s ' ' | cut -d ' ' -f 4)
+          echo "JAVA_MAJOR_VERSION=${{ matrix.java_major_version }}" >> "$GITHUB_ENV"
+        shell: bash
 
       - name: Build JAR using maven
         run: mvn -version && mvn clean install -f as400/connector.as400/pom.xml
