@@ -146,21 +146,58 @@ resolve_task_content() {
   echo "$content"
 }
 
-# group the files by architecture: the first file of each arch goes through
-# the legacy path so the suite association targets of that arch exist
-declare -A ARCH_SEEN=()
-LEGACY_FILES=()
-ORPHAN_FILES=()
-FILE_ARCHS=()
-for FILE in "${FILES[@]}"; do
+# emit the release-component hrefs a package is associated with
+lookup_prcs() {
+  local package_href=$1
+  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+    --data-urlencode "package=$package_href" \
+    --data-urlencode "limit=100" \
+    "$PULP_URL/api/v3/content/deb/package_release_components/" \
+    | jq -r '.results[].release_component'
+}
+
+# group the files by architecture: one file per arch goes through the legacy
+# path so the suite association targets of that arch exist. Prefer a file
+# whose content does NOT exist in pulp yet: a fresh upload carries exactly
+# one suite association afterwards, which identifies the release component
+# unambiguously. Content reused across suites (identical bytes delivered to
+# another suite before) keeps its prior associations, so for a reused
+# representative the pre-upload association set is captured to diff later.
+declare -A LEGACY_FOR_ARCH=()
+declare -A LEGACY_FRESH=()
+declare -A LEGACY_BEFORE=()
+refresh_pulp_token
+for i in "${!FILES[@]}"; do
+  FILE=${FILES[$i]}
   arch=$(dpkg-deb -f "$FILE" Architecture)
-  FILE_ARCHS+=("$arch")
-  if [[ -z "${ARCH_SEEN[$arch]+set}" ]]; then
-    ARCH_SEEN[$arch]=1
-    LEGACY_FILES+=("$FILE")
-  else
-    ORPHAN_FILES+=("$FILE")
+  if [[ -n "${LEGACY_FRESH[$arch]+set}" ]]; then
+    continue
   fi
+  if ((i % 40 == 0)); then
+    refresh_pulp_token
+  fi
+  sha=$(sha256sum "$FILE" | cut -d' ' -f1)
+  existing=$(lookup_deb_content "packages" "--data-urlencode sha256=$sha")
+  if [[ -z "$existing" ]]; then
+    LEGACY_FOR_ARCH[$arch]="$FILE"
+    LEGACY_FRESH[$arch]=1
+  elif [[ -z "${LEGACY_FOR_ARCH[$arch]+set}" ]]; then
+    LEGACY_FOR_ARCH[$arch]="$FILE"
+    LEGACY_BEFORE[$arch]=$(lookup_prcs "$existing" | sort)
+  fi
+done
+
+declare -A IS_LEGACY=()
+LEGACY_FILES=()
+LEGACY_ARCHS=()
+for arch in "${!LEGACY_FOR_ARCH[@]}"; do
+  LEGACY_FILES+=("${LEGACY_FOR_ARCH[$arch]}")
+  LEGACY_ARCHS+=("$arch")
+  IS_LEGACY["${LEGACY_FOR_ARCH[$arch]}"]=1
+done
+ORPHAN_FILES=()
+for FILE in "${FILES[@]}"; do
+  [[ -n "${IS_LEGACY[$FILE]+set}" ]] || ORPHAN_FILES+=("$FILE")
 done
 
 refresh_pulp_token
@@ -182,24 +219,37 @@ done
 echo "[INFO] Waiting for ${#LEGACY_TASKS[@]} legacy upload task(s)"
 wait_tasks "${LEGACY_TASKS[@]}"
 
-# the release component href of the suite, through the first legacy package
+# the release component href of $SUITE/main, deduced from the association the
+# legacy uploads just created. A FRESH representative now carries exactly one
+# association; a reused one carries its prior associations too, so the href is
+# the difference between its post- and pre-upload association sets.
 refresh_pulp_token
-first_sha256=$(sha256sum "${LEGACY_FILES[0]}" | cut -d' ' -f1)
-FIRST_PACKAGE_HREF=$(lookup_deb_content "packages" "--data-urlencode sha256=$first_sha256")
-if [[ -z "$FIRST_PACKAGE_HREF" ]]; then
-  echo "::error::Cannot find the legacy-delivered package ${LEGACY_FILES[0]} (sha256 $first_sha256)"
-  exit 1
-fi
-# the legacy package is a fresh build (unique per-build version), so its only
-# suite association is the one the legacy upload just created for $SUITE/main
-RELEASE_COMPONENT_HREF=$(
-  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-    --data-urlencode "package=$FIRST_PACKAGE_HREF" \
-    "$PULP_URL/api/v3/content/deb/package_release_components/" \
-    | jq -r '.results[0].release_component // empty'
-)
+RELEASE_COMPONENT_HREF=""
+for i in "${!LEGACY_FILES[@]}"; do
+  FILE=${LEGACY_FILES[$i]}
+  arch=${LEGACY_ARCHS[$i]}
+  sha=$(sha256sum "$FILE" | cut -d' ' -f1)
+  href=$(lookup_deb_content "packages" "--data-urlencode sha256=$sha")
+  if [[ -z "$href" ]]; then
+    echo "::error::Cannot find the legacy-delivered package $FILE (sha256 $sha)"
+    exit 1
+  fi
+  after=$(lookup_prcs "$href" | sort)
+  if [[ -n "${LEGACY_FRESH[$arch]+set}" ]]; then
+    if [[ $(echo "$after" | grep -c .) -eq 1 ]]; then
+      RELEASE_COMPONENT_HREF="$after"
+      break
+    fi
+  else
+    new_rcs=$(comm -13 <(echo "${LEGACY_BEFORE[$arch]}") <(echo "$after") | grep . || true)
+    if [[ $(echo "$new_rcs" | grep -c .) -eq 1 ]]; then
+      RELEASE_COMPONENT_HREF="$new_rcs"
+      break
+    fi
+  fi
+done
 if [[ -z "$RELEASE_COMPONENT_HREF" ]]; then
-  echo "::error::Cannot resolve the $SUITE/main release component from the legacy-delivered package"
+  echo "::error::Cannot deduce the $SUITE/main release component: every legacy representative is reused content whose suite association pre-exists. Deliver a rebuilt (fresh) package or clean up the previous partial delivery."
   exit 1
 fi
 echo "[INFO] Release component of $SUITE/main: $RELEASE_COMPONENT_HREF"
