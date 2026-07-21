@@ -18,9 +18,32 @@ fi
 
 VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
 
-# packages of the module are identified by the label set at delivery time,
-# the testing pool path scopes the stability and the package distrib name
-# scopes the distribution as the apt repository holds all the suites.
+refresh_pulp_token
+TESTING_RC=$(lookup_release_component "$VERSION_HREF" "$TESTING_SUITE")
+if [[ -z "$TESTING_RC" ]]; then
+  echo "::error::Nothing to promote, the $TESTING_SUITE suite does not exist in $REPOSITORY_NAME"
+  exit 1
+fi
+echo "[INFO] Release component of $TESTING_SUITE/main: $TESTING_RC"
+
+# membership in the testing suite comes from its PackageReleaseComponent
+# associations, NOT from the packages' relative_path: content reused across
+# suites (identical bytes first delivered to another suite) keeps its
+# original upload path, which a path-prefix filter would miss.
+TESTING_HREFS_FILE=$(mktemp)
+url="$PULP_URL/api/v3/content/deb/package_release_components/?$(
+  printf 'repository_version=%s&release_component=%s&limit=1000' \
+    "$(jq -rn --arg v "$VERSION_HREF" '$v | @uri')" \
+    "$(jq -rn --arg v "$TESTING_RC" '$v | @uri')"
+)"
+while [[ -n "$url" ]]; do
+  refresh_pulp_token
+  page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url")
+  echo "$page" | jq -r '.results[].package' >> "$TESTING_HREFS_FILE"
+  url=$(echo "$page" | jq -r '.next // empty')
+done
+
+# packages of the module are identified by the label set at delivery time.
 # Paginated: the shared repository keeps every delivered version across all
 # suites, so the module listing exceeds a single page.
 RESULTS_FILE=$(mktemp)
@@ -40,21 +63,23 @@ done
 # accumulates every delivered build (deb has no retention mechanism), and
 # our version schemes embed a monotonic date/timestamp so the plain string
 # max is the newest build
+TESTING_SET_FILE=$(mktemp)
+jq -R . "$TESTING_HREFS_FILE" | jq -s 'map({key: ., value: true}) | from_entries' > "$TESTING_SET_FILE"
 PACKAGES=$(
-  jq -s --arg testing_path "$TESTING_POOL_PATH/" --arg distrib_name "$PACKAGE_DISTRIB_NAME" \
-    '[.[] | select((.relative_path | startswith($testing_path)) and (.relative_path | contains($distrib_name)))]
+  jq -s --slurpfile testing_set "$TESTING_SET_FILE" \
+    '[.[] | select($testing_set[0][.pulp_href])]
      | group_by(.package, .architecture) | map(max_by(.version))' \
     "$RESULTS_FILE"
 )
-rm -f "$RESULTS_FILE"
+rm -f "$RESULTS_FILE" "$TESTING_HREFS_FILE" "$TESTING_SET_FILE"
 PACKAGES_COUNT=$(echo "$PACKAGES" | jq 'length')
 
 if [[ "$PACKAGES_COUNT" -eq 0 ]]; then
-  echo "::error::Nothing to promote, no package of module $MODULE_NAME found in $REPOSITORY_NAME ($TESTING_POOL_PATH/)"
+  echo "::error::Nothing to promote, no package of module $MODULE_NAME found in the $TESTING_SUITE suite of $REPOSITORY_NAME"
   exit 1
 fi
 
-echo "[INFO] $PACKAGES_COUNT packages of module $MODULE_NAME found in $REPOSITORY_NAME ($TESTING_POOL_PATH/)"
+echo "[INFO] $PACKAGES_COUNT packages of module $MODULE_NAME found in the $TESTING_SUITE suite of $REPOSITORY_NAME"
 
 if [[ "$STABILITY" != "stable" ]]; then
   echo "[INFO] Dry run, $PACKAGES_COUNT packages would be promoted to $STABLE_SUITE/main"
@@ -67,16 +92,6 @@ mkdir -p promoted-packages
 
 # module label, built with jq (safe escaping) — consistent with the delivery scripts
 PULP_LABELS=$(jq -cn --arg mod "$MODULE_NAME" '{"module": $mod}')
-
-lookup_prcs() {
-  # emit the release_component hrefs of a package's suite associations
-  local package_href=$1
-  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-    --data-urlencode "package=$package_href" \
-    --data-urlencode "limit=100" \
-    "$PULP_URL/api/v3/content/deb/package_release_components/" \
-    | jq -r '.results[].release_component'
-}
 
 # batched promote, mirroring the batched delivery: the packages already exist
 # as content units in the repository (testing suite), so promoting is only a
@@ -140,16 +155,14 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
 done
 
 if ((${#BATCH_PACKAGES[@]} > 0)); then
-  # deduce the stable release-component href: the batch packages only carry
-  # their testing association, the just-promoted legacy package carries the
-  # stable one on top of it
+  # the legacy re-uploads above created the stable suite structures
+  # (get_or_create through the repository code path), resolve the stable
+  # release component directly from the resulting repository version
   refresh_pulp_token
-  FIRST_BATCH_HREF=$(echo "${BATCH_PACKAGES[0]}" | jq -r '.pulp_href')
-  LEGACY_HREF=$(echo "${LEGACY_PACKAGES[0]}" | jq -r '.pulp_href')
-  TESTING_RC=$(lookup_prcs "$FIRST_BATCH_HREF" | head -1)
-  STABLE_RC=$(lookup_prcs "$LEGACY_HREF" | grep -Fxv "$TESTING_RC" | head -1)
+  NEW_VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
+  STABLE_RC=$(lookup_release_component "$NEW_VERSION_HREF" "$STABLE_SUITE")
   if [[ -z "$STABLE_RC" ]]; then
-    echo "::error::Cannot deduce the $STABLE_SUITE/main release component from the legacy-promoted package"
+    echo "::error::Cannot resolve the $STABLE_SUITE/main release component in $REPOSITORY_NAME"
     exit 1
   fi
   echo "[INFO] Release component of $STABLE_SUITE/main: $STABLE_RC"

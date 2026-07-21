@@ -182,24 +182,14 @@ done
 echo "[INFO] Waiting for ${#LEGACY_TASKS[@]} legacy upload task(s)"
 wait_tasks "${LEGACY_TASKS[@]}"
 
-# the release component href of the suite, through the first legacy package
+# the release component href of the suite: the legacy uploads above created it
+# (get_or_create through the repository code path), resolve it directly from
+# the resulting repository version
 refresh_pulp_token
-first_sha256=$(sha256sum "${LEGACY_FILES[0]}" | cut -d' ' -f1)
-FIRST_PACKAGE_HREF=$(lookup_deb_content "packages" "--data-urlencode sha256=$first_sha256")
-if [[ -z "$FIRST_PACKAGE_HREF" ]]; then
-  echo "::error::Cannot find the legacy-delivered package ${LEGACY_FILES[0]} (sha256 $first_sha256)"
-  exit 1
-fi
-# the legacy package is a fresh build (unique per-build version), so its only
-# suite association is the one the legacy upload just created for $SUITE/main
-RELEASE_COMPONENT_HREF=$(
-  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-    --data-urlencode "package=$FIRST_PACKAGE_HREF" \
-    "$PULP_URL/api/v3/content/deb/package_release_components/" \
-    | jq -r '.results[0].release_component // empty'
-)
+VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.latest_version_href')
+RELEASE_COMPONENT_HREF=$(lookup_release_component "$VERSION_HREF" "$SUITE")
 if [[ -z "$RELEASE_COMPONENT_HREF" ]]; then
-  echo "::error::Cannot resolve the $SUITE/main release component from the legacy-delivered package"
+  echo "::error::Cannot resolve the $SUITE/main release component in $REPOSITORY_NAME"
   exit 1
 fi
 echo "[INFO] Release component of $SUITE/main: $RELEASE_COMPONENT_HREF"

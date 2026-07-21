@@ -141,6 +141,23 @@ pulp_upload() {
 # polling: pulp-cli reads its token once at startup, so its built-in wait fails
 # with "Authentication failed for tasks_read" as soon as the publication of a
 # large repository outlives the OIDC token validity (~5 minutes)
+# resolve a suite's "main" release-component href in a deb repository version.
+# The release_components listing is opened to authenticated users by the pulp
+# bootstrap job (the suite/component pairs are public metadata: they appear
+# verbatim in the published dists/<suite>/Release indexes). Resolving the href
+# directly replaces the former deduction from PackageReleaseComponent
+# associations, which was ambiguous for content reused across suites.
+lookup_release_component() {
+  local version_href=$1 suite=$2
+  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+    --data-urlencode "repository_version=$version_href" \
+    --data-urlencode "distribution=$suite" \
+    --data-urlencode "component=main" \
+    --data-urlencode "limit=1" \
+    "$PULP_URL/api/v3/content/deb/release_components/" \
+    | jq -r '.results[0].pulp_href // empty'
+}
+
 create_publication() {
   local plugin=$1 repository=$2
   shift 2
