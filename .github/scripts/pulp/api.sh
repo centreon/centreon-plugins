@@ -141,6 +141,15 @@ pulp_upload() {
 # polling: pulp-cli reads its token once at startup, so its built-in wait fails
 # with "Authentication failed for tasks_read" as soon as the publication of a
 # large repository outlives the OIDC token validity (~5 minutes)
+# curl against the content endpoint with the CI credentials: the guarded
+# *business-internal distributions authorize the download through the same
+# GitHub OIDC authentication as the api (the CI user holds the guard
+# downloader role); unguarded distributions ignore the header.
+content_curl() {
+  refresh_pulp_token
+  curl -H "Authorization: Github $PULP_TOKEN" "$@"
+}
+
 create_publication() {
   local plugin=$1 repository=$2
   shift 2

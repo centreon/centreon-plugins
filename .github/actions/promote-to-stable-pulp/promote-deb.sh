@@ -21,7 +21,7 @@ VERSION_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.late
 # fetch a published index into a file: 0=ok, 2=absent (404), 1=error
 fetch_index() {
   local url=$1 out=$2 code
-  code=$(curl -sSL --retry 3 --retry-delay 5 -o "$out" -w '%{http_code}' "$url") || return 1
+  code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$out" -w '%{http_code}' "$url") || return 1
   [[ "$code" == "200" ]] && return 0
   [[ "$code" == "404" ]] && return 2
   return 1
@@ -187,7 +187,7 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   # layout, not their upload relative_path, so resolve the published location
   # from the testing suite Packages indexed by checksum to download the file
   FILENAME=$(
-    curl -fsSL --retry 3 --retry-delay 5 "$PULP_CONTENT_URL/$BASE_PATH/dists/$TESTING_SUITE/main/binary-$ARCH/Packages" |
+    content_curl -fsSL --retry 3 --retry-delay 5 "$PULP_CONTENT_URL/$BASE_PATH/dists/$TESTING_SUITE/main/binary-$ARCH/Packages" |
       awk -v sha="$SHA256" 'BEGIN { RS = ""; FS = "\n" } index($0, "SHA256: " sha) { for (i = 1; i <= NF; i++) if ($i ~ /^Filename: /) { sub(/^Filename: /, "", $i); print $i } }'
   )
   if [[ -z "$FILENAME" ]]; then
@@ -196,7 +196,7 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   fi
 
   echo "[INFO] Downloading $PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
-  curl -fsSL --retry 3 --retry-delay 5 -o "$FILE" "$PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
+  content_curl -fsSL --retry 3 --retry-delay 5 -o "$FILE" "$PULP_CONTENT_URL/$BASE_PATH/$FILENAME"
 
   # re-upload the same bytes with the SAME relative_path: pulp reuses the
   # existing content unit and only adds the stable suite association,

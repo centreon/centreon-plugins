@@ -32,7 +32,7 @@ assert_not_in_stable() {
   # endpoint error cannot let an already-stable version slip through and evict it
   # (the rpm guardrail is likewise fail-closed).
   pkg_file=$(mktemp)
-  http_code=$(curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
+  http_code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
     "$PULP_CONTENT_URL/$BASE_PATH/dists/$STABLE_SUITE/main/binary-$arch/Packages" 2>/dev/null || echo 000)
   case "$http_code" in
     404) rm -f "$pkg_file"; return 0 ;;
