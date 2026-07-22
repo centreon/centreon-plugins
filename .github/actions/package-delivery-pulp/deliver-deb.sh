@@ -245,6 +245,12 @@ for i in "${!LEGACY_FILES[@]}"; do
     if [[ $(echo "$new_rcs" | grep -c .) -eq 1 ]]; then
       RELEASE_COMPONENT_HREF="$new_rcs"
       break
+    elif [[ $(echo "$after" | grep -c .) -eq 1 ]]; then
+      # rerun of a partially delivered leg: the association was created by
+      # the previous attempt (empty diff) and is the only one the
+      # representative carries - it IS the suite release component.
+      RELEASE_COMPONENT_HREF=$(echo "$after" | grep .)
+      break
     fi
   fi
 done
