@@ -106,7 +106,8 @@ PULP_LABELS=$(jq -cn \
 lookup_deb_content() {
   # emit the href of a deb content unit matching the query, empty if absent
   local endpoint=$1 query=$2
-  curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+  # retried: a transient api error must not read as "content absent"
+  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
     --data-urlencode "limit=1" \
     $query \
     "$PULP_URL/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty'
