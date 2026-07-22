@@ -11,8 +11,20 @@ source "$(dirname "$0")/../../scripts/pulp/api.sh"
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
 
+# the stable packages may live in a DEDICATED repository (deb plugins:
+# apt-plugins-stable/ubuntu-plugins-stable with plain-codename suites, the
+# artifactory-compatible client layout); default to the source repository
+# for the families whose stable suite it hosts.
+STABLE_REPOSITORY_NAME="${STABLE_REPOSITORY_NAME:-$REPOSITORY_NAME}"
+STABLE_BASE_PATH="${STABLE_BASE_PATH:-$BASE_PATH}"
+
 if ! pulp deb repository show --name "$REPOSITORY_NAME" >/dev/null 2>&1; then
   echo "::error::Nothing to promote, repository $REPOSITORY_NAME does not exist"
+  exit 1
+fi
+
+if ! pulp deb repository show --name "$STABLE_REPOSITORY_NAME" >/dev/null 2>&1; then
+  echo "::error::Stable repository $STABLE_REPOSITORY_NAME does not exist. Pulp repositories are provisioned centrally by delivery-tooling create-repos; run create-repos before promoting."
   exit 1
 fi
 
@@ -34,10 +46,10 @@ fetch_index() {
 # listable by the OIDC ci-user. A missing Release (404) is an empty suite;
 # any other fetch failure aborts, a partial set must not drive a promotion.
 suite_sha_file() {
-  local suite=$1 out release_file arches arch pkg_file rc
+  local base_path=$1 suite=$2 out release_file arches arch pkg_file rc
   out=$(mktemp)
   release_file=$(mktemp)
-  fetch_index "$PULP_CONTENT_URL/$BASE_PATH/dists/$suite/Release" "$release_file" && rc=0 || rc=$?
+  fetch_index "$PULP_CONTENT_URL/$base_path/dists/$suite/Release" "$release_file" && rc=0 || rc=$?
   if [[ $rc -eq 2 ]]; then
     echo "$out"
     return 0
@@ -48,7 +60,7 @@ suite_sha_file() {
   arches=$(awk -F': ' '/^Architectures:/ {print $2}' "$release_file")
   for arch in $arches; do
     pkg_file=$(mktemp)
-    if ! fetch_index "$PULP_CONTENT_URL/$BASE_PATH/dists/$suite/main/binary-$arch/Packages" "$pkg_file"; then
+    if ! fetch_index "$PULP_CONTENT_URL/$base_path/dists/$suite/main/binary-$arch/Packages" "$pkg_file"; then
       echo "::error::Cannot fetch the $suite binary-$arch Packages index; refusing to promote from a partial view." >&2
       return 1
     fi
@@ -60,8 +72,8 @@ suite_sha_file() {
   echo "$out"
 }
 
-TESTING_SHAS_FILE=$(suite_sha_file "$TESTING_SUITE")
-STABLE_SHAS_FILE=$(suite_sha_file "$STABLE_SUITE")
+TESTING_SHAS_FILE=$(suite_sha_file "$BASE_PATH" "$TESTING_SUITE")
+STABLE_SHAS_FILE=$(suite_sha_file "$STABLE_BASE_PATH" "$STABLE_SUITE")
 
 # packages of the module are identified by the label set at delivery time.
 # Paginated: the shared repository keeps every delivered version across all
@@ -106,7 +118,7 @@ if [[ "$STABILITY" != "stable" ]]; then
   exit 0
 fi
 
-REPOSITORY_HREF=$(pulp deb repository show --name "$REPOSITORY_NAME" | jq -r '.pulp_href')
+STABLE_REPOSITORY_HREF=$(pulp deb repository show --name "$STABLE_REPOSITORY_NAME" | jq -r '.pulp_href')
 
 mkdir -p promoted-packages
 
@@ -138,12 +150,12 @@ if ((${#UNPROMOTED_HREFS[@]} == 0)); then
   echo "[INFO] All $PACKAGES_COUNT package(s) are already published in $STABLE_SUITE; republishing only"
   while read -r PACKAGE; do
     manifest_add "$(echo "$PACKAGE" | jq -c \
-      --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
+      --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "$STABLE_BASE_PATH" \
       --arg suite "$STABLE_SUITE" \
       '{filename: (.relative_path | sub(".*/"; "")), name: .package, version, arch: .architecture, sha256, repository: $repository, base_path: $base_path, suite: $suite, relative_path}')"
   done < <(echo "$PACKAGES" | jq -c '.[]')
-  create_publication deb "$REPOSITORY_NAME" --structured
-  echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$BASE_PATH/ $STABLE_SUITE main"
+  create_publication deb "$STABLE_REPOSITORY_NAME" --structured
+  echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$STABLE_BASE_PATH/ $STABLE_SUITE main"
   manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "$STABILITY" "promote" "$PULP_CONTENT_URL"
   exit 0
 fi
@@ -208,7 +220,7 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
       -F "relative_path=$RELATIVE_PATH" \
       -F "distribution=$STABLE_SUITE" \
       -F "component=main" \
-      -F "repository=$REPOSITORY_HREF" \
+      -F "repository=$STABLE_REPOSITORY_HREF" \
       -F "pulp_labels=$PULP_LABELS" \
       "$PULP_URL/api/v3/content/deb/packages/"
   )
@@ -290,7 +302,7 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
   done
   rm -rf "$PRC_DIR"
 
-  echo "[INFO] Adding ${#BATCH_PACKAGES[@]} package(s) and their suite associations to $REPOSITORY_NAME in a single task"
+  echo "[INFO] Adding ${#BATCH_PACKAGES[@]} package(s) and their suite associations to $STABLE_REPOSITORY_NAME in a single task"
   refresh_pulp_token
   # body through a file: thousands of hrefs exceed the argv limit
   ADD_BODY_FILE=$(mktemp)
@@ -300,7 +312,7 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
     curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
       -X POST -H "Content-Type: application/json" \
       -d @"$ADD_BODY_FILE" \
-      "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
+      "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" | jq -r '.task'
   )
   wait_task "$MODIFY_TASK"
 fi
@@ -309,14 +321,14 @@ fi
 # verification step verifies exactly this set against the stable suite
 while read -r PACKAGE; do
   manifest_add "$(echo "$PACKAGE" | jq -c \
-    --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
+    --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "$STABLE_BASE_PATH" \
     --arg suite "$STABLE_SUITE" \
     '{filename: (.relative_path | sub(".*/"; "")), name: .package, version, arch: .architecture, sha256, repository: $repository, base_path: $base_path, suite: $suite, relative_path}')"
 done < <(echo "$PACKAGES" | jq -c '.[]')
 
-echo "[INFO] Publishing repository $REPOSITORY_NAME"
-create_publication deb "$REPOSITORY_NAME" --structured
+echo "[INFO] Publishing repository $STABLE_REPOSITORY_NAME"
+create_publication deb "$STABLE_REPOSITORY_NAME" --structured
 
-echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$BASE_PATH/ $STABLE_SUITE main"
+echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$STABLE_BASE_PATH/ $STABLE_SUITE main"
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "$STABILITY" "promote" "$PULP_CONTENT_URL"

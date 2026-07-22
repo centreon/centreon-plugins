@@ -121,6 +121,7 @@ runs:
         BASE_PATH: ${{ steps.pulp-properties.outputs.base_path }}
         SUITE: ${{ steps.pulp-properties.outputs.suite }}
         STABLE_SUITE: ${{ steps.pulp-properties.outputs.stable_suite }}
+        STABLE_BASE_PATH: ${{ steps.pulp-properties.outputs.stable_base_path }}
         POOL_PATH: ${{ steps.pulp-properties.outputs.pool_path }}
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
