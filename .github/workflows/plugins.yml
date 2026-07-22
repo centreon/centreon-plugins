@@ -646,7 +646,9 @@ jobs:
 
   set-skip-label:
     needs: [get-environment, deliver-packages]
+    # TEMP(test-pulp-only): the label would skip the next retrigger
     if: |
+      false &&
       needs.get-environment.outputs.skip_workflow == 'false' &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
