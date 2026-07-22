@@ -118,7 +118,12 @@ if [[ "$REPO_BASE" == "plugins" ]]; then
     BASE_PATH="$ROOT_REPO"
     SUITE="$DISTRIB-$STABILITY_SEGMENT"
     TESTING_SUITE="$DISTRIB-$TESTING_SEGMENT"
-    STABLE_SUITE="$DISTRIB-stable"
+    # stable lives in a DEDICATED repository with plain-codename suites, so
+    # the client apt configuration stays identical to the artifactory one
+    # (deb .../apt-plugins-stable <codename> main)
+    STABLE_REPOSITORY_NAME="$ROOT_REPO-stable"
+    STABLE_BASE_PATH="$ROOT_REPO-stable"
+    STABLE_SUITE="$DISTRIB"
     POOL_PATH="pool/$POOL_SEGMENT/$MODULE_NAME"
     TESTING_POOL_PATH="pool/$TESTING_POOL_SEGMENT/$MODULE_NAME"
     STABLE_POOL_PATH="pool/stable/$MODULE_NAME"
@@ -161,6 +166,11 @@ else
   fi
 fi
 
+# unless a dedicated stable repository was selected above, stable shares the
+# delivery repository
+STABLE_REPOSITORY_NAME="${STABLE_REPOSITORY_NAME:-$REPOSITORY_NAME}"
+STABLE_BASE_PATH="${STABLE_BASE_PATH:-$BASE_PATH}"
+
 echo "[DEBUG] - repository_type: $REPOSITORY_TYPE"
 echo "[DEBUG] - root_repo: $ROOT_REPO"
 echo "[DEBUG] - repository_prefix: $REPOSITORY_PREFIX"
@@ -189,6 +199,8 @@ echo "[DEBUG] - stable_pool_path: $STABLE_POOL_PATH"
   echo "suite=$SUITE"
   echo "testing_suite=$TESTING_SUITE"
   echo "stable_suite=$STABLE_SUITE"
+  echo "stable_repository_name=$STABLE_REPOSITORY_NAME"
+  echo "stable_base_path=$STABLE_BASE_PATH"
   echo "pool_path=$POOL_PATH"
   echo "testing_pool_path=$TESTING_POOL_PATH"
   echo "stable_pool_path=$STABLE_POOL_PATH"
