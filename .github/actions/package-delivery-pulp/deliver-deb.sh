@@ -332,11 +332,17 @@ for i in "${!PACKAGE_HREFS[@]}"; do
   (
     refresh_pulp_token
     response=$(
-      curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" \
+      curl -sSL --retry 3 --retry-delay 5 -w '\n%{http_code}' -H "Authorization: Github $PULP_TOKEN" \
         -X POST -H "Content-Type: application/json" \
         -d "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}" \
         "$PULP_URL/api/v3/content/deb/package_release_components/"
-    ) || response=""
+    ) || response=$'\n000'
+    code="${response##*$'\n'}"
+    response="${response%$'\n'*}"
+    if [[ "$code" != 2* ]]; then
+      echo "[WARN] PRC create for ${ORPHAN_FILES[$i]} returned $code: $(echo "$response" | head -c 600)" >&2
+      response=""
+    fi
     href=$(echo "$response" | jq -r '.pulp_href // .task // empty')
     if [[ -z "$href" ]]; then
       href=$(lookup_deb_content "package_release_components" \
