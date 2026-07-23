@@ -13,7 +13,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/api.sh"
 
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
-METADATA_TIMEOUT="${METADATA_TIMEOUT:-300}"
+# 900s: the published indexes can lag a finished publication by up to the
+# content-app cache TTL (600s), the window must survive that worst case
+METADATA_TIMEOUT="${METADATA_TIMEOUT:-900}"
 METADATA_INTERVAL="${METADATA_INTERVAL:-15}"
 
 # accumulated per-package result rows and the aggregate failure flag
@@ -51,14 +53,23 @@ load_expected() {
 # surface them - report them right away instead of burning the whole window.
 wait_for_metadata() {
   local deadline=$(( SECONDS + METADATA_TIMEOUT ))
-  local resolved previous_resolved=-1
+  local resolved previous_resolved=-1 stall_rounds=0
   until resolve_pending; do
     resolved=0
     for i in "${!E_FILENAME[@]}"; do
       [[ "${META_IDX[$i]}" == "true" ]] && resolved=$((resolved + 1))
     done
     if ((resolved > 0 && resolved == previous_resolved)); then
-      echo "[WARN] ${resolved}/${#E_FILENAME[@]} package(s) resolvable in the published metadata and no progress in the last round; the remaining ones are not part of the publication, giving up early"
+      stall_rounds=$((stall_rounds + 1))
+    else
+      stall_rounds=0
+    fi
+    # several consecutive stalled rounds before giving up: a single one is
+    # not enough, the published index can lag the publication by minutes
+    # (content-app cache TTL), which read as false negatives on freshly
+    # delivered builds
+    if ((stall_rounds >= 6)); then
+      echo "[WARN] ${resolved}/${#E_FILENAME[@]} package(s) resolvable in the published metadata and no progress in the last 6 rounds; the remaining ones are not part of the publication, giving up early"
       break
     fi
     previous_resolved=$resolved
