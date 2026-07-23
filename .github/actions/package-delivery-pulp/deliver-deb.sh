@@ -104,13 +104,24 @@ PULP_LABELS=$(jq -cn \
 # unassociated content in a client-side pool, associated in parallel tasks
 # (no repository lock), then added to the repository with a single modify.
 lookup_deb_content() {
-  # emit the href of a deb content unit matching the query, empty if absent
-  local endpoint=$1 query=$2
-  # retried: a transient api error must not read as "content absent"
-  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
-    --data-urlencode "limit=1" \
-    $query \
-    "$PULP_URL/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty'
+  # emit the href of a deb content unit matching the query, empty if absent.
+  # Every caller sits on a fallback path where the content is expected to
+  # exist, so an empty result is retried too: the api has been observed
+  # answering an empty page for content committed seconds earlier (stale
+  # read), and a transient error must not read as "content absent" either.
+  local endpoint=$1 query=$2 out attempt
+  for attempt in 1 2 3 4 5; do
+    out=$(curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+      --data-urlencode "limit=1" \
+      $query \
+      "$PULP_URL/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty') || out=""
+    if [[ -n "$out" ]]; then
+      echo "$out"
+      return 0
+    fi
+    sleep $((attempt * 3))
+    refresh_pulp_token
+  done
 }
 
 resolve_task_content() {

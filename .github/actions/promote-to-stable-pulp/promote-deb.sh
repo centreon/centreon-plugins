@@ -344,14 +344,22 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
         # the api answers 500 on a duplicate synchronous content create; on a
         # rerun the stable association simply pre-exists (see the lookup below)
         echo "[INFO] $(echo "${BATCH_PACKAGES[$i]}" | jq -r '.package'): stable association create answered HTTP $code, falling back to the lookup (expected on a rerun)"
-        href=$(
-          curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-            --data-urlencode "package=$package_href" \
-            --data-urlencode "release_component=$STABLE_RC" \
-            --data-urlencode "limit=1" \
-            "$PULP_URL/api/v3/content/deb/package_release_components/" \
-            | jq -r '.results[0].pulp_href // empty'
-        )
+        # the association exists (the create just hit its unique constraint):
+        # empty pages are retried, the api has been observed answering stale
+        # reads for content committed seconds earlier
+        for lookup_attempt in 1 2 3 4 5; do
+          href=$(
+            curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+              --data-urlencode "package=$package_href" \
+              --data-urlencode "release_component=$STABLE_RC" \
+              --data-urlencode "limit=1" \
+              "$PULP_URL/api/v3/content/deb/package_release_components/" \
+              | jq -r '.results[0].pulp_href // empty'
+          ) || href=""
+          [[ -n "$href" ]] && break
+          sleep $((lookup_attempt * 3))
+          refresh_pulp_token
+        done
       fi
       printf '%s\n%s' "$package_href" "$href" > "$PRC_DIR/$i.pair"
     ) &
