@@ -332,15 +332,25 @@ for i in "${!PACKAGE_HREFS[@]}"; do
   (
     refresh_pulp_token
     response=$(
-      curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" \
+      curl -sSL --retry 3 --retry-delay 5 -w '\n%{http_code}' -H "Authorization: Github $PULP_TOKEN" \
         -X POST -H "Content-Type: application/json" \
         -d "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}" \
         "$PULP_URL/api/v3/content/deb/package_release_components/"
-    ) || response=""
-    href=$(echo "$response" | jq -r '.pulp_href // .task // empty')
+    ) || response=$'\n000'
+    code="${response##*$'\n'}"
+    body="${response%$'\n'*}"
+    href=""
+    [[ "$code" == 2* ]] && href=$(echo "$body" | jq -r '.pulp_href // .task // empty')
     if [[ -z "$href" ]]; then
       href=$(lookup_deb_content "package_release_components" \
         "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
+      if [[ -n "$href" ]]; then
+        # the api answers 500 on a duplicate synchronous content create; on a
+        # rerun the association simply pre-exists, nothing is wrong
+        echo "[INFO] ${ORPHAN_FILES[$i]}: suite association already exists (HTTP $code on create, expected on a rerun), reusing it"
+      else
+        echo "[WARN] Suite association create for ${ORPHAN_FILES[$i]} returned HTTP $code: $(echo "$body" | head -c 300)" >&2
+      fi
     fi
     printf '%s' "$href" > "$UPLOAD_DIR/$i.prc"
   ) &
