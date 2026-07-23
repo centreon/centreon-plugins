@@ -372,12 +372,7 @@ if ((${#PACKAGE_HREFS[@]} > 0)); then
   # body through a file: thousands of hrefs exceed the argv limit
   ADD_BODY_FILE=$(mktemp)
   printf '%s\n' "${PACKAGE_HREFS[@]}" "${PRC_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
-  MODIFY_TASK=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
-      -X POST -H "Content-Type: application/json" \
-      -d @"$ADD_BODY_FILE" \
-      "$PULP_URL${REPOSITORY_HREF}modify/" | jq -r '.task'
-  )
+  MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
   wait_task "$MODIFY_TASK"
 fi
 

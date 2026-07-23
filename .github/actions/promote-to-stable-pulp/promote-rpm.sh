@@ -43,10 +43,13 @@ for ARCH in noarch x86_64; do
     url=$(echo "$page" | jq -r '.next // empty')
   done
 
-  # only the LATEST build of each package is promoted: the version schemes
-  # embed a monotonic date/timestamp so the plain string max is the newest
-  RESULTS=$(jq -s '[.[] | {pulp_href, name, version, release, arch, location_href, sha256}]
-    | group_by(.name, .arch) | map(max_by([.version, .release]))' "$RESULTS_FILE")
+  # only the LATEST build of each package is promoted. Versions are compared
+  # segment by segment (numeric segments as numbers): a plain string max
+  # would rank "0.9" above "0.10", which bites the semver-like versions of
+  # some modules. Pipeline-built versions carry no epoch or tilde.
+  RESULTS=$(jq -s 'def vkey: [scan("[0-9]+|[^0-9]+") | (tonumber? // .)];
+    [.[] | {pulp_href, name, version, release, arch, location_href, sha256}]
+    | group_by(.name, .arch) | map(max_by([(.version | vkey), (.release | vkey)]))' "$RESULTS_FILE")
   rm -f "$RESULTS_FILE"
   CONTENT=$(echo "$RESULTS" | jq '[.[].pulp_href]')
   ARCH_PACKAGES_COUNT=$(echo "$CONTENT" | jq 'length')
@@ -93,12 +96,9 @@ for ARCH in noarch x86_64; do
 
   echo "[INFO] Promoting $ARCH_PACKAGES_COUNT packages to $STABLE_REPOSITORY_NAME"
   # pulp-cli repository content modify does not resolve content by pulp_href, use the api directly
-  TASK_HREF=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
-      -X POST -H "Content-Type: application/json" \
-      -d @<(echo "$CONTENT" | jq -c '{add_content_units: .}') \
-      "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" | jq -r '.task'
-  )
+  ADD_BODY_FILE=$(mktemp)
+  echo "$CONTENT" | jq -c '{add_content_units: .}' > "$ADD_BODY_FILE"
+  TASK_HREF=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
   wait_task "$TASK_HREF"
 
   echo "[INFO] Publishing repository $STABLE_REPOSITORY_NAME"
