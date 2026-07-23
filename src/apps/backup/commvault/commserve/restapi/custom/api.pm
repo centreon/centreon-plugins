@@ -25,7 +25,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use Digest::SHA qw(sha256_hex);
-use centreon::plugins::misc qw/json_encode/;
+use centreon::plugins::misc qw/json_encode is_not_empty/;
 use MIME::Base64;
 
 sub new {
@@ -198,8 +198,19 @@ sub refresh_authent_token
             if $content =~ /accessToken\":\s*\"([^\"]+)\"/m;
         $refreshToken = $1
             if $content =~ /refreshToken\":\s*\"([^\"]+)\"/m;
-        $expiryTime = $1
-            if $content =~ /tokenExpiryTimes.amp\":\s*(\d+)/m; # Commvault returns Times}amp instead of Timestamp
+
+        my $token_expiry_timestamp = $1
+            if $content =~ /"tokenExpiryTimestamp"\s*:\s*(-?\d+)/m;
+        my $expires_in = $1
+            if $content =~ /"expiresIn"\s*:\s*(\d+)/m;
+        if ( is_not_empty($token_expiry_timestamp) ) {
+            $expiryTime = $token_expiry_timestamp;
+        } elsif ( is_not_empty($expires_in) ) {
+            $expiryTime = time() + $expires_in;
+        } else {
+            $expiryTime = $1
+                if $content =~ /tokenExpiryTimes\.amp"\s*:\s*(\d+)/m; # Commvault returns Times}amp instead of Timestamp
+        }
     }
 
     $self->{output}->option_exit(short_msg => "Cannot extract tokens !")
@@ -284,6 +295,7 @@ sub request_internal {
         $self->{output}->option_exit(short_msg => 'Tokens where not found. This check can be run after next execution of "token" mode')
             if $authent_token eq '';
 
+        $expiry_time = 0 if !defined($expiry_time) || $expiry_time !~ /^\d+$/;
         $expiry_time -= time;
         $self->{output}->output_add(long_msg => $expiry_time > 0 ? "Token will expire in $expiry_time seconds" : "Token has expired", debug => 1);
 
