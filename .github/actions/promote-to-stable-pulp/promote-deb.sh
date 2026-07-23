@@ -337,9 +337,12 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
       ) || response=$'\n000'
       code="${response##*$'\n'}"
       body="${response%$'\n'*}"
-      response=""
-      [[ "$code" == 2* ]] && response="$body"
-      href=$(echo "$response" | jq -r '.pulp_href // empty')
+      href=""
+      if [[ "$code" == 2* ]]; then
+        # tolerate a non-json body (gateway error page behind a 2xx): a jq
+        # failure inside the substitution would silently kill this subshell
+        href=$(echo "$body" | jq -r '.pulp_href // empty' 2>/dev/null) || href=""
+      fi
       if [[ -z "$href" ]]; then
         # the api answers 500 on a duplicate synchronous content create; on a
         # rerun the stable association simply pre-exists (see the lookup below)

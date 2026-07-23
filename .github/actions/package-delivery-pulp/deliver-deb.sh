@@ -351,7 +351,11 @@ for i in "${!PACKAGE_HREFS[@]}"; do
     code="${response##*$'\n'}"
     body="${response%$'\n'*}"
     href=""
-    [[ "$code" == 2* ]] && href=$(echo "$body" | jq -r '.pulp_href // .task // empty')
+    if [[ "$code" == 2* ]]; then
+      # tolerate a non-json body (gateway error page behind a 2xx): a jq
+      # failure inside the substitution would silently kill this subshell
+      href=$(echo "$body" | jq -r '.pulp_href // .task // empty' 2>/dev/null) || href=""
+    fi
     if [[ -z "$href" ]]; then
       href=$(lookup_deb_content "package_release_components" \
         "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
