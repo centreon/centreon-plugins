@@ -105,12 +105,20 @@ PULP_LABELS=$(jq -cn \
 # (no repository lock), then added to the repository with a single modify.
 lookup_deb_content() {
   # emit the href of a deb content unit matching the query, empty if absent
-  local endpoint=$1 query=$2
+  local endpoint=$1 query=$2 out rc err
+  err=$(mktemp)
   # retried: a transient api error must not read as "content absent"
-  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+  out=$(curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
     --data-urlencode "limit=1" \
     $query \
-    "$PULP_URL/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty'
+    "$PULP_URL/api/v3/content/deb/$endpoint/" 2>"$err") && rc=0 || rc=$?
+  if [[ $rc -ne 0 ]]; then
+    echo "[DEBUG] lookup $endpoint failed: curl rc=$rc err=$(tr -d '\n' < "$err" | head -c 200) token_len=${#PULP_TOKEN}" >&2
+    rm -f "$err"
+    return 0
+  fi
+  rm -f "$err"
+  echo "$out" | jq -r '.results[0].pulp_href // empty'
 }
 
 resolve_task_content() {
@@ -349,7 +357,7 @@ for i in "${!PACKAGE_HREFS[@]}"; do
         # rerun the association simply pre-exists, nothing is wrong
         echo "[INFO] ${ORPHAN_FILES[$i]}: suite association already exists (HTTP $code on create, expected on a rerun), reusing it"
       else
-        echo "[WARN] Suite association create for ${ORPHAN_FILES[$i]} returned HTTP $code: $(echo "$body" | head -c 300)" >&2
+        echo "[WARN] Suite association create for ${ORPHAN_FILES[$i]} returned HTTP $code: $(echo "$body" | tr -d '\n' | head -c 200)" >&2
       fi
     fi
     printf '%s' "$href" > "$UPLOAD_DIR/$i.prc"
