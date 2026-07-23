@@ -139,6 +139,39 @@ pulp_upload() {
   return 1
 }
 
+# wait for a task, distinguishing a lost repository-version race from a
+# genuine failure: concurrent legs of a SHARED deb repository can collide on
+# the version bookkeeping (duplicate (repository_id, number) insert, or the
+# retention cleanup deleting a version another transaction still references).
+# Re-running the operation converges, so callers retry on rc 2.
+# 0=completed, 2=lost race, 1=failed or timed out.
+wait_task_race() {
+  local task_href=$1 body state error attempt
+  for ((attempt = 0; attempt < 600; attempt++)); do
+    refresh_pulp_token
+    body=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
+    state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
+    case "$state" in
+      completed)
+        return 0
+        ;;
+      failed | canceled)
+        error=$(echo "$body" | jq -c '.error // empty' 2>/dev/null) || error=""
+        if echo "$error" | grep -q 'core_repositoryversion'; then
+          return 2
+        fi
+        echo "::error::Task $task_href $state: $error"
+        return 1
+        ;;
+      *)
+        sleep 3
+        ;;
+    esac
+  done
+  echo "::error::Task $task_href did not complete in time (~30 min)"
+  return 1
+}
+
 # start a repository modify task, with retry on transient gateway failures:
 # it is the single most critical call of the flow (all uploaded content lands
 # in the repository through it) and add_content_units is idempotent, so

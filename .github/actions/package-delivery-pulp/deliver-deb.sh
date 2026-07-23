@@ -213,23 +213,38 @@ for FILE in "${FILES[@]}"; do
 done
 
 refresh_pulp_token
-LEGACY_TASKS=()
 for FILE in "${LEGACY_FILES[@]}"; do
   assert_not_in_stable "$FILE"
-  echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME) [legacy path]"
-  LEGACY_TASKS+=("$(
-    pulp_upload \
-      -F "file=@\"$FILE\"" \
-      -F "relative_path=$POOL_PATH/$FILE" \
-      -F "distribution=$SUITE" \
-      -F "component=main" \
-      -F "repository=$REPOSITORY_HREF" \
-      -F "pulp_labels=$PULP_LABELS" \
-      "$PULP_URL/api/v3/content/deb/packages/"
-  )")
 done
-echo "[INFO] Waiting for ${#LEGACY_TASKS[@]} legacy upload task(s)"
-wait_tasks "${LEGACY_TASKS[@]}"
+# sequential with retry: the legacy path creates a repository version, and
+# concurrent legs of the shared repository can lose the version race
+# (wait_task_race rc 2); re-uploading converges, content and suite structure
+# are get_or_created server-side
+for FILE in "${LEGACY_FILES[@]}"; do
+  for legacy_attempt in 1 2 3; do
+    echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME) [legacy path, attempt $legacy_attempt]"
+    LEGACY_TASK=$(
+      pulp_upload \
+        -F "file=@\"$FILE\"" \
+        -F "relative_path=$POOL_PATH/$FILE" \
+        -F "distribution=$SUITE" \
+        -F "component=main" \
+        -F "repository=$REPOSITORY_HREF" \
+        -F "pulp_labels=$PULP_LABELS" \
+        "$PULP_URL/api/v3/content/deb/packages/"
+    )
+    wait_task_race "$LEGACY_TASK" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $legacy_attempt -lt 3 ]]; then
+      echo "[WARN] Legacy upload of $FILE lost the repository-version race against a concurrent delivery, retrying"
+      sleep $((legacy_attempt * 15))
+    else
+      echo "::error::Legacy upload of $FILE failed"
+      exit 1
+    fi
+  done
+done
 
 # the release component href of $SUITE/main, deduced from the association the
 # legacy uploads just created. A FRESH representative now carries exactly one
@@ -397,8 +412,21 @@ if ((${#PACKAGE_HREFS[@]} > 0)); then
   # body through a file: thousands of hrefs exceed the argv limit
   ADD_BODY_FILE=$(mktemp)
   printf '%s\n' "${PACKAGE_HREFS[@]}" "${PRC_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
-  MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
-  wait_task "$MODIFY_TASK"
+  # retried like the legacy uploads: the modify also creates a repository
+  # version and can lose the same race against a concurrent delivery
+  for modify_attempt in 1 2 3; do
+    MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
+    wait_task_race "$MODIFY_TASK" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $modify_attempt -lt 3 ]]; then
+      echo "[WARN] Repository modify lost the repository-version race against a concurrent delivery, retrying"
+      sleep $((modify_attempt * 15))
+    else
+      echo "::error::Repository modify failed"
+      exit 1
+    fi
+  done
 fi
 
 # record every delivered package in the manifest for the verification step
