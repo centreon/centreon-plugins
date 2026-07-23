@@ -96,10 +96,8 @@ sub prefix_gateway_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "gateway '%s' [site: %s, cluster: %s] ",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
+        "gateway '%s' ",
+        $options{instance_value}->{gatewayName}
     );
 }
 
@@ -142,6 +140,19 @@ sub set_counters {
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        {
+            label => 'running-version',
+            type => COUNTER_KIND_TEXT,
+            set => {
+                key_values => [
+                    { name => 'runningVersion' },
+                    { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
+                ],
+                output_template => 'running version: %s',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -251,25 +262,26 @@ sub manage_selection {
         $self->{gateways}->{ $gw->{gw_id} } = {
             gatewayName => $gw->{gw_name},
             clusterName => $gw->{cluster_name},
-            siteName => $gw->{site_name},
+            siteName    => $gw->{site_name},
             status => {
-                gatewayName => $gw->{gw_name},
-                clusterName => $gw->{cluster_name},
-                siteName => $gw->{site_name},
+                gatewayName      => $gw->{gw_name},
+                clusterName      => $gw->{cluster_name},
+                siteName         => $gw->{site_name},
                 operationalState => $gw->{gw_operational_state},
-                desiredState => $gw->{gw_desired_state}
+                desiredState     => $gw->{gw_desired_state},
+                runningVersion   => $gw->{gw_running_version}
             },
             health => {
                 gatewayName => $gw->{gw_name},
                 clusterName => $gw->{cluster_name},
-                siteName => $gw->{site_name},
+                siteName    => $gw->{site_name},
                 healthColor => $gw->{gw_health_color}
             },
             vrrp => {
                 gatewayName => $gw->{gw_name},
                 clusterName => $gw->{cluster_name},
-                siteName => $gw->{site_name},
-                vrrpState => $gw->{gw_vrrp_state}
+                siteName    => $gw->{site_name},
+                vrrpState   => $gw->{gw_vrrp_state}
             }
         };
 
@@ -357,6 +369,21 @@ You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}
 
 Define the conditions to match for the status to be CRITICAL (default: '%{desiredState} ne %{operationalState}').
 You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
+
+=item B<--unknown-running-version>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{runningVersion}
+
+=item B<--warning-running-version>
+
+Define the conditions to match for the status to be WARNING.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{runningVersion}
+
+=item B<--critical-running-version>
+
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{runningVersion}
 
 =item B<--unknown-gateway-health>
 

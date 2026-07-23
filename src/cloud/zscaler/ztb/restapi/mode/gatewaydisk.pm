@@ -67,14 +67,23 @@ sub prefix_global_output {
     return 'Number of gateways ';
 }
 
+sub gateway_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking gateway '%s' [site: %s, cluster: %s]",
+        $options{instance_value}->{gatewayName},
+        $options{instance_value}->{siteName},
+        $options{instance_value}->{clusterName}
+    );
+}
+
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "gateway '%s' [site: %s, cluster: %s] ",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
+        "gateway '%s' ",
+        $options{instance_value}->{gatewayName}
     );
 }
 
@@ -83,7 +92,12 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'gateways', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_gateway_output', message_multiple => 'All gateways are ok', skipped_code => { NO_VALUE() => 1 } }
+        {
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
+            group => [
+                { name => 'disk', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -99,7 +113,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{gateways} = [
+    $self->{maps_counters}->{disk} = [
           { label => 'disk-usage', nlabel => 'gateway.disk.usage.bytes', set => {
                 key_values => [
                     { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' },
@@ -199,7 +213,12 @@ sub manage_selection {
         $self->{gateways}->{ $gw->{gw_id} } = {
             gatewayName => $gw->{gw_name},
             clusterName => $gw->{cluster_name},
-            siteName => $gw->{site_name}
+            siteName => $gw->{site_name},
+            disk => {
+                gatewayName => $gw->{gw_name},
+                clusterName => $gw->{cluster_name},
+                siteName => $gw->{site_name}
+            }
         };
         
         my $resource = $options{custom}->get_gateway_resource(gateway_id => $gw->{gw_id});
@@ -207,11 +226,11 @@ sub manage_selection {
             my $total = $resource->{system_stats}->{disk}->{total} * 1024 * 1024 * 1024;
             my $free = $resource->{system_stats}->{disk}->{free} * 1024 * 1024 * 1024;
             my $used = $resource->{system_stats}->{disk}->{used} * 1024 * 1024 * 1024;
-            $self->{gateways}->{ $gw->{gw_id} }->{total} = $total;
-            $self->{gateways}->{ $gw->{gw_id} }->{used} = $used;
-            $self->{gateways}->{ $gw->{gw_id} }->{free} = $free;
-            $self->{gateways}->{ $gw->{gw_id} }->{prct_used} = 100 - ($free * 100 / $total);
-            $self->{gateways}->{ $gw->{gw_id} }->{prct_free} = $free * 100 / $total;
+            $self->{gateways}->{ $gw->{gw_id} }->{disk}->{total} = $total;
+            $self->{gateways}->{ $gw->{gw_id} }->{disk}->{used} = $used;
+            $self->{gateways}->{ $gw->{gw_id} }->{disk}->{free} = $free;
+            $self->{gateways}->{ $gw->{gw_id} }->{disk}->{prct_used} = 100 - ($free * 100 / $total);
+            $self->{gateways}->{ $gw->{gw_id} }->{disk}->{prct_free} = $free * 100 / $total;
         }
 
         $self->{global}->{detected}++;

@@ -33,14 +33,23 @@ sub prefix_global_output {
     return 'Number of gateways ';
 }
 
+sub gateway_long_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "checking gateway '%s' [site: %s, cluster: %s]",
+        $options{instance_value}->{gatewayName},
+        $options{instance_value}->{siteName},
+        $options{instance_value}->{clusterName}
+    );
+}
+
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "gateway '%s' [site: %s, cluster: %s] ",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
+        "gateway '%s' ",
+        $options{instance_value}->{gatewayName}
     );
 }
 
@@ -49,7 +58,12 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'gateways', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_gateway_output', message_multiple => 'All gateways are ok', skipped_code => { NO_VALUE() => 1 } }
+        {
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
+            group => [
+                { name => 'cpu', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
+            ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -65,7 +79,7 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{gateways} = [
+    $self->{maps_counters}->{cpu} = [
           { label => 'cpu-utilization', nlabel => 'gateway.cpu.utilization.percentage', set => {
                 key_values => [
                     { name => 'prct_used' }, { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
@@ -146,12 +160,17 @@ sub manage_selection {
         $self->{gateways}->{ $gw->{gw_id} } = {
             gatewayName => $gw->{gw_name},
             clusterName => $gw->{cluster_name},
-            siteName => $gw->{site_name}
+            siteName => $gw->{site_name},
+            cpu => {
+                gatewayName => $gw->{gw_name},
+                clusterName => $gw->{cluster_name},
+                siteName => $gw->{site_name}
+            }
         };
         
         my $resource = $options{custom}->get_gateway_resource(gateway_id => $gw->{gw_id});
         if (defined($resource->{hourly_stat_last})) {
-            $self->{gateways}->{ $gw->{gw_id} }->{prct_used} = $resource->{hourly_stat_last}->{cpu_used_avg};
+            $self->{gateways}->{ $gw->{gw_id} }->{cpu}->{prct_used} = $resource->{hourly_stat_last}->{cpu_used_avg};
         }
 
         $self->{global}->{detected}++;

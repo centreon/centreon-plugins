@@ -340,6 +340,7 @@ sub get_gateways {
             $gw->{gw_desired_state} = $gateway->{desired_state};
             $gw->{gw_operational_state} = $gateway->{operational_state};
             $gw->{gw_last_poll_update} = $gateway->{last_poll_updated};
+            $gw->{gw_running_version} = $gateway->{running_version};
             push @$response, $gw;
         }
     }

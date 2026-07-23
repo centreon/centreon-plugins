@@ -149,10 +149,8 @@ sub prefix_gateway_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "gateway '%s' [site: %s, cluster: %s] ",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
+        "gateway '%s' ",
+        $options{instance_value}->{gatewayName}
     );
 }
 
