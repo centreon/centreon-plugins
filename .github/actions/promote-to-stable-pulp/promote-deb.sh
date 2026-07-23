@@ -238,18 +238,32 @@ for PACKAGE in "${LEGACY_PACKAGES[@]}"; do
   # re-upload the same bytes with the SAME relative_path: pulp reuses the
   # existing content unit and only adds the stable suite association,
   # creating the stable ReleaseComponent/ReleaseArchitecture on the way
-  echo "[INFO] Promoting $FILE_NAME to $STABLE_SUITE/main [legacy path]"
-  TASK_HREF=$(
-    pulp_upload \
-      -F "file=@\"$FILE\"" \
-      -F "relative_path=$RELATIVE_PATH" \
-      -F "distribution=$STABLE_SUITE" \
-      -F "component=main" \
-      -F "repository=$STABLE_REPOSITORY_HREF" \
-      -F "pulp_labels=$PULP_LABELS" \
-      "$PULP_URL/api/v3/content/deb/packages/"
-  )
-  wait_task "$TASK_HREF"
+  # retried: the legacy path creates a repository version and can lose the
+  # version race against a concurrent promotion or delivery (wait_task_race
+  # rc 2); re-uploading converges, content and structure are get_or_created
+  for legacy_attempt in 1 2 3; do
+    echo "[INFO] Promoting $FILE_NAME to $STABLE_SUITE/main [legacy path, attempt $legacy_attempt]"
+    TASK_HREF=$(
+      pulp_upload \
+        -F "file=@\"$FILE\"" \
+        -F "relative_path=$RELATIVE_PATH" \
+        -F "distribution=$STABLE_SUITE" \
+        -F "component=main" \
+        -F "repository=$STABLE_REPOSITORY_HREF" \
+        -F "pulp_labels=$PULP_LABELS" \
+        "$PULP_URL/api/v3/content/deb/packages/"
+    )
+    wait_task_race "$TASK_HREF" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $legacy_attempt -lt 3 ]]; then
+      echo "[WARN] Legacy promotion of $FILE_NAME lost the repository-version race, retrying"
+      sleep $((legacy_attempt * 15))
+    else
+      echo "::error::Legacy promotion of $FILE_NAME failed"
+      exit 1
+    fi
+  done
 done
 
 if ((${#BATCH_PACKAGES[@]} > 0)); then
@@ -389,8 +403,21 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
   ADD_BODY_FILE=$(mktemp)
   jq -R . "$ADD_UNITS_FILE" | jq -cs '{add_content_units: [.[] | select(. != "")]}' > "$ADD_BODY_FILE"
   rm -f "$ADD_UNITS_FILE"
-  MODIFY_TASK=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
-  wait_task "$MODIFY_TASK"
+  # retried like the legacy uploads: the modify also creates a repository
+  # version and can lose the same race
+  for modify_attempt in 1 2 3; do
+    MODIFY_TASK=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
+    wait_task_race "$MODIFY_TASK" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $modify_attempt -lt 3 ]]; then
+      echo "[WARN] Stable repository modify lost the repository-version race, retrying"
+      sleep $((modify_attempt * 15))
+    else
+      echo "::error::Stable repository modify failed"
+      exit 1
+    fi
+  done
 fi
 
 # record the promoted packages (with their stable suite coordinates) so the
