@@ -137,6 +137,30 @@ pulp_upload() {
   return 1
 }
 
+# start a repository modify task, with retry on transient gateway failures:
+# it is the single most critical call of the flow (all uploaded content lands
+# in the repository through it) and add_content_units is idempotent, so
+# retrying is always safe. Echoes the task href.
+start_modify_task() {
+  local url=$1 body_file=$2 attempt response http_code body
+  for attempt in 1 2 3 4 5; do
+    refresh_pulp_token
+    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' \
+      -X POST -H "Content-Type: application/json" \
+      -d @"$body_file" "$url" 2>/dev/null) || response=""
+    http_code=${response##*$'\n'}
+    body=${response%$'\n'*}
+    if [[ "$http_code" == "202" ]]; then
+      echo "$body" | jq -r '.task'
+      return 0
+    fi
+    echo "[WARN] modify attempt $attempt/5 on $url failed (HTTP ${http_code:-network-error}), retrying..." >&2
+    sleep $((attempt * 5))
+  done
+  echo "::error::Repository modify failed after 5 attempts on $url (HTTP ${http_code:-network-error}): $(echo "$body" | head -c 300)" >&2
+  return 1
+}
+
 # create a publication in the background and wait for it with re-authenticating
 # polling: pulp-cli reads its token once at startup, so its built-in wait fails
 # with "Authentication failed for tasks_read" as soon as the publication of a
