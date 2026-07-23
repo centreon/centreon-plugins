@@ -330,13 +330,20 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
       refresh_pulp_token
       package_href=$(echo "${BATCH_PACKAGES[$i]}" | jq -r '.pulp_href')
       response=$(
-        curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" \
+        curl -sSL --retry 3 --retry-delay 5 -w '\n%{http_code}' -H "Authorization: Github $PULP_TOKEN" \
           -X POST -H "Content-Type: application/json" \
           -d "{\"package\": \"$package_href\", \"release_component\": \"$STABLE_RC\"}" \
           "$PULP_URL/api/v3/content/deb/package_release_components/"
-      ) || response=""
+      ) || response=$'\n000'
+      code="${response##*$'\n'}"
+      body="${response%$'\n'*}"
+      response=""
+      [[ "$code" == 2* ]] && response="$body"
       href=$(echo "$response" | jq -r '.pulp_href // empty')
       if [[ -z "$href" ]]; then
+        # the api answers 500 on a duplicate synchronous content create; on a
+        # rerun the stable association simply pre-exists (see the lookup below)
+        echo "[INFO] $(echo "${BATCH_PACKAGES[$i]}" | jq -r '.package'): stable association create answered HTTP $code, falling back to the lookup (expected on a rerun)"
         href=$(
           curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
             --data-urlencode "package=$package_href" \

@@ -338,15 +338,19 @@ for i in "${!PACKAGE_HREFS[@]}"; do
         "$PULP_URL/api/v3/content/deb/package_release_components/"
     ) || response=$'\n000'
     code="${response##*$'\n'}"
-    response="${response%$'\n'*}"
-    if [[ "$code" != 2* ]]; then
-      echo "[WARN] PRC create for ${ORPHAN_FILES[$i]} returned $code: $(echo "$response" | head -c 600)" >&2
-      response=""
-    fi
-    href=$(echo "$response" | jq -r '.pulp_href // .task // empty')
+    body="${response%$'\n'*}"
+    href=""
+    [[ "$code" == 2* ]] && href=$(echo "$body" | jq -r '.pulp_href // .task // empty')
     if [[ -z "$href" ]]; then
       href=$(lookup_deb_content "package_release_components" \
         "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
+      if [[ -n "$href" ]]; then
+        # the api answers 500 on a duplicate synchronous content create; on a
+        # rerun the association simply pre-exists, nothing is wrong
+        echo "[INFO] ${ORPHAN_FILES[$i]}: suite association already exists (HTTP $code on create, expected on a rerun), reusing it"
+      else
+        echo "[WARN] Suite association create for ${ORPHAN_FILES[$i]} returned HTTP $code: $(echo "$body" | head -c 300)" >&2
+      fi
     fi
     printf '%s' "$href" > "$UPLOAD_DIR/$i.prc"
   ) &
