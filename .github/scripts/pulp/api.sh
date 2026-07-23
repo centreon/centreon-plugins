@@ -139,12 +139,15 @@ pulp_upload() {
   return 1
 }
 
-# wait for a task, distinguishing a lost repository-version race from a
-# genuine failure: concurrent legs of a SHARED deb repository can collide on
-# the version bookkeeping (duplicate (repository_id, number) insert, or the
-# retention cleanup deleting a version another transaction still references).
+# wait for a task, distinguishing a RETRYABLE failure from a genuine one:
+# - lost repository-version race: concurrent legs of a SHARED deb repository
+#   collide on the version bookkeeping (duplicate (repository_id, number)
+#   insert, or the retention cleanup deleting a version another transaction
+#   still references)
+# - "Worker has gone missing": the task worker pod was terminated mid-task
+#   (scale-down, node consolidation)
 # Re-running the operation converges, so callers retry on rc 2.
-# 0=completed, 2=lost race, 1=failed or timed out.
+# 0=completed, 2=retryable failure, 1=failed or timed out.
 wait_task_race() {
   local task_href=$1 body state error attempt
   for ((attempt = 0; attempt < 600; attempt++)); do
@@ -157,7 +160,11 @@ wait_task_race() {
         ;;
       failed | canceled)
         error=$(echo "$body" | jq -c '.error // empty' 2>/dev/null) || error=""
-        if echo "$error" | grep -q 'core_repositoryversion'; then
+        if echo "$error" | grep -qE 'core_repositoryversion|Worker has gone missing'; then
+          return 2
+        fi
+        # the "gone missing" reason lands in a separate field on some tasks
+        if echo "$body" | jq -r '.reason // empty' 2>/dev/null | grep -q 'Worker has gone missing'; then
           return 2
         fi
         echo "::error::Task $task_href $state: $error"
@@ -212,23 +219,37 @@ content_curl() {
 create_publication() {
   local plugin=$1 repository=$2
   shift 2
-  local out task attempt
-  for attempt in 1 2 3; do
-    refresh_pulp_token
-    out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) && break
-    echo "[WARN] publication start attempt $attempt/3 failed for $repository, retrying..." >&2
-    sleep $((attempt * 10))
+  local out task attempt outer rc
+  # outer retry: the publication task itself can die server-side for
+  # retryable reasons (task worker terminated mid-task, version race)
+  for outer in 1 2 3; do
     out=""
+    for attempt in 1 2 3; do
+      refresh_pulp_token
+      out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) && break
+      echo "[WARN] publication start attempt $attempt/3 failed for $repository, retrying..." >&2
+      sleep $((attempt * 10))
+      out=""
+    done
+    if [[ -z "$out" ]]; then
+      echo "::error::Cannot start the publication of repository $repository"
+      return 1
+    fi
+    task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
+    if [[ -z "$task" ]]; then
+      echo "$out"
+      echo "::error::Cannot find the publication task of repository $repository in the pulp-cli output"
+      return 1
+    fi
+    wait_task_race "$task" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      return 0
+    elif [[ $rc -eq 2 && $outer -lt 3 ]]; then
+      echo "[WARN] Publication of $repository was interrupted server-side, retrying"
+      sleep $((outer * 15))
+    else
+      echo "::error::Publication of repository $repository failed"
+      return 1
+    fi
   done
-  if [[ -z "$out" ]]; then
-    echo "::error::Cannot start the publication of repository $repository"
-    return 1
-  fi
-  task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
-  if [[ -z "$task" ]]; then
-    echo "$out"
-    echo "::error::Cannot find the publication task of repository $repository in the pulp-cli output"
-    return 1
-  fi
-  wait_task "$task"
 }
