@@ -44,11 +44,13 @@ refresh_pulp_token() {
 
 # wait for a pulp api task to complete. a failed poll request (network blip,
 # api 5xx) is retried like an unexpected state instead of aborting the caller
-# under set -e; the 200-attempt cap bounds the total wait (~10 min).
+# under set -e; the 600-attempt cap bounds the total wait (~30 min): under a
+# full-matrix delivery the publication of a large repository can sit several
+# minutes in the worker queue before its ~5 min of actual execution.
 wait_task() {
   local task_href=$1
   local state attempt
-  for ((attempt = 0; attempt < 200; attempt++)); do
+  for ((attempt = 0; attempt < 600; attempt++)); do
     refresh_pulp_token
     state=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null | jq -r '.state' 2>/dev/null) || state=""
     case "$state" in
@@ -64,7 +66,7 @@ wait_task() {
         ;;
     esac
   done
-  echo "::error::Task $task_href did not complete in time (~10 min)"
+  echo "::error::Task $task_href did not complete in time (~30 min)"
   return 1
 }
 
