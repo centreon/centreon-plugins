@@ -357,9 +357,10 @@ for i in "${!PACKAGE_HREFS[@]}"; do
   fi
   (
     refresh_pulp_token
-    body=$(post_json "$PULP_URL/api/v3/content/deb/package_release_components/" \
-      "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}") || true
-    code="$POST_HTTP_CODE"
+    out=$(post_json "$PULP_URL/api/v3/content/deb/package_release_components/" \
+      "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}") || out=$'\n000'
+    code="${out##*$'\n'}"
+    body="${out%$'\n'*}"
     href=""
     if [[ "$code" == 2* ]]; then
       # tolerate a non-json body (gateway error page behind a 2xx): a jq

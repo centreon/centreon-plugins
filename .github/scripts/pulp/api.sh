@@ -209,22 +209,24 @@ pulp_resource_exists() {
 # captured json response (a 502 html page glued before the 201 body). A 500
 # is NOT retried: on this api it means a duplicate synchronous content
 # create, and the caller's lookup fallback is the correct answer.
-# Echoes the final body; POST_HTTP_CODE holds the final status; rc 0 on 2xx.
+# Echoes the final body followed by a newline and the final status code (the
+# function runs inside command substitutions, so it cannot hand the code back
+# through a variable); the manual retry guarantees a single body, making the
+# last-line split safe.
 post_json() {
-  local url=$1 json=$2 attempt response
-  response=""
+  local url=$1 json=$2 attempt response code
+  response=$'\n000'
   for attempt in 1 2 3 4; do
     refresh_pulp_token
     response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' \
       -X POST -H "Content-Type: application/json" -d "$json" "$url" 2>/dev/null) || response=$'\n000'
-    POST_HTTP_CODE="${response##*$'\n'}"
-    case "$POST_HTTP_CODE" in
+    code="${response##*$'\n'}"
+    case "$code" in
       2* | 4* | 500) break ;;
       *) sleep $((attempt * 3)) ;;
     esac
   done
-  printf '%s' "${response%$'\n'*}"
-  [[ "$POST_HTTP_CODE" == 2* ]]
+  printf '%s\n%s' "${response%$'\n'*}" "$code"
 }
 
 # start a repository modify task, with retry on transient gateway failures:
