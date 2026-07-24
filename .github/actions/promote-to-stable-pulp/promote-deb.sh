@@ -18,12 +18,12 @@ PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
 STABLE_REPOSITORY_NAME="${STABLE_REPOSITORY_NAME:-$REPOSITORY_NAME}"
 STABLE_BASE_PATH="${STABLE_BASE_PATH:-$BASE_PATH}"
 
-if ! pulp deb repository show --name "$REPOSITORY_NAME" >/dev/null 2>&1; then
+if ! pulp_resource_exists "repositories/deb/apt" "$REPOSITORY_NAME"; then
   echo "::error::Nothing to promote, repository $REPOSITORY_NAME does not exist"
   exit 1
 fi
 
-if ! pulp deb repository show --name "$STABLE_REPOSITORY_NAME" >/dev/null 2>&1; then
+if ! pulp_resource_exists "repositories/deb/apt" "$STABLE_REPOSITORY_NAME"; then
   echo "::error::Stable repository $STABLE_REPOSITORY_NAME does not exist. Pulp repositories are provisioned centrally by delivery-tooling create-repos; run create-repos before promoting."
   exit 1
 fi

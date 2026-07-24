@@ -70,12 +70,12 @@ if [[ ${#FILES[@]} -eq 0 ]]; then
   exit 1
 fi
 
-if ! pulp deb repository show --name "$REPOSITORY_NAME" >/dev/null 2>&1; then
+if ! pulp_resource_exists "repositories/deb/apt" "$REPOSITORY_NAME"; then
   echo "::error::deb repository $REPOSITORY_NAME does not exist. Pulp repositories and distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before delivering."
   exit 1
 fi
 
-if ! pulp deb distribution show --name "$REPOSITORY_NAME" >/dev/null 2>&1; then
+if ! pulp_resource_exists "distributions/deb/apt" "$REPOSITORY_NAME"; then
   echo "::error::deb distribution $REPOSITORY_NAME does not exist. Pulp distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before delivering. Refusing to create it here to avoid an unguarded distribution."
   exit 1
 fi

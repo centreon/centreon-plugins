@@ -551,6 +551,8 @@ jobs:
 
       - name: Deliver packages on Pulp
         # TEMP(test-pulp-only): run on the PR (canary) stability too
+        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
+        if: ${{ !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
         id: deliver_pulp
         uses: ./.github/actions/package-delivery-pulp
         with:
@@ -569,6 +571,7 @@ jobs:
       - name: Promote packages on Pulp
         # TEMP(test-pulp-only): promote right after the testing delivery
         # with a forced release type, to validate the promote path at scale
+        # (skipped on jammy/noble through the skipped deliver outcome)
         if: ${{ steps.deliver_pulp.outcome == 'success' }}
         id: promote_pulp
         uses: ./.github/actions/promote-to-stable-pulp
