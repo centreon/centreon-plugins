@@ -98,8 +98,21 @@ for ARCH in noarch x86_64; do
   # pulp-cli repository content modify does not resolve content by pulp_href, use the api directly
   ADD_BODY_FILE=$(mktemp)
   echo "$CONTENT" | jq -c '{add_content_units: .}' > "$ADD_BODY_FILE"
-  TASK_HREF=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
-  wait_task "$TASK_HREF"
+  # retried like the deb path: any task can lose its worker, and concurrent
+  # promotions can race on the stable repository version
+  for modify_attempt in 1 2 3; do
+    TASK_HREF=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
+    wait_task_race "$TASK_HREF" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $modify_attempt -lt 3 ]]; then
+      echo "[WARN] Stable repository modify was interrupted server-side, retrying"
+      sleep $((modify_attempt * 15))
+    else
+      echo "::error::Stable repository modify failed"
+      exit 1
+    fi
+  done
 
   echo "[INFO] Publishing repository $STABLE_REPOSITORY_NAME"
   create_publication rpm "$STABLE_REPOSITORY_NAME"

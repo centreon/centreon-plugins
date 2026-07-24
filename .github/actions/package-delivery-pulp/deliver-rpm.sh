@@ -250,8 +250,21 @@ for ARCH in noarch x86_64; do
   # body through a file: thousands of hrefs exceed the argv limit
   ADD_BODY_FILE=$(mktemp)
   printf '%s\n' "${CONTENT_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
-  MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
-  wait_task "$MODIFY_TASK"
+  # retried like the deb path: several modules deliver into the same rpm
+  # repository (version race), and any task can lose its worker
+  for modify_attempt in 1 2 3; do
+    MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
+    wait_task_race "$MODIFY_TASK" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $modify_attempt -lt 3 ]]; then
+      echo "[WARN] Repository modify was interrupted server-side, retrying"
+      sleep $((modify_attempt * 15))
+    else
+      echo "::error::Repository modify failed"
+      exit 1
+    fi
+  done
 
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
   create_publication rpm "$REPOSITORY_NAME"
