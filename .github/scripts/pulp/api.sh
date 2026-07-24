@@ -179,6 +179,29 @@ wait_task_race() {
   return 1
 }
 
+# POST a json body with MANUAL retry on transient gateway failures: curl
+# --retry concatenates the bodies of failed attempts, which corrupts a
+# captured json response (a 502 html page glued before the 201 body). A 500
+# is NOT retried: on this api it means a duplicate synchronous content
+# create, and the caller's lookup fallback is the correct answer.
+# Echoes the final body; POST_HTTP_CODE holds the final status; rc 0 on 2xx.
+post_json() {
+  local url=$1 json=$2 attempt response
+  response=""
+  for attempt in 1 2 3 4; do
+    refresh_pulp_token
+    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' \
+      -X POST -H "Content-Type: application/json" -d "$json" "$url" 2>/dev/null) || response=$'\n000'
+    POST_HTTP_CODE="${response##*$'\n'}"
+    case "$POST_HTTP_CODE" in
+      2* | 4* | 500) break ;;
+      *) sleep $((attempt * 3)) ;;
+    esac
+  done
+  printf '%s' "${response%$'\n'*}"
+  [[ "$POST_HTTP_CODE" == 2* ]]
+}
+
 # start a repository modify task, with retry on transient gateway failures:
 # it is the single most critical call of the flow (all uploaded content lands
 # in the repository through it) and add_content_units is idempotent, so
@@ -223,22 +246,20 @@ create_publication() {
   # outer retry: the publication task itself can die server-side for
   # retryable reasons (task worker terminated mid-task, version race)
   for outer in 1 2 3; do
-    out=""
+    task=""
     for attempt in 1 2 3; do
       refresh_pulp_token
-      out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1) && break
+      if out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1); then
+        # an output without a task href (gateway error page relayed by the
+        # cli) is a start failure too, retried like a non-zero exit
+        task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
+        [[ -n "$task" ]] && break
+      fi
       echo "[WARN] publication start attempt $attempt/3 failed for $repository, retrying..." >&2
       sleep $((attempt * 10))
-      out=""
     done
-    if [[ -z "$out" ]]; then
-      echo "::error::Cannot start the publication of repository $repository"
-      return 1
-    fi
-    task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
     if [[ -z "$task" ]]; then
-      echo "$out"
-      echo "::error::Cannot find the publication task of repository $repository in the pulp-cli output"
+      echo "::error::Cannot start the publication of repository $repository"
       return 1
     fi
     wait_task_race "$task" && rc=0 || rc=$?
