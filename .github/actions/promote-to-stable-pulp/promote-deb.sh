@@ -343,9 +343,10 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
     (
       refresh_pulp_token
       package_href=$(echo "${BATCH_PACKAGES[$i]}" | jq -r '.pulp_href')
-      body=$(post_json "$PULP_URL/api/v3/content/deb/package_release_components/" \
-        "{\"package\": \"$package_href\", \"release_component\": \"$STABLE_RC\"}") || true
-      code="$POST_HTTP_CODE"
+      out=$(post_json "$PULP_URL/api/v3/content/deb/package_release_components/" \
+        "{\"package\": \"$package_href\", \"release_component\": \"$STABLE_RC\"}") || out=$'\n000'
+      code="${out##*$'\n'}"
+      body="${out%$'\n'*}"
       href=""
       if [[ "$code" == 2* ]]; then
         # tolerate a non-json body (gateway error page behind a 2xx): a jq
