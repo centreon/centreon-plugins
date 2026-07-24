@@ -18,7 +18,7 @@ TOTAL_PACKAGES_COUNT=0
 for ARCH in noarch x86_64; do
   TESTING_REPOSITORY_NAME="$TESTING_REPOSITORY_PREFIX-$ARCH"
 
-  if ! pulp rpm repository show --name "$TESTING_REPOSITORY_NAME" >/dev/null 2>&1; then
+  if ! pulp_resource_exists "repositories/rpm/rpm" "$TESTING_REPOSITORY_NAME"; then
     echo "[INFO] Testing repository $TESTING_REPOSITORY_NAME does not exist"
     continue
   fi
@@ -82,12 +82,12 @@ for ARCH in noarch x86_64; do
   STABLE_REPOSITORY_NAME="$STABLE_REPOSITORY_PREFIX-$ARCH"
   STABLE_BASE_PATH="$STABLE_BASE_PATH_PREFIX/$ARCH"
 
-  if ! pulp rpm repository show --name "$STABLE_REPOSITORY_NAME" >/dev/null 2>&1; then
+  if ! pulp_resource_exists "repositories/rpm/rpm" "$STABLE_REPOSITORY_NAME"; then
     echo "::error::stable rpm repository $STABLE_REPOSITORY_NAME does not exist. Pulp repositories and distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before promoting."
     exit 1
   fi
 
-  if ! pulp rpm distribution show --name "$STABLE_REPOSITORY_NAME" >/dev/null 2>&1; then
+  if ! pulp_resource_exists "distributions/rpm/rpm" "$STABLE_REPOSITORY_NAME"; then
     echo "::error::stable rpm distribution $STABLE_REPOSITORY_NAME does not exist. Pulp distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before promoting. Refusing to create it here to avoid an unguarded distribution."
     exit 1
   fi

@@ -179,6 +179,31 @@ wait_task_race() {
   return 1
 }
 
+# check that a named pulp resource exists through the REST list api,
+# distinguishing a genuine absence from an api failure: a failed "pulp show"
+# reads as "does not exist" and turned an api saturation window into
+# "nothing to promote". 0=exists, 1=absent; an unanswerable api aborts the
+# caller (set -e) after retries: better fail loud than act on a guess.
+# usage: pulp_resource_exists <type_path> <name>   e.g. repositories/deb/apt
+pulp_resource_exists() {
+  local type_path=$1 name=$2 attempt response http_code count
+  for attempt in 1 2 3 4; do
+    refresh_pulp_token
+    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' -G \
+      --data-urlencode "name=$name" --data-urlencode "limit=1" \
+      "$PULP_URL/api/v3/$type_path/" 2>/dev/null) || response=$'\n000'
+    http_code="${response##*$'\n'}"
+    if [[ "$http_code" == "200" ]]; then
+      count=$(printf '%s' "${response%$'\n'*}" | jq -r '.count' 2>/dev/null) || count=""
+      [[ "$count" == "0" ]] && return 1
+      [[ -n "$count" ]] && return 0
+    fi
+    sleep $((attempt * 5))
+  done
+  echo "::error::Cannot check the existence of $name (HTTP ${http_code:-network-error}); refusing to guess." >&2
+  exit 70
+}
+
 # POST a json body with MANUAL retry on transient gateway failures: curl
 # --retry concatenates the bodies of failed attempts, which corrupts a
 # captured json response (a 502 html page glued before the 201 body). A 500
