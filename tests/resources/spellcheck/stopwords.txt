@@ -173,6 +173,7 @@ jobqueues
 Jolokia
 journalctl
 JSONPath
+Juniper
 Kairos
 kccevent
 keepass
@@ -209,6 +210,7 @@ Microkernel
 Mikrotik
 milliwatt
 milliwatts
+Mist
 MMC
 module-cellradio-csq
 module-cellradio-rscp
@@ -233,6 +235,7 @@ MTU
 multiple
 mW
 MX
+NAC
 nagios
 Nagios
 NagVis
@@ -305,6 +308,7 @@ QoS
 Qtree
 queue-messages-inflighted
 quts
+RADIUS
 raidvolume
 redis-cli
 ReplicaJobSession
@@ -318,6 +322,8 @@ RSS
 rssi
 RTT
 Rubrik
+SSID
+UUID
 µs
 Sansymphony
 SAS
