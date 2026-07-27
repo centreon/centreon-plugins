@@ -39,6 +39,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $options{custom}->cache_devices();
+    $options{custom}->cache_sensors();
 
     $self->{output}->output_add(
         severity => 'OK',
