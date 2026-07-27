@@ -241,29 +241,27 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    #my $devices = $options{custom}->get_devices();
+    my $devices = $options{custom}->get_devices();
     my $sensors = $options{custom}->get_sensors();
 
     $self->{global} = { detected => 0 };
     $self->{devices} = {};
     foreach my $sensor (values %$sensors) {
-        #next if is_excluded($devices->{ $sensor->{parentId} }->{name}, $self->{option_results}->{include_device_name}, $self->{option_results}->{exclude_device_name});
-        #next if is_excluded($devices->{ $sensor->{parentId} }->{id}, $self->{option_results}->{include_device_id}, $self->{option_results}->{exclude_device_id});
+        next if is_excluded($devices->{ $sensor->{parentId} }->{name}, $self->{option_results}->{include_device_name}, $self->{option_results}->{exclude_device_name});
+        next if is_excluded($devices->{ $sensor->{parentId} }->{id}, $self->{option_results}->{include_device_id}, $self->{option_results}->{exclude_device_id});
         next if is_excluded($sensor->{name}, $self->{option_results}->{include_sensor_name}, $self->{option_results}->{exclude_sensor_name});
         next if is_excluded($sensor->{id}, $self->{option_results}->{include_sensor_id}, $self->{option_results}->{exclude_sensor_id});
 
         if (!defined($self->{devices}->{ $sensor->{parentId} })) {
             $self->{devices}->{ $sensor->{parentId} } = {
-                #deviceName => $devices->{ $sensor->{parentId} }->{name},
-                deviceName => $sensor->{parentId},
+                deviceName => $devices->{ $sensor->{parentId} }->{name},
                 sensors => {}
             };
             $self->{global}->{detected}++;
         }
 
         $self->{devices}->{ $sensor->{parentId} }->{sensors}->{ $sensor->{id} } = {
-            #deviceName => $devices->{ $sensor->{parentId} }->{name},
-            deviceName => $sensor->{parentId},
+            deviceName => $devices->{ $sensor->{parentId} }->{name},
             sensorName   => $sensor->{name},
             sensorStatus => $sensor->{status},
             current      => $sensor->{lastvalueRaw}
@@ -295,17 +293,16 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    #my $devices = $options{custom}->get_devices();
+    my $devices = $options{custom}->get_devices();
     my $sensors = $options{custom}->get_sensors();
     foreach my $sensor (values %$sensors) {
-        #next if is_excluded($devices->{ $sensor->{parentId} }->{name}, $self->{option_results}->{include_device_name}, $self->{option_results}->{exclude_device_name});
-        #next if is_excluded($devices->{ $sensor->{parentId} }->{id}, $self->{option_results}->{include_device_id}, $self->{option_results}->{exclude_device_id});
+        next if is_excluded($devices->{ $sensor->{parentId} }->{name}, $self->{option_results}->{include_device_name}, $self->{option_results}->{exclude_device_name});
+        next if is_excluded($devices->{ $sensor->{parentId} }->{id}, $self->{option_results}->{include_device_id}, $self->{option_results}->{exclude_device_id});
         next if is_excluded($sensor->{name}, $self->{option_results}->{include_sensor_name}, $self->{option_results}->{exclude_sensor_name});
         next if is_excluded($sensor->{id}, $self->{option_results}->{include_sensor_id}, $self->{option_results}->{exclude_sensor_id});
 
         $self->{output}->add_disco_entry(
-            #deviceName => $devices->{ $sensor->{parentId} }->{name},
-            deviceName => $sensor->{parentId},
+            deviceName   => $devices->{ $sensor->{parentId} }->{name},
             deviceId     => $sensor->{parentId},
             sensorName   => $sensor->{name},
             sensorId     => $sensor->{id},
