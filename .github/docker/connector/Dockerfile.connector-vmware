@@ -162,38 +162,6 @@ RUN mkdir -p /usr/local/share/perl/5.36.0/VMware /usr/local/share/perl5/VMware
 FROM sdk-${WITH_SDK} AS sdk-installer
 
 #############################################
-# Stage 2c: arm64 Perl modules builder
-# Compiles CPAN modules unavailable as arm64 packages.
-# amd64: uses Centreon apt repo packages instead (see cpanm-deps-amd64 below).
-#############################################
-FROM debian:13-slim AS cpanm-builder
-
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    --mount=type=cache,target=/root/.cpanm \
-    bash -e <<'EOF'
-apt-get update
-apt-get install -y --no-install-recommends \
-    cpanminus \
-    build-essential \
-    libzmq3-dev \
-    perl
-cpanm --notest --configure-timeout 300 -L /opt/perl-modules \
-    ZMQ::LibZMQ4
-EOF
-
-# arm64: inject pre-compiled modules into runtime
-FROM scratch AS cpanm-deps-arm64
-COPY --from=cpanm-builder /opt/perl-modules/ /opt/perl-modules/
-
-# amd64: packages come from Centreon apt repo — nothing to copy from builder
-FROM scratch AS cpanm-deps-amd64
-
-ARG TARGETARCH
-# hadolint ignore=DL3006
-FROM cpanm-deps-${TARGETARCH} AS cpanm-deps-selected
-
-#############################################
 # Stage 3: Runtime - Debian 13 slim image (trixie)
 #############################################
 FROM debian:13-slim AS centreon-vmware
@@ -224,12 +192,10 @@ usermod -aG centreon-engine centreon
 usermod -aG centreon-gorgone centreon
 EOF
 
-# Install runtime dependencies — one update, arch-conditional Centreon repo + packages
-ARG TARGETARCH
+# Install runtime dependencies — one update, same packages on every arch
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     bash -e <<'EOF'
-ARCH=$(dpkg --print-architecture)
 apt-get update
 apt-get install -y --no-install-recommends gnupg wget ca-certificates
 . /etc/os-release
@@ -253,19 +219,13 @@ apt-get install -y --no-install-recommends \
     libuuid-perl \
     libzmq5 \
     libzmq-constants-perl \
+    libzmq-libzmq4-perl \
     libxml-libxml-perl \
     libjson-perl \
     inotify-tools \
     netcat-openbsd
-if [ "$ARCH" = "amd64" ]; then
-    apt-get install -y --no-install-recommends \
-        libzmq-libzmq4-perl
-fi
 rm -rf /tmp/* /var/tmp/* /usr/share/doc/* /usr/share/man/*
 EOF
-
-# arm64: inject pre-compiled Perl modules from cpanm-builder (amd64: FROM scratch — no-op)
-COPY --link --from=cpanm-deps-selected / /
 
 # Create directory structure
 RUN bash -e <<'EOF'
@@ -312,7 +272,7 @@ EOF
 
 COPY --chmod=755 .github/docker/connector/entrypoint /usr/local/lib/centreon-vmware/
 
-ENV PERL5LIB=/opt/perl-modules/lib/perl5:/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
+ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
 EXPOSE 5700
 
