@@ -9,6 +9,10 @@ extern crate rasn_smi;
 extern crate rasn_snmp;
 
 use crate::compute::ast::ExprResult;
+use crate::generic::error::Error::EmptyResponse;
+use crate::generic::error::Error::FailedToConnectToHost;
+use crate::generic::error::Error::InvalidSnmpPduDecode;
+use crate::generic::error::Error::InvalidSnmpPduEncode;
 use log::{info, trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_snmp::v2::BulkPdu;
@@ -57,6 +61,61 @@ impl SnmpResult {
     }
 }
 
+/// Helper function to parse a numerical oid and return a vector containing the list of id composing the oid.
+///
+/// # Arguments
+/// * `oid` - string in the form '.1.3.6.1.2', the first dot being optionnal.
+///
+/// # Returns
+/// an array of unsigned number representing the oid, or an error if one of the oid part was not a number
+///
+pub fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
+    let mut oid_u32: Vec<u32> = vec![];
+    for id in oid.split('.').skip_while(|d| d.is_empty()) {
+        // OIDs are generally given starting with a '.' so the first digit may be empty
+        oid_u32.push(id.parse::<u32>().map_err(|_| InvalidOidParser {
+            oid: oid.to_string(),
+        })?);
+    }
+    return Ok(oid_u32);
+}
+
+/// Create an udp socket and send a snmp request on it, returning the response.
+/// This function is blocking.
+///
+/// # Arguments
+/// * `target` - Target address in "host:port" format
+/// * `message` - Snmp Message, containing the snmp version, comunity, and a Pdu
+///
+/// # Returns
+/// A Message<Pdu> containing the answers from the target, or an error if it was not reacheable
+///
+pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+    let socket = UdpSocket::bind("0.0.0.0:0")?;
+    socket.connect(target)?;
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration))?;
+    // Send the message through an UDP socket
+    let encoded: Vec<u8> = rasn::der::encode(&message).map_err(|_| InvalidSnmpPduEncode {})?;
+    let res: usize = socket.send(&encoded)?;
+    assert!(res == encoded.len());
+    let mut buf: [u8; 1024] = [0; 1024];
+    trace!("waiting to receive data from {:?}", socket.peer_addr());
+    let resp: (usize, std::net::SocketAddr) =
+        socket
+            .recv_from(buf.as_mut_slice())
+            .map_err(|e| FailedToConnectToHost {
+                url: target.to_string(),
+                os: e.to_string(),
+            })?;
+
+    trace!("Received {} bytes", resp.0);
+    if resp.0 == 0 {
+        return Err(EmptyResponse {});
+    }
+
+    rasn::ber::decode(&buf[0..resp.0]).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })
+}
 
 /// Retrieves values for multiple OIDs in a single bulk request.
 ///
@@ -70,37 +129,29 @@ impl SnmpResult {
 /// * `names` - Vector of logical names (one per OID)
 ///
 /// # Returns
-/// An [`SnmpResult`] containing the retrieved values indexed by name
+/// An Result<[`SnmpResult`]> containing the retrieved values indexed by name, or an error
+///
+use crate::Error::InvalidOidParser;
+use crate::generic::error::Result;
 pub fn snmp_bulk_get<'a>(
     target: &str,
     _version: &str,
     community: &str,
     non_repeaters: u32,
     max_repetitions: u32,
-    oid: &Vec<&str>,
+    oid_list: &Vec<&str>,
     names: &Vec<&str>,
-) -> SnmpResult {
-    let oids_tab = oid
-        .iter()
-        .map(|x| {
-            x.split('.')
-                .skip_while(|d| d.is_empty()) // OIDs are generally given starting with a '.' so the first digit may be empty
-                .map(|x| x.parse::<u32>().unwrap())
-                .filter(|x| *x != 0) // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first OID we are trying to get will never be requested
-                .collect::<Vec<u32>>()
-        })
-        .collect::<Vec<Vec<u32>>>();
+) -> Result<SnmpResult> {
+    let mut oids_tab: Vec<Vec<u32>> = vec![];
+    for oid_str in oid_list {
+        oids_tab.push(oid_to_vec(oid_str)?);
+    }
 
     let mut retval = SnmpResult {
         items: HashMap::new(),
         last_oid: Vec::new(),
     };
     let request_id: i32 = 1;
-
-    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
-    socket.connect(target).expect("connect function failed");
-    let duration = std::time::Duration::from_millis(1000);
-    socket.set_read_timeout(Some(duration)).unwrap();
 
     let variable_bindings = oids_tab
         .iter()
@@ -124,20 +175,10 @@ pub fn snmp_bulk_get<'a>(
         community: community.to_string().into(),
         data: get_request.into(),
     };
+    let decoded = get_data_from_udp(target, message)?;
 
-    // Send the message through an UDP socket
-    let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
-    let res: usize = socket.send(&encoded).unwrap();
-    assert!(res == encoded.len());
-
-    let mut buf: [u8; 1024] = [0; 1024];
-    let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
-
-    trace!("Received {} bytes", resp.0);
-    assert!(resp.0 > 0);
-    let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
     let _completed = retval.build_response_with_names(decoded, "", names, false);
-    retval
+    Ok(retval)
 }
 
 /// Walks a subtree of OIDs using repeated bulk requests until the subtree is exhausted.
@@ -160,24 +201,14 @@ pub fn snmp_bulk_walk<'a>(
     community: &str,
     oid: &str,
     snmp_name: &str,
-) -> SnmpResult {
-    let oid_init = oid
-        .split('.')
-        .skip_while(|d| d.is_empty()) // OIDs are generally given starting with a '.' so the first digit may be empty
-        .map(|x| x.parse::<u32>().unwrap())
-        .collect::<Vec<u32>>();
+) -> Result<SnmpResult> {
+    let oid_init = oid_to_vec(oid)?;
     let mut oid_tab = &oid_init;
     let mut retval = SnmpResult {
         items: HashMap::new(),
         last_oid: Vec::new(),
     };
     let request_id: i32 = 1;
-
-    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
-    socket.connect(target).expect("connect function failed");
-    let duration = std::time::Duration::from_millis(1000);
-    socket.set_read_timeout(Some(duration)).unwrap();
-
     loop {
         let variable_bindings = vec![VarBind {
             name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
@@ -199,17 +230,7 @@ pub fn snmp_bulk_walk<'a>(
             data: get_request.into(),
         };
 
-        // Send the message through an UDP socket
-        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
-        let res: usize = socket.send(&encoded).unwrap();
-        assert!(res == encoded.len());
-
-        let mut buf: [u8; 1024] = [0; 1024];
-        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
-
-        trace!("Received {} bytes", resp.0);
-        assert!(resp.0 > 0);
-        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
+        let decoded = get_data_from_udp(target, message)?;
         let completed = retval.build_response(decoded, &oid, snmp_name, true);
 
         if completed {
@@ -217,7 +238,7 @@ pub fn snmp_bulk_walk<'a>(
         }
         oid_tab = &retval.last_oid;
     }
-    retval
+    Ok(retval)
 }
 
 /// Walks a subtree and organizes results by label matches.
@@ -242,7 +263,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
     oid: &str,
     snmp_name: &str,
     labels: &'a HashMap<String, String>,
-) -> SnmpResult {
+) -> Result<SnmpResult> {
     let oid_init = oid
         .split('.')
         .map(|x| x.parse::<u32>().unwrap())
@@ -254,11 +275,6 @@ pub fn snmp_bulk_walk_with_labels<'a>(
         last_oid: Vec::new(),
     };
     let request_id: i32 = 1;
-
-    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
-    socket.connect(target).expect("connect function failed");
-    let duration = std::time::Duration::from_millis(1000);
-    socket.set_read_timeout(Some(duration)).unwrap();
 
     loop {
         let variable_bindings = vec![VarBind {
@@ -282,23 +298,15 @@ pub fn snmp_bulk_walk_with_labels<'a>(
         };
 
         // Send the message through an UDP socket
-        let encoded: Vec<u8> = rasn::der::encode(&message).unwrap();
-        let res: usize = socket.send(&encoded).unwrap();
-        assert!(res == encoded.len());
+        let decoded = get_data_from_udp(target, message)?;
 
-        let mut buf: [u8; 1024] = [0; 1024];
-        let resp: (usize, std::net::SocketAddr) = socket.recv_from(buf.as_mut_slice()).unwrap();
-
-        trace!("Received {} bytes", resp.0);
-        assert!(resp.0 > 0);
-        let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..resp.0]).unwrap();
         let completed = retval.build_response_with_labels(decoded, &oid, snmp_name, labels, true);
         if completed {
             break;
         }
         oid_tab = &retval.last_oid;
     }
-    retval
+    Ok(retval)
 }
 
 impl SnmpResult {

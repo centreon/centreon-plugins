@@ -259,7 +259,7 @@ impl Command {
         version: &str,
         community: &str,
         check_format: bool,
-    ) -> Vec<SnmpResult> {
+    ) -> Result<Vec<SnmpResult>> {
         let mut collect: Vec<SnmpResult> = Vec::new();
 
         if check_format {
@@ -290,10 +290,10 @@ impl Command {
                             let r = snmp_bulk_walk_with_labels(
                                 target, version, community, &s.oid, &s.name, &lab,
                             );
-                            collect.push(r);
+                            collect.push(r?);
                         } else {
                             let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
-                            collect.push(r);
+                            collect.push(r?);
                         }
                     }
                     QueryType::Get => {
@@ -305,11 +305,11 @@ impl Command {
 
             if !to_get.is_empty() {
                 let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-                collect.push(r);
+                collect.push(r?);
             }
         }
 
-        collect
+        Ok(collect)
     }
 
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
@@ -335,7 +335,7 @@ impl Command {
         check_format: bool,
         check_response: bool,
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community, check_format);
+        let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
 
         if check_response {
             return self.format_raw_response(&collect);
