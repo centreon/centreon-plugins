@@ -112,7 +112,7 @@ sub request_api {
     my ($content) = $self->{http}->request(
         hostname => $self->{hostname},
         url_path => $self->{api_path} . $options{endpoint},
-        get_param => $options{get_param},
+        get_param => $get_param,
         header => ['Accept: application/json'],
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
