@@ -48,6 +48,18 @@ fn json_to_command(file_name: &str) -> Result<Command, Error> {
 }
 
 fn main() -> Result<(), Error> {
+    match std::panic::catch_unwind(|| snmp_plugin()) {
+        std::result::Result::Ok(plugin_result) => plugin_result,
+        Err(e) => {
+            println!(
+                "Unexpected error while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information"
+            );
+            std::process::exit(3);
+        }
+    }
+}
+
+fn snmp_plugin() -> Result<(), Error> {
     env_logger::Builder::from_env(
         Env::default()
             .default_filter_or("info")
