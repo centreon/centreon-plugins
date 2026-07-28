@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,13 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw(:counters);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'organizations', type => 1, cb_prefix_output => 'prefix_organization_output', message_multiple => 'All organizations are ok' }
+        { name => 'organizations', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_organization_output', message_multiple => 'All organizations are ok' }
     ];
 
     $self->{maps_counters}->{organizations} = [
@@ -109,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check api requests.
+Check API requests.
 
 =over 8
 
@@ -117,10 +117,29 @@ Check api requests.
 
 Filter organization name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-api-requests-200>
 
-Thresholds.
-Can be: 'api-requests-200', 'api-requests-404', 'api-requests-429'.
+Threshold.
+
+=item B<--critical-api-requests-200>
+
+Threshold.
+
+=item B<--warning-api-requests-404>
+
+Threshold.
+
+=item B<--critical-api-requests-404>
+
+Threshold.
+
+=item B<--warning-api-requests-429>
+
+Threshold.
+
+=item B<--critical-api-requests-429>
+
+Threshold.
 
 =back
 

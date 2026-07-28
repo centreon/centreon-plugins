@@ -1,0 +1,148 @@
+name: "promote testing to stable"
+description: "Promote testing packages to stable."
+inputs:
+  module_name:
+    description: "Module name"
+    required: true
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  major_version:
+    description: "Centreon packaged major version (not used by the plugins repository family)"
+    required: false
+    default: ""
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+  release_type:
+    description: "Type of release (hotfix, release)"
+    required: true
+  is_cloud:
+    description: "Release context (cloud or not cloud)"
+    required: true
+  repository_name:
+    description: "Target repository family: standard, standard-internal, business, business-internal or plugins"
+    required: false
+    default: "standard"
+  verify:
+    description: "Verify the promoted packages afterwards (presence, metadata resolution, fetchability)"
+    required: false
+    default: "true"
+  pulp_url:
+    description: "The pulp server api url"
+    required: false
+    default: "https://pulp-api.apps.centreon.com"
+  pulp_content_url:
+    description: "The pulp server content url"
+    required: false
+    default: "https://packages.apps.centreon.com"
+  audience:
+    description: "OIDC audience, must match the pulp server GITHUB_OIDC.audience"
+    required: false
+    default: "https://pulp.dev.centreon.io"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Validate inputs
+      shell: bash
+      env:
+        RELEASE_TYPE: ${{ inputs.release_type }}
+      run: |
+        set -euo pipefail
+
+        if [[ "$RELEASE_TYPE" != "release" && "$RELEASE_TYPE" != "hotfix" ]]; then
+          echo "::error::release_type input must be defined (release or hotfix)"
+          exit 1
+        fi
+
+    - name: Compute pulp repository properties
+      id: pulp-properties
+      uses: ./.github/actions/pulp-repository-properties
+      with:
+        module_name: ${{ inputs.module_name }}
+        distrib: ${{ inputs.distrib }}
+        version: ${{ inputs.major_version }}
+        stability: ${{ inputs.stability }}
+        release_type: ${{ inputs.release_type }}
+        is_cloud: ${{ inputs.is_cloud }}
+        repository_name: ${{ inputs.repository_name }}
+
+    - name: Setup pulp-cli
+      uses: ./.github/actions/setup-pulp-cli
+      with:
+        pulp_url: ${{ inputs.pulp_url }}
+        audience: ${{ inputs.audience }}
+
+    - name: Promote RPM packages to stable
+      id: promote-rpm
+      if: steps.pulp-properties.outputs.package_extension == 'rpm'
+      shell: bash
+      env:
+        MODULE_NAME: ${{ inputs.module_name }}
+        DISTRIB: ${{ inputs.distrib }}
+        TESTING_REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.testing_repository_prefix }}
+        STABLE_REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.stable_repository_prefix }}
+        STABLE_BASE_PATH_PREFIX: ${{ steps.pulp-properties.outputs.stable_base_path_prefix }}
+        STABILITY: ${{ inputs.stability }}
+        PULP_URL: ${{ inputs.pulp_url }}
+        PULP_TOKEN: ${{ env.PULP_TOKEN }}
+        PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+      run: ${{ github.action_path }}/promote-rpm.sh
+
+    - name: Promote DEB packages to stable
+      id: promote-deb
+      if: steps.pulp-properties.outputs.package_extension == 'deb'
+      shell: bash
+      env:
+        MODULE_NAME: ${{ inputs.module_name }}
+        DISTRIB: ${{ inputs.distrib }}
+        REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.repository_name }}
+        BASE_PATH: ${{ steps.pulp-properties.outputs.base_path }}
+        TESTING_POOL_PATH: ${{ steps.pulp-properties.outputs.testing_pool_path }}
+        TESTING_SUITE: ${{ steps.pulp-properties.outputs.testing_suite }}
+        STABLE_SUITE: ${{ steps.pulp-properties.outputs.stable_suite }}
+        STABLE_REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.stable_repository_name }}
+        STABLE_BASE_PATH: ${{ steps.pulp-properties.outputs.stable_base_path }}
+        PACKAGE_DISTRIB_NAME: ${{ steps.pulp-properties.outputs.package_distrib_name }}
+        STABILITY: ${{ inputs.stability }}
+        PULP_URL: ${{ inputs.pulp_url }}
+        PULP_TOKEN: ${{ env.PULP_TOKEN }}
+        PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+      run: ${{ github.action_path }}/promote-deb.sh
+
+    - name: Verify RPM promotion
+      # skipped on dry runs (stability != stable): the promote script exits
+      # before promoting anything, so there is no manifest to verify
+      if: inputs.verify == 'true' && inputs.stability == 'stable' && steps.pulp-properties.outputs.package_extension == 'rpm'
+      shell: bash
+      env:
+        MANIFEST: ${{ steps.promote-rpm.outputs.manifest }}
+        CHECK_MODE: promote
+        MODULE_NAME: ${{ inputs.module_name }}
+        DISTRIB: ${{ inputs.distrib }}
+        STABILITY: ${{ inputs.stability }}
+        PULP_URL: ${{ inputs.pulp_url }}
+        PULP_TOKEN: ${{ env.PULP_TOKEN }}
+        PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+      run: |
+        ${{ github.action_path }}/../../scripts/pulp/check-rpm.sh ||
+          echo "::warning::Pulp promotion verification failed for ${MODULE_NAME} on ${DISTRIB} (non-blocking during the Artifactory-to-Pulp migration, see the run summary table)"
+
+    - name: Verify DEB promotion
+      # skipped on dry runs (stability != stable): the promote script exits
+      # before promoting anything, so there is no manifest to verify
+      if: inputs.verify == 'true' && inputs.stability == 'stable' && steps.pulp-properties.outputs.package_extension == 'deb'
+      shell: bash
+      env:
+        MANIFEST: ${{ steps.promote-deb.outputs.manifest }}
+        CHECK_MODE: promote
+        MODULE_NAME: ${{ inputs.module_name }}
+        DISTRIB: ${{ inputs.distrib }}
+        STABILITY: ${{ inputs.stability }}
+        PULP_URL: ${{ inputs.pulp_url }}
+        PULP_TOKEN: ${{ env.PULP_TOKEN }}
+        PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+      run: |
+        ${{ github.action_path }}/../../scripts/pulp/check-deb.sh ||
+          echo "::warning::Pulp promotion verification failed for ${MODULE_NAME} on ${DISTRIB} (non-blocking during the Artifactory-to-Pulp migration, see the run summary table)"

@@ -1,0 +1,35 @@
+cat <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.94SVN scan initiated Tue May 19 17:37:16 2026 as: nmap -sS -sU -R -O -&#45;osscan-limit -&#45;osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - 127.0.0.1/32 -->
+<nmaprun scanner="nmap" args="nmap -sS -sU -R -O -&#45;osscan-limit -&#45;osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - 127.0.0.1/32" start="1779205036" startstr="Tue May 19 17:37:16 2026" version="7.94SVN" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="11" services="21-25,80,139,443,3306,8080,8443"/>
+<scaninfo type="udp" protocol="udp" numservices="2" services="161-162"/>
+<verbose level="0"/>
+<debugging level="0"/>
+<host starttime="1779205036" endtime="1779205036"><status state="up" reason="localhost-response" reason_ttl="0"/>
+<address addr="127.0.0.1" addrtype="ipv4"/>
+<hostnames>
+<hostname name="localhost" type="PTR"/>
+</hostnames>
+<ports><port protocol="tcp" portid="21"><state state="closed" reason="reset" reason_ttl="64"/><service name="ftp" method="table" conf="3"/></port>
+<port protocol="tcp" portid="22"><state state="closed" reason="reset" reason_ttl="64"/><service name="ssh" method="table" conf="3"/></port>
+<port protocol="tcp" portid="23"><state state="closed" reason="reset" reason_ttl="64"/><service name="telnet" method="table" conf="3"/></port>
+<port protocol="tcp" portid="24"><state state="closed" reason="reset" reason_ttl="64"/><service name="priv-mail" method="table" conf="3"/></port>
+<port protocol="tcp" portid="25"><state state="closed" reason="reset" reason_ttl="64"/><service name="smtp" method="table" conf="3"/></port>
+<port protocol="tcp" portid="80"><state state="closed" reason="reset" reason_ttl="64"/><service name="http" method="table" conf="3"/></port>
+<port protocol="tcp" portid="139"><state state="closed" reason="reset" reason_ttl="64"/><service name="netbios-ssn" method="table" conf="3"/></port>
+<port protocol="tcp" portid="443"><state state="closed" reason="reset" reason_ttl="64"/><service name="https" method="table" conf="3"/></port>
+<port protocol="tcp" portid="3306"><state state="closed" reason="reset" reason_ttl="64"/><service name="mysql" method="table" conf="3"/></port>
+<port protocol="tcp" portid="8080"><state state="closed" reason="reset" reason_ttl="64"/><service name="http-proxy" method="table" conf="3"/></port>
+<port protocol="tcp" portid="8443"><state state="closed" reason="reset" reason_ttl="64"/><service name="https-alt" method="table" conf="3"/></port>
+<port protocol="udp" portid="161"><state state="open" reason="udp-response" reason_ttl="64"/><service name="snmp" method="table" conf="3"/></port>
+<port protocol="udp" portid="162"><state state="closed" reason="port-unreach" reason_ttl="64"/><service name="snmptrap" method="table" conf="3"/></port>
+</ports>
+<times srtt="62" rttvar="243" to="100000"/>
+</host>
+<runstats><finished time="1779205036" timestr="Tue May 19 17:37:16 2026" summary="Nmap done at Tue May 19 17:37:16 2026; 1 IP address (1 host up) scanned in 0.26 seconds" elapsed="0.26" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>
+EOF

@@ -45,7 +45,7 @@ pub struct Output {
 }
 
 fn default_ok() -> String {
-    "OK: Everything is ok".to_string()
+    "OK: Everything is ok ".to_string()
 }
 fn default_warning() -> String {
     "WARNING: ".to_string()
@@ -208,7 +208,12 @@ impl<'a> OutputFormatter<'a> {
         for m in self.metrics.iter() {
             if let Some(status) = m.status {
                 if status.is_worse_than(self.status) {
-                    v.push(std::format!("{} is {}{}", m.name, float_string(&m.value), m.uom));
+                    v.push(std::format!(
+                        "{} is {}{}",
+                        m.name,
+                        float_string(&m.value),
+                        m.uom
+                    ));
                 }
             }
         }

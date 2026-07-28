@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,8 +22,8 @@ package centreon::plugins::values;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use centreon::plugins::constants qw(:values);
+use centreon::plugins::misc qw/exprintf/;
+use centreon::plugins::constants qw(:values :unit_conversion);
 
 # Warning message with sprintf and too much arguments.
 # Really annoying. Need to disable that warning
@@ -54,6 +54,7 @@ sub new {
     $self->{threshold_crit} = undef;
 
     $self->{per_second} = 0;
+    $self->{per_minute} = 0;
     $self->{manual_keys} = 0;
     $self->{last_timestamp} = undef;
 
@@ -96,14 +97,15 @@ sub calc {
 
     # manage only one value ;)
     foreach my $value (@{$self->{key_values}}) {
-        if (defined($value->{diff}) && $value->{diff} == 1)  {
-            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
-        } elsif (defined($value->{per_second}) && $value->{per_second} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
-        } elsif (defined($value->{per_minute}) && $value->{per_minute} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / ($options{delta_time} / 60);
+        my $instance_name = $self->{instance} . '_' . $value->{name};
+        if ($value->{diff}) {
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name};
+        } elsif ($value->{per_second}) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name}) / $options{delta_time};
+        } elsif ($value->{per_minute}) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$instance_name} - $options{old_datas}->{$instance_name}) / ($options{delta_time} / 60);
         } else {
-            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$instance_name};
         }
     }
 
@@ -158,14 +160,15 @@ sub output {
 
     if (defined($name)) {
         $value = $self->{result_values}->{$name};
-        if ($self->{output_change_bytes} == 1) {
+        if ($self->{output_change_bytes} == CONVERT_STORAGE) {
             ($value, $unit) = $self->{perfdata}->change_bytes(value => $value);
-        } elsif ($self->{output_change_bytes} == 2) {
+        } elsif ($self->{output_change_bytes} == CONVERT_NETWORK) {
             ($value, $unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
+
         }
     }
 
-    return sprintf($self->{output_template}, $value, $unit);
+    return sprintf(exprintf($self->{output_template}, $self->{result_values}), $value, $unit);
 }
 
 sub use_instances {
@@ -193,7 +196,9 @@ sub perfdata {
         my $cast_int = (defined($perf->{cast_int}) && $perf->{cast_int} == 1) ? 1 : 0;
         my $template = '%s';
         
-        $template = $perf->{template} if (defined($perf->{template}));
+        $template = exprintf($perf->{template}, $self->{result_values})
+            if defined $perf->{template};
+
         $label = $perf->{label} if (defined($perf->{label}));
         if (defined($perf->{min})) {
             $min = ($perf->{min} =~ /[^0-9.-]/) ? $self->{result_values}->{$perf->{min}} : $perf->{min};
