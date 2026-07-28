@@ -36,12 +36,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'uptime', set => {
+        { label => 'uptime', nlabel => 'system.uptime.seconds', set => {
                 key_values => [ { name => 'uptime' } ],
                 closure_custom_output => $self->can('custom_uptime_output'),
-                closure_custom_perfdata => $self->can('custom_uptime_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_uptime_threshold_check'),
-                output_template => "Uptime: %s",
+                perfdatas => [
+                    { template => '%s', unit => 's', min => 0 }
+                ]
             }
         },
     ];
@@ -155,35 +155,6 @@ sub custom_uptime_output {
     );
 
     return $msg;
-}
-
-sub custom_uptime_perfdata {
-    my ($self, %options) = @_;
-
-    my $uptime_seconds = $self->{result_values}->{uptime};
-
-    $self->{output}->perfdata_add(
-        label => 'uptime',
-        nlabel => 'system.uptime.seconds',
-        value => $uptime_seconds,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-uptime'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-uptime'),
-        min => 0,
-        unit => 's'
-    );
-}
-
-sub custom_uptime_threshold_check {
-    my ($self, %options) = @_;
-    my $uptime_seconds = $self->{result_values}->{uptime};
-
-    return $self->{perfdata}->threshold_check(
-        value => $uptime_seconds,
-        threshold => [
-            { label => 'critical-uptime', exit_litteral => 'critical' },
-            { label => 'warning-uptime', exit_litteral => 'warning' },
-        ]
-    );
 }
 
 1;
