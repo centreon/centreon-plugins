@@ -237,6 +237,7 @@ nagios
 Nagios
 NagVis
 --nagvis-perfdata
+Netasq
 Netconf
 Netscaler
 net-snmp
