@@ -23,7 +23,7 @@ package centreon::plugins::dbi;
 use strict;
 use warnings;
 use DBI;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use POSIX qw(:signal_h);
 
 my %handlers = (ALRM => {});
@@ -283,7 +283,7 @@ sub get_id {
 sub get_unique_id4save {
     my ($self, %options) = @_;
 
-    return md5_hex($self->{data_source});
+    return sha256_hex($self->{data_source});
 }
 
 sub fetchall_arrayref {

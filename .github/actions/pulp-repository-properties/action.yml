@@ -1,0 +1,114 @@
+name: "pulp-repository-properties"
+description: "Compute pulp repository names, base paths and suites of a package delivery"
+inputs:
+  module_name:
+    description: "The package module name"
+    required: true
+  distrib:
+    description: "The distribution used for packaging"
+    required: true
+  version:
+    description: "Centreon packaged major version (not used by the plugins repository family)"
+    required: false
+    default: ""
+  stability:
+    description: "The package stability (stable, testing, unstable)"
+    required: true
+  release_type:
+    description: "Type of release (hotfix, release)"
+    required: false
+    default: ""
+  is_cloud:
+    description: "Release context (cloud or not cloud)"
+    required: true
+  delivery_type:
+    description: "Delivery to feature or standard repository"
+    required: false
+    default: "standard"
+  repository_name:
+    description: "Target repository family: standard, standard-internal, business, business-internal or plugins"
+    required: false
+    default: "standard"
+outputs:
+  package_extension:
+    description: "Package extension according to the distribution"
+    value: ${{ steps.parse-distrib.outputs.package_extension }}
+  distrib_family:
+    description: "Distrib family (el, debian, ubuntu)"
+    value: ${{ steps.parse-distrib.outputs.distrib_family }}
+  package_distrib_name:
+    description: "Distribution suffix in package name"
+    value: ${{ steps.parse-distrib.outputs.package_distrib_name }}
+  skip_delivery:
+    description: "Whether the delivery must be skipped"
+    value: ${{ steps.properties.outputs.skip_delivery }}
+  repository_prefix:
+    description: "Repository name prefix of rpm repositories (one repository per architecture)"
+    value: ${{ steps.properties.outputs.repository_prefix }}
+  base_path_prefix:
+    description: "Base path prefix of rpm distributions (one distribution per architecture)"
+    value: ${{ steps.properties.outputs.base_path_prefix }}
+  repository_name:
+    description: "Repository name of the deb repository"
+    value: ${{ steps.properties.outputs.repository_name }}
+  base_path:
+    description: "Base path of the deb distribution"
+    value: ${{ steps.properties.outputs.base_path }}
+  suite:
+    description: "Apt suite of the deb delivery"
+    value: ${{ steps.properties.outputs.suite }}
+  testing_repository_prefix:
+    description: "Repository name prefix of testing rpm repositories, used as promotion source"
+    value: ${{ steps.properties.outputs.testing_repository_prefix }}
+  stable_repository_prefix:
+    description: "Repository name prefix of stable rpm repositories"
+    value: ${{ steps.properties.outputs.stable_repository_prefix }}
+  stable_base_path_prefix:
+    description: "Base path prefix of stable rpm distributions"
+    value: ${{ steps.properties.outputs.stable_base_path_prefix }}
+  testing_suite:
+    description: "Apt suite of testing deb packages"
+    value: ${{ steps.properties.outputs.testing_suite }}
+  stable_suite:
+    description: "Apt suite of stable deb packages"
+    value: ${{ steps.properties.outputs.stable_suite }}
+  stable_repository_name:
+    description: "Repository holding the stable packages (dedicated for deb plugins, the delivery repository otherwise)"
+    value: ${{ steps.properties.outputs.stable_repository_name }}
+  stable_base_path:
+    description: "Base path serving the stable packages"
+    value: ${{ steps.properties.outputs.stable_base_path }}
+  pool_path:
+    description: "Module scoped pool path of the deb delivery"
+    value: ${{ steps.properties.outputs.pool_path }}
+  testing_pool_path:
+    description: "Module scoped pool path of testing deb packages, used as promotion source"
+    value: ${{ steps.properties.outputs.testing_pool_path }}
+  stable_pool_path:
+    description: "Module scoped pool path of stable deb packages"
+    value: ${{ steps.properties.outputs.stable_pool_path }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Parse distrib name
+      id: parse-distrib
+      uses: ./.github/actions/parse-distrib
+      with:
+        distrib: ${{ inputs.distrib }}
+
+    - name: Compute pulp repository properties
+      id: properties
+      shell: bash
+      env:
+        MODULE_NAME: ${{ inputs.module_name }}
+        DISTRIB: ${{ inputs.distrib }}
+        DISTRIB_FAMILY: ${{ steps.parse-distrib.outputs.distrib_family }}
+        VERSION: ${{ inputs.version }}
+        STABILITY: ${{ inputs.stability }}
+        RELEASE_TYPE: ${{ inputs.release_type }}
+        IS_CLOUD: ${{ inputs.is_cloud }}
+        DELIVERY_TYPE: ${{ inputs.delivery_type }}
+        REPOSITORY_TYPE: ${{ inputs.repository_name }}
+        GH_HEAD_REF: ${{ github.head_ref || github.ref_name }}
+      run: ${{ github.action_path }}/properties.sh

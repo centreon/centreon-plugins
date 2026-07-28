@@ -1,0 +1,9 @@
+{
+"pkg_name": "centreon-plugin-Applications-Monitoring-Centreon-LogManagement-Restapi",
+    "pkg_summary": "Centreon Plugin to query data from Centreon Log Management (CLM) solution.",
+    "plugin_name": "centreon_logmanagement_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/centreon/logmanagement/restapi/"
+    ]
+}

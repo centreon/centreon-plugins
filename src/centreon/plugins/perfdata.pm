@@ -22,7 +22,7 @@ package centreon::plugins::perfdata;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw/format_bytes/;
 
 sub new {
     my ($class, %options) = @_;
@@ -135,22 +135,7 @@ sub trim {
 sub change_bytes {
     my ($self, %options) = @_;
 
-    my $value = $options{value};
-    my $divide = defined($options{network}) ? 1000 : 1024;
-    my @units = ('K', 'M', 'G', 'T');
-    my $unit = '';
-    my $sign = '';
-
-    $sign = '-' if ($value != abs($value));
-    $value = abs($value);
-    
-    for (my $i = 0; $i < scalar(@units); $i++) {
-        last if (($value / $divide) < 1);
-        $unit = $units[$i];
-        $value = $value / $divide;
-    }
-
-    return (sprintf('%.2f', $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
+    return format_bytes(value => $options{value}, network => $options{network});
 }
 
 1;

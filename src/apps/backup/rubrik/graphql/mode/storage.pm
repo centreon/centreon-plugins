@@ -43,17 +43,11 @@ sub custom_usage_output {
     return $msg;
 }
 
-sub prefix_storage_output {
-    my ($self, %options) = @_;
-
-    return "Storage for cluster '" . $options{instance_value}->{name} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'storage', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storage are ok', skipped_code => { NO_VALUE() => 1 } }
+        { name => 'storage', type => COUNTER_TYPE_INSTANCE, prefix_output => "Storage for cluster '%{name}' ", message_multiple => 'All storage are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{storage} = [

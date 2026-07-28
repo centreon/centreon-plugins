@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,10 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5;
+use Digest::SHA qw/sha256_hex/;
 use DateTime;
 use POSIX;
-use centreon::plugins::misc;
+use centreon::plugins::constants qw/:values :counters/;
+use centreon::plugins::misc qw/change_seconds/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
@@ -89,7 +90,7 @@ sub custom_uptime_output {
 
     return sprintf(
         'uptime: %s',
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime}, start => 'd')
+        change_seconds(value => $self->{result_values}->{uptime}, start => 'd')
     );
 }
 
@@ -326,19 +327,19 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
         {
-            name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
+            name => 'devices', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok',
             group => [
-                { name => 'system', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'connection', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'mistral', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'autotests', type => 1, cb_prefix_output => 'prefix_autotest_output', message_multiple => 'autotests are ok', display_long => 1, skipped_code => { -10 => 1 } },
-                { name => 'interfaces', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { -10 => 1 } },
-                { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'certificates are ok', display_long => 1, skipped_code => { -10 => 1 } },
-                { name => 'ike_service', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'ike_sa', type => 1, cb_prefix_output => 'prefix_ike_sa_output', message_multiple => 'ike sa are ok', display_long => 1, skipped_code => { -10 => 1 } },
-                { name => 'sa', type => 1, cb_prefix_output => 'prefix_sa_output', message_multiple => 'sa are ok', display_long => 1, skipped_code => { -10 => 1 } },
+                { name => 'system', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'connection', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'mistral', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'autotests', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_autotest_output', message_multiple => 'autotests are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'interfaces', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_interface_output', message_multiple => 'interfaces are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'certificates', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'certificates are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'ike_service', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'ike_sa', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_ike_sa_output', message_multiple => 'ike sa are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'sa', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_sa_output', message_multiple => 'sa are ok', display_long => 1, skipped_code => { NO_VALUE() => 1 } },
             ]
         }
     ];
@@ -357,7 +358,7 @@ sub set_counters {
     $self->{maps_counters}->{connection} = [
         {
             label => 'connection-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             unknown_default => '%{connectionStatus} =~ /unknown/i',
             warning_default => '%{connectionStatus} =~ /disconnected|unpaired/i',
             set => {
@@ -380,7 +381,7 @@ sub set_counters {
     $self->{maps_counters}->{mistral} = [
         {
             label => 'mistral-version',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'firmwareCurrentVersion' }, { name => 'firmwareOtherVersion' }, { name => 'configurationId' } ],
                 closure_custom_output => $self->can('custom_mistral_version_output'),
@@ -390,7 +391,7 @@ sub set_counters {
         },
         {
             label => 'operating-state',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{operatingState} !~ /operating/i',
             set => {
                 key_values => [ { name => 'operatingState' }, { name => 'sn' } ],
@@ -421,7 +422,7 @@ sub set_counters {
     $self->{maps_counters}->{autotests} = [
         {
             label => 'autotest-state',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{state} !~ /success/i',
             set => {
                 key_values => [ { name => 'state' }, { name => 'name' }, { name => 'sn' } ],
@@ -435,7 +436,7 @@ sub set_counters {
     $self->{maps_counters}->{system} = [
         {
             label => 'system-version',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [ { name => 'osName' }, { name => 'osRelease' } ],
                 closure_custom_output => $self->can('custom_system_version_output'),
@@ -472,7 +473,7 @@ sub set_counters {
     $self->{maps_counters}->{interfaces} = [
         {
             label => 'interface-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             warning_default => '%{operatingStatus} !~ /up/i',
             set => {
                 key_values => [ { name => 'operatingStatus' }, { name => 'name' }, { name => 'sn' } ],
@@ -502,7 +503,7 @@ sub set_counters {
     $self->{maps_counters}->{certificates} = [
         {
             label => 'certificate-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [
                     { name => 'revoked' },
@@ -531,7 +532,7 @@ sub set_counters {
     $self->{maps_counters}->{ike_service} = [
         {
             label => 'vpn-ike-service-state',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{state} =~ /stopped/i',
             set => {
                 key_values => [ { name => 'state' }, { name => 'sn' } ],
@@ -545,7 +546,7 @@ sub set_counters {
     $self->{maps_counters}->{ike_sa} = [
         {
             label => 'vpn-ike-sa-state',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{state} =~ /down/i',
             set => {
                 key_values => [ { name => 'state' }, { name => 'name' }, { name => 'sn' } ],
@@ -559,7 +560,7 @@ sub set_counters {
      $self->{maps_counters}->{sa} = [
         {
             label => 'vpn-sa-state',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{state} =~ /down/i',
             set => {
                 key_values => [ { name => 'state' }, { name => 'name' }, { name => 'sn' } ],
@@ -778,6 +779,7 @@ sub add_certificates {
     my ($self, %options) = @_;
 
     $self->{devices}->{ $options{device}->{id} }->{certificates} = {};
+
     foreach my $cert (@{$options{device}->{certificates}}) {
         if ($cert->{validityPeriodEnd} =~ /^\s*(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.\d+([+-].*)$/) {
             my $dt = DateTime->new(
@@ -804,7 +806,7 @@ sub add_certificates {
             };
             $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds} = 0
                 if ($self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds} < 0);
-            $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_human} = centreon::plugins::misc::change_seconds(
+            $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_human} = change_seconds(
                 value => $self->{devices}->{ $options{device}->{id} }->{certificates}->{ $cert->{gwCertificateName} }->{expires_seconds}
             );
         }
@@ -877,7 +879,7 @@ sub manage_selection {
             };
             if (defined($device->{status})) {
                 $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds} = time() - ($device->{status}->{statusEpochMilli} / 1000);
-                $self->{devices}->{ $device->{id} }->{connection}->{connection_human} = centreon::plugins::misc::change_seconds(
+                $self->{devices}->{ $device->{id} }->{connection}->{connection_human} = change_seconds(
                     value => $self->{devices}->{ $device->{id} }->{connection}->{connection_seconds}
                 );
             }
@@ -900,7 +902,7 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'thales_mistral_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
-        Digest::MD5::md5_hex(
+        sha256_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
             (defined($self->{option_results}->{filter_id}) ? $self->{option_results}->{filter_id} : '') . '_' .
             (defined($self->{option_results}->{filter_sn}) ? $self->{option_results}->{filter_sn} : '') . '_' .
@@ -944,7 +946,7 @@ Check system.
 
 =item B<--add-mistral>
 
-Check mistral (operating status, temperature, autotests).
+Check mistral (C<operating status>, C<temperature>, C<autotests>).
 
 =item B<--add-certificates>
 
@@ -1076,11 +1078,11 @@ You can use the following variables: %{sn}, %{name}, %{state}
 
 =item B<--ntp-hostname>
 
-Set the ntp hostname (if not set, localtime is used).
+Set the NTP hostname (if not set, localtime is used).
 
 =item B<--ntp-port>
 
-Set the ntp port (default: 123).
+Set the NTP port (default: 123).
 
 =item B<--time-connection-unit>
 
@@ -1105,13 +1107,77 @@ Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta',
 
 Set interface speed (in Mb).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-devices-detected>
 
-Thresholds.
-Can be: 'devices-detected', 'connection-last-time',
-'interface-traffic-in', 'interface-traffic-out',
-'system-uptime', 'system-time-offset', temperature',
-'certificate-expires', 'vpn-sa-traffic'.
+Threshold.
+
+=item B<--critical-devices-detected>
+
+Threshold.
+
+=item B<--warning-connection-last-time>
+
+Threshold.
+
+=item B<--critical-connection-last-time>
+
+Threshold.
+
+=item B<--warning-interface-traffic-in>
+
+Threshold.
+
+=item B<--critical-interface-traffic-in>
+
+Threshold.
+
+=item B<--warning-interface-traffic-out>
+
+Threshold.
+
+=item B<--critical-interface-traffic-out>
+
+Threshold.
+
+=item B<--warning-system-uptime>
+
+Threshold.
+
+=item B<--critical-system-uptime>
+
+Threshold.
+
+=item B<--warning-system-time-offset>
+
+Threshold.
+
+=item B<--critical-system-time-offset>
+
+Threshold.
+
+=item B<--warning-temperature>
+
+Threshold.
+
+=item B<--critical-temperature>
+
+Threshold.
+
+=item B<--warning-certificate-expires>
+
+Threshold.
+
+=item B<--critical-certificate-expires>
+
+Threshold.
+
+=item B<--warning-vpn-sa-traffic>
+
+Threshold.
+
+=item B<--critical-vpn-sa-traffic>
+
+Threshold.
 
 =back
 

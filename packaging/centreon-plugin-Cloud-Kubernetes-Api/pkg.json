@@ -4,6 +4,7 @@
     "plugin_name": "centreon_kubernetes_api.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
+        "centreon/common/kubernetes/",
         "cloud/kubernetes/"
     ]
 }

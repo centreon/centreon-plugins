@@ -207,6 +207,9 @@ Meraki
 MIB
 Microkernel
 Mikrotik
+milliwatt
+milliwatts
+MMC
 module-cellradio-csq
 module-cellradio-rscp
 module-cellradio-rsrp
@@ -228,6 +231,7 @@ MQTT
 MSSQL
 MTU
 multiple
+mW
 MX
 nagios
 Nagios
@@ -251,6 +255,7 @@ NTP
 Nutanix
 NVOS
 OAuth
+OAuth2
 --oid
 OID
 --oid-display
@@ -261,7 +266,9 @@ okta
 OLT
 oneaccess-sys-mib
 OneAPI
+Opengear
 OpenMetrics
+OpenShift
 OpenStack
 OpenWSMAN
 OSPF
@@ -303,6 +310,7 @@ redis-cli
 ReplicaJobSession
 RestAPI
 RFC1628
+RMAN
 RRDCached
 rsrp
 rsrq
@@ -317,6 +325,7 @@ scenarii
 --scope-datacenter
 SCVMM
 SFOS
+SFP
 sfp.temperature
 SHA256
 SignalR
@@ -351,6 +360,7 @@ teampass
 Teldat
 temperatureambient
 timeframe
+timespan
 TiMOS
 TLS
 TLSv1
@@ -399,6 +409,7 @@ VMware
 VMWARE
 vpn
 VPN
+VS9
 vSAN
 Vserver
 vSphere
@@ -415,6 +426,7 @@ WaaS
 --warning-cpu-utilization
 --warning-na
 --warning-total-cpu-utilization
+Waystream
 Westermo
 WildFire
 WLAN

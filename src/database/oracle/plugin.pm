@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,8 +63,8 @@ sub new {
     };
 
     $self->{sql_modes}->{dbi} = 'database::oracle::dbi';
-    $self->{sql_modes}->{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
-						 
+    $self->{sql_modes}->{sqlpluscmd} = 'database::oracle::sqlpluscmd';
+
     return $self;
 }
 
@@ -72,11 +72,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-        'hostname:s@'   => { name => 'hostname' },
-        'port:s@'       => { name => 'port' },
-        'sid:s'         => { name => 'sid' },
-        'servicename:s' => { name => 'servicename' },
-        'container:s'   => { name => 'container' }
+        'hostname:s@'       => { name => 'hostname' },
+        'port:s@'           => { name => 'port' },
+        'component-type:s@' => { name => 'component_type' },
+        'sid:s'             => { name => 'sid' },
+        'servicename:s'     => { name => 'servicename' },
+        'container:s'       => { name => 'container' },
     });
 
     $self->{options}->parse_options();
@@ -87,19 +88,25 @@ sub init {
         @{$self->{sqldefault}->{dbi}} = ();
         @{$self->{sqldefault}->{sqlpluscmd}} = ();
         for (my $i = 0; $i < scalar(@{$options_result->{hostname}}); $i++) {
-            $self->{sqldefault}->{dbi}[$i] = { data_source => 'Oracle:host=' . $options_result->{hostname}[$i] };
-            $self->{sqldefault}->{sqlpluscmd}[$i] = { hostname => $options_result->{hostname}[$i] };
+            my $type = ref $options_result->{component_type} eq 'ARRAY' && $i < @{$options_result->{component_type}}
+                           ? $options_result->{component_type}->[$i] : 'database';
+            $type = 'database' if $type eq '';
+            $self->{output}->option_exit(short_msg => "--compnent-type should be 'database' or 'rman_catalog'.")
+                unless $type =~ /^(?:database|rman_catalog)$/;
+
+            $self->{sqldefault}->{dbi}[$i] = { type => $type, data_source => 'Oracle:host=' . $options_result->{hostname}[$i] };
+            $self->{sqldefault}->{sqlpluscmd}[$i] = { type => $type, hostname => $options_result->{hostname}[$i] };
             if (defined($options_result->{port}[$i])) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{port}[$i];
                 $self->{sqldefault}->{sqlpluscmd}[$i]->{port} = $options_result->{port}[$i];
             }
             if (defined($options_result->{sid}) && $options_result->{sid} ne '') {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';sid=' . $options_result->{sid};
-	            $self->{sqldefault}->{sqlpluscmd}[$i]->{sid} = $options_result->{sid};
+                $self->{sqldefault}->{sqlpluscmd}[$i]->{sid} = $options_result->{sid};
             }
             if (defined($options_result->{servicename}) && $options_result->{servicename} ne '') {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';service_name=' . $options_result->{servicename};
-	            $self->{sqldefault}->{sqlpluscmd}[$i]->{service_name} = $options_result->{servicename};
+                $self->{sqldefault}->{sqlpluscmd}[$i]->{service_name} = $options_result->{servicename};
             }
             $self->{sqldefault}->{dbi}[$i]->{container} = $options_result->{container};
             $self->{sqldefault}->{sqlpluscmd}[$i]->{container} = $options_result->{container};
@@ -133,6 +140,11 @@ Database SID.
 =item B<--servicename>
 
 Database Service Name.
+
+=item B<--component-type>
+
+Define the component to monitor. Can be C<database> or C<rman_catalog> (default: C<database>).
+This enables the use of C<rman-backup-problems> and C<rman-backup-age> modes when an external RMAN catalog is used.
 
 =item B<--container>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw(:counters);
+use Digest::SHA qw(sha256_hex);
 
 sub prefix_network_output {
     my ($self, %options) = @_;
@@ -36,7 +37,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'networks', type => 1, cb_prefix_output => 'prefix_network_output', message_multiple => 'All networks are ok' }
+        { name => 'networks', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_network_output', message_multiple => 'All networks are ok' }
     ];
 
     $self->{maps_counters}->{networks} = [
@@ -119,7 +120,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
-        md5_hex(
+        sha256_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : 'all') . '_' .
             (defined($self->{option_results}->{filter_network_name}) ? $self->{option_results}->{filter_network_name} : 'all') . '_' .
             (defined($self->{option_results}->{filter_organization_id}) ? $self->{option_results}->{filter_organization_id} : 'all') . '_' .
@@ -187,11 +188,61 @@ Filter networks by organization ID (can be a regexp).
 
 Filter networks by organization name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-connections-assoc>
 
-Thresholds.
-Can be: 'connections-success', 'connections-auth', 'connections-assoc',
-'connections-dhcp', 'connections-dns', 'traffic-in', 'traffic-out'.
+Threshold.
+
+=item B<--critical-connections-assoc>
+
+Threshold.
+
+=item B<--warning-connections-auth>
+
+Threshold.
+
+=item B<--critical-connections-auth>
+
+Threshold.
+
+=item B<--warning-connections-dhcp>
+
+Threshold.
+
+=item B<--critical-connections-dhcp>
+
+Threshold.
+
+=item B<--warning-connections-dns>
+
+Threshold.
+
+=item B<--critical-connections-dns>
+
+Threshold.
+
+=item B<--warning-connections-success>
+
+Threshold.
+
+=item B<--critical-connections-success>
+
+Threshold.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
 
 =back
 

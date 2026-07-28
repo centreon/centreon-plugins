@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,13 +24,15 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'state: ' . $self->{result_values}->{state};
+    return 'state : ' . $self->{result_values}->{state}
+        . ' [tags: ' . ($self->{result_values}->{tags} // '') . ']';
 }
 
 sub custom_cpu_calc {
@@ -206,18 +208,17 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes are ok', skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'node-status', type => 2, set => {
-                key_values => [ { name => 'state' }, { name => 'name' } ],
+        { label => 'node-status', type => COUNTER_KIND_TEXT, set => {
+                key_values => [ { name => 'state' }, { name => 'name' }, { name => 'tags' } ],
                 closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'cpu', nlabel => 'node.cpu.utilization.percentage', set => {
+        { label => 'cpu', type => COUNTER_KIND_METRIC, nlabel => 'node.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
                 output_template => 'cpu usage: %.2f %%',
                 closure_custom_calc => $self->can('custom_cpu_calc'),
@@ -228,7 +229,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', type => COUNTER_KIND_METRIC, set => {
                 key_values => [ { name => 'memory_usage' }, { name => 'memory_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_output => $self->can('custom_memory_output'),
@@ -236,7 +237,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_memory_threshold')
             }
         },
-        { label => 'fs', set => {
+        { label => 'fs', type => COUNTER_KIND_METRIC, set => {
                 key_values => [ { name => 'fs_usage' }, { name => 'fs_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_fs_calc'),
                 closure_custom_output => $self->can('custom_fs_output'),
@@ -244,7 +245,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_fs_threshold')
             }
         },
-        { label => 'swap', set => {
+        { label => 'swap', type => COUNTER_KIND_METRIC, set => {
                 key_values => [ { name => 'swap_usage' }, { name => 'swap_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_swap_calc'),
                 closure_custom_output => $self->can('custom_swap_output'),
@@ -263,7 +264,8 @@ sub new {
     $options{options}->add_options(arguments => {
         'node-id:s'     => { name => 'node_id' },
         'node-name:s'   => { name => 'node_name' },
-        'filter-name:s' => { name => 'filter_name' },
+        'include-name:s' => { name => 'include_name' },
+        'filter-name:s'  => { redirect => 'include_name' },
         'use-name'      => { name => 'use_name' }
     });
 
@@ -293,8 +295,8 @@ sub manage_selection {
         next if (!defined($result->{$node_id}->{Stats}));
 
         my $name = $result->{$node_id}->{Name};
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
+        if (defined($self->{option_results}->{include_name}) && $self->{option_results}->{include_name} ne '' &&
+            $name !~ /$self->{option_results}->{include_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
@@ -322,9 +324,9 @@ sub manage_selection {
 
     my $hostnames = $options{custom}->get_hostnames();
     $self->{cache_name} = 'proxmox_' . $self->{mode} . '_' .$hostnames . '_' . $options{custom}->get_port() . '_' .
-        md5_hex(
+        sha256_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
+            (defined($self->{option_results}->{include_name}) ? $self->{option_results}->{include_name} : '') . '_' .
             (defined($self->{option_results}->{node_id}) ? $self->{option_results}->{node_id} : '') . '_' .
             (defined($self->{option_results}->{node_name}) ? $self->{option_results}->{node_name} : '')
         );
@@ -352,19 +354,41 @@ Exact node name (if multiple names: names separated by ':').
 
 Use node name for perfdata and display.
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Filter by node name (can be a regexp).
+Filter by node name (can be a regexp). Option C<--filter-name> is a deprecated alias.
 
-=item B<--filter-counters>
+=item B<--warning-cpu>
 
-Only display some counters (regexp can be used).
-Example: --filter-counters='^node-status$'
+Threshold in percentage.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--critical-cpu>
 
-Thresholds.
-Can be: 'cpu' (%), 'memory' (%), 'swap' (%), 'fs' (%).
+Threshold in percentage.
+
+=item B<--warning-fs>
+
+Threshold.
+
+=item B<--critical-fs>
+
+Threshold.
+
+=item B<--warning-memory>
+
+Threshold.
+
+=item B<--critical-memory>
+
+Threshold.
+
+=item B<--warning-swap>
+
+Threshold.
+
+=item B<--critical-swap>
+
+Threshold.
 
 =item B<--warning-node-status>
 
