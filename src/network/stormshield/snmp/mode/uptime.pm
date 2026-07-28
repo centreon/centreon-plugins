@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_not_empty);
 
 
 sub set_counters {
@@ -82,16 +82,16 @@ sub manage_selection {
     # Add 'System node Name' if Stormshield firmware version >= 4.8.6 or 4.3.x with x>=40
     # This field was introduced in firmware version 4.8.6 and in 4.3.40
     my $system_node_name = $result->{$oid_snsSystemNodeName};
-    if (!centreon::plugins::misc::minimal_version($version, '4.8.6') && 
-        !(centreon::plugins::misc::minimal_version($version, '4.3.40') && !centreon::plugins::misc::minimal_version($version, '4.4.0'))) {
+    if (!centreon::plugins::misc::minimal_version($version, '4.8.6')
+        && !(centreon::plugins::misc::minimal_version($version, '4.3.40') && !centreon::plugins::misc::minimal_version($version, '4.4.0'))) {
         $system_node_name = undef;
     }
 
     # Add 'Bios Version' if Stormshield firmware version >= 4.8.15 or 4.3.x with x>=42
     # This field was introduced in firmware version 4.8.15 and in 4.3.42
     my $bios_version = $result->{$oid_snsBiosVersion};
-    if (!centreon::plugins::misc::minimal_version($version, '4.8.15') &&
-        !(centreon::plugins::misc::minimal_version($version, '4.3.42') && !centreon::plugins::misc::minimal_version($version, '4.4.0'))) {
+    if (!centreon::plugins::misc::minimal_version($version, '4.8.15')
+        && !(centreon::plugins::misc::minimal_version($version, '4.3.42') && !centreon::plugins::misc::minimal_version($version, '4.4.0'))) {
         $bios_version = undef;
     }
 
@@ -101,17 +101,17 @@ sub manage_selection {
         my $uptime_raw = $result->{$oid_snsUptime};
         $uptime_seconds = 0;
 
-        if (defined($uptime_raw) && $uptime_raw ne "") {
+        if (is_not_empty($uptime_raw)) {
             my @parts = split(/:/, $uptime_raw);
-            
+
             if (scalar(@parts) == 4) {
                 my ($days, $hours, $minutes, $seconds) = @parts;
                 $uptime_seconds = ($days * 86400) + ($hours * 3600) + ($minutes * 60) + $seconds;
             } else {
-                $self->{output}->message_add(severity => 'CRITICAL', short_msg => "Unexpected uptime format: $uptime_raw");
+                $self->{output}->output_add(severity => 'CRITICAL', short_msg => "Unexpected uptime format: $uptime_raw");
             }
         }
-    } else{
+    } else {
         my $uptime_raw = $result->{$oid_snsSysUptime};
         $uptime_seconds = $uptime_raw / 100;
     }
@@ -121,15 +121,15 @@ sub manage_selection {
     $long_msg .= "Serial Number: " . $result->{$oid_snsSerialNumber} . "\n";
     $long_msg .= "Version: " . $version . "\n";
     $long_msg .= "Date: " . $result->{$oid_snsDate} . "\n";
-    
+
     if (defined($system_node_name)) {
         $long_msg .= "System Node Name: " . $system_node_name . "\n";
     }
-    
+
     if (defined($bios_version)) {
         $long_msg .= "Bios Version: " . $bios_version . "\n";
     }
-    
+
     $self->{output}->output_add(
         long_msg => $long_msg,
     );
@@ -143,12 +143,12 @@ sub custom_uptime_output {
     my ($self, %options) = @_;
 
     my $uptime_seconds = $self->{result_values}->{uptime};
-    
+
     my $days = $uptime_seconds / 86400;
     my $hours = ($uptime_seconds % 86400) / 3600;
     my $minutes = ($uptime_seconds % 3600) / 60;
     my $seconds = $uptime_seconds % 60;
-    
+
     my $msg = sprintf(
         "Uptime: %d days %02d hours %02d minutes %02d seconds",
         $days, $hours, $minutes, $seconds
@@ -192,18 +192,18 @@ __END__
 
 =head1 MODE
 
-This mode retrieves and displays basic properties of the Stormshield device such as system name, model, version, serial number, and date.
-It also monitors the uptime with configurable warning and critical thresholds.
+This mode monitors the uptime and retrieves and displays basic properties of the Stormshield device such as system name,
+model, version, serial number, and date.
 
 =over 8
 
 =item B<--warning-uptime>
 
-Warning threshold for uptime (in seconds).
+Threshold (in seconds).
 
 =item B<--critical-uptime>
 
-Critical threshold for uptime (in seconds).
+Threshold (in seconds).
 
 =back
 
