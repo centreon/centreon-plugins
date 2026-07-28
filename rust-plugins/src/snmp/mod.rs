@@ -144,7 +144,10 @@ pub fn snmp_bulk_get<'a>(
 ) -> Result<SnmpResult> {
     let mut oids_tab: Vec<Vec<u32>> = vec![];
     for oid_str in oid_list {
-        oids_tab.push(oid_to_vec(oid_str)?);
+        let mut oid = oid_to_vec(oid_str)?;
+        // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first OID we are trying to get will never be requested
+        let _ = oid.pop_if(|val| *val == 0);
+        oids_tab.push(oid);
     }
 
     let mut retval = SnmpResult {
