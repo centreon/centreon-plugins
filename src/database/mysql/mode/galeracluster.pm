@@ -60,18 +60,18 @@ sub set_counters {
         {   label => 'node-recv-queue', display_ok => 0, nlabel => 'node.receive.queue.average.count',
             set => {
                 key_values => [ { name => 'nodeRecvQueueAvg' } ],
-                output_template => 'node receive queue average: %s',
+                output_template => 'node receive queue average: %.5f',
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%.5f', min => 0 }
                 ]
             }
         },
         {   label => 'node-send-queue', display_ok => 0, nlabel => 'node.send.queue.average.count',
             set => {
                 key_values => [ { name => 'nodeSendQueueAvg' } ],
-                output_template => 'node send queue average: %s',
+                output_template => 'node send queue average: %.5f',
                 perfdatas => [
-                    { template => '%s', min => 0 }
+                    { template => '%.5f', min => 0 }
                 ]
             }
         },
@@ -112,30 +112,22 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $cluster_info = {
-        WSREP_LOCAL_STATE_COMMENT => 'Synced',
-        WSREP_CLUSTER_SIZE => 3,
-        WSREP_CLUSTER_STATUS => 'Primary',
-        WSREP_READY => 'ON',
-        WSREP_LOCAL_RECV_QUEUE_AVG => 10,
-        WSREP_LOCAL_SEND_QUEUE_AVG => 1
-    };
+    my $cluster_info = {};
 
-=pod
+    $options{sql}->connect();
     my $query = q{
-        SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_status 
+        SELECT VARIABLE_NAME, VARIABLE_VALUE FROM information_schema.global_status
         WHERE variable_name IN (
-            'WSREP_CLUSTER_STATUS', 'WSREP_LOCAL_STATE_COMMENT', 'WSREP_CLUSTER_SIZE', 'WSREP_READY', 'WSREP_FLOW_CONTROL_PAUSED'
+            'WSREP_CLUSTER_STATUS', 'WSREP_LOCAL_STATE_COMMENT', 'WSREP_CLUSTER_SIZE', 'WSREP_READY', 'WSREP_LOCAL_RECV_QUEUE_AVG', 'WSREP_LOCAL_SEND_QUEUE_AVG'
         )
     };
     $options{sql}->query(query => $query);
     while ((my @row = $options{sql}->fetchrow_array())) {
-        $cluster_info->{ $row[0] } = $row[1]; 
+        $cluster_info->{ $row[0] } = $row[1];
     }
-=cut
 
     $self->{global} = {
-        nodeStatus       => lc($cluster_info->{WSREP_LOCAL_STATE_COMMENT}),
+        nodeStatus       => defined($cluster_info->{WSREP_LOCAL_STATE_COMMENT}) ? lc($cluster_info->{WSREP_LOCAL_STATE_COMMENT}) : '-',
         nodeReady        => lc($cluster_info->{WSREP_READY}),
         clusterSize      => $cluster_info->{WSREP_CLUSTER_SIZE},
         clusterStatus    => lc($cluster_info->{WSREP_CLUSTER_STATUS}),
