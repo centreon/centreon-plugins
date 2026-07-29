@@ -13,31 +13,110 @@ use crate::generic::error::Error::EmptyResponse;
 use crate::generic::error::Error::FailedToConnectToHost;
 use crate::generic::error::Error::InvalidSnmpPduDecode;
 use crate::generic::error::Error::InvalidSnmpPduEncode;
-use log::{info, trace, warn};
+use crate::generic::error::Error::InvalidSnmpValue;
+use log::info;
+use log::{trace, warn};
 use rasn::types::ObjectIdentifier;
+use rasn_smi::v2::{ApplicationSyntax, ObjectSyntax, SimpleSyntax};
 use rasn_snmp::v2::BulkPdu;
 use rasn_snmp::v2::GetBulkRequest;
 use rasn_snmp::v2::Pdus;
 use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
 use rasn_snmp::v2c::Message;
+use rasn_snmp::v3::VarBindValue::EndOfMibView;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::net::UdpSocket;
 
-/// The SNMP value type for an OID response.
-#[derive(Debug)]
+/// The SNMP value type decoded from a single OID's response.
+#[derive(Debug, Clone)]
 pub enum ValueType {
-    /// No value present.
-    None(()),
-    /// A 32-bit signed integer.
+    /// A 64-bit signed integer (covers INTEGER, TimeTicks, Gauge32/Unsigned32).
     Integer(i64),
-    /// A floating-point value (not a standard SNMP type, for internal use).
-    Float(f64),
-    /// A string value (OCTET STRING).
+    /// A textual value (OCTET STRING, OBJECT IDENTIFIER, IpAddress, Opaque).
     String(String),
-    /// A 64-bit unsigned counter.
+    /// A 64-bit unsigned counter (Counter32, Counter64).
     Counter64(u64),
+}
+
+impl ValueType {
+    /// Converts this value to a float for storage in a numeric [`ExprResult`].
+    ///
+    /// # Panics
+    /// Panics if called on a [`ValueType::String`]; callers must only reach
+    /// this path for OIDs whose previously stored values were numeric.
+    fn as_f64(&self) -> f64 {
+        match self {
+            ValueType::Integer(i) => *i as f64,
+            ValueType::Counter64(i) => *i as f64,
+            ValueType::String(_) => panic!("Expected a numeric SNMP value, got a string"),
+        }
+    }
+}
+
+/// Decodes a single varbind's value into a [`ValueType`].
+///
+/// Returns `Ok(None)` for markers that carry no data (unset value, no such
+/// object/instance, or end of MIB view) since these are legitimate responses
+/// an SNMP agent can send, not decode failures.
+fn value_from_varbind(value: &VarBindValue) -> Result<Option<ValueType>> {
+    let value = match value {
+        VarBindValue::Unspecified => {
+            warn!("SNMP varbind value is Unspecified");
+            return Ok(None);
+        }
+        VarBindValue::NoSuchObject => {
+            warn!("SNMP varbind value is NoSuchObject");
+            return Ok(None);
+        }
+        VarBindValue::NoSuchInstance => {
+            warn!("SNMP varbind value is NoSuchInstance");
+            return Ok(None);
+        }
+        VarBindValue::EndOfMibView => {
+            warn!("SNMP varbind value is EndOfMibView");
+            return Ok(None);
+        }
+        VarBindValue::Value(value) => value,
+    };
+
+    let typ = match value {
+        ObjectSyntax::Simple(simple) => match simple {
+            SimpleSyntax::Integer(i) => {
+                ValueType::Integer(i.try_into().map_err(|e| InvalidSnmpValue {
+                    detail: format!("integer value '{}' does not fit in 64 bits: {}", i, e),
+                })?)
+            }
+            // SNMP OCTET STRINGs are not guaranteed to be valid UTF-8 (e.g. MAC
+            // addresses), so lossily converting avoids failing the whole request.
+            SimpleSyntax::String(s) => ValueType::String(String::from_utf8_lossy(s).into_owned()),
+            SimpleSyntax::ObjectId(oid) => {
+                ValueType::String(oid.iter().map(u32::to_string).collect::<Vec<_>>().join("."))
+            }
+        },
+        ObjectSyntax::ApplicationWide(app) => match app {
+            ApplicationSyntax::Address(ip) => {
+                let bytes = &*ip.0;
+                ValueType::String(format!(
+                    "{}.{}.{}.{}",
+                    bytes[0], bytes[1], bytes[2], bytes[3]
+                ))
+            }
+            ApplicationSyntax::Counter(counter) => ValueType::Counter64(counter.0.into()),
+            ApplicationSyntax::Ticks(time_ticks) => ValueType::Integer(time_ticks.0.into()),
+            ApplicationSyntax::Arbitrary(opaque) => ValueType::String(
+                opaque
+                    .as_ref()
+                    .iter()
+                    .map(|b| format!("{:02x}", b))
+                    .collect(),
+            ),
+            ApplicationSyntax::BigCounter(counter64) => ValueType::Counter64(counter64.0),
+            ApplicationSyntax::Unsigned(gauge) => ValueType::Counter64(gauge.0.into()),
+        },
+    };
+    Ok(Some(typ))
 }
 
 /// Result of an SNMP query operation.
@@ -88,8 +167,14 @@ pub fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
 /// * `message` - Snmp Message, containing the snmp version, comunity, and a Pdu
 ///
 /// # Returns
-/// A Message<Pdu> containing the answers from the target, or an error if it was not reacheable
+/// A Message<Pdu> containing the answers from the target, or an error if it was not reacheable/decodable
 ///
+// This cfg allow to replace the function in the unit tests at the end of the file
+#[cfg(test)]
+fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+    Err(InvalidSnmpPduEncode {})
+}
+#[cfg(not(test))]
 pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
     let socket = UdpSocket::bind("0.0.0.0:0")?;
     socket.connect(target)?;
@@ -100,7 +185,7 @@ pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Resu
     let res: usize = socket.send(&encoded)?;
     assert!(res == encoded.len());
     let mut buf: [u8; 1024] = [0; 1024];
-    trace!("waiting to receive data from {:?}", socket.peer_addr());
+    info!("waiting to receive data from {:?}", socket.peer_addr());
     let resp: (usize, std::net::SocketAddr) =
         socket
             .recv_from(buf.as_mut_slice())
@@ -109,12 +194,15 @@ pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Resu
                 os: e.to_string(),
             })?;
 
-    trace!("Received {} bytes", resp.0);
+    info!("Received {} bytes", resp.0);
     if resp.0 == 0 {
         return Err(EmptyResponse {});
     }
 
-    rasn::ber::decode(&buf[0..resp.0]).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })
+    let resp =
+        rasn::ber::decode(&buf[0..resp.0]).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() });
+    trace!("Received an snmp answer : {:?}", resp);
+    resp
 }
 
 /// Retrieves values for multiple OIDs in a single bulk request.
@@ -180,7 +268,7 @@ pub fn snmp_bulk_get<'a>(
     };
     let decoded = get_data_from_udp(target, message)?;
 
-    let _completed = retval.build_response_with_names(decoded, "", names, false);
+    let _completed = retval.build_response_with_names(decoded, "", names, false)?;
     Ok(retval)
 }
 
@@ -234,7 +322,7 @@ pub fn snmp_bulk_walk<'a>(
         };
 
         let decoded = get_data_from_udp(target, message)?;
-        let completed = retval.build_response(decoded, &oid, snmp_name, true);
+        let completed = retval.build_response(decoded, &oid, snmp_name, true)?;
 
         if completed {
             break;
@@ -267,11 +355,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
     snmp_name: &str,
     labels: &'a HashMap<String, String>,
 ) -> Result<SnmpResult> {
-    let oid_init = oid
-        .split('.')
-        .map(|x| x.parse::<u32>().unwrap())
-        .collect::<Vec<u32>>();
-
+    let oid_init = oid_to_vec(oid)?;
     let mut oid_tab = &oid_init;
     let mut retval = SnmpResult {
         items: HashMap::new(),
@@ -303,7 +387,8 @@ pub fn snmp_bulk_walk_with_labels<'a>(
         // Send the message through an UDP socket
         let decoded = get_data_from_udp(target, message)?;
 
-        let completed = retval.build_response_with_labels(decoded, &oid, snmp_name, labels, true);
+        let completed =
+            retval.build_response_with_labels(decoded, &oid, snmp_name, labels, true)?;
         if completed {
             break;
         }
@@ -313,17 +398,84 @@ pub fn snmp_bulk_walk_with_labels<'a>(
 }
 
 impl SnmpResult {
-    /// Parses an SNMP response and organizes values by label.
+    /// Stores a decoded value under `key`, appending to the existing vector when
+    /// this key has already been seen (walk operations collect one entry per OID).
     ///
-    /// # Arguments
-    /// * `decoded` - The decoded SNMP response message
-    /// * `oid` - The base OID (for walk termination detection)
-    /// * `snmp_name` - Prefix for result keys
-    /// * `labels` - Label map for splitting results
-    /// * `walk` - If true, returns true when subtree is exhausted
+    /// # Panics
+    /// Panics if a key that previously held a numeric value is fed a string (or
+    /// vice versa) — this would mean a single OID column changed SNMP type
+    /// mid-collection, which indicates a malformed response.
+    fn store(&mut self, key: String, typ: ValueType) {
+        match typ {
+            ValueType::String(s) => {
+                self.items
+                    .entry(key)
+                    .and_modify(|e| match e {
+                        ExprResult::StrVector(v) => v.push(s.clone()),
+                        _ => {
+                            panic!("SNMP value type changed from numeric to string mid-collection")
+                        }
+                    })
+                    .or_insert_with(|| ExprResult::StrVector(vec![s]));
+            }
+            _ => {
+                let value = typ.as_f64();
+                self.items
+                    .entry(key)
+                    .and_modify(|e| match e {
+                        ExprResult::Vector(v) => v.push(value),
+                        _ => {
+                            panic!("SNMP value type changed from string to numeric mid-collection")
+                        }
+                    })
+                    .or_insert_with(|| ExprResult::Vector(vec![value]));
+            }
+        }
+    }
+
+    /// Processes one bulk response page: stores each variable's decoded value
+    /// and, for walk operations, detects when the response has moved past the
+    /// requested subtree.
+    ///
+    /// `key_for` maps a variable (by index and full OID name) to the key(s) its
+    /// value should be stored under; returning an empty vector skips it.
     ///
     /// # Returns
     /// `true` if the walk should terminate (for walk operations)
+    fn process_response(
+        &mut self,
+        decoded: Message<Pdus>,
+        oid: &str,
+        walk: bool,
+        mut key_for: impl FnMut(usize, &str) -> Vec<String>,
+    ) -> Result<bool> {
+        let mut completed = false;
+
+        if let Pdus::Response(resp) = &decoded.data {
+            for (idx, var) in resp.0.variable_bindings.iter().enumerate() {
+                let name = var.name.to_string();
+                self.last_oid = oid_to_vec(&name)?;
+
+                if walk && (!name.starts_with(oid) || var.value.eq(&EndOfMibView)) {
+                    completed = true;
+                    break;
+                }
+
+                let Some(typ) = value_from_varbind(&var.value)? else {
+                    continue;
+                };
+
+                for key in key_for(idx, &name) {
+                    self.store(key, typ.clone());
+                }
+            }
+        }
+        Ok(completed)
+    }
+
+    /// Parses an SNMP response and organizes values by label: the last segment
+    /// of each OID identifies the column, and matching values are stored under
+    /// `{snmp_name}.{label}`.
     fn build_response_with_labels<'a>(
         &mut self,
         decoded: Message<Pdus>,
@@ -331,456 +483,88 @@ impl SnmpResult {
         snmp_name: &str,
         labels: &'a HashMap<String, String>,
         walk: bool,
-    ) -> bool {
-        let mut completed = false;
-
-        if let Pdus::Response(resp) = &decoded.data {
-            let vars = &resp.0.variable_bindings;
-            for var in vars {
-                let name = var.name.to_string();
-                self.last_oid = name
-                    .split('.')
-                    .map(|x| x.parse::<u32>().unwrap())
-                    .collect::<Vec<u32>>();
-                if walk {
-                    if !name.starts_with(oid) {
-                        completed = true;
-                        break;
-                    }
-                }
-                let prefix = &name[..name.rfind('.').unwrap()];
-                for l in labels {
-                    if prefix.ends_with(l.0) {
-                        let mut typ = ValueType::None(());
-                        let value = match &var.value {
-                            VarBindValue::Unspecified => {
-                                warn!("Unspecified");
-                            }
-                            VarBindValue::NoSuchObject => {
-                                warn!("NoSuchObject");
-                            }
-                            VarBindValue::NoSuchInstance => {
-                                warn!("NoSuchInstance");
-                            }
-                            VarBindValue::EndOfMibView => {
-                                warn!("EndOfMibView");
-                            }
-                            VarBindValue::Value(value) => {
-                                warn!("Value {:?}", &value);
-                                match value {
-                                    rasn_smi::v2::ObjectSyntax::Simple(value) => {
-                                        info!("Simple {:?}", value);
-                                        match value {
-                                            rasn_smi::v2::SimpleSyntax::Integer(value) => {
-                                                typ = ValueType::Integer(value.try_into().unwrap());
-                                            }
-                                            rasn_smi::v2::SimpleSyntax::String(value) => {
-                                                // We transform the value into a rust String
-                                                typ = ValueType::String(
-                                                    String::from_utf8(value.to_vec()).unwrap(),
-                                                );
-                                            }
-                                            rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
-                                                let oid: String = value
-                                                    .iter()
-                                                    .map(|&id| id.to_string() + ".")
-                                                    .collect();
-                                                typ = ValueType::String(oid);
-                                            }
-                                            _ => {
-                                                typ = ValueType::String("Other".to_string());
-                                            }
-                                        };
-                                    }
-                                    rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
-                                        info!("Application {:?}", value);
-                                    }
-                                };
-                            }
-                        };
-                        let key = format!("{}.{}", snmp_name, l.1);
-                        self.items
-                            .entry(key)
-                            .and_modify(|e| match e {
-                                ExprResult::Number(_) => panic!("Should not arrive"),
-                                ExprResult::Str(_) => panic!("Should not arrive"),
-                                ExprResult::Vector(v) => v.push(match &typ {
-                                    ValueType::Float(f) => *f,
-                                    ValueType::None(()) => {
-                                        panic!("Should not arrive");
-                                    }
-                                    ValueType::String(_) => {
-                                        panic!("Value should be a float");
-                                    }
-                                    ValueType::Integer(i) => *i as f64,
-                                    ValueType::Counter64(i) => *i as f64,
-                                }),
-                                ExprResult::StrVector(v) => v.push(match &typ {
-                                    ValueType::Float(_) => {
-                                        panic!("Value should be a string");
-                                    }
-                                    ValueType::None(()) => {
-                                        panic!("Should not arrive");
-                                    }
-                                    ValueType::String(s) => s.to_string(),
-                                    ValueType::Integer(_) => panic!("Value should be a string"),
-                                    ValueType::Counter64(_) => panic!("Value should be a string"),
-                                }),
-                                ExprResult::Empty => {
-                                    panic!("Value from SNMP query cannot be empty");
-                                }
-                            })
-                            .or_insert(match typ {
-                                ValueType::Float(f) => ExprResult::Vector(vec![f]),
-                                ValueType::None(()) => panic!("Should not arrive"),
-                                ValueType::String(s) => ExprResult::StrVector(vec![s]),
-                                ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
-                                ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
-                            });
-                    }
-                }
-            }
-        }
-        completed
+    ) -> Result<bool> {
+        self.process_response(decoded, oid, walk, |_idx, name| {
+            let prefix = name.rfind('.').map_or(name, |i| &name[..i]);
+            labels
+                .iter()
+                .filter(|(label, _)| prefix.ends_with(label.as_str()))
+                .map(|(_, out_name)| format!("{}.{}", snmp_name, out_name))
+                .collect()
+        })
     }
 
-    /// Parses an SNMP response from a get request using provided names.
-    ///
-    /// # Arguments
-    /// * `decoded` - The decoded SNMP response message
-    /// * `oid` - The base OID (for walk termination detection)
-    /// * `names` - Names for each OID result
-    /// * `walk` - If true, returns true when subtree is exhausted
-    ///
-    /// # Returns
-    /// `true` if the walk should terminate (for walk operations)
+    /// Parses an SNMP response from a get request, storing each variable under
+    /// its corresponding entry in `names`.
     fn build_response_with_names<'a>(
         &mut self,
         decoded: Message<Pdus>,
         oid: &str,
         names: &Vec<&str>,
         walk: bool,
-    ) -> bool {
-        let mut completed = false;
-
-        if let Pdus::Response(resp) = &decoded.data {
-            let vars = &resp.0.variable_bindings;
-            for (idx, var) in vars.iter().enumerate() {
-                let name = var.name.to_string();
-                self.last_oid = name
-                    .split('.')
-                    .map(|x| x.parse::<u32>().unwrap())
-                    .collect::<Vec<u32>>();
-                if walk {
-                    if !name.starts_with(oid) {
-                        completed = true;
-                        break;
-                    }
-                }
-                let prefix: &str = &name[..name.rfind('.').unwrap()];
-                let mut typ = ValueType::None(());
-                let value = match &var.value {
-                    VarBindValue::Unspecified => {
-                        warn!("Unspecified");
-                    }
-                    VarBindValue::NoSuchObject => {
-                        warn!("NoSuchObject");
-                    }
-                    VarBindValue::NoSuchInstance => {
-                        warn!("NoSuchInstance");
-                    }
-                    VarBindValue::EndOfMibView => {
-                        warn!("EndOfMibView");
-                    }
-                    VarBindValue::Value(value) => {
-                        warn!("Value {:?}", &value);
-                        match value {
-                            rasn_smi::v2::ObjectSyntax::Simple(value) => {
-                                info!("Simple {:?}", value);
-                                match value {
-                                    rasn_smi::v2::SimpleSyntax::Integer(value) => {
-                                        typ = ValueType::Integer(value.try_into().unwrap());
-                                    }
-                                    rasn_smi::v2::SimpleSyntax::String(value) => {
-                                        // We transform the value into a rust String
-                                        typ = ValueType::String(
-                                            String::from_utf8(value.to_vec()).unwrap(),
-                                        );
-                                    }
-                                    rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
-                                        let oid: String =
-                                            value.iter().map(|&id| id.to_string() + ".").collect();
-                                        typ = ValueType::String(oid);
-                                    }
-                                    _ => {
-                                        typ = ValueType::String("Other".to_string());
-                                    }
-                                }
-                            }
-                            rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
-                                info!("ApplicationWide {:?}", value);
-                                match value {
-                                    rasn_smi::v2::ApplicationSyntax::Address(ip_address) => todo!(),
-                                    rasn_smi::v2::ApplicationSyntax::Counter(counter) => todo!(),
-                                    rasn_smi::v2::ApplicationSyntax::Ticks(time_ticks) => {
-                                        typ = ValueType::Integer(time_ticks.0.into());
-                                    }
-                                    rasn_smi::v2::ApplicationSyntax::Arbitrary(opaque) => todo!(),
-                                    rasn_smi::v2::ApplicationSyntax::BigCounter(counter64) => {
-                                        typ = ValueType::Counter64(counter64.0);
-                                    }
-                                    rasn_smi::v2::ApplicationSyntax::Unsigned(gauge) => todo!(),
-                                }
-                            }
-                            _ => {
-                                info!("other");
-                            }
-                        }
-                    }
-                };
-                let key = format!("{}", names[idx]);
-                self.items
-                    .entry(key)
-                    .and_modify(|e| match e {
-                        ExprResult::Number(_) => panic!("Should not arrive"),
-                        ExprResult::Vector(v) => v.push(match &typ {
-                            ValueType::Float(f) => *f,
-                            ValueType::None(()) => {
-                                panic!("Should not arrive");
-                            }
-                            ValueType::String(_) => {
-                                panic!("Value should be a float");
-                            }
-                            ValueType::Integer(i) => *i as f64,
-                            ValueType::Counter64(i) => *i as f64,
-                        }),
-                        ExprResult::Str(_) => panic!("Should not arrive"),
-                        ExprResult::StrVector(v) => v.push(match &typ {
-                            ValueType::Float(_) => {
-                                panic!("Value should be a string");
-                            }
-                            ValueType::None(()) => {
-                                panic!("Should not arrive");
-                            }
-                            ValueType::String(s) => s.to_string(),
-                            ValueType::Integer(_) => {
-                                panic!("Value should be a string");
-                            }
-                            ValueType::Counter64(_) => panic!("Value should be a string"),
-                        }),
-                        ExprResult::Empty => {
-                            panic!("Value should not be empty");
-                        }
-                    })
-                    .or_insert(match typ {
-                        ValueType::Float(f) => ExprResult::Vector(vec![f]),
-                        ValueType::None(()) => panic!("Should not arrive"),
-                        ValueType::String(s) => ExprResult::StrVector(vec![s]),
-                        ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
-                        ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
-                    });
-            }
-        }
-        completed
+    ) -> Result<bool> {
+        self.process_response(decoded, oid, walk, |idx, _name| {
+            vec![names[idx].to_string()]
+        })
     }
-    /// Parses an SNMP response and stores values under a single logical name.
-    ///
-    /// # Arguments
-    /// * `decoded` - The decoded SNMP response message
-    /// * `oid` - The base OID (for walk termination detection)
-    /// * `snmp_name` - Logical name for collected values
-    /// * `walk` - If true, returns true when subtree is exhausted
-    ///
-    /// # Returns
-    /// `true` if the walk should terminate (for walk operations)
+
+    /// Parses an SNMP response and stores every variable's value under a single
+    /// logical name (used for plain walks).
     fn build_response<'a>(
         &mut self,
         decoded: Message<Pdus>,
         oid: &str,
         snmp_name: &str,
         walk: bool,
-    ) -> bool {
-        let mut completed = false;
-
-        if let Pdus::Response(resp) = &decoded.data {
-            let vars = &resp.0.variable_bindings;
-            for var in vars {
-                let name = var.name.to_string();
-                self.last_oid = name
-                    .split('.')
-                    .map(|x| x.parse::<u32>().unwrap())
-                    .collect::<Vec<u32>>();
-                if walk {
-                    if !name.starts_with(oid) {
-                        completed = true;
-                        break;
-                    }
-                }
-                let prefix: &str = &name[..name.rfind('.').unwrap()];
-                let mut typ = ValueType::None(());
-                let value = match &var.value {
-                    VarBindValue::Unspecified => {
-                        warn!("Unspecified");
-                    }
-                    VarBindValue::NoSuchObject => {
-                        warn!("NoSuchObject");
-                    }
-                    VarBindValue::NoSuchInstance => {
-                        warn!("NoSuchInstance");
-                    }
-                    VarBindValue::EndOfMibView => {
-                        warn!("EndOfMibView");
-                    }
-                    VarBindValue::Value(value) => {
-                        warn!("Value {:?}", &value);
-                        match value {
-                            rasn_smi::v2::ObjectSyntax::Simple(value) => {
-                                info!("Simple {:?}", value);
-                                match value {
-                                    rasn_smi::v2::SimpleSyntax::Integer(value) => {
-                                        typ = ValueType::Integer(value.try_into().unwrap());
-                                    }
-                                    rasn_smi::v2::SimpleSyntax::String(value) => {
-                                        // We transform the value into a rust String
-                                        typ = ValueType::String(
-                                            String::from_utf8(value.to_vec()).unwrap(),
-                                        );
-                                    }
-                                    rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
-                                        let oid: String =
-                                            value.iter().map(|&id| id.to_string() + ".").collect();
-                                        typ = ValueType::String(oid);
-                                    }
-                                    _ => {
-                                        typ = ValueType::String("Other".to_string());
-                                    }
-                                }
-                            }
-                            _ => {
-                                info!("other");
-                            }
-                        }
-                        //match value {
-                        //    rasn_smi::v2::ObjectSyntax::Simple(value) => {
-                        //        info!("Simple {:?}", value);
-                        //        match value {
-                        //            rasn_smi::v2::ObjectSyntax::Simple(value) => {
-                        //                info!("Simple {:?}", value);
-                        //                match value {
-                        //                    rasn_smi::v2::SimpleSyntax::Integer(value) => {
-                        //                        typ = ValueType::Integer(value.try_into().unwrap());
-                        //                    }
-                        //                    rasn_smi::v2::SimpleSyntax::String(value) => {
-                        //                        // We transform the value into a rust String
-                        //                        typ = ValueType::String(
-                        //                            String::from_utf8(value.to_vec()).unwrap(),
-                        //                        );
-                        //                    }
-                        //                    rasn_smi::v2::SimpleSyntax::ObjectId(value) => {
-                        //                        let oid: String = value
-                        //                            .iter()
-                        //                            .map(|&id| id.to_string() + ".")
-                        //                            .collect();
-                        //                        typ = ValueType::String(oid);
-                        //                    }
-                        //                    _ => {
-                        //                        typ = ValueType::String("Other".to_string());
-                        //                    }
-                        //                };
-                        //            }
-                        //            rasn_smi::v2::ObjectSyntax::ApplicationWide(value) => {
-                        //                info!("Application {:?}", value);
-                        //            }
-                        //        };
-                        //    }
-                        //}
-                    }
-                };
-                let key = format!("{}", snmp_name);
-                self.items
-                    .entry(key)
-                    .and_modify(|e| match e {
-                        ExprResult::Number(_) => panic!("Should not arrive"),
-                        ExprResult::Vector(v) => v.push(match &typ {
-                            ValueType::Float(f) => *f,
-                            ValueType::None(()) => {
-                                panic!("Should not arrive");
-                            }
-                            ValueType::String(_) => {
-                                panic!("Value should be a float");
-                            }
-                            ValueType::Integer(i) => *i as f64,
-                            ValueType::Counter64(i) => *i as f64,
-                        }),
-                        ExprResult::Str(_) => panic!("Should not arrive"),
-                        ExprResult::StrVector(v) => v.push(match &typ {
-                            ValueType::Float(_) => {
-                                panic!("Value should be a string");
-                            }
-                            ValueType::None(()) => {
-                                panic!("Should not arrive");
-                            }
-                            ValueType::String(s) => s.to_string(),
-                            ValueType::Integer(_) | ValueType::Counter64(_) => {
-                                panic!("Value should be a string");
-                            }
-                        }),
-                        ExprResult::Empty => {
-                            panic!("Value should be a string");
-                        }
-                    })
-                    .or_insert(match typ {
-                        ValueType::Float(f) => ExprResult::Vector(vec![f]),
-                        ValueType::None(()) => {
-                            panic!("Should not arrive");
-                        }
-                        ValueType::String(s) => ExprResult::StrVector(vec![s]),
-                        ValueType::Integer(i) => ExprResult::Vector(vec![i as f64]),
-                        ValueType::Counter64(i) => ExprResult::Vector(vec![i as f64]),
-                    });
-            }
-        }
-        completed
+    ) -> Result<bool> {
+        self.process_response(decoded, oid, walk, |_idx, _name| {
+            vec![snmp_name.to_string()]
+        })
     }
 }
 
-//mod tests {
-//    use super::*;
-//
-//    #[test]
-//    fn test_snmp_get() {
-//        let result = r_snmp_get("127.0.0.1:161", "1.3.6.1.2.1.1.1.0", "public");
-//        let expected = SnmpResult {
-//            variables: vec![SnmpVariable{
-//                "1.3.6.1.2.1.1.1.0".to_string(),
-//                "Linux CNTR-PORT-A104 6.1.0-31-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.128-1 (2025-02-07) x86_64".to_string()}],
-//        };
-//        assert_eq!(result, expected);
-//    }
-//
-//    #[test]
-//    fn test_snmp_walk() {
-//        let result = r_snmp_walk("127.0.0.1:161", "1.3.6.1.2.1.25.3.3.1.2");
-//
-//        let re = Regex::new(r"[0-9]+").unwrap();
-//        assert!(result.variables.len() > 0);
-//        for v in result.variables.iter() {
-//            let name = &v.name;
-//            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
-//            assert!(re.is_match(&v.value));
-//        }
-//    }
-//
-//    #[test]
-//    fn test_snmp_bulk_walk() {
-//        let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
-//        let re = Regex::new(r"[0-9]+").unwrap();
-//        assert!(result.variables.len() > 0);
-//        for v in result.variables.iter() {
-//            println!("{:?}", v);
-//            let name = &v.name;
-//            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
-//            assert!(re.is_match(&v.value));
-//        }
-//    }
-//}
+mod tests {
+    use std::println;
+
+    use super::*;
+
+    // #[test]
+    // fn test_snmp_get() {
+    //     let result = r_snmp_get("127.0.0.1:161", "1.3.6.1.2.1.1.1.0", "public");
+    //     let expected = SnmpResult {
+    //         variables: vec![SnmpVariable{
+    //             "1.3.6.1.2.1.1.1.0".to_string(),
+    //             "Linux CNTR-PORT-A104 6.1.0-31-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.128-1 (2025-02-07) x86_64".to_string()}],
+    //     };
+    //     assert_eq!(result, expected);
+    // }
+    //
+    #[test]
+    fn test_snmp_bulk_walk() {
+        let result = snmp_bulk_walk(
+            "127.0.0.1:161",
+            "2",
+            "public",
+            "1.3.6.1.2.1.25.3.3.1.2",
+            "test_name",
+        );
+        println!("result : {:#?}", result);
+        for v in result.unwrap().items {
+            let name = &v.0;
+            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+        }
+    }
+    //
+    //    #[test]
+    //    fn test_snmp_bulk_walk() {
+    //        let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
+    //        let re = Regex::new(r"[0-9]+").unwrap();
+    //        assert!(result.variables.len() > 0);
+    //        for v in result.variables.iter() {
+    //            println!("{:?}", v);
+    //            let name = &v.name;
+    //            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+    //            assert!(re.is_match(&v.value));
+    //        }
+    //    }
+}

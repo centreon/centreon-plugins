@@ -36,6 +36,9 @@ pub enum Error {
     #[snafu(display("Could not decode Snmp PDU received from server : {}", err))]
     InvalidSnmpPduDecode { err: String },
 
+    #[snafu(display("Could not decode a value in the Snmp response : {}", detail))]
+    InvalidSnmpValue { detail: String },
+
     #[snafu(display(
         "Empty response from the server. Does the community have sufficient permissions ?"
     ))]

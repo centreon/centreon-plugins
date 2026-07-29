@@ -241,7 +241,10 @@ impl Command {
         }
 
         let output = if lines.len() <= 1 {
-            format!("OK: {}", lines.first().unwrap_or(&"No response".to_string()))
+            format!(
+                "OK: {}",
+                lines.first().unwrap_or(&"No response".to_string())
+            )
         } else {
             format!("OK: Response received\n{}", lines.join("\n"))
         };
@@ -280,35 +283,41 @@ impl Command {
                 }
                 collect.push(SnmpResult::new(items));
             }
-        } else {
-            let mut to_get = Vec::new();
-            let mut get_name = Vec::new();
-            for s in self.collect.snmp.iter() {
-                match s.query {
-                    QueryType::Walk => {
-                        if let Some(lab) = &s.labels {
-                            let r = snmp_bulk_walk_with_labels(
-                                target, version, community, &s.oid, &s.name, &lab,
-                            );
-                            collect.push(r?);
-                        } else {
-                            let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
-                            collect.push(r?);
+            return Ok(collect);
+        }
+        let mut to_get = Vec::new();
+        let mut get_name = Vec::new();
+        for s in self.collect.snmp.iter() {
+            match s.query {
+                QueryType::Walk => {
+                    if let Some(lab) = &s.labels {
+                        let r = snmp_bulk_walk_with_labels(
+                            target, version, community, &s.oid, &s.name, &lab,
+                        )?;
+                        if !r.items.is_empty() {
+                            collect.push(r);
+                        }
+                    } else {
+                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
+                        if !r.items.is_empty() {
+                            collect.push(r);
                         }
                     }
-                    QueryType::Get => {
-                        to_get.push(s.oid.as_str());
-                        get_name.push(s.name.as_str());
-                    }
                 }
-            }
-
-            if !to_get.is_empty() {
-                let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-                collect.push(r?);
+                QueryType::Get => {
+                    to_get.push(s.oid.as_str());
+                    get_name.push(s.name.as_str());
+                }
             }
         }
 
+        if !to_get.is_empty() {
+            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            collect.push(r?);
+        }
+        if collect.is_empty() {
+            return Err(error::Error::EmptyResponse {});
+        }
         Ok(collect)
     }
 
@@ -648,8 +657,11 @@ impl Command {
 
         if !self.compute.metrics.is_empty() {
             for metric in &self.compute.metrics {
-                let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
-                println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                println!(
+                    "  {} (--warning-{}, --critical-{})",
+                    metric.name, suffix, suffix
+                );
             }
         }
 
@@ -657,8 +669,11 @@ impl Command {
             if !aggregations.is_empty() {
                 println!("Aggregations:");
                 for metric in aggregations {
-                    let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
-                    println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                    let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                    println!(
+                        "  {} (--warning-{}, --critical-{})",
+                        metric.name, suffix, suffix
+                    );
                 }
             }
         }
