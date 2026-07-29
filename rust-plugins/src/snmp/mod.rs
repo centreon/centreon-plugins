@@ -150,6 +150,11 @@ impl SnmpResult {
 ///
 pub fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
     let mut oid_u32: Vec<u32> = vec![];
+    if oid.is_empty() {
+        return Err(InvalidOidParser {
+            oid: "no value given".to_string(),
+        });
+    }
     for id in oid.split('.').skip_while(|d| d.is_empty()) {
         // OIDs are generally given starting with a '.' so the first digit may be empty
         oid_u32.push(id.parse::<u32>().map_err(|_| InvalidOidParser {
@@ -169,10 +174,12 @@ pub fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
 /// # Returns
 /// A Message<Pdu> containing the answers from the target, or an error if it was not reacheable/decodable
 ///
-// This cfg allow to replace the function in the unit tests at the end of the file
+// In tests, the transport is replaced by an in-memory fake agent (see
+// `tests::fake_snmp_agent`) so the request/response loop in `snmp_bulk_walk`
+// and friends can be exercised without a real network.
 #[cfg(test)]
-fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-    Err(InvalidSnmpPduEncode {})
+fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+    tests::fake_snmp_agent(message)
 }
 #[cfg(not(test))]
 pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
@@ -263,7 +270,7 @@ pub fn snmp_bulk_get<'a>(
 
     let message: Message<GetBulkRequest> = Message {
         version: 1.into(),
-        community: community.to_string().into(),
+        community: community.to_string().as_bytes().into(),
         data: get_request.into(),
     };
     let decoded = get_data_from_udp(target, message)?;
@@ -317,7 +324,7 @@ pub fn snmp_bulk_walk<'a>(
 
         let message: Message<GetBulkRequest> = Message {
             version: 1.into(),
-            community: community.to_string().into(),
+            community: community.to_string().as_bytes().into(),
             data: get_request.into(),
         };
 
@@ -380,7 +387,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
 
         let message: Message<GetBulkRequest> = Message {
             version: 1.into(),
-            community: community.to_string().into(),
+            community: community.to_string().as_bytes().into(),
             data: get_request.into(),
         };
 
@@ -523,48 +530,151 @@ impl SnmpResult {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    use std::println;
-
     use super::*;
+    use rasn_snmp::v2::{Pdu, Response};
 
-    // #[test]
-    // fn test_snmp_get() {
-    //     let result = r_snmp_get("127.0.0.1:161", "1.3.6.1.2.1.1.1.0", "public");
-    //     let expected = SnmpResult {
-    //         variables: vec![SnmpVariable{
-    //             "1.3.6.1.2.1.1.1.0".to_string(),
-    //             "Linux CNTR-PORT-A104 6.1.0-31-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.128-1 (2025-02-07) x86_64".to_string()}],
-    //     };
-    //     assert_eq!(result, expected);
-    // }
-    //
-    #[test]
-    fn test_snmp_bulk_walk() {
-        let result = snmp_bulk_walk(
-            "127.0.0.1:161",
-            "2",
-            "public",
-            "1.3.6.1.2.1.25.3.3.1.2",
-            "test_name",
-        );
-        println!("result : {:#?}", result);
-        for v in result.unwrap().items {
-            let name = &v.0;
-            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
+    /// Base OID for a fake table with more rows (12) than `max_repetitions`
+    /// (hardcoded to 10 in `snmp_bulk_walk`), so a walk over it forces two
+    /// GetBulk round trips. The agent ends the walk the way a real device
+    /// would: by returning the next OID in the tree, which lies outside this
+    /// subtree.
+    const CPU_TABLE_OID: &str = "1.3.6.1.2.1.25.3.3.1.2";
+    const CPU_TABLE_LEN: i64 = 12;
+    const CPU_TABLE_NEXT_OID: &str = "1.3.6.1.2.1.25.3.3.2.1";
+
+    /// Base OID for a fake table that ends with `EndOfMibView` instead of an
+    /// out-of-subtree OID, exercising the other walk-termination path.
+    const SHORT_TABLE_OID: &str = "1.3.6.1.4.1.99999.1";
+    const SHORT_TABLE_LEN: i64 = 2;
+
+    /// Sentinel OID whose requests simulate a transport failure.
+    const TRANSPORT_ERROR_OID: &str = "1.2.3.4";
+
+    fn integer_varbind(oid: &str, value: i64) -> VarBind {
+        VarBind {
+            name: ObjectIdentifier::new_unchecked(oid_to_vec(oid).unwrap().into()),
+            value: VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::Integer(value.into()))),
         }
     }
-    //
-    //    #[test]
-    //    fn test_snmp_bulk_walk() {
-    //        let result = r_snmp_bulk_walk("127.0.0.1:161", "2c", "public", "1.3.6.1.2.1.25.3.3.1.2");
-    //        let re = Regex::new(r"[0-9]+").unwrap();
-    //        assert!(result.variables.len() > 0);
-    //        for v in result.variables.iter() {
-    //            println!("{:?}", v);
-    //            let name = &v.name;
-    //            assert!(name.starts_with("1.3.6.1.2.1.25.3.3.1.2"));
-    //            assert!(re.is_match(&v.value));
-    //        }
-    //    }
+
+    /// A fake SNMP agent: given a GetBulk request, returns canned rows so
+    /// `snmp_bulk_walk`'s request/response loop can be exercised without a
+    /// real network. The scenario is picked purely from the requested OID, so
+    /// tests stay deterministic and safe to run in parallel.
+    pub(super) fn fake_snmp_agent(message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+        let request = message.data.0;
+        let requested_str = request.variable_bindings[0].name.to_string();
+
+        if requested_str.starts_with(TRANSPORT_ERROR_OID) {
+            return Err(EmptyResponse {});
+        }
+
+        let (table_prefix, table_len, out_of_subtree): (&str, i64, Option<(&str, i64)>) =
+            if requested_str.starts_with(CPU_TABLE_OID) {
+                (
+                    CPU_TABLE_OID,
+                    CPU_TABLE_LEN,
+                    Some((CPU_TABLE_NEXT_OID, 999)),
+                )
+            } else if requested_str.starts_with(SHORT_TABLE_OID) {
+                (SHORT_TABLE_OID, SHORT_TABLE_LEN, None)
+            } else {
+                (requested_str.as_str(), 0, None)
+            };
+
+        let requested = oid_to_vec(&requested_str)?;
+        let max_repetitions = request.max_repetitions as i64;
+        let mut variable_bindings = vec![];
+        for i in 1..=table_len {
+            let oid = format!("{}.{}", table_prefix, i);
+            if oid_to_vec(&oid)? > requested && (variable_bindings.len() as i64) < max_repetitions {
+                variable_bindings.push(integer_varbind(&oid, i * 10));
+            }
+        }
+        if (variable_bindings.len() as i64) < max_repetitions {
+            match out_of_subtree {
+                Some((oid, value)) => variable_bindings.push(integer_varbind(oid, value)),
+                // A real agent fills unused repetitions with EndOfMibView once
+                // it reaches the end of its whole MIB, not just this subtree.
+                None => variable_bindings.push(VarBind {
+                    name: ObjectIdentifier::new_unchecked(requested.into()),
+                    value: VarBindValue::EndOfMibView,
+                }),
+            }
+        }
+
+        Ok(Message {
+            version: 1.into(),
+            community: "public".as_bytes().into(),
+            data: Pdus::Response(Response(Pdu {
+                request_id: request.request_id,
+                error_status: 0,
+                error_index: 0,
+                variable_bindings,
+            })),
+        })
+    }
+
+    #[test]
+    fn snmp_bulk_walk_collects_every_row_across_multiple_bulk_pages() {
+        let result = snmp_bulk_walk("test:161", "2c", "public", CPU_TABLE_OID, "cpu").unwrap();
+
+        match result.items.get("cpu").unwrap() {
+            ExprResult::Vector(v) => assert_eq!(
+                v,
+                &(1..=CPU_TABLE_LEN)
+                    .map(|i| (i * 10) as f64)
+                    .collect::<Vec<_>>()
+            ),
+            other => panic!("expected a numeric vector, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn snmp_bulk_walk_terminates_on_end_of_mib_view() {
+        let result = snmp_bulk_walk("test:161", "2c", "public", SHORT_TABLE_OID, "short").unwrap();
+
+        match result.items.get("short").unwrap() {
+            ExprResult::Vector(v) => assert_eq!(v, &vec![10.0, 20.0]),
+            other => panic!("expected a numeric vector, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn snmp_bulk_walk_propagates_transport_errors() {
+        let result = snmp_bulk_walk("test:161", "2c", "public", TRANSPORT_ERROR_OID, "x");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_oid_to_vec() {
+        let ok_tests_cases = vec![
+            (
+                "1.3.6.1.2.1.25.3.3.1.2",
+                vec![1, 3, 6, 1, 2, 1, 25, 3, 3, 1, 2],
+            ),
+            ("1.3.6.4444", vec![1, 3, 6, 4444]),
+            ("1.3.6.1", vec![1, 3, 6, 1]),
+            (".1.3.6.1", vec![1, 3, 6, 1]),
+        ];
+        for (input, output) in ok_tests_cases {
+            let result = oid_to_vec(input);
+            assert_eq!(result.unwrap(), output);
+        }
+
+        let fail_tests_cases = vec![
+            ".1..3.6.1",
+            ".1.3.6.1.",
+            ".1.string.6.1.",
+            ".1,3,6.1.",
+            "notAnOid",
+            "",
+        ];
+        for input in fail_tests_cases {
+            let result = oid_to_vec(input);
+            assert!(result.is_err());
+        }
+    }
 }
