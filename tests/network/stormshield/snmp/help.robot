@@ -75,3 +75,6 @@ Standard ${tc} - ${mode}
     ...    16
     ...    vpn-status
     ...    Mode:\n.*Check vpn
+    ...    17
+    ...    licenses
+    ...    Mode:\n.*licenses

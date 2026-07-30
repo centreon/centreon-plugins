@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::stormshield::snmp::mode::licences;
+package network::stormshield::snmp::mode::licenses;
 
 use base qw(centreon::plugins::templates::counter);
 

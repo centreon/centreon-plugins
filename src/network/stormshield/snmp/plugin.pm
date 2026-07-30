@@ -37,7 +37,7 @@ sub new {
         'connections'     => 'network::stormshield::snmp::mode::connections',
         'interfaces-disco'   => 'network::stormshield::snmp::mode::interfaces_disco',
         'interfaces'      => 'snmp_standard::mode::interfaces',
-        'licences'        => 'network::stormshield::snmp::mode::licences',
+        'licenses'        => 'network::stormshield::snmp::mode::licenses',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'load'            => 'snmp_standard::mode::loadaverage',
         'ha-nodes'        => 'network::stormshield::snmp::mode::hanodes',
