@@ -2,6 +2,12 @@
 //!
 //! Provides functions to query SNMP agents via UDP, parse responses,
 //! and store results as vectors or scalars for metric computation.
+//!
+//! Walks (`snmp_bulk_walk`, `snmp_bulk_walk_with_labels`) issue repeated
+//! GetBulk requests until the response leaves the requested subtree or the
+//! agent signals `EndOfMibView`. All standard SNMP value types (INTEGER,
+//! OCTET STRING, OBJECT IDENTIFIER, IpAddress, Counter32/64, Gauge32/Unsigned32,
+//! TimeTicks, Opaque) are decoded; see `value_from_varbind`.
 
 extern crate log;
 extern crate rasn;
@@ -30,13 +36,15 @@ use std::convert::TryInto;
 use std::net::UdpSocket;
 
 /// The SNMP value type decoded from a single OID's response.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueType {
-    /// A 64-bit signed integer (covers INTEGER, TimeTicks, Gauge32/Unsigned32).
+    /// A 64-bit signed integer (covers INTEGER and TimeTicks).
     Integer(i64),
     /// A textual value (OCTET STRING, OBJECT IDENTIFIER, IpAddress, Opaque).
     String(String),
-    /// A 64-bit unsigned counter (Counter32, Counter64).
+    /// A 64-bit unsigned counter (covers Counter32, Counter64, and
+    /// Gauge32/Unsigned32 — none of these ever go negative or need signed
+    /// arithmetic, so they share one representation).
     Counter64(u64),
 }
 
@@ -121,8 +129,17 @@ fn value_from_varbind(value: &VarBindValue) -> Result<Option<ValueType>> {
 
 /// Result of an SNMP query operation.
 ///
-/// Stores collected values keyed by OID name, and tracks the last OID
+/// Stores collected values keyed by name, and tracks the last OID
 /// for walk-based operations.
+///
+/// Exemple of output of :
+/// SnmpResult { last_oid: [1,3,6,1,2,1,25,],
+///             items: {
+///                "cpu": Vector( [
+///                        6.0,
+///                        6.0,
+///            ])}}
+///
 #[derive(Debug)]
 pub struct SnmpResult {
     /// Collected values from this SNMP query, indexed by OID name.
@@ -226,8 +243,7 @@ pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Resu
 /// # Returns
 /// An Result<[`SnmpResult`]> containing the retrieved values indexed by name, or an error
 ///
-use crate::Error::InvalidOidParser;
-use crate::generic::error::Result;
+
 pub fn snmp_bulk_get<'a>(
     target: &str,
     _version: &str,
@@ -281,8 +297,9 @@ pub fn snmp_bulk_get<'a>(
 
 /// Walks a subtree of OIDs using repeated bulk requests until the subtree is exhausted.
 ///
-/// Continues retrieving values until an OID outside the subtree is encountered
-/// or a timeout occurs.
+/// Continues retrieving values until the response leaves the requested
+/// subtree or the agent replies with `EndOfMibView`. Any transport failure
+/// (including a read timeout) is propagated as an `Err`, not a partial result.
 ///
 /// # Arguments
 /// * `target` - Target address in "host:port" format
@@ -343,6 +360,8 @@ pub fn snmp_bulk_walk<'a>(
 ///
 /// Used for tabular SNMP data where the last segment of an OID identifies
 /// the column (labeled in the `labels` map), and values are organized per label.
+/// Like [`snmp_bulk_walk`], it stops once the response leaves the requested
+/// subtree or the agent replies with `EndOfMibView`.
 ///
 /// # Arguments
 /// * `target` - Target address in "host:port" format
@@ -405,6 +424,14 @@ pub fn snmp_bulk_walk_with_labels<'a>(
 }
 
 impl SnmpResult {
+    /// Creates a new `SnmpResult` with the given items map.
+    pub fn new(items: HashMap<String, ExprResult>) -> SnmpResult {
+        SnmpResult {
+            items,
+            last_oid: Vec::new(),
+        }
+    }
+
     /// Stores a decoded value under `key`, appending to the existing vector when
     /// this key has already been seen (walk operations collect one entry per OID).
     ///
@@ -533,6 +560,12 @@ impl SnmpResult {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rasn::types::{FixedOctetString, Integer, OctetString};
+    // `ApplicationSyntax`'s fields (Counter32, Unsigned32, IpAddress, TimeTicks)
+    // are type aliases, and tuple structs can't be constructed through an
+    // alias, so tests build values via the concrete v1 types instead.
+    use rasn_smi::v1::{Counter, Gauge, IpAddress, TimeTicks};
+    use rasn_smi::v2::{Counter64, ToOpaque};
     use rasn_snmp::v2::{Pdu, Response};
 
     /// Base OID for a fake table with more rows (12) than `max_repetitions`
@@ -618,7 +651,8 @@ mod tests {
     }
 
     #[test]
-    fn snmp_bulk_walk_collects_every_row_across_multiple_bulk_pages() {
+    fn test_snmp_bulk_walk() {
+        // collects every row across multiple bulk pages
         let result = snmp_bulk_walk("test:161", "2c", "public", CPU_TABLE_OID, "cpu").unwrap();
 
         match result.items.get("cpu").unwrap() {
@@ -632,8 +666,7 @@ mod tests {
         }
     }
 
-    #[test]
-    fn snmp_bulk_walk_terminates_on_end_of_mib_view() {
+        // terminates on end of mib view
         let result = snmp_bulk_walk("test:161", "2c", "public", SHORT_TABLE_OID, "short").unwrap();
 
         match result.items.get("short").unwrap() {
@@ -642,8 +675,7 @@ mod tests {
         }
     }
 
-    #[test]
-    fn snmp_bulk_walk_propagates_transport_errors() {
+        //propagates transport errors
         let result = snmp_bulk_walk("test:161", "2c", "public", TRANSPORT_ERROR_OID, "x");
         assert!(result.is_err());
     }
@@ -676,5 +708,215 @@ mod tests {
             let result = oid_to_vec(input);
             assert!(result.is_err());
         }
+    }
+
+    #[test]
+    fn value_from_varbind_returns_none_for_data_less_markers() {
+        // These are legitimate agent responses (unset value, no such
+        // object/instance, end of MIB view), not decode failures: they must
+        // not error and must not panic.
+        for marker in [
+            VarBindValue::Unspecified,
+            VarBindValue::NoSuchObject,
+            VarBindValue::NoSuchInstance,
+            VarBindValue::EndOfMibView,
+        ] {
+            assert_eq!(value_from_varbind(&marker).unwrap(), None);
+        }
+    }
+
+    #[test]
+    fn value_from_varbind_decodes_integer() {
+        let value = VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::Integer(
+            Integer::from(42i64),
+        )));
+        assert_eq!(
+            value_from_varbind(&value).unwrap(),
+            Some(ValueType::Integer(42))
+        );
+    }
+
+    #[test]
+    fn value_from_varbind_rejects_an_integer_too_large_for_i64() {
+        let value = VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::Integer(
+            Integer::from(u128::MAX),
+        )));
+        assert!(matches!(
+            value_from_varbind(&value),
+            Err(InvalidSnmpValue { .. })
+        ));
+    }
+
+    #[test]
+    fn value_from_varbind_lossily_decodes_non_utf8_octet_strings() {
+        // Real devices put binary data (e.g. MAC addresses) in OCTET STRINGs,
+        // so this must never panic like `String::from_utf8(..).unwrap()` would.
+        let bytes = vec![0xC3, 0x28];
+        let expected = String::from_utf8_lossy(&bytes).into_owned();
+        let octets: OctetString = bytes.into();
+        let value = VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::String(octets)));
+        assert_eq!(
+            value_from_varbind(&value).unwrap(),
+            Some(ValueType::String(expected))
+        );
+    }
+
+    #[test]
+    fn value_from_varbind_decodes_object_id_as_dotted_string() {
+        let oid = ObjectIdentifier::new_unchecked(vec![1u32, 3, 6, 1].into());
+        let value = VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::ObjectId(oid)));
+        assert_eq!(
+            value_from_varbind(&value).unwrap(),
+            Some(ValueType::String("1.3.6.1".to_string()))
+        );
+    }
+
+    #[test]
+    fn value_from_varbind_decodes_every_application_wide_type() {
+        let ip = IpAddress(FixedOctetString::try_from([192u8, 168, 1, 1]).unwrap());
+        let cases = vec![
+            (
+                ApplicationSyntax::Address(ip),
+                ValueType::String("192.168.1.1".to_string()),
+            ),
+            (
+                ApplicationSyntax::Counter(Counter(4_000_000_000)),
+                ValueType::Counter64(4_000_000_000),
+            ),
+            (
+                ApplicationSyntax::Ticks(TimeTicks(12345)),
+                ValueType::Integer(12345),
+            ),
+            (
+                ApplicationSyntax::BigCounter(Counter64(u64::MAX)),
+                ValueType::Counter64(u64::MAX),
+            ),
+            (
+                ApplicationSyntax::Unsigned(Gauge(999)),
+                ValueType::Counter64(999),
+            ),
+        ];
+        for (app, expected) in cases {
+            let value = VarBindValue::Value(ObjectSyntax::ApplicationWide(app));
+            assert_eq!(value_from_varbind(&value).unwrap(), Some(expected));
+        }
+    }
+
+    #[test]
+    fn value_from_varbind_decodes_arbitrary_as_a_hex_string() {
+        let opaque = OctetString::from(vec![0xDE, 0xAD, 0xBE, 0xEF])
+            .to_opaque()
+            .unwrap();
+        let raw_len = opaque.as_ref().len();
+        let value = VarBindValue::Value(ObjectSyntax::ApplicationWide(
+            ApplicationSyntax::Arbitrary(opaque),
+        ));
+        match value_from_varbind(&value).unwrap() {
+            Some(ValueType::String(s)) => assert_eq!(s.len(), raw_len * 2),
+            other => panic!("expected a hex string, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn store_accumulates_numeric_values_under_the_same_key() {
+        let mut result = SnmpResult::new(HashMap::new());
+        result.store("k".to_string(), ValueType::Integer(1));
+        result.store("k".to_string(), ValueType::Counter64(2));
+        assert_eq!(
+            result.items.get("k").unwrap(),
+            &ExprResult::Vector(vec![1.0, 2.0])
+        );
+    }
+
+    #[test]
+    fn store_accumulates_string_values_under_the_same_key() {
+        let mut result = SnmpResult::new(HashMap::new());
+        result.store("k".to_string(), ValueType::String("a".to_string()));
+        result.store("k".to_string(), ValueType::String("b".to_string()));
+        assert_eq!(
+            result.items.get("k").unwrap(),
+            &ExprResult::StrVector(vec!["a".to_string(), "b".to_string()])
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "mid-collection")]
+    fn store_panics_when_a_key_switches_from_numeric_to_string() {
+        let mut result = SnmpResult::new(HashMap::new());
+        result.store("k".to_string(), ValueType::Integer(1));
+        result.store("k".to_string(), ValueType::String("oops".to_string()));
+    }
+
+    #[test]
+    #[should_panic(expected = "mid-collection")]
+    fn store_panics_when_a_key_switches_from_string_to_numeric() {
+        let mut result = SnmpResult::new(HashMap::new());
+        result.store("k".to_string(), ValueType::String("oops".to_string()));
+        result.store("k".to_string(), ValueType::Integer(1));
+    }
+
+    // ---- build_response_with_names / build_response_with_labels --------
+
+    fn response_message(vars: Vec<(&str, i64)>) -> Message<Pdus> {
+        Message {
+            version: 1.into(),
+            community: "public".as_bytes().into(),
+            data: Pdus::Response(Response(Pdu {
+                request_id: 1,
+                error_status: 0,
+                error_index: 0,
+                variable_bindings: vars
+                    .into_iter()
+                    .map(|(oid, value)| integer_varbind(oid, value))
+                    .collect(),
+            })),
+        }
+    }
+
+    #[test]
+    fn build_response_with_names_maps_each_varbind_to_its_name() {
+        let mut result = SnmpResult::new(HashMap::new());
+        let decoded = response_message(vec![("1.3.6.1.2.1.1.3.0", 1), ("1.3.6.1.2.1.1.9.0", 2)]);
+
+        let completed = result
+            .build_response_with_names(decoded, "", &vec!["uptime", "count"], false)
+            .unwrap();
+
+        assert!(!completed);
+        assert_eq!(
+            result.items.get("uptime").unwrap(),
+            &ExprResult::Vector(vec![1.0])
+        );
+        assert_eq!(
+            result.items.get("count").unwrap(),
+            &ExprResult::Vector(vec![2.0])
+        );
+    }
+
+    #[test]
+    fn build_response_with_labels_groups_values_by_matching_suffix() {
+        let mut result = SnmpResult::new(HashMap::new());
+        // Simulates an interface table: column .10 is "in", column .16 is "out".
+        let decoded = response_message(vec![
+            ("1.3.6.1.2.1.2.2.1.10.1", 100),
+            ("1.3.6.1.2.1.2.2.1.16.1", 200),
+        ]);
+        let mut labels = HashMap::new();
+        labels.insert("10".to_string(), "in".to_string());
+        labels.insert("16".to_string(), "out".to_string());
+
+        let completed = result
+            .build_response_with_labels(decoded, "1.3.6.1.2.1.2.2.1", "iface", &labels, false)
+            .unwrap();
+
+        assert!(!completed);
+        assert_eq!(
+            result.items.get("iface.in").unwrap(),
+            &ExprResult::Vector(vec![100.0])
+        );
+        assert_eq!(
+            result.items.get("iface.out").unwrap(),
+            &ExprResult::Vector(vec![200.0])
+        );
     }
 }
