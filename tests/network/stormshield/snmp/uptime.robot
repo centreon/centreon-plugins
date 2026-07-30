@@ -43,4 +43,4 @@ Uptime ${tc}
     ...    CRITICAL: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;;0:1;0;
     ...    4
     ...    --verbose
-    ...    OK: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;;;0; System Name: <obfuscated_serial_number> Model: SN910 Serial Number: <obfuscated_serial_number> Version: 5.2.0.dev Date: 2026-04-29 17:29:10 System Node Name: None Bios Version: 4.6.5
+    ...    OK: Uptime: 71 days 20 hours 39 minutes 47 seconds | 'system.uptime.seconds'=6208787s;;;0; System Name: <fw_2> Model: SN910 Serial Number: <fw_1> Version: 5.2.0.dev Date: 2026-04-29 17:29:10 System Node Name: None Bios Version: 4.6.5
