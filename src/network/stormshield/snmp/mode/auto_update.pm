@@ -20,6 +20,8 @@
 package network::stormshield::snmp::mode::auto_update;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw(is_empty);
 
 use strict;
 use warnings;
@@ -27,50 +29,25 @@ use DateTime;
 use centreon::plugins::constants qw(:counters);
 use centreon::plugins::misc;
 
+my %STATES_TO_READABLE = (
+    'Uptodate'         => 'is up to date',
+    'Disabled'         => 'is disabled',
+    'NeverStarted'     => 'never started',
+    'Failed'           => 'has failed',
+    'Broken'           => 'is broken',
+    'Partially Failed' => 'partially failed',
+    'N/A'              => 'has no available state'
+);
+
 sub custom_auto_update_output {
     my ($self, %options) = @_;
 
     my $state = $self->{result_values}->{state};
-    my $last_date = $self->{result_values}->{last_date} // 'N/A';
     my $display = $self->{result_values}->{display};
 
-    my $msg = "";
-    
-    if ($state eq 'Uptodate') {
-        $msg = "$display is up to date";
-    } elsif ($state eq 'Disabled') {
-        $msg = "$display is disabled";
-    } elsif ($state eq 'NeverStarted') {
-        $msg = "$display never started";
-    } else {
-        $msg = "$display $state (Last Update: $last_date)";
-    }
-    
-    if (!$self->{output}->{long_msg_added}) {
-        $self->{output}->{long_msg_added} = 1;
-        $self->{output}->output_add(
-            long_msg => "-----------------------------------------------------------------------\n"
-        );
-    }
-    
-    return $msg;
-    
-}
-
-sub custom_auto_update_threshold_check {
-    my ($self, %options) = @_;
-    
-    my $state = $self->{result_values}->{state};
-
-    if ($state eq 'Failed' || $state eq 'Broken') {
-        return 'CRITICAL';
-    } elsif ($state eq 'Partially Failed') {
-        return 'WARNING';
-    } elsif ($state eq 'Disabled' || $state eq 'NeverStarted') {
-        return 'OK';
-    } else {
-        return 'OK';
-    }
+    return "$display " . $STATES_TO_READABLE{$state} if $STATES_TO_READABLE{$state};
+    return "$display " . $state
+        . " (Last Update: " . ($self->{result_values}->{last_date} // 'N/A') . ")";
 }
 
 sub set_counters {
@@ -80,24 +57,24 @@ sub set_counters {
         { 
             name => 'updates', 
             type => COUNTER_TYPE_INSTANCE,
-            message_multiple => 'All Updates and Webservices are up to date',
-            skipped_code => { -10 => 1 } 
+            message_multiple => 'All Updates and Webservices are up to date'
         }
     ];
 
     $self->{maps_counters}->{updates} = [
         {
-            label => 'status',
-            type => COUNTER_KIND_METRIC,
-            set => {
-                key_values => [ 
+            label            => 'status',
+            type             => COUNTER_KIND_TEXT,
+            warning_default  => '%{state} =~ /Partially Failed/i',
+            critical_default => '%{state} =~ /^(Failed|Broken)$/i',
+            set              => {
+                key_values => [
                     { name => 'display' },
                     { name => 'state' },
                     { name => 'last_date' }
                 ],
                 closure_custom_output => $self->can('custom_auto_update_output'),
-                closure_custom_threshold_check => $self->can('custom_auto_update_threshold_check'),
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
     ];
@@ -107,9 +84,6 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
-    $options{options}->add_options(arguments => {
-    });
 
     return $self;
 }
@@ -202,20 +176,15 @@ sub process_table {
         my $index = $oid;
         $index =~ s/^$index_oid\.//;
 
-        my $name     = $snmp_result->{"$name_oid.$index"} // 'N/A';
-        my $state    = $snmp_result->{"$state_oid.$index"}  // 'N/A';
-        my $lastDate = $snmp_result->{"$date_oid.$index"}   // 'N/A';
+        my $name     = is_empty($snmp_result->{"$name_oid.$index"}) ? 'N/A' : $snmp_result->{"$name_oid.$index"};
+        my $state    = is_empty($snmp_result->{"$state_oid.$index"}) ? 'N/A' : $snmp_result->{"$state_oid.$index"};
+        my $lastDate = is_empty($snmp_result->{"$date_oid.$index"}) ? 'N/A' : $snmp_result->{"$date_oid.$index"};
 
-        my $normalized_state = $state;
-        if ($normalized_state eq 'Disabled') {
-            $normalized_state = 'Disabled';
-        } elsif ($normalized_state !~ /^(Uptodate|Failed|Broken|Partially Failed)/) {
-            $normalized_state = 'NeverStarted';
-        }
+        my $normalized_state = ($state =~ /^(Uptodate|Failed|Disabled|Broken|Partially Failed)$/) ? $state : 'NeverStarted';
 
         $self->{updates}->{$prefix . '_' . $index} = {
-            display => $prefix . ': ' . $name,
-            state   => $normalized_state,
+            display   => $prefix . ': ' . $name,
+            state     => $normalized_state,
             last_date => $lastDate
         };
     }
@@ -231,6 +200,21 @@ This mode allows you to monitor the status of auto-updates and web services on a
 It checks for failed, broken, or partially failed updates and reports their status.
 
 =over 8
+
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+You can use the following variables: %{display}, %{state}, %{last_date}
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING (default: C<%{state} =~ /Partially Failed/i>).
+You can use the following variables: %{display}, %{state}, %{last_date}
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL (default: C<%{state} =~ /^(Failed|Broken)$/i>).
+You can use the following variables: %{display}, %{state}, %{last_date}
 
 =back
 
