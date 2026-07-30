@@ -19,8 +19,7 @@ use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
-
-use crate::snmp::SnmpResult;
+use std::convert::Into;
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -49,50 +48,41 @@ pub enum Status {
     Critical = 2,
     Unknown = 3,
 }
-
-impl Status {
-    fn as_str(&self) -> &str {
-        match *self {
-            Status::Ok => "OK",
-            Status::Warning => "WARNING",
-            Status::Critical => "CRITICAL",
-            Status::Unknown => "UNKNOWN",
+impl Into<i32> for Status {
+    fn into(self) -> i32 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Critical => 3,
+            Status::Unknown => 2,
         }
     }
-
+}
+impl Into<String> for Status {
+    fn into(self) -> String {
+        match self {
+            Status::Ok => "OK".to_string(),
+            Status::Warning => "WARNING".to_string(),
+            Status::Critical => "CRITICAL".to_string(),
+            Status::Unknown => "UNKNOWN".to_string(),
+        }
+    }
+}
+impl Status {
     /// Returns `true` if `self` is at least as severe as `other`.
     ///
     /// Severity order: `Ok < Warning < Unknown < Critical`.
     pub fn is_worse_than(&self, other: Status) -> bool {
-        let self_int = match self {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
-        let other_int = match other {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
+        let self_int: i32 = (*self).into();
+        let other_int: i32 = other.into();
         self_int >= other_int
     }
 }
 
 fn worst(a: Status, b: Status) -> Status {
-    let a_int = match a {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
-    let b_int = match b {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
+    let a_int: i32 = a.into();
+    let b_int: i32 = b.into();
+
     if a_int > b_int {
         return a;
     } else {

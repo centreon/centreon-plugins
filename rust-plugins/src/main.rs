@@ -261,6 +261,7 @@ fn snmp_plugin() -> Result<(), Error> {
         println!("JSON is valid");
     } else {
         println!("{}", result.output);
+        std::process::exit(result.status.into());
     }
 
     Ok(())
