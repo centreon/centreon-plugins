@@ -59,7 +59,7 @@ Standard ${tc} - ${mode}
     ...    Mode:\n.*memory
     ...    11
     ...    memory-detailed
-    ...    Mode:\n.*memory.detailed
+    ...    Mode:\n.*memory
     ...    12
     ...    qos
     ...    Mode:\n.*qos
@@ -78,3 +78,6 @@ Standard ${tc} - ${mode}
     ...    17
     ...    licenses
     ...    Mode:\n.*licenses
+    ...    18
+    ...    auto-update
+    ...    Mode:\n.*auto.update
