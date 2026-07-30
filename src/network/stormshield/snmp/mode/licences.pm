@@ -24,13 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc;
 use DateTime;
-
-our $GLOBAL_WARNING_THRESHOLD;
-our $GLOBAL_PROBLEM;
 
 sub custom_licence_output {
     my ($self, %options) = @_;
@@ -41,42 +37,10 @@ sub custom_licence_output {
     my $seconds_left = $self->{result_values}->{seconds_left};
     my $fw_display = $options{instance_value}->{display}; 
 
-    my $msg = "";
-    if (defined $seconds_left) {
-        if ($seconds_left < 0) {
-            $msg = "Licence: $name (Expired: $exp_date)";
-        } elsif ($days_left <= $GLOBAL_WARNING_THRESHOLD) {
-            $msg = "Licence: $name (Expires in $days_left days: $exp_date)";
-        } else {
-            $msg = "Licence: $name (Expiration Date: $exp_date)";
-            
-            # Only add to long output if there isn't a warning/critical/unknown
-            if(!$GLOBAL_PROBLEM) {
-                $self->{output}->output_add(
-                    long_msg => $msg
-                );
-            }
-        }
-    }
-    
+    my $msg = "Licence: $name (Expires in $days_left days: $exp_date)";
+
     return sprintf($msg);
 }
-
-sub custom_licence_threshold_check {
-    my ($self, %options) = @_;
-    
-    my $days = $self->{result_values}->{days_left};
-    my $seconds_left = $self->{result_values}->{seconds_left};
-
-    if ($seconds_left < 0) {
-        return 'CRITICAL';
-    } elsif ($days <= $GLOBAL_WARNING_THRESHOLD) {
-        return 'WARNING';
-    } else {
-        return 'OK';
-    }
-}
-
 
 sub firewall_long_output {
     my ($self, %options) = @_;
@@ -94,17 +58,16 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { 
             name => 'firewalls', 
-            type => COUNTER_TYPE_GROUP,
+            type => COUNTER_TYPE_MULTIPLE,
             cb_long_output => 'firewall_long_output', 
             message_multiple => 'All licences of the cluster are up to date',
             group => [
                 { 
                     name => 'licences', 
                     display_long => 1,
-                    cb_prefix_output => sub { return ''; }, 
+                    #cb_prefix_output => sub { return ''; },
                     message_multiple => 'All licences are up to date', 
-                    type => COUNTER_TYPE_INSTANCE, 
-                    skipped_code => { -10 => 1 } 
+                    type => COUNTER_MULTIPLE_SUBINSTANCE,
                 }
             ]
         }
@@ -112,8 +75,11 @@ sub set_counters {
 
     $self->{maps_counters}->{licences} = [
         {
-            label => 'expiry',
+            label => 'expires-days',
+            nlabel  => 'license.expiration.days',
             type => COUNTER_KIND_METRIC,
+            warning_default => '60:',
+            critical_default => '0:',
             set => {
                 key_values => [ 
                     { name => 'days_left' },
@@ -121,9 +87,10 @@ sub set_counters {
                     { name => 'exp_date' },
                     { name => 'seconds_left' }
                 ],
-                closure_custom_output => $self->can('custom_licence_output'),
-                closure_custom_threshold_check => $self->can('custom_licence_threshold_check'),
-                closure_custom_perfdata => sub { return 0; }
+                output_template => "Licence: %{name} (Expires in %{days_left} days: %{exp_date})",
+                perfdatas => [
+                    { template => '%s', unit => 'd', cast_int => 1, label_extra_instance => 1 }
+                ]
             }
         },
     ];
@@ -131,25 +98,15 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'timezone:s' => { name => 'timezone' },
+        'timezone:s' => { name => 'timezone', default => 'CET' },
         'warning-days:s'  => { name => 'warning' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{option_results}->{timezone} = 'CET' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
-    $self->{option_results}->{warning} = 60 if (!defined($self->{option_results}->{warning}) || $self->{option_results}->{warning} eq '');
-
-    $GLOBAL_WARNING_THRESHOLD = $self->{option_results}->{warning};
 }
 
 sub manage_selection {
@@ -263,16 +220,15 @@ sub manage_selection {
         return;
     }
 
-    $GLOBAL_PROBLEM = 0;
-
     # Iterate over each firewall instance (HA node or single node)
     foreach my $fw_instance (@$ha_instances) {
+        my $fw_key = $serials->{$fw_instance} // 'Unknown';
         my $display_name = '';
         if (scalar(@$ha_instances) > 1) {
-            $display_name = $serials->{$fw_instance} // 'Unknown';
+            $display_name = $fw_key;
         }
 
-        $self->{firewalls}->{$fw_instance} = {
+        $self->{firewalls}->{$fw_key} = {
             display => $display_name,
             licences => {}
         };
@@ -330,11 +286,7 @@ sub manage_selection {
             my $seconds_left = $dt->epoch - time();
             my $days_left = int($seconds_left / 86400);
 
-            if ($seconds_left < 0 || $days_left <= $GLOBAL_WARNING_THRESHOLD){
-                $GLOBAL_PROBLEM = 1;
-            }
-
-            $self->{firewalls}->{$fw_instance}->{licences}->{$index} = {
+            $self->{firewalls}->{$fw_key}->{licences}->{$name} = {
                 name        => $name,
                 exp_date    => $exp_date,
                 days_left   => $days_left,
@@ -366,13 +318,17 @@ It automatically supports high-availability (HA) configurations by detecting the
 
 =over 8
 
-=item B<--warning-days>
+=item B<--warning-expires-days>
 
-Warning threshold for the number of days remaining before expiration (default: 60).
+Threshold in days (default: 60).
+
+=item B<--critical-expires-days>
+
+Threshold in days (default: 0).
 
 =item B<--timezone>
 
-Timezone options. Default is 'CET'.
+Timezone options. Default is C<CET>.
 
 =back
 
