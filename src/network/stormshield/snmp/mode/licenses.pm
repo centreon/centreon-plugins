@@ -25,27 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw/:counters :values/;
-use centreon::plugins::misc;
+use centreon::plugins::misc qw(is_empty);
 use DateTime;
-
-sub custom_licence_output {
-    my ($self, %options) = @_;
-
-    my $name = $self->{result_values}->{name};
-    my $days_left = $self->{result_values}->{days_left};
-    my $exp_date = $self->{result_values}->{exp_date};
-    my $seconds_left = $self->{result_values}->{seconds_left};
-    my $fw_display = $options{instance_value}->{display}; 
-
-    my $msg = "Licence: $name (Expires in $days_left days: $exp_date)";
-
-    return sprintf($msg);
-}
 
 sub firewall_long_output {
     my ($self, %options) = @_;
     my $display = $options{instance_value}->{display};
-    
+
     if (defined $display && $display ne '') {
         return "--------------Firewall $display--------------";
     }
@@ -56,17 +42,17 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { 
-            name => 'firewalls', 
+        {
+            name => 'firewalls',
             type => COUNTER_TYPE_MULTIPLE,
-            cb_long_output => 'firewall_long_output', 
+            cb_long_output => 'firewall_long_output',
             message_multiple => 'All licences of the cluster are up to date',
             group => [
-                { 
-                    name => 'licences', 
+                {
+                    name => 'licences',
                     display_long => 1,
                     #cb_prefix_output => sub { return ''; },
-                    message_multiple => 'All licences are up to date', 
+                    message_multiple => 'All licences are up to date',
                     type => COUNTER_MULTIPLE_SUBINSTANCE,
                 }
             ]
@@ -81,7 +67,7 @@ sub set_counters {
             warning_default => '60:',
             critical_default => '0:',
             set => {
-                key_values => [ 
+                key_values => [
                     { name => 'days_left' },
                     { name => 'name' },
                     { name => 'exp_date' },
@@ -102,8 +88,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'timezone:s' => { name => 'timezone', default => 'CET' },
-        'warning-days:s'  => { name => 'warning' },
+        'timezone:s' => { name => 'timezone', default => 'CET' }
     });
 
     return $self;
@@ -113,8 +98,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{firewalls} = {};
-    
-    my $oid_snsNode = '.1.3.6.1.4.1.11256.1.11.7.1.1'; 
+
+    my $oid_snsNode = '.1.3.6.1.4.1.11256.1.11.7.1.1';
     my $oid_snsFwSerial = '.1.3.6.1.4.1.11256.1.11.7.1.2';
     my $oid_snsVersion = '.1.3.6.1.4.1.11256.1.18.2.0';
 
@@ -122,7 +107,7 @@ sub manage_selection {
         oids => [ $oid_snsVersion ],
         nothing_quit => 0,
     );
-    
+
     if (defined $snmp_result_version && defined $snmp_result_version->{$oid_snsVersion}) {
         my $version_clean = $snmp_result_version->{$oid_snsVersion};
         # Extract major.minor.patch version number
@@ -146,7 +131,7 @@ sub manage_selection {
     eval {
         $ha_result = $options{snmp}->get_table(
             oid => $oid_snsNode,
-            nothing_quit => 0 
+            nothing_quit => 0
         );
     };
     if ($@) {
@@ -166,9 +151,9 @@ sub manage_selection {
                 push @$ha_instances, $instance;
             }
         }
-        
+
         if (scalar(@$ha_instances) == 0) {
-            push @$ha_instances, '0'; 
+            push @$ha_instances, '0';
         }
         $is_ha = 1;
     }
@@ -189,12 +174,12 @@ sub manage_selection {
     my $licence_count_total = 0;
 
     # Define OIDs based on HA or non-HA mode
-    # Stormshield uses different MIB for HA clusters vs standalone devices    
+    # Stormshield uses different MIB for HA clusters vs standalone devices
     my $oid_table;
     my $oid_index_base;
     my $oid_name_base;
     my $oid_exp_base;
-    
+
     if ($is_ha) {
         $oid_table = '.1.3.6.1.4.1.11256.1.11.14.1';                # oid_snsNodeLicenceOptionEntry
         $oid_index_base = '.1.3.6.1.4.1.11256.1.11.14.1.1';         # oid_snsNodeLicenceOptionIndex
@@ -209,7 +194,7 @@ sub manage_selection {
 
     my $snmp_lic_result = $options{snmp}->get_table(
         oid         => $oid_table,
-        nothing_quit => 0 
+        nothing_quit => 0
     );
 
     if (!defined $snmp_lic_result || scalar(keys %{$snmp_lic_result}) == 0) {
@@ -236,7 +221,7 @@ sub manage_selection {
         foreach my $oid (sort keys %{$snmp_lic_result}) {
             my $index;
             my $instance_id;
-            
+
             if ($is_ha) {
                 # In HA mode, OID structure is: base.instance.index
                 # We must filter to ensure we only process licenses for the current $fw_instance
@@ -262,7 +247,7 @@ sub manage_selection {
             my $name     = $snmp_lic_result->{$name_oid};
             my $exp_date = $snmp_lic_result->{$exp_oid};
 
-            if (!defined $name || $name eq '' || !defined $exp_date || $exp_date eq '' || $exp_date eq 'N/A' || $exp_date eq '0000-00-00') {
+            if (is_empty($name) || is_empty($exp_date) || $exp_date eq 'N/A' || $exp_date eq '0000-00-00') {
                 next;
             }
 
@@ -282,7 +267,7 @@ sub manage_selection {
                 second => 0,
                 %$tz
             );
-            
+
             my $seconds_left = $dt->epoch - time();
             my $days_left = int($seconds_left / 86400);
 
@@ -301,10 +286,10 @@ sub manage_selection {
             severity => 'UNKNOWN',
             short_msg => 'No valid licences found'
         );
-        $self->{firewalls} = {}; 
+        $self->{firewalls} = {};
         return;
-    }   
-    
+    }
+
 }
 
 1;
