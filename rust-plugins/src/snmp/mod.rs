@@ -147,88 +147,6 @@ pub struct SnmpResult {
     last_oid: Vec<u32>,
 }
 
-impl SnmpResult {
-    /// Creates a new `SnmpResult` with the given items map.
-    pub fn new(items: HashMap<String, ExprResult>) -> SnmpResult {
-        SnmpResult {
-            items,
-            last_oid: Vec::new(),
-        }
-    }
-}
-
-/// Helper function to parse a numerical oid and return a vector containing the list of id composing the oid.
-///
-/// # Arguments
-/// * `oid` - string in the form '.1.3.6.1.2', the first dot being optionnal.
-///
-/// # Returns
-/// an array of unsigned number representing the oid, or an error if one of the oid part was not a number
-///
-pub fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
-    let mut oid_u32: Vec<u32> = vec![];
-    if oid.is_empty() {
-        return Err(InvalidOidParser {
-            oid: "no value given".to_string(),
-        });
-    }
-    for id in oid.split('.').skip_while(|d| d.is_empty()) {
-        // OIDs are generally given starting with a '.' so the first digit may be empty
-        oid_u32.push(id.parse::<u32>().map_err(|_| InvalidOidParser {
-            oid: oid.to_string(),
-        })?);
-    }
-    return Ok(oid_u32);
-}
-
-/// Create an udp socket and send a snmp request on it, returning the response.
-/// This function is blocking.
-///
-/// # Arguments
-/// * `target` - Target address in "host:port" format
-/// * `message` - Snmp Message, containing the snmp version, comunity, and a Pdu
-///
-/// # Returns
-/// A Message<Pdu> containing the answers from the target, or an error if it was not reacheable/decodable
-///
-// In tests, the transport is replaced by an in-memory fake agent (see
-// `tests::fake_snmp_agent`) so the request/response loop in `snmp_bulk_walk`
-// and friends can be exercised without a real network.
-#[cfg(test)]
-fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-    tests::fake_snmp_agent(message)
-}
-#[cfg(not(test))]
-pub fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-    let socket = UdpSocket::bind("0.0.0.0:0")?;
-    socket.connect(target)?;
-    let duration = std::time::Duration::from_millis(1000);
-    socket.set_read_timeout(Some(duration))?;
-    // Send the message through an UDP socket
-    let encoded: Vec<u8> = rasn::der::encode(&message).map_err(|_| InvalidSnmpPduEncode {})?;
-    let res: usize = socket.send(&encoded)?;
-    assert!(res == encoded.len());
-    let mut buf: [u8; 1024] = [0; 1024];
-    info!("waiting to receive data from {:?}", socket.peer_addr());
-    let resp: (usize, std::net::SocketAddr) =
-        socket
-            .recv_from(buf.as_mut_slice())
-            .map_err(|e| FailedToConnectToHost {
-                url: target.to_string(),
-                os: e.to_string(),
-            })?;
-
-    info!("Received {} bytes", resp.0);
-    if resp.0 == 0 {
-        return Err(EmptyResponse {});
-    }
-
-    let resp =
-        rasn::ber::decode(&buf[0..resp.0]).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() });
-    trace!("Received an snmp answer : {:?}", resp);
-    resp
-}
-
 /// Retrieves values for multiple OIDs in a single bulk request.
 ///
 /// # Arguments
@@ -555,6 +473,79 @@ impl SnmpResult {
             vec![snmp_name.to_string()]
         })
     }
+}
+
+/// Helper function to parse a numerical oid and return a vector containing the list of id composing the oid.
+///
+/// # Arguments
+/// * `oid` - string in the form '.1.3.6.1.2', the first dot being optional.
+///
+/// # Returns
+/// An array of unsigned numbers representing the oid, or an error if the oid
+/// is empty or one of its parts is not a number.
+///
+fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
+    let mut oid_u32: Vec<u32> = vec![];
+    if oid.is_empty() {
+        return Err(InvalidOidParser {
+            oid: "no value given".to_string(),
+        });
+    }
+    for id in oid.split('.').skip_while(|d| d.is_empty()) {
+        // OIDs are generally given starting with a '.' so the first digit may be empty
+        oid_u32.push(id.parse::<u32>().map_err(|_| InvalidOidParser {
+            oid: oid.to_string(),
+        })?);
+    }
+    return Ok(oid_u32);
+}
+
+/// Create an udp socket and send a snmp request on it, returning the response.
+/// This function is blocking.
+///
+/// # Arguments
+/// * `target` - Target address in "host:port" format
+/// * `message` - Snmp Message, containing the snmp version, comunity, and a Pdu
+///
+/// # Returns
+/// A Message<Pdu> containing the answers from the target, or an error if it was not reachable/decodable
+///
+// In tests, the transport is replaced by an in-memory fake agent (see
+// `tests::fake_snmp_agent`) so the request/response loop in `snmp_bulk_walk`
+// and friends can be exercised without a real network.
+#[cfg(test)]
+fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+    tests::fake_snmp_agent(message)
+}
+#[cfg(not(test))]
+fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+    let socket = UdpSocket::bind("0.0.0.0:0")?;
+    socket.connect(target)?;
+    let duration = std::time::Duration::from_millis(1000);
+    socket.set_read_timeout(Some(duration))?;
+    // Send the message through an UDP socket
+    let encoded: Vec<u8> = rasn::der::encode(&message).map_err(|_| InvalidSnmpPduEncode {})?;
+    let res: usize = socket.send(&encoded)?;
+    assert!(res == encoded.len());
+    let mut buf: [u8; 1024] = [0; 1024];
+    info!("waiting to receive data from {:?}", socket.peer_addr());
+    let resp: (usize, std::net::SocketAddr) =
+        socket
+            .recv_from(buf.as_mut_slice())
+            .map_err(|e| FailedToConnectToHost {
+                url: target.to_string(),
+                os: e.to_string(),
+            })?;
+
+    info!("Received {} bytes", resp.0);
+    if resp.0 == 0 {
+        return Err(EmptyResponse {});
+    }
+
+    let resp =
+        rasn::ber::decode(&buf[0..resp.0]).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() });
+    trace!("Received an snmp answer : {:?}", resp);
+    resp
 }
 
 #[cfg(test)]
