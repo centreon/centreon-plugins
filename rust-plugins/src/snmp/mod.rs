@@ -343,11 +343,8 @@ impl SnmpResult {
 
     /// Stores a decoded value under `key`, appending to the existing vector when
     /// this key has already been seen (walk operations collect one entry per OID).
-    ///
-    /// # Panics
-    /// Panics if a key that previously held a numeric value is fed a string (or
-    /// vice versa) — this would mean a single OID column changed SNMP type
-    /// mid-collection, which indicates a malformed response.
+    /// Return an error when the key previously held a String and inserting a number (and vice-versa)
+    /// this would mean a single OID column changed SNMP type mid-collection, which indicates a malformed response.
     fn store(&mut self, key: String, typ: ValueType) -> Result<()> {
         match typ {
             ValueType::String(s) => match self.items.entry(key) {
