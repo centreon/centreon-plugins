@@ -597,6 +597,23 @@ mod tests {
             return Err(EmptyResponse {});
         }
 
+        // A "get" request (snmp_bulk_get) asks for several distinct,
+        // single-instance OIDs in one request, unlike a walk which always
+        // requests exactly one OID per round trip. Answer each directly.
+        if request.variable_bindings.len() > 1 {
+            let oids: Vec<String> = request
+                .variable_bindings
+                .iter()
+                .map(|vb| vb.name.to_string())
+                .collect();
+            let vars = oids
+                .iter()
+                .enumerate()
+                .map(|(i, oid)| (oid.as_str(), (i as i64 + 1) * 100))
+                .collect();
+            return Ok(response_message(vars));
+        }
+
         let (table_prefix, table_len, out_of_subtree): (&str, i64, Option<(&str, i64)>) =
             if requested_str.starts_with(CPU_TABLE_OID) {
                 (
@@ -657,7 +674,6 @@ mod tests {
             ),
             other => panic!("expected a numeric vector, got {:?}", other),
         }
-    }
 
         // terminates on end of mib view
         let result = snmp_bulk_walk("test:161", "2c", "public", SHORT_TABLE_OID, "short").unwrap();
@@ -669,6 +685,99 @@ mod tests {
 
         //propagates transport errors
         let result = snmp_bulk_walk("test:161", "2c", "public", TRANSPORT_ERROR_OID, "x");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_snmp_bulk_get() {
+        // fetches several distinct OIDs in a single round trip
+        let result = snmp_bulk_get(
+            "test:161",
+            "2c",
+            "public",
+            2,
+            0,
+            &vec!["1.3.6.1.2.1.1.3.0", "1.3.6.1.2.1.1.5.0"],
+            &vec!["uptime", "name"],
+        )
+        .unwrap();
+
+        assert_eq!(
+            result.items.get("uptime").unwrap(),
+            &ExprResult::Vector(vec![100.0])
+        );
+        assert_eq!(
+            result.items.get("name").unwrap(),
+            &ExprResult::Vector(vec![200.0])
+        );
+
+        // propagates transport errors
+        let result = snmp_bulk_get(
+            "test:161",
+            "2c",
+            "public",
+            1,
+            0,
+            &vec![TRANSPORT_ERROR_OID],
+            &vec!["x"],
+        );
+        assert!(result.is_err());
+
+        // propagates invalid-oid errors before any network call
+        let result = snmp_bulk_get("test:161", "2c", "public", 1, 0, &vec![""], &vec!["x"]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_snmp_bulk_walk_with_labels() {
+        // collects every row across multiple bulk pages, grouped by label
+        let mut labels = HashMap::new();
+        // label contain the oid last number as key and the name of the property as value.
+        labels.insert("2".to_string(), "core".to_string());
+        let result =
+            snmp_bulk_walk_with_labels("test:161", "2c", "public", CPU_TABLE_OID, "cpu", &labels)
+                .unwrap();
+        match result.items.get("cpu.core").unwrap() {
+            ExprResult::Vector(v) => assert_eq!(
+                v,
+                &(1..=CPU_TABLE_LEN)
+                    .map(|i| (i * 10) as f64)
+                    .collect::<Vec<_>>()
+            ),
+            other => panic!("expected a numeric vector, got {:?}", other),
+        }
+
+        // terminates on end of mib view
+        let mut labels = HashMap::new();
+        labels.insert("1".to_string(), "val".to_string());
+        let result = snmp_bulk_walk_with_labels(
+            "test:161",
+            "2c",
+            "public",
+            SHORT_TABLE_OID,
+            "short",
+            &labels,
+        )
+        .unwrap();
+
+        match result.items.get("short.val").unwrap() {
+            ExprResult::Vector(v) => assert_eq!(v, &vec![10.0, 20.0]),
+            other => panic!("expected a numeric vector, got {:?}", other),
+        }
+
+        // propagates transport errors
+        let result = snmp_bulk_walk_with_labels(
+            "test:161",
+            "2c",
+            "public",
+            TRANSPORT_ERROR_OID,
+            "x",
+            &labels,
+        );
+        assert!(result.is_err());
+
+        // propagates invalid-oid errors before any network call
+        let result = snmp_bulk_walk_with_labels("test:161", "2c", "public", "", "x", &labels);
         assert!(result.is_err());
     }
 
