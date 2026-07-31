@@ -81,3 +81,6 @@ Standard ${tc} - ${mode}
     ...    18
     ...    auto-update
     ...    Mode:\n.*auto.update
+    ...    19
+    ...    ha-cluster
+    ...    Mode:\n.*ha.cluster

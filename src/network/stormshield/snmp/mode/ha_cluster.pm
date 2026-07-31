@@ -24,118 +24,67 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-
-
-sub custom_node_perfdata {
-    my ($self, %options) = @_;
-    my $nb = $self->{result_values}->{nb_nodes};
-    my $warn = defined($nb) ? int($nb * 0.5) : undef;
-    my $crit = defined($nb) ? $nb : undef;
-
-    $self->{output}->perfdata_add(
-        label => 'ha.dead_nodes.count',
-        value => $self->{result_values}->{dead_nodes},
-        warning => $warn,
-        critical => $crit,
-        min => 0,
-        max => $nb,
-    )
-}
-
-sub custom_link_perfdata {
-    my ($self, %options) = @_;
-    my $nb = $self->{result_values}->{nb_links};
-    my $warn = defined($nb) ? int($nb * 0.5) : undef;
-    my $crit = defined($nb) ? $nb : undef;
-
-    $self->{output}->perfdata_add(
-        label => 'ha.faulty_links.count',
-        value => $self->{result_values}->{faulty_links},
-        warning => $warn,
-        critical => $crit,
-        min => 0,
-        max => $nb,
-    )
-}
-
-sub custom_node_threshold {
-    my ($self, %options) = @_;
-    my $nb = $self->{result_values}->{nb_nodes};
-    my $dead = $self->{result_values}->{dead_nodes};
-    return 'OK' if !defined($nb) || $nb == 0;
-    return 'WARNING' if $dead >= int($nb*0.5);
-    return 'CRITICAL' if $dead >= $nb;
-    return 'OK';
-}
-
-
-sub custom_link_threshold {
-    my ($self, %options) = @_;
-    my $nb = $self->{result_values}->{nb_links};
-    my $dead = $self->{result_values}->{faulty_links};
-    return 'OK' if !defined($nb) || $nb == 0;
-    return 'WARNING' if $dead >= int($nb*0.5);
-    return 'CRITICAL' if $dead >= $nb;
-    return 'OK';
-}
-
-sub custom_active_threshold {
-    my ($self, %options) = @_;
-    my $nb = $self->{result_values}->{nb_active};
-    return 'OK' if !defined($nb) || $nb == 1;
-    return 'CRITICAL' if $nb == 2 || $nb == 0;
-    return 'UNKNOWN';
-}
-
-sub custom_sync_threshold {
-    my ($self, %options) = @_;
-    return 'WARNING' if $self->{result_values}->{sync_status} eq 'False';
-    return 'OK';
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
     ];
 
     $self->{maps_counters}->{global} = [
         {
             label => 'dead-nodes',
+            nlabel => 'cluster.dead-nodes.count',
+            type => COUNTER_KIND_METRIC,
+            warning_default => '50',
+            critical_default => '100',
             set => {
-                key_values => [ { name => 'dead_nodes' }, { name => 'nb_nodes' }, { name => 'dead_pct' } ],
+                key_values => [ { name => 'dead_pct' }, { name => 'nb_nodes' }, { name => 'dead_nodes' } ],
                 output_template => 'Dead Nodes: %{dead_nodes}/%{nb_nodes} (%{dead_pct}%%)',
-                closure_custom_perfdata => $self->can('custom_node_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_node_threshold'),
+                perfdatas => [
+                    { label => 'ha.dead_nodes.count', value => 'dead_nodes', template => '%s', min => 0, max => 'nb_nodes', threshold_total => 'nb_nodes', cast_int => 1 }
+                ]
             }
         },
         {
             label => 'faulty-links',
+            nlabel => 'cluster.faulty-links.count',
+            type => COUNTER_KIND_METRIC,
+            warning_default => '50',
+            critical_default => '100',
             set => {
-                key_values => [ { name => 'faulty_links' }, { name => 'nb_links' }, { name => 'faulty_pct' } ],
+                key_values => [ { name => 'faulty_pct' }, { name => 'nb_links' }, { name => 'faulty_links' } ],
                 output_template => 'Faulty Links: %{faulty_links}/%{nb_links} (%{faulty_pct}%%)',
-                closure_custom_perfdata => $self->can('custom_link_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_link_threshold'),
+                perfdatas => [
+                    { label => 'ha.faulty_links.count', value => 'faulty_links', template => '%s', min => 0, max => 'nb_links', threshold_total => 'nb_links', cast_int => 1 }
+                ]
             }
         },
         {
             label => 'active-firewall',
+            nlabel => 'cluster.active-firewalls.count',
+            type => COUNTER_KIND_METRIC,
+            critical_default => '1:1',
             set => {
                 key_values => [ { name => 'nb_active' } ],
                 output_template => 'Active Firewalls: %{nb_active}/2',
-                closure_custom_threshold_check => $self->can('custom_active_threshold'),
+                perfdatas => [
+                    { label => 'ha.active_firewalls.count', value => 'nb_active', template => '%s', min => 0, max => 2, cast_int => 1 }
+                ]
             }
         },
         {
             label => 'sync-status',
+            type => COUNTER_KIND_TEXT,
+            warning_default => '%{sync_status} eq "False"',
             set => {
                 key_values => [ { name => 'sync_status' } ],
                 output_template => 'Configuration Synced: %{sync_status}',
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_sync_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -144,13 +93,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
-
-    $self->{output}->{option_results}->{verbose} = 1;
-
     return $self;
 }
-
 
 my $oid_snsNode            = '.1.3.6.1.4.1.11256.1.11.7.1';
 my $oid_snsNbNode          = '.1.3.6.1.4.1.11256.1.11.1.0';
@@ -160,25 +104,23 @@ my $oid_snsNbHALinks       = '.1.3.6.1.4.1.11256.1.11.5.0';
 my $oid_snsNbFaultyHALinks = '.1.3.6.1.4.1.11256.1.11.6.0';
 my $oid_snsHASyncStatus    = '.1.3.6.1.4.1.11256.1.11.8.0';
 
-
 my %mapping = (
-    snsNodeIndex        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.1' },
-    snsFwSerial         => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.2' },
-    snsOnline           => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.3' },
-    snsModel            => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.4' },
-    snsVersion          => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.5' },
-    snsHALicence        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.6' },
-    snsHAQuality        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.7' },
-    snsHAPriority       => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.8' },
-    snsHAStatusForced   => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.9' },
-    snsHAActive         => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.10' },
+    snsNodeIndex      => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.1' },
+    snsFwSerial       => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.2' },
+    snsOnline         => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.3' },
+    snsModel          => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.4' },
+    snsVersion        => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.5' },
+    snsHALicence      => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.6' },
+    snsHAQuality      => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.7' },
+    snsHAPriority     => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.8' },
+    snsHAStatusForced => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.9' },
+    snsHAActive       => { oid => '.1.3.6.1.4.1.11256.1.11.7.1.10' },
 );
 
 my %map_online = ( 2 => 'False', 1 => 'True' );
 my %map_status = ( 0 => 'False', 1 => 'True' );
 my %map_act_pass = ( 2 => 'Passive', 1 => 'Active' );
 my %map_sync = ( 0 => 'False', 1 => 'True' );
-
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -202,13 +144,8 @@ sub manage_selection {
     my $faulty_links   = $snmp_result_scalar->{$oid_snsNbFaultyHALinks} // 0;
     my $sync_raw       = $snmp_result_scalar->{$oid_snsHASyncStatus}    // -1;
 
-    if (!(defined $nb_nodes && $nb_nodes > 0)) {
-        $self->{output}->output_add(
-            severity => 'UNKNOWN',
-            short_msg => 'No HA cluster detected'
-        );
-        return;
-    }
+    $self->{output}->option_exit(severity  => 'UNKNOWN', short_msg => 'No HA cluster detected')
+        unless $nb_nodes;
 
     my $dead_pct   = ($nb_nodes > 0) ? int(($dead_nodes / $nb_nodes) * 100) : 0;
     my $faulty_pct = ($nb_links > 0) ? int(($faulty_links / $nb_links) * 100) : 0;
@@ -242,7 +179,6 @@ sub manage_selection {
         }
     }
 
-
     my $cluster_desc = "---- Cluster Description ----\n";
 
     foreach my $idx (sort { $a <=> $b } keys %nodes) {
@@ -251,13 +187,12 @@ sub manage_selection {
         my $serial = $n->{snsFwSerial} // 'N/A';
         my $model = $n->{snsModel} // 'N/A';
         my $version = $n->{snsVersion} // 'N/A';
-        my $status_f = $map_status{$n->{snsHAStatusForced} // 0 } // 'UNKNOWN';
-        my $act_pass = $map_act_pass{$n->{snsHAActive} // 0 } // 'UNKNOWN';
-        my $online = $map_online{$n->{snsOnline} // 0 } // 'UNKNOWN';
+        my $status_f = $map_status{ $n->{snsHAStatusForced} // 0 } // 'UNKNOWN';
+        my $act_pass = $map_act_pass{ $n->{snsHAActive} // 0 } // 'UNKNOWN';
+        my $online = $map_online{ $n->{snsOnline} // 0 } // 'UNKNOWN';
         my $licence = $n->{snsHALicence} // 'N/A';
         my $quality = $n->{snsHAQuality} // 'N/A';
         my $priority = $n->{snsHAPriority} // 'N/A';
-
 
         $cluster_desc .= sprintf(
             "Serial: %s\nModel: %s\nVersion: %s\nStatus Forced: %s\nActive/Passive: %s\nOnline: %s\nLicense: %s\nQuality: %s\nPriority: %s\n%s\n",
@@ -286,6 +221,40 @@ __END__
 Check Stormshield HA cluster global status.
 
 =over 8
+
+=item B<--warning-active-firewall>
+
+Threshold.
+
+=item B<--critical-active-firewall>
+
+Threshold. Default: C<1:1> since there must be only one active firewall per cluster.
+
+=item B<--warning-dead-nodes>
+
+Threshold in percentage of the total number of nodes. Default: 50.
+
+=item B<--critical-dead-nodes>
+
+Threshold in percentage of the total number of nodes. Default: 100.
+
+=item B<--warning-faulty-links>
+
+Threshold in percentage of the total number of links. Default: 50.
+
+=item B<--critical-faulty-links>
+
+Threshold in percentage of the total number of links. Default: 100.
+
+=item B<--warning-sync-status>
+
+Define the conditions to match for the status to be WARNING (default: C<%{sync_status} eq "False">).
+You can use the following variables: %{sync_status}.
+
+=item B<--critical-sync-status>
+
+Define the conditions to match for the status to be CRITICAL.
+You can use the following variables: %{sync_status}.
 
 =back
 
