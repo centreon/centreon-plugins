@@ -35,35 +35,35 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'udp', set => {
+        { label => 'udp', nlabel => 'connections.udp.count', set => {
                 key_values => [ { name => 'udp' } ],
                 output_template => 'UDP : %d connections',
                 perfdatas => [
-                    { label => 'udp', template => '%d', min => 0, unit => 'con' }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'tcp', set => {
+        { label => 'tcp', nlabel => 'connections.tcp.count', set => {
                 key_values => [ { name => 'tcp' } ],
                 output_template => 'TCP : %d connections',
                 perfdatas => [
-                    { label => 'tcp', template => '%d', min => 0, unit => 'con' }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'major', set => {
+        { label => 'major', nlabel => 'alarms.major.count', set => {
                 key_values => [ { name => 'major' } ],
                 output_template => 'Major Alarms : %d',
                 perfdatas => [
-                    { label => 'major', template => '%d', min => 0, unit => 'alarms' }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'minor', set => {
+        { label => 'minor', nlabel => 'alarms.minor.count', set => {
                 key_values => [ { name => 'minor' } ],
                 output_template => 'Minor Alarms : %d',
                 perfdatas => [
-                    { label => 'minor', template => '%d', min => 0, unit => 'alarms' }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -73,28 +73,16 @@ sub set_counters {
         { label => 'policy-dummy', threshold => 0, set => {
                 key_values => [ { name => 'index' }, { name => 'name' }, { name => 'slot_name' },
                                 { name => 'active' }, { name => 'sync' } ],
-                closure_custom_output => $self->can('custom_policy_output'),
+                output_template => "Policy: '%{name}', slot: '%{slot_name}', active: '%{active}', sync: %{sync}",
                 perfdatas => []
             }
         }
     ];
 }
 
-sub custom_policy_output {
-    my ($self, %options) = @_;
-    my $obj = $options{new_datas};
-    return sprintf(
-        "Policy: '%s', slot: '%s', active: '%s', sync: %s",
-        $self->{result_values}->{name},
-        $self->{result_values}->{slot_name},
-        $self->{result_values}->{active},
-        $self->{result_values}->{sync} ? 'True' : 'False'
-    );
-}
-
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -122,7 +110,7 @@ sub manage_selection {
         major => $result_asq->{$oid_snsASQStatsStatefulMajorAlarm},
         minor => $result_asq->{$oid_snsASQStatsStatefulMinorAlarm}
     };
-    
+
 
     my $oid_snsPolicyIndex    = '.1.3.6.1.4.1.11256.1.8.1.1.1';
     my $oid_snsPolicyName     = '.1.3.6.1.4.1.11256.1.8.1.1.2';
@@ -144,7 +132,7 @@ sub manage_selection {
             name      => $result_policy->{"$oid_snsPolicyName.$idx"}     // '',
             slot_name => $result_policy->{"$oid_snsPolicySlotName.$idx"} // '',
             active    => $result_policy->{"$oid_snsPolicyActive.$idx"}   // '',
-            sync      => $result_policy->{"$oid_snsPolicySync.$idx"}     // 0,
+            sync      => ($result_policy->{"$oid_snsPolicySync.$idx"} // 0) ? 'True' : 'False',
         };
     }
 }

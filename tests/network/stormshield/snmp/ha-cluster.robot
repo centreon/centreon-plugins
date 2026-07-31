@@ -15,14 +15,14 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --hostname=${HOSTNAME}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-version=${SNMPVERSION}
-...         --snmp-community=network/stormshield/snmp/sn910
 
 
 *** Test Cases ***
-Ha-cluster ${tc}
+Ha-cluster SN910 ${tc}
     [Tags]    network    stormshield    snmp
     ${command}    Catenate
     ...    ${CMD}
+    ...    --snmp-community=network/stormshield/snmp/sn910
     ...    ${extra_options}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
@@ -59,3 +59,21 @@ Ha-cluster ${tc}
     ...    9
     ...    --critical-sync-status='${PERCENT}\\{sync_status\\} eq "False"'
     ...    CRITICAL: Configuration Synced: False | 'ha.dead_nodes.count'=0;0:1;0:2;0;2 'ha.faulty_links.count'=0;0:1;0:2;0;2 'ha.active_firewalls.count'=1;;1:1;0;2
+
+Ha-cluster fake ${tc}
+    [Tags]    network    stormshield    snmp
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --snmp-community=network/stormshield/snmp/stormshield-fake
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    UNKNOWN: No HA cluster detected
