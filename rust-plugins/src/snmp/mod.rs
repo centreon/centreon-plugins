@@ -14,12 +14,15 @@ extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
 
+use crate::Error::InvalidOidParser;
 use crate::compute::ast::ExprResult;
 use crate::generic::error::Error::EmptyResponse;
 use crate::generic::error::Error::FailedToConnectToHost;
 use crate::generic::error::Error::InvalidSnmpPduDecode;
 use crate::generic::error::Error::InvalidSnmpPduEncode;
+use crate::generic::error::Error::InvalidSnmpType;
 use crate::generic::error::Error::InvalidSnmpValue;
+use crate::generic::error::Result;
 use log::info;
 use log::{trace, warn};
 use rasn::types::ObjectIdentifier;
@@ -70,23 +73,11 @@ impl ValueType {
 /// an SNMP agent can send, not decode failures.
 fn value_from_varbind(value: &VarBindValue) -> Result<Option<ValueType>> {
     let value = match value {
-        VarBindValue::Unspecified => {
-            warn!("SNMP varbind value is Unspecified");
-            return Ok(None);
-        }
-        VarBindValue::NoSuchObject => {
-            warn!("SNMP varbind value is NoSuchObject");
-            return Ok(None);
-        }
-        VarBindValue::NoSuchInstance => {
-            warn!("SNMP varbind value is NoSuchInstance");
-            return Ok(None);
-        }
-        VarBindValue::EndOfMibView => {
-            warn!("SNMP varbind value is EndOfMibView");
-            return Ok(None);
-        }
         VarBindValue::Value(value) => value,
+        _ => {
+            warn!("SNMP varbind value is Empty, returning Ok(None)");
+            return Ok(None);
+        }
     };
 
     let typ = match value {
@@ -357,32 +348,43 @@ impl SnmpResult {
     /// Panics if a key that previously held a numeric value is fed a string (or
     /// vice versa) — this would mean a single OID column changed SNMP type
     /// mid-collection, which indicates a malformed response.
-    fn store(&mut self, key: String, typ: ValueType) {
+    fn store(&mut self, key: String, typ: ValueType) -> Result<()> {
         match typ {
-            ValueType::String(s) => {
-                self.items
-                    .entry(key)
-                    .and_modify(|e| match e {
-                        ExprResult::StrVector(v) => v.push(s.clone()),
-                        _ => {
-                            panic!("SNMP value type changed from numeric to string mid-collection")
-                        }
-                    })
-                    .or_insert_with(|| ExprResult::StrVector(vec![s]));
-            }
+            ValueType::String(s) => match self.items.entry(key) {
+                std::collections::hash_map::Entry::Occupied(mut e) => match e.get_mut() {
+                    ExprResult::StrVector(v) => v.push(s),
+                    _ => {
+                        return Err(InvalidSnmpValue {
+                            detail: "SNMP value type changed from numeric to string mid-collection"
+                                .to_string(),
+                        });
+                    }
+                },
+                std::collections::hash_map::Entry::Vacant(e) => {
+                    e.insert(ExprResult::StrVector(vec![s]));
+                }
+            },
             _ => {
                 let value = typ.as_f64();
-                self.items
-                    .entry(key)
-                    .and_modify(|e| match e {
+                match self.items.entry(key) {
+                    std::collections::hash_map::Entry::Occupied(mut e) => match e.get_mut() {
                         ExprResult::Vector(v) => v.push(value),
                         _ => {
-                            panic!("SNMP value type changed from string to numeric mid-collection")
+                            return Err(InvalidSnmpValue {
+                                detail:
+                                    "SNMP value type changed from string to numeric mid-collection"
+                                        .to_string(),
+                            });
                         }
-                    })
-                    .or_insert_with(|| ExprResult::Vector(vec![value]));
+                    },
+
+                    std::collections::hash_map::Entry::Vacant(e) => {
+                        e.insert(ExprResult::Vector(vec![value]));
+                    }
+                }
             }
         }
+        Ok(())
     }
 
     /// Processes one bulk response page: stores each variable's decoded value
@@ -418,7 +420,7 @@ impl SnmpResult {
                 };
 
                 for key in key_for(idx, &name) {
-                    self.store(key, typ.clone());
+                    _ = self.store(key, typ.clone())?;
                 }
             }
         }
@@ -664,7 +666,6 @@ mod tests {
             ExprResult::Vector(v) => assert_eq!(v, &vec![10.0, 20.0]),
             other => panic!("expected a numeric vector, got {:?}", other),
         }
-    }
 
         //propagates transport errors
         let result = snmp_bulk_walk("test:161", "2c", "public", TRANSPORT_ERROR_OID, "x");
@@ -811,8 +812,13 @@ mod tests {
     #[test]
     fn store_accumulates_numeric_values_under_the_same_key() {
         let mut result = SnmpResult::new(HashMap::new());
-        result.store("k".to_string(), ValueType::Integer(1));
-        result.store("k".to_string(), ValueType::Counter64(2));
+        result
+            .store("k".to_string(), ValueType::Integer(1))
+            .unwrap();
+        result
+            .store("k".to_string(), ValueType::Counter64(2))
+            .unwrap();
+
         assert_eq!(
             result.items.get("k").unwrap(),
             &ExprResult::Vector(vec![1.0, 2.0])
@@ -822,8 +828,13 @@ mod tests {
     #[test]
     fn store_accumulates_string_values_under_the_same_key() {
         let mut result = SnmpResult::new(HashMap::new());
-        result.store("k".to_string(), ValueType::String("a".to_string()));
-        result.store("k".to_string(), ValueType::String("b".to_string()));
+        result
+            .store("k".to_string(), ValueType::String("a".to_string()))
+            .unwrap();
+
+        result
+            .store("k".to_string(), ValueType::String("b".to_string()))
+            .unwrap();
         assert_eq!(
             result.items.get("k").unwrap(),
             &ExprResult::StrVector(vec!["a".to_string(), "b".to_string()])
@@ -831,19 +842,32 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "mid-collection")]
-    fn store_panics_when_a_key_switches_from_numeric_to_string() {
+    fn store_return_err_when_a_key_switches_from_numeric_to_string() {
         let mut result = SnmpResult::new(HashMap::new());
-        result.store("k".to_string(), ValueType::Integer(1));
-        result.store("k".to_string(), ValueType::String("oops".to_string()));
+
+        result
+            .store("k".to_string(), ValueType::Integer(1))
+            .unwrap();
+        // store fail when inserting string after integer in the same key
+        assert!(
+            result
+                .store("k".to_string(), ValueType::String("oops".to_string()))
+                .is_err()
+        );
     }
 
     #[test]
-    #[should_panic(expected = "mid-collection")]
-    fn store_panics_when_a_key_switches_from_string_to_numeric() {
+    fn store_return_err_when_a_key_switches_from_string_to_numeric() {
         let mut result = SnmpResult::new(HashMap::new());
-        result.store("k".to_string(), ValueType::String("oops".to_string()));
-        result.store("k".to_string(), ValueType::Integer(1));
+        result
+            .store("k".to_string(), ValueType::String("oops".to_string()))
+            .unwrap();
+        // store fail when inserting string after integer in the same key
+        assert!(
+            result
+                .store("k".to_string(), ValueType::Integer(1))
+                .is_err()
+        );
     }
 
     // ---- build_response_with_names / build_response_with_labels --------
