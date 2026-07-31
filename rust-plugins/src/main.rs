@@ -51,8 +51,14 @@ fn main() -> Result<(), Error> {
     match std::panic::catch_unwind(|| snmp_plugin()) {
         std::result::Result::Ok(plugin_result) => plugin_result,
         Err(e) => {
+            let message = e
+                .downcast_ref::<&str>()
+                .map(|s| s.to_string())
+                .or_else(|| e.downcast_ref::<String>().cloned())
+                .unwrap_or_else(|| "unknown panic payload".to_string());
             println!(
-                "Unexpected error while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information"
+                "Unexpected error : '{}' while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information ",
+                message
             );
             std::process::exit(3);
         }
