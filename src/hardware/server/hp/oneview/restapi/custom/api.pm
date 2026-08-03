@@ -248,9 +248,26 @@ sub request_api_paginated {
 
     my $result = $self->request_api(url_path => $options{url_path});
     my $members = [];
+    my $visited_uris = {};
+    my $pages = 0;
     while (1) {
-        push @$members, @{$result->{members}} if (defined($result->{members}));
+        if (!defined($result->{members})) {
+            $self->{output}->add_option_msg(short_msg => "Unexpected paginated API response: missing 'members' field");
+            $self->{output}->option_exit();
+        }
+        push @$members, @{$result->{members}};
+
         last if (!defined($result->{nextPageUri}) || $result->{nextPageUri} eq '');
+
+        if ($result->{nextPageUri} !~ m{^/(?!/)[^\@]*$}) {
+            $self->{output}->add_option_msg(short_msg => "Unexpected pagination URI returned by the API: '" . $result->{nextPageUri} . "'");
+            $self->{output}->option_exit();
+        }
+        if (++$pages > 1000 || $visited_uris->{$result->{nextPageUri}}++) {
+            $self->{output}->add_option_msg(short_msg => 'Pagination did not terminate normally (possible API loop)');
+            $self->{output}->option_exit();
+        }
+
         $result = $self->request_api(url_path => $result->{nextPageUri});
     }
     $result->{members} = $members;
