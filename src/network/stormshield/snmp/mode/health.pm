@@ -27,59 +27,43 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw/:counters :values/;
 
-our $GLOBAL_PROBLEM;
 
 sub custom_service_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         "health: %s",
         $self->{result_values}->{health}
     );
-
-    my $health = $self->{result_values}->{health};
-
-    if ($health !~ /minor/i && $health !~ /major/i) {
-        if (!$GLOBAL_PROBLEM) {
-            $self->{output}->output_add(
-                long_msg => "service '" . $self->{result_values}->{service} . "' " . $msg
-            );
-        }
-    }
-
-    return $msg;
 }
 
-sub firewall_long_output {
+sub prefix_firewall_output {
     my ($self, %options) = @_;
-    my $display = $options{instance_value}->{display};
 
-    if (defined $display && $display ne '') {
-        return "--------------Firewall $display--------------";
-    }
-    return "------------------------------------------------------------";
+    return "firewall '" . $options{instance_value}->{display} . "': ";
 }
 
 sub prefix_service_output {
     my ($self, %options) = @_;
 
-    return "service '" . $options{instance_value}->{service} . "' ";
+    return "firewall '" . $options{instance_value}->{firewall} . "' service '" . $options{instance_value}->{service} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'firewalls', type => COUNTER_TYPE_GROUP, cb_long_output => 'firewall_long_output',
-          message_multiple => 'All firewalls are ok',
+        { name => 'firewalls', type => COUNTER_TYPE_GROUP,
+            cb_prefix_output => 'prefix_firewall_output',
+            indent_long_output => '    ',
+            message_multiple => 'All firewalls are ok',
             group => [
-                 {
+                {
                     name => 'services',
-                    display_long => 1,
                     cb_prefix_output => 'prefix_service_output',
                     message_multiple => 'All services are ok',
                     type => COUNTER_TYPE_INSTANCE,
-                    skipped_code => { -10 => 1 } }
+                    skipped_code => { NO_VALUE => 1 } }
             ]
         }
     ];
@@ -91,7 +75,7 @@ sub set_counters {
             warning_default => '%{health} =~ /minor/i',
             critical_default => '%{health} =~ /major/i',
             set => {
-                key_values => [ { name => 'health' }, { name => 'service' } ],
+                key_values => [ { name => 'health' }, { name => 'service' }, { name => 'firewall' } ],
                 closure_custom_output => $self->can('custom_service_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -157,13 +141,9 @@ sub manage_selection {
         };
     }
 
-    return if (scalar(keys %{$self->{firewalls}}) <= 0);
-
-    $GLOBAL_PROBLEM = 0;
-
-    my @instances = keys %{$self->{firewalls}};
-    if (scalar(@instances) == 1) {
-        $self->{firewalls}->{ $instances[0] }->{display} = '';
+    if (scalar(keys %{$self->{firewalls}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No firewall found with accepted serial.");
+        $self->{output}->option_exit();
     }
 
     $options{snmp}->load(
@@ -176,13 +156,10 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
         foreach my $service (keys %$result) {
-            my $health = $result->{$service};
-            if (defined $health && ($health =~ /minor/i || $health =~ /major/i)) {
-                $GLOBAL_PROBLEM = 1;
-            }
             $self->{firewalls}->{$_}->{services}->{$service} = {
-                service => $service,
-                health  => $health
+                service  => $service,
+                health   => $result->{$service},
+                firewall => $self->{firewalls}->{$_}->{display}
             };
         }
     }
