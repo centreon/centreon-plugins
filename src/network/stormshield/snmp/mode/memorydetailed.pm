@@ -37,14 +37,37 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
+        { label => 'total', nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'total: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'host', nlabel => 'memory.protected_host.percentage', set => {
+                key_values => [ { name => 'host' } ],
+                output_template => 'protected host: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
+        { label => 'frag', nlabel => 'memory.fragmented.percentage', set => {
+                key_values => [ { name => 'frag' } ],
+                output_template => 'fragmented: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        },
         { label => 'asq', set => {
                 key_values => [ { name => 'asq' } ],
-                output_template => "ASQ: %s%%",
+                output_template => "ASQ: %.2f%%",
                 perfdatas => [
                     {
                         label => 'mem_asq',
-                        value => 'asq',
-                        template => '%s',
+                        template => '%.2f',
                         unit => '%',
                         min => 0,
                         max => 100,
@@ -52,48 +75,19 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'icmp', set => {
+        { label => 'icmp', nlabel => 'memory.icmp.percentage', set => {
                 key_values => [ { name => 'icmp' } ],
-                output_template => "ICMP: %s%%",
+                output_template => 'icmp: %.2f %%',
                 perfdatas => [
-                    {
-                        label => 'mem_icmp',
-                        value => 'icmp',
-                        template => '%s',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
-        { label => 'frag', set => {
-                key_values => [ { name => 'frag' } ],
-                output_template => "Frag: %s%%",
+        { label => 'dtrack', nlabel => 'memory.data_tracking.percentage', set => {
+                key_values => [ { name => 'dtrack' } ],
+                output_template => "Data Tracking: %.2f%%",
                 perfdatas => [
-                    {
-                        label => 'mem_frag',
-                        value => 'frag',
-                        template => '%s',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
-                ]
-            }
-        },
-        { label => 'host', set => {
-                key_values => [ { name => 'host' } ],
-                output_template => "Host: %s%%",
-                perfdatas => [
-                    {
-                        label => 'mem_host',
-                        value => 'host',
-                        template => '%s',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -101,29 +95,15 @@ sub set_counters {
                 key_values => [ { name => 'system' } ],
                 output_template => "System: %s%%",
                 perfdatas => [
-                    {
-                        label => 'mem_system',
-                        value => 'system',
-                        template => '%s',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
-        { label => 'dtrack', set => {
-                key_values => [ { name => 'dtrack' } ],
-                output_template => "Data Tracking: %s%%",
+        { label => 'etherstate', nlabel => 'memory.ether_state.percentage', set => {
+                key_values => [ { name => 'etherstate' } ],
+                output_template => "EtherState: %s%%",
                 perfdatas => [
-                    {
-                        label => 'mem_dtrack',
-                        value => 'dtrack',
-                        template => '%s',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
+                    { label=> "ether-state", template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -142,21 +122,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'etherstate', set => {
-                key_values => [ { name => 'etherstate' } ],
-                output_template => "EtherState: %s%%",
-                perfdatas => [
-                    {
-                        label => 'mem_etherstate',
-                        value => 'etherstate',
-                        template => '%s',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
-                ]
-            }
-        },
+
         # only for version >= 4.8.9
         { label => 'user', set => {
                 key_values => [ { name => 'user' } ],
@@ -187,22 +153,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    foreach my $label (@mem_labels) {
-        if (($self->{perfdata}->threshold_validate(label => 'warning-' . $label,value => $self->{option_results}->{warning_memory})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning_memory} . "'.");
-            $self->{output}->option_exit();
-        }
-        if (($self->{perfdata}->threshold_validate(label => 'critical-' . $label,value => $self->{option_results}->{critical_memory})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical_memory} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
 }
 
 sub manage_selection {
@@ -284,7 +234,6 @@ sub manage_selection {
     $self->{global} = \%mem_values;
 }
 
-
 1;
 
 __END__
@@ -295,13 +244,84 @@ Check memory utilization on Stormshield firewalls.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-total>
 
-Set warning threshold for all memory types (asq, icmp, frag, host, system, dtrack, socket, etherstate, user).
+Threshold.
 
-=item B<--critical>
+=item B<--warning-host>
 
-Set critical threshold for all memory types (asq, icmp, frag, host, system, dtrack, socket, etherstate, user).
+Threshold.
+
+=item B<--warning-frag>
+
+Threshold.
+
+=item B<--warning-asq>
+
+Threshold, was conn metric before.
+
+=item B<--warning-icmp>
+
+Threshold.
+
+=item B<--warning-dtrack>
+
+Threshold.
+
+=item B<--warning-system>
+
+Threshold, was C<dyn> metric before.
+
+=item B<--warning-etherstate>
+
+Threshold.
+
+=item B<--warning-socket>
+
+Threshold.
+=item B<--warning-user>
+
+Threshold. only for version >= 4.8.9
+
+=item B<--critical-total>
+
+Threshold.
+
+=item B<--critical-host>
+
+Threshold.
+
+=item B<--critical-frag>
+
+Threshold.
+
+=item B<--critical-asq>
+
+Threshold, was conn metric before.
+
+=item B<--critical-icmp>
+
+Threshold.
+
+=item B<--critical-dtrack>
+
+Threshold.
+
+=item B<--critical-system>
+
+Threshold, was C<dyn> metric before.
+
+=item B<--critical-etherstate>
+
+Threshold.
+
+=item B<--critical-socket>
+
+Threshold.
+
+=item B<--critical-user>
+
+Threshold. only for version >= 4.8.9
 
 =back
 
