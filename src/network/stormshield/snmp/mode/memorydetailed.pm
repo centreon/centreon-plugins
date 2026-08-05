@@ -27,8 +27,6 @@ use warnings;
 use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc;
 
-my @mem_labels = qw(asq icmp frag host system dtrack socket etherstate user);
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -61,17 +59,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'asq', set => {
+        { label => 'asq', nlabel => 'memory.asq.percentage', set => {
                 key_values => [ { name => 'asq' } ],
                 output_template => "ASQ: %.2f%%",
                 perfdatas => [
-                    {
-                        label => 'mem_asq',
-                        template => '%.2f',
-                        unit => '%',
-                        min => 0,
-                        max => 100,
-                    }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -91,7 +83,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'system', set => {
+        { label => 'system', nlabel => 'memory.system.percentage', set => {
                 key_values => [ { name => 'system' } ],
                 output_template => "System: %s%%",
                 perfdatas => [
@@ -103,11 +95,11 @@ sub set_counters {
                 key_values => [ { name => 'etherstate' } ],
                 output_template => "EtherState: %s%%",
                 perfdatas => [
-                    { label=> "ether-state", template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
-        { label => 'socket', set => {
+        { label => 'socket',nlabel => 'memory.socket.percentage', set => {
                 key_values => [ { name => 'socket' } ],
                 output_template => "Socket: %s%%",
                 perfdatas => [
@@ -124,7 +116,7 @@ sub set_counters {
         },
 
         # only for version >= 4.8.9
-        { label => 'user', set => {
+        { label => 'user', nlabel => 'memory.user.percentage', set => {
                 key_values => [ { name => 'user' } ],
                 output_template => "User: %s%%",
                 perfdatas => [
@@ -217,7 +209,8 @@ sub manage_selection {
         }
     }
 
-        # Cleaning and Converting Values
+    # Cleaning and Converting Values
+    my $total = 0;
     foreach my $key (keys %mem_values) {
         if (defined $mem_values{$key}) {
             $mem_values{$key} =~ s/%//g;
@@ -225,11 +218,14 @@ sub manage_selection {
             # If the value is not a number, it is removed
             if ($mem_values{$key} !~ /^\d+\.?\d*$/) {
                 delete $mem_values{$key};
+                next;
             }
+            $total += $mem_values{$key};
         } else {
             delete $mem_values{$key};
         }
     }
+    $mem_values{total} = $total;
 
     $self->{global} = \%mem_values;
 }
