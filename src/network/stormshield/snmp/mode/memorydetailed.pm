@@ -27,11 +27,17 @@ use warnings;
 use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc;
 
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return 'Memory usage ';
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, skipped_code => { NO_VALUE() => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_memory_output', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -59,7 +65,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'asq', nlabel => 'memory.asq.percentage', set => {
+        { label => 'conn', nlabel => 'memory.connections.percentage', set => {
                 key_values => [ { name => 'asq' } ],
                 output_template => "ASQ: %.2f%%",
                 perfdatas => [
@@ -83,9 +89,9 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'system', nlabel => 'memory.system.percentage', set => {
-                key_values => [ { name => 'system' } ],
-                output_template => "System: %s%%",
+        { label => 'dyn', nlabel => 'memory.dynamic.percentage', set => {
+                key_values => [ { name => 'dyn' } ],
+                output_template => 'dynamic: %.2f %%',
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
@@ -136,13 +142,10 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-        "warning:s"  => { name => 'warning_memory' },
-        "critical:s" => { name => 'critical_memory' },
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -180,10 +183,10 @@ sub manage_selection {
         $mem_values{'host'}       = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.2.1'};
         $mem_values{'frag'}       = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.3.1'};
         $mem_values{'icmp'}       = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.4.1'};
-        $mem_values{'asq'}        = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.5.1'};
+        $mem_values{'conn'}        = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.5.1'};
         $mem_values{'etherstate'} = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.6.1'};
         $mem_values{'dtrack'}     = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.7.1'};
-        $mem_values{'system'}     = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.8.1'};
+        $mem_values{'dyn'}     = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.8.1'};
         $mem_values{'user'}       = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.9.1'};
         $mem_values{'socket'}     = $snmp_result->{'.1.3.6.1.4.1.11256.1.10.10.1.10.1'};
 
@@ -198,10 +201,10 @@ sub manage_selection {
             $mem_values{'host'}       = $values[0];
             $mem_values{'frag'}       = $values[1];
             $mem_values{'icmp'}       = $values[2];
-            $mem_values{'asq'}        = $values[3];
+            $mem_values{'conn'}        = $values[3];
             $mem_values{'etherstate'} = $values[4];
             $mem_values{'dtrack'}     = $values[5];
-            $mem_values{'system'}     = $values[6];
+            $mem_values{'dyn'}     = $values[6];
 
             if ($fields == 8) {
                 $mem_values{'socket'} = $values[7];
@@ -252,9 +255,9 @@ Threshold.
 
 Threshold.
 
-=item B<--warning-asq>
+=item B<--warning-conn>
 
-Threshold, was conn metric before.
+Threshold.
 
 =item B<--warning-icmp>
 
@@ -264,9 +267,9 @@ Threshold.
 
 Threshold.
 
-=item B<--warning-system>
+=item B<--warning-dyn>
 
-Threshold, was C<dyn> metric before.
+Threshold.
 
 =item B<--warning-etherstate>
 
@@ -291,9 +294,9 @@ Threshold.
 
 Threshold.
 
-=item B<--critical-asq>
+=item B<--critical-conn>
 
-Threshold, was conn metric before.
+Threshold.
 
 =item B<--critical-icmp>
 
@@ -303,9 +306,9 @@ Threshold.
 
 Threshold.
 
-=item B<--critical-system>
+=item B<--critical-dyn>
 
-Threshold, was C<dyn> metric before.
+Threshold.
 
 =item B<--critical-etherstate>
 
