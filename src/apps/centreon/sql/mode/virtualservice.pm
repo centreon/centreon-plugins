@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package apps::centreon::sql::mode::virtualservice;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters);
 
 use strict;
 use warnings;
@@ -288,14 +289,14 @@ sub manage_selection {
 
     if (exists($config_data->{virtualcurve})) {
         push @{$self->{maps_counters_type}}, {
-            name => 'global', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_global},
+            name => 'global', type => COUNTER_TYPE_INSTANCE, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_global},
         };
     }
 
     # Selection is prefered can't mix selection and sql matching
     if (exists($config_data->{selection})) {
         push @{$self->{maps_counters_type}}, {
-            name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
+            name => 'metric', type => COUNTER_TYPE_INSTANCE, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         foreach my $id (keys %{$config_data->{selection}}) {
             my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
@@ -317,7 +318,7 @@ sub manage_selection {
         }
     } elsif (exists($config_data->{filters})) {
         push @{$self->{maps_counters_type}}, {
-            name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
+            name => 'metric', type => COUNTER_TYPE_INSTANCE, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
         $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics, $self->{option_results}->{database}services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id AND services.host_id = index_data.host_id ";
@@ -417,6 +418,8 @@ __END__
 Mode to play with centreon metrics.
 Example: display two curves of different service on the same graph.
 Example: aggregate multiple metrics (min,max,avg,sum) or custom operation.
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::virtualservice ...>.
 
 =over 8
 
@@ -434,19 +437,25 @@ Specify the full path to a json config file
 
 =item B<--filter-counters>
 
-Filter some counter (can be 'unique' or 'global')
+Filter some counter (can be 'metric' or 'global')
 Useless, if you use selection/filter but not
 global/virtual curves
 
-=item B<--warning-*>
+=item B<--warning-global>
 
-Warning threshold (can be 'unique' or 'global')
-(Override config_file if set)
+Threshold.
 
-=item B<--critical-*>
+=item B<--critical-global>
 
-Critical threshold (can be 'unique' or 'global')
-(Override config_file if set)
+Threshold.
+
+=item B<--warning-metric>
+
+Threshold.
+
+=item B<--critical-metric>
+
+Threshold.
 
 =back
 

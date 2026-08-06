@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package apps::centreon::sql::mode::executiontime;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters);
 
 use strict;
 use warnings;
@@ -41,8 +42,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'services', type => 1 }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'services', type => COUNTER_TYPE_INSTANCE }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -114,6 +115,8 @@ __END__
 =head1 MODE
 
 Check the number of services exceeding defined execution time.
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::executiontime ...>.
 
 =over 8
 
@@ -130,10 +133,22 @@ Centreon storage database name (default: 'centreon_storage').
 
 Filter by poller name (regexp can be used).
 
-=item B<--warning-count> B<--critical-count>
 
-Thresholds on the number of services exceeding
-defined execution time.
+=item B<--warning-count>
+
+Threshold.
+
+=item B<--critical-count>
+
+Threshold.
+
+=item B<--warning-list>
+
+Threshold.
+
+=item B<--critical-list>
+
+Threshold.
 
 =back
 

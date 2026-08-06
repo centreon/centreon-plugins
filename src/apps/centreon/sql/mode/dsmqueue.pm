@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package apps::centreon::sql::mode::dsmqueue;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters);
 
 use strict;
 use warnings;
@@ -29,8 +30,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'host', type => 1, cb_prefix_output => 'prefix_host_output', message_multiple => 'All host queues are ok' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL },
+        { name => 'host', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_host_output', message_multiple => 'All host queues are ok' },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -128,6 +129,8 @@ __END__
 =head1 MODE
 
 Check Centreon DSM queue usage.
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::dsmqueue ...>.
 
 =over 8
 
@@ -142,22 +145,36 @@ Centreon storage database name (default: 'centreon').
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^total-queue-cache$'
-
-=item B<--warning-*>
-
-Warning threshold.
-Can be: Can be: 'total-queue-cache', 'total-queue-lock', 'host-queue-cache'.
-
-=item B<--critical-*>
-
-Critical threshold.
-Can be: Can be: 'total-queue-cache', 'total-queue-lock', 'host-queue-cache'.
+Example: C<--filter-counters='^total-queue-cache$'>
 
 =item B<--filter-host-queue>
 
 Filter by host and pool prefix name (regexp can be used).
-Example: host1.queue1
+Example: C<host1.queue1>.
+
+=item B<--warning-host-queue-cache>
+
+Threshold.
+
+=item B<--critical-host-queue-cache>
+
+Threshold.
+
+=item B<--warning-total-queue-cache>
+
+Threshold.
+
+=item B<--critical-total-queue-cache>
+
+Threshold.
+
+=item B<--warning-total-queue-lock>
+
+Threshold.
+
+=item B<--critical-total-queue-lock>
+
+Threshold.
 
 =back
 

@@ -87,6 +87,7 @@ dfsrevent
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
+DSM
 --dyn-mode
 Ekara
 -EncodedCommand

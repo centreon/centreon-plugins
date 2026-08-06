@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package apps::centreon::sql::mode::countservices;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:values :counters);
 
 use strict;
 use warnings;
@@ -60,10 +61,10 @@ sub set_counters {
 
      $self->{maps_counters_type} = [
         {
-            name => 'pollers', type => 3, cb_prefix_output => 'prefix_poller_output', cb_long_output => 'poller_long_output', indent_long_output => '    ', message_multiple => 'All pollers are ok',
+            name => 'pollers', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_poller_output', cb_long_output => 'poller_long_output', indent_long_output => '    ', message_multiple => 'All pollers are ok',
             group => [
-                { name => 'host', type => 0, cb_prefix_output => 'prefix_host_output', skipped_code => { -10 => 1 } },
-                { name => 'service', type => 0, cb_prefix_output => 'prefix_service_output', skipped_code => { -10 => 1 } }
+                { name => 'host', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'number of hosts ', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'service', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'number of services ', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -201,6 +202,8 @@ __END__
 =head1 MODE
 
 Check the number of hosts/services by poller.
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::countservices ...>.
 
 =over 8
 
@@ -217,11 +220,94 @@ Centreon storage database name (default: 'centreon_storage').
 
 Filter by poller name (regexp can be used).
 
-=item B<--warning-*> B<--critical-*>
 
-Thresholds.
-Can be: 'service', 'services-ok', 'services-warning', 'services-critical', 'services-unknown', 'services-pending',
-'host', 'hosts-up', 'hosts-down', 'hosts-unreachable', 'hosts-pending'.
+=item B<--warning-host>
+
+Threshold.
+
+=item B<--critical-host>
+
+Threshold.
+
+=item B<--warning-hosts-down>
+
+Threshold.
+
+=item B<--critical-hosts-down>
+
+Threshold.
+
+=item B<--warning-hosts-pending>
+
+Threshold.
+
+=item B<--critical-hosts-pending>
+
+Threshold.
+
+=item B<--warning-hosts-unreachable>
+
+Threshold.
+
+=item B<--critical-hosts-unreachable>
+
+Threshold.
+
+=item B<--warning-hosts-up>
+
+Threshold.
+
+=item B<--critical-hosts-up>
+
+Threshold.
+
+=item B<--warning-service>
+
+Threshold.
+
+=item B<--critical-service>
+
+Threshold.
+
+=item B<--warning-services-critical>
+
+Threshold.
+
+=item B<--critical-services-critical>
+
+Threshold.
+
+=item B<--warning-services-ok>
+
+Threshold.
+
+=item B<--critical-services-ok>
+
+Threshold.
+
+=item B<--warning-services-pending>
+
+Threshold.
+
+=item B<--critical-services-pending>
+
+Threshold.
+
+=item B<--warning-services-unknown>
+
+Threshold.
+
+=item B<--critical-services-unknown>
+
+Threshold.
+
+=item B<--warning-services-warning>
+
+Threshold.
+
+=item B<--critical-services-warning>
+
+Threshold.
 
 =back
 
