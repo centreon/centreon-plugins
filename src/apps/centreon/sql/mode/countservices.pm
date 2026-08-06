@@ -210,7 +210,7 @@ Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='service'
+Example: --filter-counters='service'.
 
 =item B<--centreon-storage-database>
 

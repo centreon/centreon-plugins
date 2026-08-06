@@ -494,7 +494,7 @@ Centreon storage database name (default: 'centreon_storage').
 
 =item B<--filter-counters>
 
-Can be C<totalhost>, C<totalservice>, 'groups'. Better to manage it in config file
+Can be C<totalhost>, C<totalservice>, 'groups'. Better to manage it in config file.
 
 =item B<--warning-total>
 

@@ -425,21 +425,21 @@ Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=
 
 =item B<--database>
 
-Specify the database (default: 'centreon_storage')
+Specify the database (default: 'centreon_storage').
 
 =item B<--config-file>
 
-Specify the full path to a json config file
+Specify the full path to a json config file.
 
 =item B<--json-data>
 
-Specify the full path to a json config file
+Specify the full path to a json config file.
 
 =item B<--filter-counters>
 
 Filter some counter (can be 'metric' or 'global')
 Useless, if you use selection/filter but not
-global/virtual curves
+global/virtual curves.
 
 =item B<--warning-global>
 

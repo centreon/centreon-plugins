@@ -130,19 +130,19 @@ Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=
 =item B<--tablename>
 
 This option is mandatory (can be multiple).
-Example: centreon_storage.data_bin
+Example: centreon_storage.data_bin.
 
 =item B<--warning>
 
-Warning threshold (number of retention forward days)
+Warning threshold (number of retention forward days).
 
 =item B<--critical>
 
-Critical threshold (number of retention forward days)
+Critical threshold (number of retention forward days).
 
 =item B<--timezone>
 
-Timezone use for partitioning (if not set, we use current server execution timezone)
+Timezone use for partitioning (if not set, we use current server execution timezone).
 
 =back
 
