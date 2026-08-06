@@ -68,20 +68,20 @@ sub set_counters {
         },
         {
             label => 'throughput-in',
-            nlabel => 'interface.throughput.in.bitspersecond',
+            nlabel => 'interface.throughput.in.bytespersecond',
             type => COUNTER_KIND_METRIC,
             set => {
                 key_values => [ 
                     { name => 'if_throughput_in' },
                     { name => 'if_name' }
                 ],
-                output_template => 'Throughput In: %s b/s',
+                output_template => 'Throughput In: %s B/s',
                 perfdatas => [
                     {
                         label => 'throughput_in',
                         value => 'if_throughput_in',
                         template => '%s',
-                        unit => 'b/s',
+                        unit => 'B/s',
                         min => 0,
                         label_extra_instance => 1,
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-throughput-in'),
@@ -93,20 +93,20 @@ sub set_counters {
         },
         {
             label => 'throughput-out',
-            nlabel => 'interface.throughput.out.bitspersecond',
+            nlabel => 'interface.throughput.out.bytespersecond',
             type => COUNTER_KIND_METRIC,
             set => {
                 key_values => [ 
                     { name => 'if_throughput_out' },
                     { name => 'if_name' }
                 ],
-                output_template => 'Throughput Out: %s b/s',
+                output_template => 'Throughput Out: %s B/s',
                 perfdatas => [
                     {
                         label => 'throughput_out',
                         value => 'if_throughput_out',
                         template => '%s',
-                        unit => 'b/s',
+                        unit => 'B/s',
                         min => 0,
                         label_extra_instance => 1,
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-throughput-out'),
@@ -427,19 +427,19 @@ Filter by name to only display this interface
 
 =item B<--warning-throughput-in>
 
-Set the warning threshold for throughput in (bits per second).
+Set the warning threshold for throughput in (bytes per second).
 
 =item B<--critical-throughput-in>
 
-Set the critical threshold for throughput in (bits per second).
+Set the critical threshold for throughput in (bytes per second).
 
 =item B<--warning-throughput-out>
 
-Set the warning threshold for throughput out (bits per second).
+Set the warning threshold for throughput out (bytes per second).
 
 =item B<--critical-throughput-out>
 
-Set the critical threshold for throughput out (bits per second).
+Set the critical threshold for throughput out (bytes per second).
 
 =item B<--warning-current-tcp>
 

@@ -66,7 +66,7 @@ sub set_counters {
             }
         },
         { label => 'conn', nlabel => 'memory.connections.percentage', set => {
-                key_values => [ { name => 'asq' } ],
+                key_values => [ { name => 'conn' } ],
                 output_template => "ASQ: %.2f%%",
                 perfdatas => [
                     { template => '%.2f', min => 0, max => 100, unit => '%' }
