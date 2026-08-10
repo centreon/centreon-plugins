@@ -63,9 +63,16 @@ runs:
           exit 1
         fi
 
-        # keep the token out of any log and expose it to the next steps
+        # keep the token out of any log and expose it to the next steps.
+        # the issuance time and audience let the api helpers refresh the token
+        # mid-delivery: github oidc tokens expire ~5 minutes after issuance,
+        # which is shorter than a large delivery.
         echo "::add-mask::$PULP_TOKEN"
-        echo "PULP_TOKEN=$PULP_TOKEN" >> "$GITHUB_ENV"
+        {
+          echo "PULP_TOKEN=$PULP_TOKEN"
+          echo "PULP_TOKEN_ISSUED_AT=$(date +%s)"
+          echo "PULP_OIDC_AUDIENCE=$AUDIENCE"
+        } >> "$GITHUB_ENV"
 
     - name: Configure pulp-cli
       shell: bash

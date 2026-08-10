@@ -48,6 +48,18 @@ fn json_to_command(file_name: &str) -> Result<Command, Error> {
 }
 
 fn main() -> Result<(), Error> {
+    match std::panic::catch_unwind(|| snmp_plugin()) {
+        std::result::Result::Ok(plugin_result) => plugin_result,
+        Err(e) => {
+            println!(
+                "Unexpected error while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information"
+            );
+            std::process::exit(3);
+        }
+    }
+}
+
+fn snmp_plugin() -> Result<(), Error> {
     env_logger::Builder::from_env(
         Env::default()
             .default_filter_or("info")
@@ -177,7 +189,7 @@ fn main() -> Result<(), Error> {
                 }
             },
             Err(err) => {
-                eprintln!("Error: {}", err);
+                println!("Error: {}", err);
                 std::process::exit(1);
             }
         }
@@ -192,10 +204,10 @@ fn main() -> Result<(), Error> {
             }
             Err(e) => {
                 if check_format {
-                    eprintln!("JSON is INVALID: {}", e);
+                    println!("JSON is INVALID: {}", e);
                     std::process::exit(3);
                 } else {
-                    eprintln!("UNKNOWN: Cannot read JSON file '{}': {}", file, e);
+                    println!("UNKNOWN: Cannot read JSON file '{}': {}", file, e);
                     std::process::exit(3);
                 }
             }
@@ -216,7 +228,7 @@ fn main() -> Result<(), Error> {
     let cmd = match cmd {
         Some(cmd) => cmd,
         None => {
-            eprintln!("UNKNOWN: JSON is empty");
+            println!("UNKNOWN: JSON is empty");
             std::process::exit(3);
         }
     };
@@ -238,9 +250,9 @@ fn main() -> Result<(), Error> {
         check_response,
     ).unwrap_or_else(|e| {
         if check_format {
-            eprintln!("JSON is INVALID: {}", e);
+            println!("JSON is INVALID: {}", e);
         } else {
-            eprintln!("UNKNOWN: {}", e);
+            println!("UNKNOWN: {}", e);
         }
         std::process::exit(3);
     });

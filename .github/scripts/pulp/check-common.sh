@@ -7,9 +7,15 @@
 # and only then is a non-zero status returned if anything failed. Source this
 # file, call load_expected, verify the packages, then call render_summary.
 
+# authenticated content fetches (content_curl) and token refresh
+# shellcheck source=.github/scripts/pulp/api.sh
+source "$(dirname "${BASH_SOURCE[0]}")/api.sh"
+
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
-METADATA_TIMEOUT="${METADATA_TIMEOUT:-300}"
+# 900s: the published indexes can lag a finished publication by up to the
+# content-app cache TTL (600s), the window must survive that worst case
+METADATA_TIMEOUT="${METADATA_TIMEOUT:-900}"
 METADATA_INTERVAL="${METADATA_INTERVAL:-15}"
 
 # accumulated per-package result rows and the aggregate failure flag
@@ -39,15 +45,39 @@ load_expected() {
 
 # wait_for_metadata — repeatedly call the sourcing script's resolve_pending (one
 # resolution round over the still-unresolved packages, returning 0 once none
-# remain) until everything resolves or METADATA_TIMEOUT is reached.
+# remain) until everything resolves, METADATA_TIMEOUT is reached, or the
+# resolution stalls. The retry window only covers publication propagation: once
+# a round reads the published metadata and resolves nothing new while some
+# packages already resolved, the remaining ones are not in the publication at
+# all (e.g. evicted by the retention policy) and no amount of waiting will
+# surface them - report them right away instead of burning the whole window.
 wait_for_metadata() {
   local deadline=$(( SECONDS + METADATA_TIMEOUT ))
+  local resolved previous_resolved=-1 stall_rounds=0
   until resolve_pending; do
-    if [[ "$SECONDS" -ge "$deadline" ]]; then
-      echo "[WARN] Metadata resolution timed out after ${METADATA_TIMEOUT}s"
+    resolved=0
+    for i in "${!E_FILENAME[@]}"; do
+      [[ "${META_IDX[$i]}" == "true" ]] && resolved=$((resolved + 1))
+    done
+    if ((resolved > 0 && resolved == previous_resolved)); then
+      stall_rounds=$((stall_rounds + 1))
+    else
+      stall_rounds=0
+    fi
+    # several consecutive stalled rounds before giving up: a single one is
+    # not enough, the published index can lag the publication by minutes
+    # (content-app cache TTL), which read as false negatives on freshly
+    # delivered builds
+    if ((stall_rounds >= 6)); then
+      echo "[WARN] ${resolved}/${#E_FILENAME[@]} package(s) resolvable in the published metadata and no progress in the last 6 rounds; the remaining ones are not part of the publication, giving up early"
       break
     fi
-    echo "[INFO] Waiting ${METADATA_INTERVAL}s for metadata to publish..."
+    previous_resolved=$resolved
+    if [[ "$SECONDS" -ge "$deadline" ]]; then
+      echo "[WARN] Metadata resolution timed out after ${METADATA_TIMEOUT}s (${resolved}/${#E_FILENAME[@]} resolvable)"
+      break
+    fi
+    echo "[INFO] ${resolved}/${#E_FILENAME[@]} package(s) resolvable, waiting ${METADATA_INTERVAL}s for the metadata to propagate..."
     sleep "$METADATA_INTERVAL"
   done
 }
@@ -68,13 +98,18 @@ record_row() {
 # record every package's result row. Uses the E_FILENAME/E_ARCH/E_BASEPATH,
 # PRESENT_IDX, META_IDX and RESOLVED_IDX arrays filled by the sourcing script.
 check_fetchable_and_record() {
-  local i url code fetchable
+  local i url code fetchable attempt
   for i in "${!E_FILENAME[@]}"; do
     fetchable=false
     if [[ "${META_IDX[$i]}" == "true" ]]; then
       url="${PULP_CONTENT_URL}/${E_BASEPATH[$i]}/${RESOLVED_IDX[$i]}"
-      code=$(curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
-      [[ "$code" == "200" ]] && fetchable=true
+      # retry: one flaky HEAD out of hundreds (content-app/S3 hiccup) must not
+      # fail the whole verification
+      for attempt in 1 2 3; do
+        code=$(content_curl -fsSL -o /dev/null -w '%{http_code}' -I "$url" 2>/dev/null || echo 000)
+        [[ "$code" == "200" ]] && { fetchable=true; break; }
+        sleep 2
+      done
     fi
     record_row "${E_FILENAME[$i]}" "${E_ARCH[$i]}" "${PRESENT_IDX[$i]}" "${META_IDX[$i]}" "$fetchable"
   done

@@ -72,6 +72,12 @@ outputs:
   stable_suite:
     description: "Apt suite of stable deb packages"
     value: ${{ steps.properties.outputs.stable_suite }}
+  stable_repository_name:
+    description: "Repository holding the stable packages (dedicated for deb plugins, the delivery repository otherwise)"
+    value: ${{ steps.properties.outputs.stable_repository_name }}
+  stable_base_path:
+    description: "Base path serving the stable packages"
+    value: ${{ steps.properties.outputs.stable_base_path }}
   pool_path:
     description: "Module scoped pool path of the deb delivery"
     value: ${{ steps.properties.outputs.pool_path }}
