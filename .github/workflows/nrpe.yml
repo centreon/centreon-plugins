@@ -187,13 +187,11 @@ jobs:
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
 
-  # TEMP TEST HACK (MON-206702): stability gating bypassed to live-validate
-  # deliver+promote pulp on a workflow_dispatch run of this branch (stability
-  # is "canary" here, not a real Pulp tier). MUST be reverted before merge.
   deliver-packages-pulp:
     needs: [get-environment, package]
     if: |
       needs.get-environment.outputs.skip_workflow == 'false' &&
+      (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
@@ -277,9 +275,7 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        # TEMP TEST HACK (MON-206702): stability check dropped, and stability
-        # hardcoded to "testing" (real value is "canary" on this branch).
-        # MUST be reverted before merge.
+        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
         continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
@@ -289,7 +285,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           version: ""
           cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
-          stability: "testing"
+          stability: ${{ needs.get-environment.outputs.stability }}
           release_type: ${{ needs.get-environment.outputs.release_type }}
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
@@ -297,11 +293,7 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        # TEMP TEST HACK (MON-206702): stability/release_type gate on
-        # get_release_type dropped, release_type hardcoded to "release" (real
-        # stability is "canary" here, and get_release_type can't resolve a
-        # release_type off a merged PR on this feature branch). MUST be
-        # reverted before merge.
+        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
         id: promote_pulp
         continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
@@ -311,7 +303,7 @@ jobs:
           distrib: ${{ matrix.distrib }}
           major_version: ""
           stability: stable
-          release_type: "release"
+          release_type: ${{ steps.get_release_type.outputs.release_type }}
           is_cloud: "false"
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
