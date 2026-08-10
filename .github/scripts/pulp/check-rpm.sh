@@ -38,14 +38,14 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
     echo "[WARN] Repository $repo does not exist or has no version"
     continue
   fi
-  url="$PULP_URL/api/v3/content/rpm/packages/?$(
+  url="$PULP_URL/$PULP_DOMAIN/api/v3/content/rpm/packages/?$(
     printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
       "$(jq -rn --arg v "$version_href" '$v | @uri')" \
       "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
   )"
   pages=0
   while [[ -n "$url" ]] && ((pages < 20)); do
-    page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url") || {
+    page=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$url") || {
       echo "[WARN] presence page fetch failed for $repo ($url)" >&2
       break
     }
@@ -125,10 +125,10 @@ resolve_pending() {
 
     if [[ -z "${primary_cache[$base_path]+set}" ]]; then
       cache_file=$(mktemp)
-      repomd=$(content_curl -fsSL "$PULP_CONTENT_URL/$base_path/repodata/repomd.xml" 2>/dev/null || true)
+      repomd=$(content_curl -fsSL "$PULP_CONTENT_URL/$PULP_DOMAIN/$base_path/repodata/repomd.xml" 2>/dev/null || true)
       primary_href=$(printf '%s' "$repomd" | grep -oP '<location href="\K[^"]+primary\.xml[^"]*' | head -1 || true)
       if [[ -n "$primary_href" ]]; then
-        content_curl -fsSL "$PULP_CONTENT_URL/$base_path/$primary_href" 2>/dev/null | gunzip -c 2>/dev/null > "$cache_file" || true
+        content_curl -fsSL "$PULP_CONTENT_URL/$PULP_DOMAIN/$base_path/$primary_href" 2>/dev/null | gunzip -c 2>/dev/null > "$cache_file" || true
       fi
       primary_cache[$base_path]=$cache_file
     fi

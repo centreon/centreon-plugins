@@ -7,16 +7,14 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 # shellcheck source=.github/scripts/pulp/api.sh
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
-# use the org-variable values, falling back to the defaults when passed empty
-# (an unset org variable is forwarded as an empty string, overriding the default)
+# an unset org variable is forwarded as an empty string, overriding the default
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+PULP_DOMAIN="${PULP_DOMAIN:-default}"
+# read-only grant into the stable domain, used by assert_not_in_stable below
+PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
 
-# refuse delivering a package that is already published in the stable repository.
-# rebuilding a testing/unstable version with a different content is fine, but a
-# version that already reached stable must never be re-delivered. rpm uses a
-# dedicated repository per stability, so this is a policy check (deliveries to
-# testing/unstable cannot evict stable, unlike a shared repository).
+# refuse delivering a package version already published in the stable repository
 assert_not_in_stable() {
   local file=$1 arch=$2 base name version release stable_repository repository_version count
   base=$(basename "$file" .rpm)
@@ -27,15 +25,13 @@ assert_not_in_stable() {
   name=${base%-*}
 
   stable_repository="$STABLE_REPOSITORY_PREFIX-$arch"
-  # fail closed on an unreachable api (a transient 5xx must not bypass the
-  # guard nor silently kill the calling worker), fail open only on the repo
-  # genuinely not existing yet
+  # fail closed on an unreachable api, fail open only if the repo doesn't exist yet
   local repo_page
   repo_page=$(
-    curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+    curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" -G \
       --data-urlencode "name=$stable_repository" \
       --data-urlencode "limit=1" \
-      "$PULP_URL/api/v3/repositories/rpm/rpm/"
+      "$PULP_URL/$PULP_STABLE_DOMAIN/api/v3/repositories/rpm/rpm/"
   ) || {
     echo "::error::Cannot check the stable repository $stable_repository to guard $name $version-$release ($arch); refusing to deliver. Retry once the api is reachable."
     return 1
@@ -45,14 +41,14 @@ assert_not_in_stable() {
   [[ -z "$repository_version" ]] && return 0
 
   count=$(
-    curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+    curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" -G \
       --data-urlencode "repository_version=$repository_version" \
       --data-urlencode "name=$name" \
       --data-urlencode "version=$version" \
       --data-urlencode "release=$release" \
       --data-urlencode "arch=$arch" \
       --data-urlencode "limit=1" \
-      "$PULP_URL/api/v3/content/rpm/packages/" | jq -r '.count'
+      "$PULP_URL/$PULP_STABLE_DOMAIN/api/v3/content/rpm/packages/" | jq -r '.count'
   ) || {
     echo "::error::Cannot check the stable repository $stable_repository content to guard $name $version-$release ($arch); refusing to deliver. Retry once the api is reachable."
     return 1
@@ -63,16 +59,14 @@ assert_not_in_stable() {
   fi
 }
 
-# Wait for a repository-less upload task and emit
-# the created content href. A task that did not produce one (content already
-# existing on a job re-run) is resolved by the package sha256 instead of
-# failing the delivery.
+# wait for the upload task and emit its content href; fall back to a sha256
+# lookup if the task produced none (content already existing on a job re-run)
 resolve_uploaded_content() {
   local task_href=$1 sha256=$2
   local body state content attempt
   for ((attempt = 0; attempt < 200; attempt++)); do
     refresh_pulp_token
-    body=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
+    body=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
     state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
     case "$state" in
       completed)
@@ -92,10 +86,10 @@ resolve_uploaded_content() {
     esac
   done
   content=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
+    curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" -G \
       --data-urlencode "sha256=$sha256" \
       --data-urlencode "limit=1" \
-      "$PULP_URL/api/v3/content/rpm/packages/" | jq -r '.results[0].pulp_href // empty'
+      "$PULP_URL/$PULP_DOMAIN/api/v3/content/rpm/packages/" | jq -r '.results[0].pulp_href // empty'
   )
   if [[ -z "$content" ]]; then
     echo "::error::Cannot resolve the uploaded content for task $task_href (sha256 $sha256)" >&2
@@ -150,21 +144,12 @@ for ARCH in noarch x86_64; do
 
   REPOSITORY_HREF=$(pulp rpm repository show --name "$REPOSITORY_NAME" | jq -r '.pulp_href')
 
-  # Batched delivery: packages are
-  # uploaded as unassociated content (repository-less, so the create tasks
-  # parallelize across the pulp workers instead of serializing on the
-  # repository lock), then the whole batch is added to the repository with a
-  # single modify task. Requires the reconciled rpm/packages access policy
-  # (delivery-tooling#209). Packages are labeled with their module so that
-  # promote-to-stable can identify them.
+  # upload as unassociated (repository-less) content so creates parallelize
+  # across pulp workers, then add the whole batch in one modify task
   TASK_HREFS=()
   SHA256S=()
-  # The uploads are parallelized client-side (the
-  # repository-less create tasks already parallelize server-side). A bounded
-  # pool of background subshells posts the files, each writing its task href
-  # to a marker file; the parent refreshes the OIDC token between spawn
-  # chunks so the workers always inherit a fresh token. Worker failures are
-  # detected through missing/empty marker files after the wait.
+  # bounded pool of background subshells upload in parallel, each writing its
+  # task href to a marker file; a missing/empty marker means that worker failed
   UPLOAD_DIR=$(mktemp -d)
   MAX_PARALLEL_UPLOADS=8
   for i in "${!ARCH_FILES[@]}"; do
@@ -173,15 +158,14 @@ for ARCH in noarch x86_64; do
       refresh_pulp_token
     fi
     (
-      # subshell-local refresh: under server slowdowns the inherited token can
-      # outlive its validity between two parent refreshes
+      # subshell-local: the inherited token can go stale between parent refreshes
       refresh_pulp_token
       assert_not_in_stable "$FILE" "$ARCH"
       echo "[INFO] Uploading $(basename "$FILE") (module $MODULE_NAME)"
       pulp_upload \
         -F "file=@\"$FILE\"" \
         -F "pulp_labels=$PULP_LABELS" \
-        "$PULP_URL/api/v3/content/rpm/packages/" > "$UPLOAD_DIR/$i.task"
+        "$PULP_URL/$PULP_DOMAIN/api/v3/content/rpm/packages/" > "$UPLOAD_DIR/$i.task"
     ) &
     while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
       wait -n || true
@@ -199,8 +183,7 @@ for ARCH in noarch x86_64; do
     sha256=$(sha256sum "$FILE" | cut -d' ' -f1)
     SHA256S+=("$sha256")
 
-    # record the uploaded package in the manifest (name-version-release parsed
-    # the same way as assert_not_in_stable) for the verification step
+    # name/version/release parsed the same way as assert_not_in_stable
     FILENAME=$(basename "$FILE")
     base=${FILENAME%.rpm}
     base=${base%."$ARCH"}
@@ -217,8 +200,7 @@ for ARCH in noarch x86_64; do
   rm -rf "$UPLOAD_DIR"
 
   echo "[INFO] Waiting for ${#TASK_HREFS[@]} upload task(s) and resolving the content"
-  # The resolutions are parallelized like the
-  # uploads - sequential, they paid one task GET per package (~6 min at 675)
+  # parallelized like the uploads: sequential took one task GET per package (~6 min at 675)
   RESOLVE_DIR=$(mktemp -d)
   for i in "${!TASK_HREFS[@]}"; do
     if ((i % 40 == 0)); then
@@ -244,14 +226,12 @@ for ARCH in noarch x86_64; do
   rm -rf "$RESOLVE_DIR"
 
   echo "[INFO] Adding ${#CONTENT_HREFS[@]} package(s) to $REPOSITORY_NAME in a single task"
-  # refresh from the parent shell: the resolutions above ran in subshells, so
-  # their refreshes never updated this shell's token (the 401 trap, again)
+  # the subshell refreshes above never updated this shell's token
   refresh_pulp_token
   # body through a file: thousands of hrefs exceed the argv limit
   ADD_BODY_FILE=$(mktemp)
   printf '%s\n' "${CONTENT_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
-  # retried like the deb path: several modules deliver into the same rpm
-  # repository (version race), and any task can lose its worker
+  # several modules deliver into the same repository (version race)
   for modify_attempt in 1 2 3; do
     MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
     wait_task_race "$MODIFY_TASK" && rc=0 || rc=$?
@@ -269,7 +249,7 @@ for ARCH in noarch x86_64; do
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
   create_publication rpm "$REPOSITORY_NAME"
 
-  echo "::notice::Packages are available at $PULP_CONTENT_URL/$BASE_PATH/"
+  echo "::notice::Packages are available at $PULP_CONTENT_URL/$PULP_DOMAIN/$BASE_PATH/"
 done
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "rpm" "${STABILITY:-}" "delivery" "$PULP_CONTENT_URL"

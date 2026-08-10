@@ -60,6 +60,9 @@ outputs:
   testing_repository_prefix:
     description: "Repository name prefix of testing rpm repositories, used as promotion source"
     value: ${{ steps.properties.outputs.testing_repository_prefix }}
+  testing_base_path_prefix:
+    description: "Base path prefix of testing rpm distributions, used to download promotion source content"
+    value: ${{ steps.properties.outputs.testing_base_path_prefix }}
   stable_repository_prefix:
     description: "Repository name prefix of stable rpm repositories"
     value: ${{ steps.properties.outputs.stable_repository_prefix }}
@@ -87,6 +90,12 @@ outputs:
   stable_pool_path:
     description: "Module scoped pool path of stable deb packages"
     value: ${{ steps.properties.outputs.stable_pool_path }}
+  domain:
+    description: "Pulp Domain of the delivery (testing/unstable tier) repository"
+    value: ${{ steps.properties.outputs.domain }}
+  stable_domain:
+    description: "Pulp Domain of the stable-tier repository"
+    value: ${{ steps.properties.outputs.stable_domain }}
 
 runs:
   using: "composite"

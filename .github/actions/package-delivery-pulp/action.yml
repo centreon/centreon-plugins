@@ -92,6 +92,7 @@ runs:
       with:
         pulp_url: ${{ inputs.pulp_url }}
         audience: ${{ inputs.audience }}
+        domain: ${{ steps.pulp-properties.outputs.domain }}
 
     - name: Deliver RPM packages
       id: deliver-rpm
@@ -105,6 +106,8 @@ runs:
         STABLE_REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.stable_repository_prefix }}
         BASE_PATH_PREFIX: ${{ steps.pulp-properties.outputs.base_path_prefix }}
         PULP_URL: ${{ inputs.pulp_url }}
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
+        PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
       run: ${{ github.action_path }}/deliver-rpm.sh
@@ -124,6 +127,8 @@ runs:
         STABLE_BASE_PATH: ${{ steps.pulp-properties.outputs.stable_base_path }}
         POOL_PATH: ${{ steps.pulp-properties.outputs.pool_path }}
         PULP_URL: ${{ inputs.pulp_url }}
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
+        PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
       run: ${{ github.action_path }}/deliver-deb.sh
@@ -138,6 +143,7 @@ runs:
         DISTRIB: ${{ inputs.distrib }}
         STABILITY: ${{ inputs.stability }}
         PULP_URL: ${{ inputs.pulp_url }}
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
       run: |
@@ -154,6 +160,7 @@ runs:
         DISTRIB: ${{ inputs.distrib }}
         STABILITY: ${{ inputs.stability }}
         PULP_URL: ${{ inputs.pulp_url }}
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
       run: |

@@ -13,6 +13,9 @@ source "$(dirname "${BASH_SOURCE[0]}")/api.sh"
 
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+
+switch_pulp_domain "$PULP_DOMAIN" || exit 1
+
 # 900s: the published indexes can lag a finished publication by up to the
 # content-app cache TTL (600s), the window must survive that worst case
 METADATA_TIMEOUT="${METADATA_TIMEOUT:-900}"
@@ -102,7 +105,7 @@ check_fetchable_and_record() {
   for i in "${!E_FILENAME[@]}"; do
     fetchable=false
     if [[ "${META_IDX[$i]}" == "true" ]]; then
-      url="${PULP_CONTENT_URL}/${E_BASEPATH[$i]}/${RESOLVED_IDX[$i]}"
+      url="${PULP_CONTENT_URL}/${PULP_DOMAIN}/${E_BASEPATH[$i]}/${RESOLVED_IDX[$i]}"
       # retry: one flaky HEAD out of hundreds (content-app/S3 hiccup) must not
       # fail the whole verification
       for attempt in 1 2 3; do
