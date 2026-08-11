@@ -248,7 +248,6 @@ sub request_api_paginated {
 
     my $result = $self->request_api(url_path => $options{url_path});
     my $members = [];
-    my $visited_uris = {};
     my $pages = 0;
     while (1) {
         if (!defined($result->{members})) {
@@ -263,7 +262,7 @@ sub request_api_paginated {
             $self->{output}->add_option_msg(short_msg => "Unexpected pagination URI returned by the API: '" . $result->{nextPageUri} . "'");
             $self->{output}->option_exit();
         }
-        if (++$pages > 1000 || $visited_uris->{$result->{nextPageUri}}++) {
+        if ($pages++ > 50) {
             $self->{output}->add_option_msg(short_msg => 'Pagination did not terminate normally (possible API loop)');
             $self->{output}->option_exit();
         }
