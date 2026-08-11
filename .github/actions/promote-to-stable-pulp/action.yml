@@ -73,6 +73,7 @@ runs:
       with:
         pulp_url: ${{ inputs.pulp_url }}
         audience: ${{ inputs.audience }}
+        domain: ${{ steps.pulp-properties.outputs.domain }}
 
     - name: Promote RPM packages to stable
       id: promote-rpm
@@ -82,12 +83,16 @@ runs:
         MODULE_NAME: ${{ inputs.module_name }}
         DISTRIB: ${{ inputs.distrib }}
         TESTING_REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.testing_repository_prefix }}
+        TESTING_BASE_PATH_PREFIX: ${{ steps.pulp-properties.outputs.testing_base_path_prefix }}
         STABLE_REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.stable_repository_prefix }}
         STABLE_BASE_PATH_PREFIX: ${{ steps.pulp-properties.outputs.stable_base_path_prefix }}
         STABILITY: ${{ inputs.stability }}
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+        # testing and stable tiers live in different Pulp Domains; promote-rpm.sh switches between them
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
+        PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
       run: ${{ github.action_path }}/promote-rpm.sh
 
     - name: Promote DEB packages to stable
@@ -109,6 +114,9 @@ runs:
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+        # testing and stable tiers live in different Pulp Domains; promote-deb.sh switches between them
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
+        PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
       run: ${{ github.action_path }}/promote-deb.sh
 
     - name: Verify RPM promotion
@@ -125,6 +133,8 @@ runs:
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+        # verifying the just-promoted content, which now lives in the stable domain
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
       run: |
         ${{ github.action_path }}/../../scripts/pulp/check-rpm.sh ||
           echo "::warning::Pulp promotion verification failed for ${MODULE_NAME} on ${DISTRIB} (non-blocking during the Artifactory-to-Pulp migration, see the run summary table)"
@@ -143,6 +153,8 @@ runs:
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
+        # verifying the just-promoted content, which now lives in the stable domain
+        PULP_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
       run: |
         ${{ github.action_path }}/../../scripts/pulp/check-deb.sh ||
           echo "::warning::Pulp promotion verification failed for ${MODULE_NAME} on ${DISTRIB} (non-blocking during the Artifactory-to-Pulp migration, see the run summary table)"

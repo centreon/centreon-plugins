@@ -7,61 +7,95 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 # shellcheck source=.github/scripts/pulp/api.sh
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
-# use the org-variable values, falling back to the defaults when passed empty
-# (an unset org variable is forwarded as an empty string, overriding the default)
+# an unset org variable is forwarded as an empty string, overriding the default
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+PULP_DOMAIN="${PULP_DOMAIN:-default}"
+# read through the public content-app, no auth/grant needed (see api.sh's content_curl)
+PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
 
-# refuse delivering a package that is already published in the stable suite.
-# rebuilding a testing/unstable version with a different content is fine, but a
-# version that already reached stable must never be re-delivered: pulp
-# deduplicates packages by (package, version, architecture) repository wide, so
-# the new content would silently evict the stable one. bump the version instead.
+# fetch the stable suite's Release file and print its advertised architectures
+# (empty output = suite doesn't exist yet, i.e. nothing published to guard against).
+# Fails closed (non-zero) on anything but a clean 404.
+stable_suite_architectures() {
+  local release_file http_code
+  release_file=$(mktemp)
+  http_code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$release_file" -w '%{http_code}' \
+    "$PULP_CONTENT_URL/$PULP_STABLE_DOMAIN/${STABLE_BASE_PATH:-$BASE_PATH}/dists/$STABLE_SUITE/Release" 2>/dev/null || echo 000)
+  case "$http_code" in
+    404) rm -f "$release_file"; return 0 ;;
+    200) awk -F': ' '/^Architectures:/ {print $2}' "$release_file"; rm -f "$release_file" ;;
+    *)
+      rm -f "$release_file"
+      echo "::error::Cannot verify the stable suite $STABLE_SUITE (HTTP $http_code) to guard an Architecture: all package; refusing to deliver. Retry once the content endpoint is reachable." >&2
+      return 1
+      ;;
+  esac
+}
+
+# fetch one architecture's Packages index from the stable suite (empty output = not
+# published for that architecture). Fails closed on anything but a clean 404.
+fetch_stable_packages_index() {
+  local a=$1 pkg_file http_code
+  pkg_file=$(mktemp)
+  http_code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
+    "$PULP_CONTENT_URL/$PULP_STABLE_DOMAIN/${STABLE_BASE_PATH:-$BASE_PATH}/dists/$STABLE_SUITE/main/binary-$a/Packages" 2>/dev/null || echo 000)
+  case "$http_code" in
+    404) rm -f "$pkg_file"; return 0 ;;
+    200) cat "$pkg_file"; rm -f "$pkg_file" ;;
+    *)
+      rm -f "$pkg_file"
+      echo "::error::Cannot verify the stable suite $STABLE_SUITE binary-$a index; refusing to deliver. Retry once the content endpoint is reachable." >&2
+      return 1
+      ;;
+  esac
+}
+
+# refuse delivering a package version already published in the stable suite:
+# pulp dedupes by (package, version, arch) repository-wide, so re-delivering
+# would silently evict the stable one
 assert_not_in_stable() {
-  local file=$1 name version arch packages http_code pkg_file
+  local file=$1 name version arch arches a packages
   name=$(dpkg-deb -f "$file" Package)
   version=$(dpkg-deb -f "$file" Version)
   arch=$(dpkg-deb -f "$file" Architecture)
 
-  # the published stable suite is the source of truth for what reached stable.
-  # the release_components api is not listable by the OIDC ci-user (403, and no
-  # grantable permission exists for it), so check the served Packages index
-  # instead: no api access needed and it reflects exactly what stable publishes.
-  # distinguish "not published yet" (404 -> not in stable) from a fetch failure
-  # (network / 5xx -> unknown): fail closed on the latter, so a transient content
-  # endpoint error cannot let an already-stable version slip through and evict it
-  # (the rpm guardrail is likewise fail-closed).
-  pkg_file=$(mktemp)
-  http_code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
-    "$PULP_CONTENT_URL/${STABLE_BASE_PATH:-$BASE_PATH}/dists/$STABLE_SUITE/main/binary-$arch/Packages" 2>/dev/null || echo 000)
-  case "$http_code" in
-    404) rm -f "$pkg_file"; return 0 ;;
-    200) packages=$(cat "$pkg_file"); rm -f "$pkg_file" ;;
-    *)
-      rm -f "$pkg_file"
-      echo "::error::Cannot verify the stable suite $STABLE_SUITE (HTTP $http_code) to guard $name $version ($arch); refusing to deliver. Retry once the content endpoint is reachable."
-      return 1
-      ;;
-  esac
-  # empty index -> nothing in stable
-  [[ -z "$packages" ]] && return 0
-
-  # a package is in stable if a Packages stanza matches both name and version
-  if printf '%s\n' "$packages" | awk -v n="$name" -v v="$version" '
-       BEGIN { RS = ""; FS = "\n" }
-       {
-         has_name = 0; has_version = 0
-         for (i = 1; i <= NF; i++) {
-           if ($i == "Package: " n) has_name = 1
-           if ($i == "Version: " v) has_version = 1
-         }
-         if (has_name && has_version) found = 1
-       }
-       END { exit found ? 0 : 1 }
-     '; then
-    echo "::error::$name $version ($arch) is already published in the stable suite $STABLE_SUITE; refusing to deliver it to $SUITE. Bump the package version for a new build."
-    return 1
+  # the release_components api isn't listable by the OIDC ci-user (403), so
+  # check the served Packages index(es) instead. "Architecture: all" packages are
+  # listed in every binary-<arch>/Packages index the suite advertises, not a
+  # synthetic "binary-all" one that doesn't exist -- resolve the suite's actual
+  # architectures from its Release file and check each of them; other
+  # architectures still only ever need their own single index.
+  if [[ "$arch" == "all" ]]; then
+    arches=$(stable_suite_architectures) || return 1
+    # no Release yet (fresh suite) -> nothing published, nothing to guard against
+    [[ -z "$arches" ]] && return 0
+  else
+    arches="$arch"
   fi
+
+  for a in $arches; do
+    packages=$(fetch_stable_packages_index "$a") || return 1
+    # empty index -> nothing in stable for this architecture
+    [[ -z "$packages" ]] && continue
+
+    # a package is in stable if a Packages stanza matches both name and version
+    if printf '%s\n' "$packages" | awk -v n="$name" -v v="$version" '
+         BEGIN { RS = ""; FS = "\n" }
+         {
+           has_name = 0; has_version = 0
+           for (i = 1; i <= NF; i++) {
+             if ($i == "Package: " n) has_name = 1
+             if ($i == "Version: " v) has_version = 1
+           }
+           if (has_name && has_version) found = 1
+         }
+         END { exit found ? 0 : 1 }
+       '; then
+      echo "::error::$name $version ($arch) is already published in the stable suite $STABLE_SUITE; refusing to deliver it to $SUITE. Bump the package version for a new build."
+      return 1
+    fi
+  done
 }
 
 FILES=(*.deb)
@@ -91,30 +125,20 @@ PULP_LABELS=$(jq -cn \
   --arg workflow   "${GITHUB_WORKFLOW:-}" \
   '{"module": $mod, "git_commit": $git_commit, "git_ref": $git_ref, "github_run_id": $run_id, "github_actor": $actor, "github_workflow": $workflow}')
 
-# Batched delivery, deb flavor. Unlike
-# rpm, a repository-less deb upload ignores the distribution/component
-# parameters (pulp_deb only creates the suite association inside the
-# repository code path), so the suite association is created explicitly as
-# PackageReleaseComponent content units. The release_components api is not
-# listable by the OIDC ci-user, so the FIRST package of each architecture is
-# delivered through the legacy repository code path - that also
-# get_or_creates the ReleaseComponent and the ReleaseArchitecture of the
-# suite - and its PackageReleaseComponent (listable) yields the release
-# component href for the whole batch. Everything else is uploaded as
-# unassociated content in a client-side pool, associated in parallel tasks
-# (no repository lock), then added to the repository with a single modify.
+# a repository-less deb upload ignores distribution/component, so the FIRST
+# package of each arch goes through the legacy repository path instead to
+# establish the suite's release component; the rest upload unassociated and
+# get associated explicitly, then all of it is added in a single modify.
 lookup_deb_content() {
-  # emit the href of a deb content unit matching the query, empty if absent.
-  # Every caller sits on a fallback path where the content is expected to
-  # exist, so an empty result is retried too: the api has been observed
-  # answering an empty page for content committed seconds earlier (stale
-  # read), and a transient error must not read as "content absent" either.
+  # emit the href of a matching deb content unit, empty if absent. Retried:
+  # the api has been observed answering an empty page for content committed
+  # seconds earlier (stale read)
   local endpoint=$1 query=$2 out attempt
   for attempt in 1 2 3 4 5; do
-    out=$(curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+    out=$(curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" -G \
       --data-urlencode "limit=1" \
       $query \
-      "$PULP_URL/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty') || out=""
+      "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/$endpoint/" | jq -r '.results[0].pulp_href // empty') || out=""
     if [[ -n "$out" ]]; then
       echo "$out"
       return 0
@@ -131,7 +155,7 @@ resolve_task_content() {
   local body state content attempt
   for ((attempt = 0; attempt < 200; attempt++)); do
     refresh_pulp_token
-    body=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
+    body=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
     state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
     case "$state" in
       completed)
@@ -161,20 +185,18 @@ resolve_task_content() {
 # emit the release-component hrefs a package is associated with
 lookup_prcs() {
   local package_href=$1
-  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Github $PULP_TOKEN" -G \
+  curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" -G \
     --data-urlencode "package=$package_href" \
     --data-urlencode "limit=100" \
-    "$PULP_URL/api/v3/content/deb/package_release_components/" \
+    "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/package_release_components/" \
     | jq -r '.results[].release_component'
 }
 
-# group the files by architecture: one file per arch goes through the legacy
-# path so the suite association targets of that arch exist. Prefer a file
-# whose content does NOT exist in pulp yet: a fresh upload carries exactly
-# one suite association afterwards, which identifies the release component
-# unambiguously. Content reused across suites (identical bytes delivered to
-# another suite before) keeps its prior associations, so for a reused
-# representative the pre-upload association set is captured to diff later.
+# pick one file per arch for the legacy path. Prefer content that doesn't
+# exist in pulp yet: a fresh upload carries exactly one suite association
+# afterwards, identifying the release component unambiguously. For a reused
+# representative (identical bytes delivered before), capture its pre-upload
+# associations to diff against later.
 declare -A LEGACY_FOR_ARCH=()
 declare -A LEGACY_FRESH=()
 declare -A LEGACY_BEFORE=()
@@ -217,9 +239,7 @@ for FILE in "${LEGACY_FILES[@]}"; do
   assert_not_in_stable "$FILE"
 done
 # sequential with retry: the legacy path creates a repository version, and
-# concurrent legs of the shared repository can lose the version race
-# (wait_task_race rc 2); re-uploading converges, content and suite structure
-# are get_or_created server-side
+# concurrent legs of the shared repository can lose the version race (rc 2)
 for FILE in "${LEGACY_FILES[@]}"; do
   for legacy_attempt in 1 2 3; do
     echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME) [legacy path, attempt $legacy_attempt]"
@@ -231,7 +251,7 @@ for FILE in "${LEGACY_FILES[@]}"; do
         -F "component=main" \
         -F "repository=$REPOSITORY_HREF" \
         -F "pulp_labels=$PULP_LABELS" \
-        "$PULP_URL/api/v3/content/deb/packages/"
+        "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/packages/"
     )
     wait_task_race "$LEGACY_TASK" && rc=0 || rc=$?
     if [[ $rc -eq 0 ]]; then
@@ -246,10 +266,9 @@ for FILE in "${LEGACY_FILES[@]}"; do
   done
 done
 
-# the release component href of $SUITE/main, deduced from the association the
-# legacy uploads just created. A FRESH representative now carries exactly one
-# association; a reused one carries its prior associations too, so the href is
-# the difference between its post- and pre-upload association sets.
+# deduce the release component href from the association the legacy uploads
+# just created: a fresh representative now carries exactly one association; a
+# reused one carries its prior ones too, so diff post- against pre-upload
 refresh_pulp_token
 RELEASE_COMPONENT_HREF=""
 for i in "${!LEGACY_FILES[@]}"; do
@@ -273,9 +292,7 @@ for i in "${!LEGACY_FILES[@]}"; do
       RELEASE_COMPONENT_HREF="$new_rcs"
       break
     elif [[ $(echo "$after" | grep -c .) -eq 1 ]]; then
-      # rerun of a partially delivered leg: the association was created by
-      # the previous attempt (empty diff) and is the only one the
-      # representative carries - it IS the suite release component.
+      # rerun of a partially delivered leg: empty diff, but it's the only association
       RELEASE_COMPONENT_HREF=$(echo "$after" | grep .)
       break
     fi
@@ -296,8 +313,7 @@ for i in "${!ORPHAN_FILES[@]}"; do
     refresh_pulp_token
   fi
   (
-    # subshell-local refresh: under server slowdowns the inherited token can
-    # outlive its validity between two parent refreshes
+    # subshell-local: the inherited token can go stale between parent refreshes
     refresh_pulp_token
     assert_not_in_stable "$FILE"
     echo "[INFO] Uploading $FILE to $POOL_PATH/ ($SUITE/main, module $MODULE_NAME)"
@@ -305,7 +321,7 @@ for i in "${!ORPHAN_FILES[@]}"; do
       -F "file=@\"$FILE\"" \
       -F "relative_path=$POOL_PATH/$FILE" \
       -F "pulp_labels=$PULP_LABELS" \
-      "$PULP_URL/api/v3/content/deb/packages/" > "$UPLOAD_DIR/$i.task"
+      "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/packages/" > "$UPLOAD_DIR/$i.task"
   ) &
   while (($(jobs -rp | wc -l) >= MAX_PARALLEL_UPLOADS)); do
     wait -n || true
@@ -345,11 +361,8 @@ for i in "${!ORPHAN_FILES[@]}"; do
   PACKAGE_HREFS+=("$(cat "$UPLOAD_DIR/$i.content")")
 done
 
-# associate every uploaded package with the suite component. The
-# package_release_components create is a plain synchronous DRF create (201
-# with the created unit, no task), so the href comes straight out of the
-# response; a failed create (unit already existing on a job re-run) falls
-# back to a lookup.
+# package_release_components create is synchronous (201 with the unit, no
+# task); a failed create (already existing on a job re-run) falls back to a lookup
 echo "[INFO] Associating ${#PACKAGE_HREFS[@]} package(s) with $SUITE/main"
 for i in "${!PACKAGE_HREFS[@]}"; do
   if ((i % 40 == 0)); then
@@ -357,22 +370,20 @@ for i in "${!PACKAGE_HREFS[@]}"; do
   fi
   (
     refresh_pulp_token
-    out=$(post_json "$PULP_URL/api/v3/content/deb/package_release_components/" \
+    out=$(post_json "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/package_release_components/" \
       "{\"package\": \"${PACKAGE_HREFS[$i]}\", \"release_component\": \"$RELEASE_COMPONENT_HREF\"}") || out=$'\n000'
     code="${out##*$'\n'}"
     body="${out%$'\n'*}"
     href=""
     if [[ "$code" == 2* ]]; then
-      # tolerate a non-json body (gateway error page behind a 2xx): a jq
-      # failure inside the substitution would silently kill this subshell
+      # tolerate a non-json body (gateway error page behind a 2xx)
       href=$(echo "$body" | jq -r '.pulp_href // .task // empty' 2>/dev/null) || href=""
     fi
     if [[ -z "$href" ]]; then
       href=$(lookup_deb_content "package_release_components" \
         "--data-urlencode package=${PACKAGE_HREFS[$i]} --data-urlencode release_component=$RELEASE_COMPONENT_HREF")
       if [[ -n "$href" ]]; then
-        # the api answers 500 on a duplicate synchronous content create; on a
-        # rerun the association simply pre-exists, nothing is wrong
+        # api answers 500 on a duplicate synchronous create; expected on a rerun
         echo "[INFO] ${ORPHAN_FILES[$i]}: suite association already exists (HTTP $code on create, expected on a rerun), reusing it"
       else
         echo "[WARN] Suite association create for ${ORPHAN_FILES[$i]} returned HTTP $code: $(echo "$body" | head -c 300)" >&2
@@ -408,8 +419,7 @@ if ((${#PACKAGE_HREFS[@]} > 0)); then
   # body through a file: thousands of hrefs exceed the argv limit
   ADD_BODY_FILE=$(mktemp)
   printf '%s\n' "${PACKAGE_HREFS[@]}" "${PRC_HREFS[@]}" | jq -R . | jq -cs '{add_content_units: .}' > "$ADD_BODY_FILE"
-  # retried like the legacy uploads: the modify also creates a repository
-  # version and can lose the same race against a concurrent delivery
+  # retried like the legacy uploads: same repository-version race
   for modify_attempt in 1 2 3; do
     MODIFY_TASK=$(start_modify_task "$PULP_URL${REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
     wait_task_race "$MODIFY_TASK" && rc=0 || rc=$?
@@ -441,6 +451,6 @@ done
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
 create_publication deb "$REPOSITORY_NAME" --structured
 
-echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$BASE_PATH/ $SUITE main"
+echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$PULP_DOMAIN/$BASE_PATH/ $SUITE main"
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "${STABILITY:-}" "delivery" "$PULP_CONTENT_URL"
