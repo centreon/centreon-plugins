@@ -26,7 +26,7 @@ use strict;
 use warnings;
 
 use centreon::plugins::constants qw(:values);
-use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::misc qw/is_excluded is_empty/;
 
 sub new {
     my ($class, %options) = @_;
@@ -39,7 +39,8 @@ sub new {
         'include-database:s'  => { name => 'include_database', default => '' },
         'exclude-database:s'  => { name => 'exclude_database', default => '' },
         'include:s'           => { name => 'include_database' },
-        'exclude:s'           => { name => 'exclude_database' }
+        'exclude:s'           => { name => 'exclude_database' },
+        'include-locktype:s'  => {name => 'include_locktype', default => '%'},
     });
 
     return $self;
@@ -83,7 +84,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'locks', type => 1, cb_prefix_output => 'custom_locks_prefix_output', message_multiple => 'All databases locks are ok',  skipped_code => { NO_VALUE() => 1 }  },
+        { name => 'locks', type => COUNTER_TYPE_INSTANCE(), cb_prefix_output => 'custom_locks_prefix_output', message_multiple => 'All databases locks are ok',  skipped_code => { NO_VALUE() => 1 }  },
     ];
 
     $self->{items} = { 'total', 'warning' };
@@ -136,6 +137,10 @@ sub check_options {
         $self->{output}->option_exit(short_msg => "Critical warning ('$label' locks) threshold '" . $value . "'.")
             unless $self->{perfdata}->threshold_validate(label => 'crit-' . $label, value => $value);
     }
+    # the add_options 'default' property do not transform an empty string to the default value, so we do it here too
+    if (is_empty($self->{option_results}->{include_locktype})) {
+        $self->{option_results}->{include_locktype} = '%';
+    }
 }
 
 sub manage_selection {
@@ -144,10 +149,13 @@ sub manage_selection {
     $options{sql}->connect();
 
     $options{sql}->query(query => q{
-        SELECT granted, mode, datname FROM pg_database d LEFT JOIN pg_locks l ON (d.oid=l.database) WHERE d.datallowconn
-    });
+        SELECT granted, mode, datname FROM pg_database d LEFT JOIN pg_locks l ON (d.oid=l.database AND locktype like ?) WHERE d.datallowconn
+    },
+        param=> [$self->{option_results}->{include_locktype}]);
 
     my $result = $options{sql}->fetchall_arrayref();
+    $self->{output}->option_exit(short_msg => "No databases found. Do you have sufficient permissions ?") if scalar(@{$result}) == 0;
+
     my $dblocks = {};
     foreach my $row (@{$result}) {        
         my ($granted, $mode, $dbname) = ($$row[0], $$row[1], $$row[2]);
@@ -182,6 +190,8 @@ sub manage_selection {
             push @{$self->{maps_counters}->{locks}}, $new_counter;
         }
     }
+    $self->{output}->option_exit(short_msg => "No metrics found. please check the include and exclude filter.")
+        if !%$dblocks;
 
     $self->{locks} = $dblocks;
 }
@@ -213,6 +223,10 @@ Filter databases using a regular expression.
 =item B<--exclude-database>
 
 Exclude databases using a regular expression.
+
+=item B<--include-locktype>
+
+Include lock type using a SQL 'like' format. by default all lock type are included (default: '%').
 
 =back
 
