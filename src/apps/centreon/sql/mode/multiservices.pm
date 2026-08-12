@@ -278,6 +278,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
+
     if (!defined($self->{option_results}->{config}) || $self->{option_results}->{config} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please define --config option");
         $self->{output}->option_exit();
@@ -357,7 +362,7 @@ sub manage_query {
     my ($self, %options) = @_;
 
     my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
-                FROM " . $self->{option_results}->{centreon_storage_database} . ".hosts," . $self->{option_results}->{centreon_storage_database} . ".services WHERE hosts.host_id=services.host_id
+                FROM `" . $self->{option_results}->{centreon_storage_database} . "`.hosts,`" . $self->{option_results}->{centreon_storage_database} . "`.services WHERE hosts.host_id=services.host_id
                 AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
                 AND hosts.name = '" . $options{host} . "'
                 AND services.description = '" . $options{service} . "'";
@@ -422,7 +427,7 @@ sub manage_selection {
             };
 
             my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
-                         FROM " . $self->{option_results}->{centreon_storage_database} . ".hosts," . $self->{option_results}->{centreon_storage_database} . ".services WHERE hosts.host_id=services.host_id
+                         FROM `" . $self->{option_results}->{centreon_storage_database} . "`.hosts,`" . $self->{option_results}->{centreon_storage_database} . "`.services WHERE hosts.host_id=services.host_id
                          AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
                          AND hosts.name LIKE '" . $config_data->{selection}->{$group}->{'host_name_filter'} . "'
                          AND services.description LIKE '" . $config_data->{selection}->{$group}->{'service_name_filter'} . "'";
@@ -490,7 +495,7 @@ Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=
 
 =item B<--centreon-storage-database>
 
-Centreon storage database name (default: 'centreon_storage').
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--filter-counters>
 

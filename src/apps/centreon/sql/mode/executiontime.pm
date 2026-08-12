@@ -81,13 +81,23 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
     $options{sql}->query(
         query => 'SELECT h.name, s.description, s.execution_time
-            FROM ' . $self->{option_results}->{centreon_storage_database} .  '.services s, ' . $self->{option_results}->{centreon_storage_database} .  '.hosts h
+            FROM `' . $self->{option_results}->{centreon_storage_database} .  '`.services s, `' . $self->{option_results}->{centreon_storage_database} .  '`.hosts h
             WHERE s.execution_time > ' . $self->{option_results}->{execution_time} .  '
                 AND h.enabled = 1
                 AND (h.name NOT LIKE "\_Module\_%" OR h.name LIKE "\_Module\_Meta%")
@@ -127,12 +137,11 @@ limit of execution time (default: '20').
 
 =item B<--centreon-storage-database>
 
-Centreon storage database name (default: 'centreon_storage').
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--filter-poller>
 
 Filter by poller name (regexp can be used).
-
 
 =item B<--warning-count>
 

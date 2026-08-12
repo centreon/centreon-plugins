@@ -59,11 +59,21 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => 'SELECT instance_id, name, last_alive, running FROM ' . $self->{option_results}->{centreon_storage_database} . ".instances WHERE deleted = '0'");
+    $options{sql}->query(query => "SELECT instance_id, name, last_alive, running FROM `" . $self->{option_results}->{centreon_storage_database} . "`.instances WHERE deleted = '0'");
 
     my $result = $options{sql}->fetchall_arrayref();
     $self->{poller} = {};
@@ -106,7 +116,7 @@ Filter by poller name (can be a regexp).
 
 =item B<--centreon-storage-database>
 
-Centreon storage database name (default: 'centreon_storage').
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--warning-delay>
 

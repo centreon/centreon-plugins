@@ -45,6 +45,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
+
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
         $self->{output}->option_exit();
@@ -61,7 +66,7 @@ sub execute {
     my ($self, %options) = @_;
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => "SELECT name, msg_type, status, count(NULLIF(log_id, 0)) as num FROM " . $self->{option_results}->{centreon_storage_database} . ".instances LEFT JOIN " . $self->{option_results}->{centreon_storage_database} . ".logs ON logs.ctime > " . $options{time} . " AND logs.msg_type IN ('0', '1') AND type = '1' AND status NOT IN ('0') AND logs.instance_name = instances.name WHERE deleted = '0' GROUP BY name, msg_type, status");
+    $self->{sql}->query(query => "SELECT name, msg_type, status, count(NULLIF(log_id, 0)) as num FROM `" . $self->{option_results}->{centreon_storage_database} . "`.instances LEFT JOIN `" . $self->{option_results}->{centreon_storage_database} . "`.logs ON logs.ctime > " . $options{time} . " AND logs.msg_type IN ('0', '1') AND type = '1' AND status NOT IN ('0') AND logs.instance_name = instances.name WHERE deleted = '0' GROUP BY name, msg_type, status");
 
     my $total_problems = { total => 0, hosts => 0, services => 0 };
     my $total_problems_by_poller = {};
@@ -169,7 +174,7 @@ Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=
 
 =item B<--centreon-storage-database>
 
-Centreon storage database name (default: 'centreon_storage').
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--warning>
 

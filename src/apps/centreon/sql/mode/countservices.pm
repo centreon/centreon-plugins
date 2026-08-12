@@ -127,11 +127,21 @@ sub new {
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $query = "SELECT instances.name, COUNT(DISTINCT hosts.host_id) as num_hosts, count(DISTINCT services.host_id, services.service_id) as num_services
-        FROM " . $self->{option_results}->{centreon_storage_database} .  ".instances, " . $self->{option_results}->{centreon_storage_database} . ".hosts, " . $self->{option_results}->{centreon_storage_database} . ".services WHERE instances.running = '1' AND instances.instance_id = hosts.instance_id AND hosts.enabled = '1' AND hosts.host_id = services.host_id AND services.enabled = '1' GROUP BY hosts.instance_id";
+        FROM `" . $self->{option_results}->{centreon_storage_database} . "`.instances, `" . $self->{option_results}->{centreon_storage_database} . "`.hosts, `" . $self->{option_results}->{centreon_storage_database} . "`.services WHERE instances.running = '1' AND instances.instance_id = hosts.instance_id AND hosts.enabled = '1' AND hosts.host_id = services.host_id AND services.enabled = '1' GROUP BY hosts.instance_id";
     $options{sql}->connect();
     $options{sql}->query(
         query => 'SELECT
@@ -214,7 +224,7 @@ Example: --filter-counters='service'.
 
 =item B<--centreon-storage-database>
 
-Centreon storage database name (default: 'centreon_storage').
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--filter-poller>
 

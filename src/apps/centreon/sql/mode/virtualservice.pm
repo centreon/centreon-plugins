@@ -214,7 +214,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'config-file:s' => { name => 'config_file' },
         'json-data:s'   => { name => 'json_data' },
-        'database:s'    => { name => 'database' }
+        'database:s'    => { name => 'database', default => 'centreon_storage' }
     });
 
     return $self;
@@ -250,9 +250,10 @@ sub check_options {
     $config_data->{formatting}->{change_bytes} = 0 if (!exists($config_data->{formatting}->{change_bytes}));
     $config_data->{formatting}->{change_bytes_network} = 0 if (!exists($config_data->{formatting}->{change_bytes_network}));
 
-    $self->{option_results}->{database} = 
-        (defined($self->{option_results}->{database}) && $self->{option_results}->{database} ne '') ?
-            $self->{option_results}->{database} . '.' : 'centreon_storage.';
+    if ($self->{option_results}->{database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
 }
 
 sub parse_json_config {
@@ -298,9 +299,10 @@ sub manage_selection {
         push @{$self->{maps_counters_type}}, {
             name => 'metric', type => COUNTER_TYPE_INSTANCE, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
+
         foreach my $id (keys %{$config_data->{selection}}) {
             my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-            $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics WHERE index_data.id = metrics.index_id ";
+            $query .= "FROM `$self->{option_results}->{database}`.index_data, `$self->{option_results}->{database}`.metrics WHERE index_data.id = metrics.index_id ";
             $query .= "AND index_data.service_description = '" . $config_data->{selection}->{$id}->{service_name} . "'";
             $query .= "AND index_data.host_name = '" . $config_data->{selection}->{$id}->{host_name} . "'" ;
             $query .= "AND metrics.metric_name = '" . $config_data->{selection}->{$id}->{metric_name} . "'";
@@ -321,7 +323,7 @@ sub manage_selection {
             name => 'metric', type => COUNTER_TYPE_INSTANCE, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-        $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics, $self->{option_results}->{database}services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id AND services.host_id = index_data.host_id ";
+        $query .= "FROM `$self->{option_results}->{database}`.index_data, `$self->{option_results}->{database}`.metrics, $self->{option_results}->{database}.services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id AND services.host_id = index_data.host_id ";
         $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "' " if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
         $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "' " if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
         $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "' " if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
@@ -425,7 +427,7 @@ Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=
 
 =item B<--database>
 
-Specify the database (default: 'centreon_storage').
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--config-file>
 
