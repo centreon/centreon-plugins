@@ -266,6 +266,7 @@ okta
 OLT
 oneaccess-sys-mib
 OneAPI
+OneView
 Opengear
 OpenMetrics
 OpenShift
@@ -394,6 +395,7 @@ vCenter
 VCENTER
 vCPU
 vCPUs
+vCSA
 VCSA
 vdom
 vdomain
