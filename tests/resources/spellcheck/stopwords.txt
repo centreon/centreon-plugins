@@ -71,6 +71,7 @@ CXF
 Cyberoam
 DaemonSet
 Datacore
+datafiles
 datasource
 datastore
 Datastore
