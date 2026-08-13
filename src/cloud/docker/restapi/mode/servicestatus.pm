@@ -229,7 +229,7 @@ sub manage_selection {
             next if ($results->{$service_id}->{tasks}->{$task_id}->{state} !~ /running|shutdown|failed/i);
             $self->{services}->{ $service_id }->{service}->{ $results->{$service_id}->{tasks}->{$task_id}->{state} }++;
 
-            if ($results->{$service_id}->{tasks}->{$task_id}->{state} ne 'completed' && 
+            if ($results->{$service_id}->{tasks}->{$task_id}->{state} ne 'complete' && 
                 $results->{$service_id}->{tasks}->{$task_id}->{state} ne $results->{$service_id}->{tasks}->{$task_id}->{desired_state}) {
                 $self->{services}->{service}->{ $service_id }->{problems}++;
                 $self->{global}->{problems}++;
