@@ -37,7 +37,7 @@ sub set_counters {
             name => 'services', type => COUNTER_TYPE_MULTIPLE, message_multiple => 'All services running well', skipped_code => { -11 => 1 },
             group => [ 
                 { name => 'service', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { -11 => 1 }},
-                { name => 'tasks', type => COUNTER_MULTIPLE_SUBINSTANCE, prefix_output => "service '%{service_name}' task '%{task_id}' ", skipped_code => { -11 => 1 } }
+                { name => 'tasks', type => COUNTER_MULTIPLE_SUBINSTANCE, prefix_output => "service '%{service_name}' task '%{task_id}' ", message_multiple => 'All tasks running well', skipped_code => { -11 => 1 } }
             ]
         }
     ];
