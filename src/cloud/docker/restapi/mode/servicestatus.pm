@@ -293,7 +293,7 @@ You can use the following variables: %{service_id}, %{service_name}, %{total}, %
 
 =item B<--critical-service-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{total} != %{replicas}').
+Define the conditions to match for the status to be CRITICAL (default: '%{running} != %{replicas}').
 You can use the following variables: %{service_id}, %{service_name}, %{total}, %{replicas}, %{problems}, 
 %{running}, %{shutdown}, %{failed}.
 
