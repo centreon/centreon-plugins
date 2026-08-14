@@ -88,6 +88,9 @@ dfsrevent
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
+dskAvail
+dskTotal
+dskUsed
 --dyn-mode
 Ekara
 -EncodedCommand
@@ -146,6 +149,7 @@ in-bcast
 in-crc
 in-fcserror
 in-mcast
+includeAllDisks
 -InputFormat
 interface-dsl-name
 InterrupibleSleep

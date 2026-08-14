@@ -153,10 +153,14 @@ sub check_options {
 
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{space_reservation}) && 
-        ($self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100)) {
-        $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
-        $self->{output}->option_exit();
+    if (defined($self->{option_results}->{space_reservation}) && $self->{option_results}->{space_reservation} ne '') {
+        if ($self->{option_results}->{space_reservation} eq 'auto') {
+            $self->{auto_space_reservation} = 1;
+        } elsif ($self->{option_results}->{space_reservation} !~ /^\d+(?:\.\d+)?$/ ||
+            $self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100) {
+            $self->{output}->add_option_msg(short_msg => "Space reservation argument must be 'auto' or between 0 and 100 percent.");
+            $self->{output}->option_exit();
+        }
     }
     
     $self->{statefile_cache}->check_options(%options);
@@ -164,11 +168,14 @@ sub check_options {
 
 my $mapping = {
     dskTotal32     => { oid => '.1.3.6.1.4.1.2021.9.1.6' }, # kB
+    dskAvail32     => { oid => '.1.3.6.1.4.1.2021.9.1.7' }, # kB
     dskUsed32      => { oid => '.1.3.6.1.4.1.2021.9.1.8' }, # kB
     dskPercent     => { oid => '.1.3.6.1.4.1.2021.9.1.9' },
     dskPercentNode => { oid => '.1.3.6.1.4.1.2021.9.1.10' },
     dskTotalLow    => { oid => '.1.3.6.1.4.1.2021.9.1.11' }, # kB
     dskTotalHigh   => { oid => '.1.3.6.1.4.1.2021.9.1.12' }, # kB
+    dskAvailLow    => { oid => '.1.3.6.1.4.1.2021.9.1.13' }, # kB
+    dskAvailHigh   => { oid => '.1.3.6.1.4.1.2021.9.1.14' }, # kB
     dskUsedLow     => { oid => '.1.3.6.1.4.1.2021.9.1.15' }, # kB
     dskUsedHigh    => { oid => '.1.3.6.1.4.1.2021.9.1.16' } # kB
 };
@@ -179,12 +186,20 @@ sub manage_selection {
     my $disks = $self->get_selection(snmp => $options{snmp});
 
     delete($mapping->{dskPercent}) if (!defined($self->{option_results}->{force_use_mib_percent}));
+    if (!defined($self->{auto_space_reservation})) {
+        delete($mapping->{dskAvail32});
+        delete($mapping->{dskAvailLow});
+        delete($mapping->{dskAvailHigh});
+    }
     if (!defined($self->{option_results}->{force_counters32})) {
         delete($mapping->{dskTotal32});
+        delete($mapping->{dskAvail32});
         delete($mapping->{dskUsed32});
     } else {
         delete($mapping->{dskTotalLow});
         delete($mapping->{dskTotalHigh});
+        delete($mapping->{dskAvailLow});
+        delete($mapping->{dskAvailHigh});
         delete($mapping->{dskUsedLow});
         delete($mapping->{dskUsedHigh});
     }
@@ -220,11 +235,25 @@ sub manage_selection {
         my $total_used = defined($result->{dskUsedHigh}) ? ((($result->{dskUsedHigh} << 32) + $result->{dskUsedLow}) * 1024) : $result->{dskUsed32} * 1024;
 
         my $reserved_value = 0;
-        if (defined($self->{option_results}->{space_reservation})) {
+        if (defined($self->{auto_space_reservation})) {
+            my $total_avail = defined($result->{dskAvailHigh}) ?
+                ((($result->{dskAvailHigh} << 32) + $result->{dskAvailLow}) * 1024) :
+                (defined($result->{dskAvail32}) ? $result->{dskAvail32} * 1024 : undef);
+            if (defined($total_avail)) {
+                # dskTotal - dskUsed - dskAvail is the space reserved for privileged users (f_bfree - f_bavail)
+                $reserved_value = $total_size - $total_used - $total_avail;
+                $reserved_value = 0 if ($reserved_value < 0);
+            } else {
+                $self->{output}->output_add(
+                    long_msg => sprintf("partition '%s': cannot get available space, space reservation ignored", $name_diskpath),
+                    debug => 1
+                );
+            }
+        } elsif (defined($self->{option_results}->{space_reservation})) {
             $reserved_value = $self->{option_results}->{space_reservation} * $total_size / 100;
         }
 
-        my $prct_used = $total_used * 100 / ($total_size - $reserved_value);
+        my $prct_used = ($total_size - $reserved_value) > 0 ? $total_used * 100 / ($total_size - $reserved_value) : 100;
         my $prct_free = 100 - $prct_used;
         my $free = $total_size - $total_used - $reserved_value;
         # limit to 100. Better output.
@@ -406,6 +435,9 @@ Display cache disk path data.
 
 Some filesystem has space reserved (like ext4 for root).
 The value is in percent of total (default: none) (results like 'df' command).
+Use 'auto' to compute the real reservation of each partition from the values
+returned by the agent (dskTotal - dskUsed - dskAvail), instead of applying the
+same fixed percentage to every partition.
 
 =item B<--force-use-mib-percent>
 
