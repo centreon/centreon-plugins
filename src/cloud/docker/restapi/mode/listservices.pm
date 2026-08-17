@@ -30,9 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments =>{});
     return $self;
 }
 
@@ -74,7 +72,6 @@ sub disco_show {
     foreach my $services_id (sort keys %{$self->{services}}) {             
         $self->{output}->add_disco_entry(name => $self->{services}->{$services_id}->{service}->{service_name},
             id => $services_id,
-            name => $self->{services}->{$services_id}->{service}->{service_name}
         );
     }
 }
