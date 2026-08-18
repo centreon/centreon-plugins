@@ -1,0 +1,164 @@
+{
+    "uuid": "74e97fcb-1baf-444b-8c6c-b7f33cf943ec",
+    "lastMigration": 33,
+    "name": "Cisco dnac",
+    "endpointPrefix": "",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "2466ba45-6b67-4984-9dec-eb719a6fe197",
+            "type": "http",
+            "documentation": "",
+            "method": "post",
+            "endpoint": "dna/system/api/v1/auth/token",
+            "responses": [
+                {
+                    "uuid": "54313da9-50a0-4c6f-a1e3-87fd7a9fc08d",
+                    "body": "{\r\n    \"Token\": \"string\"\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "e8e07d25-1fdd-467a-9a72-74d5de17e0af",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "dna/intent/api/v1/network-health",
+            "responses": [
+                {
+                    "uuid": "b2098a46-836c-4cea-b035-12d10c6e49c4",
+                    "body": "{\n  \"version\": \"1.0\",\n  \"response\": [\n    {\n      \"time\": \"2026-07-03T08:20:00.000+0000\",\n      \"healthScore\": 92,\n      \"totalCount\": 527,\n      \"goodCount\": 486,\n      \"noHealthCount\": 20,\n      \"fairCount\": 21,\n      \"badCount\": 0,\n      \"maintenanceModeCount\": 0,\n      \"entity\": null,\n      \"timeinMillis\": 1783066800000\n    }\n  ],\n  \"measuredBy\": \"global\",\n  \"latestMeasuredByEntity\": null,\n  \"latestHealthScore\": 92,\n  \"monitoredDevices\": 507,\n  \"monitoredHealthyDevices\": 486,\n  \"monitoredUnHealthyDevices\": 21,\n  \"noHealthDevices\": 20,\n  \"notApplicableDevices\": 0,\n  \"totalDevices\": 527,\n  \"monitoredPoorHealthDevices\": 0,\n  \"monitoredFairHealthDevices\": 21,\n  \"healthContributingDevices\": 507,\n  \"healthDistirubution\": [\n    {\n      \"category\": \"Centreon1\",\n      \"totalCount\": 43,\n      \"healthScore\": 100,\n      \"goodPercentage\": 100,\n      \"badPercentage\": 0,\n      \"fairPercentage\": 0,\n      \"noHealthPercentage\": 0,\n      \"goodCount\": 43,\n      \"badCount\": 0,\n      \"fairCount\": 0,\n      \"noHealthCount\": 0,\n      \"thirdPartyDeviceCount\": 0\n    },\n    {\n      \"category\": \"Centreon2\",\n      \"totalCount\": 5,\n      \"healthScore\": 80,\n      \"goodPercentage\": 80,\n      \"badPercentage\": 0,\n      \"fairPercentage\": 0,\n      \"noHealthPercentage\": 20,\n      \"goodCount\": 4,\n      \"badCount\": 0,\n      \"fairCount\": 0,\n      \"noHealthCount\": 1,\n      \"thirdPartyDeviceCount\": 0\n    },\n    {\n      \"category\": \"Centreon3\",\n      \"totalCount\": 2,\n      \"healthScore\": 100,\n      \"goodPercentage\": 100,\n      \"badPercentage\": 0,\n      \"fairPercentage\": 0,\n      \"noHealthPercentage\": 0,\n      \"goodCount\": 2,\n      \"badCount\": 0,\n      \"fairCount\": 0,\n      \"noHealthCount\": 0,\n      \"thirdPartyDeviceCount\": 0\n    },\n    {\n      \"category\": \"Centreon4\",\n      \"totalCount\": 477,\n      \"healthScore\": 92,\n      \"goodPercentage\": 91.61426,\n      \"badPercentage\": 0,\n      \"fairPercentage\": 4.402516,\n      \"noHealthPercentage\": 3.9832284,\n      \"goodCount\": 437,\n      \"badCount\": 0,\n      \"fairCount\": 21,\n      \"noHealthCount\": 19,\n      \"thirdPartyDeviceCount\": 0,\n      \"kpiMetrics\": [\n        {\n          \"key\": null,\n          \"value\": \"VALUE\"\n        }\n      ]\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "58eb99ca-43fa-4fd5-b9b8-aad0bd9a8074",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "dna/intent/api/v1/site-health",
+            "responses": [
+                {
+                    "uuid": "8bb7fb66-c8f4-4300-b285-67179465ac3a",
+                    "body": "\r\n{\r\n    \"response\": [\r\n        {\r\n            \"siteName\": \"Centreon\",\r\n            \"siteId\": \"1234\",\r\n            \"parentSiteId\": \"5678\",\r\n            \"parentSiteName\": \"CentreonParent\",\r\n            \"siteType\": \"siteType\",\r\n            \"latitude\": 0,\r\n            \"longitude\": 0,\r\n            \"healthyNetworkDevicePercentage\": 92,\r\n            \"healthyClientsPercentage\": 0,\r\n            \"clientHealthWired\": 0,\r\n            \"clientHealthWireless\": 0,\r\n            \"numberOfClients\": 0,\r\n            \"numberOfNetworkDevice\": 527,\r\n            \"networkHealthAverage\": 0,\r\n            \"networkHealthAccess\": 0,\r\n            \"networkHealthCore\": 0,\r\n            \"networkHealthDistribution\": 0,\r\n            \"networkHealthRouter\": 0,\r\n            \"networkHealthWireless\": 0,\r\n            \"networkHealthAP\": 0,\r\n            \"networkHealthWLC\": 0,\r\n            \"networkHealthSwitch\": 0,\r\n            \"networkHealthOthers\": 0,\r\n            \"numberOfWiredClients\": 0,\r\n            \"numberOfWirelessClients\": 0,\r\n            \"totalNumberOfConnectedWiredClients\": 0,\r\n            \"totalNumberOfActiveWirelessClients\": 0,\r\n            \"wiredGoodClients\": 0,\r\n            \"wirelessGoodClients\": 0,\r\n            \"overallGoodDevices\": 0,\r\n            \"accessGoodCount\": 0,\r\n            \"accessTotalCount\": 0,\r\n            \"coreGoodCount\": 0,\r\n            \"coreTotalCount\": 0,\r\n            \"distributionGoodCount\": 0,\r\n            \"distributionTotalCount\": 0,\r\n            \"routerGoodCount\": 0,\r\n            \"routerTotalCount\": 0,\r\n            \"wirelessDeviceGoodCount\": 0,\r\n            \"wirelessDeviceTotalCount\": 0,\r\n            \"apDeviceGoodCount\": 0,\r\n            \"apDeviceTotalCount\": 0,\r\n            \"wlcDeviceGoodCount\": 0,\r\n            \"wlcDeviceTotalCount\": 0,\r\n            \"switchDeviceGoodCount\": 0,\r\n            \"switchDeviceTotalCount\": 0,\r\n            \"applicationHealth\": 0,\r\n            \"applicationHealthInfo\": [\r\n                {\r\n                    \"trafficClass\": \"string\",\r\n                    \"bytesCount\": 0,\r\n                    \"healthScore\": 0\r\n                }\r\n            ],\r\n            \"applicationGoodCount\": 0,\r\n            \"applicationTotalCount\": 0,\r\n            \"applicationBytesTotalCount\": 0,\r\n            \"dnacInfo\": {\r\n                \"uuid\": \"string\",\r\n                \"ip\": \"string\",\r\n                \"status\": \"string\"\r\n            },\r\n            \"usage\": 0,\r\n            \"applicationHealthStats\": {\r\n                \"appTotalCount\": 0,\r\n                \"businessRelevantAppCount\": {\r\n                    \"poor\": 0,\r\n                    \"fair\": 0,\r\n                    \"good\": 0\r\n                },\r\n                \"businessIrrelevantAppCount\": {\r\n                    \"poor\": 0,\r\n                    \"fair\": 0,\r\n                    \"good\": 0\r\n                },\r\n                \"defaultHealthAppCount\": {\r\n                    \"poor\": 0,\r\n                    \"fair\": 0,\r\n                    \"good\": 0\r\n                }\r\n            }\r\n        }\r\n    ]\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "2466ba45-6b67-4984-9dec-eb719a6fe197"
+        },
+        {
+            "type": "route",
+            "uuid": "e8e07d25-1fdd-467a-9a72-74d5de17e0af"
+        },
+        {
+            "type": "route",
+            "uuid": "58eb99ca-43fa-4fd5-b9b8-aad0bd9a8074"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+        },
+        {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+        },
+        {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
+}

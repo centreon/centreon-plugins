@@ -78,7 +78,7 @@ Try {
 
             $item = @{}
             $item.name = $_.Name
-            $item.type = $_.JobType.value
+            $item.type = $_.JobType.value__
             $item.isRunning = $_.isRunning
             $item.scheduled = $_.IsScheduleEnabled
             $item.isContinuous = 0
@@ -90,7 +90,7 @@ Try {
             $item.sessions = New-Object System.Collections.Generic.List[Hashtable];
             [Veeam.Backup.Core.CBackupSession]::GetByJob($guid) | Sort-Object CreationTimeUTC -Descending | Select-Object -First 2 | ForEach-Object {
                 $session = @{}
-                $session.result = $_.Result.value
+                $session.result = $_.Result.value__
                 $session.creationTimeUTC = (get-date -date $_.CreationTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
                 $session.endTimeUTC = (get-date -date $_.EndTimeUTC.ToUniversalTime() -Uformat ' . "'%s'" . ')
                 $item.sessions.Add($session)

@@ -374,7 +374,8 @@ impl<'input> Expr<'input> {
     pub fn validate_macros(&self, collect: &Vec<SnmpResult>) -> Result<(), String> {
         match self {
             Expr::Id(key) => {
-                let k = str::from_utf8(key).unwrap();
+                let k = str::from_utf8(key)
+                    .map_err(|_| return "Error reading a macro : invalid utf8 string")?;
                 for result in collect {
                     if result.items.contains_key(k) {
                         return Ok(());
@@ -403,7 +404,8 @@ impl<'input> Expr<'input> {
         match self {
             Expr::Number(n) => Ok(ExprResult::Number(*n)),
             Expr::Id(key) => {
-                let k = str::from_utf8(key).unwrap();
+                let k = str::from_utf8(key)
+                    .map_err(|_| return "Error while eval() an expression : invalid utf8 string")?;
                 for result in collect {
                     match result.items.get(k) {
                         Some(item) => match item {

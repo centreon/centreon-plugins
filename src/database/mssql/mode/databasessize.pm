@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use database::mssql::mode::resources::types qw($database_state);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_space_usage_perfdata {
     my ($self, %options) = @_;
@@ -146,10 +147,10 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'databases', type => 3, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ', message_multiple => 'All databases are ok',
+        { name => 'databases', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ', message_multiple => 'All databases are ok',
             group => [
-                { name => 'datafiles', type => 0, cb_prefix_output => 'prefix_datafiles_output', skipped_code => { -10 => 1 } },
-                { name => 'logfiles', type => 0, cb_prefix_output => 'prefix_logfiles_output', skipped_code => { -10 => 1 } }
+                { name => 'datafiles', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_datafiles_output', skipped_code => { NO_VALUE => 1 } },
+                { name => 'logfiles', type => COUNTER_MULTIPLE_INSTANCE, cb_prefix_output => 'prefix_logfiles_output', skipped_code => { NO_VALUE => 1 } }
             ]
         }
     ];
@@ -348,6 +349,9 @@ sub manage_selection {
         }
     }
 
+    if (scalar(keys %{$self->{databases}}) <= 0 ) {
+        $self->{output}->option_exit(short_msg => "No database found, check filter parameter.");
+    }
     foreach my $dbname (keys %{$self->{databases}}) {
         foreach my $type (('data', 'log')) {
             my $options = [$type . 'files_maxsize'];
@@ -399,11 +403,11 @@ Overload all log files max size (in MB).
 
 =item B<--datafiles-maxsize-unlimited>
 
-Overload only unlimited autogrowth data files max size (in MB).
+Overload only unlimited auto growth data files max size (in MB).
 
 =item B<--logfiles-maxsize-unlimited>
 
-Overload only unlimited autogrowth log files max size (in MB).
+Overload only unlimited auto growth log files max size (in MB).
 
 =item B<--check-underlying-disk>
 
@@ -411,13 +415,55 @@ Check and consider underlying disk space for data and log files.
 
 =item B<--ignore-unlimited>
 
-Thresholds not applied on unlimited autogrowth data and log files.
+Thresholds not applied on unlimited auto growth data and log files.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-datafiles-space-usage>
 
 Thresholds.
-Can be: 'datafiles-space-usage', 'datafiles-space-usage-free', 'datafiles-space-usage-prct'
-'logfiles-space-usage', 'logfiles-space-usage-free', 'logfiles-space-usage-prct'.
+
+=item B<--critical-datafiles-space-usage>
+
+Thresholds.
+
+=item B<--warning-datafiles-space-usage-free>
+
+Thresholds.
+
+=item B<--critical-datafiles-space-usage-free>
+
+Thresholds.
+
+=item B<--warning-datafiles-space-usage-prct>
+
+Thresholds.
+
+=item B<--critical-datafiles-space-usage-prct>
+
+Thresholds.
+
+=item B<--warning-logfiles-space-usage>
+
+Thresholds.
+
+=item B<--critical-logfiles-space-usage>
+
+Thresholds.
+
+=item B<--warning-logfiles-space-usage-free>
+
+Thresholds.
+
+=item B<--critical-logfiles-space-usage-free>
+
+Thresholds.
+
+=item B<--warning-logfiles-space-usage-prct>
+
+Thresholds.
+
+=item B<--critical-logfiles-space-usage-prct>
+
+Thresholds.
 
 =back
 

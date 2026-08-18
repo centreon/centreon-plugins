@@ -71,6 +71,7 @@ CXF
 Cyberoam
 DaemonSet
 Datacore
+datafiles
 datasource
 datastore
 Datastore
@@ -87,6 +88,7 @@ dfsrevent
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
+DSM
 --dyn-mode
 Ekara
 -EncodedCommand
@@ -237,6 +239,7 @@ nagios
 Nagios
 NagVis
 --nagvis-perfdata
+Netasq
 Netconf
 Netscaler
 net-snmp
@@ -266,6 +269,7 @@ okta
 OLT
 oneaccess-sys-mib
 OneAPI
+OneView
 Opengear
 OpenMetrics
 OpenShift
@@ -394,6 +398,7 @@ vCenter
 VCENTER
 vCPU
 vCPUs
+vCSA
 VCSA
 vdom
 vdomain

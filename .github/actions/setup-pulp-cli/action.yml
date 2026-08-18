@@ -9,6 +9,10 @@ inputs:
     description: "OIDC audience, must match the pulp server GITHUB_OIDC.audience"
     required: false
     default: "https://pulp.dev.centreon.io"
+  domain:
+    description: "Pulp Domain to operate in (DOMAIN_ENABLED). Pre-Domains repositories live in \"default\"."
+    required: false
+    default: "default"
 
 runs:
   using: "composite"
@@ -63,20 +67,29 @@ runs:
           exit 1
         fi
 
-        # keep the token out of any log and expose it to the next steps
+        # keep the token out of any log and expose it to the next steps.
+        # the issuance time and audience let the api helpers refresh the token
+        # mid-delivery: github oidc tokens expire ~5 minutes after issuance,
+        # which is shorter than a large delivery.
         echo "::add-mask::$PULP_TOKEN"
-        echo "PULP_TOKEN=$PULP_TOKEN" >> "$GITHUB_ENV"
+        {
+          echo "PULP_TOKEN=$PULP_TOKEN"
+          echo "PULP_TOKEN_ISSUED_AT=$(date +%s)"
+          echo "PULP_OIDC_AUDIENCE=$AUDIENCE"
+        } >> "$GITHUB_ENV"
 
     - name: Configure pulp-cli
       shell: bash
       env:
         PULP_URL: ${{ inputs.pulp_url }}
+        DOMAIN: ${{ inputs.domain }}
       run: |
         set -euo pipefail
 
         # fall back to the default when the caller passes an empty value (unset
         # org variable forwarded as "" would otherwise override the default).
         PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
+        DOMAIN="${DOMAIN:-default}"
 
         # keep the pulp-cli config (which stores the OIDC token) under the per-job
         # RUNNER_TEMP rather than the runner's persistent ~/.config, and share the
@@ -86,16 +99,14 @@ runs:
         mkdir -p "$XDG_CONFIG_HOME"
         echo "XDG_CONFIG_HOME=$XDG_CONFIG_HOME" >> "$GITHUB_ENV"
 
-        # the GitHub OIDC plugin authenticates requests carrying this header,
-        # there is no username/password, the token grants are derived from the
-        # token claims by the pulp server rules
+        # WorkloadIdentityAuthentication reads a Bearer token, no username/password
         # pulp-cli splits --header on the first colon and keeps the value
-        # verbatim, so no space after the colon (it would be rejected as
-        # leading whitespace); the sent header is still "Authorization: Github …"
+        # verbatim, so no space after the colon (rejected as leading whitespace)
         pulp config create --overwrite \
           --base-url "$PULP_URL" \
           --api-root "/" \
-          --header "Authorization:Github $PULP_TOKEN" \
+          --domain "$DOMAIN" \
+          --header "Authorization:Bearer $PULP_TOKEN" \
           --timeout 0
 
         # fail fast on connectivity issues, scripts cannot distinguish

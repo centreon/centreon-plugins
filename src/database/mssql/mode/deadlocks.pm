@@ -108,8 +108,7 @@ sub manage_selection {
         unless $self->{by_instance} && keys %{$self->{by_instance}};
 
     $self->{cache_name} = 'mssql_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
-        sha256_hex($self->{option_results}->{include_instance}) . '_' .
-        sha256_hex($self->{option_results}->{exclude_instance});
+        sha256_hex( 'in:' . $self->{option_results}->{include_instance} . '-ex:' . $self->{option_results}->{exclude_instance} );
 }
 
 1;

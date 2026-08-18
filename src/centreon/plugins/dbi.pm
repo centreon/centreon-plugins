@@ -304,10 +304,25 @@ sub fetchrow_hashref {
     return $self->{statement_handle}->fetchrow_hashref();
 }
 
+=head2 $self->query(\%options)
+
+Constructor of the vault object.
+
+%options must provide:
+
+- C<query>: An SQL query to execute on the already connected database (ex: SELECT * FROM table WHERE col like ?)
+
+%options might provide:
+
+- C<continue_error>: either 1 or 0. if 1 and the query preparation fail, plugin exit. if 0, method return 1 if query fail.
+
+- C<param>: array of parameter to use as bind_param. the number of element in the array should match the number of bind made in the query (number of '?')
+
+=cut
 sub query {
     my ($self, %options) = @_;
     my $continue_error   = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
-
+    my $param = $options{param};
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
         return 1 if ($continue_error == 1);
@@ -316,6 +331,12 @@ sub query {
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
+    if ($param and ref($param) eq 'ARRAY' && scalar(@$param) > 0){
+        for (my $i = 1; $i <= @$param; $i++) {
+        $self->{statement_handle}->bind_param($i, @$param[$i-1]);
+        }
+
+    }
     my $rv;
     if (defined($self->{exec_timeout})) {
         my $mask   = POSIX::SigSet->new(SIGALRM);
