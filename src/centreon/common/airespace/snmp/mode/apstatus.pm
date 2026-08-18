@@ -334,10 +334,10 @@ sub get_selection {
 
     my $results = {};
     foreach (keys %$aps) {
-        next if is_excluded($aps->{$_}->[0],
+        next if is_excluded(defined($aps->{$_}->[0]) ? $aps->{$_}->[0] : '',
             $self->{option_results}->{include_name},
             $self->{option_results}->{exclude_name});
-        next if is_excluded($aps->{$_}->[1],
+        next if is_excluded(defined($aps->{$_}->[1]) ? $aps->{$_}->[1] : '',
             $self->{option_results}->{include_group},
             $self->{option_results}->{exclude_group});
         $results->{$_} = $aps->{$_};
