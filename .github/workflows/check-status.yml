@@ -16,90 +16,192 @@ jobs:
   check-status:
     runs-on: ubuntu-24.04
     steps:
-      - name: Check workflow statuses and display token usage
+      - name: Display API rate limit usage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "current rest api rate usage:"
-          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/rate_limit | jq .rate
-          echo ""
-          echo ""
-          echo "current graphql rate usage:"
-          curl -s -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/rate_limit | jq .resources.graphql
-          echo ""
-          echo ""
+          RATE_LIMIT=$(curl -sf -H "Accept: application/vnd.github+json" -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/rate_limit) || {
+            echo "::warning::Cannot fetch API rate limit usage"
+            exit 0
+          }
 
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+          echo "$RATE_LIMIT" | jq -r '
+            { rest: .rate, graphql: .resources.graphql } | to_entries[] |
+            "\(.key): \(.value.used)/\(.value.limit) used, \(.value.remaining) remaining, resets at \(.value.reset | todate)"
+          '
+
+          echo "$RATE_LIMIT" | jq -r '
+            { rest: .rate, graphql: .resources.graphql } | to_entries[] |
+            select(.value.remaining < .value.limit / 10) |
+            "::warning title=GitHub API rate limit::\(.key) API rate limit almost reached: \(.value.remaining)/\(.value.limit) requests remaining until \(.value.reset | todate)"
+          '
+
+      - name: Check workflow run statuses
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         with:
           script: |
-            await exec.exec("sleep 20s");
+            // let workflow runs triggered by the same event register before the first evaluation
+            await new Promise((resolve) => setTimeout(resolve, 20000));
 
-            for (let i = 0; i < 240; i++) {
-              const failure = [];
-              const cancelled = [];
-              const pending = [];
+            // only runs triggered by these events gate the merge (manual workflow_dispatch or push runs on the same commit must not)
+            const allowedEvents = ['pull_request'];
+            // workflows which are required status checks on their own
+            const excludedWorkflows = [];
+            const failureConclusions = ['failure', 'cancelled', 'timed_out', 'action_required', 'startup_failure', 'stale'];
+            const maxPolls = 240;
+            // matrices can produce hundreds of failed jobs, keep the summary readable
+            const maxDisplayedFailedJobs = 20;
+            const startedAt = Date.now();
 
-              const result = await github.rest.checks.listSuitesForRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: "${{ github.head_ref }}"
-              });
-              result.data.check_suites.forEach(({ app: { slug }, conclusion, id}) => {
-                if (slug === 'github-actions') {
-                  if (conclusion === 'failure' || conclusion === 'cancelled') {
-                    failure.push(id);
-                  } else if (conclusion === null) {
-                    pending.push(id);
-                  }
-                  console.log(`check suite ${id} => ${conclusion === null ? 'pending' : conclusion}`);
+            const runState = (run) => run.status === 'completed' ? run.conclusion : run.status;
+
+            const runIcon = (run) => {
+              if (run.status !== 'completed') return '⏳';
+              if (run.conclusion === 'success') return '✅';
+              if (['skipped', 'neutral'].includes(run.conclusion)) return '⏭️';
+              return '❌';
+            };
+
+            const runDuration = (run) => {
+              if (run.status !== 'completed') return '—';
+              const seconds = Math.max(0, Math.round((new Date(run.updated_at) - new Date(run.run_started_at)) / 1000));
+              return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, '0')}s`;
+            };
+
+            const writeSummary = async (title, latestRuns, failedJobs, polls) => {
+              core.summary.addHeading(title, 3);
+              core.summary.addTable([
+                [
+                  { data: 'Workflow', header: true },
+                  { data: 'Conclusion', header: true },
+                  { data: 'Duration', header: true },
+                  { data: 'Run', header: true }
+                ],
+                ...latestRuns.map((run) => [
+                  run.name,
+                  `${runIcon(run)} ${runState(run)}`,
+                  runDuration(run),
+                  `<a href="${run.html_url}">#${run.run_number}</a>`
+                ])
+              ]);
+              if (failedJobs.length > 0) {
+                core.summary.addHeading(`${failedJobs.length} job(s) failed`, 4);
+                const displayedFailedJobs = failedJobs
+                  .slice(0, maxDisplayedFailedJobs)
+                  .map(({ name, conclusion, url }) => `<a href="${url}">${name} (${conclusion})</a>`);
+                if (failedJobs.length > maxDisplayedFailedJobs) {
+                  displayedFailedJobs.push(`… and ${failedJobs.length - maxDisplayedFailedJobs} more, see the workflow runs above`);
                 }
-              });
+                core.summary.addList(displayedFailedJobs);
+              }
+              const elapsed = Math.round((Date.now() - startedAt) / 1000);
+              core.summary.addRaw(`Evaluated ${latestRuns.length} workflow run(s) in ${polls} poll(s) over ${Math.floor(elapsed / 60)}m ${String(elapsed % 60).padStart(2, '0')}s.`, true);
+              core.summary.addRaw(`Allowed events: ${allowedEvents.join(', ')} — excluded workflows: ${excludedWorkflows.join(', ') || 'none'}.`, true);
+              await core.summary.write();
+            };
 
-              if (pending.length === 0) {
-                core.setFailed("Cannot get pull request check status");
+            const listFailedJobs = async (run) => {
+              const runLevelFailure = { name: run.name, conclusion: run.conclusion, url: run.html_url };
+              try {
+                const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                  filter: 'latest',
+                  per_page: 100
+                });
+
+                const failedJobs = jobs
+                  .filter(({ conclusion }) => failureConclusions.includes(conclusion))
+                  .map(({ conclusion, name, html_url }) => ({ name: `${run.name} / ${name}`, conclusion, url: html_url }));
+                // a run can fail without any failed job (startup_failure...)
+                return failedJobs.length > 0 ? failedJobs : [runLevelFailure];
+              } catch (error) {
+                core.warning(`Cannot list jobs of workflow run ${run.id}: ${error.message}`);
+                return [runLevelFailure];
+              }
+            };
+
+            let latestRuns = [];
+
+            for (let i = 0; i < maxPolls; i++) {
+              let runs = [];
+              try {
+                runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  head_sha: process.env.PR_HEAD_SHA,
+                  per_page: 100
+                });
+              } catch (error) {
+                core.warning(`Cannot list workflow runs, retrying: ${error.message}`);
+                await new Promise((resolve) => setTimeout(resolve, 30000));
+                continue;
+              }
+
+              // the listing is eventually consistent, do not trust it until it contains the current run
+              const currentRun = runs.find((run) => run.id === context.runId);
+              if (!currentRun) {
+                core.warning("Current workflow run is not listed yet, retrying");
+                await new Promise((resolve) => setTimeout(resolve, 30000));
+                continue;
+              }
+
+              // keep only the latest run of each workflow to ignore runs superseded by a re-trigger (labeled, unlabeled...)
+              const latestRunPerWorkflow = new Map();
+              runs
+                .filter((run) => allowedEvents.includes(run.event))
+                // exclude the whole check-status workflow, not only the current run: a sibling run on the
+                // same commit (PR reopened without new commit...) must not gate the merge either
+                .filter((run) => run.workflow_id !== currentRun.workflow_id)
+                .filter((run) => !excludedWorkflows.includes(run.name))
+                .forEach((run) => {
+                  const latestRun = latestRunPerWorkflow.get(run.workflow_id);
+                  if (!latestRun || run.run_number > latestRun.run_number) {
+                    latestRunPerWorkflow.set(run.workflow_id, run);
+                  }
+                });
+
+              latestRuns = [...latestRunPerWorkflow.values()].sort((a, b) => a.name.localeCompare(b.name));
+              const pendingRuns = latestRuns.filter((run) => run.status !== 'completed');
+              const failedRuns = latestRuns.filter((run) => run.status === 'completed' && failureConclusions.includes(run.conclusion));
+
+              core.startGroup(`Poll #${i + 1} — ${pendingRuns.length} in progress, ${latestRuns.length - pendingRuns.length} completed, ${failedRuns.length} failed`);
+              latestRuns.forEach((run) => {
+                console.log(`${runIcon(run)} ${run.name} => ${runState(run)}`);
+              });
+              core.endGroup();
+
+              if (failedRuns.length > 0) {
+                const failedJobs = [];
+                for (const run of failedRuns) {
+                  const failedJobsOfRun = await listFailedJobs(run);
+                  // one annotation per failed workflow run, GitHub only displays 10 annotations per step
+                  core.error(`${run.name} (${run.conclusion}): ${failedJobsOfRun.length} failed job(s): ${run.html_url}`);
+                  failedJobs.push(...failedJobsOfRun);
+                }
+
+                await writeSummary(`❌ ${failedRuns.length} workflow run(s) failed`, latestRuns, failedJobs, i + 1);
+                core.setFailed(`${failedRuns.length} workflow run(s) failed`);
                 return;
               }
 
-              if (failure.length > 0) {
-                let failureMessage = '';
-                const failedCheckRuns = [];
-                for await (const suite_id of failure) {
-                  const resultCheckRuns = await github.rest.checks.listForSuite({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    check_suite_id: suite_id
-                  });
-
-                  resultCheckRuns.data.check_runs.forEach(({ conclusion, name, html_url }) => {
-                    if (conclusion === 'failure' || conclusion === 'cancelled') {
-                      failedCheckRuns.push(`<a href="${html_url}">${name} (${conclusion})</a>`);
-                    }
-                  });
-                }
-
-                core.summary.addRaw(`${failedCheckRuns.length} job(s) failed:`, true)
-                core.summary.addList(failedCheckRuns);
-                core.summary.write()
-
-                if (failedCheckRuns.length > 0) {
-                  core.setFailed(`${failedCheckRuns.length} job(s) failed`);
-                  return;
-                }
-              }
-
-              if (pending.length === 1) {
+              if (pendingRuns.length === 0) {
+                await writeSummary('✅ All workflow runs completed successfully', latestRuns, [], i + 1);
                 core.info("All workflows are ok");
                 return;
               }
 
-              core.info(`${pending.length} workflows in progress`);
-
-              await exec.exec("sleep 30s");
+              await new Promise((resolve) => setTimeout(resolve, 30000));
             }
 
+            latestRuns.filter((run) => run.status !== 'completed').forEach((run) => {
+              core.error(`Still in progress after timeout: ${run.name}: ${run.html_url}`);
+            });
+            await writeSummary('❌ Timeout — some workflow runs are still in progress', latestRuns, [], maxPolls);
             core.setFailed("Timeout: some jobs are still in progress");
 
   get-environment:
@@ -123,8 +225,9 @@ jobs:
           LINKED_DEV_BRANCH: develop
         with:
           script: |
+            const linkedDevBranch = process.env.LINKED_DEV_BRANCH;
             let linkedPrs = [];
-            let errorMessage = `This pull request is not a cherry-pick from ${process.env.LINKED_DEV_BRANCH} or has no reference to a pull request which has been merged on ${process.env.LINKED_DEV_BRANCH}\n`;
+            let errorMessage = `This pull request is not a cherry-pick from ${linkedDevBranch} or has no reference to a pull request which has been merged on ${linkedDevBranch}\n`;
 
             try {
               const pull = await github.rest.pulls.get({
@@ -135,7 +238,7 @@ jobs:
 
               const { title, body } = pull.data;
 
-              [title, body].forEach((text) => {
+              [title, body ?? ''].forEach((text) => {
                 const linkedPrMatches = text.matchAll(/(?:#|\/pull\/)(\d+)/g);
                 if (linkedPrMatches) {
                   [...linkedPrMatches].forEach((match) => {
@@ -159,22 +262,22 @@ jobs:
                   pull_number: prNumber
                 });
 
-                if (pull.data.base.ref === process.env.LINKED_DEV_BRANCH) {
+                if (pull.data.base.ref === linkedDevBranch) {
                   if (pull.data.state === 'closed' && pull.data.merged === true) {
-                    console.log(`This pull request is a cherry-pick from pull request #${prNumber} on ${process.env.LINKED_DEV_BRANCH}`);
+                    console.log(`This pull request is a cherry-pick from pull request #${prNumber} on ${linkedDevBranch}`);
                     return;
                   } else {
-                    errorMessage += `This pull request seems to be a cherry-pick from pull request #${prNumber} on ${process.env.LINKED_DEV_BRANCH} but it is not merged yet\n`;
+                    errorMessage += `This pull request seems to be a cherry-pick from pull request #${prNumber} on ${linkedDevBranch} but it is not merged yet\n`;
                   }
                 } else {
-                  errorMessage += `Pull request #${prNumber} is linked to ${pull.data.base.ref} instead of ${process.env.LINKED_DEV_BRANCH}\n`;
+                  errorMessage += `Pull request #${prNumber} is linked to ${pull.data.base.ref} instead of ${linkedDevBranch}\n`;
                 }
               } catch (e) {
                 errorMessage += `Failed to get information on pull request #${prNumber}: ${e}\n`;
               }
             }
 
-            errorMessage += `\nIf you are sure this PR does not need to be a cherry-pick from ${process.env.LINKED_DEV_BRANCH} or must be merged urgently, `;
-            errorMessage += `open the pull request on ${process.env.LINKED_DEV_BRANCH} and add label "skip-cherry-pick" to the PR and re-run all jobs of workflow check-status\n`;
+            errorMessage += `\nIf you are sure this PR does not need to be a cherry-pick from ${linkedDevBranch} or must be merged urgently, `;
+            errorMessage += `open the pull request on ${linkedDevBranch} and add label "skip-cherry-pick" to the PR and re-run all jobs of workflow check-status\n`;
 
             throw new Error(errorMessage);
