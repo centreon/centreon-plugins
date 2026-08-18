@@ -15,9 +15,16 @@ on:
       - ".github/actions/setup-strawberry-perl/action.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
       - ".github/scripts/windows/**"
-      - "src/os/windows/local/**"
+      - "src/apps/backup/backupexec/local/**"
+      - "src/apps/backup/veeam/local/**"
+      - "src/apps/microsoft/exchange/local/**"
+      - "src/apps/microsoft/hyperv/2012/local/**"
+      - "src/apps/microsoft/sccm/local/**"
+      - "src/apps/microsoft/wsus/local/**"
+      - "src/centreon/plugins/misc.pm"
       - "src/centreon/common/powershell/**"
-      - ".version.plugins"
+      - "src/os/windows/local/**"
+      - "src/storage/dell/compellent/local/**"
   # 'labeled' is included so that adding the 'build-nsclient' label to an
   # existing PR triggers a run (see the build-installer gate) without a new commit.
   pull_request:
@@ -30,9 +37,16 @@ on:
       - ".github/actions/setup-strawberry-perl/action.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
       - ".github/scripts/windows/**"
-      - "src/os/windows/local/**"
+      - "src/apps/backup/backupexec/local/**"
+      - "src/apps/backup/veeam/local/**"
+      - "src/apps/microsoft/exchange/local/**"
+      - "src/apps/microsoft/hyperv/2012/local/**"
+      - "src/apps/microsoft/sccm/local/**"
+      - "src/apps/microsoft/wsus/local/**"
+      - "src/centreon/plugins/misc.pm"
       - "src/centreon/common/powershell/**"
-      - ".version.plugins"
+      - "src/os/windows/local/**"
+      - "src/storage/dell/compellent/local/**"
 
 jobs:
   dependency-scan:
@@ -263,7 +277,15 @@ jobs:
           previous_tag="$(git tag -l 'windows-*' --sort=-creatordate | head -n1 || true)"
 
           .github/scripts/windows/generate-release-notes.sh "${previous_tag}" \
+            src/apps/backup/backupexec/local \
+            src/apps/backup/veeam/local \
+            src/apps/microsoft/exchange/local \
+            src/apps/microsoft/hyperv/2012/local \
+            src/apps/microsoft/sccm/local \
+            src/apps/microsoft/wsus/local \
+            src/centreon/plugins/misc.pm \
             src/os/windows/local \
+            src/storage/dell/compellent/local \
             src/centreon/common/powershell > release-notes.md
 
           if gh release view "${tag}" >/dev/null 2>&1; then
