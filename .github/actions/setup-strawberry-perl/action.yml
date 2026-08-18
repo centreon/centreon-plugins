@@ -1,23 +1,10 @@
 name: Setup Strawberry Perl
 description: Restore or build the Windows packaging environment (pre-installed Strawberry Perl + CPAN modules + libcurl) used to pack centreon_plugins.exe
 
-inputs:
-  lookup-only:
-    description: Only check if cache exists without restoring (set to true for pre-build caching jobs)
-    default: 'false'
-
-outputs:
-  cache-hit:
-    description: Whether the Strawberry Perl cache was found
-    value: ${{ steps.cache-perl.outputs.cache-hit }}
-  cache-key:
-    description: Cache key used for the environment (content-hashed; reuse it to save the cache)
-    value: ${{ steps.cache-perl.outputs.cache-primary-key }}
-
 runs:
   using: composite
   steps:
-    - name: Check/restore Perl environment cache
+    - name: Restore Perl environment cache
       id: cache-perl
       uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
       with:
@@ -26,7 +13,6 @@ runs:
         # definition changes (this action or the libcurl closure script), so it
         # is not tied to manual version bumps.
         key: centreon-plugins-windows-env-${{ hashFiles('.github/actions/setup-strawberry-perl/action.yml', '.github/scripts/windows/copy-curl-closure.sh') }}
-        lookup-only: ${{ inputs.lookup-only }}
 
     # Strawberry Perl is pre-installed on GitHub windows runners under C:\Strawberry;
     # we build on top of it rather than installing our own copy.
@@ -118,6 +104,16 @@ runs:
         set PERL_MM_OPT=DEFINE=-DCURL_DISABLE_TYPECHECK OPTIMIZE=-Wno-deprecated-declarations
         perl C:\Strawberry\perl\bin\cpanm --notest Net::Curl
         if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+    # Save the environment we just built, so the next run restores it instead of
+    # reinstalling everything. Whoever builds the environment caches it -- no
+    # separate pre-build workflow is needed.
+    - name: Save Perl environment cache
+      if: steps.cache-perl.outputs.cache-hit != 'true'
+      uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      with:
+        path: C:\Strawberry
+        key: ${{ steps.cache-perl.outputs.cache-primary-key }}
 
     - name: Show cpanm build logs on failure
       if: ${{ failure() }}
