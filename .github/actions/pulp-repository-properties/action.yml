@@ -69,6 +69,12 @@ outputs:
   stable_base_path_prefix:
     description: "Base path prefix of stable rpm distributions"
     value: ${{ steps.properties.outputs.stable_base_path_prefix }}
+  testing_repository_name:
+    description: "Repository name of the testing deb repository, used as promotion source"
+    value: ${{ steps.properties.outputs.testing_repository_name }}
+  testing_base_path:
+    description: "Base path of the testing deb distribution, used to download promotion source content"
+    value: ${{ steps.properties.outputs.testing_base_path }}
   testing_suite:
     description: "Apt suite of testing deb packages"
     value: ${{ steps.properties.outputs.testing_suite }}
@@ -76,7 +82,7 @@ outputs:
     description: "Apt suite of stable deb packages"
     value: ${{ steps.properties.outputs.stable_suite }}
   stable_repository_name:
-    description: "Repository holding the stable packages (dedicated for deb plugins, the delivery repository otherwise)"
+    description: "Repository holding the stable deb packages (one deb repository per stability)"
     value: ${{ steps.properties.outputs.stable_repository_name }}
   stable_base_path:
     description: "Base path serving the stable packages"

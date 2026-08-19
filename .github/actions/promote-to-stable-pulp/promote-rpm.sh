@@ -9,8 +9,8 @@ source "$(dirname "$0")/../../scripts/pulp/api.sh"
 # an unset org variable is forwarded as an empty string, overriding the default
 PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
 PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
-# testing and stable repositories live in different Pulp Domains; PULP_DOMAIN
-# covers the read phase, switch_pulp_domain moves to PULP_STABLE_DOMAIN for the write phase
+# stable shares its Domain with testing since the domain merge (PULP_STABLE_DOMAIN
+# now equals PULP_DOMAIN); the read/write phase switch is kept as a no-op
 PULP_DOMAIN="${PULP_DOMAIN:-default}"
 PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
 # switch_pulp_domain overwrites PULP_DOMAIN itself once the write phase

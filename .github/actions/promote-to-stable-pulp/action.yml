@@ -90,7 +90,7 @@ runs:
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
-        # testing and stable tiers live in different Pulp Domains; promote-rpm.sh switches between them
+        # stable shares the domain since the domain merge; kept distinct for the scripts that address the stable tier
         PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
         PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
       run: ${{ github.action_path }}/promote-rpm.sh
@@ -102,8 +102,10 @@ runs:
       env:
         MODULE_NAME: ${{ inputs.module_name }}
         DISTRIB: ${{ inputs.distrib }}
-        REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.repository_name }}
-        BASE_PATH: ${{ steps.pulp-properties.outputs.base_path }}
+        # the promotion source is the testing repository (one deb repository per
+        # stability), not the repository matching the requested stability
+        REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.testing_repository_name }}
+        BASE_PATH: ${{ steps.pulp-properties.outputs.testing_base_path }}
         TESTING_POOL_PATH: ${{ steps.pulp-properties.outputs.testing_pool_path }}
         TESTING_SUITE: ${{ steps.pulp-properties.outputs.testing_suite }}
         STABLE_SUITE: ${{ steps.pulp-properties.outputs.stable_suite }}
@@ -114,7 +116,7 @@ runs:
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_TOKEN: ${{ env.PULP_TOKEN }}
         PULP_CONTENT_URL: ${{ inputs.pulp_content_url }}
-        # testing and stable tiers live in different Pulp Domains; promote-deb.sh switches between them
+        # stable shares the domain since the domain merge; kept distinct for the scripts that address the stable tier
         PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
         PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
       run: ${{ github.action_path }}/promote-deb.sh
