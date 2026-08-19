@@ -31,11 +31,11 @@ inputs:
   pulp_url:
     description: "The pulp server api url"
     required: false
-    default: "https://pulp-api.apps.centreon.com"
+    default: "https://pulp-api.int.centreon.com"
   pulp_content_url:
     description: "The pulp server content url"
     required: false
-    default: "https://packages.apps.centreon.com"
+    default: "https://packages.int.centreon.com"
   audience:
     description: "OIDC audience, must match the pulp server GITHUB_OIDC.audience"
     required: false

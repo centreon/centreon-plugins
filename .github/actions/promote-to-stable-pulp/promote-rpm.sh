@@ -7,8 +7,8 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
 # an unset org variable is forwarded as an empty string, overriding the default
-PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
-PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
+PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.int.centreon.com}"
 # stable shares its Domain with testing since the domain merge (PULP_STABLE_DOMAIN
 # now equals PULP_DOMAIN); the read/write phase switch is kept as a no-op
 PULP_DOMAIN="${PULP_DOMAIN:-default}"
