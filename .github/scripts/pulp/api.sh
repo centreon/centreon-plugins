@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 # Shared pulp api helpers for the delivery/promotion scripts. Source this file
 # like manifest.sh; PULP_URL and PULP_TOKEN must be set by the caller.
+#
+# DOMAIN_ENABLED requires every viewset URL to carry a domain segment, no
+# unprefixed fallback; every domain-scoped REST call in this file is prefixed with "/$PULP_DOMAIN"
+PULP_DOMAIN="${PULP_DOMAIN:-default}"
+
+# forces pulp-cli's config to update immediately, unlike a plain PULP_DOMAIN
+# reassignment: refresh_pulp_token only re-runs "pulp config create" once the
+# token itself goes stale (>240s), which could leave pulp-cli on the old domain that long
+switch_pulp_domain() {
+  PULP_DOMAIN="$1"
+  if command -v pulp >/dev/null 2>&1; then
+    if ! pulp config create --overwrite --base-url "$PULP_URL" --api-root "/" \
+      --domain "$PULP_DOMAIN" \
+      --header "Authorization:Bearer $PULP_TOKEN" --timeout 0 >/dev/null 2>&1; then
+      echo "::error::Cannot switch the pulp-cli profile to domain $PULP_DOMAIN" >&2
+      return 1
+    fi
+  fi
+}
 
 # the github actions oidc token expires ~5 minutes after issuance, which is
 # shorter than a large delivery: refresh it before it goes stale whenever the
@@ -38,7 +57,8 @@ refresh_pulp_token() {
   fi
   if command -v pulp >/dev/null 2>&1; then
     pulp config create --overwrite --base-url "$PULP_URL" --api-root "/" \
-      --header "Authorization:Github $token" --timeout 0 >/dev/null 2>&1 || true
+      --domain "$PULP_DOMAIN" \
+      --header "Authorization:Bearer $token" --timeout 0 >/dev/null 2>&1 || true
   fi
 }
 
@@ -52,13 +72,13 @@ wait_task() {
   local state attempt
   for ((attempt = 0; attempt < 600; attempt++)); do
     refresh_pulp_token
-    state=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null | jq -r '.state' 2>/dev/null) || state=""
+    state=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null | jq -r '.state' 2>/dev/null) || state=""
     case "$state" in
       completed)
         return 0
         ;;
       failed|canceled)
-        echo "::error::Task $task_href $state: $(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" | jq -c '.error')"
+        echo "::error::Task $task_href $state: $(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$PULP_URL$task_href" | jq -c '.error')"
         return 1
         ;;
       *)
@@ -76,7 +96,7 @@ pulp_upload() {
   local attempt response http_code body
   for attempt in 1 2 3 4 5; do
     refresh_pulp_token
-    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' "$@" 2>/dev/null) || response=""
+    response=$(curl -sS -H "Authorization: Bearer $PULP_TOKEN" -w $'\n%{http_code}' "$@" 2>/dev/null) || response=""
     http_code=${response##*$'\n'}
     body=${response%$'\n'*}
     if [[ "$http_code" == "202" ]]; then
@@ -103,7 +123,7 @@ wait_task_race() {
   local task_href=$1 body state error attempt
   for ((attempt = 0; attempt < 600; attempt++)); do
     refresh_pulp_token
-    body=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
+    body=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$PULP_URL$task_href" 2>/dev/null) || body=""
     state=$(echo "$body" | jq -r '.state' 2>/dev/null) || state=""
     case "$state" in
       completed)
@@ -140,9 +160,9 @@ pulp_resource_exists() {
   local type_path=$1 name=$2 attempt response http_code count
   for attempt in 1 2 3 4; do
     refresh_pulp_token
-    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' -G \
+    response=$(curl -sS -H "Authorization: Bearer $PULP_TOKEN" -w $'\n%{http_code}' -G \
       --data-urlencode "name=$name" --data-urlencode "limit=1" \
-      "$PULP_URL/api/v3/$type_path/" 2>/dev/null) || response=$'\n000'
+      "$PULP_URL/$PULP_DOMAIN/api/v3/$type_path/" 2>/dev/null) || response=$'\n000'
     http_code="${response##*$'\n'}"
     if [[ "$http_code" == "200" ]]; then
       count=$(printf '%s' "${response%$'\n'*}" | jq -r '.count' 2>/dev/null) || count=""
@@ -169,7 +189,7 @@ post_json() {
   response=$'\n000'
   for attempt in 1 2 3 4; do
     refresh_pulp_token
-    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' \
+    response=$(curl -sS -H "Authorization: Bearer $PULP_TOKEN" -w $'\n%{http_code}' \
       -X POST -H "Content-Type: application/json" -d "$json" "$url" 2>/dev/null) || response=$'\n000'
     code="${response##*$'\n'}"
     case "$code" in
@@ -188,7 +208,7 @@ start_modify_task() {
   local url=$1 body_file=$2 attempt response http_code body
   for attempt in 1 2 3 4 5; do
     refresh_pulp_token
-    response=$(curl -sS -H "Authorization: Github $PULP_TOKEN" -w $'\n%{http_code}' \
+    response=$(curl -sS -H "Authorization: Bearer $PULP_TOKEN" -w $'\n%{http_code}' \
       -X POST -H "Content-Type: application/json" \
       -d @"$body_file" "$url" 2>/dev/null) || response=""
     http_code=${response##*$'\n'}
@@ -214,24 +234,42 @@ start_modify_task() {
 # downloader role); unguarded distributions ignore the header.
 content_curl() {
   refresh_pulp_token
-  curl -H "Authorization: Github $PULP_TOKEN" "$@"
+  curl -H "Authorization: Bearer $PULP_TOKEN" "$@"
 }
 
 create_publication() {
   local plugin=$1 repository=$2
   shift 2
-  local out task attempt outer rc
+  # pulp-cli's own task re-poll is domain-unaware and 404s under Domains ("No
+  # Task matches the given query"), so this goes straight through
+  # post_json/wait_task_race instead, both already domain-aware
+  local publication_path
+  case "$plugin" in
+    rpm) publication_path="rpm/rpm" ;;
+    deb) publication_path="deb/apt" ;;
+    *) echo "::error::create_publication: unsupported plugin $plugin" >&2; return 1 ;;
+  esac
+  local repo_href body_json response code body task attempt outer rc
   # outer retry: the publication task itself can die server-side for
   # retryable reasons (task worker terminated mid-task, version race)
   for outer in 1 2 3; do
     task=""
     for attempt in 1 2 3; do
       refresh_pulp_token
-      if out=$(pulp --background "$plugin" publication create --repository "$repository" "$@" 2>&1); then
-        # an output without a task href (gateway error page relayed by the
-        # cli) is a start failure too, retried like a non-zero exit
-        task=$(grep -oPm1 '/api/v3/tasks/[0-9a-f-]+/' <<< "$out" || true)
-        [[ -n "$task" ]] && break
+      repo_href=$(pulp "$plugin" repository show --name "$repository" 2>/dev/null | jq -r '.pulp_href // empty') || repo_href=""
+      if [[ -n "$repo_href" ]]; then
+        if [[ "$*" == *"--structured"* ]]; then
+          body_json=$(jq -nc --arg repo "$repo_href" '{repository: $repo, structured: true, simple: false}')
+        else
+          body_json=$(jq -nc --arg repo "$repo_href" '{repository: $repo}')
+        fi
+        response=$(post_json "$PULP_URL/$PULP_DOMAIN/api/v3/publications/$publication_path/" "$body_json")
+        code="${response##*$'\n'}"
+        body="${response%$'\n'*}"
+        if [[ "$code" == "202" ]]; then
+          task=$(echo "$body" | jq -r '.task // empty')
+          [[ -n "$task" ]] && break
+        fi
       fi
       echo "[WARN] publication start attempt $attempt/3 failed for $repository, retrying..." >&2
       sleep $((attempt * 10))

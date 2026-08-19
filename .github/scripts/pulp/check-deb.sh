@@ -43,14 +43,14 @@ for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
     echo "[WARN] Repository $repo does not exist or has no version"
     continue
   fi
-  url="$PULP_URL/api/v3/content/deb/packages/?$(
+  url="$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/packages/?$(
     printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
       "$(jq -rn --arg v "$version_href" '$v | @uri')" \
       "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
   )"
   pages=0
   while [[ -n "$url" ]] && ((pages < 20)); do
-    page=$(curl -fsSL -H "Authorization: Github $PULP_TOKEN" "$url") || {
+    page=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$url") || {
       echo "[WARN] presence page fetch failed for $repo ($url)" >&2
       break
     }
@@ -115,7 +115,7 @@ resolve_pending() {
     if [[ "$arch" == "all" ]]; then
       sk="$base_path|$suite"
       if [[ -z "${arches_cache[$sk]+set}" ]]; then
-        arches_cache[$sk]=$(content_curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/Release" 2>/dev/null \
+        arches_cache[$sk]=$(content_curl -fsSL "$PULP_CONTENT_URL/$PULP_DOMAIN/$base_path/dists/$suite/Release" 2>/dev/null \
           | awk -F': ' '/^Architectures:/ { print $2; exit }')
       fi
       search_arches="${arches_cache[$sk]:-amd64 arm64 all}"
@@ -126,7 +126,7 @@ resolve_pending() {
       ck="$base_path|$suite|$a"
       if [[ -z "${pkg_cache[$ck]+set}" ]]; then
         cache_file=$(mktemp)
-        content_curl -fsSL "$PULP_CONTENT_URL/$base_path/dists/$suite/main/binary-$a/Packages" 2>/dev/null > "$cache_file" || true
+        content_curl -fsSL "$PULP_CONTENT_URL/$PULP_DOMAIN/$base_path/dists/$suite/main/binary-$a/Packages" 2>/dev/null > "$cache_file" || true
         pkg_cache[$ck]=$cache_file
       fi
       filename=$(resolve_filename "${pkg_cache[$ck]}" "${E_SHA256[$i]}")

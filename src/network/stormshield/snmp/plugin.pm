@@ -31,13 +31,17 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
+        'auto-update'        => 'network::stormshield::snmp::mode::auto_update',
         'cpu'             => 'snmp_standard::mode::cpu',
         'cpu-detailed'    => 'snmp_standard::mode::cpudetailed',
         'connections'     => 'network::stormshield::snmp::mode::connections',
+        'interfaces-disco'   => 'network::stormshield::snmp::mode::interfaces_disco',
         'interfaces'      => 'snmp_standard::mode::interfaces',
+        'licenses'        => 'network::stormshield::snmp::mode::licenses',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'load'            => 'snmp_standard::mode::loadaverage',
         'ha-nodes'        => 'network::stormshield::snmp::mode::hanodes',
+        'ha-cluster'         => 'network::stormshield::snmp::mode::ha_cluster',
         'hardware'        => 'network::stormshield::snmp::mode::hardware',
         'health'          => 'network::stormshield::snmp::mode::health',
         'memory'          => 'os::freebsd::snmp::mode::memory',
@@ -45,7 +49,10 @@ sub new {
         'qos'             => 'network::stormshield::snmp::mode::qos',
         'storage'         => 'snmp_standard::mode::storage',
         'swap'            => 'snmp_standard::mode::swap',
-        'vpn-status'      => 'network::stormshield::snmp::mode::vpnstatus'
+        'vpn-status'      => 'network::stormshield::snmp::mode::vpnstatus',
+        'uptime'          => 'network::stormshield::snmp::mode::uptime',
+        'router-disco'       => 'network::stormshield::snmp::mode::router_disco'
+
     };
 
     return $self;

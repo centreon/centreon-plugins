@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -61,7 +61,7 @@ sub execute_custom {
 
     $self->{results} = {};
     foreach (@{$self->{requests}}) {
-        my $result = $options{custom}->request_api(url_path => $_->{uri});
+        my $result = $options{custom}->request_api_paginated(url_path => $_->{uri});
         $self->{results}->{$_->{label}} = $result;
     }
 }
