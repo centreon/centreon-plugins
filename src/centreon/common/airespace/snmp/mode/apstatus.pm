@@ -422,6 +422,11 @@ sub manage_selection {
         if (defined($self->{option_results}->{add_radio_interfaces})) {
             my $interface_instances = $self->{ap}->{$_}->{interface_instances};
 
+            if (scalar(keys %$interface_instances) <= 0) {
+                $self->{output}->output_add(long_msg => 'no radio interface found for ' . $self->{ap}->{$_}->{display});
+                next;
+            }
+
             $options{snmp}->load(
                 oids            => [ map($_->{oid}, values(%$mapping3)) ],
                 instances       => [ map($_->{instance}, values %$interface_instances) ],
