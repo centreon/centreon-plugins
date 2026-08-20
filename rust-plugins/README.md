@@ -9,6 +9,26 @@ Once done, you can compile it by running:
 cargo build
 ```
 
+# Static linking
+
+`cargo build` links the binary against the glibc of your own machine. The packaged binary has to
+run on every supported distribution, the oldest one being el8 with glibc 2.28, and glibc offers
+no forward compatibility: a binary built against a recent glibc fails to start on an older one.
+The CI therefore links statically against musl instead:
+
+```bash
+rustup target add x86_64-unknown-linux-musl
+cargo build --release --target x86_64-unknown-linux-musl
+```
+
+Use that command to reproduce a release binary locally. The CI fails the build if the produced
+binary still carries a dynamic dependency.
+
+A statically linked musl binary does not use the glibc Name Service Switch (NSS). Host names are
+resolved by the musl resolver, which reads `/etc/hosts` and `/etc/resolv.conf` only, so the
+`nsswitch.conf` backends such as sssd, LDAP or mDNS are ignored, unlike with the Perl plugins.
+Targets given as IP addresses are unaffected, and so are host names resolvable through plain DNS.
+
 # Description
 
 ## generic-snmp

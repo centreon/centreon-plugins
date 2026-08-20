@@ -8,12 +8,14 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - '.github/workflows/generic-plugins.yml'
       - 'rust-plugins/**'
   push:
     branches:
       - develop
       - master
     paths:
+      - '.github/workflows/generic-plugins.yml'
       - 'rust-plugins/**'
 
 jobs:
@@ -32,9 +34,19 @@ jobs:
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled()
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+            target: x86_64-unknown-linux-musl
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+            target: aarch64-unknown-linux-musl
+    runs-on: ${{ matrix.runner }}
 
-    name: "Build the generic plugins"
+    name: "Build the generic plugins ${{ matrix.arch }}"
 
     steps:
       - name: Checkout sources
@@ -46,17 +58,49 @@ jobs:
           cargo test
         shell: bash
 
+      # The binary is built once per architecture and packaged for every supported distribution,
+      # so it must not depend on the glibc of the runner: the oldest distribution we ship to (el8)
+      # provides glibc 2.28 while ubuntu-24.04 provides 2.39, and glibc offers no forward
+      # compatibility. Linking statically against musl removes the dependency on the system libc
+      # entirely.
+      # Each architecture is built natively rather than cross-compiled, because the default linker
+      # of the musl targets is the host cc, which cannot link objects of a foreign architecture.
       - name: Build optimized binary
         run: |
           cd rust-plugins
-          cargo build --release
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }}
+          # Keep the artifact where the cache, the nfpm configuration and the test job expect it.
+          mkdir -p target/release
+          cp target/${{ matrix.target }}/release/centreon-plugin-rust-snmp target/release/
+        shell: bash
+
+      - name: Check the binary has no dynamic dependency
+        run: |
+          cd rust-plugins
+          # A statically linked binary has no NEEDED entry. Do not rely on `file`, which reports
+          # "static-pie linked" rather than "statically linked" for this target.
+          if objdump -p target/release/centreon-plugin-rust-snmp | grep NEEDED; then
+            echo "::error::Binary links against shared libraries and will not run on every supported distribution"
+            exit 1
+          fi
+          echo "Binary is statically linked, it does not depend on the system libc"
         shell: bash
 
       - name: Save binary to cache
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: rust-plugins/target/release/
-          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins-${{ matrix.arch }}
+
+      # Add to your PR the label upload-artifacts to get the binaries as artifacts
+      - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        name: Upload binary artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: binaries-${{ matrix.arch }}
+          path: rust-plugins/target/release/centreon-plugin-rust-snmp
+          retention-days: 1
 
   package:
     needs: [get-environment, build]
@@ -68,39 +112,77 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # `arch` is the architecture name stamped into the package metadata, which differs
+        # between packagers (x86_64/aarch64 for rpm, amd64/arm64 for deb), while `binary_arch`
+        # selects which build cache the binary is restored from.
+        # The container always runs on amd64: nfpm only writes metadata and does not need to run
+        # on the target architecture.
         include:
           - package_extension: rpm
             image: packaging-plugins-alma8
             distrib: el8
             arch: x86_64
+            binary_arch: amd64
           - package_extension: rpm
             image: packaging-plugins-alma9
             distrib: el9
             arch: x86_64
+            binary_arch: amd64
           - package_extension: rpm
             image: packaging-plugins-alma10
             distrib: el10
             arch: x86_64
+            binary_arch: amd64
           - package_extension: deb
             image: packaging-plugins-bullseye
             distrib: bullseye
             arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-bullseye
+            distrib: bullseye
+            arch: arm64
+            binary_arch: arm64
           - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
             arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+            arch: arm64
+            binary_arch: arm64
           - package_extension: deb
             image: packaging-plugins-trixie
             distrib: trixie
             arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-trixie
+            distrib: trixie
+            arch: arm64
+            binary_arch: arm64
           - package_extension: deb
             image: packaging-plugins-jammy
             distrib: jammy
             arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
+            arch: arm64
+            binary_arch: arm64
           - package_extension: deb
             image: packaging-plugins-noble
             distrib: noble
             arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
+            arch: arm64
+            binary_arch: arm64
 
     container:
       image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
@@ -108,7 +190,7 @@ jobs:
         username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
         password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
 
-    name: Package ${{ matrix.distrib }}
+    name: Package ${{ matrix.distrib }} ${{ matrix.arch }}
 
     steps:
       - name: Checkout sources
@@ -118,7 +200,7 @@ jobs:
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: rust-plugins/target/release/
-          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins-${{ matrix.binary_arch }}
           fail-on-cache-miss: true
 
       - name: Build package
@@ -131,17 +213,20 @@ jobs:
           release: 1
           arch: ${{ matrix.arch }}
           commit_hash: ${{ github.sha }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-generic-plugins-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-generic-plugins-${{ matrix.distrib }}-${{ matrix.arch }}
           rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
           rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
           rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
           stability: ${{ needs.get-environment.outputs.stability }}
 
+      # The architecture must be part of the key: two rows of the matrix share the same
+      # distribution, and the cache silently keeps the first write on an existing key, which
+      # would deliver the wrong architecture.
       - name: Save to cache
         uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ./*.${{ matrix.package_extension }}
-          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}
 
   test-generic-plugins:
     needs: [get-environment, build]
@@ -167,7 +252,7 @@ jobs:
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: rust-plugins/target/release/
-          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins-amd64
           fail-on-cache-miss: true
 
       - name: Setup SNMP simulator and run robot tests
@@ -207,22 +292,45 @@ jobs:
         include:
           - distrib: el8
             package_extension: rpm
+            arch: x86_64
           - distrib: el9
             package_extension: rpm
+            arch: x86_64
           - distrib: el10
             package_extension: rpm
+            arch: x86_64
           - distrib: bullseye
             package_extension: deb
+            arch: amd64
+          - distrib: bullseye
+            package_extension: deb
+            arch: arm64
           - distrib: bookworm
             package_extension: deb
+            arch: amd64
+          - distrib: bookworm
+            package_extension: deb
+            arch: arm64
           - distrib: trixie
             package_extension: deb
+            arch: amd64
+          - distrib: trixie
+            package_extension: deb
+            arch: arm64
           - distrib: jammy
             package_extension: deb
+            arch: amd64
+          - distrib: jammy
+            package_extension: deb
+            arch: arm64
           - distrib: noble
             package_extension: deb
+            arch: amd64
+          - distrib: noble
+            package_extension: deb
+            arch: arm64
 
-    name: deliver ${{ matrix.distrib }}
+    name: deliver ${{ matrix.distrib }} ${{ matrix.arch }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -232,7 +340,8 @@ jobs:
         with:
           module_name: generic-plugins
           distrib: ${{ matrix.distrib }}
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          arch: ${{ matrix.arch }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}
           stability: ${{ needs.get-environment.outputs.stability }}
           release_type: ${{ needs.get-environment.outputs.release_type }}
           artifactory_token: ${{ secrets.ARTIFACTORY_ACCESS_TOKEN }}
@@ -254,25 +363,50 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # package-delivery-pulp takes no arch input: each row simply restores the cache holding
+        # its own architecture and uploads it.
         include:
           - distrib: el8
             package_extension: rpm
+            arch: x86_64
           - distrib: el9
             package_extension: rpm
+            arch: x86_64
           - distrib: el10
             package_extension: rpm
+            arch: x86_64
           - distrib: bullseye
             package_extension: deb
+            arch: amd64
+          - distrib: bullseye
+            package_extension: deb
+            arch: arm64
           - distrib: bookworm
             package_extension: deb
+            arch: amd64
+          - distrib: bookworm
+            package_extension: deb
+            arch: arm64
           - distrib: trixie
             package_extension: deb
+            arch: amd64
+          - distrib: trixie
+            package_extension: deb
+            arch: arm64
           - distrib: jammy
             package_extension: deb
+            arch: amd64
+          - distrib: jammy
+            package_extension: deb
+            arch: arm64
           - distrib: noble
             package_extension: deb
+            arch: amd64
+          - distrib: noble
+            package_extension: deb
+            arch: arm64
 
-    name: deliver ${{ matrix.distrib }} on pulp
+    name: deliver ${{ matrix.distrib }} ${{ matrix.arch }} on pulp
     steps:
       - name: Checkout sources
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -333,7 +467,7 @@ jobs:
           repository_name: plugins
           distrib: ${{ matrix.distrib }}
           version: ""
-          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-${{ matrix.distrib }}-${{ matrix.arch }}
           stability: ${{ needs.get-environment.outputs.stability }}
           release_type: ${{ needs.get-environment.outputs.release_type }}
           is_cloud: "false"
