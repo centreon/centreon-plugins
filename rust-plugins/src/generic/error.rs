@@ -24,6 +24,12 @@ pub enum Error {
     #[snafu(display("Unknown argument: {arg}\nUse --help to display available options"))]
     UnknownArgument { arg: String },
 
+    #[snafu(display(
+        "Invalid status '{}': expected one of OK, WARNING, CRITICAL, UNKNOWN",
+        value
+    ))]
+    InvalidStatus { value: String },
+
     #[snafu(display("{message}"))]
     InvalidJSON { message: String },
 

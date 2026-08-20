@@ -28,6 +28,7 @@ mod snmp;
 
 use env_logger::Env;
 use generic::Command;
+use generic::Status;
 use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
@@ -81,6 +82,7 @@ fn snmp_plugin() -> Result<(), Error> {
     let mut snmp_community = "public".to_string();
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
+    let mut no_data_status = Status::Unknown;
     let mut check_format = false;
     let mut check_response = false;
     let mut list_counters = false;
@@ -128,6 +130,14 @@ fn snmp_plugin() -> Result<(), Error> {
                         trace!("New filter_out: {}", f);
                         filter_out.push(f);
                     }
+                    Long("no-data-status") => {
+                        let s = parser.value()?.into_string()?;
+                        no_data_status = s.parse::<Status>().unwrap_or_else(|e| {
+                            println!("UNKNOWN: {}", e);
+                            std::process::exit(3);
+                        });
+                        trace!("no_data_status: {:?}", no_data_status);
+                    }
                     Short('h') | Long("help") => {
                         let prog = std::env::args()
                             .next()
@@ -141,6 +151,7 @@ fn snmp_plugin() -> Result<(), Error> {
                         println!("  -j, --json <FILE>                JSON command definition file (required)");
                         println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
                         println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
+                        println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
@@ -254,6 +265,7 @@ fn snmp_plugin() -> Result<(), Error> {
         &filter_out,
         check_format,
         check_response,
+        no_data_status,
     ).unwrap_or_else(|e| {
         if check_format {
             println!("JSON is INVALID: {}", e);
