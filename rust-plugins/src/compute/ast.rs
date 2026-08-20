@@ -35,7 +35,7 @@ pub enum Func {
 }
 
 /// Result of evaluating an expression: either a numeric value/vector or a string.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExprResult {
     /// A vector of floating-point values.
     Vector(Vec<f64>),

@@ -14,13 +14,13 @@ pub mod error;
 use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
+use crate::snmp::SnmpResult;
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
-
-use crate::snmp::SnmpResult;
+use std::convert::Into;
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -49,50 +49,41 @@ pub enum Status {
     Critical = 2,
     Unknown = 3,
 }
-
-impl Status {
-    fn as_str(&self) -> &str {
-        match *self {
-            Status::Ok => "OK",
-            Status::Warning => "WARNING",
-            Status::Critical => "CRITICAL",
-            Status::Unknown => "UNKNOWN",
+impl Into<i32> for Status {
+    fn into(self) -> i32 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Critical => 3,
+            Status::Unknown => 2,
         }
     }
-
+}
+impl Into<String> for Status {
+    fn into(self) -> String {
+        match self {
+            Status::Ok => "OK".to_string(),
+            Status::Warning => "WARNING".to_string(),
+            Status::Critical => "CRITICAL".to_string(),
+            Status::Unknown => "UNKNOWN".to_string(),
+        }
+    }
+}
+impl Status {
     /// Returns `true` if `self` is at least as severe as `other`.
     ///
     /// Severity order: `Ok < Warning < Unknown < Critical`.
     pub fn is_worse_than(&self, other: Status) -> bool {
-        let self_int = match self {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
-        let other_int = match other {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
+        let self_int: i32 = (*self).into();
+        let other_int: i32 = other.into();
         self_int >= other_int
     }
 }
 
 fn worst(a: Status, b: Status) -> Status {
-    let a_int = match a {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
-    let b_int = match b {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
+    let a_int: i32 = a.into();
+    let b_int: i32 = b.into();
+
     if a_int > b_int {
         return a;
     } else {
@@ -241,7 +232,10 @@ impl Command {
         }
 
         let output = if lines.len() <= 1 {
-            format!("OK: {}", lines.first().unwrap_or(&"No response".to_string()))
+            format!(
+                "OK: {}",
+                lines.first().unwrap_or(&"No response".to_string())
+            )
         } else {
             format!("OK: Response received\n{}", lines.join("\n"))
         };
@@ -280,35 +274,41 @@ impl Command {
                 }
                 collect.push(SnmpResult::new(items));
             }
-        } else {
-            let mut to_get = Vec::new();
-            let mut get_name = Vec::new();
-            for s in self.collect.snmp.iter() {
-                match s.query {
-                    QueryType::Walk => {
-                        if let Some(lab) = &s.labels {
-                            let r = snmp_bulk_walk_with_labels(
-                                target, version, community, &s.oid, &s.name, &lab,
-                            );
-                            collect.push(r?);
-                        } else {
-                            let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
-                            collect.push(r?);
+            return Ok(collect);
+        }
+        let mut to_get = Vec::new();
+        let mut get_name = Vec::new();
+        for s in self.collect.snmp.iter() {
+            match s.query {
+                QueryType::Walk => {
+                    if let Some(lab) = &s.labels {
+                        let r = snmp_bulk_walk_with_labels(
+                            target, version, community, &s.oid, &s.name, &lab,
+                        )?;
+                        if !r.items.is_empty() {
+                            collect.push(r);
+                        }
+                    } else {
+                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
+                        if !r.items.is_empty() {
+                            collect.push(r);
                         }
                     }
-                    QueryType::Get => {
-                        to_get.push(s.oid.as_str());
-                        get_name.push(s.name.as_str());
-                    }
                 }
-            }
-
-            if !to_get.is_empty() {
-                let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-                collect.push(r?);
+                QueryType::Get => {
+                    to_get.push(s.oid.as_str());
+                    get_name.push(s.name.as_str());
+                }
             }
         }
 
+        if !to_get.is_empty() {
+            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            collect.push(r?);
+        }
+        if collect.is_empty() {
+            return Err(error::Error::EmptyResponse {});
+        }
         Ok(collect)
     }
 
@@ -648,8 +648,11 @@ impl Command {
 
         if !self.compute.metrics.is_empty() {
             for metric in &self.compute.metrics {
-                let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
-                println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                println!(
+                    "  {} (--warning-{}, --critical-{})",
+                    metric.name, suffix, suffix
+                );
             }
         }
 
@@ -657,8 +660,11 @@ impl Command {
             if !aggregations.is_empty() {
                 println!("Aggregations:");
                 for metric in aggregations {
-                    let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
-                    println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                    let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                    println!(
+                        "  {} (--warning-{}, --critical-{})",
+                        metric.name, suffix, suffix
+                    );
                 }
             }
         }
