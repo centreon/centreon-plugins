@@ -12,7 +12,7 @@ cargo build
 # Static linking
 
 `cargo build` links the binary against the glibc of your own machine. The packaged binary has to
-run on every supported distribution, the oldest one being el8 with glibc 2.28, and glibc offers
+run on every supported distribution, the oldest one being el8 with glibc 2.28 as of 2026, and glibc offers
 no forward compatibility: a binary built against a recent glibc fails to start on an older one.
 The CI therefore links statically against musl instead:
 
