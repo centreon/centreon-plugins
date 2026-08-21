@@ -24,7 +24,7 @@
         "uom": "B",
         "min": 0,
         "max_expr": "{storage.size} * {storage.allocation_units}",
-        "threshold-suffix": "storage-bytes"
+        "threshold-suffix": "bytes"
       },
       {
         "prefix": "{storage.description}",
@@ -33,7 +33,7 @@
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "storage-prct"
+        "threshold-suffix": "prct"
       }
     ],
     "aggregations": [

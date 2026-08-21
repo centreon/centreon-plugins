@@ -48,9 +48,9 @@
   "output": {
     "ok": "All processes are OK",
     "detail_ok": false,
-    "warning": "Process WARNING: ",
+    "warning": "WARNING: ",
     "detail_warning": true,
-    "critical": "Process CRITICAL: ",
+    "critical": "CRITICAL: ",
     "detail_critical": true,
     "instance_separator": " - ",
     "metric_separator": ", ",

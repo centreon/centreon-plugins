@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
 
 
 *** Test Cases ***
@@ -39,11 +40,11 @@ uptime ${tc}
     ...    9    --unit='m'    OK: System uptime is: 38m 39s | 'uptime'=38.65m;;;0;
     ...    10    --unit='s'    OK: System uptime is: 38m 39s | 'uptime'=2319.00s;;;0;
 
-cgs-storage ${tc}
+cgs-uptime ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j ${CURDIR}/generic-snmp/uptime.json
+    ...    -j ${CGS_COLLECTIONS}${/}..${/}rust-snmp${/}uptime.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
