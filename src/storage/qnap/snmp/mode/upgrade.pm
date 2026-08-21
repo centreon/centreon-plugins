@@ -75,7 +75,7 @@ my $mapping_qts = {
     upgrade => { oid => '.1.3.6.1.4.1.55062.1.12.7' }  # firmwareUpgradeAvailable
 };
 # QuTS hero OS
-my $mapping_quts_hero = {
+my $mapping_qts_hero = {
     model   => { oid => '.1.3.6.1.4.1.55062.2.12.3' }, # systemModel
     version => { oid => '.1.3.6.1.4.1.55062.2.12.6' }, # firmwareVersion
     upgrade => { oid => '.1.3.6.1.4.1.55062.2.12.7' }  # firmwareUpgradeAvailable
@@ -113,7 +113,7 @@ __END__
 
 =head1 MODE
 
-Check upgrade status (works with QTS and QuTS hero OS).
+Check upgrade status (works with QTS and QTS hero OS).
 
 =over 8
 
