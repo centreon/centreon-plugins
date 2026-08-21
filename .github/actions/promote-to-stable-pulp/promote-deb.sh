@@ -7,10 +7,10 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
 # an unset org variable is forwarded as an empty string, overriding the default
-PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
-PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
-# testing and stable repositories live in different Pulp Domains; PULP_DOMAIN
-# covers the read phase, switch_pulp_domain moves to PULP_STABLE_DOMAIN for the write phase
+PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
+PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.int.centreon.com}"
+# stable shares its Domain with testing since the domain merge (PULP_STABLE_DOMAIN
+# now equals PULP_DOMAIN); the read/write phase switch is kept as a no-op
 PULP_DOMAIN="${PULP_DOMAIN:-default}"
 PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
 # switch_pulp_domain overwrites PULP_DOMAIN itself once the write phase
@@ -250,11 +250,13 @@ if ((${#UNPROMOTED_HREFS[@]} == 0)); then
   exit 0
 fi
 
-# batched promote, mirroring the batched delivery: Pulp Domains share no
-# content across domains, so promoting means re-downloading each package from
-# testing's published distribution and re-uploading it into the stable domain
-# (see deliver-deb.sh for why the FIRST package of each arch goes through the
-# legacy path to establish the release component).
+# batched promote, mirroring the batched delivery. Since the domain merge,
+# testing and stable share their domain (and content): the re-download/
+# re-upload below is deduplicated server-side by sha256, kept only because the
+# battle-tested flow predates the merge — a direct href association would skip
+# the transfers entirely (follow-up optimization). The FIRST package of each
+# arch still goes through the legacy path to establish the release component
+# (see deliver-deb.sh).
 declare -A ARCH_SEEN=()
 LEGACY_PACKAGES=()
 BATCH_PACKAGES=()

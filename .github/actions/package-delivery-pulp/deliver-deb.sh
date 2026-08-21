@@ -8,8 +8,8 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
 # an unset org variable is forwarded as an empty string, overriding the default
-PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
-PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
+PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.int.centreon.com}"
 PULP_DOMAIN="${PULP_DOMAIN:-default}"
 # read through the public content-app, no auth/grant needed (see api.sh's content_curl)
 PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"

@@ -4,7 +4,7 @@ inputs:
   pulp_url:
     description: "The pulp server api url"
     required: false
-    default: "https://pulp-api.apps.centreon.com"
+    default: "https://pulp-api.int.centreon.com"
   audience:
     description: "OIDC audience, must match the pulp server GITHUB_OIDC.audience"
     required: false
@@ -88,7 +88,7 @@ runs:
 
         # fall back to the default when the caller passes an empty value (unset
         # org variable forwarded as "" would otherwise override the default).
-        PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
+        PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
         DOMAIN="${DOMAIN:-default}"
 
         # keep the pulp-cli config (which stores the OIDC token) under the per-job

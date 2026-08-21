@@ -11,8 +11,8 @@
 # shellcheck source=.github/scripts/pulp/api.sh
 source "$(dirname "${BASH_SOURCE[0]}")/api.sh"
 
-PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
-PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
+PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.int.centreon.com}"
 
 switch_pulp_domain "$PULP_DOMAIN" || exit 1
 

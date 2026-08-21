@@ -30,29 +30,31 @@ fi
 # parse-distrib emits the el family either generically ("el") or per version
 # ("el7"/"el8"/"el9"/"el10" on centreon-collect); normalize it to "el" so the
 # family checks below are portable across both conventions.
+DEB_PREFIX=""
 case "$DISTRIB_FAMILY" in
   el | el[0-9]*)
-    FAMILY_PREFIX="rpm-"
     DISTRIB_FAMILY="el"
     ;;
-  debian) FAMILY_PREFIX="apt-" ;;
-  ubuntu) FAMILY_PREFIX="ubuntu-" ;;
+  debian) DEB_PREFIX="apt-" ;;
+  ubuntu) DEB_PREFIX="ubuntu-" ;;
   *)
     echo "::error::Unsupported distribution family: $DISTRIB_FAMILY"
     exit 1
     ;;
 esac
 
-ROOT_REPO="${FAMILY_PREFIX}${REPO_BASE}"
-
 # business (paid) rpm content is served under an opaque path segment, mirroring
 # the Artifactory layout; only rpm business repos use it (deb business does not).
+# The segment is path-only: repository NAMES never contain it (they are unique
+# per Domain, and the Domain already identifies the edition).
 BUSINESS_HASH="1a97ff9985262bf3daf7a0919f9c59a6"
 HASH_SEGMENT=""
 if [[ "$REPO_BASE" == "business" && "$DISTRIB_FAMILY" == "el" ]]; then
   HASH_SEGMENT="/$BUSINESS_HASH"
 fi
 
+# uniform stability segments across every edition (plugins included):
+# unstable, testing-release, testing-hotfix, stable
 TESTING_SEGMENT="testing"
 TESTING_POOL_SEGMENT="testing"
 if [[ "$RELEASE_TYPE" == "release" || "$RELEASE_TYPE" == "hotfix" ]]; then
@@ -76,6 +78,8 @@ STABLE_BASE_PATH_PREFIX=""
 REPOSITORY_NAME=""
 BASE_PATH=""
 SUITE=""
+TESTING_REPOSITORY_NAME=""
+TESTING_BASE_PATH=""
 TESTING_SUITE=""
 STABLE_SUITE=""
 POOL_PATH=""
@@ -83,48 +87,32 @@ TESTING_POOL_PATH=""
 STABLE_POOL_PATH=""
 
 if [[ "$REPO_BASE" == "plugins" ]]; then
-  # plugins repositories are not versioned and use their own testing layout: a
-  # bare "testing" segment for releases and "testing-hotfix" for hotfixes,
-  # mirroring the artifactory rpm-plugins/<distrib>/<stability> layout. deb
-  # plugins share one apt-plugins/ubuntu-plugins repo with <distrib>-<stability>
-  # suites.
+  # plugins repositories are not versioned: rpm paths carry no version segment
+  # and deb suites are the plain distribution codename.
   if [[ "$DELIVERY_TYPE" == "feature" ]]; then
     echo "::notice::Feature delivery is not supported for plugins packages, skipping delivery."
     echo "skip_delivery=true" >> "$GITHUB_OUTPUT"
     exit 0
   fi
 
-  TESTING_SEGMENT="testing"
-  TESTING_POOL_SEGMENT="testing"
-  if [[ "$RELEASE_TYPE" == "hotfix" ]]; then
-    TESTING_SEGMENT="testing-hotfix"
-    TESTING_POOL_SEGMENT="testing/hotfix"
-  fi
-
-  STABILITY_SEGMENT="$STABILITY"
-  POOL_SEGMENT="$STABILITY"
-  if [[ "$STABILITY" == "testing" ]]; then
-    STABILITY_SEGMENT="$TESTING_SEGMENT"
-    POOL_SEGMENT="$TESTING_POOL_SEGMENT"
-  fi
-
   if [[ "$DISTRIB_FAMILY" == "el" ]]; then
-    REPOSITORY_PREFIX="$ROOT_REPO-$DISTRIB-$STABILITY_SEGMENT"
-    BASE_PATH_PREFIX="$ROOT_REPO/$DISTRIB/$STABILITY_SEGMENT"
-    TESTING_REPOSITORY_PREFIX="$ROOT_REPO-$DISTRIB-$TESTING_SEGMENT"
-    TESTING_BASE_PATH_PREFIX="$ROOT_REPO/$DISTRIB/$TESTING_SEGMENT"
-    STABLE_REPOSITORY_PREFIX="$ROOT_REPO-$DISTRIB-stable"
-    STABLE_BASE_PATH_PREFIX="$ROOT_REPO/$DISTRIB/stable"
+    REPOSITORY_PREFIX="rpm-$DISTRIB-$STABILITY_SEGMENT"
+    BASE_PATH_PREFIX="rpm/$DISTRIB/$STABILITY_SEGMENT"
+    TESTING_REPOSITORY_PREFIX="rpm-$DISTRIB-$TESTING_SEGMENT"
+    TESTING_BASE_PATH_PREFIX="rpm/$DISTRIB/$TESTING_SEGMENT"
+    STABLE_REPOSITORY_PREFIX="rpm-$DISTRIB-stable"
+    STABLE_BASE_PATH_PREFIX="rpm/$DISTRIB/stable"
   else
-    REPOSITORY_NAME="$ROOT_REPO"
-    BASE_PATH="$ROOT_REPO"
-    SUITE="$DISTRIB-$STABILITY_SEGMENT"
-    TESTING_SUITE="$DISTRIB-$TESTING_SEGMENT"
-    # stable lives in a DEDICATED repository with plain-codename suites, so
-    # the client apt configuration stays identical to the artifactory one
-    # (deb .../apt-plugins-stable <codename> main)
-    STABLE_REPOSITORY_NAME="$ROOT_REPO-stable"
-    STABLE_BASE_PATH="$ROOT_REPO-stable"
+    # one deb repository per stability (base path = repository name), suites
+    # carry the plain codename only
+    REPOSITORY_NAME="${DEB_PREFIX}${STABILITY_SEGMENT}"
+    BASE_PATH="$REPOSITORY_NAME"
+    SUITE="$DISTRIB"
+    TESTING_REPOSITORY_NAME="${DEB_PREFIX}${TESTING_SEGMENT}"
+    TESTING_BASE_PATH="$TESTING_REPOSITORY_NAME"
+    TESTING_SUITE="$DISTRIB"
+    STABLE_REPOSITORY_NAME="${DEB_PREFIX}stable"
+    STABLE_BASE_PATH="$STABLE_REPOSITORY_NAME"
     STABLE_SUITE="$DISTRIB"
     POOL_PATH="pool/$POOL_SEGMENT/$MODULE_NAME"
     TESTING_POOL_PATH="pool/$TESTING_POOL_SEGMENT/$MODULE_NAME"
@@ -143,32 +131,35 @@ elif [[ "$DELIVERY_TYPE" == "feature" ]]; then
     exit 1
   fi
 
-  REPOSITORY_PREFIX="$ROOT_REPO-feature-$FEATURE_TICKET-$VERSION-$DISTRIB-$STABILITY"
-  BASE_PATH_PREFIX="$ROOT_REPO-feature$HASH_SEGMENT/$FEATURE_TICKET/$VERSION/$DISTRIB/$STABILITY"
+  REPOSITORY_PREFIX="rpm-feature-$FEATURE_TICKET-$VERSION-$DISTRIB-$STABILITY"
+  BASE_PATH_PREFIX="rpm-feature$HASH_SEGMENT/$FEATURE_TICKET/$VERSION/$DISTRIB/$STABILITY"
 else
+  RPM_ROOT="rpm"
+  DEB_INFIX=""
   if [[ "$IS_CLOUD" == "true" || "$REPOSITORY_TYPE" == *-internal ]]; then
-    ROOT_REPO="$ROOT_REPO-internal"
+    RPM_ROOT="rpm-internal"
+    DEB_INFIX="internal-"
   fi
 
   if [[ "$DISTRIB_FAMILY" == "el" ]]; then
-    REPOSITORY_PREFIX="$ROOT_REPO-$VERSION-$DISTRIB-$STABILITY_SEGMENT"
-    BASE_PATH_PREFIX="$ROOT_REPO$HASH_SEGMENT/$VERSION/$DISTRIB/$STABILITY_SEGMENT"
-    TESTING_REPOSITORY_PREFIX="$ROOT_REPO-$VERSION-$DISTRIB-$TESTING_SEGMENT"
-    TESTING_BASE_PATH_PREFIX="$ROOT_REPO$HASH_SEGMENT/$VERSION/$DISTRIB/$TESTING_SEGMENT"
-    STABLE_REPOSITORY_PREFIX="$ROOT_REPO-$VERSION-$DISTRIB-stable"
-    STABLE_BASE_PATH_PREFIX="$ROOT_REPO$HASH_SEGMENT/$VERSION/$DISTRIB/stable"
+    REPOSITORY_PREFIX="$RPM_ROOT-$VERSION-$DISTRIB-$STABILITY_SEGMENT"
+    BASE_PATH_PREFIX="$RPM_ROOT$HASH_SEGMENT/$VERSION/$DISTRIB/$STABILITY_SEGMENT"
+    TESTING_REPOSITORY_PREFIX="$RPM_ROOT-$VERSION-$DISTRIB-$TESTING_SEGMENT"
+    TESTING_BASE_PATH_PREFIX="$RPM_ROOT$HASH_SEGMENT/$VERSION/$DISTRIB/$TESTING_SEGMENT"
+    STABLE_REPOSITORY_PREFIX="$RPM_ROOT-$VERSION-$DISTRIB-stable"
+    STABLE_BASE_PATH_PREFIX="$RPM_ROOT$HASH_SEGMENT/$VERSION/$DISTRIB/stable"
   else
-    REPOSITORY_NAME="$ROOT_REPO"
-    BASE_PATH="$ROOT_REPO"
-    SUITE="$DISTRIB-$VERSION-$STABILITY_SEGMENT"
-    TESTING_SUITE="$DISTRIB-$VERSION-$TESTING_SEGMENT"
-    # stable is a dedicated repository (its own Domain, standard-stable/business-stable,
-    # is the write-protection boundary), but shares its NAME with the non-stable one --
-    # Pulp scopes name uniqueness per Domain, and the Domain already says "stable", so
-    # there's no need to also repeat that (or the version) in the repository name: the
-    # version lives in the suite name only, like the non-stable suites above.
-    STABLE_REPOSITORY_NAME="$ROOT_REPO"
-    STABLE_BASE_PATH="$ROOT_REPO"
+    # one deb repository per stability (base path = repository name), shared by
+    # every major version: the version lives in the suite name only
+    # (e.g. "trixie-26.09")
+    REPOSITORY_NAME="${DEB_PREFIX}${DEB_INFIX}${STABILITY_SEGMENT}"
+    BASE_PATH="$REPOSITORY_NAME"
+    SUITE="$DISTRIB-$VERSION"
+    TESTING_REPOSITORY_NAME="${DEB_PREFIX}${DEB_INFIX}${TESTING_SEGMENT}"
+    TESTING_BASE_PATH="$TESTING_REPOSITORY_NAME"
+    TESTING_SUITE="$DISTRIB-$VERSION"
+    STABLE_REPOSITORY_NAME="${DEB_PREFIX}${DEB_INFIX}stable"
+    STABLE_BASE_PATH="$STABLE_REPOSITORY_NAME"
     STABLE_SUITE="$DISTRIB-$VERSION"
     POOL_PATH="pool/$VERSION/$POOL_SEGMENT/$MODULE_NAME"
     TESTING_POOL_PATH="pool/$VERSION/$TESTING_POOL_SEGMENT/$MODULE_NAME"
@@ -177,19 +168,19 @@ else
 fi
 
 # unless a dedicated stable repository was selected above, stable shares the
-# delivery repository
+# delivery repository (rpm resolves stable through the *_PREFIX variables)
 STABLE_REPOSITORY_NAME="${STABLE_REPOSITORY_NAME:-$REPOSITORY_NAME}"
 STABLE_BASE_PATH="${STABLE_BASE_PATH:-$BASE_PATH}"
 
-# one Pulp Domain per edition/channel; "-internal"/cloud repos share the
-# domain of their non-internal sibling, so REPO_BASE alone is enough
+# one Pulp Domain per edition; stable and non-stable repositories share it
+# ("-internal"/cloud repos too). The stable/non-stable write boundary is the
+# repository name, enforced server-side by name-scoped grants. stable_domain
+# is kept as a distinct output for the scripts that address the stable tier,
+# even though it now always equals domain.
 DOMAIN="$REPO_BASE"
-# stable is always a separate repository object, never a suite inside
-# testing's, so it gets its own "-stable" domain
-STABLE_DOMAIN="$REPO_BASE-stable"
+STABLE_DOMAIN="$DOMAIN"
 
 echo "[DEBUG] - repository_type: $REPOSITORY_TYPE"
-echo "[DEBUG] - root_repo: $ROOT_REPO"
 echo "[DEBUG] - repository_prefix: $REPOSITORY_PREFIX"
 echo "[DEBUG] - base_path_prefix: $BASE_PATH_PREFIX"
 echo "[DEBUG] - testing_repository_prefix: $TESTING_REPOSITORY_PREFIX"
@@ -199,6 +190,8 @@ echo "[DEBUG] - stable_base_path_prefix: $STABLE_BASE_PATH_PREFIX"
 echo "[DEBUG] - repository_name: $REPOSITORY_NAME"
 echo "[DEBUG] - base_path: $BASE_PATH"
 echo "[DEBUG] - suite: $SUITE"
+echo "[DEBUG] - testing_repository_name: $TESTING_REPOSITORY_NAME"
+echo "[DEBUG] - testing_base_path: $TESTING_BASE_PATH"
 echo "[DEBUG] - testing_suite: $TESTING_SUITE"
 echo "[DEBUG] - stable_suite: $STABLE_SUITE"
 echo "[DEBUG] - pool_path: $POOL_PATH"
@@ -218,6 +211,8 @@ echo "[DEBUG] - stable_domain: $STABLE_DOMAIN"
   echo "repository_name=$REPOSITORY_NAME"
   echo "base_path=$BASE_PATH"
   echo "suite=$SUITE"
+  echo "testing_repository_name=$TESTING_REPOSITORY_NAME"
+  echo "testing_base_path=$TESTING_BASE_PATH"
   echo "testing_suite=$TESTING_SUITE"
   echo "stable_suite=$STABLE_SUITE"
   echo "stable_repository_name=$STABLE_REPOSITORY_NAME"
