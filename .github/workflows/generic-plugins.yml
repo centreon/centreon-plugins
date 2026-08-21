@@ -234,15 +234,22 @@ jobs:
       needs.get-environment.outputs.skip_workflow == 'false' &&
       needs.get-environment.outputs.stability != 'stable' &&
       ! cancelled()
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
 
     container:
-      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/testing-plugins-bookworm
-      credentials:
-        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
-        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+      # Multi-platform manifest built by docker-builder-testing-plugins.yml: the architecture
+      # of the runner selects the matching variant.
+      image: ghcr.io/${{ github.repository }}/testing:bookworm
 
-    name: Run robot tests
+    name: Run robot tests ${{ matrix.arch }}
 
     steps:
       - name: Checkout sources
@@ -252,7 +259,7 @@ jobs:
         uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: rust-plugins/target/release/
-          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins-amd64
+          key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins-${{ matrix.arch }}
           fail-on-cache-miss: true
 
       - name: Setup SNMP simulator and run robot tests
@@ -273,7 +280,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: test-generic-plugins-log
+          name: test-generic-plugins-log-${{ matrix.arch }}
           path: /tmp/robot-tests
           retention-days: 1
 
