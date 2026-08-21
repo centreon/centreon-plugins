@@ -39,26 +39,6 @@ To run the project, you can use the following command:
 cargo run -- -H localhost -v 2c -c public -j test.json
 ```
 
-## conn library
-
-You have to install the Platypus library for Perl. You can do it by running:
-
-```bash
-cpanm FFI::Platypus::Lang::Rust
-```
-
-which installs the Perl bindings for Rust.
-
-Then you have to compile the project (as described in the previous section).
-
-Then, there is an example of Perl project using it in the perl directory you
-can start with:
-
-```
-cd perl
-./with-ffi.pl
-```
-
 # the generic-snmp program
 
 This is the main program of this directory. It is a generic SNMP client that
@@ -70,7 +50,7 @@ Its API is work in progress, but you can already use it to query SNMP agents.
 
 Here is an example of JSON file already supported:
 
-```
+```json
 {
   "leaf": {
     "name": "cpu",
@@ -81,7 +61,7 @@ Here is an example of JSON file already supported:
     ]
   }
 }
-```json
+```
 
 In this example, the output is built using several internal variables that are:
 * status: the status of the query (OK, WARNING, CRITICAL, UNKNOWN)
