@@ -180,10 +180,11 @@ for ARCH in noarch x86_64; do
 
   STABLE_REPOSITORY_HREF=$(pulp rpm repository show --name "$STABLE_REPOSITORY_NAME" | jq -r '.pulp_href')
 
-  # Pulp Domains share no content across domains (RepositoryVersion.add_content
-  # requires a matching pulp_domain), so promoting re-downloads each package
-  # from testing's published distribution and re-uploads it into the stable
-  # domain -- same as the JFrog promote job always did.
+  # Since the domain merge, testing and stable share their domain (and
+  # content): this re-download/re-upload is deduplicated server-side by
+  # sha256, kept only because the battle-tested flow predates the merge — a
+  # direct href association would skip the transfers entirely (follow-up
+  # optimization). Same shape as the JFrog promote job always had.
   echo "[INFO] Re-uploading $ARCH_PACKAGES_COUNT package(s) from $TESTING_BASE_PATH into the stable domain"
   DOWNLOAD_DIR=$(mktemp -d)
   UPLOAD_DIR=$(mktemp -d)
