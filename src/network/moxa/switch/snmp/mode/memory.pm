@@ -139,6 +139,11 @@ my $mapping = {
         total => { oid => '.1.3.6.1.4.1.8691.7.108.1.56' },
         free  => { oid => '.1.3.6.1.4.1.8691.7.108.1.57' },
         used  => { oid => '.1.3.6.1.4.1.8691.7.108.1.58' }
+    },
+    iksg6524a => {
+        total => { oid => '.1.3.6.1.4.1.8691.7.95.1.56' },
+        free  => { oid => '.1.3.6.1.4.1.8691.7.95.1.57' },
+        used  => { oid => '.1.3.6.1.4.1.8691.7.05.1.58' }
     }
 };
 
@@ -158,7 +163,8 @@ sub manage_selection {
                 values(%{$mapping->{icsg7826a}}),
                 values(%{$mapping->{icsg7850a}}),
                 values(%{$mapping->{edsg512e}}),
-                values(%{$mapping->{edsg512e8poe}})
+                values(%{$mapping->{edsg512e8poe}}),
+                values(%{$mapping->{iksg6524a}})
             )
         ],
         nothing_quit => 1
@@ -192,3 +198,4 @@ Can be: 'memory-usage-prct', 'memory-usage', 'memory-usage-free',
 =back
 
 =cut
+
