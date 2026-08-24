@@ -43,16 +43,6 @@ case "$DISTRIB_FAMILY" in
     ;;
 esac
 
-# business (paid) rpm content is served under an opaque path segment, mirroring
-# the Artifactory layout; only rpm business repos use it (deb business does not).
-# The segment is path-only: repository NAMES never contain it (they are unique
-# per Domain, and the Domain already identifies the edition).
-BUSINESS_HASH="1a97ff9985262bf3daf7a0919f9c59a6"
-HASH_SEGMENT=""
-if [[ "$REPO_BASE" == "business" && "$DISTRIB_FAMILY" == "el" ]]; then
-  HASH_SEGMENT="/$BUSINESS_HASH"
-fi
-
 # uniform stability segments across every edition (plugins included):
 # unstable, testing-release, testing-hotfix, stable
 TESTING_SEGMENT="testing"
@@ -132,7 +122,7 @@ elif [[ "$DELIVERY_TYPE" == "feature" ]]; then
   fi
 
   REPOSITORY_PREFIX="rpm-feature-$FEATURE_TICKET-$VERSION-$DISTRIB-$STABILITY"
-  BASE_PATH_PREFIX="rpm-feature$HASH_SEGMENT/$FEATURE_TICKET/$VERSION/$DISTRIB/$STABILITY"
+  BASE_PATH_PREFIX="rpm-feature/$FEATURE_TICKET/$VERSION/$DISTRIB/$STABILITY"
 else
   RPM_ROOT="rpm"
   DEB_INFIX=""
@@ -143,11 +133,11 @@ else
 
   if [[ "$DISTRIB_FAMILY" == "el" ]]; then
     REPOSITORY_PREFIX="$RPM_ROOT-$VERSION-$DISTRIB-$STABILITY_SEGMENT"
-    BASE_PATH_PREFIX="$RPM_ROOT$HASH_SEGMENT/$VERSION/$DISTRIB/$STABILITY_SEGMENT"
+    BASE_PATH_PREFIX="$RPM_ROOT/$VERSION/$DISTRIB/$STABILITY_SEGMENT"
     TESTING_REPOSITORY_PREFIX="$RPM_ROOT-$VERSION-$DISTRIB-$TESTING_SEGMENT"
-    TESTING_BASE_PATH_PREFIX="$RPM_ROOT$HASH_SEGMENT/$VERSION/$DISTRIB/$TESTING_SEGMENT"
+    TESTING_BASE_PATH_PREFIX="$RPM_ROOT/$VERSION/$DISTRIB/$TESTING_SEGMENT"
     STABLE_REPOSITORY_PREFIX="$RPM_ROOT-$VERSION-$DISTRIB-stable"
-    STABLE_BASE_PATH_PREFIX="$RPM_ROOT$HASH_SEGMENT/$VERSION/$DISTRIB/stable"
+    STABLE_BASE_PATH_PREFIX="$RPM_ROOT/$VERSION/$DISTRIB/stable"
   else
     # one deb repository per stability (base path = repository name), shared by
     # every major version: the version lives in the suite name only
