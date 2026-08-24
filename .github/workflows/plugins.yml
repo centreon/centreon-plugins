@@ -27,6 +27,9 @@ on:
       - 'src/**'
       - 'packaging/**'
       - 'tests/**'
+      # Collections are the payload of the centreon-plugin-*-snmp-rs packages: changing one must
+      # repackage and reinstall its package. The functional tests live in generic-plugins.yml.
+      - 'rust-plugins/rs-collections/**'
   push:
     branches:
       - develop
@@ -42,6 +45,7 @@ on:
       - 'src/**'
       - 'packaging/**'
       - 'tests/**'
+      - 'rust-plugins/rs-collections/**'
 
 env:
   max_testing_jobs: 25
@@ -64,9 +68,11 @@ jobs:
       changes_packages: ${{ steps.filter.outputs.packages || 'false' }}
       changes_plugins: ${{ steps.filter.outputs.plugins || 'false' }}
       changes_tests: ${{ steps.filter.outputs.tests || 'false' }}
+      changes_collections: ${{ steps.filter.outputs.collections || 'false' }}
       packages_files: ${{ steps.filter.outputs.packages_files }}
       plugins_files: ${{ steps.filter.outputs.plugins_files }}
       tests_files: ${{ steps.filter.outputs.tests_files }}
+      collections_files: ${{ steps.filter.outputs.collections_files }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -88,6 +94,8 @@ jobs:
               - added|modified: src/**
             tests:
               - added|modified: tests/**
+            collections:
+              - added|modified: rust-plugins/rs-collections/**
 
   get-plugins:
     runs-on: ubuntu-24.04
@@ -108,6 +116,7 @@ jobs:
           PACKAGES_FILES: ${{ needs.changes.outputs.packages_files }}
           PLUGINS_FILES: ${{ needs.changes.outputs.plugins_files }}
           TESTS_FILES: ${{ needs.changes.outputs.tests_files }}
+          COLLECTIONS_FILES: ${{ needs.changes.outputs.collections_files }}
         run: |
           packages_folders=()
           for package_file in $PACKAGES_FILES; do
@@ -136,11 +145,19 @@ jobs:
           done
           unique_tests_folders=($(printf "%s\n" "${tests_folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_tests_folders[@]} > tests_directories.json
+
+          collections_folders=()
+          for collection_file in $COLLECTIONS_FILES; do
+              echo "Adding $(dirname $collection_file) to collections_folders"
+              collections_folders+=($(dirname $collection_file))
+          done
+          unique_collections_folders=($(printf "%s\n" "${collections_folders[@]}" | sort -u | tr '\n' ' '))
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_collections_folders[@]} > collections_directories.json
         shell: bash
 
       - name: Get plugins to build and/or test
         id: get_plugins
-        if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
+        if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' || needs.changes.outputs.changes_collections == 'true' }}
         env:
           CHANGES_COMMON: ${{ needs.changes.outputs.changes_common == 'true' }}
           MAX_RUNNERS: ${{ env.max_testing_jobs }}
