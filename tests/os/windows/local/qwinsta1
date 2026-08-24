@@ -1,0 +1,4 @@
+#!/bin/bash
+
+path=$(pwd)
+cat ${path}/tests/os/windows/local/qwinsta_result1.txt

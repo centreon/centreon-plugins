@@ -225,6 +225,7 @@ sub read_qwinsta {
                 $data->{$hdrs[3] // 'STATE'} = $state;
                 $data->{$hdrs[4] // 'TYPE'} = $type;
                 $data->{$hdrs[5] // 'DEVICE'} = $device;
+                print("SESSIONNAME: " . $sessionname . " / USERNAME: " . $username . " / ID: " . $id . " / STATE: " . $state . " / TYPE: " . $type . " / DEVICE: " . $device . "\n");
             }
         }
 

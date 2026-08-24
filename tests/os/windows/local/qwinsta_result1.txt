@@ -1,0 +1,11 @@
+    SESSIONNAME     USERNAME        ID STATE    TYPE    DEVICE
+    console         Administrator1  0 active    wdcon
+    >rdp-tcp#1      User1           1 active    wdtshare
+    rdp-tcp                         2 listen    wdtshare
+                                    4 idle
+                                    5 idle
+
+ COUNTER INFORMATION:
+   Total Sessions Created       : 7
+   Total Sessions Disconnected  : 3
+   Total Sessions Reconnected   : 2
