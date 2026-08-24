@@ -10,7 +10,6 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}              ${CENTREON_PLUGIN_RUST_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
 ${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
 
 
@@ -47,7 +46,7 @@ cgs-no-connection ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j ${CGS_COLLECTIONS}${/}/cpu.json
+    ...    -j ${CGS_COLLECTIONS}${/}cpu.json
     ...    --hostname=127.0.0.1
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}

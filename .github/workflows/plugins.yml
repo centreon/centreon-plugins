@@ -27,7 +27,6 @@ on:
       - 'src/**'
       - 'packaging/**'
       - 'tests/**'
-      - 'rust-plugins/rs-collections/**'
   push:
     branches:
       - develop
@@ -43,7 +42,6 @@ on:
       - 'src/**'
       - 'packaging/**'
       - 'tests/**'
-      - 'rust-plugins/rs-collections/**'
 
 env:
   max_testing_jobs: 25

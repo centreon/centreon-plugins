@@ -52,7 +52,7 @@ cgs-cpu ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp${/}/cpu.json
+    ...    -j ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp${/}cpu.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
