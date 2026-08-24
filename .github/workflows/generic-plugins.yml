@@ -262,7 +262,7 @@ jobs:
           key: ${{ github.sha }}-${{ github.run_id }}-build-generic-plugins-${{ matrix.arch }}
           fail-on-cache-miss: true
 
-      - name: Setup SNMP simulator and run robot tests
+      - name: Start SNMP simulator and run robot tests
         run: |
           mkdir -p /var/lib/snmp/cert_indexes/
           useradd snmp || true
