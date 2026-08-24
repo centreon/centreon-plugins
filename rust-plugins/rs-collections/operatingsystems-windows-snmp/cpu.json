@@ -16,7 +16,7 @@
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "cpu"
+        "threshold-suffix": "core"
       }
     ],
     "aggregations": [

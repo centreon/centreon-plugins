@@ -93,8 +93,8 @@ cgs-cpu ${tc}
     ...    --critical-avg=0.1
     ...    CRITICAL: avg.cpu.usage.percent is 0.5% | '0#core.cpu.usage.percent'=1%;;;0;100 '1#core.cpu.usage.percent'=0%;;;0;100 avg.cpu.usage.percent=0.5%;;0.1;0;100
     ...    4
-    ...    --warning-cpu=0.1
+    ...    --warning-core=0.1
     ...    WARNING: '0#core.cpu.usage.percent' is 1% | '0#core.cpu.usage.percent'=1%;0.1;;0;100 '1#core.cpu.usage.percent'=0%;0.1;;0;100 avg.cpu.usage.percent=0.5%;;;0;100
     ...    5
-    ...    --critical-cpu=0.01
+    ...    --critical-core=0.01
     ...    CRITICAL: '0#core.cpu.usage.percent' is 1% | '0#core.cpu.usage.percent'=1%;;0.01;0;100 '1#core.cpu.usage.percent'=0%;;0.01;0;100 avg.cpu.usage.percent=0.5%;;;0;100
