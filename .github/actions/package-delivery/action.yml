@@ -102,8 +102,9 @@ runs:
             );
           } else if ('${{ steps.parse-distrib.outputs.package_extension }}' === 'deb') {
             const releaseTypeProps = '${{ inputs.stability }}' === 'testing' ? '--props "release_type=${{ inputs.release_type }}"' : '';
+            const archSuffix = '${{ inputs.arch }}' !== '' ? '_${{ inputs.arch }}' : '';
             await exec.exec(
-              `jf rt del "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*.deb" --quiet ${releaseTypeProps}`
+              `jf rt del "${{ steps.get_repository_stability_path.outputs.repository_stability_path }}/pool/${{ inputs.module_name }}/*${{ steps.parse-distrib.outputs.package_distrib_name }}*${archSuffix}.deb" --quiet ${releaseTypeProps}`
             );
           }
 
