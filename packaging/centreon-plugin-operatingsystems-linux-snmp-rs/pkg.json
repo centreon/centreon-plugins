@@ -11,6 +11,21 @@
             "file_mode": "0644"
         },
         {
+            "src": "../../rust-plugins/rs-collections/rust-snmp/cpu.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
+            "src": "../../rust-plugins/rs-collections/rust-snmp/processcount.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
+            "src": "../../rust-plugins/rs-collections/rust-snmp/storage.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
             "src": "../../rust-plugins/rs-collections/rust-snmp/uptime.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
             "file_mode": "0644"
