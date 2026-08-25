@@ -110,6 +110,7 @@ sub check_options {
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
     $self->{container} = defined($self->{option_results}->{container}[0]) ? $self->{option_results}->{container}[0] : undef;
+    $self->{type} = $self->{option_results}->{type} ? shift(@{$self->{option_results}->{type}}) : '';
 
     $self->{timeout} = 30;
     if (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ &&
@@ -188,6 +189,12 @@ sub check_options {
         return 0;
     }
     return 1;
+}
+
+sub is_rman {
+      my ($self, %options) = @_;                                               
+
+      return ($self->{type} // '') eq 'rman_catalog';
 }
 
 sub is_version_minimum {
