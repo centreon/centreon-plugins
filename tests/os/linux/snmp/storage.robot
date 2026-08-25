@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}rust-snmp
 
 
 *** Test Cases ***
@@ -75,14 +75,14 @@ cgs-storage ${tc}
     ...    --filter-in='^\/$'
     ...    All storages are OK | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
     ...    3
-    ...    --filter-in='^\/$' --warning-storage-bytes=1000
+    ...    --filter-in='^\/$' --warning-bytes=1000
     ...    WARNING: '/#storage.usage.bytes' is 7394013184B | '/#storage.usage.bytes'=7394013184B;1000;;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
     ...    4
-    ...    --filter-in='^\/$' --critical-storage-bytes=1000
+    ...    --filter-in='^\/$' --critical-bytes=1000
     ...    CRITICAL: '/#storage.usage.bytes' is 7394013184B | '/#storage.usage.bytes'=7394013184B;;1000;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
     ...    5
-    ...    --filter-in='^\/$' --warning-storage-prct=1
+    ...    --filter-in='^\/$' --warning-prct=1
     ...    WARNING: '/#storage.usage.percent' is 7.04% | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;1;;0;100
     ...    6
-    ...    --filter-in='^\/$' --critical-storage-prct=1
+    ...    --filter-in='^\/$' --critical-prct=1
     ...    CRITICAL: '/#storage.usage.percent' is 7.04% | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;;1;0;100
