@@ -110,24 +110,23 @@ if [[ "$REPO_BASE" == "plugins" ]]; then
     # carry the plain codename only
     REPOSITORY_NAME="${DEB_PREFIX}${STABILITY_SEGMENT}"
     BASE_PATH="$REPOSITORY_NAME"
-    # historical plugins suite names: plain codename for stable,
-    # codename-<stability> otherwise (bare "testing" segment)
+    # historical layout: one repository per stability with plain-codename
+    # suites; the legacy stability (bare "testing") lives in the front prefix
     LEGACY_SEGMENT="$STABILITY_SEGMENT"
     [[ "$STABILITY_SEGMENT" == "testing-release" ]] && LEGACY_SEGMENT="testing"
     LEGACY_TESTING_SEGMENT="$TESTING_SEGMENT"
     [[ "$TESTING_SEGMENT" == "testing-release" ]] && LEGACY_TESTING_SEGMENT="testing"
-    SUITE="$DISTRIB-$LEGACY_SEGMENT"
-    [[ "$STABILITY" == "stable" ]] && SUITE="$DISTRIB"
+    SUITE="$DISTRIB"
     TESTING_REPOSITORY_NAME="${DEB_PREFIX}${TESTING_SEGMENT}"
     TESTING_BASE_PATH="$TESTING_REPOSITORY_NAME"
-    TESTING_SUITE="$DISTRIB-$LEGACY_TESTING_SEGMENT"
+    TESTING_SUITE="$DISTRIB"
     STABLE_REPOSITORY_NAME="${DEB_PREFIX}stable"
     STABLE_BASE_PATH="$STABLE_REPOSITORY_NAME"
     STABLE_SUITE="$DISTRIB"
     # legacy (front) paths used by the content verifications: the CI exercises
     # the compatibility rewrites on every delivery
-    LEGACY_BASE_PATH="${DEB_PREFIX}${REPO_BASE}"
-    LEGACY_TESTING_BASE_PATH="${DEB_PREFIX}${REPO_BASE}"
+    LEGACY_BASE_PATH="${DEB_PREFIX}${REPO_BASE}-${LEGACY_SEGMENT}"
+    LEGACY_TESTING_BASE_PATH="${DEB_PREFIX}${REPO_BASE}-${LEGACY_TESTING_SEGMENT}"
     LEGACY_STABLE_BASE_PATH="${DEB_PREFIX}${REPO_BASE}-stable"
     POOL_PATH="pool/$POOL_SEGMENT/$MODULE_NAME"
     TESTING_POOL_PATH="pool/$TESTING_POOL_SEGMENT/$MODULE_NAME"
