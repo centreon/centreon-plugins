@@ -48,12 +48,30 @@ outputs:
   base_path_prefix:
     description: "Base path prefix of rpm distributions (one distribution per architecture)"
     value: ${{ steps.properties.outputs.base_path_prefix }}
+  legacy_base_path_prefix:
+    description: "Legacy (front) rpm base path prefix, used by the content verifications"
+    value: ${{ steps.properties.outputs.legacy_base_path_prefix }}
+  legacy_testing_base_path_prefix:
+    description: "Legacy (front) testing rpm base path prefix"
+    value: ${{ steps.properties.outputs.legacy_testing_base_path_prefix }}
+  legacy_stable_base_path_prefix:
+    description: "Legacy (front) stable rpm base path prefix"
+    value: ${{ steps.properties.outputs.legacy_stable_base_path_prefix }}
   repository_name:
     description: "Repository name of the deb repository"
     value: ${{ steps.properties.outputs.repository_name }}
   base_path:
     description: "Base path of the deb distribution"
     value: ${{ steps.properties.outputs.base_path }}
+  legacy_base_path:
+    description: "Legacy (front) deb base path, used by the content verifications"
+    value: ${{ steps.properties.outputs.legacy_base_path }}
+  legacy_testing_base_path:
+    description: "Legacy (front) testing deb base path"
+    value: ${{ steps.properties.outputs.legacy_testing_base_path }}
+  legacy_stable_base_path:
+    description: "Legacy (front) stable deb base path"
+    value: ${{ steps.properties.outputs.legacy_stable_base_path }}
   suite:
     description: "Apt suite of the deb delivery"
     value: ${{ steps.properties.outputs.suite }}

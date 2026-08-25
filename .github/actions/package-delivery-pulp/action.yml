@@ -105,6 +105,7 @@ runs:
         REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.repository_prefix }}
         STABLE_REPOSITORY_PREFIX: ${{ steps.pulp-properties.outputs.stable_repository_prefix }}
         BASE_PATH_PREFIX: ${{ steps.pulp-properties.outputs.base_path_prefix }}
+        LEGACY_BASE_PATH_PREFIX: ${{ steps.pulp-properties.outputs.legacy_base_path_prefix }}
         PULP_URL: ${{ inputs.pulp_url }}
         PULP_DOMAIN: ${{ steps.pulp-properties.outputs.domain }}
         PULP_STABLE_DOMAIN: ${{ steps.pulp-properties.outputs.stable_domain }}
@@ -122,6 +123,8 @@ runs:
         STABILITY: ${{ inputs.stability }}
         REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.repository_name }}
         BASE_PATH: ${{ steps.pulp-properties.outputs.base_path }}
+        LEGACY_BASE_PATH: ${{ steps.pulp-properties.outputs.legacy_base_path }}
+        LEGACY_STABLE_BASE_PATH: ${{ steps.pulp-properties.outputs.legacy_stable_base_path }}
         SUITE: ${{ steps.pulp-properties.outputs.suite }}
         STABLE_SUITE: ${{ steps.pulp-properties.outputs.stable_suite }}
         STABLE_BASE_PATH: ${{ steps.pulp-properties.outputs.stable_base_path }}
