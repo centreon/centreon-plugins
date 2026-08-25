@@ -21,9 +21,12 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   echo "::group::Preparing $PLUGIN_NAME_LOWER"
 
   # Process package files
-  pkg_values=($(jq -r '.pkg_name,.plugin_name' "$PACKAGE_FILE"))
-  pkg_summary=$(echo "${pkg_values[0]}")
-  plugin_name=$(echo "${pkg_values[1]}")
+  pkg_summary=$(jq -r '.pkg_summary' "$PACKAGE_FILE")
+  # More than half the packages still carry the placeholder summary "Centreon Plugin", which says
+  # less than their own name. Keep the previous behaviour for those until they get a real summary.
+  if [[ "${pkg_summary}" == "Centreon Plugin" ]]; then
+    pkg_summary=$(jq -r '.pkg_name' "$PACKAGE_FILE")
+  fi
   contents=$(jq -r '.package_files // [] | map("  - src: \"" + .src + "\"\n    dst: \"" + .dst + "\"\n    file_info:\n      mode: " + (.file_mode // "0755")) | join("\n")' "$PACKAGE_FILE")
   conflicts=$(jq -r '.conflicts // [] | join(",")' "$PACKAGE_FILE")
   replaces=$(jq -r '.replaces // [] | join(",")' "$PACKAGE_FILE")
