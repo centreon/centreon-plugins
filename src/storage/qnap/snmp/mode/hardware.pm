@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -91,8 +91,14 @@ sub snmp_execute {
     my $oid_qts_model = '.1.3.6.1.4.1.55062.1.12.3.0'; # systemModel
     my $oid_quts_disk_table = '.1.3.6.1.4.1.55062.2.10.7.1.1.1'; # quts-poolTable
     my $snmp_result = $self->{snmp}->get_leef(
-        oids => [$oid_es_uptime, $oid_qts_model, $oid_quts_disk_table]
-    ); 
+        oids      => [ $oid_es_uptime, $oid_qts_model, $oid_quts_disk_table ],
+        dont_quit => 1,
+    );
+    if (!defined($snmp_result)) {
+        my $err = $self->{snmp}->error() // "unknown snmp error";
+        $self->{output}->add_option_msg(short_msg => "$err, if the server only answer to snmp V1 request, try using the --snmp-force-getnext option");
+        $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+    }
     if (defined($snmp_result->{$oid_es_uptime})) {
         $self->{is_es} = 1;
     }
@@ -127,7 +133,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'disk', 'fan', 'mdisk', 'psu', 'raid', 'temperature'.
+Can be: C<disk>, C<fan>, C<mdisk>, C<psu>, C<raid>, C<temperature>.
 
 =item B<--filter>
 
