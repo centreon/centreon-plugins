@@ -21,7 +21,7 @@ stable_suite_architectures() {
   local release_file http_code
   release_file=$(mktemp)
   http_code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$release_file" -w '%{http_code}' \
-    "$PULP_CONTENT_URL/$PULP_STABLE_DOMAIN/${STABLE_BASE_PATH:-$BASE_PATH}/dists/$STABLE_SUITE/Release" 2>/dev/null || echo 000)
+    "$PULP_CONTENT_URL/${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/${STABLE_BASE_PATH:-$BASE_PATH}}/dists/$STABLE_SUITE/Release" 2>/dev/null || echo 000)
   case "$http_code" in
     404) rm -f "$release_file"; return 0 ;;
     200) awk -F': ' '/^Architectures:/ {print $2}' "$release_file"; rm -f "$release_file" ;;
@@ -39,7 +39,7 @@ fetch_stable_packages_index() {
   local a=$1 pkg_file http_code
   pkg_file=$(mktemp)
   http_code=$(content_curl -sSL --retry 3 --retry-delay 5 -o "$pkg_file" -w '%{http_code}' \
-    "$PULP_CONTENT_URL/$PULP_STABLE_DOMAIN/${STABLE_BASE_PATH:-$BASE_PATH}/dists/$STABLE_SUITE/main/binary-$a/Packages" 2>/dev/null || echo 000)
+    "$PULP_CONTENT_URL/${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/${STABLE_BASE_PATH:-$BASE_PATH}}/dists/$STABLE_SUITE/main/binary-$a/Packages" 2>/dev/null || echo 000)
   case "$http_code" in
     404) rm -f "$pkg_file"; return 0 ;;
     200) cat "$pkg_file"; rm -f "$pkg_file" ;;
@@ -444,13 +444,13 @@ for FILE in "${FILES[@]}"; do
   manifest_add "$(jq -cn \
     --arg filename "$FILE" --arg name "$name" --arg version "$version" \
     --arg arch "$arch" --arg sha256 "$sha256" --arg repository "$REPOSITORY_NAME" \
-    --arg base_path "$BASE_PATH" --arg suite "$SUITE" --arg relative_path "$POOL_PATH/$FILE" \
+    --arg base_path "${LEGACY_BASE_PATH:-$PULP_DOMAIN/$BASE_PATH}" --arg suite "$SUITE" --arg relative_path "$POOL_PATH/$FILE" \
     '{filename:$filename,name:$name,version:$version,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path,suite:$suite,relative_path:$relative_path}')"
 done
 
 echo "[INFO] Publishing repository $REPOSITORY_NAME"
 create_publication deb "$REPOSITORY_NAME" --structured
 
-echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/$PULP_DOMAIN/$BASE_PATH/ $SUITE main"
+echo "::notice::Packages are available with: deb $PULP_CONTENT_URL/${LEGACY_BASE_PATH:-$PULP_DOMAIN/$BASE_PATH}/ $SUITE main"
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "deb" "${STABILITY:-}" "delivery" "$PULP_CONTENT_URL"
