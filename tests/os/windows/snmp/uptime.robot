@@ -45,7 +45,7 @@ cgs-uptime ${tc}
     [Tags]    os    windows    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j ${CGS_COLLECTIONS}${/}..${/}rust-snmp${/}uptime.json
+    ...    -j ${CGS_COLLECTIONS}${/}..${/}applications-protocol-snmp${/}uptime.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}

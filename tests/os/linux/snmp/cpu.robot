@@ -10,7 +10,7 @@ Test Timeout        120s
 
 *** Variables ***
 ${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}rust-snmp
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}applications-protocol-snmp
 
 
 *** Test Cases ***

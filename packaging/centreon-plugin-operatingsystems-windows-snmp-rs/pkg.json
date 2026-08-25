@@ -11,27 +11,27 @@
             "file_mode": "0644"
         },
         {
-            "src": "../../rust-plugins/rs-collections/rust-snmp/cpu.json",
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/cpu.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
             "file_mode": "0644"
         },
         {
-            "src": "../../rust-plugins/rs-collections/rust-snmp/processcount.json",
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/processcount.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
             "file_mode": "0644"
         },
         {
-            "src": "../../rust-plugins/rs-collections/rust-snmp/storage.json",
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/storage.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
             "file_mode": "0644"
         },
         {
-            "src": "../../rust-plugins/rs-collections/rust-snmp/uptime.json",
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/uptime.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
             "file_mode": "0644"
         },
         {
-            "src": "../../rust-plugins/rs-collections/rust-snmp/sysdesc.json",
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/sysdesc.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
             "file_mode": "0644"
         }
