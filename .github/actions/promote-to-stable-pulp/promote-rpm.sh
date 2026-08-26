@@ -83,6 +83,8 @@ for ARCH in noarch x86_64; do
 
   STABLE_REPOSITORY_NAME="$STABLE_REPOSITORY_PREFIX-$ARCH"
   STABLE_BASE_PATH="$STABLE_BASE_PATH_PREFIX/$ARCH"
+  LEGACY_STABLE_BASE_PATH=""
+  [[ -n "$LEGACY_STABLE_BASE_PATH_PREFIX" ]] && LEGACY_STABLE_BASE_PATH="$LEGACY_STABLE_BASE_PATH_PREFIX/$ARCH"
 
   if ! pulp_resource_exists "repositories/rpm/rpm" "$STABLE_REPOSITORY_NAME"; then
     echo "::error::stable rpm repository $STABLE_REPOSITORY_NAME does not exist. Pulp repositories and distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before promoting."
@@ -126,11 +128,11 @@ for ARCH in noarch x86_64; do
   # verification step verifies exactly this set against the stable repo
   while read -r PKG; do
     manifest_add "$(echo "$PKG" | jq -c \
-      --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "$STABLE_BASE_PATH" \
+      --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}" \
       '{filename: (.location_href | sub(".*/"; "")), name, version, release, arch, sha256, repository: $repository, base_path: $base_path}')"
   done < <(echo "${ARCH_RESULTS[$ARCH]}" | jq -c '.[]')
 
-  echo "::notice::Packages are available at $PULP_CONTENT_URL/$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH/"
+  echo "::notice::Packages are available at $PULP_CONTENT_URL/${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}/"
 done
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "rpm" "$STABILITY" "promote" "$PULP_CONTENT_URL"
