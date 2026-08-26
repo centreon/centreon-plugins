@@ -22,7 +22,9 @@ package apps::virtualization::vates::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
+use centreon::plugins::statefile;
 use centreon::plugins::misc qw/json_encode json_decode is_empty/;
+use Digest::SHA 'sha1_hex';
 
 sub new {
     my ($class, %options) = @_;
@@ -46,13 +48,16 @@ sub new {
             'password:s' => { name => 'password' },
             'api-key:s'  => { name => 'api_key' },
             'timeout:s'  => { name => 'timeout', default => 10 },
-            'api-url:s'  => {name => 'api_url', default => '/rest/v0/' }
+            'api-url:s'  => {name => 'api_url', default => '/rest/v0/' },
+            'header:s@'  => { name => 'header' },
+            'reload-cache-time:s' => { name => 'reload_cache_time', default => 1440 }
         });
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output}          = $options{output};
     $self->{http}            = centreon::plugins::http->new(%options, 'default_backend' => 'curl');
+    $self->{statefile_cache}        = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -75,25 +80,27 @@ sub check_options {
         $self->{output}->option_exit(short_msg => "Need to specify --username option.");
     }
     $self->{http}->set_options(%{$self->{option_results}});
+    $self->{statefile_cache}->check_options(option_results => $self->{option_results});
     # set auth header
     $self->{auth_header} = MIME::Base64::encode_base64($self->{option_results}->{username} . ':' . $self->{option_results}->{password});
     chomp($self->{auth_header});
+    # registered through add_header (not passed to request()) so it merges with, instead of
+    # overriding, any --header value supplied on the command line.
+    $self->{http}->add_header(key => 'Authorization', value => 'Basic ' . $self->{auth_header});
 
     return 0;
 }
 sub request_api {
     my ($self, %options) = @_;
-    my @header = ('Authorization: Basic ' . $self->{auth_header});
 
-    if ($options{header}) {
-        print("inserting\n");
-        push @header, @{$options{header}};
-    }
      my ($content) = $self->{http}->request(
         method          => 'GET',
         url_path        => $self->{option_results}->{api_url} . $options{endpoint},
         get_param       => $options{get_param},
-        header          => \@header,
+        header          => $options{header},
+        # lets a caller inspect a non-2xx JSON error body instead of the http layer
+        # auto-exiting on it (used by get_vm_stats to tell "vm halted" from a real error).
+        silently_fail   => $options{silently_fail}
      );
     return json_decode($content, booleans_as_strings => 1);
 
@@ -107,4 +114,86 @@ sub request_api_get {
     return $content;
 }
 
+# resolves --vm-name to a vm uuid and caches the mapping on disk (name/uuid never change for
+# the lifetime of a vm), so that a --vm-name lookup only costs an extra API call once per
+# reload-cache-time window instead of on every plugin execution. --vm-uuid needs no resolution.
+sub get_vm_uuid {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{vm_uuid} if (!is_empty($self->{option_results}->{vm_uuid}));
+
+    my $vm_name = $self->{option_results}->{vm_name};
+    my $has_cache_file = $self->{statefile_cache}->read(
+        statefile => 'vates_vm_uuid_' . sha1_hex($self->{option_results}->{hostname} . '_' . $vm_name)
+    );
+    my $cached_uuid = $self->{statefile_cache}->get(name => 'uuid');
+    my $last_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
+
+    if ($options{force_update}
+        or $has_cache_file == 0
+        or !defined($cached_uuid)
+        or (time() - $last_timestamp) > ($self->{option_results}->{reload_cache_time} * 60)
+    ) {
+        my $response = $self->request_api_get(
+            endpoint  => 'vms',
+            get_param => [ 'fields=uuid', 'filter=name_label:' . $vm_name ]
+        );
+        if (!defined($response) or ref($response) ne 'ARRAY' or scalar @$response != 1) {
+            $self->{output}->option_exit(short_msg => "no vm found, api did not return an array with one element. Please check --vm-uuid and --vm-name parameter or --debug.");
+        }
+        $cached_uuid = $response->[0]->{uuid};
+        $self->{statefile_cache}->write(data => { uuid => $cached_uuid, last_timestamp => time() });
+    }
+
+    return $cached_uuid;
+}
+
+# returns { uuid => ..., stats => ... } for the vm identified by --vm-uuid/--vm-name.
+# only issues the vms/<uuid>/stats call (the uuid resolution is skipped whenever it is
+# already cached), and turns the API's own error message (e.g. "vm is halted") into a
+# clean UNKNOWN instead of a generic HTTP status.
+sub get_vm_stats {
+    my ($self, %options) = @_;
+
+    if (is_empty($self->{option_results}->{vm_uuid}) and is_empty($self->{option_results}->{vm_name})) {
+        $self->{output}->option_exit(short_msg => "you must fill either --vm-uuid or --vm-name.");
+    }
+
+    my $uuid = $self->get_vm_uuid();
+    my $stats = $self->request_api_get(endpoint => 'vms/' . $uuid . '/stats', silently_fail => 1);
+
+    # the cached uuid can be stale if the vm was deleted and re-created with the same name:
+    # invalidate the cache and resolve it again, once, before giving up.
+    if (defined($stats->{error}) and !is_empty($self->{option_results}->{vm_name})) {
+        $uuid = $self->get_vm_uuid(force_update => 1);
+        $stats = $self->request_api_get(endpoint => 'vms/' . $uuid . '/stats', silently_fail => 1);
+    }
+
+    if (defined($stats->{error})) {
+        $self->{output}->option_exit(short_msg => $stats->{error});
+    }
+
+    return { uuid => $uuid, stats => $stats->{stats} };
+}
+
+# used to get overview of a vm with power state, and uuid/name
+sub get_vm_info {
+    my ($self, %options) = @_;
+
+    my $fields = "name_label,power_state,uuid,os_version";
+
+    # default filter use uuid, or name if not present.
+    my $filter = "uuid:". $self->{option_results}->{vm_uuid};
+    if (is_empty($self->{option_results}->{vm_uuid})){
+        $filter = "name_label:". $self->{option_results}->{vm_name};
+    }
+    my $response = $self->request_api_get(
+        endpoint  => "vms",
+        get_param => [ "fields=" . $fields, "filter=" . $filter ],
+    );
+    if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1){
+        $self->{output}->option_exit(short_msg => "no vm found, api did not return an array with one element. Please check --vm-uuid and --vm-name parameter or --debug.");
+    }
+    return $response->[0];
+}
 1;
