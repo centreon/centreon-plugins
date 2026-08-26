@@ -78,6 +78,7 @@ TESTING_REPOSITORY_NAME=""
 TESTING_BASE_PATH=""
 TESTING_SUITE=""
 STABLE_SUITE=""
+STABLE_LEGACY_SUITE=""
 POOL_PATH=""
 TESTING_POOL_PATH=""
 STABLE_POOL_PATH=""
@@ -187,6 +188,13 @@ else
     STABLE_REPOSITORY_NAME="${DEB_PREFIX}${DEB_INFIX}stable"
     STABLE_BASE_PATH="$STABLE_REPOSITORY_NAME"
     STABLE_SUITE="$DISTRIB-$VERSION-stable"
+    # 24.x standard clients use the dedicated legacy stable repos
+    # (apt-standard-24.10-stable/) with plain-codename suites: the promote
+    # mirrors its associations into that suite
+    if [[ "$REPO_BASE" == "standard" && -z "$DEB_INFIX" ]] \
+      && [[ "$VERSION" == "24.04" || "$VERSION" == "24.10" ]]; then
+      STABLE_LEGACY_SUITE="$DISTRIB"
+    fi
     LEGACY_DEB_ROOT="${DEB_PREFIX}${REPO_BASE}"
     [[ -n "$DEB_INFIX" ]] && LEGACY_DEB_ROOT="${DEB_PREFIX}${REPO_BASE}-internal"
     LEGACY_BASE_PATH="$LEGACY_DEB_ROOT"
@@ -252,6 +260,7 @@ echo "[DEBUG] - stable_domain: $STABLE_DOMAIN"
   echo "testing_base_path=$TESTING_BASE_PATH"
   echo "testing_suite=$TESTING_SUITE"
   echo "stable_suite=$STABLE_SUITE"
+  echo "stable_legacy_suite=$STABLE_LEGACY_SUITE"
   echo "stable_repository_name=$STABLE_REPOSITORY_NAME"
   echo "stable_base_path=$STABLE_BASE_PATH"
   echo "pool_path=$POOL_PATH"
