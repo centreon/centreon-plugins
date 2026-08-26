@@ -139,10 +139,15 @@ STABLE_REPOSITORY_HREF=$(pulp deb repository show --name "$STABLE_REPOSITORY_NAM
 # create-repos): mirror every candidate package association into that suite so
 # both suites always list the same stable content. Idempotent (rerun safe).
 ensure_legacy_suite_associations() {
-  [[ -z "${STABLE_LEGACY_SUITE:-}" ]] && return 0
+  [[ -z "${STABLE_LEGACY_REPOSITORY_NAME:-}" ]] && return 0
   refresh_pulp_token
-  local latest legacy_rc
-  latest=$(pulp deb repository show --name "$STABLE_REPOSITORY_NAME" | jq -r '.latest_version_href')
+  if ! pulp_resource_exists "repositories/deb/apt" "$STABLE_LEGACY_REPOSITORY_NAME"; then
+    echo "::error::Dedicated legacy repository $STABLE_LEGACY_REPOSITORY_NAME does not exist. Pulp repositories are provisioned centrally by delivery-tooling create-repos; run create-repos before promoting."
+    return 1
+  fi
+  local legacy_repo_href latest legacy_rc
+  legacy_repo_href=$(pulp deb repository show --name "$STABLE_LEGACY_REPOSITORY_NAME" | jq -r '.pulp_href')
+  latest=$(pulp deb repository show --name "$STABLE_LEGACY_REPOSITORY_NAME" | jq -r '.latest_version_href')
   legacy_rc=$(
     curl -fsSL --retry 3 --retry-delay 5 -H "Authorization: Bearer $PULP_TOKEN" \
       "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/release_components/?$(
@@ -151,10 +156,10 @@ ensure_legacy_suite_associations() {
       )" | jq -r '.results[0].pulp_href // empty'
   )
   if [[ -z "$legacy_rc" ]]; then
-    echo "::error::Cannot resolve the $STABLE_LEGACY_SUITE/main release component (dedicated legacy suite, provisioned by create-repos)"
+    echo "::error::Cannot resolve the $STABLE_LEGACY_SUITE/main release component of $STABLE_LEGACY_REPOSITORY_NAME (provisioned by create-repos)"
     return 1
   fi
-  echo "[INFO] Mirroring $PACKAGES_COUNT package association(s) into $STABLE_LEGACY_SUITE/main (dedicated legacy suite)"
+  echo "[INFO] Mirroring $PACKAGES_COUNT package association(s) into $STABLE_LEGACY_REPOSITORY_NAME $STABLE_LEGACY_SUITE/main"
   local units_file body_file sha href out code body prc n=0
   units_file=$(mktemp)
   while read -r sha; do
@@ -189,14 +194,15 @@ ensure_legacy_suite_associations() {
   rm -f "$units_file"
   local task rc
   for _ in 1 2 3; do
-    task=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$body_file")
+    task=$(start_modify_task "$PULP_URL${legacy_repo_href}modify/" "$body_file")
     wait_task_race "$task" && rc=0 || rc=$?
     if [[ $rc -eq 0 ]]; then
       rm -f "$body_file"
+      create_publication deb "$STABLE_LEGACY_REPOSITORY_NAME" --structured
       return 0
     fi
   done
-  echo "::error::Cannot add the $STABLE_LEGACY_SUITE mirror associations to $STABLE_REPOSITORY_NAME"
+  echo "::error::Cannot add the $STABLE_LEGACY_SUITE mirror associations to $STABLE_LEGACY_REPOSITORY_NAME"
   return 1
 }
 

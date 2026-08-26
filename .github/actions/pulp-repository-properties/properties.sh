@@ -79,6 +79,7 @@ TESTING_BASE_PATH=""
 TESTING_SUITE=""
 STABLE_SUITE=""
 STABLE_LEGACY_SUITE=""
+STABLE_LEGACY_REPOSITORY_NAME=""
 POOL_PATH=""
 TESTING_POOL_PATH=""
 STABLE_POOL_PATH=""
@@ -188,12 +189,17 @@ else
     STABLE_REPOSITORY_NAME="${DEB_PREFIX}${DEB_INFIX}stable"
     STABLE_BASE_PATH="$STABLE_REPOSITORY_NAME"
     STABLE_SUITE="$DISTRIB-$VERSION-stable"
-    # 24.x standard clients use the dedicated legacy stable repos
-    # (apt-standard-24.10-stable/) with plain-codename suites: the promote
-    # mirrors its associations into that suite
-    if [[ "$REPO_BASE" == "standard" && -z "$DEB_INFIX" ]] \
-      && [[ "$VERSION" == "24.04" || "$VERSION" == "24.10" ]]; then
-      STABLE_LEGACY_SUITE="$DISTRIB"
+    # 24.x clients use dedicated legacy stable repositories with plain-codename
+    # suites (apt|ubuntu-standard-<major>-stable, apt-<major>-business-stable):
+    # the promote mirrors its package associations into them
+    if [[ -z "$DEB_INFIX" && ( "$VERSION" == "24.04" || "$VERSION" == "24.10" ) ]]; then
+      if [[ "$REPO_BASE" == "standard" ]]; then
+        STABLE_LEGACY_REPOSITORY_NAME="${DEB_PREFIX}standard-$VERSION-stable"
+        STABLE_LEGACY_SUITE="$DISTRIB"
+      elif [[ "$REPO_BASE" == "business" && "$DEB_PREFIX" == "apt-" ]]; then
+        STABLE_LEGACY_REPOSITORY_NAME="apt-$VERSION-business-stable"
+        STABLE_LEGACY_SUITE="$DISTRIB"
+      fi
     fi
     LEGACY_DEB_ROOT="${DEB_PREFIX}${REPO_BASE}"
     [[ -n "$DEB_INFIX" ]] && LEGACY_DEB_ROOT="${DEB_PREFIX}${REPO_BASE}-internal"
@@ -261,6 +267,7 @@ echo "[DEBUG] - stable_domain: $STABLE_DOMAIN"
   echo "testing_suite=$TESTING_SUITE"
   echo "stable_suite=$STABLE_SUITE"
   echo "stable_legacy_suite=$STABLE_LEGACY_SUITE"
+  echo "stable_legacy_repository_name=$STABLE_LEGACY_REPOSITORY_NAME"
   echo "stable_repository_name=$STABLE_REPOSITORY_NAME"
   echo "stable_base_path=$STABLE_BASE_PATH"
   echo "pool_path=$POOL_PATH"
