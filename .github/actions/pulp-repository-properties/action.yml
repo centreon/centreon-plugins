@@ -99,6 +99,12 @@ outputs:
   stable_suite:
     description: "Apt suite of stable deb packages"
     value: ${{ steps.properties.outputs.stable_suite }}
+  stable_legacy_suite:
+    description: "Plain-codename suite of the dedicated 24.x stable legacy repositories (empty otherwise)"
+    value: ${{ steps.properties.outputs.stable_legacy_suite }}
+  stable_legacy_repository_name:
+    description: "Dedicated 24.x stable legacy repository fed by the promote mirror (empty otherwise)"
+    value: ${{ steps.properties.outputs.stable_legacy_repository_name }}
   stable_repository_name:
     description: "Repository holding the stable deb packages (one deb repository per stability)"
     value: ${{ steps.properties.outputs.stable_repository_name }}

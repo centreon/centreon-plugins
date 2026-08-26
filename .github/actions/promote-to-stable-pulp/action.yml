@@ -112,6 +112,8 @@ runs:
         TESTING_POOL_PATH: ${{ steps.pulp-properties.outputs.testing_pool_path }}
         TESTING_SUITE: ${{ steps.pulp-properties.outputs.testing_suite }}
         STABLE_SUITE: ${{ steps.pulp-properties.outputs.stable_suite }}
+        STABLE_LEGACY_SUITE: ${{ steps.pulp-properties.outputs.stable_legacy_suite }}
+        STABLE_LEGACY_REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.stable_legacy_repository_name }}
         STABLE_REPOSITORY_NAME: ${{ steps.pulp-properties.outputs.stable_repository_name }}
         STABLE_BASE_PATH: ${{ steps.pulp-properties.outputs.stable_base_path }}
         PACKAGE_DISTRIB_NAME: ${{ steps.pulp-properties.outputs.package_distrib_name }}
