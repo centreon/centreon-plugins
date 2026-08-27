@@ -29,11 +29,6 @@
             "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/uptime.json",
             "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
             "file_mode": "0644"
-        },
-        {
-            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/sysdesc.json",
-            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-windows-snmp/",
-            "file_mode": "0644"
         }
     ],
     "skip_default_dependencies": true

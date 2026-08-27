@@ -1,5 +1,5 @@
 {
     "dependencies": [
-        "centreon-plugin-rust-snmp"
+        "centreon-plugin-rust-snmp >= 20260900"
     ]
 }

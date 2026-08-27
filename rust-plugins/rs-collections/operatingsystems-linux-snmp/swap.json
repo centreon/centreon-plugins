@@ -22,7 +22,7 @@
         "uom": "B",
         "min": 0,
         "max_expr": "{memTotalSwap}",
-        "threshold-suffix": "swap-free-bytes"
+        "threshold-suffix": "free-bytes"
       },
       {
         "name": "swap.usage.bytes",
@@ -30,7 +30,7 @@
         "uom": "B",
         "min": 0,
         "max_expr": "{memTotalSwap}",
-        "threshold-suffix": "swap-bytes"
+        "threshold-suffix": "bytes"
       },
       {
         "name": "swap.usage.percent",
@@ -38,7 +38,7 @@
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "swap-prct"
+        "threshold-suffix": "prct"
       }
     ]
   },
