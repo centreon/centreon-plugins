@@ -79,7 +79,27 @@ my @labels = (
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->get_devices_from_api();
+    my $all_devices = $options{custom}->get_devices();
+
+    if ($self->{option_results}->{resource_type} eq 'workspace') {
+        my @workspace_devices = ();
+
+        foreach my $device (@$all_devices) {
+            next if !defined($device->{workspace_id}) || $self->{option_results}->{workspace_id} ne $device->{workspace_id};
+            push(@workspace_devices, $device);
+        }
+
+        return \@workspace_devices;
+    } else {
+        my @personal_devices = ();
+
+        foreach my $device (@$all_devices) {
+            next if $self->{option_results}->{person_id} ne $device->{person_id};
+            push(@personal_devices, $device);
+        }
+
+        return \@personal_devices;
+    }
 }
 
 sub run {
@@ -137,6 +157,10 @@ Choose the type of resources to discover (can be: C<workspace>, C<person>). Defa
 =item B<--use-id-empty-serial>
 
 use the last 10 characters of the id as the serial number if serial number is empty.
+
+=item B<--cache-use>
+
+Use the cache file instead of requesting the API (the cache file can be created with the cache mode).
 
 =back
 

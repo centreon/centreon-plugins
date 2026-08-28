@@ -345,7 +345,7 @@ sub get_max_devices {
     my $results = [];
 
     for my $item (@{$response->{items}}) {
-        push @$results, {
+        my $res = {
             id                  => $item->{id},
             display_name        => $item->{displayName},
             product             => $item->{product},
@@ -359,6 +359,16 @@ sub get_max_devices {
             connection_status   => $item->{connectionStatus},
             error_codes         => defined($item->{errorCodes}) ? join(';', @{$item->{errorCodes}}) : ''
         };
+
+        if(defined($item->{workspaceId})) {
+            $res->{workspace_id} = $item->{workspaceId};
+        }
+
+        if(defined($item->{personId})) {
+            $res->{person_id} = $item->{personId};
+        }
+
+        push @$results, $res;
     }
 
     return $results;
