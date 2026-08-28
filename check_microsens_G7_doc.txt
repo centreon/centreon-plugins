@@ -1,0 +1,126 @@
+=== Documentation for the check_microsens_G7_v3.pl script ===
+
+This script is a Nagios/Centreon plugin for monitoring Microsens G7 devices via SNMP.
+
+-- Available Modes ---
+- uptime: Checks the device's uptime.
+- temperature: Checks the system temperature (with warning/critical thresholds).
+- ports: Checks the port status (linkUp/linkDown + spanning-tree status).
+- poe: Checks the total and per-port PoE consumption.
+- g8032: Checks the status of the G.8032 Ring redundancy protocol.
+- firmware: Checks the installed firmware version.
+- system: Checks system information (hostname, serial number, MAC address, CPU, memory, temperature).
+- config: Checks critical configuration (DNS, NTP, TACACS, authentication mode).
+
+--- General Options ---
+-H, --host: Device IP address or FQDN.
+-C, --community: SNMP community (SNMP v2c).
+-v, --version: SNMP version (2c or 3).
+-u, --username: SNMP v3 username.
+--authproto: Authentication protocol (MD5|SHA).
+--authpass: Authentication password.
+--privproto: Encryption protocol (DES|AES).
+--privpass: Encryption password.
+-m, --mode: Verification mode to run.
+-w, --warning: Warning threshold (temperature, PoE).
+-c, --critical: Critical threshold (temperature, PoE).
+-t, --timeout: SNMP timeout in seconds.
+-p, --port: SNMP port (default 161).
+--debug: Enables debug mode.
+
+--- Usage Examples ---
+
+1) Check uptime with SNMPv2c:
+./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m uptime
+
+2) Check the temperature with threshold warning=60°C and critical=70°C:
+./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m temperature -w 60 -c 70
+
+3) Check port status with SNMPv3:
+./check_microsens_G7_v3.pl -H 192.168.1.20 -v3 -u snmpuser --authproto MD5 --authpass "password" -m ports
+
+4) Check the configured NTP/DNS/TACACS servers: 
+./check_microsens_G7_v3.pl -H 192.168.1.30 -C public -v2c -m config
+
+ENGLISH :
+1) Check uptime using SNMPv2c: 
+./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m uptime
+
+2) Check temperature with warning=60°C and critical=70°C: 
+./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m temperature -w 60 -c 70
+
+3) Check port status using SNMPv3: 
+./check_microsens_G7_v3.pl -H 192.168.1.20 -v3 -u snmpuser --authproto MD5 --authpass "password" -m ports
+
+4) Check configured NTP/DNS/TACACS servers:
+./check_microsens_G7_v3.pl -H 192.168.1.30 -C public -v2c -m config
+
+--- Standard Nagios outputs ---
+OK: Everything is normal.
+WARNING: Monitor for threshold exceeded or partial configuration.
+CRITICAL: Serious problem (temperature, PoE, critical ports, missing configuration).
+UNKNOWN: Unable to query the device or unexpected format.
+
+=== Documentation du script check_microsens_G7_v3.pl ===
+
+Ce script est un plugin Nagios/Centreon permettant de superviser les équipements Microsens G7 via SNMP.
+
+--- Modes disponibles ---
+- uptime        : Vérifie le temps de fonctionnement de l’équipement.
+- temperature   : Vérifie la température système (avec seuils warning/critical).
+- ports         : Vérifie l’état des ports (linkUp/linkDown + état du spanning-tree).
+- poe           : Vérifie la consommation PoE totale et par port.
+- g8032         : Vérifie l’état du protocole de redondance G.8032 Ring.
+- firmware      : Vérifie la version du firmware installé.
+- system        : Vérifie les informations système (hostname, numéro de série, adresse MAC, CPU, mémoire, température).
+- config        : Vérifie la configuration critique (DNS, NTP, TACACS, mode d’authentification).
+
+--- Options générales ---
+-H, --host       : Adresse IP ou FQDN de l’équipement.
+-C, --community  : Communauté SNMP (SNMP v2c).
+-v, --version    : Version SNMP (2c ou 3).
+-u, --username   : Nom d’utilisateur SNMP v3.
+--authproto      : Protocole d’authentification (MD5|SHA).
+--authpass       : Mot de passe d’authentification.
+--privproto      : Protocole de chiffrement (DES|AES).
+--privpass       : Mot de passe de chiffrement.
+-m, --mode       : Mode de vérification à exécuter.
+-w, --warning    : Seuil warning (température, PoE).
+-c, --critical   : Seuil critical (température, PoE).
+-t, --timeout    : Timeout SNMP en secondes.
+-p, --port       : Port SNMP (par défaut 161).
+--debug          : Active le mode debug.
+
+--- Exemples d’utilisation ---
+
+1) Vérifier l’uptime avec SNMPv2c :
+   ./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m uptime
+
+2) Vérifier la température avec seuil warning=60°C et critical=70°C :
+   ./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m temperature -w 60 -c 70
+
+3) Vérifier l’état des ports avec SNMPv3 :
+   ./check_microsens_G7_v3.pl -H 192.168.1.20 -v3 -u snmpuser --authproto MD5 --authpass "password" -m ports
+
+4) Vérifier les serveurs NTP/DNS/TACACS configurés :
+   ./check_microsens_G7_v3.pl -H 192.168.1.30 -C public -v2c -m config
+
+ANGLAIS :
+1) Check uptime using SNMPv2c:
+   ./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m uptime
+
+2) Check temperature with warning=60°C and critical=70°C:
+   ./check_microsens_G7_v3.pl -H 192.168.1.10 -C public -v2c -m temperature -w 60 -c 70
+
+3) Check port status using SNMPv3:
+   ./check_microsens_G7_v3.pl -H 192.168.1.20 -v3 -u snmpuser --authproto MD5 --authpass "password" -m ports
+
+4) Check configured NTP/DNS/TACACS servers:
+   ./check_microsens_G7_v3.pl -H 192.168.1.30 -C public -v2c -m config
+
+--- Sorties Nagios standard ---
+OK       : Tout est normal.
+WARNING  : A surveiller, dépassement de seuil ou config partielle.
+CRITICAL : Problème grave (température, PoE, ports critiques, config manquante).
+UNKNOWN  : Impossible d’interroger l’équipement ou format inattendu.
+
