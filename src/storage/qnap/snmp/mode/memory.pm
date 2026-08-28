@@ -128,6 +128,10 @@ my $mapping = {
     qts => {
         ram_total => { oid => '.1.3.6.1.4.1.55062.1.12.13' }, # systemTotalMem
         ram_free  => { oid => '.1.3.6.1.4.1.55062.1.12.15' }  # systemAvailableMem
+    },
+    quts => {
+        ram_total => { oid => '.1.3.6.1.4.1.55062.2.12.13' }, # systemTotalMem
+        ram_free  => { oid => '.1.3.6.1.4.1.55062.2.12.15' }  # systemAvailableMem
     }
 };
 
@@ -165,13 +169,15 @@ sub manage_selection {
                 values(%{$mapping->{legacy}}),
                 values(%{$mapping->{ex}}),
                 values(%{$mapping->{es}}),
-                values(%{$mapping->{qts}})
+                values(%{$mapping->{qts}}),
+                values(%{$mapping->{quts}})
             )
         ],
         nothing_quit => 1
     );
 
     if (!defined($self->{option_results}->{force_counters_legacy})) {
+        $self->check_memory(snmp => $options{snmp}, type => 'quts', snmp_result => $snmp_result);
         $self->check_memory(snmp => $options{snmp}, type => 'qts', snmp_result => $snmp_result);
         $self->check_memory(snmp => $options{snmp}, type => 'ex', snmp_result => $snmp_result);
         $self->check_memory(snmp => $options{snmp}, type => 'es', snmp_result => $snmp_result, convert => 1);
