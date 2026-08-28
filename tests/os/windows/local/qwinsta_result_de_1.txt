@@ -1,0 +1,11 @@
+SITZUNGSNAME               BENUTZERNAME                 ID  STATUS   TYP        GERÄT
+services                                            0  Getr.
+console                                             1  Verb.
+>ica-cgp#2                 eSievers                  5  Aktiv
+ica-cgp#3                 shaaske                   6  Aktiv
+ica-cgp                                         65536  Abhör.
+ica-tcp                                         65537  Abhör.
+rdp-tcp                                         65538  Abhör.
+Erstellte Sitzungen gesamt: 9
+Getrennte Sitzungen gesamt: 7
+Erneut verbundene Sitzungen gesamt: 0

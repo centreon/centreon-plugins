@@ -36,6 +36,7 @@ sub new {
          'list-storages'     => 'os::windows::local::mode::liststorages',
          'pending-reboot'    => 'os::windows::local::mode::pendingreboot',
          'sessions'          => 'os::windows::local::mode::sessions',
+         'sessions-old'      => 'os::windows::local::mode::sessionsold',
          'time'              => 'os::windows::local::mode::ntp',
          'updates'           => 'os::windows::local::mode::updates'
     };

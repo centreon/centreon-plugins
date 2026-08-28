@@ -21,9 +21,12 @@ cpu ${tc}
     ...    --mode=sessions
     ...    --command=${qwinsta_command}
     ...    --command-path=${CURDIR}
+    ...    --command-options="/COUNTER ${lang}"
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:        tc    qwinsta_command     expected_result    --
-            ...      1     qwinsta1    OK: Sessions sessions-created : Buffer creation, sessions-disconnected : Buffer creation, sessions-reconnected : Buffer creation, current active : 0, current disconnected : 0 | 'sessions_active'=0;;;0; 'sessions_disconnected_current'=0;;;0;
-            ...      2     qwinsta2    OK: 2 CPU(s) average usage is 0.50 % | 'total_cpu_avg'=0.50%;0:80;0:90;0;100 'cpu_0'=1.00%;;;0;100 'cpu_1'=0.00%;;;0;100
+    Examples:        tc    qwinsta_command    lang    expected_result    --
+            ...      1     qwinsta1           en      OK: Sessions sessions-created : Buffer creation, sessions-disconnected : Buffer creation, sessions-reconnected : Buffer creation, current active : 0, current disconnected : 0 | 'sessions_active'=0;;;0; 'sessions_disconnected_current'=0;;;0;
+            ...      2     qwinsta2           en      OK: 2 CPU(s) average usage is 0.50 % | 'total_cpu_avg'=0.50%;0:80;0:90;0;100 'cpu_0'=1.00%;;;0;100 'cpu_1'=0.00%;;;0;100
+            ...      3     qwinsta1           de      OK: Sessions sessions-created : Buffer creation, sessions-disconnected : Buffer creation, sessions-reconnected : Buffer creation, current active : 0, current disconnected : 0 | 'sessions_active'=0;;;0; 'sessions_disconnected_current'=0;;;0;
+            ...      4     qwinsta2           de      OK: 2 CPU(s) average usage is 0.50 % | 'total_cpu_avg'=0.50%;0:80;0:90;0;100 'cpu_0'=1.00%;;;0;100 'cpu_1'=0.00%;;;0;100

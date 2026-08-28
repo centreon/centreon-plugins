@@ -1,4 +1,4 @@
 #!/bin/bash
 
 path=$(pwd)
-cat ${path}/tests/os/windows/local/qwinsta_result1.txt
+cat ${path}/tests/os/windows/local/qwinsta_result_$2_1.txt
