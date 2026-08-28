@@ -30,10 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'components'  => 'storage::ibm::storwize::ssh::mode::hardware',
-        'eventlog'    => 'storage::ibm::storwize::ssh::mode::eventlog',
-        'pool-usage'  => 'storage::ibm::storwize::ssh::mode::poolusage',
-        'replication' => 'storage::ibm::storwize::ssh::mode::replication'
+        'components'   => 'storage::ibm::storwize::ssh::mode::hardware',
+        'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
+        'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
+        'replication'  => 'storage::ibm::storwize::ssh::mode::replication',
+        'vdisk-status' => 'storage::ibm::storwize::ssh::mode::vdiskstatus'
     };
 
     $self->{custom_modes}{api} = 'storage::ibm::storwize::ssh::custom::api';
