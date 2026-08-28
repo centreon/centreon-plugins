@@ -290,7 +290,7 @@ _DEB_VERSION_RE = re.compile(r"^([0-9v][0-9.]*)(?:[+\-]|$)")
 _deb_packages_cache: dict = {}  # (repo, distrib, arch) → {pkg_name: version}
 
 
-_ALLOWED_ARTIFACTORY_HOSTS = {"packages.centreon.com"}
+_ALLOWED_ARTIFACTORY_HOSTS = {"centreon.jfrog.io"}
 
 
 def _artifactory_list_folder(base_url, repo_path):

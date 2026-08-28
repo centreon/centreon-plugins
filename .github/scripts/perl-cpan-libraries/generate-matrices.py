@@ -12,7 +12,7 @@ Usage:
     # CI (after all check-official-repos jobs)
     python3 generate-matrices.py \\
         --partial-matrices-dir official-repos/ \\
-        --artifactory-url https://packages.centreon.com \\
+        --artifactory-url https://centreon.jfrog.io \\
         .github/packaging/cpan-libraries.json
 
     # Local debug (no filtering, cpanm used for version info if available)
@@ -218,7 +218,7 @@ def main():
     parser.add_argument(
         "--artifactory-url", metavar="URL",
         help="Base URL of the public Artifactory instance "
-             "(e.g. https://packages.centreon.com). When provided, packages already "
+             "(e.g. https://centreon.jfrog.io). When provided, packages already "
              "present in the Centreon repository at the expected version are "
              "skipped (not rebuilt).",
     )
