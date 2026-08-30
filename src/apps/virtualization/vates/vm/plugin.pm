@@ -33,6 +33,7 @@ sub new {
         'cpu'            => 'apps::virtualization::vates::vm::mode::cpu',
         'memory'         => 'apps::virtualization::vates::vm::mode::memory',
         'status'         => 'apps::virtualization::vates::vm::mode::vmstatus',
+        'discovery'      => 'apps::virtualization::vates::vm::mode::discovery',
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';
