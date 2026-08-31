@@ -283,9 +283,8 @@ jobs:
               grep " 0100007F:07E8 " /proc/net/udp >/dev/null && break
               sleep 0.5
           done ; echo "snmpsim is listening"' || exit 1
-          # One directory per collection set shipped by a centreon-plugin-*-snmp-rs package: the
-          # tag filter keeps only the cgs-* cases driving the rust binary.
-          robot --include centreon-plugin-rust-snmp --exclude notauto --outputdir /tmp/robot-tests ./tests/os/linux/snmp/ ./tests/os/windows/snmp/
+          # Test all tests that use the rust plugin
+          robot --include centreon-plugin-rust-snmp --exclude notauto --outputdir /tmp/robot-tests ./tests
         shell: bash
 
       - name: Upload logs as artifacts if tests failed

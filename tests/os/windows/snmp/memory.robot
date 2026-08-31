@@ -76,16 +76,16 @@ cgs-memory ${tc}
     ...    --
     ...    1
     ...    --filter-in='Physical Memory'
-    ...    OK: 'Physical Memory#storage.usage.percent' is 13.62%, 'Physical Memory#storage.usage.bytes' is 585039872B | 'Physical Memory#storage.usage.percent'=13.62%;;;0;100 'Physical Memory#storage.usage.bytes'=585039872B;;;0;4294377472
+    ...    OK: 'Physical Memory#memory.usage.percent' is 13.62%, 'Physical Memory#memory.usage.bytes' is 585039872B | 'Physical Memory#memory.usage.percent'=13.62%;;;0;100 'Physical Memory#memory.usage.bytes'=585039872B;;;0;4294377472
     ...    2
     ...    --filter-in='Physical Memory' --warning-bytes=0.1
-    ...    WARNING: 'Physical Memory#storage.usage.bytes' is 585039872B | 'Physical Memory#storage.usage.percent'=13.62%;;;0;100 'Physical Memory#storage.usage.bytes'=585039872B;0.1;;0;4294377472
+    ...    WARNING: 'Physical Memory#memory.usage.bytes' is 585039872B | 'Physical Memory#memory.usage.percent'=13.62%;;;0;100 'Physical Memory#memory.usage.bytes'=585039872B;0.1;;0;4294377472
     ...    3
     ...    --filter-in='Physical Memory' --critical-bytes=0.1
-    ...    CRITICAL: 'Physical Memory#storage.usage.bytes' is 585039872B | 'Physical Memory#storage.usage.percent'=13.62%;;;0;100 'Physical Memory#storage.usage.bytes'=585039872B;;0.1;0;4294377472
+    ...    CRITICAL: 'Physical Memory#memory.usage.bytes' is 585039872B | 'Physical Memory#memory.usage.percent'=13.62%;;;0;100 'Physical Memory#memory.usage.bytes'=585039872B;;0.1;0;4294377472
     ...    4
     ...    --filter-in='Physical Memory' --warning-prct=0.1
-    ...    WARNING: 'Physical Memory#storage.usage.percent' is 13.62% | 'Physical Memory#storage.usage.percent'=13.62%;0.1;;0;100 'Physical Memory#storage.usage.bytes'=585039872B;;;0;4294377472
+    ...    WARNING: 'Physical Memory#memory.usage.percent' is 13.62% | 'Physical Memory#memory.usage.percent'=13.62%;0.1;;0;100 'Physical Memory#memory.usage.bytes'=585039872B;;;0;4294377472
     ...    5
     ...    --filter-in='Physical Memory' --critical-prct=0.1
-    ...    CRITICAL: 'Physical Memory#storage.usage.percent' is 13.62% | 'Physical Memory#storage.usage.percent'=13.62%;;0.1;0;100 'Physical Memory#storage.usage.bytes'=585039872B;;;0;4294377472
+    ...    CRITICAL: 'Physical Memory#memory.usage.percent' is 13.62% | 'Physical Memory#memory.usage.percent'=13.62%;;0.1;0;100 'Physical Memory#memory.usage.bytes'=585039872B;;;0;4294377472

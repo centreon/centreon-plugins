@@ -69,16 +69,16 @@ cgs-virtual-memory ${tc}
     ...    --
     ...    1
     ...    --filter-in='Virtual Memory'
-    ...    OK: 'Virtual Memory#storage.usage.percent' is 9.67%, 'Virtual Memory#storage.usage.bytes' is 493027328B | 'Virtual Memory#storage.usage.percent'=9.67%;;;0;100 'Virtual Memory#storage.usage.bytes'=493027328B;;;0;5099683840
+    ...    OK: 'Virtual Memory#memory.usage.percent' is 9.67%, 'Virtual Memory#memory.usage.bytes' is 493027328B | 'Virtual Memory#memory.usage.percent'=9.67%;;;0;100 'Virtual Memory#memory.usage.bytes'=493027328B;;;0;5099683840
     ...    2
     ...    --filter-in='Virtual Memory' --warning-bytes=0.1
-    ...    WARNING: 'Virtual Memory#storage.usage.bytes' is 493027328B | 'Virtual Memory#storage.usage.percent'=9.67%;;;0;100 'Virtual Memory#storage.usage.bytes'=493027328B;0.1;;0;5099683840
+    ...    WARNING: 'Virtual Memory#memory.usage.bytes' is 493027328B | 'Virtual Memory#memory.usage.percent'=9.67%;;;0;100 'Virtual Memory#memory.usage.bytes'=493027328B;0.1;;0;5099683840
     ...    3
     ...    --filter-in='Virtual Memory' --critical-bytes=0.1
-    ...    CRITICAL: 'Virtual Memory#storage.usage.bytes' is 493027328B | 'Virtual Memory#storage.usage.percent'=9.67%;;;0;100 'Virtual Memory#storage.usage.bytes'=493027328B;;0.1;0;5099683840
+    ...    CRITICAL: 'Virtual Memory#memory.usage.bytes' is 493027328B | 'Virtual Memory#memory.usage.percent'=9.67%;;;0;100 'Virtual Memory#memory.usage.bytes'=493027328B;;0.1;0;5099683840
     ...    4
     ...    --filter-in='Virtual Memory' --warning-prct=0.1
-    ...    WARNING: 'Virtual Memory#storage.usage.percent' is 9.67% | 'Virtual Memory#storage.usage.percent'=9.67%;0.1;;0;100 'Virtual Memory#storage.usage.bytes'=493027328B;;;0;5099683840
+    ...    WARNING: 'Virtual Memory#memory.usage.percent' is 9.67% | 'Virtual Memory#memory.usage.percent'=9.67%;0.1;;0;100 'Virtual Memory#memory.usage.bytes'=493027328B;;;0;5099683840
     ...    5
     ...    --filter-in='Virtual Memory' --critical-prct=0.1
-    ...    CRITICAL: 'Virtual Memory#storage.usage.percent' is 9.67% | 'Virtual Memory#storage.usage.percent'=9.67%;;0.1;0;100 'Virtual Memory#storage.usage.bytes'=493027328B;;;0;5099683840
+    ...    CRITICAL: 'Virtual Memory#memory.usage.percent' is 9.67% | 'Virtual Memory#memory.usage.percent'=9.67%;;0.1;0;100 'Virtual Memory#memory.usage.bytes'=493027328B;;;0;5099683840

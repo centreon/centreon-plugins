@@ -19,7 +19,7 @@
     "metrics": [
       {
         "prefix": "{storage.description}",
-        "name": "storage.usage.percent",
+        "name": "memory.usage.percent",
         "value": "100 * {storage.used} / {storage.size}",
         "uom": "%",
         "min": 0,
@@ -28,7 +28,7 @@
       },
       {
         "prefix": "{storage.description}",
-        "name": "storage.usage.bytes",
+        "name": "memory.usage.bytes",
         "value": "{storage.used} * {storage.allocation_units}",
         "uom": "B",
         "min": 0,
