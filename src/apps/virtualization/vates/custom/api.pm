@@ -46,11 +46,10 @@ sub new {
             'proto:s'    => { name => 'proto', default => 'https' },
             'username:s' => { name => 'username' },
             'password:s' => { name => 'password' },
-            'api-key:s'  => { name => 'api_key' },
             'timeout:s'  => { name => 'timeout', default => 10 },
             'api-url:s'  => {name => 'api_url', default => '/rest/v0/' },
             'header:s@'  => { name => 'header' },
-            'reload-cache-time:s' => { name => 'reload_cache_time', default => 1440 }
+
         });
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -135,3 +134,45 @@ sub get_vm_info {
     return $response->[0];
 }
 1;
+
+=head1 REST API OPTIONS
+
+Command-line options for Xen orchestra API:
+
+=over 8
+
+=item B<--hostname>
+
+Define the hostname of the Vates server.
+
+=item B<--port>
+
+Define the port of the Vates server (default: 443).
+
+=item B<--proto>
+
+Define the protocol to use (default: https).
+
+=item B<--username>
+
+Define the username for authentication.
+
+=item B<--password>
+
+Define the password for authentication.
+
+=item B<--timeout>
+
+Define the http timeout in second (default: 10).
+
+=item B<--api-url>
+
+Define the API prefix (default: /rest/v0).
+
+=item B<--header>
+
+Define optional additional header to send with every HTTP request.
+
+=back
+
+=cut

@@ -19,7 +19,7 @@
 #
 package apps::virtualization::vates::vm::plugin;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use base qw(centreon::plugins::script_custom);
 
 
@@ -40,3 +40,9 @@ sub new {
     return $self;
 }
 1;
+
+=head1 PLUGIN DESCRIPTION
+
+Monitor Vates virtual machines through Xen Orchestra REST API.
+
+=cut
