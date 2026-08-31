@@ -122,25 +122,25 @@ cgs-swap ${tc}
     ...    ${EMPTY}
     ...    OK: Swap Used: 499420B - Free: 500000B - Total: 999420B | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    2
-    ...    --warning-swap-bytes=0.1
+    ...    --warning-bytes=0.1
     ...    WARNING: swap.usage.bytes is 499420B | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;0.1;;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    3
-    ...    --critical-swap-bytes=0.1
+    ...    --critical-bytes=0.1
     ...    CRITICAL: swap.usage.bytes is 499420B | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;0.1;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    4
-    ...    --warning-swap-prct=0.1
+    ...    --warning-prct=0.1
     ...    WARNING: swap.usage.percent is 49.97% | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;0.1;;0;100
     ...    5
-    ...    --critical-swap-prct=0.1
+    ...    --critical-prct=0.1
     ...    CRITICAL: swap.usage.percent is 49.97% | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;0.1;0;100
     ...    6
     ...    --check-format
     ...    Check format of JSON file '${CGS_COLLECTIONS}${/}swap.json' JSON is valid
     ...    7
-    ...    --warning-swap-free-bytes=1
+    ...    --warning-free-bytes=1
     ...    WARNING: swap.free.bytes is 500000B | swap.free.bytes=500000B;1;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    8
-    ...    --critical-swap-free-bytes=1
+    ...    --critical-free-bytes=1
     ...    CRITICAL: swap.free.bytes is 500000B | swap.free.bytes=500000B;;1;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
 
 cgs-swap-64 ${tc}
@@ -165,23 +165,23 @@ cgs-swap-64 ${tc}
     ...    ${EMPTY}
     ...    OK: Swap Used: 499420B - Free: 500000B - Total: 999420B | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    2
-    ...    --warning-swap-bytes=0.1
+    ...    --warning-bytes=0.1
     ...    WARNING: swap.usage.bytes is 499420B | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;0.1;;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    3
-    ...    --critical-swap-bytes=0.1
+    ...    --critical-bytes=0.1
     ...    CRITICAL: swap.usage.bytes is 499420B | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;0.1;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    4
-    ...    --warning-swap-prct=0.1
+    ...    --warning-prct=0.1
     ...    WARNING: swap.usage.percent is 49.97% | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;0.1;;0;100
     ...    5
-    ...    --critical-swap-prct=0.1
+    ...    --critical-prct=0.1
     ...    CRITICAL: swap.usage.percent is 49.97% | swap.free.bytes=500000B;;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;0.1;0;100
     ...    6
     ...    --check-format
     ...    Check format of JSON file '${CGS_COLLECTIONS}${/}swap-64.json' JSON is valid
     ...    7
-    ...    --warning-swap-free-bytes=1
+    ...    --warning-free-bytes=1
     ...    WARNING: swap.free.bytes is 500000B | swap.free.bytes=500000B;1;;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
     ...    8
-    ...    --critical-swap-free-bytes=1
+    ...    --critical-free-bytes=1
     ...    CRITICAL: swap.free.bytes is 500000B | swap.free.bytes=500000B;;1;0;999420 swap.usage.bytes=499420B;;;0;999420 swap.usage.percent=49.97%;;;0;100
