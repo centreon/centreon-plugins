@@ -80,3 +80,9 @@ cgs-processcount ${tc}
     ...    5
     ...    --filter-in 'Anonymized 187' --critical-process-cpu=0.1
     ...    CRITICAL: 'Anonymized 187#process.cpu.percent' is 51% | 'Anonymized 187#process.memory.bytes'=19980288B;;;0; 'Anonymized 187#process.cpu.percent'=51%;;0.1;0;100
+    ...    6
+    ...    --filter-in 'not foundable' --critical-process-cpu=0.1
+    ...    UNKNOWN: Process not found
+    ...    7
+    ...    --filter-in 'not foundable' --critical-process-cpu=0.1 --no-data-status=CRITICAL
+    ...    CRITICAL: Process not found
