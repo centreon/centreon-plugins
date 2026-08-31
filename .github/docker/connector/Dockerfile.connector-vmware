@@ -150,8 +150,11 @@ EOF
 
 #############################################
 # Stage 2b: VMware SDK — without SDK (WITH_SDK=false, default)
-# Used by CI and public image builds. The daemon starts but encrypted
-# credentials won't be decryptable without the SDK.
+# Used by CI and public image builds. The daemon requires the VMware Perl
+# SDK to run at all — centreon::script::centreon_vmware unconditionally
+# `use`s VMware::VIRuntime/VILib — so without it the daemon logs a clear
+# "you will need the Perl VMware SDK" error and exits immediately, rather
+# than starting in some degraded/plain-text-only mode.
 #############################################
 FROM debian:13-slim AS sdk-false
 
@@ -167,6 +170,7 @@ FROM debian:13-slim AS centreon-vmware
 
 ARG VERSION
 ARG STABILITY
+ARG WITH_SDK=false
 
 LABEL org.opencontainers.image.title="centreon-vmware" \
       org.opencontainers.image.source="https://github.com/centreon/centreon-plugins" \
@@ -260,20 +264,37 @@ COPY --chown=centreon-gorgone:centreon --chmod=660 \
     connectors/vmware/packaging/config/centreon_vmware-conf.json \
     /etc/centreon/centreon_vmware.json
 
-# Verify critical files exist
-RUN bash -e <<'EOF'
+# Needed before the verification step below so `perl -c`/`perl` can resolve
+# the copied centreon:: and VMware:: modules.
+ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
+
+# Verify critical files exist, and that the daemon behaves as documented
+# for the current WITH_SDK setting
+RUN WITH_SDK=${WITH_SDK} bash -eo pipefail <<'EOF'
 echo "=== Verification ==="
 ls -lah /usr/bin/centreon_vmware.pl
 ls -lah /usr/bin/centreon_vmware_convert_config_file
 ls -lah /usr/share/perl5/centreon/
 ls -lah /usr/local/share/perl5/VMware/
 ls -lah /etc/centreon/
+if [ "$WITH_SDK" = "true" ]; then
+    # centreon_vmware.pl unconditionally `use`s VMware::VIRuntime/VILib
+    # (via centreon::script::centreon_vmware) — only compiles when the
+    # licensed SDK is actually present.
+    perl -c /usr/bin/centreon_vmware.pl
+else
+    # Without the SDK, a BEGIN-time requirements check deliberately makes
+    # the daemon refuse to start and log this exact message instead of a
+    # raw "Can't locate VMware/VIRuntime.pm in @INC" error. Assert that
+    # graceful failure still fires, rather than silently accepting any
+    # other kind of breakage.
+    OUTPUT=$(perl /usr/bin/centreon_vmware.pl --config-extra=/etc/centreon/centreon_vmware.json 2>&1) || true
+    echo "$OUTPUT" | grep -q 'you will need the Perl VMware SDK'
+fi
 echo "=== Files verified ==="
 EOF
 
 COPY --chmod=755 .github/docker/connector/entrypoint /usr/local/lib/centreon-vmware/
-
-ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
 EXPOSE 5700
 
