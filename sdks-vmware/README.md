@@ -45,14 +45,11 @@ you want the built image labeled with the repo's current plugins-wide version an
 
 ## Local build with SDK — from Centreon stable repo
 
-This is now the default — both flags below match the Dockerfile's own defaults, so a
-plain `docker build -f .github/docker/connector/Dockerfile.connector-vmware .` from the
-repo root does the same thing. Kept explicit here for clarity:
+`PACKAGE_SOURCE=repo` and `WITH_SDK=true` are the Dockerfile's own defaults, so this is
+just:
 
 ```bash
 docker build \
-  --build-arg PACKAGE_SOURCE=repo \
-  --build-arg WITH_SDK=true \
   --file .github/docker/connector/Dockerfile.connector-vmware \
   --tag connector-vmware:local \
   .
@@ -66,12 +63,12 @@ reflects whatever `VERSION` you passed (empty if you didn't pin one).
 
 ## Local build with SDK — from local .deb packages
 
-Place the `.deb` package in a `packages-centreon/` directory at the repo root, then:
+Place the `.deb` package in a `packages-centreon/` directory at the repo root, then
+(`WITH_SDK=true` is the default, only `PACKAGE_SOURCE` needs overriding):
 
 ```bash
 docker build \
   --build-arg PACKAGE_SOURCE=mount \
-  --build-arg WITH_SDK=true \
   --file .github/docker/connector/Dockerfile.connector-vmware \
   --tag connector-vmware:local \
   .
@@ -88,7 +85,6 @@ immediately.
 
 ```bash
 docker build \
-  --build-arg PACKAGE_SOURCE=repo \
   --build-arg WITH_SDK=false \
   --file .github/docker/connector/Dockerfile.connector-vmware \
   --tag connector-vmware:local \
