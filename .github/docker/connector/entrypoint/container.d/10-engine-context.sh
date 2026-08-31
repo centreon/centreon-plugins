@@ -1,11 +1,13 @@
 #!/bin/sh
-# This file is sourced (not executed) by container.sh, so DEBUG=true's
-# `set -x` is inherited here. Disable it before touching the secrets: with
-# tracing on, the shell would print APP_SECRET/SALT's actual values inline
-# (e.g. "+ APP_SECRET=...", "+ printf ... <secret>"). Restore it afterwards
-# so later container.d scripts still get traced when DEBUG is enabled.
-case "$-" in *x*) trace_was_on=1 ;; esac
-set +x
+# This file is sourced (not executed) by container.sh, so container.sh's
+# `set -x` (enabled when DEBUG=true/1) is inherited here. Disable it before
+# touching the secrets: with tracing on, the shell would print
+# APP_SECRET/SALT's actual values inline (e.g. "+ APP_SECRET=...",
+# "+ printf ... <secret>"). Restore it afterwards so later container.d
+# scripts still get traced when DEBUG is enabled.
+if [ "${DEBUG}" = "true" ] || [ "${DEBUG}" = "1" ]; then
+    set +x
+fi
 
 echo "=== Writing Engine Secrets ==="
 
@@ -24,5 +26,6 @@ if [ "${DEBUG}" = "true" ] || [ "${DEBUG}" = "1" ]; then
 fi
 echo ""
 
-[ "$trace_was_on" = "1" ] && set -x
-:
+if [ "${DEBUG}" = "true" ] || [ "${DEBUG}" = "1" ]; then
+    set -x
+fi
