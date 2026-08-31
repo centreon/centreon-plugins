@@ -1,11 +1,14 @@
 # syntax=docker/dockerfile:1
 
-# PACKAGE_SOURCE=mount (default, CI): extract from .deb bind-mounted via packages-centreon/
-# PACKAGE_SOURCE=repo  (prod):        download from Centreon apt repo (requires VERSION + STABILITY)
-# PACKAGE_SOURCE=local (dev):         copy from local repo source (connectors/vmware/src/)
-ARG PACKAGE_SOURCE=mount
-# Build arg to include VMware Perl SDK (requires proprietary files in sdks-vmware/ — see sdks-vmware/README.md)
-ARG WITH_SDK=false
+# PACKAGE_SOURCE=repo  (default, local dev): download from Centreon apt repo (VERSION pins a release, STABILITY picks the channel)
+# PACKAGE_SOURCE=mount (CI):                 extract from .deb bind-mounted via packages-centreon/
+# PACKAGE_SOURCE=local (Dockerfile-only CI): copy from local repo source (connectors/vmware/src/)
+ARG PACKAGE_SOURCE=repo
+# Build arg to include VMware Perl SDK (requires proprietary files in sdks-vmware/ — see sdks-vmware/README.md).
+# Defaults to true: without the SDK the daemon can't do anything useful (see the
+# sdk-false stage below) — CI always passes WITH_SDK=false explicitly to validate
+# the Dockerfile builds without the licensed SDK, it doesn't rely on this default.
+ARG WITH_SDK=true
 
 #############################################
 # Stage 1a: Extract from bind-mounted .deb (PACKAGE_SOURCE=mount)
@@ -45,14 +48,9 @@ ARG STABILITY=stable
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    bash -e <<'EOF'
+    STABILITY=${STABILITY} PKG_VERSION=${VERSION} bash -eo pipefail <<'EOF'
 apt-get update
 apt-get install -y --no-install-recommends dpkg gnupg wget ca-certificates
-EOF
-
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    STABILITY=${STABILITY} bash -e <<'EOF'
 . /etc/os-release
 echo "deb https://packages.centreon.com/apt-plugins-${STABILITY}/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/centreon-plugins.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor \
@@ -60,7 +58,11 @@ wget -O- https://apt-key.centreon.com | gpg --dearmor \
 apt-get update
 mkdir -p /extracted
 cd /tmp
-apt-get download centreon-plugin-virtualization-vmware-daemon
+# PKG_VERSION pins an exact release (e.g. 20260300-1+deb13u1); unset/empty
+# downloads whatever is currently latest in the ${STABILITY} channel.
+# (named PKG_VERSION, not VERSION: `. /etc/os-release` above already defines
+# its own VERSION="13 (trixie)", which would silently clobber an ARG VERSION.)
+apt-get download "centreon-plugin-virtualization-vmware-daemon${PKG_VERSION:+=$PKG_VERSION}"
 for deb in centreon-plugin-virtualization-vmware-daemon*.deb; do
     echo "Extracting $deb..."
     dpkg-deb -x "$deb" /extracted/
@@ -86,7 +88,7 @@ COPY --link --from=extractor-repo /extracted/usr/share/perl5/centreon /centreon-
 FROM scratch AS vmware-perl-local
 COPY connectors/vmware/src/centreon/ /centreon-modules/
 
-ARG PACKAGE_SOURCE=mount
+ARG PACKAGE_SOURCE=repo
 # hadolint ignore=DL3006
 FROM vmware-perl-${PACKAGE_SOURCE} AS vmware-perl-selected
 
@@ -105,7 +107,7 @@ FROM scratch AS vmware-bin-local
 COPY connectors/vmware/src/centreon_vmware.pl /centreon_vmware.pl
 COPY connectors/vmware/src/centreon/script/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
 
-ARG PACKAGE_SOURCE=mount
+ARG PACKAGE_SOURCE=repo
 # hadolint ignore=DL3006
 FROM vmware-bin-${PACKAGE_SOURCE} AS vmware-bin-selected
 
@@ -151,8 +153,11 @@ EOF
 
 #############################################
 # Stage 2b: VMware SDK — without SDK (WITH_SDK=false, default)
-# Used by CI and public image builds. The daemon starts but encrypted
-# credentials won't be decryptable without the SDK.
+# Used by CI and public image builds. The daemon requires the VMware Perl
+# SDK to run at all — centreon::script::centreon_vmware unconditionally
+# `use`s VMware::VIRuntime/VILib — so without it the daemon logs a clear
+# "you will need the Perl VMware SDK" error and exits immediately, rather
+# than starting in some degraded/plain-text-only mode.
 #############################################
 FROM debian:13-slim AS sdk-false
 
@@ -168,6 +173,7 @@ FROM debian:13-slim AS centreon-vmware
 
 ARG VERSION
 ARG STABILITY
+ARG WITH_SDK=true
 
 LABEL org.opencontainers.image.title="centreon-vmware" \
       org.opencontainers.image.source="https://github.com/centreon/centreon-plugins" \
@@ -183,11 +189,11 @@ EOF
 RUN bash -e <<'EOF'
 groupadd -g 33 www-data 2>/dev/null || true
 groupadd -g 900 centreon
-useradd -u 900 -g centreon -m -r -d /var/spool/centreon -s /bin/bash centreon
+useradd -u 900 -g centreon -m -r -l -d /var/spool/centreon -s /bin/bash centreon
 groupadd -g 901 centreon-engine
-useradd -u 901 -g centreon-engine -m -r -d /var/lib/centreon-engine -s /bin/bash centreon-engine
+useradd -u 901 -g centreon-engine -m -r -l -d /var/lib/centreon-engine -s /bin/bash centreon-engine
 groupadd -g 903 centreon-gorgone
-useradd -u 903 -g centreon-gorgone -m -r -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone
+useradd -u 903 -g centreon-gorgone -m -r -l -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone
 usermod -aG centreon-engine centreon
 usermod -aG centreon-gorgone centreon
 EOF
@@ -195,7 +201,7 @@ EOF
 # Install runtime dependencies — one update, same packages on every arch
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    bash -e <<'EOF'
+    bash -eo pipefail <<'EOF'
 apt-get update
 apt-get install -y --no-install-recommends gnupg wget ca-certificates
 . /etc/os-release
@@ -224,6 +230,8 @@ apt-get install -y --no-install-recommends \
     libjson-perl \
     inotify-tools \
     netcat-openbsd
+apt-get remove -y --purge gnupg wget
+apt-get autoremove -y
 rm -rf /tmp/* /var/tmp/* /usr/share/doc/* /usr/share/man/*
 EOF
 
@@ -259,20 +267,37 @@ COPY --chown=centreon-gorgone:centreon --chmod=660 \
     connectors/vmware/packaging/config/centreon_vmware-conf.json \
     /etc/centreon/centreon_vmware.json
 
-# Verify critical files exist
-RUN bash -e <<'EOF'
+# Needed before the verification step below so `perl -c`/`perl` can resolve
+# the copied centreon:: and VMware:: modules.
+ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
+
+# Verify critical files exist, and that the daemon behaves as documented
+# for the current WITH_SDK setting
+RUN WITH_SDK=${WITH_SDK} bash -eo pipefail <<'EOF'
 echo "=== Verification ==="
 ls -lah /usr/bin/centreon_vmware.pl
 ls -lah /usr/bin/centreon_vmware_convert_config_file
 ls -lah /usr/share/perl5/centreon/
 ls -lah /usr/local/share/perl5/VMware/
 ls -lah /etc/centreon/
+if [ "$WITH_SDK" = "true" ]; then
+    # centreon_vmware.pl unconditionally `use`s VMware::VIRuntime/VILib
+    # (via centreon::script::centreon_vmware) — only compiles when the
+    # licensed SDK is actually present.
+    perl -c /usr/bin/centreon_vmware.pl
+else
+    # Without the SDK, a BEGIN-time requirements check deliberately makes
+    # the daemon refuse to start and log this exact message instead of a
+    # raw "Can't locate VMware/VIRuntime.pm in @INC" error. Assert that
+    # graceful failure still fires, rather than silently accepting any
+    # other kind of breakage.
+    OUTPUT=$(perl /usr/bin/centreon_vmware.pl --config-extra=/etc/centreon/centreon_vmware.json 2>&1) || true
+    echo "$OUTPUT" | grep -q 'you will need the Perl VMware SDK'
+fi
 echo "=== Files verified ==="
 EOF
 
 COPY --chmod=755 .github/docker/connector/entrypoint /usr/local/lib/centreon-vmware/
-
-ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
 EXPOSE 5700
 
