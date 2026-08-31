@@ -269,12 +269,6 @@ EOF
 
 COPY --chmod=755 .github/docker/connector/entrypoint /usr/local/lib/centreon-vmware/
 
-# Required at runtime by entrypoint/container.d/10-engine-context.sh (poller mode).
-# DEBUG (true/1) enables verbose entrypoint logging — see container.sh / 00-init.sh.
-ENV APP_SECRET= \
-    SALT= \
-    DEBUG=
-
 ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
 EXPOSE 5700
