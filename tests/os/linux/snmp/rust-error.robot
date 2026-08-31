@@ -7,31 +7,33 @@ Suite Setup         Ctn Generic Suite Setup
 Suite Teardown      Ctn Generic Suite Teardown
 Test Timeout        120s
 
+
 *** Variables ***
-${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
+
 
 *** Test Cases ***
-cgs-invalid-oid ${tc}
+cgs-invalid-oid
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j
-    ...    ${CURDIR}${/}generic-snmp/err-invalid-oid.json
+    ...    -j ${CURDIR}${/}generic-snmp/err-invalid-oid.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
     ...    --snmp-community=os/linux/snmp/network-interfaces
     ...    2>/dev/null
 
-    Ctn Run Command Without Connector And Check Result As Strings    ${command}    UNKNOWN: Could not parse oid 1.3.6.1.2.a.25.3.3.1.2
+    Ctn Run Command Without Connector And Check Result As Strings
+    ...    ${command}
+    ...    UNKNOWN: Could not parse oid 1.3.6.1.2.a.25.3.3.1.2
 
-cgs-invalid-macro ${tc}
+cgs-invalid-macro
     [Tags]    os    linux    centreon-plugin-rust-snmp    panic
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j
-    ...    ${CURDIR}${/}generic-snmp/err-macro.json
+    ...    -j ${CURDIR}${/}generic-snmp/err-macro.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -43,9 +45,8 @@ cgs-invalid-macro ${tc}
 cgs-no-connection ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-        ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j
-    ...    ${CURDIR}${/}generic-snmp/cpu.json
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}cpu.json
     ...    --hostname=127.0.0.1
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}

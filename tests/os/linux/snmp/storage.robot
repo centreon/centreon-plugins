@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
 
 
 *** Test Cases ***
@@ -52,7 +53,7 @@ cgs-storage ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
     ...    ${CENTREON_PLUGIN_RUST_SNMP}
-    ...    -j ${CURDIR}/generic-snmp/storage.json
+    ...    -j ${CGS_COLLECTIONS}${/}storage.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}

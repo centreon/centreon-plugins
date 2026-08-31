@@ -10,6 +10,12 @@ on:
     paths:
       - '.github/workflows/generic-plugins.yml'
       - 'rust-plugins/**'
+      - 'packaging/centreon-plugin-*-snmp-rs/**'
+      # The robot suites of the rust plugin live in the perl test tree: they must retrigger this
+      # workflow, as plugins.yml excludes the centreon-plugin-rust-snmp tag.
+      - 'tests/resources/**'
+      - 'tests/os/linux/snmp/**'
+      - 'tests/os/windows/snmp/**'
   push:
     branches:
       - develop
@@ -17,6 +23,10 @@ on:
     paths:
       - '.github/workflows/generic-plugins.yml'
       - 'rust-plugins/**'
+      - 'packaging/centreon-plugin-*-snmp-rs/**'
+      - 'tests/resources/**'
+      - 'tests/os/linux/snmp/**'
+      - 'tests/os/windows/snmp/**'
 
 jobs:
   dependency-scan:
@@ -273,7 +283,8 @@ jobs:
               grep " 0100007F:07E8 " /proc/net/udp >/dev/null && break
               sleep 0.5
           done ; echo "snmpsim is listening"' || exit 1
-          robot --include centreon-plugin-rust-snmp --exclude notauto --outputdir /tmp/robot-tests ./tests/os/linux/snmp/
+          # Test all tests that use the rust plugin
+          robot --include centreon-plugin-rust-snmp --exclude notauto --outputdir /tmp/robot-tests ./tests
         shell: bash
 
       - name: Upload logs as artifacts if tests failed

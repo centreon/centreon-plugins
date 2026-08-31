@@ -9,8 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP}
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
 
 
 *** Test Cases ***
@@ -204,8 +204,8 @@ memory ${tc}
 cgs-mem ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
-    ...    -j ${CURDIR}/generic-snmp/memory.json
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}memory.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -236,7 +236,7 @@ cgs-mem ${tc}
     ...    CRITICAL: memory.usage.percent is 62.88% | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;0.1;0;100
     ...    6
     ...    --check-format
-    ...    Check format of JSON file '${CURDIR}/generic-snmp/memory.json' JSON is valid
+    ...    Check format of JSON file '${CGS_COLLECTIONS}${/}memory.json' JSON is valid
     ...    7
     ...    --warning-memory-free-bytes=1
     ...    WARNING: memory.free.bytes is 747712B | memory.free.bytes=747712B;1;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
@@ -247,8 +247,8 @@ cgs-mem ${tc}
 cgs-mem-64 ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
-    ...    -j ${CURDIR}/generic-snmp/memory-64.json
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}memory-64.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -279,7 +279,7 @@ cgs-mem-64 ${tc}
     ...    CRITICAL: memory.usage.percent is 99.68% | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;0.1;0;100
     ...    6
     ...    --check-format
-    ...    Check format of JSON file '${CURDIR}/generic-snmp/memory-64.json' JSON is valid
+    ...    Check format of JSON file '${CGS_COLLECTIONS}${/}memory-64.json' JSON is valid
     ...    7
     ...    --warning-memory-free-bytes=1
     ...    WARNING: memory.free.bytes is 20050780B | memory.free.bytes=20050780B;1;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100

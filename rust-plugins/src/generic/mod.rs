@@ -54,8 +54,8 @@ impl Into<i32> for Status {
         match self {
             Status::Ok => 0,
             Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
+            Status::Critical => 2,
+            Status::Unknown => 3,
         }
     }
 }
@@ -69,26 +69,47 @@ impl Into<String> for Status {
         }
     }
 }
+impl std::str::FromStr for Status {
+    type Err = error::Error;
+
+    /// Parses a status from its textual form, case-insensitively
+    /// (e.g. `"critical"`, `"CRITICAL"`).
+    fn from_str(s: &str) -> Result<Self> {
+        match s.trim().to_lowercase().as_str() {
+            "ok" => Ok(Status::Ok),
+            "warning" => Ok(Status::Warning),
+            "critical" => Ok(Status::Critical),
+            "unknown" => Ok(Status::Unknown),
+            _ => Err(error::Error::InvalidStatus {
+                value: s.to_string(),
+            }),
+        }
+    }
+}
 impl Status {
+    /// Returns the severity rank of the status, used to compare statuses.
+    ///
+    /// Severity order: `Ok < Warning < Unknown < Critical`.  It differs from the
+    /// exit code (see [`Into<i32>`]), where `Critical` is 2 and `Unknown` is 3.
+    fn severity(&self) -> u8 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Unknown => 2,
+            Status::Critical => 3,
+        }
+    }
+
     /// Returns `true` if `self` is at least as severe as `other`.
     ///
     /// Severity order: `Ok < Warning < Unknown < Critical`.
     pub fn is_worse_than(&self, other: Status) -> bool {
-        let self_int: i32 = (*self).into();
-        let other_int: i32 = other.into();
-        self_int >= other_int
+        self.severity() >= other.severity()
     }
 }
 
 fn worst(a: Status, b: Status) -> Status {
-    let a_int: i32 = a.into();
-    let b_int: i32 = b.into();
-
-    if a_int > b_int {
-        return a;
-    } else {
-        return b;
-    }
+    if a.severity() > b.severity() { a } else { b }
 }
 
 /// Type of SNMP query to perform for a given OID.
@@ -322,6 +343,7 @@ impl Command {
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
     /// * `check_format` - Dry-run mode ( validate macros )
     /// * `check_response` - Display raw SNMP response without metrics computation
+    /// * `no_data_status` - Status to report when no metric is left once the filters are applied
     ///
     /// # Returns
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
@@ -334,6 +356,7 @@ impl Command {
         filter_out: &Vec<String>,
         check_format: bool,
         check_response: bool,
+        no_data_status: Status,
     ) -> Result<CmdResult> {
         let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
 
@@ -510,6 +533,22 @@ impl Command {
             debug!("New ID '{}' with content: {:?}", key, value);
             my_res.items.insert(key, value);
         }
+
+        // Nothing left to report: every instance has been discarded by the filters
+        // (or none was collected at all). Aggregations are skipped on purpose, as they
+        // would be computed on values that have just been filtered out.
+        if !self.compute.metrics.is_empty() && metrics.is_empty() {
+            debug!(
+                "No metric left, reporting the no-data status {:?}",
+                no_data_status
+            );
+            let status_str: String = no_data_status.into();
+            return Ok(CmdResult {
+                status: no_data_status,
+                output: format!("{}: {}", status_str, self.output.no_data),
+            });
+        }
+
         collect.push(my_res);
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
             let mut my_res = SnmpResult::new(HashMap::new());
@@ -668,5 +707,46 @@ impl Command {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn status_exit_codes_follow_the_monitoring_plugins_guidelines() {
+        let codes: Vec<i32> = vec![
+            Status::Ok.into(),
+            Status::Warning.into(),
+            Status::Critical.into(),
+            Status::Unknown.into(),
+        ];
+        assert_eq!(codes, vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn worst_ranks_critical_above_unknown() {
+        assert_eq!(worst(Status::Ok, Status::Warning), Status::Warning);
+        assert_eq!(worst(Status::Warning, Status::Unknown), Status::Unknown);
+        assert_eq!(worst(Status::Unknown, Status::Critical), Status::Critical);
+        assert_eq!(worst(Status::Critical, Status::Unknown), Status::Critical);
+    }
+
+    #[test]
+    fn status_is_parsed_from_its_textual_form_whatever_the_case() {
+        assert_eq!("ok".parse::<Status>().unwrap(), Status::Ok);
+        assert_eq!("Warning".parse::<Status>().unwrap(), Status::Warning);
+        assert_eq!("CRITICAL".parse::<Status>().unwrap(), Status::Critical);
+        assert_eq!(" unknown ".parse::<Status>().unwrap(), Status::Unknown);
+    }
+
+    #[test]
+    fn parsing_an_unsupported_status_returns_an_error() {
+        let err = "pending".parse::<Status>().unwrap_err();
+        assert!(matches!(
+            err,
+            error::Error::InvalidStatus { ref value } if value == "pending"
+        ));
     }
 }
