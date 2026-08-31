@@ -35,6 +35,10 @@ Two workflows handle Docker image validation:
 | `mount` | `packages-centreon/` bind mount | CI (from cache) or local build with `.deb` |
 | `repo` | `packages.centreon.com` apt repo | Ad-hoc build — downloads from stable repo |
 
+`local` and `mount` copy files directly (no `.deb` download), so there's no packaged
+version for the image to pick up. Pass `--build-arg VERSION=$(cat .version.plugins)` if
+you want the built image labeled with the repo's current plugins-wide version anyway.
+
 ## Local build with SDK — from Centreon stable repo
 
 Downloads the stable `.deb` from the Centreon apt repository.
@@ -49,7 +53,11 @@ docker build \
   .
 ```
 
-Specify a version with `--build-arg VERSION=20260300-1+deb13u1` to pin a specific release.
+By default this downloads whatever is currently latest in the `${STABILITY}` channel
+(`STABILITY` defaults to `stable`). Pass `--build-arg VERSION=20260300-1+deb13u1` to pin
+an exact release instead — the build fails clearly if that version isn't published in
+the selected channel. Either way, `org.opencontainers.image.version` on the built image
+reflects whatever `VERSION` you passed (empty if you didn't pin one).
 
 ## Local build with SDK — from local .deb packages
 

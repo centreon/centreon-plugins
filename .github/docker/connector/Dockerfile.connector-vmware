@@ -45,7 +45,7 @@ ARG STABILITY=stable
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    STABILITY=${STABILITY} bash -eo pipefail <<'EOF'
+    STABILITY=${STABILITY} PKG_VERSION=${VERSION} bash -eo pipefail <<'EOF'
 apt-get update
 apt-get install -y --no-install-recommends dpkg gnupg wget ca-certificates
 . /etc/os-release
@@ -55,7 +55,11 @@ wget -O- https://apt-key.centreon.com | gpg --dearmor \
 apt-get update
 mkdir -p /extracted
 cd /tmp
-apt-get download centreon-plugin-virtualization-vmware-daemon
+# PKG_VERSION pins an exact release (e.g. 20260300-1+deb13u1); unset/empty
+# downloads whatever is currently latest in the ${STABILITY} channel.
+# (named PKG_VERSION, not VERSION: `. /etc/os-release` above already defines
+# its own VERSION="13 (trixie)", which would silently clobber an ARG VERSION.)
+apt-get download "centreon-plugin-virtualization-vmware-daemon${PKG_VERSION:+=$PKG_VERSION}"
 for deb in centreon-plugin-virtualization-vmware-daemon*.deb; do
     echo "Extracting $deb..."
     dpkg-deb -x "$deb" /extracted/
