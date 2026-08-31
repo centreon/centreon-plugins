@@ -319,6 +319,8 @@ jobs:
           build-args: |
             PACKAGE_SOURCE=mount
             WITH_SDK=false
+            VERSION=${{ needs.get-environment.outputs.version }}
+            STABILITY=${{ needs.get-environment.outputs.stability }}
           push: false
 
   set-skip-label:

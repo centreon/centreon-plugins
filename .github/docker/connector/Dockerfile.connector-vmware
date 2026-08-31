@@ -45,14 +45,9 @@ ARG STABILITY=stable
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    bash -e <<'EOF'
+    STABILITY=${STABILITY} bash -eo pipefail <<'EOF'
 apt-get update
 apt-get install -y --no-install-recommends dpkg gnupg wget ca-certificates
-EOF
-
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    STABILITY=${STABILITY} bash -e <<'EOF'
 . /etc/os-release
 echo "deb https://packages.centreon.com/apt-plugins-${STABILITY}/ ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/centreon-plugins.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor \
@@ -183,11 +178,11 @@ EOF
 RUN bash -e <<'EOF'
 groupadd -g 33 www-data 2>/dev/null || true
 groupadd -g 900 centreon
-useradd -u 900 -g centreon -m -r -d /var/spool/centreon -s /bin/bash centreon
+useradd -u 900 -g centreon -m -r -l -d /var/spool/centreon -s /bin/bash centreon
 groupadd -g 901 centreon-engine
-useradd -u 901 -g centreon-engine -m -r -d /var/lib/centreon-engine -s /bin/bash centreon-engine
+useradd -u 901 -g centreon-engine -m -r -l -d /var/lib/centreon-engine -s /bin/bash centreon-engine
 groupadd -g 903 centreon-gorgone
-useradd -u 903 -g centreon-gorgone -m -r -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone
+useradd -u 903 -g centreon-gorgone -m -r -l -d /var/lib/centreon-gorgone -s /bin/bash centreon-gorgone
 usermod -aG centreon-engine centreon
 usermod -aG centreon-gorgone centreon
 EOF
@@ -195,7 +190,7 @@ EOF
 # Install runtime dependencies — one update, same packages on every arch
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    bash -e <<'EOF'
+    bash -eo pipefail <<'EOF'
 apt-get update
 apt-get install -y --no-install-recommends gnupg wget ca-certificates
 . /etc/os-release
@@ -224,6 +219,8 @@ apt-get install -y --no-install-recommends \
     libjson-perl \
     inotify-tools \
     netcat-openbsd
+apt-get remove -y --purge gnupg wget
+apt-get autoremove -y
 rm -rf /tmp/* /var/tmp/* /usr/share/doc/* /usr/share/man/*
 EOF
 
@@ -271,6 +268,12 @@ echo "=== Files verified ==="
 EOF
 
 COPY --chmod=755 .github/docker/connector/entrypoint /usr/local/lib/centreon-vmware/
+
+# Required at runtime by entrypoint/container.d/10-engine-context.sh (poller mode).
+# DEBUG (true/1) enables verbose entrypoint logging — see container.sh / 00-init.sh.
+ENV APP_SECRET= \
+    SALT= \
+    DEBUG=
 
 ENV PERL5LIB=/usr/local/share/perl5:/usr/share/perl5:/usr/lib/perl5
 
