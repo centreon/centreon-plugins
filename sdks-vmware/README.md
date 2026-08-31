@@ -18,22 +18,26 @@ The SDK files are **not included** in this repository due to Broadcom licensing 
 2. Download **VMware vSphere Perl SDK 7.0** and **vSAN SDK for Perl**
 3. Place the downloaded archives in this directory
 
-## CI workflows
+## CI workflow
 
-Two workflows handle Docker image validation:
-
-| Workflow | Trigger | `PACKAGE_SOURCE` | Description |
-|---|---|---|---|
-| `connector-vmware.yml` | Source / packaging changes | `mount` | Builds real `.deb`, stages it, builds Docker image |
-| `docker-builder-connector-vmware.yml` | Dockerfile / entrypoint changes only | `local` | Validates Dockerfile structure without packages |
+`connector-vmware.yml` builds the real `.deb`, stages it into `packages-centreon/`, and
+builds the Docker image with `PACKAGE_SOURCE=mount` and `WITH_SDK=false` — both passed
+explicitly as build-args, so it doesn't depend on this Dockerfile's own `ARG` defaults.
+It never publishes the image (`push: false`); its only job is proving the Dockerfile
+builds. It's triggered by changes under `connectors/vmware/`, this Dockerfile, or the
+entrypoint scripts.
 
 ## PACKAGE_SOURCE build modes
 
 | `PACKAGE_SOURCE` | Source | Use case |
 |---|---|---|
-| `local` | `connectors/vmware/src/` | Dockerfile-only CI validation |
-| `mount` | `packages-centreon/` bind mount | CI (from cache) or local build with `.deb` |
-| `repo` | `packages.centreon.com` apt repo | Ad-hoc build — downloads from stable repo |
+| `repo` (default) | `packages.centreon.com` apt repo | Local/dev build — downloads from the stable repo |
+| `mount` | `packages-centreon/` bind mount | CI (from cache) or local build with a `.deb` you already have |
+| `local` | `connectors/vmware/src/` | Dockerfile-only structure validation, no real package |
+
+`WITH_SDK` also defaults to `true`: this image is primarily meant for local/dev use,
+where the SDK is required for the daemon to do anything at all (see below) — CI passes
+`WITH_SDK=false` explicitly to validate the Dockerfile without the licensed SDK.
 
 `local` and `mount` copy files directly (no `.deb` download), so there's no packaged
 version for the image to pick up. Pass `--build-arg VERSION=$(cat .version.plugins)` if
@@ -41,8 +45,9 @@ you want the built image labeled with the repo's current plugins-wide version an
 
 ## Local build with SDK — from Centreon stable repo
 
-Downloads the stable `.deb` from the Centreon apt repository.
-`encrypted::` credentials require the SDK.
+This is now the default — both flags below match the Dockerfile's own defaults, so a
+plain `docker build -f .github/docker/connector/Dockerfile.connector-vmware .` from the
+repo root does the same thing. Kept explicit here for clarity:
 
 ```bash
 docker build \
@@ -74,12 +79,17 @@ docker build \
 
 ## Local build without SDK
 
-The image works for plain-text credentials in `centreon_vmware.json`.
-`encrypted::` credentials require the SDK.
+Mainly useful to validate the Dockerfile/repo-download path builds without the licensed
+SDK on hand — matches what CI does. The resulting image **cannot actually run the
+daemon**: `centreon::script::centreon_vmware` unconditionally requires
+`VMware::VIRuntime`/`VMware::VILib` (for both plain-text and `encrypted::` credentials),
+so without the SDK it logs a clear "you will need the Perl VMware SDK" error and exits
+immediately.
 
 ```bash
 docker build \
   --build-arg PACKAGE_SOURCE=repo \
+  --build-arg WITH_SDK=false \
   --file .github/docker/connector/Dockerfile.connector-vmware \
   --tag connector-vmware:local \
   .

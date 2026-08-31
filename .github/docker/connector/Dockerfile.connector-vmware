@@ -1,11 +1,14 @@
 # syntax=docker/dockerfile:1
 
-# PACKAGE_SOURCE=mount (default, CI): extract from .deb bind-mounted via packages-centreon/
-# PACKAGE_SOURCE=repo  (prod):        download from Centreon apt repo (requires VERSION + STABILITY)
-# PACKAGE_SOURCE=local (dev):         copy from local repo source (connectors/vmware/src/)
-ARG PACKAGE_SOURCE=mount
-# Build arg to include VMware Perl SDK (requires proprietary files in sdks-vmware/ — see sdks-vmware/README.md)
-ARG WITH_SDK=false
+# PACKAGE_SOURCE=repo  (default, local dev): download from Centreon apt repo (VERSION pins a release, STABILITY picks the channel)
+# PACKAGE_SOURCE=mount (CI):                 extract from .deb bind-mounted via packages-centreon/
+# PACKAGE_SOURCE=local (Dockerfile-only CI): copy from local repo source (connectors/vmware/src/)
+ARG PACKAGE_SOURCE=repo
+# Build arg to include VMware Perl SDK (requires proprietary files in sdks-vmware/ — see sdks-vmware/README.md).
+# Defaults to true: without the SDK the daemon can't do anything useful (see the
+# sdk-false stage below) — CI always passes WITH_SDK=false explicitly to validate
+# the Dockerfile builds without the licensed SDK, it doesn't rely on this default.
+ARG WITH_SDK=true
 
 #############################################
 # Stage 1a: Extract from bind-mounted .deb (PACKAGE_SOURCE=mount)
@@ -85,7 +88,7 @@ COPY --link --from=extractor-repo /extracted/usr/share/perl5/centreon /centreon-
 FROM scratch AS vmware-perl-local
 COPY connectors/vmware/src/centreon/ /centreon-modules/
 
-ARG PACKAGE_SOURCE=mount
+ARG PACKAGE_SOURCE=repo
 # hadolint ignore=DL3006
 FROM vmware-perl-${PACKAGE_SOURCE} AS vmware-perl-selected
 
@@ -104,7 +107,7 @@ FROM scratch AS vmware-bin-local
 COPY connectors/vmware/src/centreon_vmware.pl /centreon_vmware.pl
 COPY connectors/vmware/src/centreon/script/centreon_vmware_convert_config_file /centreon_vmware_convert_config_file
 
-ARG PACKAGE_SOURCE=mount
+ARG PACKAGE_SOURCE=repo
 # hadolint ignore=DL3006
 FROM vmware-bin-${PACKAGE_SOURCE} AS vmware-bin-selected
 
@@ -170,7 +173,7 @@ FROM debian:13-slim AS centreon-vmware
 
 ARG VERSION
 ARG STABILITY
-ARG WITH_SDK=false
+ARG WITH_SDK=true
 
 LABEL org.opencontainers.image.title="centreon-vmware" \
       org.opencontainers.image.source="https://github.com/centreon/centreon-plugins" \
