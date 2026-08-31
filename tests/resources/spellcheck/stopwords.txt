@@ -379,6 +379,7 @@ tower-cli
 TrendMicro
 tsdb-version
 TWAMP
+Ubiquiti
 UCD
 UDP
 unicast
