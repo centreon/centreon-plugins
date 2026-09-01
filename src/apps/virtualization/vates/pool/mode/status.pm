@@ -130,8 +130,8 @@ sub manage_selection {
     my $pool = $response->[0];
 
     my $master = $options{custom}->request_api_get(
-        endpoint  => "hosts/",
-                get_param => [ "fields=name_label,uuid,power_state", "filter=uuid" .  $pool->{master} ]
+        endpoint  => "hosts",
+                get_param => [ "fields=name_label,uuid,power_state", "filter=uuid:" .  $pool->{master} ]
 
     );
     if (!defined($master) or ref($master) ne "ARRAY" or scalar @$response != 1) {
@@ -158,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check the status of a Vates Xen Orchestra pool: master host availability, power state and High Availability if configured
+Check the status of a Vates Xen Orchestra pool: master host availability, power state and High Availability if configured.
 
 =over 8
 
@@ -170,6 +170,13 @@ Identify the pool by its exact uuid.
 
 Identify the pool by its name (only one pool is expected).
 
+=item B<--is-ha>
+
+Convenience shortcut to check that HA is enabled/disabled as expected, without having to write a
+C<--critical-ha-status> expression by hand. Set to C<true> or C<1> to require HA enabled (equivalent
+to the default C<--critical-ha-status>); any other value disables the HA status check entirely
+(equivalent to C<--critical-ha-status=''>).
+
 =item B<--warning-master-status>
 
 Define the conditions to match for the master host status to be WARNING. You can use the following
@@ -179,7 +186,18 @@ variables: C<%{display}>, C<%{master_name}>, C<%{master_power_state}>.
 
 Define the conditions to match for the master host status to be CRITICAL. You can use the following
 variables: C<%{display}>, C<%{master_name}>, C<%{master_power_state}>.
-Default: C<%{master_enabled} ne "true" or %{master_power_state} !~ /^Running/i>
+Default: C<%{master_power_state} !~ /^Running/i>
+
+=item B<--warning-ha-status>
+
+Define the conditions to match for the pool's High Availability status to be WARNING. You can use
+the following variable: C<%{ha_enabled}>.
+
+=item B<--critical-ha-status>
+
+Define the conditions to match for the pool's High Availability status to be CRITICAL. You can use
+the following variable: C<%{ha_enabled}>.
+Default: C<%{ha_enabled} !~ /^true/i>
 
 =back
 

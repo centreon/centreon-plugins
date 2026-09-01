@@ -23,7 +23,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
-use centreon::plugins::misc qw/json_encode json_decode is_empty/;
+use centreon::plugins::misc qw/json_encode json_decode is_empty is_not_empty/;
 use Digest::SHA 'sha1_hex';
 
 sub new {
@@ -49,6 +49,7 @@ sub new {
             'timeout:s'  => { name => 'timeout', default => 10 },
             'api-url:s'  => {name => 'api_url', default => '/rest/v0/' },
             'header:s@'  => { name => 'header' },
+            'reload-cache-time:s'  => {name => 'reload_cache_time', default => 1440 },
 
         });
 
@@ -135,8 +136,7 @@ sub get_name_and_uuid {
     my $cached_uuid = $self->{statefile_cache}->get(name => 'values');
     my $last_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
 
-    if ($options{force_update}
-        or $has_cache_file == 0
+    if ($has_cache_file == 0
         or !defined($cached_uuid)
         or (time() - $last_timestamp) > ($self->{option_results}->{reload_cache_time} * 60)
     ) {
@@ -185,9 +185,46 @@ sub get_vm_info {
 }
 1;
 
+__END__
+
+=head1 NAME
+
+apps::virtualization::vates::custom::api - Custom module for the Vates Xen Orchestra REST API.
+
+=head1 DESCRIPTION
+
+This module provides methods to interact with the Vates Xen Orchestra REST API (Basic Auth). It
+handles authentication, on-disk caching of name/uuid lookups, and API requests.
+
+=head1 METHODS
+
+=head2 request_api / request_api_get
+
+    my $response = $api->request_api_get(endpoint => 'vms', get_param => ['fields=uuid']);
+
+Performs a GET request against C<< <api-url><endpoint> >> and decodes the JSON response.
+C<silently_fail> may be passed through so the (possibly non-200) response body is returned
+instead of letting the HTTP layer exit on error.
+
+=head2 get_name_and_uuid
+
+    my $ids = $api->get_name_and_uuid(type => 'pool', api_endpoint => 'pools');
+
+Resolves C<--E<lt>typeE<gt>-name>/C<--E<lt>typeE<gt>-uuid> (whichever was provided) to
+C<{ uuid =E<gt> ..., name_label =E<gt> ... }>, caching the mapping on disk so it is only
+re-fetched once per C<--reload-cache-time> window instead of on every plugin execution.
+
+=head2 get_vm_info
+
+    my $vm = $api->get_vm_info();
+
+Resolves C<--vm-uuid>/C<--vm-name> and returns the matching VM's C<name_label>, C<power_state>,
+C<uuid> and C<os_version> fields. Always live (not cached), since C<power_state> can change at
+any time.
+
 =head1 REST API OPTIONS
 
-Command-line options for Xen orchestra API:
+Command-line options for the Vates Xen Orchestra API:
 
 =over 8
 
@@ -217,11 +254,11 @@ Define the http timeout in second (default: 10).
 
 =item B<--api-url>
 
-Define the API prefix (default: /rest/v0).
+Define the API prefix (default: /rest/v0/).
 
 =item B<--header>
 
-Define optional additional header to send with every HTTP request.
+Define an optional additional header to send with every HTTP request (repeatable).
 
 =back
 

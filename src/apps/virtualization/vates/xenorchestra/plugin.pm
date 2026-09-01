@@ -38,3 +38,11 @@ sub new {
     return $self;
 }
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Monitor Vates Xen Orchestra through the REST API.
+
+=cut
