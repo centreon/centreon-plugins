@@ -77,8 +77,8 @@ sub set_counters {
             label            => 'cpu-overcommit-prct',
             type             => COUNTER_TYPE_INSTANCE,
             nlabel           => 'pool.cpu.overcommit.percentage',
-            warning_default  => '400',
-            critical_default => '800',
+            warning_default  => '90',
+            critical_default => '100',
             set              => {
                 key_values      => [ { name => 'cpu_overcommit_prct' }, { name => 'cpu_assigned' }, { name => 'cpu_total' } ],
                 output_template => 'CPU overcommit ratio is %.2f %%',
@@ -92,36 +92,20 @@ sub set_counters {
 
 sub manage_selection {
     my ($self, %options) = @_;
+    my $pool = $options{custom}->get_name_and_uuid(type => "pool", "api_endpoint"=> "pools");
 
-    # default filter use uuid, or name if not present.
-    my $filter = "uuid:" . $self->{option_results}->{pool_uuid};
-    if (is_empty($self->{option_results}->{pool_uuid})) {
-        $filter = "name_label:" . $self->{option_results}->{pool_name};
-    }
-    my $response = $options{custom}->request_api_get(
-        endpoint  => "pools",
-        get_param => [ "fields=name_label,uuid,master,HA_enabled", "filter=" . $filter ]
+    my $dashboard = $options{custom}->request_api_get(
+        endpoint  => "pools/" . $pool->{uuid} . "/dashboard"
     );
-    if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1) {
-        $self->{output}->option_exit(short_msg => "no pool found, api did not return an array with one element. Please check --pool-uuid and --pool-name parameter or --debug.");
+    if (!defined($dashboard) or !defined($dashboard->{cpuProvisioning}) or ref($dashboard->{cpuProvisioning}) ne "HASH") {
+        $self->{output}->option_exit(short_msg => "unable to retrieve the performance data of pool '" . $pool->{name_label} . "'.");
     }
-    my $pool = $response->[0];
-
-    my $master = $options{custom}->request_api_get(
-        endpoint  => "hosts/" . $pool->{master},
-                get_param => [ "fields=name_label,uuid,power_state", "filter=" . $filter ]
-
-    );
-    if (!defined($master) or !defined($master->{name_label})) {
-        $self->{output}->option_exit(short_msg => "unable to retrieve the master host '" . $pool->{master} . "' of pool '" . $pool->{name_label} . "'.");
-    }
-
-
 
     $self->{pool} = {
         display             => $pool->{name_label},
-        master_enabled      => $master->{enabled},
-        master_power_state  => $master->{power_state},
+        cpu_overcommit_prct => $dashboard->{cpuProvisioning}->{percent},
+        cpu_assigned        => $dashboard->{cpuProvisioning}->{assigned},
+        cpu_total           => $dashboard->{cpuProvisioning}->{total},
     };
 }
 
@@ -131,7 +115,7 @@ __END__
 
 =head1 MODE
 
-Check the CPU over commit ratio of a Xen Orchestra pool.
+Check the CPU over commit ratio of a Xen Orchestra pool (vCPUs assigned vs. physical CPUs).
 
 =over 8
 
@@ -142,6 +126,20 @@ Identify the pool by its exact uuid.
 =item B<--pool-name>
 
 Identify the pool by its name (only one pool is expected).
+
+=item B<--warning-cpu-overcommit-prct>
+
+Threshold warning for the CPU over commit ratio, in percentage.
+Note that this metric can go over 100%.
+100% mean the sum of CPU assigned to virtual machines is equal to the physical number of CPU in the pool
+Default: 90
+
+=item B<--critical-cpu-overcommit-prct>
+
+Threshold critical for the CPU over commit ratio, in percentage.
+Note that this metric can go over 100%.
+100% mean the sum of CPU assigned to virtual machines is equal to the physical number of CPU in the pool
+Default: 100
 
 =back
 

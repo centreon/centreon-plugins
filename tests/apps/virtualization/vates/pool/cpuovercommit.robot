@@ -12,7 +12,7 @@ Test Timeout        120s
 ${MOCKOON_JSON}     ${CURDIR}${/}..${/}mockoon.json
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::virtualization::vates::pool::plugin
-...                 --mode=status
+...                 --mode=cpu-over-commit
 ...                 --password=C3POR2P2
 ...                 --username=obi-wan
 ...                 --hostname=127.0.0.1
@@ -38,8 +38,8 @@ Cpu ${tc}
     ...    ${EMPTY}
     ...    UNKNOWN: you must fill either --pool-uuid or --pool-name.
     ...    2
-    ...    --pool-uuid=e9425768-75ed-a6da-bd00-2774c94ef200
+    ...    --pool-uuid=00969214-df4d-83cb-78d5-bec9181903d4
     ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
     ...    3
-    ...    --pool-name=XOA
+    ...    --pool-name=vates
     ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
