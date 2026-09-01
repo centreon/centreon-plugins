@@ -30,7 +30,6 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'hastatus'         => 'apps::virtualization::vates::pool::mode::hastatus',
         'status'           => 'apps::virtualization::vates::pool::mode::status',
         'cpu-over-commit'  => 'apps::virtualization::vates::pool::mode::cpuovercommit',
 

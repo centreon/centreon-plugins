@@ -173,12 +173,12 @@ Identify the pool by its name (only one pool is expected).
 =item B<--warning-master-status>
 
 Define the conditions to match for the master host status to be WARNING. You can use the following
-variables: C<%{display}>, C<%{master_name}>, C<%{master_enabled}>, C<%{master_power_state}>.
+variables: C<%{display}>, C<%{master_name}>, C<%{master_power_state}>.
 
 =item B<--critical-master-status>
 
 Define the conditions to match for the master host status to be CRITICAL. You can use the following
-variables: C<%{display}>, C<%{master_name}>, C<%{master_enabled}>, C<%{master_power_state}>.
+variables: C<%{display}>, C<%{master_name}>, C<%{master_power_state}>.
 Default: C<%{master_enabled} ne "true" or %{master_power_state} !~ /^Running/i>
 
 =back
