@@ -475,7 +475,7 @@
       "responses": [
         {
           "uuid": "419a62a9-f70a-43c6-a01c-ec550305db22",
-          "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"power_state\": \"Running\",\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  }\n]\n",
+          "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"power_state\": \"Running\",\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
           "label": "one master running",
@@ -486,21 +486,48 @@
           "sendFileAsBody": false,
           "rules": [
             {
-              "target": "params",
-              "modifier": "hostuuid",
+              "target": "query",
+              "modifier": "fields",
               "value": "name_label,uuid,power_state",
-              "invert": false,
-              "operator": "equals"
-            },
-            {
-              "target": "body",
-              "modifier": "",
-              "value": "",
               "invert": false,
               "operator": "equals"
             }
           ],
           "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "14217c3a-c963-40fc-8c63-0b402c9f9f64",
+          "body": "[\n  {\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"name_label\": \"vates\",\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  },\n  {\n    \"uuid\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"name_label\": \"vates3\",\n    \"href\": \"/rest/v0/hosts/f71b4cd5-c0e5-4a94-bc96-eaefe4919104\"\n  },\n  {\n    \"uuid\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"name_label\": \"vates2\",\n    \"href\": \"/rest/v0/hosts/4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "pool discovery",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "uuid,name_label",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "uuid:00969214-df4d-83cb-78d5-bec9181903d4",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": false,
