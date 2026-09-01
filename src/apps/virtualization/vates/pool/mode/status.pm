@@ -30,15 +30,17 @@ sub custom_ha_status_output {
     my ($self, %options) = @_;
 
     my $ha = ($self->{result_values}->{ha_enabled} eq 'true') ? 'enabled' : 'disabled';
-    return "'" . $self->{result_values}->{display} . "' pool has HA " . $ha;
+    return "pool has HA " . $ha;
 }
 
 sub custom_master_status_output {
     my ($self, %options) = @_;
 
-    return "pool '" . $self->{result_values}->{display} . "' master is '" . $self->{result_values}->{master_name} .
-       "', power_state: " . $self->{result_values}->{master_power_state}  .
-       ", enabled: " . $self->{result_values}->{master_enabled} ;
+    return sprintf("pool '%s' master '%s' is %s",
+         $self->{result_values}->{display},
+        $self->{result_values}->{master_name},
+        $self->{result_values}->{master_power_state},
+    );
 }
 
 sub new {
@@ -64,6 +66,14 @@ sub check_options {
     if (is_empty($options{option_results}->{pool_uuid}) and is_empty($options{option_results}->{pool_name})) {
         $self->{output}->option_exit(short_msg => "you must fill either --pool-uuid or --pool-name.");
     }
+    if (!is_empty($options{option_results}->{is_ha})) {
+        if ($options{option_results}->{is_ha} eq "true" or $options{option_results}->{is_ha} eq '1')  {
+            $options{option_results}->{'critical-ha-status'} = '%{ha_enabled} !~ /^true/i'
+        } else {
+            $options{option_results}->{'critical-ha-status'} = ''
+        }
+    }
+
     $self->SUPER::check_options(%options);
 }
 
@@ -78,13 +88,24 @@ sub set_counters {
         {
             label            => 'master-status',
             type             => COUNTER_TYPE_GROUP,
-            critical_default => '%{master_enabled} ne "true" or %{master_power_state} !~ /^Running/i',
+            critical_default => '%{master_power_state} !~ /^Running/i',
             set              => {
                 key_values                     => [
                     { name => 'display' }, { name => 'master_name' },
-                    { name => 'master_enabled' }, { name => 'master_power_state' }
+                    { name => 'master_power_state' }
                 ],
                 closure_custom_output          => $self->can('custom_master_status_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            }
+        },
+        {
+            label            => 'ha-status',
+            type             => COUNTER_TYPE_GROUP,
+            critical_default => '%{ha_enabled} !~ /^true/i',
+
+            set              => {
+                key_values                     => [ { name => 'ha_enabled' } ],
+                closure_custom_output          => $self->can('custom_ha_status_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -109,10 +130,14 @@ sub manage_selection {
     my $pool = $response->[0];
 
     my $master = $options{custom}->request_api_get(
-        endpoint  => "hosts/" . $pool->{master},
-                get_param => [ "fields=name_label,uuid,power_state", "filter=" . $filter ]
+        endpoint  => "hosts/",
+                get_param => [ "fields=name_label,uuid,power_state", "filter=uuid" .  $pool->{master} ]
 
     );
+    if (!defined($master) or ref($master) ne "ARRAY" or scalar @$response != 1) {
+        $self->{output}->option_exit(short_msg => "no host found, api did not return an array with one element. Please check --pool-uuid and --pool-name parameter or --debug.");
+    }
+    $master = $master->[0];
     if (!defined($master) or !defined($master->{name_label})) {
         $self->{output}->option_exit(short_msg => "unable to retrieve the master host '" . $pool->{master} . "' of pool '" . $pool->{name_label} . "'.");
     }
@@ -121,8 +146,8 @@ sub manage_selection {
 
     $self->{pool} = {
         display             => $pool->{name_label},
+        ha_enabled          => $pool->{HA_enabled},
         master_name         => $master->{name_label},
-        master_enabled      => $master->{enabled},
         master_power_state  => $master->{power_state},
     };
 }
@@ -133,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check the status of a Xen Orchestra pool: master host availability and power state
+Check the status of a Vates Xen Orchestra pool: master host availability, power state and High Availability if configured
 
 =over 8
 

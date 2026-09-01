@@ -113,6 +113,56 @@ sub request_api_get {
     return $content;
 }
 
+# get_name_and_uuid( type => 'pool', 'api_endpoint' => 'pools');
+# check --{type}-name and --{type}-uuid and retrieve the other value from the api.
+# it caches the mapping on disk for --reload-cache-time window second
+# %options input :
+#   type : the type of object fetching, used to construct the argument name (ex: pool, vm, host)
+#   api_endpoint: optionnal api endpoint to collect data (ex: pools) use type if empty
+sub get_name_and_uuid {
+    my ($self, %options) = @_;
+
+    my $obj_uuid = $options{type} . "_uuid";
+    my $obj_name = $options{type} . "_name";
+
+    my $vm_name = $self->{option_results}->{$obj_name};
+    my $has_cache_file = $self->{statefile_cache}->read(
+        statefile => 'vates_uuid_to_name' . sha1_hex(
+            $self->{option_results}->{hostname} . '_' .
+            $self->{option_results}->{$obj_name} .
+            $self->{option_results}->{$obj_uuid})
+    );
+    my $cached_uuid = $self->{statefile_cache}->get(name => 'values');
+    my $last_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
+
+    if ($options{force_update}
+        or $has_cache_file == 0
+        or !defined($cached_uuid)
+        or (time() - $last_timestamp) > ($self->{option_results}->{reload_cache_time} * 60)
+    ) {
+        my $filter = '';
+
+        if (is_not_empty($self->{option_results}->{$obj_name})) {
+
+            $filter = "name_label:" . $self->{option_results}->{$obj_name};
+        }
+        else {
+            $filter = "uuid:" . $self->{option_results}->{$obj_uuid};
+        }
+        my $response = $self->request_api_get(
+            endpoint  => $options{api_endpoint} // $options{type},
+            get_param => [ 'fields=uuid,name_label', 'filter=' . $filter]
+        );
+        if (!defined($response) or ref($response) ne 'ARRAY' or scalar @$response != 1) {
+            $self->{output}->option_exit(short_msg => "no $options{type} found, api did not return an array with one element. Please check --$options{type}-uuid and --$options{type}-name parameter or --debug.");
+        }
+        $cached_uuid = {uuid => $response->[0]->{uuid}, name_label =>  $response->[0]->{name_label} };
+        $self->{statefile_cache}->write(data => { values => $cached_uuid, last_timestamp => time() });
+    }
+
+    return $cached_uuid;
+}
+
 # used to get overview of one vm with power state, and uuid/name
 sub get_vm_info {
     my ($self, %options) = @_;

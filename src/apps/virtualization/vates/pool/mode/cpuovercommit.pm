@@ -73,16 +73,18 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pool} = [
-        {
-            label            => 'master-status',
-            type             => COUNTER_TYPE_GROUP,
+             {
+            label            => 'cpu-overcommit-prct',
+            type             => COUNTER_TYPE_INSTANCE,
+            nlabel           => 'pool.cpu.overcommit.percentage',
+            warning_default  => '400',
+            critical_default => '800',
             set              => {
-                key_values                     => [
-                    { name => 'display' }, { name => 'pool_name' },
-                    { name => 'master_enabled' }, { name => 'master_power_state' }
-                ],
-                closure_custom_output          => $self->can('custom_master_status_output'),
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
+                key_values      => [ { name => 'cpu_overcommit_prct' }, { name => 'cpu_assigned' }, { name => 'cpu_total' } ],
+                output_template => 'CPU overcommit ratio is %.2f %%',
+                perfdatas       => [
+                    { value => 'cpu_overcommit_prct', template => '%.2f', min => 0, unit => '%' }
+                ]
             }
         }
     ];

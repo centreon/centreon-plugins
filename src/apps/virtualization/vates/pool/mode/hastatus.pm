@@ -33,12 +33,7 @@ sub custom_ha_status_output {
     return "'" . $self->{result_values}->{display} . "' pool has HA " . $ha;
 }
 
-sub custom_master_status_output {
-    my ($self, %options) = @_;
 
-    return "'" . $self->{result_values}->{display} . "' pool master is '" . $self->{result_values}->{master_name} .
-        "' (enabled: " . $self->{result_values}->{master_enabled} . ', power_state: ' . $self->{result_values}->{master_power_state} . ')';
-}
 
 sub new {
     my ($class, %options) = @_;
@@ -74,18 +69,17 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{pool} = [
+
         {
-            label            => 'cpu-overcommit-prct',
-            type             => COUNTER_TYPE_INSTANCE,
-            nlabel           => 'pool.cpu.overcommit.percentage',
-            warning_default  => '400',
-            critical_default => '800',
+            label            => 'master-status',
+            type             => COUNTER_TYPE_GROUP,
             set              => {
-                key_values      => [ { name => 'cpu_overcommit_prct' }, { name => 'cpu_assigned' }, { name => 'cpu_total' } ],
-                output_template => 'CPU overcommit ratio is %.2f %%',
-                perfdatas       => [
-                    { value => 'cpu_overcommit_prct', template => '%.2f', min => 0, unit => '%' }
-                ]
+                key_values                     => [
+                    { name => 'display' },
+                    { name => 'ha_enabled' }
+                ],
+                closure_custom_output          => $self->can('custom_ha_status_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -101,7 +95,7 @@ sub manage_selection {
     }
     my $response = $options{custom}->request_api_get(
         endpoint  => "pools",
-        get_param => [ "fields=name_label,uuid", "filter=" . $filter ]
+        get_param => [ "fields=name_label,uuid,HA_enabled", "filter=" . $filter ]
     );
 
     if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1) {
@@ -109,17 +103,11 @@ sub manage_selection {
     }
     my $pool = $response->[0];
 
-    my $dashboard = $options{custom}->request_api_get(endpoint => "pools/" . $pool->{uuid} . "/dashboard");
-    if (!defined($dashboard->{cpuProvisioning}) or !defined($dashboard->{cpuProvisioning}->{percent})) {
-        $self->{output}->option_exit(short_msg => "Field cpuProvisioning not found in API response for pool '" . $pool->{name_label} . "'. Please check --debug or the Swagger documentation.");
-    }
 
     $self->{pool} = {
         display             => $pool->{name_label},
         ha_enabled          => $pool->{HA_enabled},
-        cpu_overcommit_prct => $dashboard->{cpuProvisioning}->{percent},
-        cpu_assigned        => $dashboard->{cpuProvisioning}->{assigned},
-        cpu_total           => $dashboard->{cpuProvisioning}->{total}
+
     };
 }
 
@@ -129,11 +117,7 @@ __END__
 
 =head1 MODE
 
-Check the aggregated status of a Xen Orchestra pool: master host availability, high availability
-status and CPU over commit ratio.
-
-Memory over commit and license consistency between hosts are not exposed by the Xen Orchestra REST
-API dashboard endpoint at the time of writing, and are therefore not checked by this mode.
+Check the High Availability status of a Xen Orchestra pool. Return Critical if High Availability is not enabled.
 
 =over 8
 
@@ -154,7 +138,7 @@ C<%{display}>, C<%{ha_enabled}>.
 
 Define the conditions to match for the HA status to be CRITICAL. You can use the following variables:
 C<%{display}>, C<%{ha_enabled}>.
-
+Default:
 =back
 
 =cut
