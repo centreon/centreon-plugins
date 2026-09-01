@@ -9,7 +9,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}..${/}mockoon.json
 ${CMD}              ${CENTREON_PLUGINS}
 ...                 --plugin=apps::virtualization::vates::vm::plugin
 ...                 --mode=cpu
