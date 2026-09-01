@@ -21,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-Cpu ${tc}
+pool status ${tc}
     [Tags]    apps    virtualization    vm
     ${command}    Catenate
     ...    ${CMD}
@@ -38,8 +38,17 @@ Cpu ${tc}
     ...    ${EMPTY}
     ...    UNKNOWN: you must fill either --pool-uuid or --pool-name.
     ...    2
-    ...    --pool-uuid=e9425768-75ed-a6da-bd00-2774c94ef200
-    ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
+    ...    --pool-uuid=00969214-df4d-83cb-78d5-bec9181903d4
+    ...    OK: pool 'vates' master 'vates' is Running - pool has HA enabled
     ...    3
-    ...    --pool-name=XOA
-    ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
+    ...    --pool-name=vates
+    ...    OK: pool 'vates' master 'vates' is Running - pool has HA enabled
+    ...    4
+    ...    --pool-name=second --is-ha='false'
+    ...    OK: pool 'second' master 'vates' is Running - pool has HA disabled
+    ...    5
+    ...    --pool-name=second --is-ha='true'
+    ...    CRITICAL: pool has HA disabled
+    ...    4
+    ...    --pool-name=second --is-ha=''
+    ...    CRITICAL: pool has HA disabled
