@@ -30,9 +30,6 @@ Standard ${tc} - ${mode}
     ...    1
     ...    status
     ...    Mode:\n.*status
-    ...    2
-    ...    hastatus
-    ...    Mode:\n.*High Availability status
     ...    3
     ...    cpu-over-commit
     ...    Mode:\n.*CPU over commit

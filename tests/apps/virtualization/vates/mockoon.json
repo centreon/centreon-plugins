@@ -311,7 +311,7 @@
           "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"00969214-df4d-83cb-78d5-bec9181903d4\"\n  }\n]",
           "latency": 0,
           "statusCode": 200,
-          "label": "return one pool ha enabled (copy)",
+          "label": "return one pool ha enabled slim",
           "headers": [],
           "bodyType": "INLINE",
           "filePath": "",
@@ -356,6 +356,40 @@
               "target": "query",
               "modifier": "fields",
               "value": "name_label,uuid,master,HA_enabled",
+              "invert": false,
+              "operator": "equals"
+            },
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "name_label:vates",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "2a124cdc-9951-44ed-9cee-68a7024d5ee1",
+          "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"master\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"HA_enabled\": true,\n    \"href\": \"/rest/v0/pools/00969214-df4d-83cb-78d5-bec9181903d4\"\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "return one pool ha enabled by name slim",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "uuid,name_label",
               "invert": false,
               "operator": "equals"
             },

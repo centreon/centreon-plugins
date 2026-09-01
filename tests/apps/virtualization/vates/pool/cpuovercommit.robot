@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       apps::virtualization::vates::vm::plugin
+Documentation       apps::virtualization::vates::pool::plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -21,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-Cpu ${tc}
+Cpu over commit ${tc}
     [Tags]    apps    virtualization    vm
     ${command}    Catenate
     ...    ${CMD}
@@ -39,7 +39,7 @@ Cpu ${tc}
     ...    UNKNOWN: you must fill either --pool-uuid or --pool-name.
     ...    2
     ...    --pool-uuid=00969214-df4d-83cb-78d5-bec9181903d4
-    ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
+    ...    OK: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:90;0:100;0;
     ...    3
     ...    --pool-name=vates
-    ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
+    ...    OK: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:90;0:100;0;
