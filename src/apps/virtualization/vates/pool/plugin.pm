@@ -32,7 +32,7 @@ sub new {
     $self->{modes} = {
         'status'           => 'apps::virtualization::vates::pool::mode::status',
         'cpu-over-commit'  => 'apps::virtualization::vates::pool::mode::cpuovercommit',
-
+        'discovery'        => 'apps::virtualization::vates::pool::mode::discovery',
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';
