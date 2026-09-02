@@ -21,17 +21,16 @@
 #
 
 #
-# Etat des hotes declares sur la baie.
+# Status of the hosts declared on the system.
 #
-# Aucune exclusion n'est ecrite dans le plugin. Un hote hors ligne remonte,
-# qu'il le soit par panne ou par construction : c'est le role de la supervision
-# de refleter l'etat reel. Un hote hors ligne en toute connaissance de cause
-# s'acquitte ou se met en maintenance dans Centreon — ce qui laisse une trace
-# et une date de revue, la ou un filtre code en dur le ferait disparaitre
-# silencieusement.
+# No exclusion is written in the plugin. An offline host is reported, whether
+# it is offline by failure or by design: reflecting the real state is what
+# monitoring is for. A host knowingly offline is acknowledged or put in
+# downtime in Centreon - which leaves a trace and a review date, where a
+# hard-coded filter would make it disappear silently.
 #
-# --filter-name reste disponible pour restreindre le perimetre d'un service,
-# mais il est vide par defaut.
+# --filter-name remains available to restrict the scope of a service, but it
+# is empty by default.
 #
 
 package storage::ibm::flashsystem::restapi::mode::hosts;
@@ -105,19 +104,19 @@ sub set_counters {
         }
     ];
 
-    # Les deux etats ne disent pas ce qu'on croit, et l'ordre de gravite
-    # naturel est INVERSE :
+    # The two states do not mean what one expects, and the natural order of
+    # severity is INVERTED:
     #
-    #   offline  = plus aucun WWPN de l'hote ne se connecte. La baie ne sait
-    #              pas distinguer un serveur eteint a dessein d'un serveur en
-    #              panne — et le cas courant est le premier (reserves,
-    #              sauvegardes). Ce n'est pas un defaut de la baie : WARNING,
-    #              visible sans reveiller l'astreinte.
-    #   degraded = une PARTIE seulement des chemins repond. L'hote tourne, en
-    #              production, sur une redondance entamee : le prochain chemin
-    #              perdu lui coupe son stockage. C'est actionnable tout de
-    #              suite (zoning, SFP, switch) et souvent le seul endroit ou ce
-    #              defaut de fabrique se voit : CRITICAL.
+    #   offline  = no WWPN of the host connects any more. The array cannot
+    #              tell a deliberately powered-off server from a failed one -
+    #              and the common case is the former (spares, backup hosts).
+    #              It is not a fault of the array: WARNING, visible without
+    #              waking anyone up.
+    #   degraded = only PART of the paths answer. The host is running, in
+    #              production, on eaten-into redundancy: the next lost path
+    #              cuts its storage. Actionable right away (zoning, SFP,
+    #              switch) and often the only place such a fabric fault
+    #              shows: CRITICAL.
     $self->{maps_counters}->{hosts} = [
         {
             label => 'status',

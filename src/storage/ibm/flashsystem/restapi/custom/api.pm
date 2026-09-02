@@ -21,14 +21,14 @@
 #
 
 #
-# Mode custom : dialogue avec l'API REST Storage Virtualize.
+# Custom mode: talks to the Storage Virtualize REST API.
 #
-# Trois particularites de cette API dictent la conception :
-#   1. Toutes les commandes sont des POST, y compris les lectures 'ls*'.
-#   2. Le prefixe est /rest/v1 depuis la 8.1.3, /rest avant : on detecte.
-#   3. Une session dure 2 h actives ou 30 min d'inactivite, puis renvoie 403.
-#      Le jeton est donc mis en cache sur le collecteur et reobtenu a la volee
-#      quand la baie le refuse.
+# Three traits of this API drive the design:
+#   1. Every command is a POST, including the 'ls*' reads.
+#   2. The prefix is /rest/v1 since 8.1.3, /rest before: it is auto-detected.
+#   3. A session lasts 2 h active or 30 min idle, then answers 403. The token
+#      is therefore cached on the poller and re-obtained on the fly when the
+#      array rejects it.
 #
 
 package storage::ibm::flashsystem::restapi::custom::api;
@@ -95,16 +95,16 @@ sub check_options {
     $self->{api_username}   = $self->{option_results}->{api_username};
     $self->{api_password}   = $self->{option_results}->{api_password};
     $self->{api_path}       = $self->{option_results}->{api_path};
-    # Duree de reutilisation du jeton. On la veut LONGUE : la baie limite le
-    # nombre d'authentifications et renvoie 429 quand on insiste, alors qu'un
-    # jeton perime se rattrape tout seul par le reessai sur 401/403. Expirer le
-    # jeton par precaution ne protege de rien et coute une authentification.
-    # 6600 s reste sous la limite de 2 h de session active.
+    # How long a token is reused. It has to be LONG: the array rate-limits
+    # authentications and answers 429 when pushed, whereas an expired token
+    # recovers by itself through the retry on 401/403. Expiring the token
+    # early protects against nothing and costs an authentication. 6600 s
+    # stays under the 2 h cap on an active session.
     $self->{token_lifetime} = defined($self->{option_results}->{token_lifetime}) && $self->{option_results}->{token_lifetime} =~ /^\d+$/ ? $self->{option_results}->{token_lifetime} : 6600;
-    # Duree de reutilisation d'une reponse de commande. 55 s par defaut :
-    # assez pour absorber la rafale des controles qui partent dans la meme
-    # minute, court devant la cadence de 5 min — le retard maximal d'une
-    # detection reste sous une minute. 0 desactive le cache.
+    # How long a command response is reused. 55 s by default: enough to
+    # absorb the burst of checks starting within the same minute, short
+    # against the 5 min cadence - the worst detection delay stays under a
+    # minute. 0 disables the cache.
     $self->{command_cache_ttl} = defined($self->{option_results}->{command_cache_ttl}) && $self->{option_results}->{command_cache_ttl} =~ /^\d+$/ ? $self->{option_results}->{command_cache_ttl} : 55;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
@@ -150,8 +150,8 @@ sub settings {
     $self->{settings_done} = 1;
 }
 
-# Les prefixes a essayer, dans l'ordre. --api-path fige le choix quand on veut
-# eviter la detection (une baie de plus dans le parc, un firmware connu).
+# The prefixes to try, in order. --api-path pins the choice when detection is
+# not wanted (one more array in a known fleet, a known firmware).
 sub api_paths {
     my ($self, %options) = @_;
 
@@ -172,11 +172,10 @@ sub decode_response {
     return $decoded;
 }
 
-# Authentification : POST <prefixe>/auth avec les identifiants en en-tetes.
-# La reponse porte un jeton (JWT sur les firmwares recents, chaine hexadecimale
-# avant). En cas d'echec, le corps porte le code IBM (CMMVCxxxxE) : on le
-# remonte tel quel, c'est lui qui distingue un mot de passe faux d'un compte
-# sans role.
+# Authentication: POST <prefix>/auth with the credentials in headers. The
+# answer carries a token (a JWT on recent firmwares, a hex string before). On
+# failure the body carries the IBM code (CMMVCxxxxE): it is passed through as
+# is, since it is what tells a wrong password from an account with no role.
 sub authenticate {
     my ($self, %options) = @_;
 
@@ -184,10 +183,10 @@ sub authenticate {
 
     my $last_message;
 
-    # La baie limite le rythme des authentifications et repond 429. Plusieurs
-    # controles qui expirent en meme temps suffisent a le declencher, d'ou une
-    # temporisation croissante avant d'abandonner. Le total reste sous le
-    # timeout d'un controle Centreon.
+    # The array rate-limits authentications and answers 429. A few checks
+    # expiring at the same time are enough to trigger it, hence a growing
+    # back-off before giving up. The total stays under a Centreon check
+    # timeout.
     foreach my $attempt (1 .. 3) {
         my $throttled = 0;
 
@@ -215,8 +214,8 @@ sub authenticate {
 
             $last_message = 'HTTP ' . $code . (defined($content) && $content ne '' ? ' - ' . $content : '');
 
-            # Inutile d'essayer l'autre prefixe : c'est le rythme qui est
-            # refuse, pas l'URL.
+            # No point trying the other prefix: the rate is being refused,
+            # not the URL.
             if ($code == 429) {
                 $throttled = 1;
                 last;
@@ -227,8 +226,8 @@ sub authenticate {
         sleep($attempt * 2);
     }
 
-    # Sur 429 on ne sort pas : l'appelant va relire le cache, qu'un controle
-    # voisin a peut-etre rafraichi pendant qu'on patientait.
+    # A 429 does not exit: the caller re-reads the cache, which a neighbouring
+    # check may have refreshed while we waited.
     return (undef, undef, $last_message) if (defined($last_message) && $last_message =~ /^HTTP 429/);
 
     $self->{output}->add_option_msg(
@@ -237,8 +236,8 @@ sub authenticate {
     $self->{output}->option_exit();
 }
 
-# Nom du fichier de cache : une entree par baie et par compte, partagee par
-# tous les controles de cette baie.
+# Cache file name: one entry per array and per account, shared by every check
+# of that array.
 sub statefile_name {
     my ($self, %options) = @_;
 
@@ -247,7 +246,7 @@ sub statefile_name {
         . '_' . md5_hex($self->{api_username});
 }
 
-# Relit le cache et rend le jeton s'il est encore valide, sinon undef.
+# Re-reads the cache and returns the token if still valid, undef otherwise.
 sub cached_token {
     my ($self, %options) = @_;
 
@@ -265,28 +264,28 @@ sub cached_token {
     return $token;
 }
 
-# Le jeton est partage par tous les controles d'une meme baie et d'un meme
-# compte : sans ce cache, chaque service ouvrirait sa propre session.
+# The token is shared by every check of the same array and account: without
+# this cache each service would open its own session.
 sub get_token {
     my ($self, %options) = @_;
 
     my $force = defined($options{force}) && $options{force} == 1;
 
-    # Le jeton qu'on ne veut surtout pas reprendre : celui que la baie vient de
-    # refuser, quand on est ici a cause d'un 401/403.
+    # The one token we must not pick up again: the one the array has just
+    # rejected, when we are here because of a 401/403.
     my $rejected = $force ? $self->{token} : undef;
 
-    # cached_token() lit le fichier, ce qui fixe aussi son nom pour l'ecriture.
+    # cached_token() reads the file, which also sets its name for writing.
     my $cached = $self->cached_token();
     return $cached if (!$force && defined($cached));
 
     my ($token, $path, $throttle_message) = $self->authenticate();
 
-    # Authentification refusee pour cause de rythme. Tous les controles d'une
-    # meme baie constatent l'expiration du jeton au meme moment et se ruent sur
-    # /auth : le temps qu'on ait patiente, l'un d'eux a souvent reussi et ecrit
-    # le cache. On le relit plutot que d'insister — sauf s'il rend le jeton
-    # qu'on vient justement de faire rejeter.
+    # Authentication refused because of the rate. Every check of the same
+    # array notices the token expiry at the same moment and rushes /auth: by
+    # the time we have waited, one of them has usually succeeded and written
+    # the cache. Re-read it rather than insist - unless it hands back the very
+    # token we just got rejected.
     if (!defined($token)) {
         my $refreshed = $self->cached_token();
         if (defined($refreshed) && (!defined($rejected) || $refreshed ne $rejected)) {
@@ -311,24 +310,17 @@ sub get_token {
     return $token;
 }
 
-# request : execute une commande CLI via l'API.
+# RESPONSE cache, shared between the checks of one array through the poller
+# state directory - the same principle as the token cache.
 #
-# $options{command}  nom de la commande, par exemple 'lsvdisk'
-# $options{payload}  parametres, par exemple { filtervalue => 'fixed=no' }
-#
-# Renvoie toujours une reference de tableau : l'API rend tantot un objet seul
-# (lssystem), tantot un tableau. Les modes n'ont donc jamais a tester la forme.
-# Cache de REPONSES, partage entre les controles d'une meme baie via le
-# repertoire d'etat du collecteur — le meme principe que le cache de jeton.
-#
-# Pourquoi : le decoupage en services multiplie les executions du plugin, et
-# plusieurs services relisent les MEMES commandes dans la meme minute — trois
-# services issus du mode performance relisent chacun lssystemstats, les deux
-# services de replication refont les quatre memes appels, et lssystem est lu
-# par la moitie des modes. La baie limite le rythme et repond 429. Le premier
-# controle du cycle remplit le cache, les suivants le relisent : la rafale
-# disparait sans changer la cadence de supervision. Toutes les commandes sont
-# des lectures ls*, la mise en cache est donc semantiquement sure.
+# Why: splitting the monitoring into single-purpose services multiplies plugin
+# runs, and several services re-read the SAME commands within the same minute
+# - three services carved out of the performance mode each re-read
+# lssystemstats, two per-partition replication services redo the same four
+# calls, and lssystem is read by half the modes. The array rate-limits and
+# answers 429. The first check of the cycle fills the cache, the following
+# ones read it: the burst disappears without changing the monitoring cadence.
+# Every command is an ls* read, so caching is semantically safe.
 
 sub response_cache_name {
     my ($self, %options) = @_;
@@ -352,17 +344,24 @@ sub cached_response {
 sub store_response {
     my ($self, %options) = @_;
 
-    # read() d'abord : c'est lui qui fixe le nom du fichier que write() utilise.
+    # read() first: it is what sets the file name write() uses.
     $self->{response_cache}->read(statefile => $self->response_cache_name(key => $options{key}));
     $self->{response_cache}->write(data => { stamp => time(), response => $options{response} });
 }
 
+# request: runs a CLI command through the API.
+#
+# $options{command}  command name, for instance 'lsvdisk'
+# $options{payload}  parameters, for instance { filtervalue => 'fixed=no' }
+#
+# Always returns an array reference: the API answers sometimes with a single
+# object (lssystem), sometimes with an array. Modes never have to test which.
 sub request {
     my ($self, %options) = @_;
 
     my $payload = defined($options{payload}) ? $options{payload} : {};
-    # canonical : le meme payload donne toujours la meme cle, quel que soit
-    # l'ordre interne du hachage.
+    # canonical: the same payload always gives the same key, whatever the
+    # internal hash order.
     my $cache_key = $options{command} . '|' . JSON::XS->new->utf8->canonical->encode($payload);
 
     if ($self->{command_cache_ttl} > 0) {
@@ -393,26 +392,26 @@ sub request {
 
         my $code = $self->{http}->get_code();
 
-        # 401 / 403 : session expiree ou invalidee cote baie. On se
-        # reauthentifie une fois, puis on abandonne pour ne pas boucler.
-        # C'est ce rattrapage qui permet de garder un jeton longtemps en cache
-        # plutot que de le renouveler par precaution.
+        # 401 / 403: session expired or invalidated on the array side.
+        # Re-authenticate once, then give up rather than loop. This recovery
+        # is what allows keeping a token cached for long instead of renewing
+        # it as a precaution.
         if (($code == 401 || $code == 403) && $attempt == 1) {
             $token = $self->get_token(force => 1);
             next;
         }
 
-        # 429 sur une commande : la baie limite le rythme des requetes. On
-        # temporise en allongeant le pas avant d'abandonner.
+        # 429 on a command: the array rate-limits requests. Back off with a
+        # growing step before giving up.
         if ($code == 429 && $attempt <= 3) {
             sleep($attempt * 3);
             next;
         }
 
-        # Rafale persistante malgre les reessais : plutot que de rendre le
-        # controle UNKNOWN, on sert la derniere reponse connue si elle a moins
-        # d'un quart d'heure. Un etat legerement date vaut mieux qu'un trou
-        # dans la supervision pendant une saturation passagere de l'API.
+        # Still throttled after the retries: rather than turning the check
+        # UNKNOWN, serve the last known response if it is under fifteen
+        # minutes old. A slightly stale state beats a hole in the monitoring
+        # during a passing API saturation.
         if ($code == 429 && $self->{command_cache_ttl} > 0) {
             my $stale = $self->cached_response(key => $cache_key, max_age => 900);
             if (defined($stale)) {
@@ -444,15 +443,10 @@ sub request {
     }
 }
 
-# Certaines commandes n'existent pas sur tous les firmwares ni sur tous les
-# modeles : lspartition n'apparait qu'en 8.7, lsrcrelationship disparait des
-# configurations qui n'utilisent que la replication par politique. Un mode
-# generique doit pouvoir demander sans savoir, d'ou cette variante tolerante
-# qui rend une liste vide plutot que de faire echouer le controle.
-# L'API rend les capacites sous forme de chaines unitaires : "310.99TB",
-# "0.00MB", parfois "1.25PB". Les seuils et la perfdata veulent des octets.
-# Rend undef quand la valeur est absente ou non exploitable, pour qu'un mode
-# puisse distinguer "zero" de "pas d'information".
+# The API returns capacities as unit-suffixed strings: "310.99TB", "0.00MB",
+# sometimes "1.25PB". Thresholds and perfdata want bytes. Returns undef when
+# the value is missing or unusable, so a mode can tell "zero" from "no
+# information".
 sub size_to_bytes {
     my ($self, %options) = @_;
 
@@ -467,17 +461,17 @@ sub size_to_bytes {
     return $number * $factor{$unit};
 }
 
-# Joignabilite de la baie, pour le seul usage du controle d'hote.
+# Array reachability, for the sole use of the host check.
 #
-# On ne peut pas se contenter de "l'API a repondu ou non" : un jeton refuse, un
-# 429 ou un certificat casse sont des problemes de supervision, pas des baies
-# mortes. Les confondre ferait passer l'hote DOWN et rendrait TOUS ses services
-# UNREACHABLE — on perdrait la supervision au moment ou elle sert le plus.
+# "Did the API answer" is not enough: a rejected token, a 429 or a broken
+# certificate are monitoring problems, not dead arrays. Mixing them up would
+# take the host DOWN and make ALL its services UNREACHABLE - losing the
+# monitoring right when it matters most.
 #
-# Rend l'une de ces trois valeurs :
-#   'unreachable' l'equipement ne repond pas du tout ;
-#   'degraded'    il repond mais l'API refuse de nous servir ;
-#   'ok'          l'API repond normalement.
+# Returns one of three values:
+#   'unreachable' the device does not answer at all;
+#   'degraded'    it answers but the API refuses to serve us;
+#   'ok'          the API answers normally.
 sub reachability {
     my ($self, %options) = @_;
 
@@ -499,9 +493,9 @@ sub reachability {
     my $code = $self->{http}->get_code();
     return ('ok', 'API responded') if ($code == 200);
 
-    # La bibliotheque HTTP rend un 500 synthetique quand la connexion elle-meme
-    # a echoue : c'est le texte qui distingue "personne au bout du fil" d'une
-    # reponse applicative.
+    # The HTTP library returns a synthetic 500 when the connection itself
+    # failed: the text is what tells "nobody at the other end" from an
+    # application answer.
     my $text = defined($content) ? $content : '';
     return ('unreachable', $text)
         if ($text =~ /can'?t connect|connection refused|no route to host|timeout|timed out/i);
@@ -509,6 +503,11 @@ sub reachability {
     return ('degraded', 'HTTP ' . $code . ($text ne '' ? ' - ' . $text : ''));
 }
 
+# Some commands do not exist on every firmware or model: lspartition only
+# appears in 8.7, lsrcrelationship disappears from setups that only use
+# policy-based replication. A generic mode must be able to ask without
+# knowing, hence this tolerant variant that returns an empty list rather
+# than failing the check.
 sub request_optional {
     my ($self, %options) = @_;
 

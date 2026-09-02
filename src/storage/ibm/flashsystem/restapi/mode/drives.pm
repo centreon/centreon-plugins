@@ -21,26 +21,25 @@
 #
 
 #
-# Suivi des disques : usure, chemins et remplissage par disque.
+# Drive tracking: wear, paths and fill, per drive.
 #
-# La vue concise de lsdrive ne porte que le statut et la capacite. Tout ce qui
-# fait un SUIVI de disque vit dans la vue detaillee, un appel par disque :
+# The concise lsdrive view only carries status and capacity. Everything that
+# makes drive TRACKING lives in the detailed view, one call per drive:
 #
-#   write_endurance_used     usure du FlashCore Module, en % — la metrique de
-#                            long terme d'un disque flash
-#   port_1/2_status          les deux chemins NVMe vers le disque
-#   physical_used_capacity   remplissage physique reel du module
-#   replacement_date         renseigne quand IBM predit une fin de vie
+#   write_endurance_used     FlashCore Module wear, in % - the long-term
+#                            metric of a flash drive
+#   port_1/2_status          the two NVMe paths to the drive
+#   physical_used_capacity   real physical fill of the module
+#   replacement_date         set when IBM predicts an end of life
 #
-# Le STATUT du disque reste au mode hardware, qui couvre deja les 12 disques
-# parmi ses composants : le porter ici aussi doublerait chaque alerte. Ce mode
-# couvre ce que hardware ne voit pas — la redondance des chemins, l'usure et
-# le remplissage — et n'alerte par defaut que sur un chemin tombe ou une fin
-# de vie predite.
+# Drive STATUS stays with the hardware mode, which already covers every drive
+# among its components: carrying it here too would double each alert. This
+# mode covers what hardware does not see - path redundancy, wear and fill -
+# and by default only alerts on a fallen path or a predicted end of life.
 #
-# Les seuils d'usure ne sont pas codes ici : ils se posent dans la macro
-# EXTRAOPTIONS du modele de service (--warning-endurance=80
-# --critical-endurance=90), visibles et reglables dans Centreon.
+# Wear thresholds are not coded here: they are set on the service side
+# (--warning-endurance=80 --critical-endurance=90), visible and adjustable in
+# Centreon.
 #
 
 package storage::ibm::flashsystem::restapi::mode::drives;
@@ -62,8 +61,8 @@ sub custom_drive_output {
     );
     $msg .= sprintf(', firmware %s', $self->{result_values}->{firmware})
         if ($self->{result_values}->{firmware} ne '-');
-    # Une date de remplacement n'est renseignee que quand la baie predit une
-    # fin de vie : quand elle existe, c'est l'information la plus importante.
+    # A replacement date is only set when the array predicts an end of life:
+    # when it exists, it is the most important piece of information.
     $msg .= sprintf(', REPLACEMENT PREDICTED %s', $self->{result_values}->{replacement_date})
         if ($self->{result_values}->{replacement_date} ne '-');
 
@@ -106,9 +105,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{drives} = [
-        # Le statut du disque appartient au mode hardware : ici on surveille la
-        # REDONDANCE. Un chemin tombe pendant que le disque sert encore, c'est
-        # exactement le defaut qu'un statut global ne montre pas.
+        # Drive status belongs to the hardware mode: here we watch REDUNDANCY. A
+        # path down while the drive still serves is exactly the fault a global
+        # status does not show.
         {
             label => 'status',
             type => 2,
@@ -125,8 +124,8 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        # L'usure s'use dans un seul sens : la courbe est le vrai livrable, le
-        # seuil se pose dans la macro du modele de service.
+        # Wear only goes one way: the curve is the real deliverable, the threshold
+        # is set on the service side.
         { label => 'endurance', nlabel => 'drive.endurance.used.percentage', set => {
                 key_values => [ { name => 'endurance' }, { name => 'display' } ],
                 output_template => 'endurance used %s %%',
@@ -175,8 +174,8 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne ''
             && $drive->{id} !~ /$self->{option_results}->{filter_id}/);
 
-        # Tout ce qui fait le suivi est dans la vue detaillee. Une douzaine
-        # d'appels par controle : le jeton est en cache, le cout est faible.
+        # Everything that makes the tracking is in the detailed view. A dozen
+        # calls per check: the token is cached, the cost is low.
         my $detail = $options{custom}->request_optional(command => 'lsdrive/' . $drive->{id})->[0];
         $detail = $drive unless (ref $detail eq 'HASH');
 
@@ -192,7 +191,7 @@ sub manage_selection {
             replacement_date => field($detail, 'replacement_date'),
             firmware => field($detail, 'firmware_level')
         };
-        # firmware_level arrive avec des espaces de fin sur ces firmwares.
+        # firmware_level comes with trailing spaces on some firmwares.
         $entry->{firmware} =~ s/\s+$//;
 
         my $endurance = $detail->{write_endurance_used};

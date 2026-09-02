@@ -21,20 +21,20 @@
 #
 
 #
-# Ports Fibre Channel — le chemin de donnees, que le mode hardware ne couvre pas.
+# Fibre Channel ports - the data path, which the hardware mode does not cover.
 #
-# Deux precisions tirees de l'API :
+# Two facts taken from the API:
 #
-#   - lsportfc n'expose NI compteur d'erreurs NI debit. Les seuls etats sont le
-#     statut, la vitesse negociee et le rattachement. Le debit FC ne s'obtient
-#     qu'au niveau du noeud, via lsnodecanisterstats.
-#   - un port equipe d'un SFP mais non raccorde remonte 'inactive_configured'
-#     en permanence, par conception IBM, et aucune option ne change ce
-#     comportement. Le seuil par defaut ne le traite donc pas comme une panne :
-#     il alerte sur ce qui a cesse d'etre actif, pas sur ce qui ne l'a jamais ete.
+#   - lsportfc exposes NEITHER error counters NOR throughput. The only states
+#     are the status, the negotiated speed and the attachment. FC throughput
+#     is only available at node level, through lsnodecanisterstats.
+#   - a port fitted with an SFP but not connected reports 'inactive_configured'
+#     permanently, by IBM design, and no option changes that behaviour. The
+#     default threshold therefore does not treat it as a fault: it alerts on
+#     what stopped being active, not on what never was.
 #
-# lstargetportfc ajoute le nombre de connexions hotes par port : un port actif
-# qui perd ses connexions est un chemin perdu, invisible autrement.
+# lstargetportfc adds the number of host logins per port: an active port that
+# loses its logins is a lost path, invisible otherwise.
 #
 
 package storage::ibm::flashsystem::restapi::mode::fcports;
@@ -109,11 +109,11 @@ sub set_counters {
         }
     ];
 
-    # 'inactive_unconfigured' = pas de SFP, 'inactive_configured' = SFP pose mais
-    # rien de branche : deux etats normaux sur une baie partiellement cablee.
-    # Alerter dessus produirait un Critical perpetuel, ce qui apprend a l'equipe
-    # a ignorer le service. On ne retient donc que les etats qui traduisent une
-    # degradation reelle.
+    # 'inactive_unconfigured' = no SFP, 'inactive_configured' = SFP fitted but
+    # nothing plugged: two normal states on a partially cabled array. Alerting
+    # on them would produce a perpetual Critical, which teaches the team to
+    # ignore the service. Only the states reflecting a real degradation are
+    # retained.
     $self->{maps_counters}->{ports} = [
         {
             label => 'status',
@@ -158,9 +158,9 @@ sub field {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Les connexions hotes se lisent sur les ports virtualises (NPIV), indexes
-    # par fc_io_port_id. On les agrege avant de les rattacher aux ports
-    # physiques.
+    # Host logins are read on the virtualised (NPIV) ports, keyed on
+    # fc_io_port_id. They are aggregated before being attached to the physical
+    # ports.
     my %logins;
     foreach my $target (@{ $options{custom}->request_optional(command => 'lstargetportfc') }) {
         my $port = field($target, 'fc_io_port_id');
@@ -173,9 +173,9 @@ sub manage_selection {
     $self->{ports} = {};
 
     foreach my $port (@{ $options{custom}->request(command => 'lsportfc') }) {
-        # Les identifiants de port ne sont pas contigus — 0 a 3 puis 24 a 27 —
-        # donc un service « Port 24 » n'aiderait personne. On nomme par noeud et
-        # numero de port, ce que lit un exploitant.
+        # Port ids are not contiguous - 0 to 3 then 24 to 27 - so a "Port 24"
+        # service would help nobody. Ports are named by node and port number,
+        # what an operator reads.
         my $name = field($port, 'node_name') . '-' . field($port, 'port_id');
         my $type = field($port, 'type');
 

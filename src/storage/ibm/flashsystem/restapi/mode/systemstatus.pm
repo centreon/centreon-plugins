@@ -21,28 +21,28 @@
 #
 
 #
-# Controle d'HOTE : la baie fonctionne-t-elle encore ?
+# HOST check: is the array still working?
 #
-# Ce mode est concu pour la commande de verification d'hote, pas pour un
-# service. Il ne rend donc que deux verdicts — OK (hote UP) ou CRITICAL (hote
-# DOWN) — et jamais WARNING ni UNKNOWN, dont l'interpretation par le moteur est
-# ambigue.
+# This mode is designed for the host check command, not for a service. It
+# therefore only returns two verdicts - OK (host UP) or CRITICAL (host DOWN) -
+# and never WARNING nor UNKNOWN, whose interpretation by the engine is
+# ambiguous.
 #
-# Le critere est etroit a dessein : DOWN veut dire « la baie a cesse de
-# fonctionner », pas « quelque chose ne va pas ». Passer un hote DOWN rend TOUS
-# ses services UNREACHABLE et les fait taire ; une alimentation en panne, un
-# disque mort ou une partition degradee ne doivent donc surtout pas y conduire —
-# ce sont les services Hardware, Replication et Event-Log qui les portent, et on
-# a besoin de les entendre precisement dans ces moments-la.
+# The criterion is narrow on purpose: DOWN means "the array stopped working",
+# not "something is wrong". Taking a host DOWN makes ALL its services
+# UNREACHABLE and silences them; a failed power supply, a dead drive or a
+# degraded partition must therefore never lead there - the hardware,
+# replication and eventlog services carry those, and they need to be heard
+# precisely at such moments.
 #
-# Trois faits, et trois seulement, valent arret de service :
-#   - la baie ne repond plus du tout ;
-#   - aucun canister n'est en ligne, donc plus rien ne traite d'E/S ;
-#   - aucun pool n'est en ligne, donc plus aucun volume n'est servi.
+# Three facts, and three only, mean the service is down:
+#   - the array does not answer at all;
+#   - no canister is online, so nothing processes I/O any more;
+#   - no pool is online, so no volume is served any more.
 #
-# Une API qui repond mais refuse de nous servir — jeton expire, 429, certificat
-# — n'est PAS une baie morte : c'est notre supervision qui a un souci. L'hote
-# reste UP, avec le motif dans la sortie.
+# An API that answers but refuses to serve us - expired token, 429,
+# certificate - is NOT a dead array: it is our monitoring that has an issue.
+# The host stays UP, with the reason in the output.
 #
 
 package storage::ibm::flashsystem::restapi::mode::systemstatus;
@@ -58,8 +58,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        # Sur une baie mono-controleur ou en cours de maintenance planifiee, on
-        # peut vouloir desactiver l'un des deux criteres fonctionnels.
+        # On a single-controller system or during planned maintenance, one may
+        # want to disable one of the two functional criteria.
         'skip-canisters' => { name => 'skip_canisters' },
         'skip-pools'     => { name => 'skip_pools' }
     });
@@ -100,8 +100,8 @@ sub run {
     }
 
     if ($state eq 'degraded') {
-        # L'equipement repond : ce n'est pas lui qui est mort. On le dit sans
-        # faire tomber l'hote, sinon toute sa supervision se tairait.
+        # The device answers: it is not the one that is dead. Say so without
+        # taking the host down, or all its monitoring would go silent.
         $self->{output}->output_add(
             severity => 'OK',
             short_msg => 'Array is answering but the API refused the call, '

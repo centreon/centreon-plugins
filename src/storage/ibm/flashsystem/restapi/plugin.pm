@@ -21,12 +21,12 @@
 #
 
 #
-# Supervision des baies IBM Storage Virtualize (FlashSystem, Storwize, SVC)
-# via l'API REST exposee sur le port 7443.
+# Monitoring of IBM Storage Virtualize systems (FlashSystem, Storwize, SVC)
+# through the REST API served on port 7443.
 #
-# Principe de conception : le plugin ne connait aucune specificite d'une baie
-# donnee. Tout est decouvert par l'API. Ajouter une baie se limite a creer un
-# hote portant le calque et deux macros ; aucune modification de code.
+# Design principle: the plugin knows nothing specific to a given array.
+# Everything is discovered through the API. Adding an array comes down to
+# creating a host with the template and two macros; no code change.
 #
 
 package storage::ibm::flashsystem::restapi::plugin;
@@ -42,8 +42,8 @@ sub new {
 
     $self->{version} = '1.0';
 
-    # Seuls les modes reellement implementes sont declares : un mode declare
-    # sans son module apparait dans --list-mode puis echoue a l'execution sur
+    # Only the modes that really exist are declared: a mode declared without
+    # its module shows up in --list-mode and then fails at run time with
     # "Cannot load module".
     $self->{modes} = {
         'capacity'      => 'storage::ibm::flashsystem::restapi::mode::capacity',
@@ -55,13 +55,13 @@ sub new {
         'hosts'         => 'storage::ibm::flashsystem::restapi::mode::hosts',
         'performance'   => 'storage::ibm::flashsystem::restapi::mode::performance',
         'replication'   => 'storage::ibm::flashsystem::restapi::mode::replication',
-        # Destine a la commande de verification d'HOTE, pas a un service.
+        # Meant for the HOST check command, not for a service.
         'system-status' => 'storage::ibm::flashsystem::restapi::mode::systemstatus',
         'volume-groups' => 'storage::ibm::flashsystem::restapi::mode::volumegroups',
         'volumes'       => 'storage::ibm::flashsystem::restapi::mode::volumes'
-        # Restent a ecrire, le jour ou la decouverte automatique de services
-        # sera mise en place (elle demande aussi des regles cote Centreon, que
-        # ni CLAPI ni l'API v2 n'exposent) :
+        # Still to be written, for the day automatic service discovery is set
+        # up (it also needs discovery rules on the Centreon side, which
+        # neither CLAPI nor the v2 API expose):
         # 'list-fc-ports'      => '...::mode::listfcports',
         # 'list-volume-groups' => '...::mode::listvolumegroups'
     };

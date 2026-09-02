@@ -21,25 +21,25 @@
 #
 
 #
-# Etat d'ensemble des volumes.
+# Overall volume state.
 #
-# Ce mode est volontairement agrege. Ni lsvdisk ni lsvdiskcopy n'exposent
-# used_capacity en vue concise : la consommation d'un volume exigerait la vue
-# detaillee, soit un appel par volume — 349 par cycle sur ces baies. Le seul
-# etat reellement disponible par volume est son statut, et ils sont tous
-# 'online'. Un service par volume afficherait donc « online » et une taille
-# figee, sept cents fois.
+# This mode is aggregated on purpose. Neither lsvdisk nor lsvdiskcopy exposes
+# used_capacity in the concise view: a volume's consumption would need the
+# detailed view, one call per volume - several hundred per cycle on a typical
+# array. The only state really available per volume is its status, and they
+# are all 'online'. One service per volume would therefore show "online" and a
+# fixed size, hundreds of times.
 #
-# Le service compte les etats et NOMME les volumes anormaux dans sa sortie :
-# la granularite de diagnostic est conservee, les sept cents services non.
-# Pour une supervision par objet, voir le mode volume-groups, dont les objets
-# portent un vrai etat.
+# The service counts the states and NAMES the abnormal volumes in its output:
+# the diagnostic granularity is kept, the hundreds of services are not. For a
+# per-object monitoring, see the volume-groups mode, whose objects carry a real
+# state.
 #
-# Deux pieges de lecture :
-#   - fast_write_state = 'not_empty' est l'etat NORMAL d'un volume qui travaille
-#     (des donnees en cache d'ecriture). Seul 'corrupt' est anormal.
-#   - un volume 'plein' au sens de sa taille provisionnee ne veut rien dire en
-#     thin provisioning : la capacite se gere au niveau du pool.
+# Two reading traps:
+#   - fast_write_state = 'not_empty' is the NORMAL state of a working volume
+#     (data in the write cache). Only 'corrupt' is abnormal.
+#   - a volume 'full' with regard to its provisioned size means nothing with
+#     thin provisioning: capacity is managed at pool level.
 #
 
 package storage::ibm::flashsystem::restapi::mode::volumes;
@@ -123,8 +123,8 @@ sub set_counters {
         }
     ];
 
-    # Seuls les volumes anormaux deviennent des instances : on ne cree pas
-    # trois cent quarante-neuf lignes pour dire que tout va bien.
+    # Only abnormal volumes become instances: hundreds of lines are not
+    # created to say that all is well.
     $self->{maps_counters}->{volumes} = [
         {
             label => 'status',
@@ -170,8 +170,8 @@ sub field {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # La synchronisation des copies vit sur lsvdiskcopy, pas sur lsvdisk : un
-    # volume peut etre 'online' avec une copie desynchronisee.
+    # Copy synchronisation lives on lsvdiskcopy, not on lsvdisk: a volume can
+    # be 'online' with an out-of-sync copy.
     my %unsynced;
     foreach my $copy (@{ $options{custom}->request_optional(command => 'lsvdiskcopy') }) {
         my $name = field($copy, 'vdisk_name');
@@ -210,7 +210,7 @@ sub manage_selection {
             && ($sync eq 'yes')
             && (field($volume, 'formatting') !~ /^yes$/i);
 
-        # Par defaut, seuls les volumes anormaux deviennent des instances.
+        # By default, only abnormal volumes become instances.
         next if ($healthy && !defined($self->{option_results}->{add_all_volumes}));
 
         $self->{volumes}->{$name} = {

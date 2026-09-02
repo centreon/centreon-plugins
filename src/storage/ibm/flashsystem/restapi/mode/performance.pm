@@ -21,23 +21,22 @@
 #
 
 #
-# Performance de la baie : latence, debit, IOPS et charge processeur.
+# Array performance: latency, throughput, IOPS and processor load.
 #
-# lssystemstats rend une liste de compteurs { stat_name, stat_current,
-# stat_peak, stat_peak_time }. On expose la valeur courante en metrique et le
-# pic en donnee complementaire : sur un echantillonnage a cinq minutes, le pic
-# dit ce que la moyenne efface.
+# lssystemstats returns a list of counters { stat_name, stat_current,
+# stat_peak, stat_peak_time }. The current value is exposed as the metric and
+# the peak as extra information: on a five-minute sampling, the peak says what
+# the average erases.
 #
-# Aucun compteur ne porte de seuil par defaut : les IOPS, le debit et le
-# processeur n'ont pas de bonne valeur dans l'absolu — ils se reglent sur
-# l'observe. La latence est le seul indicateur a norme physique (sur du
-# tout-flash, quelques ms sont normales, quelques dizaines non) : la doc
-# suggere 10/20 ms comme point de depart, a poser via --warning-latency /
-# --critical-latency dans la macro EXTRAOPTIONS du modele Latency, en UAT.
+# No counter ships with a default threshold: IOPS, throughput and processor
+# have no good absolute value - they are set against what is observed. Latency
+# is the one indicator with a physical norm (on all-flash, a few ms are normal,
+# a few tens are not): the help suggests 5/15 ms as a starting point, to be set
+# with --warning-latency / --critical-latency on the service side.
 #
-# IBM Storage Insights Pro garde un an d'historique et des dizaines de
-# metriques : la metrologie fine vit la-bas. Ce mode existe pour l'ALERTE, qui
-# doit naitre dans Centreon parce que c'est lui qui parle a ServiceNow.
+# Fine metrology usually lives in the vendor tool (IBM Storage Insights keeps
+# a year of history and dozens of metrics). This mode exists for the ALERT,
+# which has to be raised by the monitoring platform.
 #
 
 package storage::ibm::flashsystem::restapi::mode::performance;
@@ -47,9 +46,9 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-# Correspondance entre les compteurs de la baie et les metriques publiees.
-# 'scale' convertit vers l'unite attendue par Centreon ; les Mo/s de la baie
-# deviennent des octets par seconde.
+# Mapping between the array counters and the published metrics. 'scale'
+# converts to the unit Centreon expects; the array's MB/s become bytes per
+# second.
 my $MEASURES = [
     { stat => 'vdisk_ms',           key => 'latency',            unit => 'ms' },
     { stat => 'vdisk_r_ms',         key => 'read_latency',       unit => 'ms' },
@@ -60,8 +59,8 @@ my $MEASURES = [
     { stat => 'compression_cpu_pc', key => 'compression_cpu',    unit => '%' },
     { stat => 'write_cache_pc',     key => 'write_cache',        unit => '%' },
     { stat => 'total_cache_pc',     key => 'total_cache',        unit => '%' },
-    # Cote arriere : utile pour distinguer une latence vue par les hotes d'une
-    # latence reellement produite par les disques.
+    # Back end: useful to tell a latency seen by the hosts from a latency really
+    # produced by the drives.
     { stat => 'mdisk_ms',           key => 'backend_latency',    unit => 'ms' },
     { stat => 'drive_ms',           key => 'drive_latency',      unit => 'ms' },
     { stat => 'fc_io',              key => 'fc_iops',            unit => 'iops' },
@@ -89,15 +88,14 @@ sub set_counters {
           message_multiple => 'All node CPUs are ok', skipped_code => { -10 => 1 } }
     ];
 
-    # Il n'y a pas de « load average » sur Storage Virtualize : l'equivalent
-    # le plus proche est la charge CPU PAR CANISTER (lsnodecanisterstats).
-    # Sur un actif/actif a deux noeuds, c'est le desequilibre qui parle : un
-    # noeud qui porte tout pendant que l'autre dort signale une bascule ou
-    # des chemins malades — invisible dans le CPU global, qui moyenne.
+    # There is no "load average" on Storage Virtualize: the closest equivalent
+    # is the CPU load PER CANISTER (lsnodecanisterstats). On an active/active
+    # pair it is the imbalance that speaks: one node carrying everything while
+    # the other idles signals a failover or sick paths - invisible in the global
+    # CPU, which averages.
     #
-    # Le label 'node-cpu' est choisi pour que le filtre --filter-counters=cpu
-    # du service Cpu l'attrape tel quel : la declinaison arrive dans le bon
-    # service sans toucher aux modeles Centreon.
+    # The 'node-cpu' label is chosen so that --filter-counters=cpu picks it up
+    # as is: a service split on the CPU counters gets it without any change.
     $self->{maps_counters}->{nodes} = [
         { label => 'node-cpu', nlabel => 'node.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
@@ -109,9 +107,9 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{system} = [
-        # La latence est le seul compteur livre avec des seuils : sur du
-        # tout-flash, au-dela de quelques dizaines de millisecondes le probleme
-        # est reel quelle que soit la charge.
+        # Latency is the one counter with a physical norm: on all-flash, beyond a
+        # few tens of milliseconds the problem is real whatever the load. No
+        # default is shipped; the help gives a suggested starting point.
         { label => 'latency', nlabel => 'system.io.latency.milliseconds',
           set => {
                 key_values => [ { name => 'latency' } ],
@@ -137,13 +135,13 @@ sub set_counters {
                 perfdatas => [ { template => '%s', unit => 'iops', min => 0 } ]
             }
         },
-        # output_change_bytes rend un couple (valeur, unite) : sans le second
-        # %s, la sortie affiche « bandwidth 1.34 » et l'unite disparait.
+        # output_change_bytes returns a (value, unit) pair: without the second
+        # %s, the output reads "bandwidth 1.34" and the unit disappears.
         #
-        # Et il faut le mode 1, pas 2 : le mode 2 est prevu pour le reseau, ou
-        # l'on compte des BITS, et rend une unite en « b » — « 1.74 Gb/s » pour
-        # une valeur qui est en octets par seconde. Un facteur huit dans la
-        # tete du lecteur. Le mode 1 rend « GB », ce que la mesure est vraiment.
+        # And it must be mode 1, not 2: mode 2 is meant for networking, where
+        # BITS are counted, and returns a unit in "b" - "1.74 Gb/s" for a value
+        # that is in bytes per second. A factor of eight in the reader's head.
+        # Mode 1 returns "GB", what the measure really is.
         { label => 'bandwidth', nlabel => 'system.io.usage.bytespersecond', set => {
                 key_values => [ { name => 'bandwidth' } ],
                 output_template => 'bandwidth %s %s/s',
@@ -218,9 +216,9 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # statistics_status a 'off' fige lssystemstats sans le signaler : les
-    # valeurs restent lisibles mais ne bougent plus. Mieux vaut le dire que
-    # publier une courbe morte.
+    # statistics_status at 'off' freezes lssystemstats without saying so: the
+    # values stay readable but no longer move. Better to say it than to
+    # publish a dead curve.
     my $system = $options{custom}->request(command => 'lssystem')->[0];
     if (defined($system->{statistics_status}) && $system->{statistics_status} !~ /^on$/i) {
         $self->{output}->output_add(
@@ -238,8 +236,8 @@ sub manage_selection {
         $stats{ $entry->{stat_name} } = $entry;
     }
 
-    # Charge CPU par canister. request_optional : un firmware qui ne rendrait
-    # pas la commande prive du detail par noeud, pas du controle entier.
+    # CPU load per canister. request_optional: a firmware that would not
+    # return the command loses the per-node detail, not the whole check.
     $self->{nodes} = {};
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lsnodecanisterstats') }) {
         next unless (ref $entry eq 'HASH'
@@ -281,8 +279,8 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    # Le pic est ce que la moyenne sur cinq minutes efface : on le montre en
-    # sortie longue plutot que d'en faire une metrique de plus.
+    # The peak is what the five-minute average erases: it is shown in the long
+    # output rather than turned into one more metric.
     $self->{output}->output_add(long_msg => join("\n", @peaks)) if (@peaks);
 }
 

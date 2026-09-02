@@ -21,19 +21,18 @@
 #
 
 #
-# Etat de la replication, sous les trois formes que Storage Virtualize connait :
+# Replication health, in the three forms Storage Virtualize knows:
 #
-#   - partitions de stockage (8.7+) : c'est la partition qui porte l'etat de
-#     sante de la haute disponibilite. Un ha_status a 'problem' coexiste sans
-#     contradiction avec des groupes de volumes tous 'synchronized' : regarder
-#     les seuls groupes ferait conclure a tort que tout va bien.
-#   - replication par politique (8.5.2+) : lsvolumegroupreplication.
-#   - Metro / Global Mirror (historique) : lsrcrelationship.
+#   - storage partitions (8.7+): the partition is what carries the high
+#     availability health. An ha_status at 'problem' coexists without
+#     contradiction with volume groups all 'synchronized': looking at the
+#     groups alone would wrongly conclude that all is well.
+#   - policy-based replication (8.5.2+): lsvolumegroupreplication.
+#   - Metro / Global Mirror (legacy): lsrcrelationship.
 #
-# Les trois sont interrogees systematiquement. Une baie qui n'en utilise
-# aucune rend OK avec la mention explicite qu'aucune replication n'est
-# configuree ; une baie qui en utilise deux voit les deux. Aucun mode n'est a
-# activer par option.
+# All three are queried systematically. A system using none of them reports
+# OK with an explicit mention that no replication is configured; a system
+# using two sees both. No mode has to be enabled by option.
 #
 
 package storage::ibm::flashsystem::restapi::mode::replication;
@@ -53,7 +52,7 @@ sub custom_partition_output {
         $self->{result_values}->{link_status}
     );
 
-    # Les deux cotes ne sont renseignes que sur une partition repliquee.
+    # Both sides are only set on a replicated partition.
     foreach my $side (1, 2) {
         my $system = $self->{result_values}->{'location' . $side . '_system_name'};
         my $status = $self->{result_values}->{'location' . $side . '_status'};
@@ -75,9 +74,9 @@ sub custom_group_output {
     $msg .= sprintf(', partition: %s', $self->{result_values}->{partition_name})
         if ($self->{result_values}->{partition_name} ne '-');
 
-    # En 2-site-ha ces champs restent vides : ils ne decrivent que la
-    # replication asynchrone. On ne les affiche donc que s'ils portent une
-    # valeur, ce qui rend le meme mode lisible dans les deux topologies.
+    # In 2-site-ha these fields stay empty: they only describe asynchronous
+    # replication. They are therefore only shown when they carry a value,
+    # which keeps the same mode readable in both topologies.
     foreach my $side (1, 2) {
         my $rpo = $self->{result_values}->{'location' . $side . '_within_rpo'};
         next if ($rpo eq '-');
@@ -176,10 +175,10 @@ sub set_counters {
         }
     ];
 
-    # Les seuils par defaut signalent tout ce qui n'est pas explicitement sain.
-    # Une valeur inconnue — firmware plus recent, topologie non rencontree —
-    # remonte donc plutot que de passer inapercue ; --critical-status permet de
-    # l'accepter ensuite, par service, sans toucher au code.
+    # Default thresholds report everything that is not explicitly healthy. An
+    # unknown value - newer firmware, topology not met yet - is therefore
+    # raised rather than going unnoticed; --critical-status then allows
+    # accepting it, per service, without touching the code.
     $self->{maps_counters}->{partitions} = [
         {
             label => 'partition-status',
@@ -203,9 +202,9 @@ sub set_counters {
         {
             label => 'volume-group-status',
             type => 2,
-            # L'expression sur within_rpo est volontairement inerte quand le
-            # champ est vide : elle ne se declenche qu'en replication
-            # asynchrone, ou la baie le renseigne.
+            # The expression on within_rpo is deliberately inert when the field
+            # is empty: it only triggers on asynchronous replication, where the
+            # array sets it.
             critical_default => '%{link1_status} !~ /^(synchronized|running|connected)$/i'
                 . ' || %{location1_within_rpo} =~ /^no$/i'
                 . ' || %{location2_within_rpo} =~ /^no$/i',
@@ -223,8 +222,8 @@ sub set_counters {
         }
     ];
 
-    # Le partenariat local n'a pas d'etat : il se decrit lui-meme. Seuls les
-    # partenariats distants sont evalues, d'ou le filtre pose en selection.
+    # The local partnership has no state: it describes itself. Only remote
+    # partnerships are evaluated, hence the filter applied at selection.
     $self->{maps_counters}->{partnerships} = [
         {
             label => 'partnership-status',
@@ -269,8 +268,8 @@ sub new {
     return $self;
 }
 
-# Renvoie la valeur du champ, ou '-' : les seuils et les sorties travaillent
-# alors sur une chaine toujours definie, quelle que soit la version de l'API.
+# Returns the field value, or '-': thresholds and outputs then work on an
+# always-defined string, whatever the API version.
 sub field {
     my ($entry, $name) = @_;
 
@@ -300,10 +299,10 @@ sub manage_selection {
     $self->{partnerships} = {};
     $self->{relationships} = {};
 
-    # request_optional : lspartition n'existe qu'a partir de la 8.7, et les
-    # autres commandes peuvent manquer selon le modele. Une commande absente ne
-    # doit pas faire echouer le controle sur une baie ou les autres formes de
-    # replication fonctionnent.
+    # request_optional: lspartition only exists from 8.7, and the other
+    # commands may be missing depending on the model. A missing command must
+    # not fail the check on a system where the other forms of replication
+    # work.
     my $partitions    = $options{custom}->request_optional(command => 'lspartition');
     my $groups        = $options{custom}->request_optional(command => 'lsvolumegroupreplication');
     my $partnerships  = $options{custom}->request_optional(command => 'lspartnership');
@@ -329,11 +328,11 @@ sub manage_selection {
     foreach my $entry (@$groups) {
         my $name = field($entry, 'name');
         next if ($self->filtered(filter => 'filter_volume_group', value => $name));
-        # Le filtre de partition restreint aussi les groupes, par leur
-        # partition d'appartenance : c'est ce qui permet un service PAR
-        # partition — meme commande, meme modele, seule la macro de service
-        # change. Les partenariats restent hors filtre : un partenariat casse
-        # concerne toutes les partitions.
+        # The partition filter also restricts the groups, by the partition
+        # they belong to: that is what allows one service PER partition -
+        # same command, same template, only the service macro changes.
+        # Partnerships stay unfiltered: a broken partnership concerns every
+        # partition.
         next if ($self->filtered(filter => 'filter_partition', value => field($entry, 'partition_name')));
 
         $self->{global}->{groups_detected}++;
@@ -353,8 +352,8 @@ sub manage_selection {
         my $name = field($entry, 'name');
         my $location = field($entry, 'location');
 
-        # L'entree 'local' decrit la baie interrogee, pas un lien : elle n'a ni
-        # partnership ni type, et n'a donc pas d'etat a evaluer.
+        # The 'local' entry describes the queried system, not a link: it has
+        # neither partnership nor type, hence no state to evaluate.
         next if ($location =~ /^local$/i);
         next if ($self->filtered(filter => 'filter_partnership', value => $name));
 
@@ -379,8 +378,8 @@ sub manage_selection {
         };
     }
 
-    # Aucune replication n'est une configuration valide, pas une anomalie ni
-    # une erreur de collecte : on le dit, et le service reste OK.
+    # No replication is a valid configuration, neither an anomaly nor a
+    # collection error: say so, and the service stays OK.
     if (scalar(keys %{$self->{partitions}}) == 0
         && scalar(keys %{$self->{groups}}) == 0
         && scalar(keys %{$self->{partnerships}}) == 0

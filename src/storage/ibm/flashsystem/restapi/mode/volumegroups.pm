@@ -21,16 +21,16 @@
 #
 
 #
-# Groupes de volumes — la granularite par objet qui a du sens sur ces baies.
+# Volume groups - the per-object granularity that makes sense on these systems.
 #
-# Le volume ne porte qu'un statut, identique sur les 349. Le groupe, lui, porte
-# un etat de sauvegarde, une date de derniere sauvegarde, une restauration en
-# cours et les politiques qui lui sont attachees. Et ses noms sont metier :
-# Volume_Group_ESXi, Volume_Group_DBWMSPRTRI01 — lisibles en astreinte.
+# A volume only carries a status, identical across hundreds of them. A group
+# carries a backup state, a last backup time, a restore in progress and the
+# policies attached to it. And its names are business names: Volume_Group_ESXi,
+# Volume_Group_DB01 - readable on call.
 #
-# Un groupe sans politique n'est pas une anomalie en soi : c'est une decision
-# d'exploitation. Le mode l'expose donc en metrique et laisse --warning-status
-# trancher, plutot que d'imposer un jugement.
+# A group without a policy is not an anomaly in itself: it is an operational
+# decision. The mode therefore exposes it as a metric and lets --warning-status
+# decide, rather than imposing a judgement.
 #
 
 package storage::ibm::flashsystem::restapi::mode::volumegroups;
@@ -112,9 +112,9 @@ sub set_counters {
         }
     ];
 
-    # Rien n'est critique par defaut : sur ces baies backup_status vaut 'off'
-    # partout, ce qui est un choix d'exploitation et non une panne. Le seuil se
-    # pose une fois la politique de sauvegarde arretee, pas avant.
+    # Nothing is critical by default: on the arrays surveyed backup_status was
+    # 'off' everywhere, which is an operational choice and not a failure. The
+    # threshold is set once the backup policy is decided, not before.
     $self->{maps_counters}->{groups} = [
         {
             label => 'status',
@@ -172,9 +172,9 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_partition}) && $self->{option_results}->{filter_partition} ne ''
             && $partition !~ /$self->{option_results}->{filter_partition}/);
 
-        # La politique de replication se lit soit directement, soit via la
-        # politique HA quand la baie est en 2-site-ha : les deux champs
-        # coexistent et un seul est renseigne selon la topologie.
+        # The replication policy is read either directly, or through the HA
+        # policy when the system is in 2-site-ha: both fields coexist and only
+        # one is set depending on the topology.
         my $replication = field($group, 'replication_policy_name');
         $replication = field($group, 'ha_replication_policy_name') if ($replication eq '-');
 

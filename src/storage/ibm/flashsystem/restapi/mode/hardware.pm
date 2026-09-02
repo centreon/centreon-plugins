@@ -21,15 +21,15 @@
 #
 
 #
-# Etat du materiel.
+# Hardware health.
 #
-# lsenclosure porte deja les compteurs online/total de chaque sous-ensemble du
-# chassis : alimentations, canisters, ventilateurs, SEM. Une seule commande
-# suffit donc la ou l'approche naive en demandait quatre.
+# lsenclosure already carries the online/total counters of every enclosure
+# subsystem: power supplies, canisters, fan modules, SEMs. One command is thus
+# enough where the naive approach needed four.
 #
-# Un sous-ensemble dont le total vaut 0 n'est pas installe sur ce modele : il
-# est ignore et non compte comme defaillant. C'est ce qui permet au meme mode
-# de couvrir un FlashSystem 5300 sans SEM et un chassis qui en possede.
+# A subsystem whose total is 0 is not fitted on that model: it is skipped and
+# not counted as failed. That is what lets the same mode cover a FlashSystem
+# 5300 without SEMs and an enclosure that has some.
 #
 
 package storage::ibm::flashsystem::restapi::mode::hardware;
@@ -40,15 +40,15 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# Les familles d'objets interrogees, avec le libelle affiche. La liste est
-# parcourue telle quelle : ajouter une famille ne demande qu'une ligne.
+# The object families queried, with the displayed label. The list is walked
+# as is: adding a family takes one line.
 #
-# id_fields : les champs ou chercher l'identite, dans l'ordre. Le premier
-# renseigne gagne. Les objets de Storage Virtualize ne portent pas tous la meme
-# clef — un ventilateur s'appelle fan_module_id, un quorum applicatif n'a ni
-# name ni id et n'est designe que par quorum_index. Essayer plusieurs champs
-# evite d'avoir a le deviner famille par famille, et evite surtout le « '-' »
-# qui rendait le message d'alerte illisible.
+# id_fields: the fields where to look for the identity, in order. The first
+# one set wins. Storage Virtualize objects do not all carry the same key - a
+# fan module is called fan_module_id, an application quorum has neither name
+# nor id and is only designated by quorum_index. Trying several fields avoids
+# guessing family by family, and above all avoids the "'-'" that made the
+# alert message unreadable.
 my $COMPONENT_COMMANDS = [
     { command => 'lsenclosure',         label => 'enclosure' },
     { command => 'lsnodecanister',      label => 'node canister' },
@@ -62,7 +62,7 @@ my $COMPONENT_COMMANDS = [
     { command => 'lsquorum',            label => 'quorum', id_fields => [ 'quorum_index' ] }
 ];
 
-# Sous-ensembles decrits par un couple online_X / total_X dans lsenclosure.
+# Subsystems described by an online_X / total_X pair in lsenclosure.
 my $ENCLOSURE_SUBSYSTEMS = [
     { field => 'PSUs',        label => 'power supplies' },
     { field => 'canisters',   label => 'canisters' },
@@ -87,8 +87,8 @@ sub custom_subsystem_output {
     );
 }
 
-# Compteurs environnementaux exposes par lssystemstats. Ce sont des grandeurs
-# physiques du chassis, pas de la performance : leur place est ici.
+# Environmental counters exposed by lssystemstats. They are physical measures
+# of the enclosure, not performance: their place is here.
 my $ENVIRONMENT_STATS = [
     { stat => 'temp_c',  key => 'temperature', label => 'temperature', unit => 'C' },
     { stat => 'power_w', key => 'power',       label => 'power draw',  unit => 'W' }
@@ -130,9 +130,9 @@ sub set_counters {
           message_multiple => 'All enclosure subsystems are fully populated', skipped_code => { -10 => 1 } }
     ];
 
-    # Grandeurs physiques du chassis. Aucun seuil par defaut : le bon reglage
-    # depend de la salle et du modele, pas d'une regle generale. La metrique est
-    # tracee dans tous les cas, ce qui permet de la regler sur l'observe.
+    # Physical measures of the enclosure. No default threshold: the right
+    # setting depends on the room and the model, not on a general rule. The
+    # metric is graphed in every case, which allows tuning it on what is seen.
     $self->{maps_counters}->{environment} = [
         { label => 'temperature', nlabel => 'hardware.temperature.celsius', set => {
                 key_values => [ { name => 'temperature' } ],
@@ -163,11 +163,11 @@ sub set_counters {
         }
     ];
 
-    # CRITICAL = perte de SERVICE, WARNING = perte de REDONDANCE. Tout ce
-    # materiel est redonde (2 alimentations, 2 canisters, 6 ventilateurs, DRAID
-    # sur 12 disques) : un composant 'degraded' entame la marge, il n'arrete
-    # rien. Le confondre avec 'offline' reveille l'astreinte pour un defaut qui
-    # attend l'heure ouvree — et, a l'inverse, noie le vrai arret dans le lot.
+    # CRITICAL = SERVICE lost, WARNING = REDUNDANCY lost. All this hardware is
+    # redundant (2 power supplies, 2 canisters, 6 fan modules, a DRAID across
+    # the drives): a 'degraded' component eats the margin, it stops nothing.
+    # Confusing it with 'offline' wakes someone up for a fault that can wait
+    # for business hours - and, conversely, buries the real outage among them.
     $self->{maps_counters}->{components} = [
         {
             label => 'component-status',
@@ -183,9 +183,9 @@ sub set_counters {
         }
     ];
 
-    # Meme principe sur les sous-ensembles du chassis : une alimentation sur
-    # deux est une redondance perdue (WARNING), zero alimentation en ligne est
-    # un arret (CRITICAL).
+    # Same principle on the enclosure subsystems: one power supply out of two
+    # is a lost redundancy (WARNING), zero power supply online is an outage
+    # (CRITICAL).
     $self->{maps_counters}->{subsystems} = [
         {
             label => 'subsystem-status',
@@ -230,9 +230,9 @@ sub manage_selection {
     $self->{components} = {};
     $self->{subsystems} = {};
 
-    # Temperature et consommation viennent de lssystemstats, avec les compteurs
-    # de performance — mais ce sont des grandeurs physiques du chassis, donc
-    # elles se lisent ici plutot que dans le mode performance.
+    # Temperature and power draw come from lssystemstats, with the performance
+    # counters - but they are physical measures of the enclosure, so they are
+    # read here rather than in the performance mode.
     my %stats;
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lssystemstats') }) {
         next unless (ref $entry eq 'HASH' && defined($entry->{stat_name}));
@@ -248,14 +248,14 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne ''
             && $family->{label} !~ /$self->{option_results}->{filter_type}/);
 
-        # Une famille absente du modele ou du firmware ne doit pas faire
-        # echouer le controle des autres.
+        # A family missing from the model or the firmware must not fail the
+        # check of the others.
         my $entries = $options{custom}->request_optional(command => $family->{command});
 
         foreach my $entry (@$entries) {
-            # Tous les objets n'ont pas de champ 'name' : un disque ou une
-            # alimentation ne portent qu'un identifiant. On prend le premier
-            # champ renseigne, en commencant par ceux propres a la famille.
+            # Not every object has a 'name' field: a drive or a power supply only
+            # carries an identifier. The first field set is taken, starting with
+            # those specific to the family.
             my @candidates = ('name');
             push @candidates, @{ $family->{id_fields} } if (defined($family->{id_fields}));
             push @candidates, 'id';
@@ -284,14 +284,14 @@ sub manage_selection {
 
             next if ($family->{command} ne 'lsenclosure');
 
-            # Compteurs online/total portes par le chassis lui-meme.
+            # online/total counters carried by the enclosure itself.
             foreach my $subsystem (@$ENCLOSURE_SUBSYSTEMS) {
                 my $online = $entry->{'online_' . $subsystem->{field}};
                 my $total  = $entry->{'total_' . $subsystem->{field}};
 
                 next if (!defined($online) || !defined($total));
                 next if ($online !~ /^\d+$/ || $total !~ /^\d+$/);
-                # total = 0 : le sous-ensemble n'existe pas sur ce materiel.
+                # total = 0: the subsystem does not exist on this hardware.
                 next if ($total == 0);
 
                 $self->{subsystems}->{ $name . '.' . $subsystem->{field} } = {

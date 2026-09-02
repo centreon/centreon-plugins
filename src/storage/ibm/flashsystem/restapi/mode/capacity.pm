@@ -21,17 +21,17 @@
 #
 
 #
-# Remplissage de la baie.
+# How full the system is.
 #
-# Piege central : sur une baie a FlashCore Modules, la capacite d'un pool est
-# une vue VIRTUELLE sur-allouee au-dessus du materiel. Un pool peut annoncer
-# 630 To libres alors qu'il reste 164 To physiques sur 311. Poser le seuil
-# d'alerte sur l'espace libre du pool revient donc a surveiller un chiffre sans
-# rapport avec le moment ou la baie sera pleine.
+# Central trap: on a system fitted with FlashCore Modules, a pool's capacity is
+# a VIRTUAL, over-allocated view laid over the hardware. A pool can announce
+# 630 TB free while 164 TB remain physically out of 311. Putting the alert
+# threshold on the pool's free space therefore watches a number unrelated to
+# the moment the array fills up.
 #
-# Le seuil par defaut porte donc sur physical_free_capacity, remonte par
-# lssystem. Les chiffres du pool restent exposes en metrique, pour la tendance
-# et pour le taux de sur-allocation, mais ne declenchent rien d'eux-memes.
+# The threshold therefore belongs on physical_free_capacity, reported by
+# lssystem. Pool figures stay published as metrics, for the trend and for the
+# over-allocation ratio, but trigger nothing by themselves.
 #
 
 package storage::ibm::flashsystem::restapi::mode::capacity;
@@ -89,9 +89,9 @@ sub set_counters {
           message_multiple => 'All pools are online', skipped_code => { -10 => 1 } }
     ];
 
-    # C'est ce compteur qui porte l'alerte. Les seuils par defaut restent
-    # volontairement larges : le bon reglage depend du delai d'appro d'une
-    # extension, pas d'une regle generale.
+    # This is the counter that carries the alert. No default is shipped: the
+    # right value depends on how long an extension takes to be delivered, not
+    # on a general rule.
     $self->{maps_counters}->{physical} = [
         { label => 'physical-usage-prct', nlabel => 'system.physical.space.usage.percentage',
           set => {
@@ -100,9 +100,9 @@ sub set_counters {
                 perfdatas => [ { template => '%.2f', unit => '%', min => 0, max => 100 } ]
             }
         },
-        # output_change_bytes convertit la valeur ET rend l'unite : le gabarit
-        # doit donc porter DEUX %s. Avec un seul, l'unite est perdue et la
-        # sortie affiche « used 146.45 » sans dire de quoi.
+        # output_change_bytes converts the value AND returns the unit: the template
+        # must carry TWO %s. With one, the unit is lost and the output reads
+        # "used 146.45" without saying of what.
         { label => 'physical-usage', nlabel => 'system.physical.space.usage.bytes', set => {
                 key_values => [ { name => 'physical_used' }, { name => 'physical_total' } ],
                 output_template => '%s %s',
@@ -142,16 +142,15 @@ sub set_counters {
         }
     ];
 
-    # Ce que la reduction de donnees fait gagner. Le ratio parle mieux que les
-    # octets : « 2.40:1 » se compare d'une baie a l'autre et d'un mois a
-    # l'autre, « 12 To » non.
+    # What data reduction saves. The ratio speaks better than bytes: "2.40:1"
+    # compares from one array to another and from one month to the next,
+    # "12 TB" does not.
     #
-    # Ces deux compteurs vivent dans un groupe A PART, et de type 1, pour une
-    # raison precise : un compteur de type 0 dont la valeur manque n'est pas
-    # tu, il s'affiche « skipped (no value(s)) ». Quand aucun pool n'active la
-    # reduction — le cas ici — cela mettait deux mentions de saut dans une
-    # sortie par ailleurs normale, qui se lisent comme une panne. Un groupe de
-    # type 1 laisse vide ne produit, lui, aucune sortie.
+    # These two counters live in a SEPARATE group, of type 1, for a precise
+    # reason: a type 0 counter whose value is missing is not silent, it prints
+    # "skipped (no value(s))". When no pool enables reduction - a common case -
+    # that put two skip mentions in an otherwise normal output, which read like
+    # a fault. An empty type 1 group prints nothing at all.
     $self->{maps_counters}->{reduction} = [
         { label => 'data-reduction-ratio', nlabel => 'system.data.reduction.ratio.count', set => {
                 key_values => [ { name => 'reduction_ratio' } ],
@@ -228,9 +227,9 @@ sub manage_selection {
     my $physical_total = $options{custom}->size_to_bytes(value => $system->{physical_capacity});
     my $physical_free = $options{custom}->size_to_bytes(value => $system->{physical_free_capacity});
 
-    # Sans capacite physique, on est probablement sur un modele sans FlashCore
-    # Module. Plutot que d'inventer un chiffre, on le dit et on s'en tient aux
-    # pools, dont les seuils restent utilisables.
+    # Without physical capacity we are probably on a model without FlashCore
+    # Modules. Rather than making a figure up, say so and stick to the pools,
+    # whose thresholds remain usable.
     if (!defined($physical_total) || !defined($physical_free) || $physical_total == 0) {
         $self->{output}->output_add(
             long_msg => 'System reports no physical capacity: thresholds on pools only.',
@@ -253,27 +252,25 @@ sub manage_selection {
         logical_free => $options{custom}->size_to_bytes(value => $system->{total_free_space})
     };
 
-    # Taux de reduction : rapport de ce qui a ete ecrit sur ce qui est
-    # reellement stocke. Les deux compteurs valent 0 quand aucun pool n'active
-    # la reduction de donnees — on ne publie alors ni ratio ni gain, plutot que
-    # d'afficher un 1:1 trompeur.
+    # Reduction ratio: what was written over what is really stored. Both
+    # counters are 0 when no pool enables data reduction - then neither ratio
+    # nor saving is published, rather than showing a misleading 1:1.
     my $before = $options{custom}->size_to_bytes(value => $system->{used_capacity_before_reduction});
     my $after = $options{custom}->size_to_bytes(value => $system->{used_capacity_after_reduction});
 
-    # La reduction de donnees peut se produire a DEUX etages, publies par des
-    # champs differents :
+    # Data reduction can happen at TWO layers, published by different fields:
     #
-    #   - la couche logicielle (Data Reduction Pools) : les compteurs
-    #     used_capacity_before/after_reduction de lssystem. Ils valent 0 des
-    #     que les pools sont en data_reduction=no.
-    #   - la compression MATERIELLE des FlashCore Modules, un etage plus bas,
-    #     dans les disques. Elle n'apparait QUE dans la vue detaillee des
-    #     mdisks (effective_used_capacity = ecrit avant compression, contre le
-    #     physique reellement consomme). C'est elle que la GUI appelle
-    #     « Data reduction » sur ces baies : 265.45/146.45 = 1.81:1, verifie
-    #     au dixieme pres contre l'affichage.
+    #   - the software layer (Data Reduction Pools): the
+    #     used_capacity_before/after_reduction counters of lssystem. They are 0
+    #     as soon as the pools are in data_reduction=no.
+    #   - the HARDWARE compression of the FlashCore Modules, one layer below,
+    #     in the drives. It ONLY shows in the detailed view of the mdisks
+    #     (effective_used_capacity = written before compression, against the
+    #     physical capacity really consumed). It is what the GUI calls "Data
+    #     reduction" on such systems: 265.45/146.45 = 1.81:1 on a surveyed
+    #     FlashSystem 5300, verified to the decimal against the display.
     #
-    # On publie la couche active, en disant laquelle en sortie longue.
+    # The active layer is published, and named in the long output.
     $self->{reduction} = {};
     if (defined($before) && defined($after) && $after > 0) {
         $self->{reduction}->{system} = {
@@ -287,16 +284,16 @@ sub manage_selection {
         my ($effective, $used) = (0, 0);
         foreach my $mdisk (@{ $options{custom}->request_optional(command => 'lsmdisk') }) {
             next unless (ref $mdisk eq 'HASH' && defined($mdisk->{id}) && $mdisk->{id} =~ /^\d+$/);
-            # La vue concise ne porte aucun de ces champs : il faut la vue
-            # detaillee, un appel par mdisk. Il y en a un ou deux par baie.
+            # The concise view carries none of these fields: the detailed view is
+            # needed, one call per mdisk. There are one or two per array.
             my $detail = $options{custom}->request_optional(command => 'lsmdisk/' . $mdisk->{id})->[0];
             next unless (ref $detail eq 'HASH');
 
             my $eff   = $options{custom}->size_to_bytes(value => $detail->{effective_used_capacity});
             my $ptot  = $options{custom}->size_to_bytes(value => $detail->{physical_capacity});
             my $pfree = $options{custom}->size_to_bytes(value => $detail->{physical_free_capacity});
-            # Un mdisk sans capacite physique n'est pas porte par des FCM
-            # (baie a disques classiques) : il ne compresse rien.
+            # An mdisk without physical capacity is not backed by FCMs (classic
+            # drives): it compresses nothing.
             next if (!defined($eff) || !defined($ptot) || !defined($pfree) || $ptot == 0);
 
             $effective += $eff;
@@ -312,8 +309,8 @@ sub manage_selection {
                 long_msg => 'Data reduction measured at the drive layer (FlashCore Module compression).'
             );
         } else {
-            # Le dire une fois, en sortie longue, plutot que de laisser deux
-            # compteurs vides encombrer la ligne de resume.
+            # Say it once, in the long output, rather than letting two empty
+            # counters clutter the summary line.
             $self->{output}->output_add(
                 long_msg => 'No data reduction active at any layer: no ratio to report.'
             );

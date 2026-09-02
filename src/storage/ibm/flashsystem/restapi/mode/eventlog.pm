@@ -21,17 +21,17 @@
 #
 
 #
-# Journal d'evenements non resolus.
+# Unresolved event log.
 #
-# Piege central de cette commande : filtrer sur 'fixed=no' seul ne suffit pas.
-# Le journal melange des entrees 'alert', qui appellent une action, et des
-# entrees 'message' purement informatives, qui ne se resolvent jamais parce
-# qu'un message ne se corrige pas. Une baie peut ainsi porter des centaines
-# d'entrees non resolues sans qu'aucune ne soit un probleme.
+# Central trap of this command: filtering on 'fixed=no' alone is not enough.
+# The log mixes 'alert' entries, which call for an action, with purely
+# informational 'message' entries, which never get resolved because a message
+# cannot be fixed. An array can thus carry hundreds of unresolved entries with
+# none of them being a problem.
 #
-# Ce sont les entrees 'alert' qui reproduisent le panneau "Recommended Actions"
-# de l'interface. Les 'message' sont comptes et exposes en metrique, mais ne
-# declenchent rien par defaut.
+# The 'alert' entries are what reproduce the GUI "Recommended Actions" panel.
+# The 'message' entries are counted and exposed as a metric, but trigger
+# nothing by default.
 #
 
 package storage::ibm::flashsystem::restapi::mode::eventlog;
@@ -97,8 +97,8 @@ sub set_counters {
         }
     ];
 
-    # Toute entree retenue est signalee : le tri a deja eu lieu au moment de la
-    # selection. On ne masque rien ici.
+    # Every retained entry is reported: the sorting already happened at
+    # selection time. Nothing is hidden here.
     $self->{maps_counters}->{events} = [
         {
             label => 'event-status',
@@ -144,17 +144,17 @@ sub field {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # Le tri se fait cote plugin plutot que dans le filtervalue de l'API : on
-    # veut compter les 'message' pour les exposer en metrique, sans les
-    # transformer en instances a evaluer.
+    # The sorting is done plugin-side rather than in the API filtervalue: the
+    # 'message' entries are counted to be exposed as a metric, without turning
+    # them into instances to evaluate.
     my $entries = $options{custom}->request(
         command => 'lseventlog',
         payload => { filtervalue => 'fixed=no' }
     );
 
-    # Par defaut on ne retient que les alertes comme instances a evaluer. Le
-    # filtre est une option, pas une valeur en dur : une baie dont on voudrait
-    # aussi voir les messages se configure sans toucher au code.
+    # By default only alerts are retained as instances to evaluate. The filter
+    # is an option, not a hard-coded value: an array whose messages should
+    # also be seen is configured without touching the code.
     my $status_filter = defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne ''
         ? $self->{option_results}->{filter_status}
         : '^alert$';

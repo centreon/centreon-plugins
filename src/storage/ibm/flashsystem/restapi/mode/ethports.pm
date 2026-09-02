@@ -21,27 +21,27 @@
 #
 
 #
-# Ports Ethernet et IP.
+# Ethernet and IP ports.
 #
-# Deux commandes, deux objets differents, et la confusion est facile :
+# Two commands, two different objects, and mixing them up is easy:
 #
-#   lsportethernet  le port PHYSIQUE. link_state, vitesse negociee, et les
-#                   drapeaux qui disent a quoi il sert : management, host,
-#                   storage, replication.
-#   lsportip        la configuration IP posee dessus. Une entree par port et par
-#                   usage, d'ou plusieurs lignes pour un meme port physique.
+#   lsportethernet  the PHYSICAL port: link_state, negotiated speed, and the
+#                   flags saying what it is for - management, host, storage,
+#                   replication.
+#   lsportip        the IP configuration laid on top. One entry per port and
+#                   per use, hence several rows for one physical port.
 #
-# Sur les baies relevees, les 12 entrees IP sont 'unconfigured' — l'iSCSI n'est
-# pas utilise, tout passe en Fibre Channel — et 2 des 6 ports physiques sont
-# actifs a 1 Gb/s. Le mode ne considere donc pas un port inactif comme une
-# panne : un port non cable est un choix de cablage, pas un defaut.
+# On the arrays surveyed, all 12 IP entries were 'unconfigured' - iSCSI not in
+# use, everything over Fibre Channel - and 2 of the 6 physical ports were
+# active at 1 Gb/s. So the mode does not treat an inactive port as a fault: an
+# uncabled port is a cabling choice, not a defect.
 #
-# ATTENTION aux drapeaux management/host/storage/replication : ce sont les
-# usages AUTORISES sur le port, pas les usages en cours. La premiere version de
-# ce mode alertait sur « porte un role et lien inactif », ce qui a mis les
-# quatre ports non cables en CRITICAL permanent — ils portent tous les roles
-# parce que rien ne les interdit, pas parce qu'ils servent. Le seul signe qu'un
-# port est reellement en service est une adresse IP configuree dessus.
+# BEWARE of the management/host/storage/replication flags: they are the uses
+# ALLOWED on the port, not the uses in progress. The first version of this
+# mode alerted on "carries a role and link inactive", which put the four
+# uncabled ports in permanent CRITICAL - they carry every role because nothing
+# forbids it, not because they serve. The one sign a port is really in service
+# is an IP address configured on it.
 #
 
 package storage::ibm::flashsystem::restapi::mode::ethports;
@@ -52,8 +52,8 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-# Drapeaux de lsportethernet qui donnent un role au port. Un port sans aucun
-# role n'est pas surveille : il n'est simplement pas utilise.
+# lsportethernet flags giving a role to the port. A port without any role is
+# not watched: it is simply not used.
 my $ROLES = [
     { field => 'management',  label => 'management' },
     { field => 'host',        label => 'host' },
@@ -111,9 +111,9 @@ sub set_counters {
                 perfdatas => [ { template => '%s', min => 0 } ]
             }
         },
-        # « role-capable » et non « carrying a role » : les drapeaux disent ce
-        # qu'un port a le droit de porter. Les six le peuvent, deux servent.
-        # Le compteur qui dit combien servent vraiment, c'est ip-configured.
+        # "role-capable" and not "carrying a role": the flags say what a port is
+        # allowed to carry. All six can, two serve. The counter that says how
+        # many really serve is ip-configured.
         { label => 'with-role', nlabel => 'ethports.withrole.count', set => {
                 key_values => [ { name => 'with_role' } ],
                 output_template => '%s role-capable',
@@ -128,9 +128,9 @@ sub set_counters {
         }
     ];
 
-    # Un port inactif non configure est normal : il n'est pas cable. Le seuil
-    # ne porte que sur les ports qui portent une adresse IP, seul signe qu'ils
-    # sont reellement en service.
+    # An inactive, unconfigured port is normal: it is not cabled. The threshold
+    # only covers ports carrying an IP address, the one sign they are really
+    # in service.
     $self->{maps_counters}->{ports} = [
         {
             label => 'status',
@@ -173,8 +173,8 @@ sub field {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # lsportip a plusieurs entrees par port physique, indexees par 'id' et non
-    # par 'port_id'. On garde la premiere adresse reellement configuree.
+    # lsportip has several entries per physical port, keyed on 'id' and not on
+    # 'port_id'. The first really configured address is kept.
     my %addresses;
     my $ip_configured = 0;
     foreach my $entry (@{ $options{custom}->request_optional(command => 'lsportip') }) {
@@ -199,9 +199,9 @@ sub manage_selection {
 
         my $link = field($port, 'link_state');
 
-        # Un port « porte un role » des qu'un des drapeaux est arme. Les valeurs
-        # observees sont 'yes'/'no', mais certains firmwares rendent le nom du
-        # role : on accepte tout ce qui n'est ni vide ni 'no'.
+        # A port "carries a role" as soon as one flag is set. Observed values
+        # are 'yes'/'no', but some firmwares return the role name: anything that
+        # is neither empty nor 'no' is accepted.
         my @roles;
         foreach my $role (@$ROLES) {
             my $value = field($port, $role->{field});
@@ -215,9 +215,9 @@ sub manage_selection {
 
         my $configured = exists($addresses{$name}) ? 'yes' : 'no';
 
-        # Ni adresse ni lien : le port n'est pas cable. L'exposer ferait du
-        # bruit permanent. --add-unused le rend visible quand on veut
-        # l'inventaire complet.
+        # Neither address nor link: the port is not cabled. Exposing it would
+        # make permanent noise. --add-unused shows it when the full inventory
+        # is wanted.
         next if ($configured eq 'no' && $link !~ /^active$/i
                  && !defined($self->{option_results}->{add_unused}));
 
