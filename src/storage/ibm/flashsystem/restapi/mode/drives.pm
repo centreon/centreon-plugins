@@ -111,7 +111,7 @@ sub set_counters {
         # status does not show.
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i',
             warning_default => '%{port_1_status} !~ /^online$/i or %{port_2_status} !~ /^online$/i or %{replacement_date} ne "-"',
             set => {

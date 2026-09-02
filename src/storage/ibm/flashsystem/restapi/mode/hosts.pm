@@ -121,7 +121,7 @@ sub set_counters {
     $self->{maps_counters}->{hosts} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /^degraded$/i',
             warning_default => '%{status} =~ /^offline$/i',
             set => {

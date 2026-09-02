@@ -183,7 +183,7 @@ sub set_counters {
     $self->{maps_counters}->{partitions} = [
         {
             label => 'partition-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{ha_status} !~ /^(established|healthy|synchronized)$/i',
             set => {
                 key_values => [
@@ -202,7 +202,7 @@ sub set_counters {
     $self->{maps_counters}->{groups} = [
         {
             label => 'volume-group-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             # The expression on within_rpo is deliberately inert when the field
             # is empty: it only triggers on asynchronous replication, where the
             # array sets it.
@@ -228,7 +228,7 @@ sub set_counters {
     $self->{maps_counters}->{partnerships} = [
         {
             label => 'partnership-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{partnership} !~ /^fully_configured$/i',
             set => {
                 key_values => [ { name => 'name' }, { name => 'partnership' }, { name => 'type' }, { name => 'location' } ],
@@ -242,7 +242,7 @@ sub set_counters {
     $self->{maps_counters}->{relationships} = [
         {
             label => 'relationship-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{state} !~ /^(consistent_synchronized|consistent_copying)$/i',
             set => {
                 key_values => [ { name => 'name' }, { name => 'state' }, { name => 'progress' }, { name => 'freeze_time' } ],

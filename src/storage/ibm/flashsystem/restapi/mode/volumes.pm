@@ -129,7 +129,7 @@ sub set_counters {
     $self->{maps_counters}->{volumes} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /^offline$/i || %{fast_write_state} =~ /^corrupt$/i',
             warning_default => '%{status} =~ /^degraded$/i || %{sync} =~ /^no$/i',
             set => {

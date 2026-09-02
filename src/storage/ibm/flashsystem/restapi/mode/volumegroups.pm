@@ -119,7 +119,7 @@ sub set_counters {
     $self->{maps_counters}->{groups} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{backup_status} =~ /^failed$/i',
             set => {
                 key_values => [

@@ -55,15 +55,15 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'       => { name => 'hostname' },
-            'port:s'           => { name => 'port' },
-            'proto:s'          => { name => 'proto' },
-            'api-username:s'   => { name => 'api_username' },
-            'api-password:s'   => { name => 'api_password' },
-            'api-path:s'       => { name => 'api_path' },
-            'timeout:s'        => { name => 'timeout' },
-            'token-lifetime:s' => { name => 'token_lifetime' },
-            'command-cache-ttl:s' => { name => 'command_cache_ttl' }
+            'hostname:s'          => { name => 'hostname' },
+            'port:s'              => { name => 'port', default => 7443, port => 1 },
+            'proto:s'             => { name => 'proto', default => 'https', protocol_http => 1 },
+            'api-username:s'      => { name => 'api_username' },
+            'api-password:s'      => { name => 'api_password' },
+            'api-path:s'          => { name => 'api_path' },
+            'timeout:s'           => { name => 'timeout', default => 30, numeric => 1 },
+            'token-lifetime:s'    => { name => 'token_lifetime', default => 6600, numeric => 1 },
+            'command-cache-ttl:s' => { name => 'command_cache_ttl', default => 0, numeric => 1 }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -87,24 +87,27 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname}       = $self->{option_results}->{hostname};
-    $self->{port}           = defined($self->{option_results}->{port}) && $self->{option_results}->{port} ne '' ? $self->{option_results}->{port} : 7443;
-    $self->{proto}          = defined($self->{option_results}->{proto}) && $self->{option_results}->{proto} ne '' ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout}        = defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /^\d+$/ ? $self->{option_results}->{timeout} : 30;
-    $self->{api_username}   = $self->{option_results}->{api_username};
-    $self->{api_password}   = $self->{option_results}->{api_password};
-    $self->{api_path}       = $self->{option_results}->{api_path};
+    # Defaults and validations are declared with the options: nothing to
+    # re-check here.
+    $self->{hostname}     = $self->{option_results}->{hostname};
+    $self->{port}         = $self->{option_results}->{port};
+    $self->{proto}        = $self->{option_results}->{proto};
+    $self->{timeout}      = $self->{option_results}->{timeout};
+    $self->{api_username} = $self->{option_results}->{api_username};
+    $self->{api_password} = $self->{option_results}->{api_password};
+    $self->{api_path}     = $self->{option_results}->{api_path};
     # How long a token is reused. It has to be LONG: the array rate-limits
     # authentications and answers 429 when pushed, whereas an expired token
     # recovers by itself through the retry on 401/403. Expiring the token
     # early protects against nothing and costs an authentication. 6600 s
     # stays under the 2 h cap on an active session.
-    $self->{token_lifetime} = defined($self->{option_results}->{token_lifetime}) && $self->{option_results}->{token_lifetime} =~ /^\d+$/ ? $self->{option_results}->{token_lifetime} : 6600;
-    # How long a command response is reused. 55 s by default: enough to
-    # absorb the burst of checks starting within the same minute, short
-    # against the 5 min cadence - the worst detection delay stays under a
-    # minute. 0 disables the cache.
-    $self->{command_cache_ttl} = defined($self->{option_results}->{command_cache_ttl}) && $self->{option_results}->{command_cache_ttl} =~ /^\d+$/ ? $self->{option_results}->{command_cache_ttl} : 55;
+    $self->{token_lifetime} = $self->{option_results}->{token_lifetime};
+    # How long a command response is reused. Disabled by default; 55 s is a
+    # good value when several single-purpose services read the same array:
+    # enough to absorb the burst of checks starting within the same minute,
+    # short against a 5 min cadence - the worst detection delay stays under
+    # a minute.
+    $self->{command_cache_ttl} = $self->{option_results}->{command_cache_ttl};
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->option_exit(short_msg => 'Need to specify --hostname option.');
@@ -568,7 +571,8 @@ token early protects against nothing and spends an authentication.
 =item B<--command-cache-ttl>
 
 Seconds a command B<response> is reused across checks of the same array
-(default: 55; 0 disables).
+(default: 0, disabled; 55 is a good value when several services read the same
+array).
 
 The array also rate-limits commands. Splitting the monitoring into
 single-purpose services multiplies plugin runs that read the B<same> C<ls*>

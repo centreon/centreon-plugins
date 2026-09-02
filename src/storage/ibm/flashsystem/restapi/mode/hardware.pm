@@ -172,7 +172,7 @@ sub set_counters {
     $self->{maps_counters}->{components} = [
         {
             label => 'component-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /^(offline|excluded)$/i',
             warning_default => '%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i',
             set => {
@@ -190,7 +190,7 @@ sub set_counters {
     $self->{maps_counters}->{subsystems} = [
         {
             label => 'subsystem-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{online} == 0',
             warning_default => '%{online} < %{total}',
             set => {

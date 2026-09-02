@@ -103,7 +103,7 @@ sub set_counters {
     $self->{maps_counters}->{events} = [
         {
             label => 'event-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} =~ /^alert$/i',
             set => {
                 key_values => [

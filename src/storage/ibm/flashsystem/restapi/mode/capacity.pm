@@ -171,7 +171,7 @@ sub set_counters {
     $self->{maps_counters}->{pools} = [
         {
             label => 'pool-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{status} !~ /^online$/i',
             set => {
                 key_values => [

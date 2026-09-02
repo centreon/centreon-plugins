@@ -118,7 +118,7 @@ sub set_counters {
     $self->{maps_counters}->{ports} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default =>
                 '%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i',
             warning_default => '%{status} =~ /^inactive_configured$/i and %{attachment} =~ /^switch$/i',

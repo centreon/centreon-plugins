@@ -135,7 +135,7 @@ sub set_counters {
     $self->{maps_counters}->{ports} = [
         {
             label => 'status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{configured} eq "yes" and %{link_state} !~ /^active$/i',
             set => {
                 key_values => [
