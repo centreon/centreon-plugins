@@ -471,7 +471,7 @@
       "type": "http",
       "documentation": "",
       "method": "get",
-      "endpoint": "rest/v0/hosts/",
+      "endpoint": "rest/v0/hosts",
       "responses": [
         {
           "uuid": "419a62a9-f70a-43c6-a01c-ec550305db22",
@@ -522,7 +522,7 @@
             {
               "target": "query",
               "modifier": "filter",
-              "value": "uuid:00969214-df4d-83cb-78d5-bec9181903d4",
+              "value": "$pool:00969214-df4d-83cb-78d5-bec9181903d4",
               "invert": false,
               "operator": "equals"
             }
