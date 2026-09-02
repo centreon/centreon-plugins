@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Ibm-Flashsystem-Restapi",
+    "pkg_summary": "Centreon Plugin",
+    "plugin_name": "centreon_ibm_flashsystem_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/ibm/flashsystem/restapi/"
+    ]
+}
