@@ -246,14 +246,12 @@ Only check ports whose C<node-port> name matches this regular expression.
 
 Only check ports of this type (C<fc>, C<ethernet>…).
 
-=item B<--unknown-status> B<--warning-status> B<--critical-status>
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each port. Available macros: C<name>, C<status>, C<port_speed>,
 C<attachment>, C<node_name>, C<port_id>, C<type>, C<active_login_count>.
-
-Default warning: C<%{status} =~ /^inactive_configured$/i and %{attachment} =~ /^switch$/i>
-
-Default critical: C<%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i>
 
 A port fitted with an SFP but cabled to nothing reports C<inactive_configured>
 permanently, by IBM design, and no option changes that. Treating it as a fault
@@ -265,11 +263,78 @@ To require a negotiated speed, add it explicitly:
 
     --critical-status='%{status} !~ /^active$/i || %{port_speed} !~ /^16Gb$/'
 
-=item B<--warning-active> B<--critical-active> B<--warning-inactive> B<--critical-inactive>
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each port. Available macros: C<name>, C<status>, C<port_speed>,
+C<attachment>, C<node_name>, C<port_id>, C<type>, C<active_login_count>.
+
+Default warning: C<%{status} =~ /^inactive_configured$/i and %{attachment} =~ /^switch$/i>.
+
+A port fitted with an SFP but cabled to nothing reports C<inactive_configured>
+permanently, by IBM design, and no option changes that. Treating it as a fault
+would make the service critical forever, which teaches people to ignore it. The
+defaults therefore only warn when such a port claims to be attached to a switch,
+and only alert on states that mean something actually degraded.
+
+To require a negotiated speed, add it explicitly:
+
+    --critical-status='%{status} !~ /^active$/i || %{port_speed} !~ /^16Gb$/'
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each port. Available macros: C<name>, C<status>, C<port_speed>,
+C<attachment>, C<node_name>, C<port_id>, C<type>, C<active_login_count>.
+
+Default critical: C<%{status} !~ /^(active|inactive_configured|inactive_unconfigured)$/i>.
+
+A port fitted with an SFP but cabled to nothing reports C<inactive_configured>
+permanently, by IBM design, and no option changes that. Treating it as a fault
+would make the service critical forever, which teaches people to ignore it. The
+defaults therefore only warn when such a port claims to be attached to a switch,
+and only alert on states that mean something actually degraded.
+
+To require a negotiated speed, add it explicitly:
+
+    --critical-status='%{status} !~ /^active$/i || %{port_speed} !~ /^16Gb$/'
+
+=item B<--warning-active>
+
+Warning threshold.
 
 Thresholds on the number of active and inactive ports.
 
-=item B<--warning-host-logins> B<--critical-host-logins>
+=item B<--critical-active>
+
+Critical threshold.
+
+Thresholds on the number of active and inactive ports.
+
+=item B<--warning-inactive>
+
+Warning threshold.
+
+Thresholds on the number of active and inactive ports.
+
+=item B<--critical-inactive>
+
+Critical threshold.
+
+Thresholds on the number of active and inactive ports.
+
+=item B<--warning-host-logins>
+
+Warning threshold.
+
+Threshold on the total number of host logins across all ports. Useful to catch
+a fabric-wide loss that leaves every port nominally active.
+
+=item B<--critical-host-logins>
+
+Critical threshold.
 
 Threshold on the total number of host logins across all ports. Useful to catch
 a fabric-wide loss that leaves every port nominally active.

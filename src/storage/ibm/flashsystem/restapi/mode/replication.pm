@@ -431,15 +431,35 @@ Only check partnerships whose name matches this regular expression.
 
 Only check remote copy relationships whose name matches this regular expression.
 
-=item B<--unknown-partition-status> B<--warning-partition-status> B<--critical-partition-status>
+=item B<--unknown-partition-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on the partition state. Available macros: C<ha_status>,
 C<link_status>, C<location1_system_name>, C<location1_status>,
 C<location2_system_name>, C<location2_status>, C<migration_status>, C<name>.
 
-Default critical: C<%{ha_status} !~ /^(established|healthy|synchronized)$/i>
+=item B<--warning-partition-status>
 
-=item B<--unknown-volume-group-status> B<--warning-volume-group-status> B<--critical-volume-group-status>
+Define the conditions to match for the status to be WARNING.
+
+Threshold on the partition state. Available macros: C<ha_status>,
+C<link_status>, C<location1_system_name>, C<location1_status>,
+C<location2_system_name>, C<location2_status>, C<migration_status>, C<name>.
+
+=item B<--critical-partition-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on the partition state. Available macros: C<ha_status>,
+C<link_status>, C<location1_system_name>, C<location1_status>,
+C<location2_system_name>, C<location2_status>, C<migration_status>, C<name>.
+
+Default critical: C<%{ha_status} !~ /^(established|healthy|synchronized)$/i>.
+
+=item B<--unknown-volume-group-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on the volume group replication state. Available macros:
 C<link1_status>, C<partition_name>, C<location1_within_rpo>,
@@ -450,20 +470,97 @@ The C<within_rpo> macros stay empty in C<2-site-ha> topologies, where they do
 not apply; the default expression is inert in that case and only triggers on
 asynchronous replication.
 
-=item B<--unknown-partnership-status> B<--warning-partnership-status> B<--critical-partnership-status>
+=item B<--warning-volume-group-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on the volume group replication state. Available macros:
+C<link1_status>, C<partition_name>, C<location1_within_rpo>,
+C<location2_within_rpo>, C<location1_replication_mode>,
+C<location2_replication_mode>, C<recovery_test_active>, C<name>.
+
+The C<within_rpo> macros stay empty in C<2-site-ha> topologies, where they do
+not apply; the default expression is inert in that case and only triggers on
+asynchronous replication.
+
+=item B<--critical-volume-group-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on the volume group replication state. Available macros:
+C<link1_status>, C<partition_name>, C<location1_within_rpo>,
+C<location2_within_rpo>, C<location1_replication_mode>,
+C<location2_replication_mode>, C<recovery_test_active>, C<name>.
+
+The C<within_rpo> macros stay empty in C<2-site-ha> topologies, where they do
+not apply; the default expression is inert in that case and only triggers on
+asynchronous replication.
+
+=item B<--unknown-partnership-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on the partnership state. Available macros: C<partnership>, C<type>,
 C<location>, C<name>.
 
-=item B<--unknown-relationship-status> B<--warning-relationship-status> B<--critical-relationship-status>
+=item B<--warning-partnership-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on the partnership state. Available macros: C<partnership>, C<type>,
+C<location>, C<name>.
+
+=item B<--critical-partnership-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on the partnership state. Available macros: C<partnership>, C<type>,
+C<location>, C<name>.
+
+=item B<--unknown-relationship-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on the remote copy relationship state. Available macros: C<state>,
 C<progress>, C<freeze_time>, C<name>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-relationship-status>
 
-Thresholds on the detected counts: C<partitions-detected>,
-C<volume-groups-detected>, C<relationships-detected>.
+Define the conditions to match for the status to be WARNING.
+
+Threshold on the remote copy relationship state. Available macros: C<state>,
+C<progress>, C<freeze_time>, C<name>.
+
+=item B<--critical-relationship-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on the remote copy relationship state. Available macros: C<state>,
+C<progress>, C<freeze_time>, C<name>.
+
+=item B<--warning-partitions-detected>
+
+Warning threshold on the number of storage partitions detected.
+
+=item B<--critical-partitions-detected>
+
+Critical threshold on the number of storage partitions detected.
+
+=item B<--warning-volume-groups-detected>
+
+Warning threshold on the number of replicated volume groups detected.
+
+=item B<--critical-volume-groups-detected>
+
+Critical threshold on the number of replicated volume groups detected.
+
+=item B<--warning-relationships-detected>
+
+Warning threshold on the number of remote copy relationships detected.
+
+=item B<--critical-relationships-detected>
+
+Critical threshold on the number of remote copy relationships detected.
 
 =back
 

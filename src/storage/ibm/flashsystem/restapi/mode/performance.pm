@@ -319,34 +319,141 @@ Example:
 
 Add each counter's peak value and peak time to the long output.
 
-=item B<--warning-latency> B<--critical-latency>
+=item B<--warning-latency>
+
+Warning threshold.
 
 Thresholds on the overall volume latency, in milliseconds. Suggested starting
 point on these all-flash systems: 10 and 20. Measured idle values sit around
 0.3 ms, so anything in that range is already an order of magnitude off.
 
-=item B<--warning-read-latency> B<--critical-read-latency> B<--warning-write-latency> B<--critical-write-latency>
+=item B<--critical-latency>
+
+Critical threshold.
+
+Thresholds on the overall volume latency, in milliseconds. Suggested starting
+point on these all-flash systems: 10 and 20. Measured idle values sit around
+0.3 ms, so anything in that range is already an order of magnitude off.
+
+=item B<--warning-read-latency>
+
+Warning threshold.
 
 Same, split by direction. Writes are normally slower than reads — around 0.5 ms
 against 0.2 on these arrays — so a single threshold on both hides a write
 problem.
 
-=item B<--warning-backend-latency> B<--critical-backend-latency> B<--warning-drive-latency> B<--critical-drive-latency>
+=item B<--critical-read-latency>
+
+Critical threshold.
+
+Same, split by direction. Writes are normally slower than reads — around 0.5 ms
+against 0.2 on these arrays — so a single threshold on both hides a write
+problem.
+
+=item B<--warning-write-latency>
+
+Warning threshold.
+
+Same, split by direction. Writes are normally slower than reads — around 0.5 ms
+against 0.2 on these arrays — so a single threshold on both hides a write
+problem.
+
+=item B<--critical-write-latency>
+
+Critical threshold.
+
+Same, split by direction. Writes are normally slower than reads — around 0.5 ms
+against 0.2 on these arrays — so a single threshold on both hides a write
+problem.
+
+=item B<--warning-backend-latency>
+
+Warning threshold.
 
 Latency of the mdisks and of the drives. Compare with the volume latency: a
 system slow at the front but fast at the back points at the cache or the
 fabric, not at the disks.
 
-=item B<--warning-iops> B<--critical-iops> B<--warning-bandwidth> B<--critical-bandwidth>
+=item B<--critical-backend-latency>
+
+Critical threshold.
+
+Latency of the mdisks and of the drives. Compare with the volume latency: a
+system slow at the front but fast at the back points at the cache or the
+fabric, not at the disks.
+
+=item B<--warning-drive-latency>
+
+Warning threshold.
+
+Latency of the mdisks and of the drives. Compare with the volume latency: a
+system slow at the front but fast at the back points at the cache or the
+fabric, not at the disks.
+
+=item B<--critical-drive-latency>
+
+Critical threshold.
+
+Latency of the mdisks and of the drives. Compare with the volume latency: a
+system slow at the front but fast at the back points at the cache or the
+fabric, not at the disks.
+
+=item B<--warning-iops>
+
+Warning threshold.
 
 Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
 the array reports MB/s and the mode converts.
 
-=item B<--warning-cpu> B<--critical-cpu> B<--warning-compression-cpu> B<--critical-compression-cpu>
+=item B<--critical-iops>
+
+Critical threshold.
+
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+the array reports MB/s and the mode converts.
+
+=item B<--warning-bandwidth>
+
+Warning threshold.
+
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+the array reports MB/s and the mode converts.
+
+=item B<--critical-bandwidth>
+
+Critical threshold.
+
+Thresholds on volume IOPS and throughput. Throughput is in bytes per second —
+the array reports MB/s and the mode converts.
+
+=item B<--warning-cpu>
+
+Warning threshold.
 
 Thresholds on the processor load, overall and for compression.
 
-=item B<--warning-node-cpu> B<--critical-node-cpu>
+=item B<--critical-cpu>
+
+Critical threshold.
+
+Thresholds on the processor load, overall and for compression.
+
+=item B<--warning-compression-cpu>
+
+Warning threshold.
+
+Thresholds on the processor load, overall and for compression.
+
+=item B<--critical-compression-cpu>
+
+Critical threshold.
+
+Thresholds on the processor load, overall and for compression.
+
+=item B<--warning-node-cpu>
+
+Warning threshold.
 
 Thresholds on the B<per-canister> CPU load. Storage Virtualize has no load
 average; on an active/active pair the telling figure is the imbalance — one
@@ -355,12 +462,66 @@ hides. The C<node-cpu> label is chosen so the Cpu service's
 C<--filter-counters=cpu> picks these counters up without touching any Centreon
 template.
 
-=item B<--warning-write-cache> B<--critical-write-cache> B<--warning-total-cache> B<--critical-total-cache>
+=item B<--critical-node-cpu>
+
+Critical threshold.
+
+Thresholds on the B<per-canister> CPU load. Storage Virtualize has no load
+average; on an active/active pair the telling figure is the imbalance — one
+canister carrying everything while the other idles — which the global average
+hides. The C<node-cpu> label is chosen so the Cpu service's
+C<--filter-counters=cpu> picks these counters up without touching any Centreon
+template.
+
+=item B<--warning-write-cache>
+
+Warning threshold.
 
 Thresholds on cache occupancy. A write cache that stays full is a sign the
 backend cannot absorb what the hosts send.
 
-=item B<--warning-fc-iops> B<--critical-fc-iops> B<--warning-fc-bandwidth> B<--critical-fc-bandwidth>
+=item B<--critical-write-cache>
+
+Critical threshold.
+
+Thresholds on cache occupancy. A write cache that stays full is a sign the
+backend cannot absorb what the hosts send.
+
+=item B<--warning-total-cache>
+
+Warning threshold.
+
+Thresholds on cache occupancy. A write cache that stays full is a sign the
+backend cannot absorb what the hosts send.
+
+=item B<--critical-total-cache>
+
+Critical threshold.
+
+Thresholds on cache occupancy. A write cache that stays full is a sign the
+backend cannot absorb what the hosts send.
+
+=item B<--warning-fc-iops>
+
+Warning threshold.
+
+Thresholds on the Fibre Channel load, all ports together.
+
+=item B<--critical-fc-iops>
+
+Critical threshold.
+
+Thresholds on the Fibre Channel load, all ports together.
+
+=item B<--warning-fc-bandwidth>
+
+Warning threshold.
+
+Thresholds on the Fibre Channel load, all ports together.
+
+=item B<--critical-fc-bandwidth>
+
+Critical threshold.
 
 Thresholds on the Fibre Channel load, all ports together.
 

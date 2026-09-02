@@ -221,14 +221,12 @@ Only check hosts whose name matches this regular expression. Empty by default.
 Only check hosts belonging to a storage partition matching this regular
 expression. Empty by default.
 
-=item B<--unknown-status> B<--warning-status> B<--critical-status>
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each host. Available macros: C<name>, C<status>, C<port_count>,
 C<host_cluster_name>, C<partition_name>.
-
-Default warning: C<%{status} =~ /^offline$/i>
-
-Default critical: C<%{status} =~ /^degraded$/i>
 
 The natural order of severity is B<inverted> here, on purpose. C<offline> means
 no WWPN of that host connects any more: the array cannot tell a deliberately
@@ -239,7 +237,63 @@ production, on eaten-into redundancy, and the next lost path cuts its storage.
 That is actionable right now (zoning, SFP, switch) and is often the only place
 such a fabric fault shows up.
 
-=item B<--warning-offline> B<--critical-offline> B<--warning-degraded> B<--critical-degraded>
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each host. Available macros: C<name>, C<status>, C<port_count>,
+C<host_cluster_name>, C<partition_name>.
+
+Default warning: C<%{status} =~ /^offline$/i>.
+
+The natural order of severity is B<inverted> here, on purpose. C<offline> means
+no WWPN of that host connects any more: the array cannot tell a deliberately
+powered-off server from a failed one, and the common case is the former
+(spares, backup hosts) — a warning keeps it visible without waking anyone.
+C<degraded> means only B<part> of the paths answer: the host is running, in
+production, on eaten-into redundancy, and the next lost path cuts its storage.
+That is actionable right now (zoning, SFP, switch) and is often the only place
+such a fabric fault shows up.
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each host. Available macros: C<name>, C<status>, C<port_count>,
+C<host_cluster_name>, C<partition_name>.
+
+Default critical: C<%{status} =~ /^degraded$/i>.
+
+The natural order of severity is B<inverted> here, on purpose. C<offline> means
+no WWPN of that host connects any more: the array cannot tell a deliberately
+powered-off server from a failed one, and the common case is the former
+(spares, backup hosts) — a warning keeps it visible without waking anyone.
+C<degraded> means only B<part> of the paths answer: the host is running, in
+production, on eaten-into redundancy, and the next lost path cuts its storage.
+That is actionable right now (zoning, SFP, switch) and is often the only place
+such a fabric fault shows up.
+
+=item B<--warning-offline>
+
+Warning threshold.
+
+Thresholds on the number of offline and degraded hosts.
+
+=item B<--critical-offline>
+
+Critical threshold.
+
+Thresholds on the number of offline and degraded hosts.
+
+=item B<--warning-degraded>
+
+Warning threshold.
+
+Thresholds on the number of offline and degraded hosts.
+
+=item B<--critical-degraded>
+
+Critical threshold.
 
 Thresholds on the number of offline and degraded hosts.
 

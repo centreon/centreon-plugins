@@ -340,13 +340,11 @@ array, mdisk, quorum).
 
 Only check components whose name or id matches this regular expression.
 
-=item B<--unknown-component-status> B<--warning-component-status> B<--critical-component-status>
+=item B<--unknown-component-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each component. Available macros: C<name>, C<type>, C<status>.
-
-Default critical: C<%{status} =~ /^(offline|excluded)$/i>
-
-Default warning: C<%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i>
 
 Critical means B<service lost>, warning means B<redundancy lost>. Every part
 here is redundant — two power supplies, two canisters, six fan modules, a DRAID
@@ -354,17 +352,70 @@ across twelve drives — so a degraded component eats the margin without stoppin
 anything. Merging the two wakes someone up for a fault that can wait for
 business hours, and buries the real outage among them.
 
-=item B<--unknown-subsystem-status> B<--warning-subsystem-status> B<--critical-subsystem-status>
+=item B<--warning-component-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each component. Available macros: C<name>, C<type>, C<status>.
+
+Default warning: C<%{status} =~ /^(degraded|degraded_paths|degraded_ports)$/i>.
+
+Critical means B<service lost>, warning means B<redundancy lost>. Every part
+here is redundant — two power supplies, two canisters, six fan modules, a DRAID
+across twelve drives — so a degraded component eats the margin without stopping
+anything. Merging the two wakes someone up for a fault that can wait for
+business hours, and buries the real outage among them.
+
+=item B<--critical-component-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each component. Available macros: C<name>, C<type>, C<status>.
+
+Default critical: C<%{status} =~ /^(offline|excluded)$/i>.
+
+Critical means B<service lost>, warning means B<redundancy lost>. Every part
+here is redundant — two power supplies, two canisters, six fan modules, a DRAID
+across twelve drives — so a degraded component eats the margin without stopping
+anything. Merging the two wakes someone up for a fault that can wait for
+business hours, and buries the real outage among them.
+
+=item B<--unknown-subsystem-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each enclosure subsystem. Available macros: C<enclosure>,
 C<label>, C<online>, C<total>.
 
-Default critical: C<%{online} == 0> — nothing left in that subsystem.
+=item B<--warning-subsystem-status>
 
-Default warning: C<%{online} E<lt> %{total}> — one power supply out of two is a
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each enclosure subsystem. Available macros: C<enclosure>,
+C<label>, C<online>, C<total>.
+
+Default warning: C<%{online} E<lt> %{total}> - one power supply out of two is a.
 lost redundancy, not an outage.
 
-=item B<--warning-components-degraded> B<--critical-components-degraded>
+=item B<--critical-subsystem-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each enclosure subsystem. Available macros: C<enclosure>,
+C<label>, C<online>, C<total>.
+
+Default critical: C<%{online} == 0> - nothing left in that subsystem.
+.
+
+=item B<--warning-components-degraded>
+
+Warning threshold.
+
+Thresholds on the number of components that are not online.
+
+=item B<--critical-components-degraded>
+
+Critical threshold.
 
 Thresholds on the number of components that are not online.
 

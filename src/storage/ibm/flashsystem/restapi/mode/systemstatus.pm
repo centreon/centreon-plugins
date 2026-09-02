@@ -153,7 +153,7 @@ __END__
 
 =head1 MODE
 
-Host check: is the array still working?
+Host check: whether the array is still working.
 
 This mode is meant for the B<host check command>, not for a service. It returns
 only OK (host UP) or CRITICAL (host DOWN) — never WARNING or UNKNOWN, whose
@@ -170,11 +170,17 @@ Three facts, and only three, count as a stopped array:
 
 =over 4
 
-=item * the array does not answer at all;
+=item *
 
-=item * no canister is online, so nothing processes I/O any more;
+the array does not answer at all;
 
-=item * no pool is online, so no volume is served any more.
+=item *
+
+no canister is online, so nothing processes I/O any more;
+
+=item *
+
+no pool is online, so no volume is served any more.
 
 =back
 

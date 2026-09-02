@@ -243,26 +243,62 @@ Example:
 
 Only check drives whose id matches this regular expression.
 
-=item B<--unknown-status> B<--warning-status> B<--critical-status>
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
+
+Threshold on each drive. Available macros: C<display>, C<use>,
+C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
+
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each drive. Available macros: C<display>, C<use>,
+C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
+
+Default warning:
+C<%{port_1_status} !~ /^online$/i or %{port_2_status} !~ /^online$/i or %{replacement_date} ne "-">.
+— one path left, or an end of life the array predicts.
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
 
 Threshold on each drive. Available macros: C<display>, C<use>,
 C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
 
 Default critical:
-C<%{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i> — both
+C<%{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i> - both.
 NVMe paths down, the drive is unreachable.
 
-Default warning:
-C<%{port_1_status} !~ /^online$/i or %{port_2_status} !~ /^online$/i or %{replacement_date} ne "-">
-— one path left, or an end of life the array predicts.
+=item B<--warning-endurance>
 
-=item B<--warning-endurance> B<--critical-endurance>
+Warning threshold.
 
 Thresholds on the FlashCore Module wear, in percent. No default in the code:
 the values are set in the service template macro (80/90 suggested). Observed
 on these arrays after their first months: 0 %.
 
-=item B<--warning-physical-usage-prct> B<--critical-physical-usage-prct>
+=item B<--critical-endurance>
+
+Critical threshold.
+
+Thresholds on the FlashCore Module wear, in percent. No default in the code:
+the values are set in the service template macro (80/90 suggested). Observed
+on these arrays after their first months: 0 %.
+
+=item B<--warning-physical-usage-prct>
+
+Warning threshold.
+
+Thresholds on the physical fill of each module. The system-level threshold in
+the capacity mode is the one that matters; the per-drive figure exists to spot
+an unbalanced distribution.
+
+=item B<--critical-physical-usage-prct>
+
+Critical threshold.
 
 Thresholds on the physical fill of each module. The system-level threshold in
 the capacity mode is the one that matters; the per-drive figure exists to spot

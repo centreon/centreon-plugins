@@ -250,10 +250,14 @@ Two reading traps:
 
 =over 4
 
-=item * C<fast_write_state = not_empty> is the B<normal> state of a working
+=item *
+
+C<fast_write_state = not_empty> is the B<normal> state of a working
 volume — data sitting in the write cache. Only C<corrupt> is abnormal.
 
-=item * A volume "full" with respect to its provisioned size means nothing under
+=item *
+
+A volume "full" with respect to its provisioned size means nothing under
 thin provisioning. Capacity is managed at the pool level, see the C<capacity>
 mode.
 
@@ -267,7 +271,17 @@ Example:
 
 =over 8
 
-=item B<--filter-name> B<--filter-pool> B<--filter-volume-group>
+=item B<--filter-name>
+
+Only check volumes whose name, pool or volume group matches this regular
+expression. Empty by default.
+
+=item B<--filter-pool>
+
+Only check volumes whose name, pool or volume group matches this regular
+expression. Empty by default.
+
+=item B<--filter-volume-group>
 
 Only check volumes whose name, pool or volume group matches this regular
 expression. Empty by default.
@@ -280,17 +294,67 @@ want one:
 
     --mode=volumes --add-all-volumes --filter-name='^VOL_PRD_01$'
 
-=item B<--unknown-status> B<--warning-status> B<--critical-status>
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each selected volume. Available macros: C<name>, C<status>,
 C<fast_write_state>, C<formatting>, C<sync>, C<mdisk_grp_name>,
 C<volume_group_name>.
 
-Default warning: C<%{status} =~ /^degraded$/i || %{sync} =~ /^no$/i>
+=item B<--warning-status>
 
-Default critical: C<%{status} =~ /^offline$/i || %{fast_write_state} =~ /^corrupt$/i>
+Define the conditions to match for the status to be WARNING.
 
-=item B<--warning-offline> B<--critical-offline> B<--warning-degraded> B<--critical-degraded> B<--warning-unsynchronised> B<--critical-unsynchronised>
+Threshold on each selected volume. Available macros: C<name>, C<status>,
+C<fast_write_state>, C<formatting>, C<sync>, C<mdisk_grp_name>,
+C<volume_group_name>.
+
+Default warning: C<%{status} =~ /^degraded$/i || %{sync} =~ /^no$/i>.
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each selected volume. Available macros: C<name>, C<status>,
+C<fast_write_state>, C<formatting>, C<sync>, C<mdisk_grp_name>,
+C<volume_group_name>.
+
+Default critical: C<%{status} =~ /^offline$/i || %{fast_write_state} =~ /^corrupt$/i>.
+
+=item B<--warning-offline>
+
+Warning threshold.
+
+Thresholds on the counts.
+
+=item B<--critical-offline>
+
+Critical threshold.
+
+Thresholds on the counts.
+
+=item B<--warning-degraded>
+
+Warning threshold.
+
+Thresholds on the counts.
+
+=item B<--critical-degraded>
+
+Critical threshold.
+
+Thresholds on the counts.
+
+=item B<--warning-unsynchronised>
+
+Warning threshold.
+
+Thresholds on the counts.
+
+=item B<--critical-unsynchronised>
+
+Critical threshold.
 
 Thresholds on the counts.
 

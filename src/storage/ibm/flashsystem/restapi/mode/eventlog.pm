@@ -228,20 +228,73 @@ Example:
 Regular expression selecting which entries become checkable instances
 (default: C<^alert$>). Set it to C<.> to also evaluate informational messages.
 
-=item B<--filter-error-code> B<--filter-event-id> B<--filter-object-type> B<--filter-object-name>
+=item B<--filter-error-code>
 
 Further restrict the selected entries. Empty by default: nothing is hidden
 unless it is explicitly excluded.
 
-=item B<--unknown-event-status> B<--warning-event-status> B<--critical-event-status>
+=item B<--filter-event-id>
+
+Further restrict the selected entries. Empty by default: nothing is hidden
+unless it is explicitly excluded.
+
+=item B<--filter-object-type>
+
+Further restrict the selected entries. Empty by default: nothing is hidden
+unless it is explicitly excluded.
+
+=item B<--filter-object-name>
+
+Further restrict the selected entries. Empty by default: nothing is hidden
+unless it is explicitly excluded.
+
+=item B<--unknown-event-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each selected entry. Available macros: C<status>, C<error_code>,
 C<event_id>, C<object_type>, C<object_name>, C<description>,
 C<last_timestamp>, C<sequence_number>.
 
-Default critical: C<%{status} =~ /^alert$/i>
+=item B<--warning-event-status>
 
-=item B<--warning-alerts> B<--critical-alerts> B<--warning-messages> B<--critical-messages>
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each selected entry. Available macros: C<status>, C<error_code>,
+C<event_id>, C<object_type>, C<object_name>, C<description>,
+C<last_timestamp>, C<sequence_number>.
+
+=item B<--critical-event-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each selected entry. Available macros: C<status>, C<error_code>,
+C<event_id>, C<object_type>, C<object_name>, C<description>,
+C<last_timestamp>, C<sequence_number>.
+
+Default critical: C<%{status} =~ /^alert$/i>.
+
+=item B<--warning-alerts>
+
+Warning threshold.
+
+Thresholds on the number of unfixed alerts and messages.
+
+=item B<--critical-alerts>
+
+Critical threshold.
+
+Thresholds on the number of unfixed alerts and messages.
+
+=item B<--warning-messages>
+
+Warning threshold.
+
+Thresholds on the number of unfixed alerts and messages.
+
+=item B<--critical-messages>
+
+Critical threshold.
 
 Thresholds on the number of unfixed alerts and messages.
 

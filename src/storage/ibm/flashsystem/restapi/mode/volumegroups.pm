@@ -224,19 +224,24 @@ Example, one service per group through service discovery:
 
 =over 8
 
-=item B<--filter-name> B<--filter-partition>
+=item B<--filter-name>
 
 Only check groups whose name or storage partition matches this regular
 expression. Empty by default.
 
-=item B<--unknown-status> B<--warning-status> B<--critical-status>
+=item B<--filter-partition>
+
+Only check groups whose name or storage partition matches this regular
+expression. Empty by default.
+
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each group. Available macros: C<name>, C<volume_count>,
 C<backup_status>, C<last_backup_time>, C<partition_name>,
 C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
 C<restore_in_progress>.
-
-Default critical: C<%{backup_status} =~ /^failed$/i>
 
 Nothing else alerts by default. On these arrays C<backup_status> is C<off>
 everywhere and no group references a snapshot policy — an operational choice,
@@ -245,12 +250,75 @@ code:
 
     --warning-status='%{snapshot_policy} eq "-"'
 
-=item B<--warning-without-snapshot-policy> B<--critical-without-snapshot-policy>
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each group. Available macros: C<name>, C<volume_count>,
+C<backup_status>, C<last_backup_time>, C<partition_name>,
+C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
+C<restore_in_progress>.
+
+Nothing else alerts by default. On these arrays C<backup_status> is C<off>
+everywhere and no group references a snapshot policy — an operational choice,
+not a fault. Once that choice is settled, express it here rather than in the
+code:
+
+    --warning-status='%{snapshot_policy} eq "-"'
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each group. Available macros: C<name>, C<volume_count>,
+C<backup_status>, C<last_backup_time>, C<partition_name>,
+C<replication_policy>, C<snapshot_policy>, C<safeguarded_policy>,
+C<restore_in_progress>.
+
+Default critical: C<%{backup_status} =~ /^failed$/i>.
+
+Nothing else alerts by default. On these arrays C<backup_status> is C<off>
+everywhere and no group references a snapshot policy — an operational choice,
+not a fault. Once that choice is settled, express it here rather than in the
+code:
+
+    --warning-status='%{snapshot_policy} eq "-"'
+
+=item B<--warning-without-snapshot-policy>
+
+Warning threshold.
 
 Threshold on the number of groups with no snapshot policy attached. The blunt
 version of the same question, when the answer is "all of them should have one".
 
-=item B<--warning-replicated> B<--critical-replicated> B<--warning-restoring> B<--critical-restoring>
+=item B<--critical-without-snapshot-policy>
+
+Critical threshold.
+
+Threshold on the number of groups with no snapshot policy attached. The blunt
+version of the same question, when the answer is "all of them should have one".
+
+=item B<--warning-replicated>
+
+Warning threshold.
+
+Thresholds on the counts.
+
+=item B<--critical-replicated>
+
+Critical threshold.
+
+Thresholds on the counts.
+
+=item B<--warning-restoring>
+
+Warning threshold.
+
+Thresholds on the counts.
+
+=item B<--critical-restoring>
+
+Critical threshold.
 
 Thresholds on the counts.
 

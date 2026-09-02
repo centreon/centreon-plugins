@@ -247,11 +247,15 @@ Two commands describe two different things, and mixing them up is easy:
 
 =over 4
 
-=item * C<lsportethernet> is the B<physical> port: link state, negotiated speed,
+=item *
+
+C<lsportethernet> is the B<physical> port: link state, negotiated speed,
 and the flags saying what it is used for — management, host, storage,
 replication.
 
-=item * C<lsportip> is the IP configuration laid on top. There is one entry per
+=item *
+
+C<lsportip> is the IP configuration laid on top. There is one entry per
 port B<and per use>, so a single physical port produces several rows, keyed on
 C<id> rather than C<port_id>.
 
@@ -288,12 +292,12 @@ Only check ports whose C<node-port> name matches this regular expression.
 Also report ports that carry no role and have no link — the full inventory
 rather than just what is in service.
 
-=item B<--unknown-status> B<--warning-status> B<--critical-status>
+=item B<--unknown-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each port. Available macros: C<name>, C<link_state>, C<speed>,
 C<roles>, C<ip>, C<node_name>, C<port_id>, C<configured>.
-
-Default critical: C<%{configured} eq "yes" and %{link_state} !~ /^active$/i>
 
 To also require a negotiated speed on the management ports:
 
@@ -303,7 +307,76 @@ With no iSCSI in service, no port carries an address and the mode reports the
 inventory without ever alerting. That is the intended behaviour: it starts
 alerting by itself the day an address is configured.
 
-=item B<--warning-active> B<--critical-active> B<--warning-with-role> B<--critical-with-role> B<--warning-ip-configured> B<--critical-ip-configured>
+=item B<--warning-status>
+
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each port. Available macros: C<name>, C<link_state>, C<speed>,
+C<roles>, C<ip>, C<node_name>, C<port_id>, C<configured>.
+
+To also require a negotiated speed on the management ports:
+
+    --warning-status='%{roles} =~ /management/ && %{speed} !~ /^1Gb/'
+
+With no iSCSI in service, no port carries an address and the mode reports the
+inventory without ever alerting. That is the intended behaviour: it starts
+alerting by itself the day an address is configured.
+
+=item B<--critical-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each port. Available macros: C<name>, C<link_state>, C<speed>,
+C<roles>, C<ip>, C<node_name>, C<port_id>, C<configured>.
+
+Default critical: C<%{configured} eq "yes" and %{link_state} !~ /^active$/i>.
+
+To also require a negotiated speed on the management ports:
+
+    --warning-status='%{roles} =~ /management/ && %{speed} !~ /^1Gb/'
+
+With no iSCSI in service, no port carries an address and the mode reports the
+inventory without ever alerting. That is the intended behaviour: it starts
+alerting by itself the day an address is configured.
+
+=item B<--warning-active>
+
+Warning threshold.
+
+Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
+put into service: it stays at zero as long as nothing is configured.
+
+=item B<--critical-active>
+
+Critical threshold.
+
+Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
+put into service: it stays at zero as long as nothing is configured.
+
+=item B<--warning-with-role>
+
+Warning threshold.
+
+Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
+put into service: it stays at zero as long as nothing is configured.
+
+=item B<--critical-with-role>
+
+Critical threshold.
+
+Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
+put into service: it stays at zero as long as nothing is configured.
+
+=item B<--warning-ip-configured>
+
+Warning threshold.
+
+Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
+put into service: it stays at zero as long as nothing is configured.
+
+=item B<--critical-ip-configured>
+
+Critical threshold.
 
 Thresholds on the counts. C<ip-configured> is worth watching if iSCSI is ever
 put into service: it stays at zero as long as nothing is configured.

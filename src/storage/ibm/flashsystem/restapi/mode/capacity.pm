@@ -380,29 +380,95 @@ Example:
 
 Only check pools whose name matches this regular expression.
 
-=item B<--warning-physical-usage-prct> B<--critical-physical-usage-prct>
+=item B<--warning-physical-usage-prct>
+
+Warning threshold.
 
 Thresholds on the percentage of B<physical> capacity used. This is the one to
 set. No default is shipped: the right value depends on how long it takes to get
 an extension delivered, not on a general rule.
 
-=item B<--warning-physical-free> B<--critical-physical-free>
+=item B<--critical-physical-usage-prct>
+
+Critical threshold.
+
+Thresholds on the percentage of B<physical> capacity used. This is the one to
+set. No default is shipped: the right value depends on how long it takes to get
+an extension delivered, not on a general rule.
+
+=item B<--warning-physical-free>
+
+Warning threshold.
 
 Thresholds on the physical space left, in bytes. Useful when the answer is "we
 need N TB of headroom" rather than a percentage.
 
-=item B<--warning-overallocation> B<--critical-overallocation>
+=item B<--critical-physical-free>
+
+Critical threshold.
+
+Thresholds on the physical space left, in bytes. Useful when the answer is "we
+need N TB of headroom" rather than a percentage.
+
+=item B<--warning-overallocation>
+
+Warning threshold.
 
 Threshold on the over-allocation ratio, in percent.
 
-=item B<--unknown-pool-status> B<--warning-pool-status> B<--critical-pool-status>
+=item B<--critical-overallocation>
+
+Critical threshold.
+
+Threshold on the over-allocation ratio, in percent.
+
+=item B<--unknown-pool-status>
+
+Define the conditions to match for the status to be UNKNOWN.
 
 Threshold on each pool. Available macros: C<name>, C<status>,
 C<overallocation>, C<data_reduction>.
 
-Default critical: C<%{status} !~ /^online$/i>
+=item B<--warning-pool-status>
 
-=item B<--warning-pool-usage-prct> B<--critical-pool-usage-prct> B<--warning-pool-free> B<--critical-pool-free>
+Define the conditions to match for the status to be WARNING.
+
+Threshold on each pool. Available macros: C<name>, C<status>,
+C<overallocation>, C<data_reduction>.
+
+=item B<--critical-pool-status>
+
+Define the conditions to match for the status to be CRITICAL.
+
+Threshold on each pool. Available macros: C<name>, C<status>,
+C<overallocation>, C<data_reduction>.
+
+Default critical: C<%{status} !~ /^online$/i>.
+
+=item B<--warning-pool-usage-prct>
+
+Warning threshold.
+
+Thresholds per pool. Remember these are virtual figures on a FlashCore Module
+system.
+
+=item B<--critical-pool-usage-prct>
+
+Critical threshold.
+
+Thresholds per pool. Remember these are virtual figures on a FlashCore Module
+system.
+
+=item B<--warning-pool-free>
+
+Warning threshold.
+
+Thresholds per pool. Remember these are virtual figures on a FlashCore Module
+system.
+
+=item B<--critical-pool-free>
+
+Critical threshold.
 
 Thresholds per pool. Remember these are virtual figures on a FlashCore Module
 system.
