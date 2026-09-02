@@ -76,7 +76,7 @@ sub run {
             $pool_disco->{cpu_sockets} = $pool->{cpus}->{sockets} // '';
         }
         # list all host in a pool and add their name_label in the output.
-        my $hosts = $options{custom}->request_api_get(endpoint => "hosts", get_param => ["fields=uuid,name_label", 'filter:$pool:' . $pool->{uuid}]);
+        my $hosts = $options{custom}->request_api_get(endpoint => "hosts", get_param => ["fields=uuid,name_label", 'filter=$pool:' . $pool->{uuid}]);
         $pool_disco->{hosts_name_label} = [];
         $pool_disco->{hosts_uuid} = [];
         foreach my $host (@{$hosts}){
