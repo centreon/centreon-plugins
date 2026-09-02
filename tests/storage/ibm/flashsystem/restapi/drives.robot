@@ -1,0 +1,36 @@
+*** Settings ***
+Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
+
+Suite Setup         Start Mockoon    ${MOCKOON_JSON}
+Suite Teardown      Stop Mockoon
+Test Timeout        120s
+
+
+*** Variables ***
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
+
+${CMD}              ${CENTREON_PLUGINS}
+...                 --plugin=storage::ibm::flashsystem::restapi::plugin
+...                 --mode=drives
+...                 --hostname=${HOSTNAME}
+...                 --proto='http'
+...                 --port=${APIPORT}
+...                 --api-path='/rest/v1'
+...                 --api-username='user'
+...                 --api-password='pass'
+...                 --statefile-dir=/tmp
+
+
+*** Test Cases ***
+drives ${tc}
+    [Tags]    storage    ibm    flashsystem    restapi
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    ${extra_options}
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:         tc      extra_options                            expected_result    --
+            ...       1       ${EMPTY}                                 OK: Drives: 12 detected - All drives have both paths online | 'drives.detected.count'=12;;;0; '0#drive.endurance.used.percentage'=0%;;;0;100 '0#drive.physical.space.usage.percentage'=42.94%;;;0;100 '1#drive.endurance.used.percentage'=0%;;;0;100 '1#drive.physical.space.usage.percentage'=42.94%;;;0;100 '10#drive.endurance.used.percentage'=0%;;;0;100 '10#drive.physical.space.usage.percentage'=42.94%;;;0;100 '11#drive.endurance.used.percentage'=0%;;;0;100 '11#drive.physical.space.usage.percentage'=42.94%;;;0;100 '2#drive.endurance.used.percentage'=0%;;;0;100 '2#drive.physical.space.usage.percentage'=42.94%;;;0;100 '3#drive.endurance.used.percentage'=0%;;;0;100 '3#drive.physical.space.usage.percentage'=42.94%;;;0;100 '4#drive.endurance.used.percentage'=0%;;;0;100 '4#drive.physical.space.usage.percentage'=42.94%;;;0;100 '5#drive.endurance.used.percentage'=0%;;;0;100 '5#drive.physical.space.usage.percentage'=42.94%;;;0;100 '6#drive.endurance.used.percentage'=0%;;;0;100 '6#drive.physical.space.usage.percentage'=42.94%;;;0;100 '7#drive.endurance.used.percentage'=0%;;;0;100 '7#drive.physical.space.usage.percentage'=42.94%;;;0;100 '8#drive.endurance.used.percentage'=0%;;;0;100 '8#drive.physical.space.usage.percentage'=42.94%;;;0;100 '9#drive.endurance.used.percentage'=0%;;;0;100 '9#drive.physical.space.usage.percentage'=42.94%;;;0;100
+            ...       2       --filter-id='^0$'                        OK: Drives: 1 detected - Drive '0' (enclosure 1 slot 8) paths online/online, use: member, firmware 4_1_8, endurance used 0 %, physical used 42.94 % | 'drives.detected.count'=1;;;0; '0#drive.endurance.used.percentage'=0%;;;0;100 '0#drive.physical.space.usage.percentage'=42.94%;;;0;100
+            ...       3       --critical-physical-usage-prct=10        CRITICAL: Drive '0' (enclosure 1 slot 8) physical used 42.94 % - Drive '1' (enclosure 1 slot 7) physical used 42.94 % - Drive '10' (enclosure 1 slot 12) physical used 42.94 % - Drive '11' (enclosure 1 slot 9) physical used 42.94 % - Drive '2' (enclosure 1 slot 6) physical used 42.94 % - Drive '3' (enclosure 1 slot 11) physical used 42.94 % - Drive '4' (enclosure 1 slot 5) physical used 42.94 % - Drive '5' (enclosure 1 slot 2) physical used 42.94 % - Drive '6' (enclosure 1 slot 4) physical used 42.94 % - Drive '7' (enclosure 1 slot 1) physical used 42.94 % - Drive '8' (enclosure 1 slot 3) physical used 42.94 % - Drive '9' (enclosure 1 slot 10) physical used 42.94 % | 'drives.detected.count'=12;;;0; '0#drive.endurance.used.percentage'=0%;;;0;100 '0#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '1#drive.endurance.used.percentage'=0%;;;0;100 '1#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '10#drive.endurance.used.percentage'=0%;;;0;100 '10#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '11#drive.endurance.used.percentage'=0%;;;0;100 '11#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '2#drive.endurance.used.percentage'=0%;;;0;100 '2#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '3#drive.endurance.used.percentage'=0%;;;0;100 '3#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '4#drive.endurance.used.percentage'=0%;;;0;100 '4#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '5#drive.endurance.used.percentage'=0%;;;0;100 '5#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '6#drive.endurance.used.percentage'=0%;;;0;100 '6#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '7#drive.endurance.used.percentage'=0%;;;0;100 '7#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '8#drive.endurance.used.percentage'=0%;;;0;100 '8#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100 '9#drive.endurance.used.percentage'=0%;;;0;100 '9#drive.physical.space.usage.percentage'=42.94%;;0:10;0;100
+            ...       4       --warning-status='\\\%{use} eq "member"'    WARNING: Drive '0' (enclosure 1 slot 8) paths online/online, use: member, firmware 4_1_8 - Drive '1' (enclosure 1 slot 7) paths online/online, use: member, firmware 4_1_8 - Drive '10' (enclosure 1 slot 12) paths online/online, use: member, firmware 4_1_8 - Drive '11' (enclosure 1 slot 9) paths online/online, use: member, firmware 4_1_8 - Drive '2' (enclosure 1 slot 6) paths online/online, use: member, firmware 4_1_8 - Drive '3' (enclosure 1 slot 11) paths online/online, use: member, firmware 4_1_8 - Drive '4' (enclosure 1 slot 5) paths online/online, use: member, firmware 4_1_8 - Drive '5' (enclosure 1 slot 2) paths online/online, use: member, firmware 4_1_8 - Drive '6' (enclosure 1 slot 4) paths online/online, use: member, firmware 4_1_8 - Drive '7' (enclosure 1 slot 1) paths online/online, use: member, firmware 4_1_8 - Drive '8' (enclosure 1 slot 3) paths online/online, use: member, firmware 4_1_8 - Drive '9' (enclosure 1 slot 10) paths online/online, use: member, firmware 4_1_8 | 'drives.detected.count'=12;;;0; '0#drive.endurance.used.percentage'=0%;;;0;100 '0#drive.physical.space.usage.percentage'=42.94%;;;0;100 '1#drive.endurance.used.percentage'=0%;;;0;100 '1#drive.physical.space.usage.percentage'=42.94%;;;0;100 '10#drive.endurance.used.percentage'=0%;;;0;100 '10#drive.physical.space.usage.percentage'=42.94%;;;0;100 '11#drive.endurance.used.percentage'=0%;;;0;100 '11#drive.physical.space.usage.percentage'=42.94%;;;0;100 '2#drive.endurance.used.percentage'=0%;;;0;100 '2#drive.physical.space.usage.percentage'=42.94%;;;0;100 '3#drive.endurance.used.percentage'=0%;;;0;100 '3#drive.physical.space.usage.percentage'=42.94%;;;0;100 '4#drive.endurance.used.percentage'=0%;;;0;100 '4#drive.physical.space.usage.percentage'=42.94%;;;0;100 '5#drive.endurance.used.percentage'=0%;;;0;100 '5#drive.physical.space.usage.percentage'=42.94%;;;0;100 '6#drive.endurance.used.percentage'=0%;;;0;100 '6#drive.physical.space.usage.percentage'=42.94%;;;0;100 '7#drive.endurance.used.percentage'=0%;;;0;100 '7#drive.physical.space.usage.percentage'=42.94%;;;0;100 '8#drive.endurance.used.percentage'=0%;;;0;100 '8#drive.physical.space.usage.percentage'=42.94%;;;0;100 '9#drive.endurance.used.percentage'=0%;;;0;100 '9#drive.physical.space.usage.percentage'=42.94%;;;0;100
