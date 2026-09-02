@@ -112,8 +112,10 @@ sub set_counters {
         {
             label => 'status',
             type => COUNTER_KIND_TEXT,
-            critical_default => '%{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i',
-            warning_default => '%{port_1_status} !~ /^online$/i or %{port_2_status} !~ /^online$/i or %{replacement_date} ne "-"',
+            # A path state of '-' means the detailed view was not available
+            # (older firmware): unknown is not down.
+            critical_default => '%{port_1_status} ne "-" and %{port_2_status} ne "-" and %{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i',
+            warning_default => '(%{port_1_status} ne "-" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "-" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne "-"',
             set => {
                 key_values => [
                     { name => 'display' }, { name => 'use' },
@@ -258,7 +260,7 @@ Threshold on each drive. Available macros: C<display>, C<use>,
 C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
 
 Default warning:
-C<%{port_1_status} !~ /^online$/i or %{port_2_status} !~ /^online$/i or %{replacement_date} ne "-">.
+C<(%{port_1_status} ne "-" and %{port_1_status} !~ /^online$/i) or (%{port_2_status} ne "-" and %{port_2_status} !~ /^online$/i) or %{replacement_date} ne "-">.
 — one path left, or an end of life the array predicts.
 
 =item B<--critical-status>
@@ -269,7 +271,7 @@ Threshold on each drive. Available macros: C<display>, C<use>,
 C<port_1_status>, C<port_2_status>, C<replacement_date>, C<firmware>.
 
 Default critical:
-C<%{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i> - both.
+C<%{port_1_status} ne "-" and %{port_2_status} ne "-" and %{port_1_status} !~ /^online$/i and %{port_2_status} !~ /^online$/i> - both.
 NVMe paths down, the drive is unreachable.
 
 =item B<--warning-endurance>
