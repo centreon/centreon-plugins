@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       apps::virtualization::vates::vm::plugin
+Documentation       apps::virtualization::vates::pool::plugin
 
 Resource            ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
@@ -11,8 +11,8 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}..${/}mockoon.json
 ${CMD}              ${CENTREON_PLUGINS}
-...                 --plugin=apps::virtualization::vates::vm::plugin
-...                 --mode=cpu
+...                 --plugin=apps::virtualization::vates::pool::plugin
+...                 --mode=cpu-over-commit
 ...                 --password=C3POR2P2
 ...                 --username=obi-wan
 ...                 --hostname=127.0.0.1
@@ -21,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS}
 
 
 *** Test Cases ***
-Cpu ${tc}
+Cpu over commit ${tc}
     [Tags]    apps    virtualization    vm
     ${command}    Catenate
     ...    ${CMD}
@@ -36,16 +36,10 @@ Cpu ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    UNKNOWN: you must fill either --vm-uuid or --vm-name.
+    ...    UNKNOWN: you must fill either --pool-uuid or --pool-name.
     ...    2
-    ...    --vm-uuid=e9425768-75ed-a6da-bd00-2774c94ef200
-    ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
+    ...    --pool-uuid=00969214-df4d-83cb-78d5-bec9181903d4
+    ...    OK: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:90;0:100;0;
     ...    3
-    ...    --vm-name=XOA
-    ...    OK: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;;0;100
-    ...    4
-    ...    --vm-name=XOA --warning-cpu-usage-prct=1
-    ...    WARNING: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;0:1;;0;100
-    ...    5
-    ...    --vm-name=XOA --critical-cpu-usage-prct=1
-    ...    CRITICAL: CPU usage is 35.40 % | 'vm.cpu.usage.percentage'=35.40%;;0:1;0;100
+    ...    --pool-name=vates
+    ...    OK: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:90;0:100;0;

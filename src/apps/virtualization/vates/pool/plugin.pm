@@ -17,7 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-package apps::virtualization::vates::xenorchestra::plugin;
+package apps::virtualization::vates::pool::plugin;
 use strict;
 use warnings FATAL => 'all';
 use base qw(centreon::plugins::script_custom);
@@ -30,8 +30,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'status'         => 'apps::virtualization::vates::xenorchestra::status',
-        'vm-status'         => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
+        'status'           => 'apps::virtualization::vates::pool::mode::status',
+        'cpu-over-commit'  => 'apps::virtualization::vates::pool::mode::cpuovercommit',
+        'discovery'        => 'apps::virtualization::vates::pool::mode::discovery',
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';
@@ -43,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Monitor Vates Xen Orchestra through the REST API.
+Monitor Xen Orchestra pools through the Vates REST API.
 
 =cut

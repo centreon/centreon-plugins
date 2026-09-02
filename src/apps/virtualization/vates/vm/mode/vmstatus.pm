@@ -116,28 +116,28 @@ __END__
 
 =head1 MODE
 
-Check one virtual machines status on a Xen Orchestra pool (running, halted, paused, suspended).
+Check one virtual machine's status on a Xen Orchestra pool (running, halted, paused, suspended).
 
 =over 8
 
 =item B<--vm-uuid>
 
-include virtual machines by exact uuid.
+Identify the virtual machine by its exact uuid.
 
 =item B<--vm-name>
 
-include virtual machines by name (only one machine is expected).
+Identify the virtual machine by its name (only one machine is expected).
 
 =item B<--warning-status>
 
-Define the warning threshold for the power status of the VM.
-The value should be a Perl expression using the %{power_state} macro.
+Define the conditions to match for the status to be WARNING. You can use the following variables:
+C<%{display}>, C<%{power_state}>, C<%{uuid}>, C<%{os_version}>.
 
 =item B<--critical-status>
 
-Define the critical threshold for the power status of the VM.
-The value should be a Perl expression using the %{power_state} macro.
-Default: '%{power_state} =~ /^Halted|Paused/i'
+Define the conditions to match for the status to be CRITICAL. You can use the following variables:
+C<%{display}>, C<%{power_state}>, C<%{uuid}>, C<%{os_version}>.
+Default: C<%{power_state} =~ /^Halted|Paused/i>
 
 =back
 

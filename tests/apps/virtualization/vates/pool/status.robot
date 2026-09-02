@@ -10,7 +10,8 @@ Test Timeout        120s
 
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}..${/}mockoon.json
-${CMD}              ${CENTREON_PLUGINS} --plugin=apps::virtualization::vates::vm::plugin
+${CMD}              ${CENTREON_PLUGINS}
+...                 --plugin=apps::virtualization::vates::pool::plugin
 ...                 --mode=status
 ...                 --password=C3POR2P2
 ...                 --username=obi-wan
@@ -20,7 +21,7 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::virtualization::vates::vm
 
 
 *** Test Cases ***
-Status ${tc}
+pool status ${tc}
     [Tags]    apps    virtualization    vm
     ${command}    Catenate
     ...    ${CMD}
@@ -35,19 +36,19 @@ Status ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    UNKNOWN: you must fill either --vm-uuid or --vm-name.
+    ...    UNKNOWN: you must fill either --pool-uuid or --pool-name.
     ...    2
-    ...    --vm-uuid=e9425768-75ed-a6da-bd00-2774c94ef200
-    ...    OK: 'XOA' vm is Running. OS : Debian 12
+    ...    --pool-uuid=00969214-df4d-83cb-78d5-bec9181903d4
+    ...    OK: pool 'vates' master 'vates' is Running - pool has HA enabled
     ...    3
-    ...    --vm-name=XOA
-    ...    OK: 'XOA' vm is Running. OS : Debian 12
+    ...    --pool-name=vates
+    ...    OK: pool 'vates' master 'vates' is Running - pool has HA enabled
     ...    4
-    ...    --vm-name=XOA --warning-status='\\\%{power_state} =~ /^Running/i'
-    ...    WARNING: 'XOA' vm is Running. OS : Debian 12
+    ...    --pool-name=second --is-ha='false'
+    ...    OK: pool 'second' master 'vates' is Running - pool has HA disabled
     ...    5
-    ...    --vm-name=XOA --critical-status='\\\%{power_state} =~ /^Running/i'
-    ...    CRITICAL: 'XOA' vm is Running. OS : Debian 12
-    ...    6
-    ...    --vm-name=DontExist
-    ...    UNKNOWN: no vm found, api did not return an array with one element. Please check --vm-uuid and --vm-name parameter or --debug.
+    ...    --pool-name=second --is-ha='true'
+    ...    CRITICAL: pool has HA disabled
+    ...    4
+    ...    --pool-name=second --is-ha=''
+    ...    CRITICAL: pool has HA disabled
