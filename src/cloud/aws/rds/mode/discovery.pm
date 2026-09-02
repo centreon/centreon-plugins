@@ -30,11 +30,18 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "prettify"  => { name => 'prettify' },
+        'prettify' => { name => 'prettify' },
+        'type:s'   =>
+            {
+                name         => 'type',
+                default      => 'instance',
+                regexp_match => '^(?:instance|cluster)$'
+            },
+        'prettify' => { name => 'prettify' }
     });
-    
+
     return $self;
 }
 
@@ -53,26 +60,46 @@ sub run {
 
     my $db_instances = $options{custom}->discovery(
         service => 'rds',
-        command => 'describe-db-instances'
+        command => $self->{option_results}->{type} eq "instance" ?
+            'describe-db-instances' : 'describe-db-clusters'
     );
 
-    foreach my $db_instance (@{$db_instances->{DBInstances}}) {
-        next if (!defined($db_instance->{DbiResourceId}));
+    my $items = $self->{option_results}->{type} eq "instance" ?
+        $db_instances->{DBInstances} : $db_instances->{DBClusters};
+
+    foreach my $item (@{$items}) {
+        next if (!defined($item->{DbiResourceId}) && !defined($item->{DBClusterIdentifier}));
         my %rds;
         $rds{type} = "rds";
-        $rds{id} = $db_instance->{DbiResourceId};
-        $rds{name} = $db_instance->{DBInstanceIdentifier};
-        $rds{status} = $db_instance->{DBInstanceStatus};
-        $rds{storage_type} = $db_instance->{StorageType};
-        $rds{instance_class} = $db_instance->{DBInstanceClass};
-        $rds{availability_zone} = $db_instance->{AvailabilityZone};
-        $rds{vpc_id} = $db_instance->{DBSubnetGroup}->{VpcId};
-        $rds{engine} = $db_instance->{Engine};
-        $rds{engine_version} = $db_instance->{EngineVersion};
-        $rds{db_name} = $db_instance->{DBName};
-        $rds{endpoint_host_zone_id} = $db_instance->{Endpoint}->{HostedZoneId};
-        $rds{endpoint_port} = $db_instance->{Endpoint}->{Port};
-        $rds{endpoint_address} = $db_instance->{Endpoint}->{Address};
+
+        if($self->{option_results}->{type} eq "instance") {
+            $rds{id} = $item->{DbiResourceId};
+            $rds{name} = $item->{DBInstanceIdentifier};
+            $rds{status} = $item->{DBInstanceStatus};
+            $rds{storage_type} = $item->{StorageType};
+            $rds{instance_class} = $item->{DBInstanceClass};
+            $rds{availability_zone} = $item->{AvailabilityZone};
+            $rds{vpc_id} = $item->{DBSubnetGroup}->{VpcId};
+            $rds{engine} = $item->{Engine};
+            $rds{engine_version} = $item->{EngineVersion};
+            $rds{db_name} = $item->{DBName};
+            $rds{endpoint_host_zone_id} = $item->{Endpoint}->{HostedZoneId};
+            $rds{endpoint_port} = $item->{Endpoint}->{Port};
+            $rds{endpoint_address} = $item->{Endpoint}->{Address};
+            $rds{tags} = $item->{TagList};
+        } else {
+            $rds{id} = $item->{DbClusterResourceId};
+            $rds{name} = $item->{DBClusterIdentifier};
+            $rds{status} = $item->{Status};
+            $rds{availability_zones} = $item->{AvailabilityZones};
+            $rds{engine} = $item->{Engine};
+            $rds{engine_version} = $item->{EngineVersion};
+            $rds{endpoint_host_zone_id} = $item->{HostedZoneId};
+            $rds{endpoint_port} = $item->{Port};
+            $rds{endpoint_address} = $item->{Endpoint};
+            $rds{tags} = $item->{TagList};
+            $rds{members} = $item->{DBClusterMembers};
+        }
         push @disco_data, \%rds;
     }
 
@@ -109,6 +136,10 @@ __END__
 RDS discovery.
 
 =over 8
+
+=item B<--type>
+
+Set the instance type. Default: C<instance> (can be: 'cluster', 'instance').
 
 =item B<--prettify>
 
