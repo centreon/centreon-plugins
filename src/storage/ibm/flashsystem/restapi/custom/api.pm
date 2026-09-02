@@ -355,6 +355,9 @@ sub store_response {
 #
 # Always returns an array reference: the API answers sometimes with a single
 # object (lssystem), sometimes with an array. Modes never have to test which.
+# With optional => 1 an HTTP error or an undecodable answer returns undef
+# instead of ending the check: option_exit() leaves the process, an eval()
+# around the call does not catch it - request_optional relies on this flag.
 sub request {
     my ($self, %options) = @_;
 
@@ -422,6 +425,8 @@ sub request {
         }
 
         if ($code != 200) {
+
+            return undef if ($options{optional});
             $self->{output}->add_option_msg(
                 short_msg => "API command '" . $options{command} . "' failed (HTTP " . $code . ")"
                     . (defined($content) && $content ne '' ? ': ' . $content : '')
@@ -431,6 +436,7 @@ sub request {
 
         my $decoded = $self->decode_response(content => $content);
         if (!defined($decoded)) {
+            return undef if ($options{optional});
             $self->{output}->option_exit(short_msg => "Cannot decode API response for command '" . $options{command} . "'");
         }
 
@@ -512,7 +518,7 @@ sub request_optional {
     my $result;
     eval {
         local $SIG{__DIE__};
-        $result = $self->request(%options);
+        $result = $self->request(%options, optional => 1);
     };
     return [] if ($@ || !defined($result));
     return $result;

@@ -53,12 +53,12 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 my $COMPONENT_COMMANDS = [
     { command => 'lsenclosure',         label => 'enclosure' },
     { command => 'lsnodecanister',      label => 'node canister' },
-    { command => 'lsenclosurecanister', label => 'expansion canister' },
-    { command => 'lsenclosurepsu',      label => 'power supply' },
-    { command => 'lsenclosurebattery',  label => 'battery' },
+    { command => 'lsenclosurecanister', label => 'expansion canister', id_fields => [ 'canister_id' ] },
+    { command => 'lsenclosurepsu',      label => 'power supply', id_fields => [ 'PSU_id' ] },
+    { command => 'lsenclosurebattery',  label => 'battery', id_fields => [ 'battery_id' ] },
     { command => 'lsenclosurefanmodule', label => 'fan module', id_fields => [ 'fan_module_id' ] },
     { command => 'lsdrive',             label => 'drive' },
-    { command => 'lsarray',             label => 'array' },
+    { command => 'lsarray',             label => 'array', id_fields => [ 'mdisk_name', 'mdisk_id' ] },
     { command => 'lsmdisk',             label => 'mdisk' },
     { command => 'lsquorum',            label => 'quorum', id_fields => [ 'quorum_index' ] }
 ];
