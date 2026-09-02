@@ -41,6 +41,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_partition_output {
@@ -143,15 +144,15 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'partitions', type => 1, cb_prefix_output => 'prefix_partition_output',
-          message_multiple => 'All storage partitions are healthy', skipped_code => { -10 => 1 } },
-        { name => 'groups', type => 1, cb_prefix_output => 'prefix_group_output',
-          message_multiple => 'All replicated volume groups are healthy', skipped_code => { -10 => 1 } },
-        { name => 'partnerships', type => 1, cb_prefix_output => 'prefix_partnership_output',
-          message_multiple => 'All partnerships are healthy', skipped_code => { -10 => 1 } },
-        { name => 'relationships', type => 1, cb_prefix_output => 'prefix_relationship_output',
-          message_multiple => 'All remote copy relationships are healthy', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'partitions', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_partition_output',
+          message_multiple => 'All storage partitions are healthy', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'groups', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_group_output',
+          message_multiple => 'All replicated volume groups are healthy', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'partnerships', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_partnership_output',
+          message_multiple => 'All partnerships are healthy', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'relationships', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_relationship_output',
+          message_multiple => 'All remote copy relationships are healthy', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [

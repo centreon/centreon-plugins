@@ -39,6 +39,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_group_output {
@@ -80,9 +81,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'groups', type => 1, cb_prefix_output => 'prefix_group_output',
-          message_multiple => 'All volume groups are healthy', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'groups', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_group_output',
+          message_multiple => 'All volume groups are healthy', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [

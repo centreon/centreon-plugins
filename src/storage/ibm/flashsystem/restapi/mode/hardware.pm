@@ -38,6 +38,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 # The object families queried, with the displayed label. The list is walked
@@ -122,12 +123,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'components', type => 1, cb_prefix_output => 'prefix_component_output',
-          message_multiple => 'All hardware components are online', skipped_code => { -10 => 1 } },
-        { name => 'environment', type => 0, cb_prefix_output => 'prefix_environment_output' },
-        { name => 'subsystems', type => 1, cb_prefix_output => 'prefix_subsystem_output',
-          message_multiple => 'All enclosure subsystems are fully populated', skipped_code => { -10 => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'components', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_component_output',
+          message_multiple => 'All hardware components are online', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'environment', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_environment_output' },
+        { name => 'subsystems', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_subsystem_output',
+          message_multiple => 'All enclosure subsystems are fully populated', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     # Physical measures of the enclosure. No default threshold: the right

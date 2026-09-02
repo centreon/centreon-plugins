@@ -45,6 +45,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters :values/;
 
 # Mapping between the array counters and the published metrics. 'scale'
 # converts to the unit Centreon expects; the array's MB/s become bytes per
@@ -83,9 +84,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'system', type => 0, cb_prefix_output => 'prefix_system_output' },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output',
-          message_multiple => 'All node CPUs are ok', skipped_code => { -10 => 1 } }
+        { name => 'system', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_system_output' },
+        { name => 'nodes', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_node_output',
+          message_multiple => 'All node CPUs are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     # There is no "load average" on Storage Virtualize: the closest equivalent

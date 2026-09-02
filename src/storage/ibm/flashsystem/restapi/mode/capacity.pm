@@ -40,6 +40,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_pool_output {
@@ -81,12 +82,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'physical', type => 0, cb_prefix_output => 'prefix_physical_output' },
-        { name => 'logical', type => 0, cb_prefix_output => 'prefix_logical_output' },
-        { name => 'reduction', type => 1, cb_prefix_output => 'prefix_reduction_output',
-          skipped_code => { -10 => 1 } },
-        { name => 'pools', type => 1, cb_prefix_output => 'prefix_pool_output',
-          message_multiple => 'All pools are online', skipped_code => { -10 => 1 } }
+        { name => 'physical', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_physical_output' },
+        { name => 'logical', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_logical_output' },
+        { name => 'reduction', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_reduction_output',
+          skipped_code => { NO_VALUE() => 1 } },
+        { name => 'pools', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_pool_output',
+          message_multiple => 'All pools are online', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     # This is the counter that carries the alert. No default is shipped: the

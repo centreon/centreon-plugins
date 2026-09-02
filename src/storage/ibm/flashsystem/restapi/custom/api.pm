@@ -50,8 +50,7 @@ sub new {
         exit 3;
     }
     if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
+        $options{output}->option_exit(short_msg => "Class Custom: Need to specify 'options' argument.");
     }
 
     if (!defined($options{noptions})) {
@@ -108,16 +107,13 @@ sub check_options {
     $self->{command_cache_ttl} = defined($self->{option_results}->{command_cache_ttl}) && $self->{option_results}->{command_cache_ttl} =~ /^\d+$/ ? $self->{option_results}->{command_cache_ttl} : 55;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify --hostname option.');
     }
     if (!defined($self->{api_username}) || $self->{api_username} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-username option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify --api-username option.');
     }
     if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => 'Need to specify --api-password option.');
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -432,8 +428,7 @@ sub request {
 
         my $decoded = $self->decode_response(content => $content);
         if (!defined($decoded)) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode API response for command '" . $options{command} . "'");
-            $self->{output}->option_exit();
+            $self->{output}->option_exit(short_msg => "Cannot decode API response for command '" . $options{command} . "'");
         }
 
         my $result = ref($decoded) eq 'ARRAY' ? $decoded : [ $decoded ];
