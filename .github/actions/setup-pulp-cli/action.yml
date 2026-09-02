@@ -3,12 +3,10 @@ description: "Install pulp-cli and authenticate to pulp with a GitHub OIDC token
 inputs:
   pulp_url:
     description: "The pulp server api url"
-    required: false
-    default: "https://pulp-api.int.centreon.com"
+    required: true
   audience:
     description: "OIDC audience, must match the pulp server GITHUB_OIDC.audience"
-    required: false
-    default: "https://pulp.dev.centreon.io"
+    required: true
   domain:
     description: "Pulp Domain to operate in (DOMAIN_ENABLED). Pre-Domains repositories live in \"default\"."
     required: false
