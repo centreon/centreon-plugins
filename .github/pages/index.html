@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Centreon Plugins — schema references</title>
+  <style>
+    :root {
+      /* the generated reference ships Bootstrap 4.3.1, which has no dark theme,
+         so the whole site stays light instead of mixing the two */
+      color-scheme: light;
+      --bg: #ffffff;
+      --fg: #1a1a1a;
+      --muted: #5c5c5c;
+      --border: #e0e0e0;
+      --accent: #0072ce;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 48px 20px;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    main { max-width: 44rem; margin: 0 auto; }
+    h1 { font-size: 1.75rem; margin: 0 0 .5rem; }
+    p.lead { color: var(--muted); margin: 0 0 2.5rem; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li + li { margin-top: 1rem; }
+    a.card {
+      display: block;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+    }
+    a.card:hover, a.card:focus-visible { border-color: var(--accent); }
+    a.card strong { display: block; color: var(--accent); font-size: 1.05rem; }
+    a.card span { color: var(--muted); font-size: .9rem; }
+    footer {
+      max-width: 44rem;
+      margin: 3rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .875rem;
+    }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Centreon Plugins — schema references</h1>
+    <p class="lead">
+      Generated from the JSON Schema files of the
+      <a href="https://github.com/centreon/centreon-plugins">centreon-plugins</a>
+      repository, on every change to the <code>develop</code> branch.
+    </p>
+    <ul>
+      <li>
+        <a class="card" href="rs-collections/snmp/">
+          <strong>Rust SNMP collection</strong>
+          <span>Format of the JSON collection files consumed by the <code>centreon-plugin-rust-snmp</code> binary.</span>
+        </a>
+      </li>
+    </ul>
+  </main>
+  <footer>
+    Machine-readable source:
+    <a href="https://github.com/centreon/centreon-plugins/blob/develop/rust-plugins/schema/rs-collection.schema.json">rs-collection.schema.json</a>
+  </footer>
+</body>
+</html>
