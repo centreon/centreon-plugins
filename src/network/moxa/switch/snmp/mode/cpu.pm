@@ -96,6 +96,46 @@ my $mapping = {
         cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.41.1.53' },
         cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.41.1.54' },
         cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.41.1.55' }
+    },
+    eds508a => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.9.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.9.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.9.1.55' }
+    },
+    edsg508e => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.69.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.69.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.69.1.55' }
+    },
+    edsp510a8poe => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.86.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.86.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.86.1.55' }
+    },
+    icsg7826a => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.99.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.99.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.99.1.55' }
+    },
+    icsg7850a => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.105.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.105.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.105.1.55' }
+    },
+    edsg512e => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.70.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.70.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.70.1.55' }
+    },
+    edsg512e8poe => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.108.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.108.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.108.1.55' }
+    },
+    iksg6524a => {
+        cpu_load5s => { oid => '.1.3.6.1.4.1.8691.7.95.1.53' },
+        cpu_load1m => { oid => '.1.3.6.1.4.1.8691.7.95.1.54' },
+        cpu_load5m => { oid => '.1.3.6.1.4.1.8691.7.95.1.55' }
     }
 };
 
@@ -109,7 +149,15 @@ sub manage_selection {
                 values(%{$mapping->{iks6726a}}),
                 values(%{$mapping->{eds405a}}),
                 values(%{$mapping->{edsp506e}}),
-                values(%{$mapping->{edsp506a}})
+                values(%{$mapping->{edsp506a}}),
+                values(%{$mapping->{eds508a}}),
+                values(%{$mapping->{edsg508e}}),
+                values(%{$mapping->{edsp510a8poe}}),
+                values(%{$mapping->{icsg7826a}}),
+                values(%{$mapping->{icsg7850a}}),
+                values(%{$mapping->{edsg512e}}),
+                values(%{$mapping->{edsg512e8poe}}),
+                values(%{$mapping->{iksg6524a}})
             )
         ],
         nothing_quit => 1
