@@ -7,7 +7,7 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=network::extreme::snmp::plugin
+${CMD}      ${CENTREON_PLUGINS} --plugin=network::extreme::standard::snmp::plugin
 
 
 *** Test Cases ***

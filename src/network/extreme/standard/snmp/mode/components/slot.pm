@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::components::slot;
+package network::extreme::standard::snmp::mode::components::slot;
 
 use strict;
 use warnings;

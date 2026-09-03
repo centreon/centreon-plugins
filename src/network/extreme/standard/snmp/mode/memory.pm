@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::memory;
+package network::extreme::standard::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 

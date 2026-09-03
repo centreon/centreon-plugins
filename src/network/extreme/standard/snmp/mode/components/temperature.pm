@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::components::temperature;
+package network::extreme::standard::snmp::mode::components::temperature;
 
 use strict;
 use warnings;
