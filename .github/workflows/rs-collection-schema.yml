@@ -1,0 +1,149 @@
+name: rs-collection-schema
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/rs-collection-schema.yml'
+      - '.github/pages/index.html'
+      - '.github/scripts/build-schema-doc.sh'
+      - 'rust-plugins/schema/**'
+      - 'rust-plugins/rs-collections/**'
+  push:
+    branches:
+      - develop
+    paths:
+      - '.github/workflows/rs-collection-schema.yml'
+      - '.github/pages/index.html'
+      - '.github/scripts/build-schema-doc.sh'
+      - 'rust-plugins/schema/**'
+      - 'rust-plugins/rs-collections/**'
+
+permissions:
+  contents: read
+
+env:
+  SCHEMA_FILE: rust-plugins/schema/rs-collection.schema.json
+  COLLECTIONS_DIR: rust-plugins/rs-collections
+  CHECK_JSONSCHEMA_VERSION: '0.38.0'
+  JSON_SCHEMA_FOR_HUMANS_VERSION: '1.5.1'
+
+jobs:
+  dependency-scan:
+    # the called workflow declares 'pull-requests: write', which the workflow-wide
+    # 'contents: read' above would otherwise cap to 'none'
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  validate-collections:
+    needs: [dependency-scan]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.13'
+
+      - name: Install check-jsonschema
+        run: pip install "check-jsonschema==$CHECK_JSONSCHEMA_VERSION"
+        shell: bash
+
+      - name: Check the schema against the JSON Schema metaschema
+        run: check-jsonschema --check-metaschema "$SCHEMA_FILE"
+        shell: bash
+
+      - name: Validate every collection against the schema
+        run: |
+          mapfile -t collections < <(find "$COLLECTIONS_DIR" -type f -name '*.json' | sort)
+
+          if [ ${#collections[@]} -eq 0 ]; then
+            echo "::error::no collection found under $COLLECTIONS_DIR"
+            exit 1
+          fi
+
+          echo "Validating ${#collections[@]} collection(s) against $SCHEMA_FILE:"
+          printf '  %s\n' "${collections[@]}"
+
+          check-jsonschema --schemafile "$SCHEMA_FILE" "${collections[@]}"
+        shell: bash
+
+      # Add to your PR the label upload-artifacts to get the rendered reference.
+      # A pull request cannot publish a Pages preview: the github-pages
+      # environment only accepts deployments from the default branch.
+      - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        name: Render the schema reference
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          pip install "json-schema-for-humans==$JSON_SCHEMA_FOR_HUMANS_VERSION"
+
+          .github/scripts/build-schema-doc.sh "$SCHEMA_FILE" site \
+            "Preview of pull request #${PR_NUMBER} - not the published reference"
+
+          {
+            echo "### Schema reference preview"
+            echo
+            echo "Download the \`schema-reference-preview\` artifact below, unzip it and open \`index.html\`."
+            echo
+            echo "The site is self-contained, browsing it needs no network access."
+          } >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
+
+      - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        name: Upload the rendered reference
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: schema-reference-preview
+          path: site
+          retention-days: 7
+
+  publish-schema-doc:
+    needs: [validate-collections]
+    # never on a pull request: only once the merge commit lands on develop
+    # (github.ref is refs/pull/<n>/merge for pull_request events), plus a
+    # manual re-publication from the develop branch
+    if: |
+      contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name) &&
+      github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # a Pages deployment must never be cancelled halfway through, so this job
+    # gets its own group instead of the workflow-wide cancel-in-progress one
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.13'
+
+      - name: Install json-schema-for-humans
+        run: pip install "json-schema-for-humans==$JSON_SCHEMA_FOR_HUMANS_VERSION"
+        shell: bash
+
+      - name: Build the site
+        run: .github/scripts/build-schema-doc.sh "$SCHEMA_FILE" site
+        shell: bash
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
