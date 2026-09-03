@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Monitoring-Prtg-Api",
+    "pkg_summary": "Centreon Plugin to monitor PRTG",
+    "plugin_name": "centreon_monitoring_prtg_api.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/monitoring/prtg/api/"
+    ]
+}
