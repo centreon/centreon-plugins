@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/centreon/centreon-plugins/develop/rust-plugins/schema/rs-collection.schema.json",
+  "title": "Centreon Rust SNMP collection",
+  "description": "Declarative definition of a check executed by the `centreon-plugin-rust-snmp` binary (see `rust-plugins/`).\n\nA collection describes three stages, run in order:\n\n1. `collect` — the SNMP queries to perform against the target;\n2. `compute` — the metrics (and optional aggregations) derived from the collected values, with their thresholds;\n3. `output` — how the resulting status and metrics are rendered as a Monitoring Plugins compatible message.\n\nThe file is passed to the binary with `--json` / `-j`.",
+  "type": "object",
+  "required": ["collect", "compute"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Optional reference to this schema, so editors provide completion and inline documentation.",
+      "examples": ["../../schema/rs-collection.schema.json"]
+    },
+    "collect": { "$ref": "#/$defs/collect" },
+    "compute": { "$ref": "#/$defs/compute" },
+    "output": { "$ref": "#/$defs/output" }
+  },
+  "$defs": {
+    "collect": {
+      "title": "Collection stage",
+      "description": "SNMP queries executed before any metric is computed.",
+      "type": "object",
+      "required": ["snmp"],
+      "additionalProperties": false,
+      "properties": {
+        "snmp": {
+          "type": "array",
+          "description": "Queries to run. All `Get` queries are batched into a single GetBulk request; each `Walk` query is a separate subtree traversal.",
+          "items": { "$ref": "#/$defs/snmpQuery" }
+        }
+      }
+    },
+    "snmpQuery": {
+      "title": "SNMP query",
+      "description": "One SNMP query and the macro namespace under which its values are exposed to the compute stage.",
+      "type": "object",
+      "required": ["name", "oid", "query"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Macro name under which the collected value is exposed to expressions.\n\nWithout `labels`, the value is referenced as `{name}`: a scalar for a `Get` query, a vector (one entry per row) for a `Walk`.\nWith `labels`, one macro per label is created instead, named `{name.<label>}`.",
+          "minLength": 1,
+          "examples": ["hrSystemUptime", "storage", "memory_used"]
+        },
+        "oid": {
+          "type": "string",
+          "description": "OID to query, in numeric dotted form. A leading dot is accepted and ignored.\n\nFor a `Get` query this must be a leaf OID (index included, usually ending in `.0`); for a `Walk` it is the root of the subtree to traverse.",
+          "pattern": "^\\.?[0-9]+(\\.[0-9]+)*$",
+          "examples": ["1.3.6.1.2.1.1.1.0", ".1.3.6.1.2.1.25.1.1.0", "1.3.6.1.2.1.25.2.3.1"]
+        },
+        "query": {
+          "description": "Kind of SNMP operation. Values are case sensitive.",
+          "type": "string",
+          "enum": ["Get", "Walk"],
+          "oneOf": [
+            { "const": "Get", "title": "Retrieve a single leaf OID value." },
+            { "const": "Walk", "title": "Traverse the subtree under `oid` with repeated GetBulk requests." }
+          ]
+        },
+        "labels": {
+          "type": "object",
+          "description": "Splits a `Walk` over a table into one named macro per column. Only meaningful with `\"query\": \"Walk\"`.\n\nEach key is the column part of the OID — the walked OID minus its trailing row index — matched as a suffix, so both `\".2\"` and `\"2\"` select column 2. Each value is the label appended to the query name, giving the macro `{<name>.<label>}`.\n\nExample: walking `1.3.6.1.2.1.25.2.3.1` under the name `storage` with `{\".3\": \"description\", \".6\": \"used\"}` yields the vectors `{storage.description}` and `{storage.used}`, aligned row by row.",
+          "propertyNames": { "pattern": "^\\.?[0-9]+(\\.[0-9]+)*$" },
+          "additionalProperties": {
+            "type": "string",
+            "description": "Label appended to the query name to build the macro name.",
+            "minLength": 1
+          },
+          "examples": [{ ".3": "description", ".5": "size", ".6": "used" }]
+        }
+      }
+    },
+    "compute": {
+      "title": "Compute stage",
+      "description": "Metrics derived from the collected values.",
+      "type": "object",
+      "required": ["metrics"],
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "description": "First-pass metrics, computed from the `collect` macros. May be empty when the check only reports aggregations or a plain status message.\n\nEach metric is exposed to the aggregation pass as `{metrics.<name>}`.",
+          "items": { "$ref": "#/$defs/metric" }
+        },
+        "aggregations": {
+          "type": "array",
+          "description": "Second-pass metrics, computed after `metrics` and able to reference them as `{metrics.<name>}` — typically to sum or average a per-instance metric into a global one.\n\nThe pass is skipped entirely when every instance has been discarded by `--filter-in` / `--filter-out`. Each aggregation is exposed as `{aggregations.<name>}`, usable in `output` templates.",
+          "items": { "$ref": "#/$defs/metric" }
+        }
+      }
+    },
+    "metric": {
+      "title": "Metric",
+      "description": "A value to compute, threshold and report as perfdata.",
+      "type": "object",
+      "required": ["name", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Metric name, reported in the perfdata and used to reference the result as `{metrics.<name>}` or `{aggregations.<name>}`.\n\nFor a metric evaluating to a vector, the perfdata is named `'<instance>#<name>'`, the instance coming from `prefix`.",
+          "minLength": 1,
+          "examples": ["storage.usage.bytes", "system.uptime.seconds"]
+        },
+        "value": {
+          "$ref": "#/$defs/expression",
+          "description": "Expression producing the metric value. A scalar expression yields one perfdata; a vector expression (a `Walk` macro, or an arithmetic combination of vectors) yields one perfdata per row.\n\nSyntax: numbers, `+ - * /`, parentheses, macros in braces (`{storage.used}`), and the functions `Average(...)`, `Min(...)` and `Max(...)`, which reduce a vector macro to a scalar.",
+          "examples": [
+            "{storage.used} * {storage.allocation_units}",
+            "100 * {storage.used} / {storage.size}",
+            "Average({metrics.cpu.utilization.percentage})"
+          ]
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Template naming each instance of a vector metric, interpolated with the collected macros — usually the label column of the walked table.\n\nWhen omitted, instances are numbered from 0. The resulting name is what `--filter-in` and `--filter-out` match against.\n\nThe template is only interpolated for a metric evaluating to a vector; for a scalar metric, and for any aggregation, the string is used as-is.",
+          "examples": ["{storage.description}", "{inodes.path}"]
+        },
+        "uom": {
+          "type": "string",
+          "description": "Unit of measurement appended to the perfdata value, as defined by the Monitoring Plugins guidelines. Empty by default (dimensionless).",
+          "default": "",
+          "examples": ["", "%", "B", "s", "ms", "c"]
+        },
+        "min": {
+          "type": "number",
+          "description": "Static lower bound reported in the perfdata. Ignored when `min_expr` is set."
+        },
+        "min_expr": {
+          "$ref": "#/$defs/expression",
+          "description": "Expression computing the lower bound reported in the perfdata. Takes precedence over `min`."
+        },
+        "max": {
+          "type": "number",
+          "description": "Static upper bound reported in the perfdata. Ignored when `max_expr` is set."
+        },
+        "max_expr": {
+          "$ref": "#/$defs/expression",
+          "description": "Expression computing the upper bound reported in the perfdata. Takes precedence over `max`.",
+          "examples": ["{storage.size} * {storage.allocation_units}"]
+        },
+        "threshold-suffix": {
+          "type": "string",
+          "description": "Exposes the metric on the command line as `--warning-<suffix>` and `--critical-<suffix>`; those options override the `warning` and `critical` fields below. Metrics without a suffix cannot be thresholded from the command line.\n\nThe suffixes of a collection are listed by `--list-counters`.",
+          "minLength": 1,
+          "examples": ["usage", "prct", "seconds"]
+        },
+        "warning": {
+          "$ref": "#/$defs/threshold",
+          "description": "Default WARNING threshold, overridden by `--warning-<threshold-suffix>`."
+        },
+        "critical": {
+          "$ref": "#/$defs/threshold",
+          "description": "Default CRITICAL threshold, overridden by `--critical-<threshold-suffix>`."
+        }
+      }
+    },
+    "expression": {
+      "type": "string",
+      "description": "Arithmetic expression over collected macros: numbers, `+ - * /`, parentheses, `{macro}` references and the `Average()`, `Min()`, `Max()` functions.",
+      "minLength": 1
+    },
+    "threshold": {
+      "type": "string",
+      "description": "Alert range in Monitoring Plugins threshold format (https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT):\n\n- `end` — alert if value > end (equivalent to `0:end`)\n- `start:` — alert if value < start\n- `~:end` — alert if value > end, no lower bound\n- `start:end` — alert if value is outside the range\n- `@start:end` — inverted: alert if value is inside the range",
+      "pattern": "^\\s*@?\\s*(?:(?:~|[-+]?[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)\\s*:\\s*(?:[-+]?[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)?|[-+]?[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)\\s*$",
+      "examples": ["80", "10:20", "~:90", "5:", "@0:10"]
+    },
+    "output": {
+      "title": "Output stage",
+      "description": "Status messages and separators used to render the plugin output. The whole object is optional; every field falls back to its default.\n\nMessages are templates: `{metrics.<name>}` and `{aggregations.<name>}` are replaced by the computed values.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ok": {
+          "type": "string",
+          "description": "Message reported when every metric is within its thresholds.",
+          "default": "OK: Everything is ok ",
+          "examples": ["OK: Uptime: {aggregations.system.uptime.seconds}s"]
+        },
+        "detail_ok": {
+          "type": "boolean",
+          "description": "Append the per-instance detail of the metrics to the OK message.",
+          "default": false
+        },
+        "warning": {
+          "type": "string",
+          "description": "Prefix of the message reported when the worst status is WARNING.",
+          "default": "WARNING: "
+        },
+        "detail_warning": {
+          "type": "boolean",
+          "description": "Append the detail of the metrics in alert to the WARNING message.",
+          "default": true
+        },
+        "critical": {
+          "type": "string",
+          "description": "Prefix of the message reported when the worst status is CRITICAL.",
+          "default": "CRITICAL: "
+        },
+        "detail_critical": {
+          "type": "boolean",
+          "description": "Append the detail of the metrics in alert to the CRITICAL message.",
+          "default": true
+        },
+        "unknown": {
+          "type": "string",
+          "description": "Prefix of the message reported when the worst status is UNKNOWN.",
+          "default": "UNKNOWN: "
+        },
+        "detail_unknown": {
+          "type": "boolean",
+          "description": "Append the detail of the metrics in alert to the UNKNOWN message.",
+          "default": true
+        },
+        "no_data": {
+          "type": "string",
+          "description": "Message reported when no metric is left once `--filter-in` / `--filter-out` have been applied. The status name given by `--no-data-status` is prepended to it.",
+          "default": "No data matching the filters",
+          "examples": ["No process matching the filters"]
+        },
+        "instance_separator": {
+          "type": "string",
+          "description": "String inserted between two instances in the detail message.",
+          "default": " - "
+        },
+        "metric_separator": {
+          "type": "string",
+          "description": "String inserted between two metrics of the same instance in the detail message.",
+          "default": ", "
+        }
+      }
+    }
+  }
+}
