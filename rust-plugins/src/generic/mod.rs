@@ -38,6 +38,13 @@ pub struct Perfdata<'p> {
     pub warning: Option<String>,
     pub critical: Option<String>,
     pub status: Option<Status>,
+    /// Number of decimals used to render `value` in the detail message.
+    pub decimals: Option<usize>,
+    /// Per-metric detail-message template, evaluated instead of the
+    /// default `name is value` fallback.
+    pub output: Option<&'p str>,
+    /// Display rank in perfdata and detail messages.
+    pub order: i32,
 }
 
 /// Logical name of a metric: `instance#metric` when it carries an instance,
@@ -725,6 +732,7 @@ impl Command {
                         }
                         None => ExprResult::Empty,
                     };
+                    let mut instances: Vec<String> = Vec::new();
                     for (i, item) in v.iter().enumerate() {
                         // first, compose the instance name
                         let instance_name = match &prefix_str {
@@ -764,6 +772,7 @@ impl Command {
                         {
                             continue;
                         }
+                        instances.push(instance_name.clone());
                         // and now concatenate to form the full perfdata
                         let name = perfdata_name(Some(&instance_name), &metric.name);
                         let current_status =
@@ -780,10 +789,17 @@ impl Command {
                             warning: w,
                             critical: c,
                             status: Some(current_status),
+                            decimals: metric.decimals,
+                            output: metric.output.as_deref(),
+                            order: metric.order,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
-                        metrics.push(m);
+                        if metric.perfdata {
+                            metrics.push(m);
+                        }
                     }
+                    let key = format!("metrics.{}.instance", metric.name);
+                    my_res.items.insert(key, ExprResult::StrVector(instances));
                 }
                 ExprResult::Number(s) => {
                     // A scalar value has no instance in perfdata (Perl
@@ -815,9 +831,14 @@ impl Command {
                         warning: w,
                         critical: c,
                         status: Some(current_status),
+                        decimals: metric.decimals,
+                        output: metric.output.as_deref(),
+                        order: metric.order,
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
-                    metrics.push(m);
+                    if metric.perfdata {
+                        metrics.push(m);
+                    }
                 }
                 _ => panic!("Aggregation must be applied to a vector"),
             }
@@ -919,9 +940,14 @@ impl Command {
                                 warning: w,
                                 critical: c,
                                 status: Some(current_status),
+                                decimals: metric.decimals,
+                                output: metric.output.as_deref(),
+                                order: metric.order,
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
-                            metrics.push(m);
+                            if metric.perfdata {
+                                metrics.push(m);
+                            }
                         }
                     }
                     ExprResult::Number(s) => {
@@ -940,9 +966,14 @@ impl Command {
                             warning: w,
                             critical: c,
                             status: Some(current_status),
+                            decimals: metric.decimals,
+                            output: metric.output.as_deref(),
+                            order: metric.order,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
-                        metrics.push(m);
+                        if metric.perfdata {
+                            metrics.push(m);
+                        }
                     }
                     _ => panic!("Aggregation must be applied to a vector"),
                 }
@@ -952,6 +983,10 @@ impl Command {
             }
             collect.push(my_res);
         }
+
+        // Perl publishes its groups in the declared order (often global
+        // before per-instance), not always metrics-then-aggregations.
+        metrics.sort_by_key(|m| m.order);
 
         debug!("collect: {:#?}", collect);
         trace!("metrics: {:#?}", metrics);
