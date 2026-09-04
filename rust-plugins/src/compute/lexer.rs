@@ -57,6 +57,7 @@ pub enum LexicalError {
     /// A character that cannot be tokenized was encountered.
     NotPossible,
     /// A brace was not properly matched (currently unused).
+    #[allow(dead_code)]
     UnmatchedBrace,
 }
 
@@ -189,7 +190,7 @@ impl<'input> Iterator for Lexer<'input> {
             }
         }
         // No more characters to process
-        return None;
+        None
     }
 }
 
