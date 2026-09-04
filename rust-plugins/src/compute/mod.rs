@@ -108,7 +108,13 @@ impl<'a> Parser<'a> {
     /// Replaces `{identifier}` with values from SNMP results, handling both
     /// scalar and vector values appropriately.
     pub fn eval_str(&self, expr: &'a str) -> Result<ExprResult, String> {
-        let re = Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").unwrap();
+        // Compiled once for the whole process: eval_str runs for every
+        // template of every metric, recompiling the regex each time is waste.
+        static MACRO_RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
+        let re = MACRO_RE.get_or_init(|| {
+            // The pattern is a compile-time constant: it cannot fail to build.
+            Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").expect("static regex")
+        });
         let mut suffix = expr;
         let mut result: ExprResult = ExprResult::Empty;
         trace!("[eval_str] suffix: {:?} - re: {:?}", &suffix, &re);
