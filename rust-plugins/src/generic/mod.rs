@@ -132,6 +132,10 @@ pub struct Snmp {
     /// Optional label map used by [`snmp_bulk_walk_with_labels`] to split
     /// a subtree walk into named sub-vectors.
     labels: Option<HashMap<String, String>>,
+    /// Optional per-query override of the GetBulk `max-repetitions`
+    /// (defaults to the global value, see the `--maxrepetitions` CLI option).
+    #[serde(rename = "max-repetitions")]
+    max_repetitions: Option<u32>,
 }
 
 /// Groups all SNMP queries that must be executed before computing metrics.
@@ -165,20 +169,36 @@ pub struct CmdResult {
     pub output: String,
 }
 
-fn compute_status(value: &f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
-    if let Some(c) = crit {
-        let crit = Threshold::parse(c)?;
-        if crit.in_alert(*value) {
-            return Ok(Status::Critical);
+/// Parses a Nagios threshold specification once, with an error message that
+/// names the metric and the field. Called once per metric — never per value:
+/// re-parsing the same string for every element of a 10 000-interface table
+/// would be pure waste.
+fn parse_threshold(
+    spec: &Option<String>,
+    metric_name: &str,
+    field: &str,
+) -> Result<Option<Threshold>> {
+    spec.as_deref()
+        .map(Threshold::parse)
+        .transpose()
+        .map_err(|e| error::Error::InvalidJSON {
+            message: format!("Metric \"{}\", field \"{}\": {}", metric_name, field, e),
+        })
+}
+
+/// Evaluates a value against pre-parsed warning/critical thresholds.
+fn compute_status(value: f64, warn: Option<&Threshold>, crit: Option<&Threshold>) -> Status {
+    if let Some(crit) = crit {
+        if crit.in_alert(value) {
+            return Status::Critical;
         }
     }
-    if let Some(w) = warn {
-        let warn = Threshold::parse(w)?;
-        if warn.in_alert(*value) {
-            return Ok(Status::Warning);
+    if let Some(warn) = warn {
+        if warn.in_alert(value) {
+            return Status::Warning;
         }
     }
-    Ok(Status::Ok)
+    Status::Ok
 }
 
 impl Command {
@@ -303,15 +323,22 @@ impl Command {
         for s in self.collect.snmp.iter() {
             match s.query {
                 QueryType::Walk => {
+                    let max_repetitions = s.max_repetitions.unwrap_or(config.max_repetitions);
                     if let Some(lab) = &s.labels {
                         let r = snmp_bulk_walk_with_labels(
-                            config, deadline, &s.oid, &s.name, lab,
+                            config,
+                            deadline,
+                            &s.oid,
+                            &s.name,
+                            lab,
+                            max_repetitions,
                         )?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
                     } else {
-                        let r = snmp_bulk_walk(config, deadline, &s.oid, &s.name)?;
+                        let r =
+                            snmp_bulk_walk(config, deadline, &s.oid, &s.name, max_repetitions)?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
@@ -413,6 +440,9 @@ impl Command {
                 ExprResult::Vector(v) => Some(v[idx]),
                 _ => None,
             };
+            // Thresholds are parsed once per metric, then evaluated per value.
+            let warn_threshold = parse_threshold(&metric.warning, &metric.name, "warning")?;
+            let crit_threshold = parse_threshold(&metric.critical, &metric.name, "critical")?;
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
@@ -455,7 +485,7 @@ impl Command {
                         // and now concatenate to form the full perfdata
                         let name = format!("'{}#{}'", instance_name, metric.name);
                         let current_status =
-                            compute_status(item, &metric.warning, &metric.critical)?;
+                            compute_status(*item, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
@@ -501,7 +531,8 @@ impl Command {
                             continue;
                         }
                     }
-                    let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                    let current_status =
+                        compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                     status = worst(status, current_status);
                     let w = match metric.warning {
                         Some(ref w) => Some(w.as_str()),
@@ -596,6 +627,9 @@ impl Command {
                 } else {
                     None
                 };
+                // Thresholds are parsed once per aggregation, then evaluated per value.
+                let warn_threshold = parse_threshold(&metric.warning, &metric.name, "warning")?;
+                let crit_threshold = parse_threshold(&metric.critical, &metric.name, "critical")?;
                 let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
                     message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e),
                 })?;
@@ -612,8 +646,11 @@ impl Command {
                                     res
                                 }
                             };
-                            let current_status =
-                                compute_status(item, &metric.warning, &metric.critical)?;
+                            let current_status = compute_status(
+                                *item,
+                                warn_threshold.as_ref(),
+                                crit_threshold.as_ref(),
+                            );
                             status = worst(status, current_status);
                             let w = match metric.warning {
                                 Some(ref w) => Some(w.as_str()),
@@ -639,7 +676,8 @@ impl Command {
                     }
                     ExprResult::Number(s) => {
                         let name = &metric.name;
-                        let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                        let current_status =
+                            compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
