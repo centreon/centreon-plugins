@@ -33,6 +33,7 @@ use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::trace;
+use snmp::SnmpConfig;
 use std::fs;
 
 lalrpop_mod!(grammar);
@@ -80,6 +81,14 @@ fn snmp_plugin() -> Result<(), Error> {
     let mut port = 161;
     let mut snmp_version = "2c".to_string();
     let mut snmp_community = "public".to_string();
+    // Mirrors of the Perl plugin options: --timeout (per-request receive
+    // timeout, default 1s) and --snmp-retries (default 2, audit P9
+    // recommendation rather than the Perl default of 5).
+    let mut timeout_secs: u64 = 1;
+    let mut snmp_retries: u32 = 2;
+    // Global budget for the whole collection: exits with a clean UNKNOWN
+    // before centengine (60s default) kills the process.
+    let mut collect_timeout_secs: u64 = 50;
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
     let mut no_data_status = Status::Unknown;
@@ -152,6 +161,9 @@ fn snmp_plugin() -> Result<(), Error> {
                         println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
                         println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
                         println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
+                        println!("  --timeout <SECONDS>              Timeout per SNMP request attempt (default: 1)");
+                        println!("  --snmp-retries <COUNT>           Retries after a timed-out attempt (default: 2)");
+                        println!("  --collect-timeout <SECONDS>      Global time budget for the whole collection (default: 50)");
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
@@ -159,6 +171,18 @@ fn snmp_plugin() -> Result<(), Error> {
                         println!("  --list-counters                  List all available metrics");
                         println!("  -h, --help                       Print this help message");
                         std::process::exit(0);
+                    }
+                    Long("timeout") => {
+                        timeout_secs = parser.value()?.parse::<u64>()?;
+                        trace!("timeout: {}s", timeout_secs);
+                    }
+                    Long("snmp-retries") => {
+                        snmp_retries = parser.value()?.parse::<u32>()?;
+                        trace!("snmp_retries: {}", snmp_retries);
+                    }
+                    Long("collect-timeout") => {
+                        collect_timeout_secs = parser.value()?.parse::<u64>()?;
+                        trace!("collect_timeout: {}s", collect_timeout_secs);
                     }
                     Long("check-format") => {
                         check_format = true;
@@ -255,12 +279,17 @@ fn snmp_plugin() -> Result<(), Error> {
         std::process::exit(0);
     }
 
-    let url = format!("{}:{}", hostname, port);
+    let snmp_config = SnmpConfig {
+        target: format!("{}:{}", hostname, port),
+        version: snmp_version,
+        community: snmp_community,
+        timeout: std::time::Duration::from_secs(timeout_secs),
+        retries: snmp_retries,
+        collect_timeout: std::time::Duration::from_secs(collect_timeout_secs),
+    };
 
     let result = cmd.execute(
-        &url,
-        &snmp_version,
-        &snmp_community,
+        &snmp_config,
         &filter_in,
         &filter_out,
         check_format,

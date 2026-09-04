@@ -59,6 +59,42 @@ pub enum Error {
     ))]
     FailedToConnectToHost { url: String, os: String },
 
+    #[snafu(display(
+        "SNMP agent returned an error: {} (status {}, index {})",
+        name,
+        status,
+        index
+    ))]
+    SnmpAgentError {
+        name: &'static str,
+        status: u32,
+        index: u32,
+    },
+
+    #[snafu(display("SNMP agent is misbehaving: OID {} is not increasing during walk", oid))]
+    OidNotIncreasing { oid: String },
+
+    #[snafu(display(
+        "SNMP walk aborted: the agent returned more than {} values for a single subtree",
+        max
+    ))]
+    WalkTooLarge { max: usize },
+
+    #[snafu(display("SNMP collection exceeded the global timeout of {}s", seconds))]
+    CollectTimeout { seconds: u64 },
+
+    #[snafu(display(
+        "No valid SNMP response from {} after {} attempts (timeout {}s per attempt)",
+        url,
+        attempts,
+        timeout
+    ))]
+    RequestTimeout {
+        url: String,
+        attempts: u32,
+        timeout: u64,
+    },
+
     #[snafu(transparent)]
     Io { source: io::Error },
     #[snafu(transparent)]
