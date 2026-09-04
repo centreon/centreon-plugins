@@ -78,6 +78,9 @@ pub struct SnmpConfig {
     /// `--maxrepetitions`, default 50). Higher values mean fewer network
     /// round-trips when walking large tables.
     pub max_repetitions: u32,
+    /// Directory where rate/delta state files are stored (mirror of the
+    /// Perl `--statefile-dir`).
+    pub statefile_dir: std::path::PathBuf,
 }
 
 impl SnmpConfig {
@@ -262,6 +265,10 @@ pub struct SnmpResult {
     /// Number of in-subtree variable bindings processed by this walk,
     /// checked against [`MAX_WALK_VARBINDS`].
     processed: usize,
+    /// Numeric samples captured for rate computation, in push order:
+    /// `(item key, full OID, value)`. Only filled when the collect entry
+    /// asked for rates.
+    pub samples: Vec<(String, String, f64)>,
 }
 
 /// Retrieves the exact values of multiple OIDs in a single `GetRequest`.
@@ -289,6 +296,7 @@ pub fn snmp_bulk_get<'a>(
     deadline: Instant,
     oid_list: &Vec<&str>,
     names: &Vec<&str>,
+    capture_samples: bool,
 ) -> Result<SnmpResult> {
     let _span = debug_span!("get", oids = oid_list.len()).entered();
     let mut oids_tab: Vec<Vec<u32>> = vec![];
@@ -321,7 +329,8 @@ pub fn snmp_bulk_get<'a>(
     let mut buf = vec![0u8; UDP_BUFFER_SIZE];
     let decoded = send_request(config, deadline, request_id, &message, &socket, &mut buf)?;
 
-    let _completed = retval.build_response_with_names(decoded, "", names, false)?;
+    let _completed =
+        retval.build_response_with_names(decoded, "", names, false, capture_samples)?;
     Ok(retval)
 }
 
@@ -345,6 +354,7 @@ pub fn snmp_bulk_walk<'a>(
     oid: &str,
     snmp_name: &str,
     max_repetitions: u32,
+    capture_samples: bool,
 ) -> Result<SnmpResult> {
     let _span = debug_span!("walk", oid).entered();
     let oid_init = oid_to_vec(oid)?;
@@ -367,7 +377,7 @@ pub fn snmp_bulk_walk<'a>(
         // never be mistaken for the current one.
         request_id = request_id.wrapping_add(1);
 
-        let completed = retval.build_response(decoded, oid, snmp_name, true)?;
+        let completed = retval.build_response(decoded, oid, snmp_name, true, capture_samples)?;
 
         if completed {
             break;
@@ -400,6 +410,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
     snmp_name: &str,
     labels: &'a HashMap<String, String>,
     max_repetitions: u32,
+    capture_samples: bool,
 ) -> Result<SnmpResult> {
     let _span = debug_span!("walk", oid).entered();
     let oid_init = oid_to_vec(oid)?;
@@ -424,7 +435,14 @@ pub fn snmp_bulk_walk_with_labels<'a>(
         // never be mistaken for the current one.
         request_id = request_id.wrapping_add(1);
 
-        let completed = retval.build_response_with_labels(decoded, oid, snmp_name, labels, true)?;
+        let completed = retval.build_response_with_labels(
+            decoded,
+            oid,
+            snmp_name,
+            labels,
+            true,
+            capture_samples,
+        )?;
         if completed {
             break;
         }
@@ -440,6 +458,7 @@ impl SnmpResult {
             items,
             last_oid: Vec::new(),
             processed: 0,
+            samples: Vec::new(),
         }
     }
 
@@ -500,6 +519,7 @@ impl SnmpResult {
         decoded: Message<Pdus>,
         oid: &str,
         walk: bool,
+        capture_samples: bool,
         mut key_for: impl FnMut(usize, &str) -> Vec<String>,
     ) -> Result<bool> {
         let mut completed = false;
@@ -544,8 +564,16 @@ impl SnmpResult {
                 let Some(typ) = value_from_varbind(&var.value)? else {
                     continue;
                 };
+                let numeric = match &typ {
+                    ValueType::Integer(i) => Some(*i as f64),
+                    ValueType::Counter64(c) => Some(*c as f64),
+                    ValueType::String(_) => None,
+                };
 
                 for key in key_for(idx, &name) {
+                    if capture_samples && let Some(value) = numeric {
+                        self.samples.push((key.clone(), name.clone(), value));
+                    }
                     _ = self.store(key, typ.clone())?;
                 }
             }
@@ -563,8 +591,9 @@ impl SnmpResult {
         snmp_name: &str,
         labels: &'a HashMap<String, String>,
         walk: bool,
+        capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, |_idx, name| {
+        self.process_response(decoded, oid, walk, capture_samples, |_idx, name| {
             let prefix = name.rfind('.').map_or(name, |i| &name[..i]);
             labels
                 .iter()
@@ -582,8 +611,9 @@ impl SnmpResult {
         oid: &str,
         names: &Vec<&str>,
         walk: bool,
+        capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, |idx, _name| {
+        self.process_response(decoded, oid, walk, capture_samples, |idx, _name| {
             vec![names[idx].to_string()]
         })
     }
@@ -596,8 +626,9 @@ impl SnmpResult {
         oid: &str,
         snmp_name: &str,
         walk: bool,
+        capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, |_idx, _name| {
+        self.process_response(decoded, oid, walk, capture_samples, |_idx, _name| {
             vec![snmp_name.to_string()]
         })
     }
@@ -913,6 +944,7 @@ mod tests {
             retries: 2,
             collect_timeout: Duration::from_secs(50),
             max_repetitions: 50,
+            statefile_dir: std::env::temp_dir(),
         }
     }
 
@@ -926,6 +958,7 @@ mod tests {
             CPU_TABLE_OID,
             "cpu",
             config.max_repetitions,
+            false,
         )
         .unwrap();
 
@@ -946,6 +979,7 @@ mod tests {
             SHORT_TABLE_OID,
             "short",
             config.max_repetitions,
+            false,
         )
         .unwrap();
 
@@ -961,6 +995,7 @@ mod tests {
             TRANSPORT_ERROR_OID,
             "x",
             config.max_repetitions,
+            false,
         );
         assert!(result.is_err());
     }
@@ -974,6 +1009,7 @@ mod tests {
             config.deadline(),
             &vec!["1.3.6.1.2.1.1.3.0", "1.3.6.1.2.1.1.5.0"],
             &vec!["uptime", "name"],
+            false,
         )
         .unwrap();
 
@@ -992,11 +1028,12 @@ mod tests {
             config.deadline(),
             &vec![TRANSPORT_ERROR_OID],
             &vec!["x"],
+            false,
         );
         assert!(result.is_err());
 
         // propagates invalid-oid errors before any network call
-        let result = snmp_bulk_get(&config, config.deadline(), &vec![""], &vec!["x"]);
+        let result = snmp_bulk_get(&config, config.deadline(), &vec![""], &vec!["x"], false);
         assert!(result.is_err());
     }
 
@@ -1014,6 +1051,7 @@ mod tests {
             "cpu",
             &labels,
             config.max_repetitions,
+            false,
         )
         .unwrap();
         match result.items.get("cpu.core").unwrap() {
@@ -1036,6 +1074,7 @@ mod tests {
             "short",
             &labels,
             config.max_repetitions,
+            false,
         )
         .unwrap();
 
@@ -1052,6 +1091,7 @@ mod tests {
             "x",
             &labels,
             config.max_repetitions,
+            false,
         );
         assert!(result.is_err());
 
@@ -1063,6 +1103,7 @@ mod tests {
             "x",
             &labels,
             config.max_repetitions,
+            false,
         );
         assert!(result.is_err());
     }
@@ -1136,13 +1177,13 @@ mod tests {
         // forever without this guard.
         let msg = response_message(vec![("1.3.6.1.2.5", 1), ("1.3.6.1.2.4", 2)]);
         let mut result = SnmpResult::new(HashMap::new());
-        let err = result.build_response(msg, "1.3.6.1.2", "v", true);
+        let err = result.build_response(msg, "1.3.6.1.2", "v", true, false);
         assert!(err.is_err(), "backwards OID must be an error");
 
         // An OID equal to the previous one must fail too.
         let msg = response_message(vec![("1.3.6.1.2.5", 1), ("1.3.6.1.2.5", 2)]);
         let mut result = SnmpResult::new(HashMap::new());
-        let err = result.build_response(msg, "1.3.6.1.2", "v", true);
+        let err = result.build_response(msg, "1.3.6.1.2", "v", true, false);
         assert!(err.is_err(), "repeated OID must be an error");
     }
 
@@ -1155,7 +1196,7 @@ mod tests {
             .collect();
         let msg = response_message(bindings.iter().map(|(oid, v)| (oid.as_str(), *v)).collect());
         let mut result = SnmpResult::new(HashMap::new());
-        let err = result.build_response(msg, "1.3.6.1.2", "v", true);
+        let err = result.build_response(msg, "1.3.6.1.2", "v", true, false);
         match err {
             Err(crate::generic::error::Error::WalkTooLarge { max }) => {
                 assert_eq!(max, MAX_WALK_VARBINDS)
@@ -1402,7 +1443,7 @@ mod tests {
         let decoded = response_message(vec![("1.3.6.1.2.1.1.3.0", 1), ("1.3.6.1.2.1.1.9.0", 2)]);
 
         let completed = result
-            .build_response_with_names(decoded, "", &vec!["uptime", "count"], false)
+            .build_response_with_names(decoded, "", &vec!["uptime", "count"], false, false)
             .unwrap();
 
         assert!(!completed);
@@ -1429,7 +1470,14 @@ mod tests {
         labels.insert("16".to_string(), "out".to_string());
 
         let completed = result
-            .build_response_with_labels(decoded, "1.3.6.1.2.1.2.2.1", "iface", &labels, false)
+            .build_response_with_labels(
+                decoded,
+                "1.3.6.1.2.1.2.2.1",
+                "iface",
+                &labels,
+                false,
+                false,
+            )
             .unwrap();
 
         assert!(!completed);
@@ -1440,6 +1488,40 @@ mod tests {
         assert_eq!(
             result.items.get("iface.out").unwrap(),
             &ExprResult::Vector(vec![200.0])
+        );
+    }
+
+    #[test]
+    fn capture_records_numeric_samples_with_their_oid() {
+        let decoded = Message {
+            version: 1.into(),
+            community: "public".as_bytes().into(),
+            data: Pdus::Response(Response(Pdu {
+                request_id: 1,
+                error_status: 0,
+                error_index: 0,
+                variable_bindings: vec![
+                    integer_varbind("1.3.6.1.2.10.1", 41),
+                    VarBind {
+                        name: ObjectIdentifier::new_unchecked(
+                            oid_to_vec("1.3.6.1.2.2.1").unwrap().into(),
+                        ),
+                        value: VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::String(
+                            OctetString::from_static(b"eth0"),
+                        ))),
+                    },
+                ],
+            })),
+        };
+        let mut result = SnmpResult::new(HashMap::new());
+        let names = vec!["traffic", "descr"];
+        result
+            .build_response_with_names(decoded, "", &names, false, true)
+            .expect("build_response should succeed");
+        // Only the numeric varbind is sampled, with its full OID.
+        assert_eq!(
+            result.samples,
+            vec![("traffic".to_string(), "1.3.6.1.2.10.1".to_string(), 41.0)]
         );
     }
 }

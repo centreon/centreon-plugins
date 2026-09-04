@@ -84,6 +84,13 @@ pub enum Error {
     CollectTimeout { seconds: u64 },
 
     #[snafu(display(
+        "Could not persist the state file {} ({}): rates would be computed against a stale reference",
+        path,
+        reason
+    ))]
+    StatefileWrite { path: String, reason: String },
+
+    #[snafu(display(
         "No valid SNMP response from {} after {} attempts (timeout {}s per attempt)",
         url,
         attempts,
