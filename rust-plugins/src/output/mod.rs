@@ -125,13 +125,15 @@ impl<'a> OutputFormatter<'a> {
             .metrics
             .iter()
             .map(|m| {
+                // Names are single-quoted, matching Perl: kept out of the
+                // logical name so filters/templates match on the bare name.
                 format!(
-                    "{}={}{};{};{};{};{}",
+                    "'{}'={}{};{};{};{};{}",
                     m.name,
                     float_string(&m.value),
                     m.uom,
-                    m.warning.unwrap_or(""),
-                    m.critical.unwrap_or(""),
+                    m.warning.as_deref().unwrap_or(""),
+                    m.critical.as_deref().unwrap_or(""),
                     match m.min {
                         Some(min) => float_string(&min),
                         None => "".to_string(),

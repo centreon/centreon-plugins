@@ -5,7 +5,7 @@ use std::io;
 #[snafu(visibility(pub))]
 pub enum Error {
     #[snafu(display(
-        "Threshold: This syntax is a shortcut of '0:{}', so {} must be greater than 0.",
+        "Threshold: This syntax is a shortcut of '0:{}', so {} must not be negative.",
         value,
         value
     ))]
