@@ -16,11 +16,11 @@ use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
 use crate::snmp::{SnmpConfig, snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
-use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::convert::Into;
+use tracing::{debug, debug_span, info_span, trace};
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -293,6 +293,7 @@ impl Command {
         config: &SnmpConfig,
         check_format: bool,
     ) -> Result<Vec<SnmpResult>> {
+        let _span = info_span!("collect").entered();
         let mut collect: Vec<SnmpResult> = Vec::new();
         // Single deadline for ALL queries of this collection: the global
         // time budget covers the sum of the walks and gets, not each one.
@@ -381,6 +382,7 @@ impl Command {
         check_response: bool,
         no_data_status: Status,
     ) -> Result<CmdResult> {
+        let _check_span = info_span!("check").entered();
         let mut collect = self.execute_snmp_collect(config, check_format)?;
 
         if check_response {
@@ -406,6 +408,7 @@ impl Command {
         }
 
         for metric in self.compute.metrics.iter() {
+            let _span = debug_span!("metric", name = %metric.name).entered();
             let value = &metric.value;
             let parser = Parser::new(&collect, check_format);
             let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
@@ -580,6 +583,7 @@ impl Command {
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
             let mut my_res = SnmpResult::new(HashMap::new());
             for metric in aggregations {
+                let _span = debug_span!("aggregation", name = %metric.name).entered();
                 let value = &metric.value;
                 let parser = Parser::new(&collect, check_format);
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
@@ -710,6 +714,7 @@ impl Command {
 
         debug!("collect: {:#?}", collect);
         trace!("metrics: {:#?}", metrics);
+        let _span = debug_span!("output").entered();
         let output_formatter = OutputFormatter::new(status, &collect, &metrics, &self.output);
         let output = output_formatter.to_string();
         Ok(CmdResult { status, output })
