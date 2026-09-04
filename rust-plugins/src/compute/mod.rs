@@ -12,7 +12,7 @@ use self::ast::ExprResult;
 use self::lexer::{LexicalError, Tok};
 use crate::snmp::SnmpResult;
 use lalrpop_util::{ParseError, lalrpop_mod};
-use log::{debug, trace};
+use tracing::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 
@@ -108,7 +108,13 @@ impl<'a> Parser<'a> {
     /// Replaces `{identifier}` with values from SNMP results, handling both
     /// scalar and vector values appropriately.
     pub fn eval_str(&self, expr: &'a str) -> Result<ExprResult, String> {
-        let re = Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").unwrap();
+        // Compiled once for the whole process: eval_str runs for every
+        // template of every metric, recompiling the regex each time is waste.
+        static MACRO_RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
+        let re = MACRO_RE.get_or_init(|| {
+            // The pattern is a compile-time constant: it cannot fail to build.
+            Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").expect("static regex")
+        });
         let mut suffix = expr;
         let mut result: ExprResult = ExprResult::Empty;
         trace!("[eval_str] suffix: {:?} - re: {:?}", &suffix, &re);
@@ -153,11 +159,11 @@ impl<'a> Parser<'a> {
 mod test {
     use crate::compute::{Parser, ast::ExprResult, grammar, lexer};
     use crate::snmp::SnmpResult;
-    use log::{debug, info};
+    use tracing::{debug, info};
     use std::collections::HashMap;
 
     fn init() {
-        let _ = env_logger::builder().is_test(true).try_init();
+        let _ = tracing_subscriber::fmt().with_test_writer().try_init();
     }
 
     #[test]
