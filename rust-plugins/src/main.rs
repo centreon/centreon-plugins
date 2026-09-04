@@ -89,6 +89,8 @@ fn snmp_plugin() -> Result<(), Error> {
     // Global budget for the whole collection: exits with a clean UNKNOWN
     // before centengine (60s default) kills the process.
     let mut collect_timeout_secs: u64 = 50;
+    // GetBulk max-repetitions (Perl parity: --maxrepetitions, default 50).
+    let mut max_repetitions: u32 = 50;
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
     let mut no_data_status = Status::Unknown;
@@ -164,6 +166,7 @@ fn snmp_plugin() -> Result<(), Error> {
                         println!("  --timeout <SECONDS>              Timeout per SNMP request attempt (default: 1)");
                         println!("  --snmp-retries <COUNT>           Retries after a timed-out attempt (default: 2)");
                         println!("  --collect-timeout <SECONDS>      Global time budget for the whole collection (default: 50)");
+                        println!("  --maxrepetitions <COUNT>         GetBulk max-repetitions (default: 50)");
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
@@ -183,6 +186,10 @@ fn snmp_plugin() -> Result<(), Error> {
                     Long("collect-timeout") => {
                         collect_timeout_secs = parser.value()?.parse::<u64>()?;
                         trace!("collect_timeout: {}s", collect_timeout_secs);
+                    }
+                    Long("maxrepetitions") => {
+                        max_repetitions = parser.value()?.parse::<u32>()?;
+                        trace!("max_repetitions: {}", max_repetitions);
                     }
                     Long("check-format") => {
                         check_format = true;
@@ -286,6 +293,7 @@ fn snmp_plugin() -> Result<(), Error> {
         timeout: std::time::Duration::from_secs(timeout_secs),
         retries: snmp_retries,
         collect_timeout: std::time::Duration::from_secs(collect_timeout_secs),
+        max_repetitions,
     };
 
     let result = cmd.execute(
