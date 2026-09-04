@@ -36,6 +36,36 @@ jobs:
     with:
       version_file: rust-plugins/Cargo.toml
 
+  lint:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled()
+    runs-on: ubuntu-24.04
+
+    name: "Lint the generic plugins"
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install fmt and clippy components
+        run: rustup component add rustfmt clippy
+        shell: bash
+
+      - name: Check formatting
+        run: |
+          cd rust-plugins
+          cargo fmt --check
+        shell: bash
+
+      - name: Clippy
+        run: |
+          cd rust-plugins
+          cargo clippy --all-targets --release -- -D warnings
+        shell: bash
+
   build:
     needs: [get-environment]
     if: |

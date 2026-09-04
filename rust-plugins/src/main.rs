@@ -49,7 +49,7 @@ fn json_to_command(file_name: &str) -> Result<Command, Error> {
 }
 
 fn main() -> Result<(), Error> {
-    match std::panic::catch_unwind(|| snmp_plugin()) {
+    match std::panic::catch_unwind(snmp_plugin) {
         std::result::Result::Ok(plugin_result) => plugin_result,
         Err(e) => {
             let message = e
@@ -87,7 +87,7 @@ fn snmp_plugin() -> Result<(), Error> {
     let mut check_response = false;
     let mut list_counters = false;
     let mut json_file: Option<String> = None;
-    let mut cmd: Option<Command> = None;
+    let mut cmd: Option<Command>;
     let mut warnings: Vec<(String, String)> = Vec::new();
     let mut criticals: Vec<(String, String)> = Vec::new();
     loop {
@@ -113,7 +113,7 @@ fn snmp_plugin() -> Result<(), Error> {
                         trace!("snmp_version: {}", snmp_version);
                     }
                     Short('c') | Long("snmp-community") => {
-                        /// For backward compatibility 'public' is used when the SNMP community is empty
+                        // For backward compatibility 'public' is used when the SNMP community is empty
                         let s = parser.value()?.into_string()?;
                         if !s.is_empty() {
                             snmp_community = s;
@@ -144,17 +144,33 @@ fn snmp_plugin() -> Result<(), Error> {
                             .unwrap_or_else(|| "plugin".to_string());
                         println!("Usage: {} [OPTIONS]\n", prog);
                         println!("OPTIONS:");
-                        println!("  -H, --hostname <HOST>            Hostname or IP address (default: localhost)");
+                        println!(
+                            "  -H, --hostname <HOST>            Hostname or IP address (default: localhost)"
+                        );
                         println!("  -p, --port <PORT>                SNMP port (default: 161)");
                         println!("  -v, --snmp-version <VERSION>     SNMP version (default: 2c)");
-                        println!("  -c, --snmp-community <COMMUNITY> SNMP community (default: public)");
-                        println!("  -j, --json <FILE>                JSON command definition file (required)");
-                        println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
-                        println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
-                        println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
+                        println!(
+                            "  -c, --snmp-community <COMMUNITY> SNMP community (default: public)"
+                        );
+                        println!(
+                            "  -j, --json <FILE>                JSON command definition file (required)"
+                        );
+                        println!(
+                            "  -i, --filter-in <FILTER>         Include filter (can be used multiple times)"
+                        );
+                        println!(
+                            "  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)"
+                        );
+                        println!(
+                            "  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)"
+                        );
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
-                        println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
-                        println!("  --check-format                   Check JSON file validity and exit");
+                        println!(
+                            "  --critical-<METRIC> <VALUE>      Critical threshold for metric"
+                        );
+                        println!(
+                            "  --check-format                   Check JSON file validity and exit"
+                        );
                         println!("  --check-response                 Display raw SNMP response");
                         println!("  --list-counters                  List all available metrics");
                         println!("  -h, --help                       Print this help message");
@@ -169,37 +185,35 @@ fn snmp_plugin() -> Result<(), Error> {
                     Long("list-counters") => {
                         list_counters = true;
                     }
-                    t => {
-                        match t {
-                            Arg::Long(name) if name.starts_with("warning-") => {
-                                let wmetric = name[8..].to_string();
-                                let value = parser.value()?.into_string()?;
-                                if !value.is_empty() {
-                                    trace!("Warning stored for metric '{}'", wmetric);
-                                    warnings.push((wmetric, value));
-                                }
+                    t => match t {
+                        Arg::Long(name) if name.starts_with("warning-") => {
+                            let wmetric = name[8..].to_string();
+                            let value = parser.value()?.into_string()?;
+                            if !value.is_empty() {
+                                trace!("Warning stored for metric '{}'", wmetric);
+                                warnings.push((wmetric, value));
                             }
-                            Arg::Long(name) if name.starts_with("critical-") => {
-                                let cmetric = name[9..].to_string();
-                                let value = parser.value()?.into_string()?;
-                                if !value.is_empty() {
-                                    trace!("Critical stored for metric '{}'", cmetric);
-                                    criticals.push((cmetric, value));
-                                }
-                            }
-                            Arg::Long(name) => {
-                                return Err(Error::UnknownArgument {
-                                    arg: format!("--{}", name),
-                                });
-                            }
-                            Arg::Short(c) => {
-                                return Err(Error::UnknownArgument {
-                                    arg: format!("-{}", c),
-                                });
-                            }
-                            _ => {}
                         }
-                    }
+                        Arg::Long(name) if name.starts_with("critical-") => {
+                            let cmetric = name[9..].to_string();
+                            let value = parser.value()?.into_string()?;
+                            if !value.is_empty() {
+                                trace!("Critical stored for metric '{}'", cmetric);
+                                criticals.push((cmetric, value));
+                            }
+                        }
+                        Arg::Long(name) => {
+                            return Err(Error::UnknownArgument {
+                                arg: format!("--{}", name),
+                            });
+                        }
+                        Arg::Short(c) => {
+                            return Err(Error::UnknownArgument {
+                                arg: format!("-{}", c),
+                            });
+                        }
+                        _ => {}
+                    },
                 },
                 None => {
                     break;
@@ -257,23 +271,25 @@ fn snmp_plugin() -> Result<(), Error> {
 
     let url = format!("{}:{}", hostname, port);
 
-    let result = cmd.execute(
-        &url,
-        &snmp_version,
-        &snmp_community,
-        &filter_in,
-        &filter_out,
-        check_format,
-        check_response,
-        no_data_status,
-    ).unwrap_or_else(|e| {
-        if check_format {
-            println!("JSON is INVALID: {}", e);
-        } else {
-            println!("UNKNOWN: {}", e);
-        }
-        std::process::exit(3);
-    });
+    let result = cmd
+        .execute(
+            &url,
+            &snmp_version,
+            &snmp_community,
+            &filter_in,
+            &filter_out,
+            check_format,
+            check_response,
+            no_data_status,
+        )
+        .unwrap_or_else(|e| {
+            if check_format {
+                println!("JSON is INVALID: {}", e);
+            } else {
+                println!("UNKNOWN: {}", e);
+            }
+            std::process::exit(3);
+        });
 
     if check_format {
         println!("JSON is valid");
