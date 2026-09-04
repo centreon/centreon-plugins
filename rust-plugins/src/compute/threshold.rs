@@ -105,7 +105,10 @@ impl Threshold {
         } else if in_range > 1 {
             return Err(Error::BadThreshold);
         } else {
-            if value[0] <= 0_f64 {
+            // `n` is a shortcut for `0:n`: only a negative `n` gives an
+            // inverted range. `0` (the range `0:0`) is legal — Perl accepts
+            // it, and some modes rely on it to alert on any non-zero value.
+            if value[0] < 0_f64 {
                 return Err(Error::NegativeSimpleThreshold { value: value[0] });
             }
             return Ok(Threshold {
@@ -114,6 +117,25 @@ impl Threshold {
                 negation: negation > 0,
             });
         }
+    }
+
+    /// Canonical form of the threshold, as published in perfdata.
+    ///
+    /// Perl always republishes a range (`--warning=10` comes back as
+    /// `0:10`), never the input string — so perfdata consumers only ever
+    /// have one syntax to read.
+    pub fn canonical(&self) -> String {
+        let start = if self.start == f64::NEG_INFINITY {
+            "~".to_string()
+        } else {
+            crate::output::float_string(&self.start)
+        };
+        let end = if self.end == f64::INFINITY {
+            String::new()
+        } else {
+            crate::output::float_string(&self.end)
+        };
+        format!("{}{}:{}", if self.negation { "@" } else { "" }, start, end)
     }
 
     /// Returns `true` if the given value triggers an alert.
@@ -133,6 +155,35 @@ mod test {
     use crate::compute::threshold::Threshold;
     use crate::generic::error::Error;
     use std::f64::INFINITY;
+
+    /// `--warning=0` is the range `0:0`: anything non-zero alerts. Perl
+    /// accepts it; rejecting it broke parity (UNKNOWN where Perl says WARNING).
+    #[test]
+    fn test_zero_is_a_valid_simple_threshold() {
+        let threshold = Threshold::parse("0").expect("0 is a valid threshold");
+        assert_eq!(threshold.start, 0_f64);
+        assert_eq!(threshold.end, 0_f64);
+        assert!(threshold.in_alert(2_f64));
+        assert!(!threshold.in_alert(0_f64));
+        assert_eq!(threshold.canonical(), "0:0");
+    }
+
+    /// Perfdata always republish a range, never the raw input.
+    #[test]
+    fn test_canonical_form() {
+        for (expr, expected) in [
+            ("10", "0:10"),
+            ("0", "0:0"),
+            ("10:20", "10:20"),
+            ("10:", "10:"),
+            ("~:10", "~:10"),
+            ("@10:20", "@10:20"),
+        ] {
+            let threshold = Threshold::parse(expr).expect(expr);
+            assert_eq!(threshold.canonical(), expected, "threshold {}", expr);
+        }
+    }
+
     #[test]
     fn test_parse_value() {
         let expr = "1.2";
@@ -318,7 +369,7 @@ mod test {
             Err(err) => {
                 assert_eq!(
                     err.to_string(),
-                    "Threshold: This syntax is a shortcut of '0:-12', so -12 must be greater than 0."
+                    "Threshold: This syntax is a shortcut of '0:-12', so -12 must not be negative."
                 );
             }
         }

@@ -34,9 +34,22 @@ pub struct Perfdata<'p> {
     pub uom: &'p str,
     pub min: Option<f64>,
     pub max: Option<f64>,
-    pub warning: Option<&'p str>,
-    pub critical: Option<&'p str>,
+    /// Thresholds in canonical form (`0:10`), as republished in perfdata.
+    pub warning: Option<String>,
+    pub critical: Option<String>,
     pub status: Option<Status>,
+}
+
+/// Logical name of a metric: `instance#metric` when it carries an instance,
+/// `metric` otherwise.
+///
+/// A scalar value has no instance: pinning an index on it (`0#used`) made no
+/// sense and broke parity with Perl, which publishes `used`.
+fn perfdata_name(instance: Option<&str>, metric: &str) -> String {
+    match instance {
+        Some(instance) => format!("{}#{}", instance, metric),
+        None => metric.to_string(),
+    }
 }
 
 /// Nagios-compatible plugin exit status.
@@ -752,18 +765,12 @@ impl Command {
                             continue;
                         }
                         // and now concatenate to form the full perfdata
-                        let name = format!("'{}#{}'", instance_name, metric.name);
+                        let name = perfdata_name(Some(&instance_name), &metric.name);
                         let current_status =
                             compute_status(*item, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
-                        let w = match metric.warning {
-                            Some(ref w) => Some(w.as_str()),
-                            None => None,
-                        };
-                        let c = match metric.critical {
-                            Some(ref c) => Some(c.as_str()),
-                            None => None,
-                        };
+                        let w = warn_threshold.as_ref().map(|t| t.canonical());
+                        let c = crit_threshold.as_ref().map(|t| t.canonical());
                         let m = Perfdata {
                             name,
                             value: *item,
@@ -779,16 +786,10 @@ impl Command {
                     }
                 }
                 ExprResult::Number(s) => {
-                    let name = match &metric.prefix {
-                        Some(prefix) => {
-                            format!("{}#{}", prefix, metric.name)
-                        }
-                        None => {
-                            let res = format!("{}#{}", idx, metric.name);
-                            idx += 1;
-                            res
-                        }
-                    };
+                    // A scalar value has no instance in perfdata (Perl
+                    // publishes `cpu`, not `0#cpu`, when there's a single
+                    // core) — the filter regexes still need a name to match.
+                    let name = perfdata_name(metric.prefix.as_deref(), &metric.name);
                     if !re_in.is_empty() {
                         // If one filter is matched, we keep the metric
                         if !re_in.iter().any(|re| re.is_match(&name)) {
@@ -803,14 +804,8 @@ impl Command {
                     let current_status =
                         compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                     status = worst(status, current_status);
-                    let w = match metric.warning {
-                        Some(ref w) => Some(w.as_str()),
-                        None => None,
-                    };
-                    let c = match metric.critical {
-                        Some(ref c) => Some(c.as_str()),
-                        None => None,
-                    };
+                    let w = warn_threshold.as_ref().map(|t| t.canonical());
+                    let c = crit_threshold.as_ref().map(|t| t.canonical());
                     let m = Perfdata {
                         name,
                         value: *s,
@@ -906,30 +901,15 @@ impl Command {
                 match &value {
                     ExprResult::Vector(v) => {
                         for item in v {
-                            let name = match &metric.prefix {
-                                Some(prefix) => {
-                                    format!("{:?}#{}", prefix, metric.name)
-                                }
-                                None => {
-                                    let res = format!("{}#{}", idx, metric.name);
-                                    idx += 1;
-                                    res
-                                }
-                            };
+                            let name = perfdata_name(metric.prefix.as_deref(), &metric.name);
                             let current_status = compute_status(
                                 *item,
                                 warn_threshold.as_ref(),
                                 crit_threshold.as_ref(),
                             );
                             status = worst(status, current_status);
-                            let w = match metric.warning {
-                                Some(ref w) => Some(w.as_str()),
-                                None => None,
-                            };
-                            let c = match metric.critical {
-                                Some(ref c) => Some(c.as_str()),
-                                None => None,
-                            };
+                            let w = warn_threshold.as_ref().map(|t| t.canonical());
+                            let c = crit_threshold.as_ref().map(|t| t.canonical());
                             let m = Perfdata {
                                 name,
                                 value: *item,
@@ -945,20 +925,14 @@ impl Command {
                         }
                     }
                     ExprResult::Number(s) => {
-                        let name = &metric.name;
+                        let name = perfdata_name(None, &metric.name);
                         let current_status =
                             compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
-                        let w = match metric.warning {
-                            Some(ref w) => Some(w.as_str()),
-                            None => None,
-                        };
-                        let c = match metric.critical {
-                            Some(ref c) => Some(c.as_str()),
-                            None => None,
-                        };
+                        let w = warn_threshold.as_ref().map(|t| t.canonical());
+                        let c = crit_threshold.as_ref().map(|t| t.canonical());
                         let m = Perfdata {
-                            name: name.to_string(),
+                            name,
                             value: *s,
                             uom: &metric.uom,
                             min,
@@ -1054,6 +1028,14 @@ mod tests {
             err,
             error::Error::InvalidStatus { ref value } if value == "pending"
         ));
+    }
+
+    #[test]
+    fn scalar_metrics_carry_no_instance_index() {
+        // A scalar has no instance: `used`, not `0#used` — the index was
+        // meaningless and broke parity with Perl.
+        assert_eq!(perfdata_name(None, "used"), "used");
+        assert_eq!(perfdata_name(Some("eth0"), "traffic"), "eth0#traffic");
     }
 }
 
