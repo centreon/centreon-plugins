@@ -83,6 +83,15 @@ pub enum Error {
     #[snafu(display("SNMP collection exceeded the global timeout of {}s", seconds))]
     CollectTimeout { seconds: u64 },
 
+    #[snafu(display("SNMPv3 (USM): {}", reason))]
+    UsmFailure { reason: String },
+
+    #[snafu(display("SNMPv3: unsupported {} (supported: {})", what, supported))]
+    UsmUnsupported {
+        what: String,
+        supported: &'static str,
+    },
+
     #[snafu(display(
         "Could not persist the state file {} ({}): rates would be computed against a stale reference",
         path,
