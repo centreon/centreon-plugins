@@ -31,6 +31,7 @@ use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use snmp::SnmpConfig;
+use snmp::usm::{AuthProtocol, PrivProtocol, UsmUser};
 use std::fs;
 use tracing::trace;
 
@@ -45,6 +46,18 @@ fn json_to_command(file_name: &str) -> Result<Command, Error> {
     let configuration = fs::read_to_string(file_name)?;
     let command = serde_json::from_str(&configuration)?;
     Ok(command)
+}
+
+/// Decodes a hex string (optionally `0x`-prefixed) into bytes.
+fn decode_hex(input: &str) -> Option<Vec<u8>> {
+    let cleaned = input.trim_start_matches("0x").trim_start_matches("0X");
+    if cleaned.is_empty() || !cleaned.len().is_multiple_of(2) {
+        return None;
+    }
+    (0..cleaned.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&cleaned[i..i + 2], 16).ok())
+        .collect()
 }
 
 fn main() {
@@ -143,6 +156,15 @@ fn snmp_plugin() -> Result<i32, Error> {
     let mut max_repetitions: u32 = 50;
     // Directory for rate/delta state files (Perl parity: --statefile-dir).
     let mut statefile_dir = "/var/lib/centreon/centplugins".to_string();
+    // SNMPv3 credentials (Perl parity: --snmp-username, --authprotocol,
+    // --authpassphrase, --privprotocol, --privpassphrase).
+    let mut snmp_username: Option<String> = None;
+    let mut auth_protocol: Option<String> = None;
+    let mut auth_passphrase: Option<String> = None;
+    let mut priv_protocol: Option<String> = None;
+    let mut priv_passphrase: Option<String> = None;
+    let mut context_name = String::new();
+    let mut context_engine_id: Option<String> = None;
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
     let mut no_data_status = Status::Unknown;
@@ -204,27 +226,57 @@ fn snmp_plugin() -> Result<i32, Error> {
                     .unwrap_or_else(|| "plugin".to_string());
                 println!("Usage: {} [OPTIONS]\n", prog);
                 println!("OPTIONS:");
-                println!("  -H, --hostname <HOST>            Hostname or IP address (default: localhost)");
+                println!(
+                    "  -H, --hostname <HOST>            Hostname or IP address (default: localhost)"
+                );
                 println!("  -p, --port <PORT>                SNMP port (default: 161)");
                 println!("  -v, --snmp-version <VERSION>     SNMP version (default: 2c)");
                 println!("  -c, --snmp-community <COMMUNITY> SNMP community (default: public)");
-                println!("  -j, --json <FILE>                JSON command definition file (required)");
-                println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
-                println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
-                println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
-                println!("  --timeout <SECONDS>              Timeout per SNMP request attempt (default: 1)");
-                println!("  --snmp-retries <COUNT>           Retries after a timed-out attempt (default: 2)");
-                println!("  --collect-timeout <SECONDS>      Global time budget for the whole collection (default: 50)");
-                println!("  --maxrepetitions <COUNT>         GetBulk max-repetitions (default: 50)");
+                println!(
+                    "  -j, --json <FILE>                JSON command definition file (required)"
+                );
+                println!(
+                    "  -i, --filter-in <FILTER>         Include filter (can be used multiple times)"
+                );
+                println!(
+                    "  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)"
+                );
+                println!(
+                    "  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)"
+                );
+                println!(
+                    "  --timeout <SECONDS>              Timeout per SNMP request attempt (default: 1)"
+                );
+                println!(
+                    "  --snmp-retries <COUNT>           Retries after a timed-out attempt (default: 2)"
+                );
+                println!(
+                    "  --collect-timeout <SECONDS>      Global time budget for the whole collection (default: 50)"
+                );
+                println!(
+                    "  --maxrepetitions <COUNT>         GetBulk max-repetitions (default: 50)"
+                );
                 println!(
                     "  --statefile-dir <DIR>            Directory for rate/delta state files (default: /var/lib/centreon/centplugins)"
                 );
+                println!("\nSNMPv3 (used when --snmp-version=3):");
+                println!("  --snmp-username <USER>           USM user name");
+                println!(
+                    "  --authprotocol <PROTO>           MD5, SHA (SHA1), SHA224, SHA256, SHA384, SHA512"
+                );
+                println!("  --authpassphrase <PASS>          Authentication passphrase");
+                println!("  --privprotocol <PROTO>           DES, AES (AES128)");
+                println!("  --privpassphrase <PASS>          Privacy passphrase");
+                println!("  --contextname <NAME>             SNMP context name");
+                println!("  --contextengineid <HEX>          SNMP context engine ID (hex)");
                 println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                 println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                 println!("  --check-format                   Check JSON file validity and exit");
                 println!("  --check-response                 Display raw SNMP response");
                 println!("  --list-counters                  List all available metrics");
-                println!("  --trace-file <FILE>              Record a Chrome trace (Perfetto) of the run");
+                println!(
+                    "  --trace-file <FILE>              Record a Chrome trace (Perfetto) of the run"
+                );
                 println!("  -h, --help                       Print this help message");
                 return Ok(0);
             }
@@ -247,6 +299,27 @@ fn snmp_plugin() -> Result<i32, Error> {
             Long("statefile-dir") => {
                 statefile_dir = parser.value()?.into_string()?;
                 trace!("statefile_dir: {}", statefile_dir);
+            }
+            Long("snmp-username") => {
+                snmp_username = Some(parser.value()?.into_string()?);
+            }
+            Long("authprotocol") => {
+                auth_protocol = Some(parser.value()?.into_string()?);
+            }
+            Long("authpassphrase") => {
+                auth_passphrase = Some(parser.value()?.into_string()?);
+            }
+            Long("privprotocol") => {
+                priv_protocol = Some(parser.value()?.into_string()?);
+            }
+            Long("privpassphrase") => {
+                priv_passphrase = Some(parser.value()?.into_string()?);
+            }
+            Long("contextname") => {
+                context_name = parser.value()?.into_string()?;
+            }
+            Long("contextengineid") => {
+                context_engine_id = Some(parser.value()?.into_string()?);
             }
             Long("trace-file") => {
                 // Already consumed by the pre-scan in init_tracing;
@@ -337,6 +410,58 @@ fn snmp_plugin() -> Result<i32, Error> {
         return Ok(0);
     }
 
+    // SNMPv3 is selected by the version flag; credentials without v3 (or the
+    // reverse) is a configuration mistake worth reporting rather than
+    // silently downgrading the security level.
+    let is_v3 = snmp_version.trim() == "3" || snmp_version.trim().eq_ignore_ascii_case("v3");
+    if !is_v3 && snmp_username.is_some() {
+        println!(
+            "UNKNOWN: SNMPv3 credentials given but --snmp-version is '{}' (use 3)",
+            snmp_version
+        );
+        return Ok(3);
+    }
+    let v3 = if is_v3 {
+        let Some(name) = snmp_username.clone() else {
+            println!("UNKNOWN: --snmp-version=3 requires --snmp-username");
+            return Ok(3);
+        };
+        let auth = match (&auth_protocol, &auth_passphrase) {
+            (Some(proto), Some(pass)) => Some((AuthProtocol::parse(proto)?, pass.clone())),
+            (None, None) => None,
+            _ => {
+                println!("UNKNOWN: --authprotocol and --authpassphrase must be given together");
+                return Ok(3);
+            }
+        };
+        let priv_ = match (&priv_protocol, &priv_passphrase) {
+            (Some(proto), Some(pass)) => Some((PrivProtocol::parse(proto)?, pass.clone())),
+            (None, None) => None,
+            _ => {
+                println!("UNKNOWN: --privprotocol and --privpassphrase must be given together");
+                return Ok(3);
+            }
+        };
+        let context_engine_id = match &context_engine_id {
+            Some(hex) => Some(decode_hex(hex).ok_or_else(|| Error::InvalidJSON {
+                message: format!("--contextengineid must be hexadecimal, got '{}'", hex),
+            })?),
+            None => None,
+        };
+        let user = UsmUser {
+            name,
+            auth,
+            priv_,
+            context_name: context_name.clone(),
+            context_engine_id,
+        };
+        // Fails fast on privacy-without-authentication.
+        user.level()?;
+        Some(user)
+    } else {
+        None
+    };
+
     let snmp_config = SnmpConfig {
         target: format!("{}:{}", hostname, port),
         version: snmp_version,
@@ -346,23 +471,26 @@ fn snmp_plugin() -> Result<i32, Error> {
         collect_timeout: std::time::Duration::from_secs(collect_timeout_secs),
         max_repetitions,
         statefile_dir: std::path::PathBuf::from(statefile_dir),
+        v3,
     };
 
-    let result = cmd.execute(
-        &snmp_config,
-        &filter_in,
-        &filter_out,
-        check_format,
-        check_response,
-        no_data_status,
-    ).unwrap_or_else(|e| {
-        if check_format {
-            println!("JSON is INVALID: {}", e);
-        } else {
-            println!("UNKNOWN: {}", e);
-        }
-        std::process::exit(3);
-    });
+    let result = cmd
+        .execute(
+            &snmp_config,
+            &filter_in,
+            &filter_out,
+            check_format,
+            check_response,
+            no_data_status,
+        )
+        .unwrap_or_else(|e| {
+            if check_format {
+                println!("JSON is INVALID: {}", e);
+            } else {
+                println!("UNKNOWN: {}", e);
+            }
+            std::process::exit(3);
+        });
 
     if check_format {
         println!("JSON is valid");

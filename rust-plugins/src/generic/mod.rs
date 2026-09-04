@@ -1073,6 +1073,7 @@ mod rate_tests {
             collect_timeout: std::time::Duration::from_secs(5),
             max_repetitions: 10,
             statefile_dir: dir,
+            v3: None,
         };
         let entry: Snmp = serde_json::from_str(
             r#"{"name":"if","oid":"1.3.6.1.2.1.2.2.1","query":"Walk","rate":true}"#,

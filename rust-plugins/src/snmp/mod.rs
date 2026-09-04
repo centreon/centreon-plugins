@@ -9,6 +9,8 @@
 //! OCTET STRING, OBJECT IDENTIFIER, IpAddress, Counter32/64, Gauge32/Unsigned32,
 //! TimeTicks, Opaque) are decoded; see `value_from_varbind`.
 
+pub mod usm;
+
 extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
@@ -25,6 +27,7 @@ use crate::generic::error::Error::InvalidSnmpValue;
 use crate::generic::error::Error::OidNotIncreasing;
 use crate::generic::error::Error::RequestTimeout;
 use crate::generic::error::Error::SnmpAgentError;
+use crate::generic::error::Error::UsmFailure;
 use crate::generic::error::Error::WalkTooLarge;
 use crate::generic::error::Result;
 use rasn::types::ObjectIdentifier;
@@ -81,6 +84,9 @@ pub struct SnmpConfig {
     /// Directory where rate/delta state files are stored (mirror of the
     /// Perl `--statefile-dir`).
     pub statefile_dir: std::path::PathBuf,
+    /// SNMPv3 credentials. When set, every request uses the User-based
+    /// Security Model instead of the v2c community.
+    pub v3: Option<usm::UsmUser>,
 }
 
 impl SnmpConfig {
@@ -274,6 +280,162 @@ pub struct SnmpResult {
     pub indices: HashMap<String, Vec<u32>>,
 }
 
+/// Live SNMPv3 session: the authoritative engine discovered on this target
+/// and the keys localized to it. Discovery happens once per collection.
+pub struct V3Session {
+    user: usm::UsmUser,
+    keys: usm::LocalizedKeys,
+    engine: usm::EngineParams,
+}
+
+/// Wraps a PDU into a scoped PDU addressed to the authoritative engine,
+/// in the user's SNMP context.
+fn scoped_pdu(
+    user: Option<&usm::UsmUser>,
+    engine_id: &[u8],
+    data: Pdus,
+) -> rasn_snmp::v3::ScopedPdu {
+    let context_engine = user
+        .and_then(|u| u.context_engine_id.clone())
+        .unwrap_or_else(|| engine_id.to_vec());
+    let context_name = user.map(|u| u.context_name.clone()).unwrap_or_default();
+    rasn_snmp::v3::ScopedPdu {
+        engine_id: rasn::types::OctetString::from(context_engine),
+        name: rasn::types::OctetString::from(context_name.into_bytes()),
+        data,
+    }
+}
+
+/// Sends an already-encoded datagram and returns the raw response bytes,
+/// honoring per-attempt timeouts, retries and the collection deadline.
+///
+/// Response *validation* is left to the caller: v2c checks community and
+/// request-id ([`check_response`]), v3 verifies the USM digest.
+fn exchange(
+    config: &SnmpConfig,
+    deadline: Instant,
+    encoded: &[u8],
+    socket: &UdpSocket,
+    buf: &mut [u8],
+) -> Result<Vec<u8>> {
+    let attempts = config.retries + 1;
+    for _ in 1..=attempts {
+        let now = Instant::now();
+        if now >= deadline {
+            return Err(CollectTimeout {
+                seconds: config.collect_timeout.as_secs(),
+            });
+        }
+        let attempt_deadline = std::cmp::min(now + config.timeout, deadline);
+        socket.send(encoded)?;
+        let remaining = attempt_deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            continue;
+        }
+        socket.set_read_timeout(Some(remaining))?;
+        match socket.recv(buf) {
+            Ok(0) => return Err(EmptyResponse {}),
+            Ok(n) => return Ok(buf[..n].to_vec()),
+            Err(_) => continue,
+        }
+    }
+    Err(RequestTimeout {
+        url: config.target.clone(),
+        attempts,
+        timeout: config.timeout.as_secs(),
+    })
+}
+
+impl V3Session {
+    /// Discovers the authoritative engine (RFC 3414 §4) and localizes the
+    /// user keys to it.
+    ///
+    /// Step 1 is an unauthenticated probe with an empty engine ID: the agent
+    /// answers with a Report carrying its `snmpEngineID`. Step 2, only needed
+    /// when authentication is on and the agent did not already disclose its
+    /// counters, is an authenticated probe whose `notInTimeWindows` report
+    /// carries the real `engineBoots`/`engineTime`.
+    fn discover(
+        config: &SnmpConfig,
+        user: &usm::UsmUser,
+        deadline: Instant,
+        socket: &UdpSocket,
+        buf: &mut [u8],
+    ) -> Result<V3Session> {
+        let _span = debug_span!("v3_discovery").entered();
+        let probe_pdu = Pdus::GetRequest(rasn_snmp::v2::GetRequest(rasn_snmp::v2::Pdu {
+            request_id: 1,
+            error_status: 0,
+            error_index: 0,
+            variable_bindings: vec![],
+        }));
+        let encoded = usm::discovery_message(1, scoped_pdu(None, b"", probe_pdu.clone()))?;
+        let raw = exchange(config, deadline, &encoded, socket, buf)?;
+        let message: rasn_snmp::v3::Message =
+            rasn::ber::decode(&raw).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })?;
+        let mut engine = usm::engine_of(&message)?;
+        if engine.id.is_empty() {
+            return Err(UsmFailure {
+                reason: "the agent did not disclose its engine ID during discovery".to_string(),
+            });
+        }
+        trace!("discovered engine id: {} bytes", engine.id.len());
+        let keys = user.localize(&engine.id)?;
+
+        // Time synchronization: an authenticated probe against boots/time = 0
+        // is answered with a report carrying the authoritative counters.
+        if keys.auth.is_some() && engine.boots == 0 && engine.time == 0 {
+            let encoded = usm::build_message(
+                2,
+                user,
+                &keys,
+                &engine,
+                scoped_pdu(Some(user), &engine.id, probe_pdu),
+            )?;
+            if let Ok(raw) = exchange(config, deadline, &encoded, socket, buf)
+                && let Ok(message) = rasn::ber::decode::<rasn_snmp::v3::Message>(&raw)
+                && let Ok(reported) = usm::engine_of(&message)
+            {
+                engine.boots = reported.boots;
+                engine.time = reported.time;
+            }
+            trace!("time sync: boots={} time={}", engine.boots, engine.time);
+        }
+
+        Ok(V3Session {
+            user: user.clone(),
+            keys,
+            engine,
+        })
+    }
+
+    /// Sends an authenticated (and possibly encrypted) GetBulk, returning the
+    /// PDU of the verified response.
+    fn request(
+        &self,
+        config: &SnmpConfig,
+        deadline: Instant,
+        request_id: i32,
+        pdu: Pdus,
+        socket: &UdpSocket,
+        buf: &mut [u8],
+    ) -> Result<Pdus> {
+        let _span = trace_span!("request", id = request_id).entered();
+        let encoded = usm::build_message(
+            request_id,
+            &self.user,
+            &self.keys,
+            &self.engine,
+            scoped_pdu(Some(&self.user), &self.engine.id, pdu),
+        )?;
+        let raw = exchange(config, deadline, &encoded, socket, buf)?;
+        let message: rasn_snmp::v3::Message =
+            rasn::ber::decode(&raw).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })?;
+        let scoped = usm::open_message(&raw, &message, &self.keys)?;
+        Ok(scoped.data)
+    }
+}
+
 /// Retrieves the exact values of multiple OIDs in a single `GetRequest`.
 ///
 /// A plain `GetRequest` — not `GetBulkRequest` — is required here: GetBulk
@@ -318,22 +480,30 @@ pub fn snmp_bulk_get<'a>(
         })
         .collect::<Vec<VarBind>>();
 
-    let message = Message {
-        version: 1.into(),
-        community: config.community.as_bytes().into(),
-        data: Pdus::GetRequest(GetRequest(Pdu {
-            request_id,
-            error_status: 0,
-            error_index: 0,
-            variable_bindings,
-        })),
-    };
+    let get_pdu = Pdus::GetRequest(GetRequest(Pdu {
+        request_id,
+        error_status: 0,
+        error_index: 0,
+        variable_bindings,
+    }));
     let socket = open_socket(config)?;
     let mut buf = vec![0u8; UDP_BUFFER_SIZE];
-    let decoded = send_request(config, deadline, request_id, &message, &socket, &mut buf)?;
+    let pdus = match &config.v3 {
+        Some(user) => {
+            let session = V3Session::discover(config, user, deadline, &socket, &mut buf)?;
+            session.request(config, deadline, request_id, get_pdu, &socket, &mut buf)?
+        }
+        None => {
+            let message = Message {
+                version: 1.into(),
+                community: config.community.as_bytes().into(),
+                data: get_pdu,
+            };
+            send_request(config, deadline, request_id, &message, &socket, &mut buf)?.data
+        }
+    };
 
-    let _completed =
-        retval.build_response_with_names(decoded, "", names, false, capture_samples)?;
+    let _completed = retval.build_response_with_names(&pdus, "", names, false, capture_samples)?;
     Ok(retval)
 }
 
@@ -368,19 +538,40 @@ pub fn snmp_bulk_walk<'a>(
     // walk, instead of a fresh bind+connect+alloc per round trip.
     let socket = open_socket(config)?;
     let mut buf = vec![0u8; UDP_BUFFER_SIZE];
+    // v3 discovery is done once for the whole walk, not per iteration.
+    let session = match &config.v3 {
+        Some(user) => Some(V3Session::discover(
+            config, user, deadline, &socket, &mut buf,
+        )?),
+        None => None,
+    };
     loop {
         let variable_bindings = vec![VarBind {
             name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
             value: VarBindValue::Unspecified,
         }];
 
-        let message = build_bulk_message(config, request_id, variable_bindings, 0, max_repetitions);
-        let decoded = send_request(config, deadline, request_id, &message, &socket, &mut buf)?;
+        let pdus = match &session {
+            Some(session) => {
+                let pdu = Pdus::GetBulkRequest(GetBulkRequest(BulkPdu {
+                    request_id,
+                    variable_bindings,
+                    non_repeaters: 0,
+                    max_repetitions,
+                }));
+                session.request(config, deadline, request_id, pdu, &socket, &mut buf)?
+            }
+            None => {
+                let message =
+                    build_bulk_message(config, request_id, variable_bindings, 0, max_repetitions);
+                send_request(config, deadline, request_id, &message, &socket, &mut buf)?.data
+            }
+        };
         // One id per request: a late response to a previous iteration can
         // never be mistaken for the current one.
         request_id = request_id.wrapping_add(1);
 
-        let completed = retval.build_response(decoded, oid, snmp_name, true, capture_samples)?;
+        let completed = retval.build_response(&pdus, oid, snmp_name, true, capture_samples)?;
 
         if completed {
             break;
@@ -424,6 +615,13 @@ pub fn snmp_bulk_walk_with_labels<'a>(
     // walk, instead of a fresh bind+connect+alloc per round trip.
     let socket = open_socket(config)?;
     let mut buf = vec![0u8; UDP_BUFFER_SIZE];
+    // v3 discovery is done once for the whole walk, not per iteration.
+    let session = match &config.v3 {
+        Some(user) => Some(V3Session::discover(
+            config, user, deadline, &socket, &mut buf,
+        )?),
+        None => None,
+    };
 
     loop {
         let variable_bindings = vec![VarBind {
@@ -431,15 +629,28 @@ pub fn snmp_bulk_walk_with_labels<'a>(
             value: VarBindValue::Unspecified,
         }];
 
-        let message = build_bulk_message(config, request_id, variable_bindings, 0, max_repetitions);
-        // Send the message through an UDP socket
-        let decoded = send_request(config, deadline, request_id, &message, &socket, &mut buf)?;
+        let pdus = match &session {
+            Some(session) => {
+                let pdu = Pdus::GetBulkRequest(GetBulkRequest(BulkPdu {
+                    request_id,
+                    variable_bindings,
+                    non_repeaters: 0,
+                    max_repetitions,
+                }));
+                session.request(config, deadline, request_id, pdu, &socket, &mut buf)?
+            }
+            None => {
+                let message =
+                    build_bulk_message(config, request_id, variable_bindings, 0, max_repetitions);
+                send_request(config, deadline, request_id, &message, &socket, &mut buf)?.data
+            }
+        };
         // One id per request: a late response to a previous iteration can
         // never be mistaken for the current one.
         request_id = request_id.wrapping_add(1);
 
         let completed = retval.build_response_with_labels(
-            decoded,
+            &pdus,
             oid,
             snmp_name,
             labels,
@@ -520,7 +731,7 @@ impl SnmpResult {
     /// `true` if the walk should terminate (for walk operations)
     fn process_response(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         walk: bool,
         capture_samples: bool,
@@ -529,7 +740,7 @@ impl SnmpResult {
     ) -> Result<bool> {
         let mut completed = false;
 
-        if let Pdus::Response(resp) = &decoded.data {
+        if let Pdus::Response(resp) = decoded {
             for (idx, var) in resp.0.variable_bindings.iter().enumerate() {
                 let name = var.name.to_string();
 
@@ -598,7 +809,7 @@ impl SnmpResult {
     /// `{snmp_name}.{label}`.
     fn build_response_with_labels<'a>(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         snmp_name: &str,
         labels: &'a HashMap<String, String>,
@@ -623,7 +834,7 @@ impl SnmpResult {
     /// its corresponding entry in `names`.
     fn build_response_with_names<'a>(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         names: &Vec<&str>,
         walk: bool,
@@ -638,7 +849,7 @@ impl SnmpResult {
     /// logical name (used for plain walks).
     fn build_response<'a>(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         snmp_name: &str,
         walk: bool,
@@ -961,6 +1172,7 @@ mod tests {
             collect_timeout: Duration::from_secs(50),
             max_repetitions: 50,
             statefile_dir: std::env::temp_dir(),
+            v3: None,
         }
     }
 
@@ -1193,13 +1405,13 @@ mod tests {
         // forever without this guard.
         let msg = response_message(vec![("1.3.6.1.2.5", 1), ("1.3.6.1.2.4", 2)]);
         let mut result = SnmpResult::new(HashMap::new());
-        let err = result.build_response(msg, "1.3.6.1.2", "v", true, false);
+        let err = result.build_response(&msg.data, "1.3.6.1.2", "v", true, false);
         assert!(err.is_err(), "backwards OID must be an error");
 
         // An OID equal to the previous one must fail too.
         let msg = response_message(vec![("1.3.6.1.2.5", 1), ("1.3.6.1.2.5", 2)]);
         let mut result = SnmpResult::new(HashMap::new());
-        let err = result.build_response(msg, "1.3.6.1.2", "v", true, false);
+        let err = result.build_response(&msg.data, "1.3.6.1.2", "v", true, false);
         assert!(err.is_err(), "repeated OID must be an error");
     }
 
@@ -1212,7 +1424,7 @@ mod tests {
             .collect();
         let msg = response_message(bindings.iter().map(|(oid, v)| (oid.as_str(), *v)).collect());
         let mut result = SnmpResult::new(HashMap::new());
-        let err = result.build_response(msg, "1.3.6.1.2", "v", true, false);
+        let err = result.build_response(&msg.data, "1.3.6.1.2", "v", true, false);
         match err {
             Err(crate::generic::error::Error::WalkTooLarge { max }) => {
                 assert_eq!(max, MAX_WALK_VARBINDS)
@@ -1459,7 +1671,7 @@ mod tests {
         let decoded = response_message(vec![("1.3.6.1.2.1.1.3.0", 1), ("1.3.6.1.2.1.1.9.0", 2)]);
 
         let completed = result
-            .build_response_with_names(decoded, "", &vec!["uptime", "count"], false, false)
+            .build_response_with_names(&decoded.data, "", &vec!["uptime", "count"], false, false)
             .unwrap();
 
         assert!(!completed);
@@ -1487,7 +1699,7 @@ mod tests {
 
         let completed = result
             .build_response_with_labels(
-                decoded,
+                &decoded.data,
                 "1.3.6.1.2.1.2.2.1",
                 "iface",
                 &labels,
@@ -1532,7 +1744,7 @@ mod tests {
         let mut result = SnmpResult::new(HashMap::new());
         let names = vec!["traffic", "descr"];
         result
-            .build_response_with_names(decoded, "", &names, false, true)
+            .build_response_with_names(&decoded.data, "", &names, false, true)
             .expect("build_response should succeed");
         // Only the numeric varbind is sampled, with its full OID.
         assert_eq!(
