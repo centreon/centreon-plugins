@@ -16,6 +16,7 @@ use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpConfig};
+use crate::state::{compute_rate, Snapshot, StateStore};
 use tracing::{debug, debug_span, info_span, trace};
 use regex::Regex;
 use serde::Deserialize;
@@ -112,6 +113,65 @@ fn worst(a: Status, b: Status) -> Status {
     if a.severity() > b.severity() { a } else { b }
 }
 
+/// Current Unix time in seconds (never fails after 1970).
+fn unix_now() -> f64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs_f64())
+        .unwrap_or(0.0)
+}
+
+/// Replaces the collected counter values of a rate entry with per-second
+/// rates, using the snapshot persisted by the previous run.
+///
+/// The state is keyed by full OID: the identity of an instance across runs
+/// is its OID, never its position in the table. String columns (labels such
+/// as `ifDescr`) are left untouched — only numeric samples are transformed,
+/// so vectors stay aligned.
+///
+/// # Returns
+/// `Ok(true)` when there was no previous snapshot (first run): the caller
+/// reports `OK: Buffer creation` and exits 0, Perl-style.
+fn apply_rate(result: &mut SnmpResult, entry: &Snmp, config: &SnmpConfig, now: f64) -> Result<bool> {
+    let store = StateStore::new(&config.statefile_dir);
+    let key = StateStore::rate_key(&config.target, &entry.name, &entry.oid);
+    let previous = store.load(&key);
+
+    let mut values = HashMap::new();
+    for (_, oid, value) in &result.samples {
+        values.insert(oid.clone(), *value);
+    }
+    store.save(
+        &key,
+        &Snapshot {
+            timestamp: now,
+            values,
+        },
+    )?;
+
+    let Some(previous) = previous else {
+        return Ok(true);
+    };
+    let dt = now - previous.timestamp;
+
+    // Rebuild each numeric vector in sample (= push) order. A missing
+    // previous instance, a counter reset or dt <= 0 yields one aligned 0.0
+    // sample: dropping it would desalign the column from its siblings.
+    let mut rates: HashMap<String, Vec<f64>> = HashMap::new();
+    for (item_key, oid, value) in &result.samples {
+        let rate = previous
+            .values
+            .get(oid)
+            .and_then(|old| compute_rate(*old, *value, dt))
+            .unwrap_or(0.0);
+        rates.entry(item_key.clone()).or_default().push(rate);
+    }
+    for (item_key, vector) in rates {
+        result.items.insert(item_key, ExprResult::Vector(vector));
+    }
+    Ok(false)
+}
+
 /// Type of SNMP query to perform for a given OID.
 #[derive(Deserialize, Debug)]
 enum QueryType {
@@ -136,6 +196,14 @@ pub struct Snmp {
     /// (defaults to the global value, see the `--maxrepetitions` CLI option).
     #[serde(rename = "max-repetitions")]
     max_repetitions: Option<u32>,
+    /// When `true`, every numeric value of this entry is converted into a
+    /// per-second rate using the previous run (state persisted under
+    /// `--statefile-dir`, keyed by full OID). First run: the plugin
+    /// reports `OK: Buffer creation` and exits 0, Perl-style. 32-bit
+    /// counter wraparound is corrected; a counter reset or a missing
+    /// previous instance yields one aligned 0.0 sample.
+    #[serde(default)]
+    rate: bool,
 }
 
 /// Groups all SNMP queries that must be executed before computing metrics.
@@ -288,13 +356,17 @@ impl Command {
     }
 
     /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
+    /// Returns the collected results, plus `true` when at least one rate
+    /// entry had no previous state (first run): the caller then reports
+    /// `OK: Buffer creation` instead of computing metrics.
     fn execute_snmp_collect(
         &self,
         config: &SnmpConfig,
         check_format: bool,
-    ) -> Result<Vec<SnmpResult>> {
+    ) -> Result<(Vec<SnmpResult>, bool)> {
         let _span = info_span!("collect").entered();
         let mut collect: Vec<SnmpResult> = Vec::new();
+        let mut buffer_creation = false;
         // Single deadline for ALL queries of this collection: the global
         // time budget covers the sum of the walks and gets, not each one.
         let deadline = config.deadline();
@@ -317,7 +389,7 @@ impl Command {
                 }
                 collect.push(SnmpResult::new(items));
             }
-            return Ok(collect);
+            return Ok((collect, buffer_creation));
         }
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
@@ -325,25 +397,48 @@ impl Command {
             match s.query {
                 QueryType::Walk => {
                     let max_repetitions = s.max_repetitions.unwrap_or(config.max_repetitions);
-                    if let Some(lab) = &s.labels {
-                        let r = snmp_bulk_walk_with_labels(
+                    let mut r = if let Some(lab) = &s.labels {
+                        snmp_bulk_walk_with_labels(
                             config,
                             deadline,
                             &s.oid,
                             &s.name,
                             lab,
                             max_repetitions,
-                        )?;
-                        if !r.items.is_empty() {
-                            collect.push(r);
-                        }
+                            s.rate,
+                        )?
                     } else {
-                        let r =
-                            snmp_bulk_walk(config, deadline, &s.oid, &s.name, max_repetitions)?;
-                        if !r.items.is_empty() {
-                            collect.push(r);
-                        }
+                        snmp_bulk_walk(
+                            config,
+                            deadline,
+                            &s.oid,
+                            &s.name,
+                            max_repetitions,
+                            s.rate,
+                        )?
+                    };
+                    if s.rate {
+                        buffer_creation |= apply_rate(&mut r, s, config, unix_now())?;
                     }
+                    if !r.items.is_empty() {
+                        collect.push(r);
+                    }
+                }
+                // Rate entries need their samples isolated per entry, so
+                // they are queried individually instead of joining the
+                // batched get below.
+                QueryType::Get if s.rate => {
+                    let mut r = snmp_bulk_get(
+                        config,
+                        deadline,
+                        1,
+                        1,
+                        &vec![s.oid.as_str()],
+                        &vec![s.name.as_str()],
+                        true,
+                    )?;
+                    buffer_creation |= apply_rate(&mut r, s, config, unix_now())?;
+                    collect.push(r);
                 }
                 QueryType::Get => {
                     to_get.push(s.oid.as_str());
@@ -353,13 +448,13 @@ impl Command {
         }
 
         if !to_get.is_empty() {
-            let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name);
+            let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name, false);
             collect.push(r?);
         }
         if collect.is_empty() {
             return Err(error::Error::EmptyResponse {});
         }
-        Ok(collect)
+        Ok((collect, buffer_creation))
     }
 
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
@@ -384,7 +479,16 @@ impl Command {
         no_data_status: Status,
     ) -> Result<CmdResult> {
         let _check_span = info_span!("check").entered();
-        let mut collect = self.execute_snmp_collect(config, check_format)?;
+        let (mut collect, buffer_creation) = self.execute_snmp_collect(config, check_format)?;
+
+        if buffer_creation {
+            // First run of a rate entry: no reference to compute rates from.
+            // Perl-style behavior: report the buffer build and exit OK.
+            return Ok(CmdResult {
+                status: Status::Ok,
+                output: "OK: Buffer creation".to_string(),
+            });
+        }
 
         if check_response {
             return self.format_raw_response(&collect);
@@ -788,5 +892,96 @@ mod tests {
             err,
             error::Error::InvalidStatus { ref value } if value == "pending"
         ));
+    }
+}
+
+#[cfg(test)]
+mod rate_tests {
+    use super::*;
+    use crate::snmp::SnmpResult;
+
+    fn test_setup(dir_tag: &str) -> (SnmpConfig, Snmp) {
+        let dir =
+            std::env::temp_dir().join(format!("rate-test-{}-{}", dir_tag, std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let config = SnmpConfig {
+            target: "10.0.0.1:161".to_string(),
+            version: "2c".to_string(),
+            community: "public".to_string(),
+            timeout: std::time::Duration::from_secs(1),
+            retries: 0,
+            collect_timeout: std::time::Duration::from_secs(5),
+            max_repetitions: 10,
+            statefile_dir: dir,
+        };
+        let entry: Snmp = serde_json::from_str(
+            r#"{"name":"if","oid":"1.3.6.1.2.1.2.2.1","query":"Walk","rate":true}"#,
+        )
+        .expect("valid entry JSON");
+        (config, entry)
+    }
+
+    fn result_with(samples: Vec<(&str, &str, f64)>) -> SnmpResult {
+        let mut result = SnmpResult::new(HashMap::new());
+        let mut vector = Vec::new();
+        for (key, oid, value) in samples {
+            vector.push(value);
+            result
+                .samples
+                .push((key.to_string(), oid.to_string(), value));
+        }
+        result
+            .items
+            .insert("if".to_string(), ExprResult::Vector(vector));
+        result
+    }
+
+    #[test]
+    fn rate_entries_turn_counters_into_rates_across_runs() {
+        let (config, entry) = test_setup("basic");
+
+        // Run 1: no previous state -> buffer creation.
+        let mut run1 = result_with(vec![("if", "oid.10.1", 1000.0), ("if", "oid.10.2", 2000.0)]);
+        let first = apply_rate(&mut run1, &entry, &config, 100.0).expect("run 1");
+        assert!(first, "first run must report buffer creation");
+
+        // Run 2, 10s later, +600 and +1200 octets -> 60 and 120 per second.
+        let mut run2 = result_with(vec![("if", "oid.10.1", 1600.0), ("if", "oid.10.2", 3200.0)]);
+        let first = apply_rate(&mut run2, &entry, &config, 110.0).expect("run 2");
+        assert!(!first);
+        match run2.items.get("if") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![60.0, 120.0]),
+            other => panic!("expected rate Vector([60, 120]), got {:?}", other),
+        }
+
+        // Run 3: a NEW instance appears -> one aligned 0.0 sample, the known
+        // instances keep their rates.
+        let mut run3 = result_with(vec![
+            ("if", "oid.10.1", 2200.0),
+            ("if", "oid.10.2", 4400.0),
+            ("if", "oid.10.3", 500.0),
+        ]);
+        let first = apply_rate(&mut run3, &entry, &config, 120.0).expect("run 3");
+        assert!(!first);
+        match run3.items.get("if") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![60.0, 120.0, 0.0]),
+            other => panic!("expected Vector([60, 120, 0]), got {:?}", other),
+        }
+
+        let _ = std::fs::remove_dir_all(&config.statefile_dir);
+    }
+
+    #[test]
+    fn same_timestamp_yields_aligned_zeroes_not_a_division_by_zero() {
+        let (config, entry) = test_setup("dtzero");
+        let mut run1 = result_with(vec![("if", "oid.10.1", 1000.0)]);
+        apply_rate(&mut run1, &entry, &config, 100.0).expect("run 1");
+        let mut run2 = result_with(vec![("if", "oid.10.1", 1600.0)]);
+        apply_rate(&mut run2, &entry, &config, 100.0).expect("run 2");
+        match run2.items.get("if") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![0.0]),
+            other => panic!("expected Vector([0.0]), got {:?}", other),
+        }
+        let _ = std::fs::remove_dir_all(&config.statefile_dir);
     }
 }
