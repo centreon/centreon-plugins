@@ -15,13 +15,13 @@ use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
-use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpConfig};
-use crate::state::{compute_rate, Snapshot, StateStore};
-use tracing::{debug, debug_span, info_span, trace, warn};
+use crate::snmp::{SnmpConfig, snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
+use crate::state::{Snapshot, StateStore, compute_rate};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::convert::Into;
+use tracing::{debug, debug_span, info_span, trace, warn};
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -235,7 +235,12 @@ fn unix_now() -> f64 {
 /// # Returns
 /// `Ok(true)` when there was no previous snapshot (first run): the caller
 /// reports `OK: Buffer creation` and exits 0, Perl-style.
-fn apply_rate(result: &mut SnmpResult, entry: &Snmp, config: &SnmpConfig, now: f64) -> Result<bool> {
+fn apply_rate(
+    result: &mut SnmpResult,
+    entry: &Snmp,
+    config: &SnmpConfig,
+    now: f64,
+) -> Result<bool> {
     let store = StateStore::new(&config.statefile_dir);
     let key = StateStore::rate_key(&config.target, &entry.name, &entry.oid);
     let previous = store.load(&key);
@@ -523,14 +528,7 @@ impl Command {
                             s.rate,
                         )?
                     } else {
-                        snmp_bulk_walk(
-                            config,
-                            deadline,
-                            &s.oid,
-                            &s.name,
-                            max_repetitions,
-                            s.rate,
-                        )?
+                        snmp_bulk_walk(config, deadline, &s.oid, &s.name, max_repetitions, s.rate)?
                     };
                     if s.labels.is_some() {
                         // Columns of one entry are ALWAYS aligned on their
@@ -1077,6 +1075,7 @@ mod rate_tests {
             collect_timeout: std::time::Duration::from_secs(5),
             max_repetitions: 10,
             statefile_dir: dir,
+            v3: None,
         };
         let entry: Snmp = serde_json::from_str(
             r#"{"name":"if","oid":"1.3.6.1.2.1.2.2.1","query":"Walk","rate":true}"#,
