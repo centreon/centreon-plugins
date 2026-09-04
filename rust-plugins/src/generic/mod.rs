@@ -17,7 +17,7 @@ use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpConfig};
 use crate::state::{compute_rate, Snapshot, StateStore};
-use tracing::{debug, debug_span, info_span, trace};
+use tracing::{debug, debug_span, info_span, trace, warn};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -113,6 +113,109 @@ fn worst(a: Status, b: Status) -> Status {
     if a.severity() > b.severity() { a } else { b }
 }
 
+/// Aligns a set of labeled columns on their common row indices.
+///
+/// Positional alignment is a silent-corruption trap: two columns of the same
+/// SNMP table can have different holes, and two tables (`ifTable`/`ifXTable`)
+/// different instance sets. This keeps only the rows present in **every**
+/// listed column, in ascending walk order, so that element-wise expressions,
+/// prefixes and rates always describe the same instance.
+///
+/// `targets` lists `(index in collect, item key)` pairs — the columns of one
+/// entry, or of a whole `join` group across entries.
+fn align_by_index(collect: &mut [SnmpResult], targets: &[(usize, String)]) {
+    use std::collections::BTreeSet;
+    if targets.len() < 2 {
+        return;
+    }
+    // Intersection of the row-index sets of every column.
+    let mut common: Option<BTreeSet<u32>> = None;
+    for (result_idx, key) in targets {
+        let set: BTreeSet<u32> = collect[*result_idx]
+            .indices
+            .get(key)
+            .map(|v| v.iter().copied().collect())
+            .unwrap_or_default();
+        common = Some(match common {
+            None => set,
+            Some(current) => current.intersection(&set).copied().collect(),
+        });
+    }
+    let Some(common) = common else { return };
+
+    let mut dropped = 0usize;
+    for (result_idx, key) in targets {
+        let result = &mut collect[*result_idx];
+        let Some(indices) = result.indices.get(key).cloned() else {
+            continue;
+        };
+        let keep: Vec<bool> = indices.iter().map(|i| common.contains(i)).collect();
+        if keep.iter().all(|k| *k) {
+            continue;
+        }
+        dropped += keep.iter().filter(|k| !**k).count();
+        // Columns are walked in ascending index order, so masking every
+        // column with the same common set preserves a shared order.
+        match result.items.get_mut(key) {
+            Some(ExprResult::Vector(values)) => {
+                let mut position = 0usize;
+                values.retain(|_| {
+                    let kept = keep.get(position).copied().unwrap_or(false);
+                    position += 1;
+                    kept
+                });
+            }
+            Some(ExprResult::StrVector(values)) => {
+                let mut position = 0usize;
+                values.retain(|_| {
+                    let kept = keep.get(position).copied().unwrap_or(false);
+                    position += 1;
+                    kept
+                });
+            }
+            _ => {}
+        }
+        if let Some(indices) = result.indices.get_mut(key) {
+            let mut position = 0usize;
+            indices.retain(|_| {
+                let kept = keep.get(position).copied().unwrap_or(false);
+                position += 1;
+                kept
+            });
+        }
+        // Rate samples of this key follow the same mask (same push order).
+        let mut position = 0usize;
+        result.samples.retain(|(sample_key, _, _)| {
+            if sample_key != key {
+                return true;
+            }
+            let kept = keep.get(position).copied().unwrap_or(false);
+            position += 1;
+            kept
+        });
+    }
+    if dropped > 0 {
+        warn!(
+            "index join: {} value(s) dropped (rows missing in at least one column)",
+            dropped
+        );
+    }
+}
+
+/// Item keys of a labeled entry (`<name>.<label>` per label).
+fn entry_label_keys(entry: &Snmp) -> Vec<String> {
+    entry
+        .labels
+        .as_ref()
+        .map(|labels| {
+            labels
+                .values()
+                .map(|label| format!("{}.{}", entry.name, label))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 /// Current Unix time in seconds (never fails after 1970).
 fn unix_now() -> f64 {
     std::time::SystemTime::now()
@@ -196,6 +299,10 @@ pub struct Snmp {
     /// (defaults to the global value, see the `--maxrepetitions` CLI option).
     #[serde(rename = "max-repetitions")]
     max_repetitions: Option<u32>,
+    /// Optional join group: entries sharing the same group name are aligned
+    /// on their common row indices ACROSS entries (e.g. ifTable + ifXTable).
+    /// Columns within one labeled entry are always aligned by index.
+    join: Option<String>,
     /// When `true`, every numeric value of this entry is converted into a
     /// per-second rate using the previous run (state persisted under
     /// `--statefile-dir`, keyed by full OID). First run: the plugin
@@ -393,7 +500,15 @@ impl Command {
         }
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
+        // Cross-entry alignment groups: `join` field -> (result idx, key).
+        let mut join_groups: HashMap<String, Vec<(usize, String)>> = HashMap::new();
         for s in self.collect.snmp.iter() {
+            if s.join.is_some() && s.labels.is_none() {
+                warn!(
+                    "collect entry '{}': 'join' requires 'labels' (row indices), ignored",
+                    s.name
+                );
+            }
             match s.query {
                 QueryType::Walk => {
                     let max_repetitions = s.max_repetitions.unwrap_or(config.max_repetitions);
@@ -417,10 +532,29 @@ impl Command {
                             s.rate,
                         )?
                     };
+                    if s.labels.is_some() {
+                        // Columns of one entry are ALWAYS aligned on their
+                        // common row indices (positional alignment silently
+                        // corrupts data on tables with holes).
+                        let targets: Vec<(usize, String)> = entry_label_keys(s)
+                            .into_iter()
+                            .map(|key| (0usize, key))
+                            .collect();
+                        align_by_index(std::slice::from_mut(&mut r), &targets);
+                    }
                     if s.rate {
                         buffer_creation |= apply_rate(&mut r, s, config, unix_now())?;
                     }
                     if !r.items.is_empty() {
+                        if s.labels.is_some()
+                            && let Some(group) = &s.join
+                        {
+                            join_groups.entry(group.clone()).or_default().extend(
+                                entry_label_keys(s)
+                                    .into_iter()
+                                    .map(|key| (collect.len(), key)),
+                            );
+                        }
                         collect.push(r);
                     }
                 }
@@ -451,6 +585,21 @@ impl Command {
             let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name, false);
             collect.push(r?);
         }
+
+        // Cross-entry alignment: every column of a `join` group is reduced
+        // to the row indices present in ALL of them (e.g. the ifTable +
+        // ifXTable instance sets).
+        for (group, targets) in &join_groups {
+            if targets.len() < 2 {
+                warn!(
+                    "join group '{}' references a single column, nothing to align",
+                    group
+                );
+                continue;
+            }
+            align_by_index(&mut collect, targets);
+        }
+
         if collect.is_empty() {
             return Err(error::Error::EmptyResponse {});
         }
@@ -568,7 +717,22 @@ impl Command {
                     for (i, item) in v.iter().enumerate() {
                         // first, compose the instance name
                         let instance_name = match &prefix_str {
-                            ExprResult::StrVector(v) => v[i].to_string(),
+                            // Guards against a prefix vector shorter than the
+                            // values (cross-entry reference without a `join`
+                            // group): fall back to the counter instead of
+                            // panicking out of bounds.
+                            ExprResult::StrVector(v) => match v.get(i) {
+                                Some(name) => name.to_string(),
+                                None => {
+                                    warn!(
+                                        "Metric \"{}\": prefix has fewer elements than values (missing 'join'?)",
+                                        metric.name
+                                    );
+                                    let res = idx.to_string();
+                                    idx += 1;
+                                    res
+                                }
+                            },
                             ExprResult::Str(s) => s.to_string(),
                             ExprResult::Empty => {
                                 let res = idx.to_string();
@@ -983,5 +1147,134 @@ mod rate_tests {
             other => panic!("expected Vector([0.0]), got {:?}", other),
         }
         let _ = std::fs::remove_dir_all(&config.statefile_dir);
+    }
+}
+
+#[cfg(test)]
+mod join_tests {
+    use super::*;
+    use crate::snmp::SnmpResult;
+
+    fn column(result: &mut SnmpResult, key: &str, rows: &[(u32, f64)]) {
+        result.items.insert(
+            key.to_string(),
+            ExprResult::Vector(rows.iter().map(|(_, v)| *v).collect()),
+        );
+        result
+            .indices
+            .insert(key.to_string(), rows.iter().map(|(i, _)| *i).collect());
+    }
+
+    fn str_column(result: &mut SnmpResult, key: &str, rows: &[(u32, &str)]) {
+        result.items.insert(
+            key.to_string(),
+            ExprResult::StrVector(rows.iter().map(|(_, v)| v.to_string()).collect()),
+        );
+        result
+            .indices
+            .insert(key.to_string(), rows.iter().map(|(i, _)| *i).collect());
+    }
+
+    #[test]
+    fn holes_are_dropped_consistently_across_columns() {
+        // Row 2 is missing in `out`; row 4 missing in `in`: only rows present
+        // everywhere survive, in ascending order, in every column.
+        let mut result = SnmpResult::new(HashMap::new());
+        column(&mut result, "if.in", &[(1, 10.0), (2, 20.0), (3, 30.0)]);
+        column(&mut result, "if.out", &[(1, 100.0), (3, 300.0), (4, 400.0)]);
+        str_column(
+            &mut result,
+            "if.descr",
+            &[(1, "eth1"), (2, "eth2"), (3, "eth3"), (4, "eth4")],
+        );
+        let targets = vec![
+            (0usize, "if.in".to_string()),
+            (0usize, "if.out".to_string()),
+            (0usize, "if.descr".to_string()),
+        ];
+        align_by_index(std::slice::from_mut(&mut result), &targets);
+
+        match result.items.get("if.in") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![10.0, 30.0]),
+            other => panic!("if.in: {:?}", other),
+        }
+        match result.items.get("if.out") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![100.0, 300.0]),
+            other => panic!("if.out: {:?}", other),
+        }
+        match result.items.get("if.descr") {
+            Some(ExprResult::StrVector(v)) => {
+                assert_eq!(v, &vec!["eth1".to_string(), "eth3".to_string()])
+            }
+            other => panic!("if.descr: {:?}", other),
+        }
+        assert_eq!(result.indices.get("if.in"), Some(&vec![1, 3]));
+    }
+
+    #[test]
+    fn disjoint_columns_align_to_empty_vectors() {
+        let mut result = SnmpResult::new(HashMap::new());
+        column(&mut result, "a.x", &[(1, 1.0)]);
+        column(&mut result, "a.y", &[(2, 2.0)]);
+        let targets = vec![(0usize, "a.x".to_string()), (0usize, "a.y".to_string())];
+        align_by_index(std::slice::from_mut(&mut result), &targets);
+        match result.items.get("a.x") {
+            Some(ExprResult::Vector(v)) => assert!(v.is_empty()),
+            other => panic!("a.x: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn rate_samples_follow_the_alignment_mask() {
+        let mut result = SnmpResult::new(HashMap::new());
+        column(&mut result, "if.in", &[(1, 10.0), (2, 20.0), (3, 30.0)]);
+        column(&mut result, "if.out", &[(1, 100.0), (3, 300.0)]);
+        result.samples = vec![
+            ("if.in".to_string(), "oid.10.1".to_string(), 10.0),
+            ("if.in".to_string(), "oid.10.2".to_string(), 20.0),
+            ("if.in".to_string(), "oid.10.3".to_string(), 30.0),
+            ("if.out".to_string(), "oid.16.1".to_string(), 100.0),
+            ("if.out".to_string(), "oid.16.3".to_string(), 300.0),
+        ];
+        let targets = vec![
+            (0usize, "if.in".to_string()),
+            (0usize, "if.out".to_string()),
+        ];
+        align_by_index(std::slice::from_mut(&mut result), &targets);
+        // The dropped row 2 disappears from the samples too: state and
+        // vectors stay parallel for apply_rate.
+        assert_eq!(
+            result.samples,
+            vec![
+                ("if.in".to_string(), "oid.10.1".to_string(), 10.0),
+                ("if.in".to_string(), "oid.10.3".to_string(), 30.0),
+                ("if.out".to_string(), "oid.16.1".to_string(), 100.0),
+                ("if.out".to_string(), "oid.16.3".to_string(), 300.0),
+            ]
+        );
+    }
+
+    #[test]
+    fn join_groups_align_across_collect_entries() {
+        // ifTable-like entry and ifXTable-like entry with different instance
+        // sets: the group keeps the intersection in both results.
+        let mut table = SnmpResult::new(HashMap::new());
+        column(&mut table, "if.in", &[(1, 10.0), (2, 20.0)]);
+        let mut xtable = SnmpResult::new(HashMap::new());
+        column(&mut xtable, "ifx.hcin", &[(2, 200.0), (3, 300.0)]);
+        let mut collect = vec![table, xtable];
+        let targets = vec![
+            (0usize, "if.in".to_string()),
+            (1usize, "ifx.hcin".to_string()),
+        ];
+        align_by_index(&mut collect, &targets);
+        match collect[0].items.get("if.in") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![20.0]),
+            other => panic!("if.in: {:?}", other),
+        }
+        match collect[1].items.get("ifx.hcin") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![200.0]),
+            other => panic!("ifx.hcin: {:?}", other),
+        }
     }
 }
