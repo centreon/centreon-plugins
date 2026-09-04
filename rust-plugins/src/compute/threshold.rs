@@ -4,7 +4,6 @@
 //! following the [Nagios plugin guidelines](https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT).
 
 use crate::generic::error::Error;
-use std::f64::INFINITY;
 
 /// Represents an alert threshold range and its alert condition.
 pub struct Threshold {
@@ -30,7 +29,7 @@ impl Threshold {
         let mut start: usize = 0;
         let mut in_number = false;
         let mut current = 0;
-        let mut value = [-INFINITY, INFINITY];
+        let mut value = [-f64::INFINITY, f64::INFINITY];
         let mut in_range = 0;
         let mut negation = 0;
         for (idx, c) in expr.char_indices() {
@@ -69,7 +68,7 @@ impl Threshold {
                         start = idx;
                     }
                     '~' => {
-                        value[0] = -INFINITY;
+                        value[0] = -f64::INFINITY;
                     }
                     ':' => {
                         in_range += 1;
@@ -97,42 +96,40 @@ impl Threshold {
                     end: value[1],
                 });
             }
-            return Ok(Threshold {
+            Ok(Threshold {
                 start: value[0],
                 end: value[1],
                 negation: negation > 0,
-            });
+            })
         } else if in_range > 1 {
-            return Err(Error::BadThreshold);
+            Err(Error::BadThreshold)
         } else {
             if value[0] <= 0_f64 {
                 return Err(Error::NegativeSimpleThreshold { value: value[0] });
             }
-            return Ok(Threshold {
+            Ok(Threshold {
                 start: 0_f64,
                 end: value[0],
                 negation: negation > 0,
-            });
+            })
         }
     }
 
     /// Returns `true` if the given value triggers an alert.
     pub fn in_alert(&self, value: f64) -> bool {
         if value < self.start || value > self.end {
-            if self.negation {
-                return false;
-            } else {
-                return true;
-            }
+            return !self.negation;
         }
-        if self.negation { true } else { false }
+        self.negation
     }
 }
 
+// These imports are used only inside #[test] fn bodies, which rustc strips
+// from a plain (non-test) build -- this module lacks #[cfg(test)] (see PR
+// #6410), so a plain `cargo clippy` sees them as unused.
+#[allow(unused_imports, dead_code)]
 mod test {
     use crate::compute::threshold::Threshold;
-    use crate::generic::error::Error;
-    use std::f64::INFINITY;
     #[test]
     fn test_parse_value() {
         let expr = "1.2";
@@ -157,7 +154,7 @@ mod test {
         match threshold {
             Ok(threshold) => {
                 assert_eq!(threshold.start, 10_f64);
-                assert_eq!(threshold.end, INFINITY);
+                assert_eq!(threshold.end, f64::INFINITY);
                 assert!(!threshold.in_alert(10_f64));
                 assert!(!threshold.in_alert(11_f64));
                 assert!(threshold.in_alert(9_f64));
@@ -174,7 +171,7 @@ mod test {
         let threshold = Threshold::parse(expr);
         match threshold {
             Ok(threshold) => {
-                assert_eq!(threshold.start, -INFINITY);
+                assert_eq!(threshold.start, -f64::INFINITY);
                 assert_eq!(threshold.end, 10_f64);
                 assert!(!threshold.in_alert(10_f64));
                 assert!(threshold.in_alert(11_f64));

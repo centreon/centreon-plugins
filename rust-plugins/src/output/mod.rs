@@ -41,7 +41,11 @@ pub struct Output {
     #[serde(default = "default_no_data")]
     pub no_data: String,
     /// String used to separate metric instances in the detail message.
+    // Not read yet: `build_detail` currently joins with `metric_separator`
+    // for both purposes. Kept as a distinct, already-deserialized config
+    // field for when that's split out.
     #[serde(default = "default_instance_separator")]
+    #[allow(dead_code)]
     instance_separator: String,
     /// String used to separate individual metrics in perfdata.
     #[serde(default = "default_metric_separator")]
@@ -120,7 +124,7 @@ impl<'a> OutputFormatter<'a> {
     }
 
     /// Generates the complete Nagios-compatible output string.
-    pub fn to_string(&self) -> String {
+    fn render(&self) -> String {
         let metrics = self
             .metrics
             .iter()
@@ -148,9 +152,9 @@ impl<'a> OutputFormatter<'a> {
             Status::Ok => {
                 if self.output_formatter.detail_ok {
                     let detail = self.build_detail(&self.output_formatter.ok);
-                    return format!("{} | {}", detail, metrics);
+                    format!("{} | {}", detail, metrics)
                 } else {
-                    let parser = Parser::new(&self.collect, false);
+                    let parser = Parser::new(self.collect, false);
                     let res = parser.eval_str(&self.output_formatter.ok);
                     let output = match res {
                         Ok(output) => match output {
@@ -163,8 +167,7 @@ impl<'a> OutputFormatter<'a> {
                             }
                             ExprResult::StrVector(v) => {
                                 if v.len() == 1 {
-                                    let output = v[0].clone();
-                                    output
+                                    v[0].clone()
                                 } else {
                                     error!(
                                         "Output expression evaluated to a vector with more than one element, expected a single string"
@@ -179,31 +182,31 @@ impl<'a> OutputFormatter<'a> {
                             self.output_formatter.ok.clone()
                         }
                     };
-                    return format!("{} | {}", output, metrics);
+                    format!("{} | {}", output, metrics)
                 }
             }
             Status::Warning => {
                 if self.output_formatter.detail_warning {
                     let detail = self.build_detail(&self.output_formatter.warning);
-                    return format!("{} | {}", detail, metrics);
+                    format!("{} | {}", detail, metrics)
                 } else {
-                    return format!("{} | {}", self.output_formatter.warning, metrics);
+                    format!("{} | {}", self.output_formatter.warning, metrics)
                 }
             }
             Status::Critical => {
                 if self.output_formatter.detail_critical {
                     let detail = self.build_detail(&self.output_formatter.critical);
-                    return format!("{} | {}", detail, metrics);
+                    format!("{} | {}", detail, metrics)
                 } else {
-                    return format!("{} | {}", self.output_formatter.critical, metrics);
+                    format!("{} | {}", self.output_formatter.critical, metrics)
                 }
             }
             Status::Unknown => {
                 if self.output_formatter.detail_unknown {
                     let detail = self.build_detail(&self.output_formatter.unknown);
-                    return format!("{} | {}", detail, metrics);
+                    format!("{} | {}", detail, metrics)
                 } else {
-                    return format!("{} | {}", self.output_formatter.unknown, metrics);
+                    format!("{} | {}", self.output_formatter.unknown, metrics)
                 }
             }
         }
@@ -214,15 +217,15 @@ impl<'a> OutputFormatter<'a> {
     fn build_detail(&self, prefix: &str) -> String {
         let mut v = Vec::new();
         for m in self.metrics.iter() {
-            if let Some(status) = m.status {
-                if status.is_worse_than(self.status) {
-                    v.push(std::format!(
-                        "{} is {}{}",
-                        m.name,
-                        float_string(&m.value),
-                        m.uom
-                    ));
-                }
+            if let Some(status) = m.status
+                && status.is_worse_than(self.status)
+            {
+                v.push(std::format!(
+                    "{} is {}{}",
+                    m.name,
+                    float_string(&m.value),
+                    m.uom
+                ));
             }
         }
         std::format!(
@@ -230,6 +233,12 @@ impl<'a> OutputFormatter<'a> {
             prefix,
             v.join::<&str>(&self.output_formatter.metric_separator)
         )
+    }
+}
+
+impl<'a> std::fmt::Display for OutputFormatter<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.render())
     }
 }
 
