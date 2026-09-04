@@ -267,6 +267,9 @@ pub struct SnmpResult {
     /// `(item key, full OID, value)`. Only filled when the collect entry
     /// asked for rates.
     pub samples: Vec<(String, String, f64)>,
+    /// Row indices (last OID arc) captured per item key during a labeled
+    /// walk, in push order — the join key for index-based alignment.
+    pub indices: HashMap<String, Vec<u32>>,
 }
 
 /// Retrieves values for multiple OIDs in a single bulk request.
@@ -453,6 +456,7 @@ impl SnmpResult {
             last_oid: Vec::new(),
             processed: 0,
             samples: Vec::new(),
+            indices: HashMap::new(),
         }
     }
 
@@ -514,6 +518,7 @@ impl SnmpResult {
         oid: &str,
         walk: bool,
         capture_samples: bool,
+        capture_indices: bool,
         mut key_for: impl FnMut(usize, &str) -> Vec<String>,
     ) -> Result<bool> {
         let mut completed = false;
@@ -542,6 +547,7 @@ impl SnmpResult {
                 if walk && !self.last_oid.is_empty() && arcs <= self.last_oid {
                     return Err(OidNotIncreasing { oid: name });
                 }
+                let row_index = arcs.last().copied();
                 self.last_oid = arcs;
 
                 // Hard bound on the amount of data a single walk may
@@ -570,6 +576,14 @@ impl SnmpResult {
                     {
                         self.samples.push((key.clone(), name.clone(), value));
                     }
+                    // The row index is the join key for index-based alignment
+                    // (see generic::align_by_index): recorded in push order so
+                    // it stays parallel to the value vector.
+                    if capture_indices
+                        && let Some(row) = row_index
+                    {
+                        self.indices.entry(key.clone()).or_default().push(row);
+                    }
                     _ = self.store(key, typ.clone())?;
                 }
             }
@@ -589,7 +603,11 @@ impl SnmpResult {
         walk: bool,
         capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, capture_samples, |_idx, name| {
+        // Row indices are only meaningful for labeled (tabular) walks: this
+        // is what lets generic::align_by_index reject positional alignment
+        // in favor of the actual OID row index. Not a caller-configurable
+        // option — an invariant of using labels.
+        self.process_response(decoded, oid, walk, capture_samples, true, |_idx, name| {
             let prefix = name.rfind('.').map_or(name, |i| &name[..i]);
             labels
                 .iter()
@@ -609,7 +627,7 @@ impl SnmpResult {
         walk: bool,
         capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, capture_samples, |idx, _name| {
+        self.process_response(decoded, oid, walk, capture_samples, false, |idx, _name| {
             vec![names[idx].to_string()]
         })
     }
@@ -624,7 +642,7 @@ impl SnmpResult {
         walk: bool,
         capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, capture_samples, |_idx, _name| {
+        self.process_response(decoded, oid, walk, capture_samples, false, |_idx, _name| {
             vec![snmp_name.to_string()]
         })
     }
