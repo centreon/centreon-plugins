@@ -9,7 +9,6 @@
 //! OCTET STRING, OBJECT IDENTIFIER, IpAddress, Counter32/64, Gauge32/Unsigned32,
 //! TimeTicks, Opaque) are decoded; see `value_from_varbind`.
 
-extern crate log;
 extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
@@ -28,7 +27,6 @@ use crate::generic::error::Error::RequestTimeout;
 use crate::generic::error::Error::SnmpAgentError;
 use crate::generic::error::Error::WalkTooLarge;
 use crate::generic::error::Result;
-use log::{trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_smi::v2::{ApplicationSyntax, ObjectSyntax, SimpleSyntax};
 use rasn_snmp::v2::BulkPdu;
@@ -42,6 +40,7 @@ use std::collections::HashMap;
 use std::convert::TryInto;
 use std::net::UdpSocket;
 use std::time::{Duration, Instant};
+use tracing::{debug_span, trace, trace_span, warn};
 
 /// Maximum size of a UDP datagram; SNMP bulk responses can be large,
 /// a smaller buffer would silently truncate them and break BER decoding.
@@ -285,6 +284,7 @@ pub fn snmp_bulk_get<'a>(
     oid_list: &Vec<&str>,
     names: &Vec<&str>,
 ) -> Result<SnmpResult> {
+    let _span = debug_span!("get", oids = oid_list.len()).entered();
     let mut oids_tab: Vec<Vec<u32>> = vec![];
     for oid_str in oid_list {
         let mut oid = oid_to_vec(oid_str)?;
@@ -340,6 +340,7 @@ pub fn snmp_bulk_walk<'a>(
     snmp_name: &str,
     max_repetitions: u32,
 ) -> Result<SnmpResult> {
+    let _span = debug_span!("walk", oid).entered();
     let oid_init = oid_to_vec(oid)?;
     let mut oid_tab = oid_init.clone();
     let mut retval = SnmpResult::new(HashMap::new());
@@ -394,6 +395,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
     labels: &'a HashMap<String, String>,
     max_repetitions: u32,
 ) -> Result<SnmpResult> {
+    let _span = debug_span!("walk", oid).entered();
     let oid_init = oid_to_vec(oid)?;
     let mut oid_tab = oid_init.clone();
     let mut retval = SnmpResult::new(HashMap::new());
@@ -716,6 +718,7 @@ fn send_request(
     socket: &UdpSocket,
     buf: &mut [u8],
 ) -> Result<Message<Pdus>> {
+    let _span = trace_span!("request", id = request_id).entered();
     let encoded: Vec<u8> = rasn::der::encode(message).map_err(|_| InvalidSnmpPduEncode {})?;
 
     let attempts = config.retries + 1;

@@ -12,7 +12,7 @@ use self::ast::ExprResult;
 use self::lexer::{LexicalError, Tok};
 use crate::snmp::SnmpResult;
 use lalrpop_util::{ParseError, lalrpop_mod};
-use log::{debug, trace};
+use tracing::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 
@@ -159,11 +159,11 @@ impl<'a> Parser<'a> {
 mod test {
     use crate::compute::{Parser, ast::ExprResult, grammar, lexer};
     use crate::snmp::SnmpResult;
-    use log::{debug, info};
+    use tracing::{debug, info};
     use std::collections::HashMap;
 
     fn init() {
-        let _ = env_logger::builder().is_test(true).try_init();
+        let _ = tracing_subscriber::fmt().with_test_writer().try_init();
     }
 
     #[test]

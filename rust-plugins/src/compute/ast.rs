@@ -1,7 +1,7 @@
 //! Abstract syntax tree and expression evaluation.
 
 use crate::snmp::SnmpResult;
-use log::{info, trace, warn};
+use tracing::{info, trace, warn};
 use std::str;
 
 /// An expression node in the AST.
