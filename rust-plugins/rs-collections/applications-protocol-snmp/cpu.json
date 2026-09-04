@@ -11,33 +11,41 @@
   "compute": {
     "metrics": [
       {
-        "name": "core.cpu.usage.percent",
+        "name": "cpu",
         "value": "{cpu}",
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "core"
+        "threshold-suffix": "core",
+        "decimals": 2,
+        "output": "CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %",
+        "order": 1
       }
     ],
     "aggregations": [
       {
-        "name": "avg.cpu.usage.percent",
+        "name": "total_cpu_avg",
         "value": "Average({cpu})",
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "avg"
+        "threshold-suffix": "average",
+        "decimals": 2,
+        "output": "{Count(metrics.cpu)} CPU(s) average usage is {aggregations.total_cpu_avg:.2f} %",
+        "order": 0
       }
     ]
   },
   "output": {
-    "ok": "OK: avg.cpu.usage.percent is {aggregations.avg.cpu.usage.percent}%",
+    "ok": "OK: {Count(metrics.cpu)} CPU(s) average usage is {aggregations.total_cpu_avg:.2f} %",
     "detail_ok": false,
     "warning": "WARNING: ",
     "detail_warning": true,
     "critical": "CRITICAL: ",
     "detail_critical": true,
     "instance_separator": " - ",
-    "metric_separator": ", "
+    "metric_separator": ", ",
+    "instance": "CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %",
+    "instance_display": "single"
   }
 }

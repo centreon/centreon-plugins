@@ -9,22 +9,27 @@
 //! OCTET STRING, OBJECT IDENTIFIER, IpAddress, Counter32/64, Gauge32/Unsigned32,
 //! TimeTicks, Opaque) are decoded; see `value_from_varbind`.
 
-extern crate log;
+pub mod usm;
+
 extern crate rasn;
 extern crate rasn_smi;
 extern crate rasn_snmp;
 
 use crate::Error::InvalidOidParser;
 use crate::compute::ast::ExprResult;
+use crate::generic::error::Error::CollectTimeout;
 use crate::generic::error::Error::EmptyResponse;
 use crate::generic::error::Error::FailedToConnectToHost;
 use crate::generic::error::Error::InvalidSnmpPduDecode;
 use crate::generic::error::Error::InvalidSnmpPduEncode;
 use crate::generic::error::Error::InvalidSnmpType;
 use crate::generic::error::Error::InvalidSnmpValue;
+use crate::generic::error::Error::OidNotIncreasing;
+use crate::generic::error::Error::RequestTimeout;
+use crate::generic::error::Error::SnmpAgentError;
+use crate::generic::error::Error::UsmFailure;
+use crate::generic::error::Error::WalkTooLarge;
 use crate::generic::error::Result;
-use log::info;
-use log::{trace, warn};
 use rasn::types::ObjectIdentifier;
 use rasn_smi::v2::{ApplicationSyntax, ObjectSyntax, SimpleSyntax};
 use rasn_snmp::v2::BulkPdu;
@@ -37,6 +42,131 @@ use rasn_snmp::v3::VarBindValue::EndOfMibView;
 use std::collections::HashMap;
 use std::convert::TryInto;
 use std::net::UdpSocket;
+use std::time::{Duration, Instant};
+use tracing::{debug_span, trace, trace_span, warn};
+
+/// Maximum size of a UDP datagram; SNMP bulk responses can be large,
+/// a smaller buffer would silently truncate them and break BER decoding.
+const UDP_BUFFER_SIZE: usize = 65535;
+
+/// Upper bound on the number of values a single walk may collect. Protects
+/// the plugin against a buggy or malicious agent that returns endless data:
+/// well beyond any real table (a 48-port switch's ifTable is a few thousand
+/// entries), but finite.
+const MAX_WALK_VARBINDS: usize = 100_000;
+
+/// Connection parameters shared by every SNMP request of a collection.
+#[derive(Debug, Clone)]
+pub struct SnmpConfig {
+    /// Target address in `host:port` format.
+    pub target: String,
+    /// SNMP version (only `2c` is supported today).
+    pub version: String,
+    /// SNMP community string.
+    pub community: String,
+    /// Receive timeout for a single request attempt (mirror of the Perl
+    /// `--timeout`, default 1s).
+    pub timeout: Duration,
+    /// Number of retries after a timed-out attempt (default 2; total
+    /// attempts = retries + 1).
+    pub retries: u32,
+    /// Global time budget for the whole collection (all gets and walks).
+    /// Protects the poller from a slow agent: centengine kills plugins
+    /// after its own timeout, this one lets us exit with a clean UNKNOWN
+    /// message before being killed.
+    pub collect_timeout: Duration,
+    /// Maximum repetitions per GetBulk request (mirror of the Perl
+    /// `--maxrepetitions`, default 50). Higher values mean fewer network
+    /// round-trips when walking large tables.
+    pub max_repetitions: u32,
+    /// Directory where rate/delta state files are stored (mirror of the
+    /// Perl `--statefile-dir`).
+    pub statefile_dir: std::path::PathBuf,
+    /// SNMPv3 credentials. When set, every request uses the User-based
+    /// Security Model instead of the v2c community.
+    pub v3: Option<usm::UsmUser>,
+}
+
+impl SnmpConfig {
+    /// Computes the collection deadline from now.
+    pub fn deadline(&self) -> Instant {
+        Instant::now() + self.collect_timeout
+    }
+}
+
+/// Standard names of the SNMP `error-status` field (RFC 3416).
+fn error_status_name(status: u32) -> &'static str {
+    match status {
+        0 => "noError",
+        1 => "tooBig",
+        2 => "noSuchName",
+        3 => "badValue",
+        4 => "readOnly",
+        5 => "genErr",
+        6 => "noAccess",
+        7 => "wrongType",
+        8 => "wrongLength",
+        9 => "wrongEncoding",
+        10 => "wrongValue",
+        11 => "noCreation",
+        12 => "inconsistentValue",
+        13 => "resourceUnavailable",
+        14 => "commitFailed",
+        15 => "undoFailed",
+        16 => "authorizationError",
+        17 => "notWritable",
+        18 => "inconsistentName",
+        _ => "unknown",
+    }
+}
+
+/// Outcome of validating a received SNMP message against the request.
+#[derive(Debug, PartialEq)]
+enum ResponseCheck {
+    /// The response matches the request and carries no agent error.
+    Valid,
+    /// The datagram does not belong to this request (wrong request-id,
+    /// wrong community or unexpected PDU type): discard it and keep
+    /// waiting — e.g. a late retransmission from a previous attempt.
+    Discard,
+}
+
+/// Validates a received message: PDU type, request-id correlation,
+/// community echo and agent error status.
+///
+/// # Returns
+/// * `Ok(Valid)` — response usable by the caller,
+/// * `Ok(Discard)` — datagram unrelated to this request, keep waiting,
+/// * `Err(SnmpAgentError)` — the agent answered with an error status.
+fn check_response(
+    message: &Message<Pdus>,
+    expected_id: i32,
+    community: &str,
+) -> Result<ResponseCheck> {
+    let Pdus::Response(resp) = &message.data else {
+        warn!("Received a non-Response SNMP PDU, discarding");
+        return Ok(ResponseCheck::Discard);
+    };
+    if resp.0.request_id != expected_id {
+        warn!(
+            "Received response for request-id {} while waiting for {}, discarding",
+            resp.0.request_id, expected_id
+        );
+        return Ok(ResponseCheck::Discard);
+    }
+    if message.community.as_ref() != community.as_bytes() {
+        warn!("Received response with a mismatched community, discarding");
+        return Ok(ResponseCheck::Discard);
+    }
+    if resp.0.error_status != 0 {
+        return Err(SnmpAgentError {
+            name: error_status_name(resp.0.error_status),
+            status: resp.0.error_status,
+            index: resp.0.error_index,
+        });
+    }
+    Ok(ResponseCheck::Valid)
+}
 
 /// The SNMP value type decoded from a single OID's response.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -136,14 +266,197 @@ pub struct SnmpResult {
     /// Collected values from this SNMP query, indexed by OID name.
     pub items: HashMap<String, ExprResult>,
     last_oid: Vec<u32>,
+    /// Number of in-subtree variable bindings processed by this walk,
+    /// checked against [`MAX_WALK_VARBINDS`].
+    processed: usize,
+    /// Numeric samples captured for rate computation, in push order:
+    /// `(item key, full OID, value)`. Only filled when the collect entry
+    /// asked for rates.
+    pub samples: Vec<(String, String, f64)>,
+    /// Row indices (last OID arc) captured per item key during a labeled
+    /// walk, in push order — the join key for index-based alignment.
+    pub indices: HashMap<String, Vec<u32>>,
+}
+
+/// GetBulk parameters of one request.
+struct BulkParams {
+    variable_bindings: Vec<VarBind>,
+    non_repeaters: u32,
+    max_repetitions: u32,
+}
+
+/// Live SNMPv3 session: the authoritative engine discovered on this target
+/// and the keys localized to it. Discovery happens once per collection.
+pub struct V3Session {
+    user: usm::UsmUser,
+    keys: usm::LocalizedKeys,
+    engine: usm::EngineParams,
+}
+
+/// Wraps a PDU into a scoped PDU addressed to the authoritative engine,
+/// in the user's SNMP context.
+fn scoped_pdu(
+    user: Option<&usm::UsmUser>,
+    engine_id: &[u8],
+    data: Pdus,
+) -> rasn_snmp::v3::ScopedPdu {
+    let context_engine = user
+        .and_then(|u| u.context_engine_id.clone())
+        .unwrap_or_else(|| engine_id.to_vec());
+    let context_name = user.map(|u| u.context_name.clone()).unwrap_or_default();
+    rasn_snmp::v3::ScopedPdu {
+        engine_id: rasn::types::OctetString::from(context_engine),
+        name: rasn::types::OctetString::from(context_name.into_bytes()),
+        data,
+    }
+}
+
+/// Sends an already-encoded datagram and returns the raw response bytes,
+/// honoring per-attempt timeouts, retries and the collection deadline.
+///
+/// Response *validation* is left to the caller: v2c checks community and
+/// request-id ([`check_response`]), v3 verifies the USM digest.
+fn exchange(
+    config: &SnmpConfig,
+    deadline: Instant,
+    encoded: &[u8],
+    socket: &UdpSocket,
+    buf: &mut [u8],
+) -> Result<Vec<u8>> {
+    let attempts = config.retries + 1;
+    for _ in 1..=attempts {
+        let now = Instant::now();
+        if now >= deadline {
+            return Err(CollectTimeout {
+                seconds: config.collect_timeout.as_secs(),
+            });
+        }
+        let attempt_deadline = std::cmp::min(now + config.timeout, deadline);
+        socket.send(encoded)?;
+        let remaining = attempt_deadline.saturating_duration_since(Instant::now());
+        if remaining.is_zero() {
+            continue;
+        }
+        socket.set_read_timeout(Some(remaining))?;
+        match socket.recv(buf) {
+            Ok(0) => return Err(EmptyResponse {}),
+            Ok(n) => return Ok(buf[..n].to_vec()),
+            Err(_) => continue,
+        }
+    }
+    Err(RequestTimeout {
+        url: config.target.clone(),
+        attempts,
+        timeout: config.timeout.as_secs(),
+    })
+}
+
+impl V3Session {
+    /// Discovers the authoritative engine (RFC 3414 §4) and localizes the
+    /// user keys to it.
+    ///
+    /// Step 1 is an unauthenticated probe with an empty engine ID: the agent
+    /// answers with a Report carrying its `snmpEngineID`. Step 2, only needed
+    /// when authentication is on and the agent did not already disclose its
+    /// counters, is an authenticated probe whose `notInTimeWindows` report
+    /// carries the real `engineBoots`/`engineTime`.
+    fn discover(
+        config: &SnmpConfig,
+        user: &usm::UsmUser,
+        deadline: Instant,
+        socket: &UdpSocket,
+        buf: &mut [u8],
+    ) -> Result<V3Session> {
+        let _span = debug_span!("v3_discovery").entered();
+        let probe_pdu = Pdus::GetRequest(rasn_snmp::v2::GetRequest(rasn_snmp::v2::Pdu {
+            request_id: 1,
+            error_status: 0,
+            error_index: 0,
+            variable_bindings: vec![],
+        }));
+        let encoded = usm::discovery_message(1, scoped_pdu(None, b"", probe_pdu.clone()))?;
+        let raw = exchange(config, deadline, &encoded, socket, buf)?;
+        let message: rasn_snmp::v3::Message =
+            rasn::ber::decode(&raw).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })?;
+        let mut engine = usm::engine_of(&message)?;
+        if engine.id.is_empty() {
+            return Err(UsmFailure {
+                reason: "the agent did not disclose its engine ID during discovery".to_string(),
+            });
+        }
+        trace!("discovered engine id: {} bytes", engine.id.len());
+        let keys = user.localize(&engine.id)?;
+
+        // Time synchronization: an authenticated probe against boots/time = 0
+        // is answered with a report carrying the authoritative counters.
+        if keys.auth.is_some() && engine.boots == 0 && engine.time == 0 {
+            let encoded = usm::build_message(
+                2,
+                user,
+                &keys,
+                &engine,
+                scoped_pdu(Some(user), &engine.id, probe_pdu),
+            )?;
+            if let Ok(raw) = exchange(config, deadline, &encoded, socket, buf)
+                && let Ok(message) = rasn::ber::decode::<rasn_snmp::v3::Message>(&raw)
+                && let Ok(reported) = usm::engine_of(&message)
+            {
+                engine.boots = reported.boots;
+                engine.time = reported.time;
+            }
+            trace!("time sync: boots={} time={}", engine.boots, engine.time);
+        }
+
+        Ok(V3Session {
+            user: user.clone(),
+            keys,
+            engine,
+        })
+    }
+
+    /// Sends an authenticated (and possibly encrypted) GetBulk, returning the
+    /// PDU of the verified response.
+    fn request(
+        &self,
+        config: &SnmpConfig,
+        deadline: Instant,
+        request_id: i32,
+        bulk: BulkParams,
+        socket: &UdpSocket,
+        buf: &mut [u8],
+    ) -> Result<Pdus> {
+        let BulkParams {
+            variable_bindings,
+            non_repeaters,
+            max_repetitions,
+        } = bulk;
+        let _span = trace_span!("request", id = request_id).entered();
+        let pdu = Pdus::GetBulkRequest(GetBulkRequest(BulkPdu {
+            request_id,
+            variable_bindings,
+            non_repeaters,
+            max_repetitions,
+        }));
+        let encoded = usm::build_message(
+            request_id,
+            &self.user,
+            &self.keys,
+            &self.engine,
+            scoped_pdu(Some(&self.user), &self.engine.id, pdu),
+        )?;
+        let raw = exchange(config, deadline, &encoded, socket, buf)?;
+        let message: rasn_snmp::v3::Message =
+            rasn::ber::decode(&raw).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })?;
+        let scoped = usm::open_message(&raw, &message, &self.keys)?;
+        Ok(scoped.data)
+    }
 }
 
 /// Retrieves values for multiple OIDs in a single bulk request.
 ///
 /// # Arguments
-/// * `target` - Target address in "host:port" format
-/// * `_version` - SNMP version (e.g., "2c")
-/// * `community` - SNMP community string
+/// * `config` - Connection parameters (target, community, timeouts, retries)
+/// * `deadline` - Global deadline of the whole collection
 /// * `non_repeaters` - Number of non-repeating OIDs (typically 0 or 1)
 /// * `max_repetitions` - Maximum repetitions per OID
 /// * `oid` - Vector of OID strings to query
@@ -154,14 +467,15 @@ pub struct SnmpResult {
 ///
 
 pub fn snmp_bulk_get<'a>(
-    target: &str,
-    _version: &str,
-    community: &str,
+    config: &SnmpConfig,
+    deadline: Instant,
     non_repeaters: u32,
     max_repetitions: u32,
     oid_list: &Vec<&str>,
     names: &Vec<&str>,
+    capture_samples: bool,
 ) -> Result<SnmpResult> {
+    let _span = debug_span!("get", oids = oid_list.len()).entered();
     let mut oids_tab: Vec<Vec<u32>> = vec![];
     for oid_str in oid_list {
         let mut oid = oid_to_vec(oid_str)?;
@@ -170,10 +484,7 @@ pub fn snmp_bulk_get<'a>(
         oids_tab.push(oid);
     }
 
-    let mut retval = SnmpResult {
-        items: HashMap::new(),
-        last_oid: Vec::new(),
-    };
+    let mut retval = SnmpResult::new(HashMap::new());
     let request_id: i32 = 1;
 
     let variable_bindings = oids_tab
@@ -184,23 +495,37 @@ pub fn snmp_bulk_get<'a>(
         })
         .collect::<Vec<VarBind>>();
 
-    let pdu = BulkPdu {
-        request_id,
-        variable_bindings,
-        non_repeaters,
-        max_repetitions,
+    let socket = open_socket(config)?;
+    let mut buf = vec![0u8; UDP_BUFFER_SIZE];
+    let pdus = match &config.v3 {
+        Some(user) => {
+            let session = V3Session::discover(config, user, deadline, &socket, &mut buf)?;
+            session.request(
+                config,
+                deadline,
+                request_id,
+                BulkParams {
+                    variable_bindings,
+                    non_repeaters,
+                    max_repetitions,
+                },
+                &socket,
+                &mut buf,
+            )?
+        }
+        None => {
+            let message = build_bulk_message(
+                config,
+                request_id,
+                variable_bindings,
+                non_repeaters,
+                max_repetitions,
+            );
+            send_request(config, deadline, request_id, &message, &socket, &mut buf)?.data
+        }
     };
 
-    let get_request: GetBulkRequest = GetBulkRequest(pdu);
-
-    let message: Message<GetBulkRequest> = Message {
-        version: 1.into(),
-        community: community.to_string().as_bytes().into(),
-        data: get_request.into(),
-    };
-    let decoded = get_data_from_udp(target, message)?;
-
-    let _completed = retval.build_response_with_names(decoded, "", names, false)?;
+    let _completed = retval.build_response_with_names(&pdus, "", names, false, capture_samples)?;
     Ok(retval)
 }
 
@@ -211,56 +536,72 @@ pub fn snmp_bulk_get<'a>(
 /// (including a read timeout) is propagated as an `Err`, not a partial result.
 ///
 /// # Arguments
-/// * `target` - Target address in "host:port" format
-/// * `_version` - SNMP version (e.g., "2c")
-/// * `community` - SNMP community string
+/// * `config` - Connection parameters (target, community, timeouts, retries)
+/// * `deadline` - Global deadline of the whole collection
 /// * `oid` - The base OID to walk
 /// * `snmp_name` - Logical name for collected values
 ///
 /// # Returns
 /// An [`SnmpResult`] containing all values under the specified OID
 pub fn snmp_bulk_walk<'a>(
-    target: &str,
-    _version: &str,
-    community: &str,
+    config: &SnmpConfig,
+    deadline: Instant,
     oid: &str,
     snmp_name: &str,
+    max_repetitions: u32,
+    capture_samples: bool,
 ) -> Result<SnmpResult> {
+    let _span = debug_span!("walk", oid).entered();
     let oid_init = oid_to_vec(oid)?;
-    let mut oid_tab = &oid_init;
-    let mut retval = SnmpResult {
-        items: HashMap::new(),
-        last_oid: Vec::new(),
+    let mut oid_tab = oid_init.clone();
+    let mut retval = SnmpResult::new(HashMap::new());
+    let mut request_id: i32 = 1;
+    // One socket (and one receive buffer) reused for every request of this
+    // walk, instead of a fresh bind+connect+alloc per round trip.
+    let socket = open_socket(config)?;
+    let mut buf = vec![0u8; UDP_BUFFER_SIZE];
+    // v3 discovery is done once for the whole walk, not per iteration.
+    let session = match &config.v3 {
+        Some(user) => Some(V3Session::discover(
+            config, user, deadline, &socket, &mut buf,
+        )?),
+        None => None,
     };
-    let request_id: i32 = 1;
     loop {
         let variable_bindings = vec![VarBind {
             name: ObjectIdentifier::new_unchecked(oid_tab.to_vec().into()),
             value: VarBindValue::Unspecified,
         }];
 
-        let pdu = BulkPdu {
-            request_id,
-            non_repeaters: 0,
-            max_repetitions: 10,
-            variable_bindings,
+        let pdus = match &session {
+            Some(session) => session.request(
+                config,
+                deadline,
+                request_id,
+                BulkParams {
+                    variable_bindings,
+                    non_repeaters: 0,
+                    max_repetitions,
+                },
+                &socket,
+                &mut buf,
+            )?,
+            None => {
+                let message =
+                    build_bulk_message(config, request_id, variable_bindings, 0, max_repetitions);
+                send_request(config, deadline, request_id, &message, &socket, &mut buf)?.data
+            }
         };
+        // One id per request: a late response to a previous iteration can
+        // never be mistaken for the current one.
+        request_id = request_id.wrapping_add(1);
 
-        let get_request: GetBulkRequest = GetBulkRequest(pdu);
-
-        let message: Message<GetBulkRequest> = Message {
-            version: 1.into(),
-            community: community.to_string().as_bytes().into(),
-            data: get_request.into(),
-        };
-
-        let decoded = get_data_from_udp(target, message)?;
-        let completed = retval.build_response(decoded, &oid, snmp_name, true)?;
+        let completed = retval.build_response(&pdus, oid, snmp_name, true, capture_samples)?;
 
         if completed {
             break;
         }
-        oid_tab = &retval.last_oid;
+        oid_tab = retval.last_oid.clone();
     }
     Ok(retval)
 }
@@ -273,9 +614,8 @@ pub fn snmp_bulk_walk<'a>(
 /// subtree or the agent replies with `EndOfMibView`.
 ///
 /// # Arguments
-/// * `target` - Target address in "host:port" format
-/// * `_version` - SNMP version (e.g., "2c")
-/// * `community` - SNMP community string
+/// * `config` - Connection parameters (target, community, timeouts, retries)
+/// * `deadline` - Global deadline of the whole collection
 /// * `oid` - The base OID to walk
 /// * `snmp_name` - Logical name prefix for collected values
 /// * `labels` - Map of label identifiers to logical names
@@ -283,20 +623,30 @@ pub fn snmp_bulk_walk<'a>(
 /// # Returns
 /// An [`SnmpResult`] with values organized by label as separate vectors
 pub fn snmp_bulk_walk_with_labels<'a>(
-    target: &str,
-    _version: &str,
-    community: &str,
+    config: &SnmpConfig,
+    deadline: Instant,
     oid: &str,
     snmp_name: &str,
     labels: &'a HashMap<String, String>,
+    max_repetitions: u32,
+    capture_samples: bool,
 ) -> Result<SnmpResult> {
+    let _span = debug_span!("walk", oid).entered();
     let oid_init = oid_to_vec(oid)?;
-    let mut oid_tab = &oid_init;
-    let mut retval = SnmpResult {
-        items: HashMap::new(),
-        last_oid: Vec::new(),
+    let mut oid_tab = oid_init.clone();
+    let mut retval = SnmpResult::new(HashMap::new());
+    let mut request_id: i32 = 1;
+    // One socket (and one receive buffer) reused for every request of this
+    // walk, instead of a fresh bind+connect+alloc per round trip.
+    let socket = open_socket(config)?;
+    let mut buf = vec![0u8; UDP_BUFFER_SIZE];
+    // v3 discovery is done once for the whole walk, not per iteration.
+    let session = match &config.v3 {
+        Some(user) => Some(V3Session::discover(
+            config, user, deadline, &socket, &mut buf,
+        )?),
+        None => None,
     };
-    let request_id: i32 = 1;
 
     loop {
         let variable_bindings = vec![VarBind {
@@ -304,30 +654,41 @@ pub fn snmp_bulk_walk_with_labels<'a>(
             value: VarBindValue::Unspecified,
         }];
 
-        let pdu = BulkPdu {
-            request_id,
-            non_repeaters: 0,
-            max_repetitions: 10,
-            variable_bindings,
+        let pdus = match &session {
+            Some(session) => session.request(
+                config,
+                deadline,
+                request_id,
+                BulkParams {
+                    variable_bindings,
+                    non_repeaters: 0,
+                    max_repetitions,
+                },
+                &socket,
+                &mut buf,
+            )?,
+            None => {
+                let message =
+                    build_bulk_message(config, request_id, variable_bindings, 0, max_repetitions);
+                send_request(config, deadline, request_id, &message, &socket, &mut buf)?.data
+            }
         };
+        // One id per request: a late response to a previous iteration can
+        // never be mistaken for the current one.
+        request_id = request_id.wrapping_add(1);
 
-        let get_request: GetBulkRequest = GetBulkRequest(pdu);
-
-        let message: Message<GetBulkRequest> = Message {
-            version: 1.into(),
-            community: community.to_string().as_bytes().into(),
-            data: get_request.into(),
-        };
-
-        // Send the message through an UDP socket
-        let decoded = get_data_from_udp(target, message)?;
-
-        let completed =
-            retval.build_response_with_labels(decoded, &oid, snmp_name, labels, true)?;
+        let completed = retval.build_response_with_labels(
+            &pdus,
+            oid,
+            snmp_name,
+            labels,
+            true,
+            capture_samples,
+        )?;
         if completed {
             break;
         }
-        oid_tab = &retval.last_oid;
+        oid_tab = retval.last_oid.clone();
     }
     Ok(retval)
 }
@@ -338,6 +699,9 @@ impl SnmpResult {
         SnmpResult {
             items,
             last_oid: Vec::new(),
+            processed: 0,
+            samples: Vec::new(),
+            indices: HashMap::new(),
         }
     }
 
@@ -395,28 +759,72 @@ impl SnmpResult {
     /// `true` if the walk should terminate (for walk operations)
     fn process_response(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         walk: bool,
+        capture_samples: bool,
+        capture_indices: bool,
         mut key_for: impl FnMut(usize, &str) -> Vec<String>,
     ) -> Result<bool> {
         let mut completed = false;
 
-        if let Pdus::Response(resp) = &decoded.data {
+        if let Pdus::Response(resp) = decoded {
             for (idx, var) in resp.0.variable_bindings.iter().enumerate() {
                 let name = var.name.to_string();
-                self.last_oid = oid_to_vec(&name)?;
 
+                // A terminator (out-of-subtree OID or EndOfMibView) is not
+                // real walked data: some agents echo a stale or unrelated
+                // OID on it, so it must not be subjected to the
+                // monotonicity/cap guards below, only checked for
+                // termination.
                 if walk && (!name.starts_with(oid) || var.value.eq(&EndOfMibView)) {
                     completed = true;
                     break;
                 }
 
+                let arcs = oid_to_vec(&name)?;
+
+                // During a walk, OIDs must be strictly increasing — both
+                // inside a batch and across batches (`last_oid` carries the
+                // previous position). An agent that repeats or goes
+                // backwards would otherwise loop the walk forever (classic
+                // snmpwalk "OID not increasing" guard).
+                if walk && !self.last_oid.is_empty() && arcs <= self.last_oid {
+                    return Err(OidNotIncreasing { oid: name });
+                }
+                let row_index = arcs.last().copied();
+                self.last_oid = arcs;
+
+                // Hard bound on the amount of data a single walk may
+                // return: protects against an agent streaming endless values.
+                if walk {
+                    self.processed += 1;
+                    if self.processed > MAX_WALK_VARBINDS {
+                        return Err(WalkTooLarge {
+                            max: MAX_WALK_VARBINDS,
+                        });
+                    }
+                }
+
                 let Some(typ) = value_from_varbind(&var.value)? else {
                     continue;
                 };
+                let numeric = match &typ {
+                    ValueType::Integer(i) => Some(*i as f64),
+                    ValueType::Counter64(c) => Some(*c as f64),
+                    ValueType::String(_) => None,
+                };
 
                 for key in key_for(idx, &name) {
+                    if capture_samples && let Some(value) = numeric {
+                        self.samples.push((key.clone(), name.clone(), value));
+                    }
+                    // The row index is the join key for index-based alignment
+                    // (see generic::align_by_index): recorded in push order so
+                    // it stays parallel to the value vector.
+                    if capture_indices && let Some(row) = row_index {
+                        self.indices.entry(key.clone()).or_default().push(row);
+                    }
                     _ = self.store(key, typ.clone())?;
                 }
             }
@@ -429,13 +837,18 @@ impl SnmpResult {
     /// `{snmp_name}.{label}`.
     fn build_response_with_labels<'a>(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         snmp_name: &str,
         labels: &'a HashMap<String, String>,
         walk: bool,
+        capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, |_idx, name| {
+        // Row indices are only meaningful for labeled (tabular) walks: this
+        // is what lets generic::align_by_index reject positional alignment
+        // in favor of the actual OID row index. Not a caller-configurable
+        // option — an invariant of using labels.
+        self.process_response(decoded, oid, walk, capture_samples, true, |_idx, name| {
             let prefix = name.rfind('.').map_or(name, |i| &name[..i]);
             labels
                 .iter()
@@ -449,12 +862,13 @@ impl SnmpResult {
     /// its corresponding entry in `names`.
     fn build_response_with_names<'a>(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         names: &Vec<&str>,
         walk: bool,
+        capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, |idx, _name| {
+        self.process_response(decoded, oid, walk, capture_samples, false, |idx, _name| {
             vec![names[idx].to_string()]
         })
     }
@@ -463,12 +877,13 @@ impl SnmpResult {
     /// logical name (used for plain walks).
     fn build_response<'a>(
         &mut self,
-        decoded: Message<Pdus>,
+        decoded: &Pdus,
         oid: &str,
         snmp_name: &str,
         walk: bool,
+        capture_samples: bool,
     ) -> Result<bool> {
-        self.process_response(decoded, oid, walk, |_idx, _name| {
+        self.process_response(decoded, oid, walk, capture_samples, false, |_idx, _name| {
             vec![snmp_name.to_string()]
         })
     }
@@ -499,52 +914,156 @@ fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
     return Ok(oid_u32);
 }
 
-/// Create an udp socket and send a snmp request on it, returning the response.
+/// Builds the v2c GetBulk message for the given variable bindings.
+fn build_bulk_message(
+    config: &SnmpConfig,
+    request_id: i32,
+    variable_bindings: Vec<VarBind>,
+    non_repeaters: u32,
+    max_repetitions: u32,
+) -> Message<GetBulkRequest> {
+    let pdu = BulkPdu {
+        request_id,
+        variable_bindings,
+        non_repeaters,
+        max_repetitions,
+    };
+    Message {
+        version: 1.into(),
+        community: config.community.as_bytes().into(),
+        data: GetBulkRequest(pdu),
+    }
+}
+
+/// Opens a UDP socket `connect`ed to the target: the kernel then filters
+/// datagrams coming from any other source. One socket (and one receive
+/// buffer) is reused for all the requests of a get or a walk.
+#[cfg(not(test))]
+fn open_socket(config: &SnmpConfig) -> Result<UdpSocket> {
+    let socket = UdpSocket::bind("0.0.0.0:0")?;
+    socket.connect(&config.target)?;
+    Ok(socket)
+}
+#[cfg(test)]
+fn open_socket(_config: &SnmpConfig) -> Result<UdpSocket> {
+    // Tests bypass the network entirely (see `send_request`'s #[cfg(test)]
+    // variant below, which never touches the socket); a bound-but
+    // unconnected socket is a harmless placeholder so call sites don't need
+    // their own cfg branching.
+    Ok(UdpSocket::bind("0.0.0.0:0")?)
+}
+
+/// Sends a GetBulk request and waits for its matching response, honoring
+/// per-attempt timeouts, retries and the global collection deadline.
 /// This function is blocking.
 ///
+/// The socket is `connect`ed to the target, so the kernel filters datagrams
+/// from other sources. On top of that, every received message is validated
+/// by [`check_response`] (request-id correlation, community echo, agent
+/// error status); unrelated datagrams are discarded and the wait continues.
+///
 /// # Arguments
-/// * `target` - Target address in "host:port" format
-/// * `message` - Snmp Message, containing the snmp version, comunity, and a Pdu
+/// * `config` - Connection parameters (target, community, timeouts, retries)
+/// * `deadline` - Global deadline of the whole collection
+/// * `request_id` - Identifier of this request, verified in the response
+/// * `message` - The request message to send
 ///
 /// # Returns
-/// A Message<Pdu> containing the answers from the target, or an error if it was not reachable/decodable
-///
+/// The validated response, or a typed error (`CollectTimeout`,
+/// `RequestTimeout`, `SnmpAgentError`, ...)
 // In tests, the transport is replaced by an in-memory fake agent (see
 // `tests::fake_snmp_agent`) so the request/response loop in `snmp_bulk_walk`
-// and friends can be exercised without a real network.
+// and friends can be exercised without a real network; the deadline check
+// still runs so `expired_deadline_stops_the_collection_before_sending` can
+// exercise it without touching the network either.
 #[cfg(test)]
-fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-    tests::fake_snmp_agent(message)
+fn send_request(
+    config: &SnmpConfig,
+    deadline: Instant,
+    request_id: i32,
+    message: &Message<GetBulkRequest>,
+    _socket: &UdpSocket,
+    _buf: &mut [u8],
+) -> Result<Message<Pdus>> {
+    if Instant::now() >= deadline {
+        return Err(CollectTimeout {
+            seconds: config.collect_timeout.as_secs(),
+        });
+    }
+    let decoded = tests::fake_snmp_agent(message.clone())?;
+    match check_response(&decoded, request_id, &config.community)? {
+        ResponseCheck::Valid => Ok(decoded),
+        ResponseCheck::Discard => Err(RequestTimeout {
+            url: config.target.clone(),
+            attempts: 1,
+            timeout: config.timeout.as_secs(),
+        }),
+    }
 }
 #[cfg(not(test))]
-fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-    let socket = UdpSocket::bind("0.0.0.0:0")?;
-    socket.connect(target)?;
-    let duration = std::time::Duration::from_millis(1000);
-    socket.set_read_timeout(Some(duration))?;
-    // Send the message through an UDP socket
-    let encoded: Vec<u8> = rasn::der::encode(&message).map_err(|_| InvalidSnmpPduEncode {})?;
-    let res: usize = socket.send(&encoded)?;
-    assert!(res == encoded.len());
-    let mut buf: [u8; 1024] = [0; 1024];
-    info!("waiting to receive data from {:?}", socket.peer_addr());
-    let resp: (usize, std::net::SocketAddr) =
-        socket
-            .recv_from(buf.as_mut_slice())
-            .map_err(|e| FailedToConnectToHost {
-                url: target.to_string(),
-                os: e.to_string(),
-            })?;
+fn send_request(
+    config: &SnmpConfig,
+    deadline: Instant,
+    request_id: i32,
+    message: &Message<GetBulkRequest>,
+    socket: &UdpSocket,
+    buf: &mut [u8],
+) -> Result<Message<Pdus>> {
+    let _span = trace_span!("request", id = request_id).entered();
+    let encoded: Vec<u8> = rasn::der::encode(message).map_err(|_| InvalidSnmpPduEncode {})?;
 
-    info!("Received {} bytes", resp.0);
-    if resp.0 == 0 {
-        return Err(EmptyResponse {});
+    let attempts = config.retries + 1;
+    for attempt in 1..=attempts {
+        // Enforce the global collection budget before spending more time.
+        let now = Instant::now();
+        if now >= deadline {
+            return Err(CollectTimeout {
+                seconds: config.collect_timeout.as_secs(),
+            });
+        }
+        let attempt_deadline = std::cmp::min(now + config.timeout, deadline);
+
+        let sent = socket.send(&encoded).map_err(|e| FailedToConnectToHost {
+            url: config.target.clone(),
+            os: e.to_string(),
+        })?;
+        // UDP send is all-or-nothing: a partial send cannot happen, the
+        // datagram is either fully sent or the call errors out above.
+        assert!(sent == encoded.len());
+        trace!(
+            "request {} attempt {}/{} sent to {}",
+            request_id, attempt, attempts, config.target
+        );
+
+        // Receive until this attempt's deadline; discard unrelated datagrams.
+        loop {
+            let remaining = attempt_deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                break; // attempt timed out, retry
+            }
+            socket.set_read_timeout(Some(remaining))?;
+            let received = match socket.recv(&mut *buf) {
+                Ok(n) => n,
+                Err(_) => break, // timeout or transient error: retry
+            };
+            trace!("Received {} bytes", received);
+            if received == 0 {
+                return Err(EmptyResponse {});
+            }
+            let decoded: Message<Pdus> = rasn::ber::decode(&buf[0..received])
+                .map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })?;
+            match check_response(&decoded, request_id, &config.community)? {
+                ResponseCheck::Valid => return Ok(decoded),
+                ResponseCheck::Discard => continue,
+            }
+        }
     }
 
-    let resp =
-        rasn::ber::decode(&buf[0..resp.0]).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() });
-    trace!("Received an snmp answer : {:?}", resp);
-    resp
+    Err(RequestTimeout {
+        url: config.target.clone(),
+        attempts,
+        timeout: config.timeout.as_secs(),
+    })
 }
 
 #[cfg(test)]
@@ -657,10 +1176,33 @@ mod tests {
         })
     }
 
+    fn test_config() -> SnmpConfig {
+        SnmpConfig {
+            target: "test:161".to_string(),
+            version: "2c".to_string(),
+            community: "public".to_string(),
+            timeout: Duration::from_secs(1),
+            retries: 2,
+            collect_timeout: Duration::from_secs(50),
+            max_repetitions: 50,
+            statefile_dir: std::env::temp_dir(),
+            v3: None,
+        }
+    }
+
     #[test]
     fn test_snmp_bulk_walk() {
+        let config = test_config();
         // collects every row across multiple bulk pages
-        let result = snmp_bulk_walk("test:161", "2c", "public", CPU_TABLE_OID, "cpu").unwrap();
+        let result = snmp_bulk_walk(
+            &config,
+            config.deadline(),
+            CPU_TABLE_OID,
+            "cpu",
+            config.max_repetitions,
+            false,
+        )
+        .unwrap();
 
         match result.items.get("cpu").unwrap() {
             ExprResult::Vector(v) => assert_eq!(
@@ -673,7 +1215,15 @@ mod tests {
         }
 
         // terminates on end of mib view
-        let result = snmp_bulk_walk("test:161", "2c", "public", SHORT_TABLE_OID, "short").unwrap();
+        let result = snmp_bulk_walk(
+            &config,
+            config.deadline(),
+            SHORT_TABLE_OID,
+            "short",
+            config.max_repetitions,
+            false,
+        )
+        .unwrap();
 
         match result.items.get("short").unwrap() {
             ExprResult::Vector(v) => assert_eq!(v, &vec![10.0, 20.0]),
@@ -681,21 +1231,29 @@ mod tests {
         }
 
         //propagates transport errors
-        let result = snmp_bulk_walk("test:161", "2c", "public", TRANSPORT_ERROR_OID, "x");
+        let result = snmp_bulk_walk(
+            &config,
+            config.deadline(),
+            TRANSPORT_ERROR_OID,
+            "x",
+            config.max_repetitions,
+            false,
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn test_snmp_bulk_get() {
+        let config = test_config();
         // fetches several distinct OIDs in a single round trip
         let result = snmp_bulk_get(
-            "test:161",
-            "2c",
-            "public",
+            &config,
+            config.deadline(),
             2,
             0,
             &vec!["1.3.6.1.2.1.1.3.0", "1.3.6.1.2.1.1.5.0"],
             &vec!["uptime", "name"],
+            false,
         )
         .unwrap();
 
@@ -710,30 +1268,46 @@ mod tests {
 
         // propagates transport errors
         let result = snmp_bulk_get(
-            "test:161",
-            "2c",
-            "public",
+            &config,
+            config.deadline(),
             1,
             0,
             &vec![TRANSPORT_ERROR_OID],
             &vec!["x"],
+            false,
         );
         assert!(result.is_err());
 
         // propagates invalid-oid errors before any network call
-        let result = snmp_bulk_get("test:161", "2c", "public", 1, 0, &vec![""], &vec!["x"]);
+        let result = snmp_bulk_get(
+            &config,
+            config.deadline(),
+            1,
+            0,
+            &vec![""],
+            &vec!["x"],
+            false,
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn test_snmp_bulk_walk_with_labels() {
+        let config = test_config();
         // collects every row across multiple bulk pages, grouped by label
         let mut labels = HashMap::new();
         // label contain the oid last number as key and the name of the property as value.
         labels.insert("2".to_string(), "core".to_string());
-        let result =
-            snmp_bulk_walk_with_labels("test:161", "2c", "public", CPU_TABLE_OID, "cpu", &labels)
-                .unwrap();
+        let result = snmp_bulk_walk_with_labels(
+            &config,
+            config.deadline(),
+            CPU_TABLE_OID,
+            "cpu",
+            &labels,
+            config.max_repetitions,
+            false,
+        )
+        .unwrap();
         match result.items.get("cpu.core").unwrap() {
             ExprResult::Vector(v) => assert_eq!(
                 v,
@@ -748,12 +1322,13 @@ mod tests {
         let mut labels = HashMap::new();
         labels.insert("1".to_string(), "val".to_string());
         let result = snmp_bulk_walk_with_labels(
-            "test:161",
-            "2c",
-            "public",
+            &config,
+            config.deadline(),
             SHORT_TABLE_OID,
             "short",
             &labels,
+            config.max_repetitions,
+            false,
         )
         .unwrap();
 
@@ -764,18 +1339,140 @@ mod tests {
 
         // propagates transport errors
         let result = snmp_bulk_walk_with_labels(
-            "test:161",
-            "2c",
-            "public",
+            &config,
+            config.deadline(),
             TRANSPORT_ERROR_OID,
             "x",
             &labels,
+            config.max_repetitions,
+            false,
         );
         assert!(result.is_err());
 
         // propagates invalid-oid errors before any network call
-        let result = snmp_bulk_walk_with_labels("test:161", "2c", "public", "", "x", &labels);
+        let result = snmp_bulk_walk_with_labels(
+            &config,
+            config.deadline(),
+            "",
+            "x",
+            &labels,
+            config.max_repetitions,
+            false,
+        );
         assert!(result.is_err());
+    }
+
+    // ---- Protocol hardening (quality plan, chantier A) ----------------------
+
+    fn response_full(
+        request_id: i32,
+        error_status: u32,
+        community: &str,
+        bindings: Vec<VarBind>,
+    ) -> Message<Pdus> {
+        Message {
+            version: 1.into(),
+            community: community.as_bytes().into(),
+            data: Pdus::Response(Response(Pdu {
+                request_id,
+                error_status,
+                error_index: 3,
+                variable_bindings: bindings,
+            })),
+        }
+    }
+
+    #[test]
+    fn error_status_names_follow_rfc3416() {
+        assert_eq!(error_status_name(0), "noError");
+        assert_eq!(error_status_name(1), "tooBig");
+        assert_eq!(error_status_name(2), "noSuchName");
+        assert_eq!(error_status_name(5), "genErr");
+        assert_eq!(error_status_name(16), "authorizationError");
+        assert_eq!(error_status_name(99), "unknown");
+    }
+
+    #[test]
+    fn check_response_accepts_a_matching_response() {
+        let msg = response_full(42, 0, "public", vec![]);
+        let res = check_response(&msg, 42, "public").expect("no agent error");
+        assert_eq!(res, ResponseCheck::Valid);
+    }
+
+    #[test]
+    fn check_response_discards_a_mismatched_request_id() {
+        // A late retransmission from a previous request must be discarded,
+        // not consumed as the answer to the current one.
+        let msg = response_full(41, 0, "public", vec![]);
+        let res = check_response(&msg, 42, "public").expect("discard is not an error");
+        assert_eq!(res, ResponseCheck::Discard);
+    }
+
+    #[test]
+    fn check_response_discards_a_mismatched_community() {
+        let msg = response_full(42, 0, "other", vec![]);
+        let res = check_response(&msg, 42, "public").expect("discard is not an error");
+        assert_eq!(res, ResponseCheck::Discard);
+    }
+
+    #[test]
+    fn check_response_reports_agent_errors_with_their_standard_name() {
+        // error_status 2 = noSuchName, error_index 3.
+        let msg = response_full(42, 2, "public", vec![]);
+        let err = check_response(&msg, 42, "public").expect_err("agent error expected");
+        let text = err.to_string();
+        assert!(text.contains("noSuchName"), "got: {}", text);
+        assert!(text.contains("index 3"), "got: {}", text);
+    }
+
+    #[test]
+    fn walk_rejects_a_non_increasing_oid() {
+        // Second OID goes backwards: a buggy agent would loop the walk
+        // forever without this guard.
+        let msg = response_message(vec![("1.3.6.1.2.5", 1), ("1.3.6.1.2.4", 2)]);
+        let mut result = SnmpResult::new(HashMap::new());
+        let err = result.build_response(&msg.data, "1.3.6.1.2", "v", true, false);
+        assert!(err.is_err(), "backwards OID must be an error");
+
+        // An OID equal to the previous one must fail too.
+        let msg = response_message(vec![("1.3.6.1.2.5", 1), ("1.3.6.1.2.5", 2)]);
+        let mut result = SnmpResult::new(HashMap::new());
+        let err = result.build_response(&msg.data, "1.3.6.1.2", "v", true, false);
+        assert!(err.is_err(), "repeated OID must be an error");
+    }
+
+    #[test]
+    fn walk_aborts_beyond_the_varbind_safety_bound() {
+        // Feed MAX_WALK_VARBINDS + 1 increasing varbinds through the walk
+        // path: the bound must trip instead of accumulating forever.
+        let bindings: Vec<(String, i64)> = (0..=(MAX_WALK_VARBINDS as u32))
+            .map(|i| (format!("1.3.6.1.2.{}", i + 1), 1))
+            .collect();
+        let msg = response_message(bindings.iter().map(|(oid, v)| (oid.as_str(), *v)).collect());
+        let mut result = SnmpResult::new(HashMap::new());
+        let err = result.build_response(&msg.data, "1.3.6.1.2", "v", true, false);
+        match err {
+            Err(crate::generic::error::Error::WalkTooLarge { max }) => {
+                assert_eq!(max, MAX_WALK_VARBINDS)
+            }
+            other => panic!("expected WalkTooLarge, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn expired_deadline_stops_the_collection_before_sending() {
+        let config = test_config();
+        let message = build_bulk_message(&config, 1, vec![], 0, 10);
+        let past = Instant::now() - Duration::from_secs(1);
+        let socket = open_socket(&config).expect("socket");
+        let mut buf = vec![0u8; 64];
+        let err = send_request(&config, past, 1, &message, &socket, &mut buf);
+        match err {
+            Err(crate::generic::error::Error::CollectTimeout { seconds }) => {
+                assert_eq!(seconds, 50)
+            }
+            other => panic!("expected CollectTimeout, got {:?}", other),
+        }
     }
 
     #[test]
@@ -1000,7 +1697,7 @@ mod tests {
         let decoded = response_message(vec![("1.3.6.1.2.1.1.3.0", 1), ("1.3.6.1.2.1.1.9.0", 2)]);
 
         let completed = result
-            .build_response_with_names(decoded, "", &vec!["uptime", "count"], false)
+            .build_response_with_names(&decoded.data, "", &vec!["uptime", "count"], false, false)
             .unwrap();
 
         assert!(!completed);
@@ -1027,7 +1724,14 @@ mod tests {
         labels.insert("16".to_string(), "out".to_string());
 
         let completed = result
-            .build_response_with_labels(decoded, "1.3.6.1.2.1.2.2.1", "iface", &labels, false)
+            .build_response_with_labels(
+                &decoded.data,
+                "1.3.6.1.2.1.2.2.1",
+                "iface",
+                &labels,
+                false,
+                false,
+            )
             .unwrap();
 
         assert!(!completed);
@@ -1038,6 +1742,40 @@ mod tests {
         assert_eq!(
             result.items.get("iface.out").unwrap(),
             &ExprResult::Vector(vec![200.0])
+        );
+    }
+
+    #[test]
+    fn capture_records_numeric_samples_with_their_oid() {
+        let decoded = Message {
+            version: 1.into(),
+            community: "public".as_bytes().into(),
+            data: Pdus::Response(Response(Pdu {
+                request_id: 1,
+                error_status: 0,
+                error_index: 0,
+                variable_bindings: vec![
+                    integer_varbind("1.3.6.1.2.10.1", 41),
+                    VarBind {
+                        name: ObjectIdentifier::new_unchecked(
+                            oid_to_vec("1.3.6.1.2.2.1").unwrap().into(),
+                        ),
+                        value: VarBindValue::Value(ObjectSyntax::Simple(SimpleSyntax::String(
+                            OctetString::from_static(b"eth0"),
+                        ))),
+                    },
+                ],
+            })),
+        };
+        let mut result = SnmpResult::new(HashMap::new());
+        let names = vec!["traffic", "descr"];
+        result
+            .build_response_with_names(&decoded.data, "", &names, false, true)
+            .expect("build_response should succeed");
+        // Only the numeric varbind is sampled, with its full OID.
+        assert_eq!(
+            result.samples,
+            vec![("traffic".to_string(), "1.3.6.1.2.10.1".to_string(), 41.0)]
         );
     }
 }

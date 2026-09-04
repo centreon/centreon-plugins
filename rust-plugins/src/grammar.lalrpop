@@ -21,6 +21,8 @@ pub Function: Box<ast::Expr<'input>> = {
 	b"Average" => return Box::new(ast::Expr::Fn(ast::Func::Average, a)),
 	b"Max" => return Box::new(ast::Expr::Fn(ast::Func::Max, a)),
 	b"Min" => return Box::new(ast::Expr::Fn(ast::Func::Min, a)),
+	b"Count" => return Box::new(ast::Expr::Fn(ast::Func::Count, a)),
+	b"Bytes" => return Box::new(ast::Expr::Fn(ast::Func::Bytes, a)),
 	// FIXME DBO: This case is an error case...
 	_ => return a,
       }

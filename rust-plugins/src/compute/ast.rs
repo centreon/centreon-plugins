@@ -1,8 +1,8 @@
 //! Abstract syntax tree and expression evaluation.
 
 use crate::snmp::SnmpResult;
-use log::{info, trace, warn};
 use std::str;
+use tracing::{info, trace, warn};
 
 /// An expression node in the AST.
 #[derive(Debug)]
@@ -32,10 +32,116 @@ pub enum Func {
     Min,
     /// Compute the maximum value.
     Max,
+    /// Number of elements of a vector (1 for a scalar).
+    ///
+    /// Reproduces Perl messages like "2 CPU(s) average usage is ...", where
+    /// the instance count is part of the text.
+    Count,
+    /// Scales a byte quantity to a human-readable unit: `1023406080` becomes
+    /// `976.00 MB`.
+    ///
+    /// Reproduces `centreon::plugins::misc::format_bytes`: base 1024, units
+    /// up to terabyte, two decimals.
+    Bytes,
+}
+
+impl Func {
+    /// Resolves a function name found in a template (e.g. `Count` in
+    /// `"{Count(metrics.cpu)}"`) to the matching variant.
+    ///
+    /// Only `Count` and `Bytes` are recognized here: `Average`/`Min`/`Max`
+    /// are computation-stage functions parsed by the grammar, not
+    /// presentation-stage functions used in output templates.
+    pub fn from_name(name: &str) -> Option<Func> {
+        match name {
+            "Count" => Some(Func::Count),
+            "Bytes" => Some(Func::Bytes),
+            _ => None,
+        }
+    }
+
+    /// Applies this function to an already-evaluated value.
+    ///
+    /// Shared by the grammar's `Expr::Fn` evaluation and by output
+    /// templates' inline `{Function(macro)}` syntax, so both surfaces stay
+    /// byte-for-byte consistent.
+    pub fn apply(&self, v: ExprResult) -> Result<ExprResult, String> {
+        match self {
+            Func::Average => match v {
+                ExprResult::Number(n) => Ok(ExprResult::Number(n)),
+                ExprResult::Vector(v) => {
+                    let mut sum = 0.0;
+                    let mut count = 0;
+                    for value in v {
+                        if !value.is_nan() {
+                            sum += value;
+                            count += 1;
+                        }
+                    }
+                    if count > 0 {
+                        Ok(ExprResult::Number(sum / count as f64))
+                    } else {
+                        Ok(ExprResult::Number(f64::NAN))
+                    }
+                }
+                _ => panic!("Invalid operation"),
+            },
+            Func::Min => match v {
+                ExprResult::Number(n) => Ok(ExprResult::Number(n)),
+                ExprResult::Vector(v) => {
+                    let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
+                    Ok(ExprResult::Number(min))
+                }
+                _ => panic!("Invalid operation"),
+            },
+            Func::Max => match v {
+                ExprResult::Number(n) => Ok(ExprResult::Number(n)),
+                ExprResult::Vector(v) => {
+                    let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+                    Ok(ExprResult::Number(max))
+                }
+                _ => panic!("Invalid operation"),
+            },
+            // Bytes only makes sense on numeric values.
+            Func::Bytes => match v {
+                ExprResult::Number(n) => Ok(ExprResult::Str(format_bytes(n))),
+                ExprResult::Vector(v) => Ok(ExprResult::StrVector(
+                    v.iter().map(|n| format_bytes(*n)).collect(),
+                )),
+                _ => Err("Bytes expects numeric values".to_string()),
+            },
+            // Count accepts every type: it's a count, not a
+            // computation on the values.
+            Func::Count => Ok(ExprResult::Number(match v {
+                ExprResult::Vector(v) => v.len() as f64,
+                ExprResult::StrVector(v) => v.len() as f64,
+                ExprResult::Empty => 0.0,
+                _ => 1.0,
+            })),
+        }
+    }
+}
+
+/// Scales a byte quantity to a human-readable unit, identically to Perl.
+///
+/// The unit climb stops at terabyte (beyond that, Perl shows thousands of
+/// TB) and the sign is applied after scaling.
+fn format_bytes(value: f64) -> String {
+    let sign = if value < 0.0 { "-" } else { "" };
+    let mut value = value.abs();
+    let mut unit = "";
+    for candidate in ["K", "M", "G", "T"] {
+        if value / 1024.0 < 1.0 {
+            break;
+        }
+        unit = candidate;
+        value /= 1024.0;
+    }
+    format!("{}{:.2} {}B", sign, value, unit)
 }
 
 /// Result of evaluating an expression: either a numeric value/vector or a string.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ExprResult {
     /// A vector of floating-point values.
     Vector(Vec<f64>),
@@ -431,43 +537,7 @@ impl<'input> Expr<'input> {
             Expr::OpSlash(left, right) => Ok(left.eval(collect)? / right.eval(collect)?),
             Expr::Fn(func, expr) => {
                 let v = expr.eval(collect)?;
-                match func {
-                    Func::Average => match v {
-                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
-                        ExprResult::Vector(v) => {
-                            let mut sum = 0.0;
-                            let mut count = 0;
-                            for value in v {
-                                if !value.is_nan() {
-                                    sum += value;
-                                    count += 1;
-                                }
-                            }
-                            if count > 0 {
-                                Ok(ExprResult::Number(sum / count as f64))
-                            } else {
-                                Ok(ExprResult::Number(f64::NAN))
-                            }
-                        }
-                        _ => panic!("Invalid operation"),
-                    },
-                    Func::Min => match v {
-                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
-                        ExprResult::Vector(v) => {
-                            let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
-                            Ok(ExprResult::Number(min))
-                        }
-                        _ => panic!("Invalid operation"),
-                    },
-                    Func::Max => match v {
-                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
-                        ExprResult::Vector(v) => {
-                            let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-                            Ok(ExprResult::Number(max))
-                        }
-                        _ => panic!("Invalid operation"),
-                    },
-                }
+                func.apply(v)
             }
         }
     }
@@ -478,6 +548,32 @@ impl<'input> Expr<'input> {
             return id;
         } else {
             return b"Bad value";
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::format_bytes;
+
+    /// Values taken from real Perl `swap` mode output: the scaling must
+    /// match character-for-character, including the unit switch and the
+    /// two-decimal rounding.
+    #[test]
+    fn test_format_bytes_matches_perl() {
+        for (value, expected) in [
+            (0.0, "0.00 B"),
+            (1023.0, "1023.00 B"),
+            (1024.0, "1.00 KB"),
+            (511406080.0, "487.71 MB"),
+            (512000000.0, "488.28 MB"),
+            (1023406080.0, "976.00 MB"),
+            (1099511627776.0, "1.00 TB"),
+            // Perl stops at terabyte: beyond that it shows thousands of TB.
+            (1125899906842624.0, "1024.00 TB"),
+            (-1024.0, "-1.00 KB"),
+        ] {
+            assert_eq!(format_bytes(value), expected, "value {}", value);
         }
     }
 }
