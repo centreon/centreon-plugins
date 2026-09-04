@@ -1,0 +1,2031 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="css/overpass300,400,600,800.css">
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <link href="css/bootstrap-4.3.1.min.css" rel="stylesheet">
+    <script src="js/bootstrap-4.3.1.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/schema_doc.css">
+    <!-- <script src="js/facf9fa52c.js"></script> -->
+    <script src="js/schema_doc.min.js"></script>
+    <meta charset="utf-8"/>
+        
+    
+    <title>Centreon Rust SNMP collection</title>
+</head>
+<body onload="anchorOnLoad();" id="root">
+
+    <div class="breadcrumbs"></div> <h1>Centreon Rust SNMP collection</h1><span class="badge badge-dark value-type">Type: object</span><br/>
+<div class="description collapse" id="collapseDescription_root">
+            <p>Declarative definition of a check executed by the <code>centreon-plugin-rust-snmp</code> binary (see <code>rust-plugins/</code>).</p>
+
+<p>A collection describes three stages, run in order:</p>
+
+<ol>
+<li><code>collect</code> — the SNMP queries to perform against the target;</li>
+<li><code>compute</code> — the metrics (and optional aggregations) derived from the collected values, with their thresholds;</li>
+<li><code>output</code> — how the resulting status and metrics are rendered as a Monitoring Plugins compatible message.</li>
+</ol>
+
+<p>The file is passed to the binary with <code>--json</code> / <code>-j</code>.</p>
+
+        </div>
+        <div>
+            <a class="collapse-description-link collapsed" data-toggle="collapse" href="#collapseDescription_root"
+               aria-expanded="false" aria-controls="collapseDescriptionroot"
+            ></a>
+        </div> <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordionschema">
+    <div class="card">
+        <div class="card-header" id="headingschema">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#schema"
+                        aria-expanded="" aria-controls="schema" onclick="setAnchor('#schema')"><span class="property-name">$schema</span></button>
+            </h2>
+        </div>
+
+        <div id="schema"
+             class="collapse property-definition-div" aria-labelledby="headingschema"
+             data-parent="#accordionschema">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#schema" onclick="anchorLink('schema')">$schema</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Optional reference to this schema, so editors provide completion and inline documentation.</p>
+</span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><div id="schema_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;../../schema/rs-collection.schema.json&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncollect">
+    <div class="card">
+        <div class="card-header" id="headingcollect">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect"
+                        aria-expanded="" aria-controls="collect" onclick="setAnchor('#collect')"><span class="property-name">collect</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="collect"
+             class="collapse property-definition-div" aria-labelledby="headingcollect"
+             data-parent="#accordioncollect">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a></div><h4>Collection stage</h4><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>SNMP queries executed before any metric is computed.</p>
+</span>
+
+     <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordioncollect_snmp">
+    <div class="card">
+        <div class="card-header" id="headingcollect_snmp">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect_snmp"
+                        aria-expanded="" aria-controls="collect_snmp" onclick="setAnchor('#collect_snmp')"><span class="property-name">snmp</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="collect_snmp"
+             class="collapse property-definition-div" aria-labelledby="headingcollect_snmp"
+             data-parent="#accordioncollect_snmp">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a></div><span class="badge badge-dark value-type">Type: array</span><br/>
+<span class="description"><p>Queries to run. All <code>Get</code> queries are batched into a single GetBulk request; each <code>Walk</code> query is a separate subtree traversal.</p>
+</span>
+        
+
+        
+        
+
+         <span class="badge badge-info no-additional">No Additional Items</span><h4>Each item of this array must be:</h4>
+    <div class="card">
+        <div class="card-body items-definition" id="collect_snmp_items">
+            
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a></div><h4>SNMP query</h4><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>One SNMP query and the macro namespace under which its values are exposed to the compute stage.</p>
+</span>
+
+     <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordioncollect_snmp_items_name">
+    <div class="card">
+        <div class="card-header" id="headingcollect_snmp_items_name">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect_snmp_items_name"
+                        aria-expanded="" aria-controls="collect_snmp_items_name" onclick="setAnchor('#collect_snmp_items_name')"><span class="property-name">name</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="collect_snmp_items_name"
+             class="collapse property-definition-div" aria-labelledby="headingcollect_snmp_items_name"
+             data-parent="#accordioncollect_snmp_items_name">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_name" onclick="anchorLink('collect_snmp_items_name')">name</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<div class="description collapse" id="collapseDescription_collect_snmp_items_name">
+            <p>Macro name under which the collected value is exposed to expressions.</p>
+
+<p>Without <code>labels</code>, the value is referenced as <code>{name}</code>: a scalar for a <code>Get</code> query, a vector (one entry per row) for a <code>Walk</code>.<br />
+With <code>labels</code>, one macro per label is created instead, named <code>{name.&lt;label&gt;}</code>.</p>
+
+        </div>
+        <div>
+            <a class="collapse-description-link collapsed" data-toggle="collapse" href="#collapseDescription_collect_snmp_items_name"
+               aria-expanded="false" aria-controls="collapseDescriptioncollect_snmp_items_name"
+            ></a>
+        </div>
+        
+
+        
+        <p><span class="badge badge-light restriction min-length-restriction" id="collect_snmp_items_name_minLength">Must be at least <code>1</code> characters long</span></p>
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="collect_snmp_items_name_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;hrSystemUptime&quot;</span>
+</pre></div>
+</div><div id="collect_snmp_items_name_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;storage&quot;</span>
+</pre></div>
+</div><div id="collect_snmp_items_name_ex3" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;memory_used&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncollect_snmp_items_oid">
+    <div class="card">
+        <div class="card-header" id="headingcollect_snmp_items_oid">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect_snmp_items_oid"
+                        aria-expanded="" aria-controls="collect_snmp_items_oid" onclick="setAnchor('#collect_snmp_items_oid')"><span class="property-name">oid</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="collect_snmp_items_oid"
+             class="collapse property-definition-div" aria-labelledby="headingcollect_snmp_items_oid"
+             data-parent="#accordioncollect_snmp_items_oid">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_oid" onclick="anchorLink('collect_snmp_items_oid')">oid</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>OID to query, in numeric dotted form. A leading dot is accepted and ignored.</p>
+
+<p>For a <code>Get</code> query this must be a leaf OID (index included, usually ending in <code>.0</code>); for a <code>Walk</code> it is the root of the subtree to traverse.</p>
+</span><span class="pattern-value" id="collect_snmp_items_oid_pattern">Must match regular expression: <code>^\.?[0-9]+(\.[0-9]+)*$</code></span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="collect_snmp_items_oid_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;1.3.6.1.2.1.1.1.0&quot;</span>
+</pre></div>
+</div><div id="collect_snmp_items_oid_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;.1.3.6.1.2.1.25.1.1.0&quot;</span>
+</pre></div>
+</div><div id="collect_snmp_items_oid_ex3" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;1.3.6.1.2.1.25.2.3.1&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncollect_snmp_items_query">
+    <div class="card">
+        <div class="card-header" id="headingcollect_snmp_items_query">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect_snmp_items_query"
+                        aria-expanded="" aria-controls="collect_snmp_items_query" onclick="setAnchor('#collect_snmp_items_query')"><span class="property-name">query</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="collect_snmp_items_query"
+             class="collapse property-definition-div" aria-labelledby="headingcollect_snmp_items_query"
+             data-parent="#accordioncollect_snmp_items_query">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query" onclick="anchorLink('collect_snmp_items_query')">query</a></div><br/>
+<span class="description"><p>Kind of SNMP operation. Values are case sensitive.</p>
+</span><div class="one-of-value" id="collect_snmp_items_query_oneOf"><h2 class="handle">
+  <label>One of</label>
+</h2><ul class="nav nav-tabs" id="tabscollect_snmp_items_query_oneOf_oneOf" role="tablist"><li class="nav-item">
+            <a class="nav-link active oneOf-option"
+               id="collect_snmp_items_query_oneOf_i0" data-toggle="tab" href="#tab-pane_collect_snmp_items_query_oneOf_i0" role="tab"
+               onclick="setAnchor('#collect_snmp_items_query_oneOf_i0')"
+            >Retrieve a single leaf OID value.</a>
+        </li><li class="nav-item">
+            <a class="nav-link oneOf-option"
+               id="collect_snmp_items_query_oneOf_i1" data-toggle="tab" href="#tab-pane_collect_snmp_items_query_oneOf_i1" role="tab"
+               onclick="setAnchor('#collect_snmp_items_query_oneOf_i1')"
+            >Traverse the subtree under `oid` with repeated GetBulk requests.</a>
+        </li></ul>
+<div class="tab-content card"><div class="tab-pane fade card-body active show"
+             id="tab-pane_collect_snmp_items_query_oneOf_i0" role="tabpanel">
+            
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query" onclick="anchorLink('collect_snmp_items_query')">query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query_oneOf" onclick="anchorLink('collect_snmp_items_query_oneOf')">oneOf</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query_oneOf_i0" onclick="anchorLink('collect_snmp_items_query_oneOf_i0')">Retrieve a single leaf OID value.</a></div><h4>Retrieve a single leaf OID value.</h4><span class="badge badge-dark value-type">Type: const</span><br/>
+<span class="const-value" id="collect_snmp_items_query_oneOf_i0_const">Specific value: <code>"Get"</code></span>
+        
+
+        
+        
+
+        
+        </div><div class="tab-pane fade card-body "
+             id="tab-pane_collect_snmp_items_query_oneOf_i1" role="tabpanel">
+            
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query" onclick="anchorLink('collect_snmp_items_query')">query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query_oneOf" onclick="anchorLink('collect_snmp_items_query_oneOf')">oneOf</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_query_oneOf_i1" onclick="anchorLink('collect_snmp_items_query_oneOf_i1')">Traverse the subtree under `oid` with repeated GetBulk requests.</a></div><h4>Traverse the subtree under `oid` with repeated GetBulk requests.</h4><span class="badge badge-dark value-type">Type: const</span><br/>
+<span class="const-value" id="collect_snmp_items_query_oneOf_i1_const">Specific value: <code>"Walk"</code></span>
+        
+
+        
+        
+
+        
+        </div></div></div><div class="enum-value" id="collect_snmp_items_query_enum">
+                <h4>Must be one of:</h4>
+                <ul class="list-group"><li class="list-group-item enum-item">"Get"</li><li class="list-group-item enum-item">"Walk"</li></ul>
+            </div>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncollect_snmp_items_labels">
+    <div class="card">
+        <div class="card-header" id="headingcollect_snmp_items_labels">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect_snmp_items_labels"
+                        aria-expanded="" aria-controls="collect_snmp_items_labels" onclick="setAnchor('#collect_snmp_items_labels')"><span class="property-name">labels</span></button>
+            </h2>
+        </div>
+
+        <div id="collect_snmp_items_labels"
+             class="collapse property-definition-div" aria-labelledby="headingcollect_snmp_items_labels"
+             data-parent="#accordioncollect_snmp_items_labels">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_labels" onclick="anchorLink('collect_snmp_items_labels')">labels</a></div><span class="badge badge-dark value-type">Type: object</span><br/>
+<div class="description collapse" id="collapseDescription_collect_snmp_items_labels">
+            <p>Splits a <code>Walk</code> over a table into one named macro per column. Only meaningful with <code>"query": "Walk"</code>.</p>
+
+<p>Each key is the column part of the OID — the walked OID minus its trailing row index — matched as a suffix, so both <code>".2"</code> and <code>"2"</code> select column 2. Each value is the label appended to the query name, giving the macro <code>{&lt;name&gt;.&lt;label&gt;}</code>.</p>
+
+<p>Example: walking <code>1.3.6.1.2.1.25.2.3.1</code> under the name <code>storage</code> with <code>{".3": "description", ".6": "used"}</code> yields the vectors <code>{storage.description}</code> and <code>{storage.used}</code>, aligned row by row.</p>
+
+        </div>
+        <div>
+            <a class="collapse-description-link collapsed" data-toggle="collapse" href="#collapseDescription_collect_snmp_items_labels"
+               aria-expanded="false" aria-controls="collapseDescriptioncollect_snmp_items_labels"
+            ></a>
+        </div>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><div id="collect_snmp_items_labels_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="s2">&quot;.3&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;description&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;.5&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;size&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;.6&quot;</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;used&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="accordion" id="accordioncollect_snmp_items_labels_additionalProperties">
+    <div class="card">
+        <div class="card-header" id="headingcollect_snmp_items_labels_additionalProperties">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#collect_snmp_items_labels_additionalProperties"
+                        aria-expanded="" aria-controls="collect_snmp_items_labels_additionalProperties" onclick="setAnchor('#collect_snmp_items_labels_additionalProperties')"><em><span class="property-name">Additional Properties</span></em></button>
+            </h2>
+        </div>
+
+        <div id="collect_snmp_items_labels_additionalProperties"
+             class="collapse property-definition-div" aria-labelledby="headingcollect_snmp_items_labels_additionalProperties"
+             data-parent="#accordioncollect_snmp_items_labels_additionalProperties">
+            <div class="card-body pl-5"><p class="additional-properties">Each additional property must conform to the following schema</p>
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect" onclick="anchorLink('collect')">collect</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp" onclick="anchorLink('collect_snmp')">snmp</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items" onclick="anchorLink('collect_snmp_items')">SNMP query</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_labels" onclick="anchorLink('collect_snmp_items_labels')">labels</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#collect_snmp_items_labels_additionalProperties" onclick="anchorLink('collect_snmp_items_labels_additionalProperties')">additionalProperties</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Label appended to the query name to build the macro name.</p>
+</span>
+        
+
+        
+        <p><span class="badge badge-light restriction min-length-restriction" id="collect_snmp_items_labels_additionalProperties_minLength">Must be at least <code>1</code> characters long</span></p>
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute">
+    <div class="card">
+        <div class="card-header" id="headingcompute">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute"
+                        aria-expanded="" aria-controls="compute" onclick="setAnchor('#compute')"><span class="property-name">compute</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="compute"
+             class="collapse property-definition-div" aria-labelledby="headingcompute"
+             data-parent="#accordioncompute">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a></div><h4>Compute stage</h4><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>Metrics derived from the collected values.</p>
+</span>
+
+     <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordioncompute_metrics">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics"
+                        aria-expanded="" aria-controls="compute_metrics" onclick="setAnchor('#compute_metrics')"><span class="property-name">metrics</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics"
+             data-parent="#accordioncompute_metrics">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a></div><span class="badge badge-dark value-type">Type: array</span><br/>
+<span class="description"><p>First-pass metrics, computed from the <code>collect</code> macros. May be empty when the check only reports aggregations or a plain status message.</p>
+
+<p>Each metric is exposed to the aggregation pass as <code>{metrics.&lt;name&gt;}</code>.</p>
+</span>
+        
+
+        
+        
+
+         <span class="badge badge-info no-additional">No Additional Items</span><h4>Each item of this array must be:</h4>
+    <div class="card">
+        <div class="card-body items-definition" id="compute_metrics_items">
+            
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a></div><h4>Metric</h4><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>A value to compute, threshold and report as perfdata.</p>
+</span>
+
+     <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordioncompute_metrics_items_name">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_name">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_name"
+                        aria-expanded="" aria-controls="compute_metrics_items_name" onclick="setAnchor('#compute_metrics_items_name')"><span class="property-name">name</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_name"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_name"
+             data-parent="#accordioncompute_metrics_items_name">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_name" onclick="anchorLink('compute_metrics_items_name')">name</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Metric name, reported in the perfdata and used to reference the result as <code>{metrics.&lt;name&gt;}</code> or <code>{aggregations.&lt;name&gt;}</code>.</p>
+
+<p>For a metric evaluating to a vector, the perfdata is named <code>'&lt;instance&gt;#&lt;name&gt;'</code>, the instance coming from <code>prefix</code>.</p>
+</span>
+        
+
+        
+        <p><span class="badge badge-light restriction min-length-restriction" id="compute_metrics_items_name_minLength">Must be at least <code>1</code> characters long</span></p>
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="compute_metrics_items_name_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;storage.usage.bytes&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_name_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;system.uptime.seconds&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_value">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_value">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_value"
+                        aria-expanded="" aria-controls="compute_metrics_items_value" onclick="setAnchor('#compute_metrics_items_value')"><span class="property-name">value</span> <span class="badge badge-warning required-property">Required</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_value"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_value"
+             data-parent="#accordioncompute_metrics_items_value">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_value" onclick="anchorLink('compute_metrics_items_value')">value</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<div class="description collapse" id="collapseDescription_compute_metrics_items_value">
+            <p>Expression producing the metric value. A scalar expression yields one perfdata; a vector expression (a <code>Walk</code> macro, or an arithmetic combination of vectors) yields one perfdata per row.</p>
+
+<p>Syntax: numbers, <code>+ - * /</code>, parentheses, macros in braces (<code>{storage.used}</code>), and the functions <code>Average(...)</code>, <code>Min(...)</code> and <code>Max(...)</code>, which reduce a vector macro to a scalar.</p>
+
+        </div>
+        <div>
+            <a class="collapse-description-link collapsed" data-toggle="collapse" href="#collapseDescription_compute_metrics_items_value"
+               aria-expanded="false" aria-controls="collapseDescriptioncompute_metrics_items_value"
+            ></a>
+        </div>
+
+    
+        
+
+        
+        <p><span class="badge badge-light restriction min-length-restriction" id="compute_metrics_items_value_minLength">Must be at least <code>1</code> characters long</span></p>
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="compute_metrics_items_value_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;{storage.used} * {storage.allocation_units}&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_value_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;100 * {storage.used} / {storage.size}&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_value_ex3" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;Average({metrics.cpu.utilization.percentage})&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_prefix">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_prefix">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_prefix"
+                        aria-expanded="" aria-controls="compute_metrics_items_prefix" onclick="setAnchor('#compute_metrics_items_prefix')"><span class="property-name">prefix</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_prefix"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_prefix"
+             data-parent="#accordioncompute_metrics_items_prefix">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_prefix" onclick="anchorLink('compute_metrics_items_prefix')">prefix</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<div class="description collapse" id="collapseDescription_compute_metrics_items_prefix">
+            <p>Template naming each instance of a vector metric, interpolated with the collected macros — usually the label column of the walked table.</p>
+
+<p>When omitted, instances are numbered from 0. The resulting name is what <code>--filter-in</code> and <code>--filter-out</code> match against.</p>
+
+<p>The template is only interpolated for a metric evaluating to a vector; for a scalar metric, and for any aggregation, the string is used as-is.</p>
+
+        </div>
+        <div>
+            <a class="collapse-description-link collapsed" data-toggle="collapse" href="#collapseDescription_compute_metrics_items_prefix"
+               aria-expanded="false" aria-controls="collapseDescriptioncompute_metrics_items_prefix"
+            ></a>
+        </div>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="compute_metrics_items_prefix_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;{storage.description}&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_prefix_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;{inodes.path}&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_uom">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_uom">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_uom"
+                        aria-expanded="" aria-controls="compute_metrics_items_uom" onclick="setAnchor('#compute_metrics_items_uom')"><span class="property-name">uom</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_uom"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_uom"
+             data-parent="#accordioncompute_metrics_items_uom">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_uom" onclick="anchorLink('compute_metrics_items_uom')">uom</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: ""</span><br/>
+<span class="description"><p>Unit of measurement appended to the perfdata value, as defined by the Monitoring Plugins guidelines. Empty by default (dimensionless).</p>
+</span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="compute_metrics_items_uom_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_uom_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;%&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_uom_ex3" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;B&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_uom_ex4" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;s&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_uom_ex5" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;ms&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_uom_ex6" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;c&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_min">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_min">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_min"
+                        aria-expanded="" aria-controls="compute_metrics_items_min" onclick="setAnchor('#compute_metrics_items_min')"><span class="property-name">min</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_min"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_min"
+             data-parent="#accordioncompute_metrics_items_min">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_min" onclick="anchorLink('compute_metrics_items_min')">min</a></div><span class="badge badge-dark value-type">Type: number</span><br/>
+<span class="description"><p>Static lower bound reported in the perfdata. Ignored when <code>min_expr</code> is set.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_min_expr">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_min_expr">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_min_expr"
+                        aria-expanded="" aria-controls="compute_metrics_items_min_expr" onclick="setAnchor('#compute_metrics_items_min_expr')"><span class="property-name">min_expr</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_min_expr"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_min_expr"
+             data-parent="#accordioncompute_metrics_items_min_expr">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_min_expr" onclick="anchorLink('compute_metrics_items_min_expr')">min_expr</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Expression computing the lower bound reported in the perfdata. Takes precedence over <code>min</code>.</p>
+</span><a href="#compute_metrics_items_value" onclick="anchorLink('compute_metrics_items_value')" class="ref-link">Same definition as value</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_max">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_max">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_max"
+                        aria-expanded="" aria-controls="compute_metrics_items_max" onclick="setAnchor('#compute_metrics_items_max')"><span class="property-name">max</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_max"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_max"
+             data-parent="#accordioncompute_metrics_items_max">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_max" onclick="anchorLink('compute_metrics_items_max')">max</a></div><span class="badge badge-dark value-type">Type: number</span><br/>
+<span class="description"><p>Static upper bound reported in the perfdata. Ignored when <code>max_expr</code> is set.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_max_expr">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_max_expr">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_max_expr"
+                        aria-expanded="" aria-controls="compute_metrics_items_max_expr" onclick="setAnchor('#compute_metrics_items_max_expr')"><span class="property-name">max_expr</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_max_expr"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_max_expr"
+             data-parent="#accordioncompute_metrics_items_max_expr">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_max_expr" onclick="anchorLink('compute_metrics_items_max_expr')">max_expr</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Expression computing the upper bound reported in the perfdata. Takes precedence over <code>max</code>.</p>
+</span>
+
+    
+        
+
+        
+        <p><span class="badge badge-light restriction min-length-restriction" id="compute_metrics_items_value_minLength">Must be at least <code>1</code> characters long</span></p>
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><div id="compute_metrics_items_value_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;{storage.size} * {storage.allocation_units}&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_threshold-suffix">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_threshold-suffix">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_threshold-suffix"
+                        aria-expanded="" aria-controls="compute_metrics_items_threshold-suffix" onclick="setAnchor('#compute_metrics_items_threshold-suffix')"><span class="property-name">threshold-suffix</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_threshold-suffix"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_threshold-suffix"
+             data-parent="#accordioncompute_metrics_items_threshold-suffix">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_threshold-suffix" onclick="anchorLink('compute_metrics_items_threshold-suffix')">threshold-suffix</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Exposes the metric on the command line as <code>--warning-&lt;suffix&gt;</code> and <code>--critical-&lt;suffix&gt;</code>; those options override the <code>warning</code> and <code>critical</code> fields below. Metrics without a suffix cannot be thresholded from the command line.</p>
+
+<p>The suffixes of a collection are listed by <code>--list-counters</code>.</p>
+</span>
+        
+
+        
+        <p><span class="badge badge-light restriction min-length-restriction" id="compute_metrics_items_threshold-suffix_minLength">Must be at least <code>1</code> characters long</span></p>
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="compute_metrics_items_threshold-suffix_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;usage&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_threshold-suffix_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;prct&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_threshold-suffix_ex3" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;seconds&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_warning">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_warning">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_warning"
+                        aria-expanded="" aria-controls="compute_metrics_items_warning" onclick="setAnchor('#compute_metrics_items_warning')"><span class="property-name">warning</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_warning"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_warning"
+             data-parent="#accordioncompute_metrics_items_warning">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_warning" onclick="anchorLink('compute_metrics_items_warning')">warning</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Default WARNING threshold, overridden by <code>--warning-&lt;threshold-suffix&gt;</code>.</p>
+</span>
+
+    <span class="pattern-value" id="compute_metrics_items_warning_pattern">Must match regular expression: <code>^\s*@?\s*(?:(?:~|[-+]?[0-9]+(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)\s*:\s*(?:[-+]?[0-9]+(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)?|[-+]?[0-9]+(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)\s*$</code></span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Examples:</div>
+<br/><div id="compute_metrics_items_warning_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;80&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_warning_ex2" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;10:20&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_warning_ex3" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;~:90&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_warning_ex4" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;5:&quot;</span>
+</pre></div>
+</div><div id="compute_metrics_items_warning_ex5" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;@0:10&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_metrics_items_critical">
+    <div class="card">
+        <div class="card-header" id="headingcompute_metrics_items_critical">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_metrics_items_critical"
+                        aria-expanded="" aria-controls="compute_metrics_items_critical" onclick="setAnchor('#compute_metrics_items_critical')"><span class="property-name">critical</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_metrics_items_critical"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_metrics_items_critical"
+             data-parent="#accordioncompute_metrics_items_critical">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics" onclick="anchorLink('compute_metrics')">metrics</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')">Metric</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_metrics_items_critical" onclick="anchorLink('compute_metrics_items_critical')">critical</a></div><span class="badge badge-dark value-type">Type: string</span><br/>
+<span class="description"><p>Default CRITICAL threshold, overridden by <code>--critical-&lt;threshold-suffix&gt;</code>.</p>
+</span><a href="#compute_metrics_items_warning" onclick="anchorLink('compute_metrics_items_warning')" class="ref-link">Same definition as warning</a>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordioncompute_aggregations">
+    <div class="card">
+        <div class="card-header" id="headingcompute_aggregations">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#compute_aggregations"
+                        aria-expanded="" aria-controls="compute_aggregations" onclick="setAnchor('#compute_aggregations')"><span class="property-name">aggregations</span></button>
+            </h2>
+        </div>
+
+        <div id="compute_aggregations"
+             class="collapse property-definition-div" aria-labelledby="headingcompute_aggregations"
+             data-parent="#accordioncompute_aggregations">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_aggregations" onclick="anchorLink('compute_aggregations')">aggregations</a></div><span class="badge badge-dark value-type">Type: array</span><br/>
+<div class="description collapse" id="collapseDescription_compute_aggregations">
+            <p>Second-pass metrics, computed after <code>metrics</code> and able to reference them as <code>{metrics.&lt;name&gt;}</code> — typically to sum or average a per-instance metric into a global one.</p>
+
+<p>The pass is skipped entirely when every instance has been discarded by <code>--filter-in</code> / <code>--filter-out</code>. Each aggregation is exposed as <code>{aggregations.&lt;name&gt;}</code>, usable in <code>output</code> templates.</p>
+
+        </div>
+        <div>
+            <a class="collapse-description-link collapsed" data-toggle="collapse" href="#collapseDescription_compute_aggregations"
+               aria-expanded="false" aria-controls="collapseDescriptioncompute_aggregations"
+            ></a>
+        </div>
+        
+
+        
+        
+
+         <span class="badge badge-info no-additional">No Additional Items</span><h4>Each item of this array must be:</h4>
+    <div class="card">
+        <div class="card-body items-definition" id="compute_aggregations_items">
+            
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute" onclick="anchorLink('compute')">compute</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_aggregations" onclick="anchorLink('compute_aggregations')">aggregations</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#compute_aggregations_items" onclick="anchorLink('compute_aggregations_items')">Metric</a></div><h4>Metric</h4><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>A value to compute, threshold and report as perfdata.</p>
+</span><a href="#compute_metrics_items" onclick="anchorLink('compute_metrics_items')" class="ref-link">Same definition as Metric</a>
+        </div>
+    </div>
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput">
+    <div class="card">
+        <div class="card-header" id="headingoutput">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output"
+                        aria-expanded="" aria-controls="output" onclick="setAnchor('#output')"><span class="property-name">output</span></button>
+            </h2>
+        </div>
+
+        <div id="output"
+             class="collapse property-definition-div" aria-labelledby="headingoutput"
+             data-parent="#accordionoutput">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a></div><h4>Output stage</h4><span class="badge badge-dark value-type">Type: object</span><br/>
+<span class="description"><p>Status messages and separators used to render the plugin output. The whole object is optional; every field falls back to its default.</p>
+
+<p>Messages are templates: <code>{metrics.&lt;name&gt;}</code> and <code>{aggregations.&lt;name&gt;}</code> are replaced by the computed values.</p>
+</span>
+
+     <span class="badge badge-info no-additional">No Additional Properties</span>
+        
+
+        
+        
+
+        
+<div class="accordion" id="accordionoutput_ok">
+    <div class="card">
+        <div class="card-header" id="headingoutput_ok">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_ok"
+                        aria-expanded="" aria-controls="output_ok" onclick="setAnchor('#output_ok')"><span class="property-name">ok</span></button>
+            </h2>
+        </div>
+
+        <div id="output_ok"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_ok"
+             data-parent="#accordionoutput_ok">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_ok" onclick="anchorLink('output_ok')">ok</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "OK: Everything is ok "</span><br/>
+<span class="description"><p>Message reported when every metric is within its thresholds.</p>
+</span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><div id="output_ok_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;OK: Uptime: {aggregations.system.uptime.seconds}s&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_detail_ok">
+    <div class="card">
+        <div class="card-header" id="headingoutput_detail_ok">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_detail_ok"
+                        aria-expanded="" aria-controls="output_detail_ok" onclick="setAnchor('#output_detail_ok')"><span class="property-name">detail_ok</span></button>
+            </h2>
+        </div>
+
+        <div id="output_detail_ok"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_detail_ok"
+             data-parent="#accordionoutput_detail_ok">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_detail_ok" onclick="anchorLink('output_detail_ok')">detail_ok</a></div><span class="badge badge-dark value-type">Type: boolean</span> <span class="badge badge-success default-value">Default: false</span><br/>
+<span class="description"><p>Append the per-instance detail of the metrics to the OK message.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_warning">
+    <div class="card">
+        <div class="card-header" id="headingoutput_warning">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_warning"
+                        aria-expanded="" aria-controls="output_warning" onclick="setAnchor('#output_warning')"><span class="property-name">warning</span></button>
+            </h2>
+        </div>
+
+        <div id="output_warning"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_warning"
+             data-parent="#accordionoutput_warning">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_warning" onclick="anchorLink('output_warning')">warning</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "WARNING: "</span><br/>
+<span class="description"><p>Prefix of the message reported when the worst status is WARNING.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_detail_warning">
+    <div class="card">
+        <div class="card-header" id="headingoutput_detail_warning">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_detail_warning"
+                        aria-expanded="" aria-controls="output_detail_warning" onclick="setAnchor('#output_detail_warning')"><span class="property-name">detail_warning</span></button>
+            </h2>
+        </div>
+
+        <div id="output_detail_warning"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_detail_warning"
+             data-parent="#accordionoutput_detail_warning">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_detail_warning" onclick="anchorLink('output_detail_warning')">detail_warning</a></div><span class="badge badge-dark value-type">Type: boolean</span> <span class="badge badge-success default-value">Default: true</span><br/>
+<span class="description"><p>Append the detail of the metrics in alert to the WARNING message.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_critical">
+    <div class="card">
+        <div class="card-header" id="headingoutput_critical">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_critical"
+                        aria-expanded="" aria-controls="output_critical" onclick="setAnchor('#output_critical')"><span class="property-name">critical</span></button>
+            </h2>
+        </div>
+
+        <div id="output_critical"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_critical"
+             data-parent="#accordionoutput_critical">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_critical" onclick="anchorLink('output_critical')">critical</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "CRITICAL: "</span><br/>
+<span class="description"><p>Prefix of the message reported when the worst status is CRITICAL.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_detail_critical">
+    <div class="card">
+        <div class="card-header" id="headingoutput_detail_critical">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_detail_critical"
+                        aria-expanded="" aria-controls="output_detail_critical" onclick="setAnchor('#output_detail_critical')"><span class="property-name">detail_critical</span></button>
+            </h2>
+        </div>
+
+        <div id="output_detail_critical"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_detail_critical"
+             data-parent="#accordionoutput_detail_critical">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_detail_critical" onclick="anchorLink('output_detail_critical')">detail_critical</a></div><span class="badge badge-dark value-type">Type: boolean</span> <span class="badge badge-success default-value">Default: true</span><br/>
+<span class="description"><p>Append the detail of the metrics in alert to the CRITICAL message.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_unknown">
+    <div class="card">
+        <div class="card-header" id="headingoutput_unknown">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_unknown"
+                        aria-expanded="" aria-controls="output_unknown" onclick="setAnchor('#output_unknown')"><span class="property-name">unknown</span></button>
+            </h2>
+        </div>
+
+        <div id="output_unknown"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_unknown"
+             data-parent="#accordionoutput_unknown">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_unknown" onclick="anchorLink('output_unknown')">unknown</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "UNKNOWN: "</span><br/>
+<span class="description"><p>Prefix of the message reported when the worst status is UNKNOWN.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_detail_unknown">
+    <div class="card">
+        <div class="card-header" id="headingoutput_detail_unknown">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_detail_unknown"
+                        aria-expanded="" aria-controls="output_detail_unknown" onclick="setAnchor('#output_detail_unknown')"><span class="property-name">detail_unknown</span></button>
+            </h2>
+        </div>
+
+        <div id="output_detail_unknown"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_detail_unknown"
+             data-parent="#accordionoutput_detail_unknown">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_detail_unknown" onclick="anchorLink('output_detail_unknown')">detail_unknown</a></div><span class="badge badge-dark value-type">Type: boolean</span> <span class="badge badge-success default-value">Default: true</span><br/>
+<span class="description"><p>Append the detail of the metrics in alert to the UNKNOWN message.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_no_data">
+    <div class="card">
+        <div class="card-header" id="headingoutput_no_data">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_no_data"
+                        aria-expanded="" aria-controls="output_no_data" onclick="setAnchor('#output_no_data')"><span class="property-name">no_data</span></button>
+            </h2>
+        </div>
+
+        <div id="output_no_data"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_no_data"
+             data-parent="#accordionoutput_no_data">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_no_data" onclick="anchorLink('output_no_data')">no_data</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: "No data matching the filters"</span><br/>
+<span class="description"><p>Message reported when no metric is left once <code>--filter-in</code> / <code>--filter-out</code> have been applied. The status name given by <code>--no-data-status</code> is prepended to it.</p>
+</span>
+        
+
+        
+        
+
+        <br/>
+<div class="badge badge-secondary">Example:</div>
+<br/><div id="output_no_data_ex1" class="jumbotron examples"><div class="highlight"><pre><span></span><span class="s2">&quot;No process matching the filters&quot;</span>
+</pre></div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_instance_separator">
+    <div class="card">
+        <div class="card-header" id="headingoutput_instance_separator">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_instance_separator"
+                        aria-expanded="" aria-controls="output_instance_separator" onclick="setAnchor('#output_instance_separator')"><span class="property-name">instance_separator</span></button>
+            </h2>
+        </div>
+
+        <div id="output_instance_separator"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_instance_separator"
+             data-parent="#accordionoutput_instance_separator">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_instance_separator" onclick="anchorLink('output_instance_separator')">instance_separator</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: " - "</span><br/>
+<span class="description"><p>String inserted between two instances in the detail message.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+<div class="accordion" id="accordionoutput_metric_separator">
+    <div class="card">
+        <div class="card-header" id="headingoutput_metric_separator">
+            <h2 class="mb-0">
+                <button class="btn btn-link property-name-button" type="button" data-toggle="collapse" data-target="#output_metric_separator"
+                        aria-expanded="" aria-controls="output_metric_separator" onclick="setAnchor('#output_metric_separator')"><span class="property-name">metric_separator</span></button>
+            </h2>
+        </div>
+
+        <div id="output_metric_separator"
+             class="collapse property-definition-div" aria-labelledby="headingoutput_metric_separator"
+             data-parent="#accordionoutput_metric_separator">
+            <div class="card-body pl-5">
+
+    <div class="breadcrumbs">root
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output" onclick="anchorLink('output')">output</a>
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-arrow-right-short" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+                fill-rule="evenodd"
+                d="M4 8a.5.5 0 0 1 .5-.5h5.793L8.146 5.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 8.5H4.5A.5.5 0 0 1 4 8z"
+            />
+        </svg>
+    <a href="#output_metric_separator" onclick="anchorLink('output_metric_separator')">metric_separator</a></div><span class="badge badge-dark value-type">Type: string</span> <span class="badge badge-success default-value">Default: ", "</span><br/>
+<span class="description"><p>String inserted between two metrics of the same instance in the detail message.</p>
+</span>
+        
+
+        
+        
+
+        
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <footer>
+        <p class="generated-by-footer">Generated using <a href="https://github.com/coveooss/json-schema-for-humans">json-schema-for-humans</a> on 2026-09-04 at 11:05:54 +0200</p>
+    </footer></body>
+</html>
