@@ -150,6 +150,7 @@ impl<'a> Parser<'a> {
     }
 }
 
+#[cfg(test)]
 mod test {
     use crate::compute::{Parser, ast::ExprResult, grammar, lexer};
     use crate::snmp::SnmpResult;

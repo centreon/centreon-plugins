@@ -257,6 +257,7 @@ pub fn float_string(val: &f64) -> String {
     s
 }
 
+#[cfg(test)]
 mod test {
 
     #[test]
