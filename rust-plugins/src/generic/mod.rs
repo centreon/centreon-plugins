@@ -15,7 +15,7 @@ use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
-use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
+use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpConfig};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
@@ -270,12 +270,13 @@ impl Command {
     /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
     fn execute_snmp_collect(
         &self,
-        target: &str,
-        version: &str,
-        community: &str,
+        config: &SnmpConfig,
         check_format: bool,
     ) -> Result<Vec<SnmpResult>> {
         let mut collect: Vec<SnmpResult> = Vec::new();
+        // Single deadline for ALL queries of this collection: the global
+        // time budget covers the sum of the walks and gets, not each one.
+        let deadline = config.deadline();
 
         if check_format {
             // In check-format mode, don't make SNMP requests and initialize with dummy values.
@@ -304,13 +305,13 @@ impl Command {
                 QueryType::Walk => {
                     if let Some(lab) = &s.labels {
                         let r = snmp_bulk_walk_with_labels(
-                            target, version, community, &s.oid, &s.name, &lab,
+                            config, deadline, &s.oid, &s.name, lab,
                         )?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
                     } else {
-                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
+                        let r = snmp_bulk_walk(config, deadline, &s.oid, &s.name)?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
@@ -324,7 +325,7 @@ impl Command {
         }
 
         if !to_get.is_empty() {
-            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name);
             collect.push(r?);
         }
         if collect.is_empty() {
@@ -336,9 +337,7 @@ impl Command {
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
     ///
     /// # Arguments
-    /// * `target` - The target address in "host:port" format
-    /// * `version` - SNMP version string (e.g., "2c")
-    /// * `community` - SNMP community string
+    /// * `config` - SNMP connection parameters (target, community, timeouts, retries)
     /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
     /// * `check_format` - Dry-run mode ( validate macros )
@@ -349,16 +348,14 @@ impl Command {
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
     pub fn execute(
         &self,
-        target: &str,
-        version: &str,
-        community: &str,
+        config: &SnmpConfig,
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
         check_format: bool,
         check_response: bool,
         no_data_status: Status,
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
+        let mut collect = self.execute_snmp_collect(config, check_format)?;
 
         if check_response {
             return self.format_raw_response(&collect);
