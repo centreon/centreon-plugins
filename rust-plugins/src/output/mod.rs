@@ -6,8 +6,8 @@ use crate::compute::Parser;
 use crate::compute::ast::ExprResult;
 use crate::generic::{Perfdata, Status};
 use crate::snmp::SnmpResult;
-use tracing::error;
 use serde::Deserialize;
+use tracing::error;
 
 /// Configurable status messages and separators for plugin output.
 #[derive(Deserialize, Debug)]
@@ -46,6 +46,21 @@ pub struct Output {
     /// String used to separate individual metrics in perfdata.
     #[serde(default = "default_metric_separator")]
     metric_separator: String,
+    /// Per-instance template appended to the OK message (non-`detail_ok`
+    /// path only), e.g. `"CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %"`.
+    /// Absent: nothing is appended.
+    instance: Option<String>,
+    /// How `instance` is rendered when it evaluates to more than one
+    /// value: joined into a single string with `instance_separator`.
+    /// Currently the only supported mode; kept as a named, deserialized
+    /// field so a config can state its intent and future modes can be
+    /// added without a breaking JSON schema change.
+    #[serde(default = "default_instance_display")]
+    instance_display: String,
+}
+
+fn default_instance_display() -> String {
+    "single".to_string()
 }
 
 fn default_ok() -> String {
@@ -91,6 +106,8 @@ impl Output {
             no_data: default_no_data(),
             instance_separator: default_instance_separator(),
             metric_separator: default_metric_separator(),
+            instance: None,
+            instance_display: default_instance_display(),
         }
     }
 }
@@ -130,7 +147,7 @@ impl<'a> OutputFormatter<'a> {
                 format!(
                     "'{}'={}{};{};{};{};{}",
                     m.name,
-                    float_string(&m.value),
+                    format_value(&m.value, m.decimals),
                     m.uom,
                     m.warning.as_deref().unwrap_or(""),
                     m.critical.as_deref().unwrap_or(""),
@@ -181,6 +198,13 @@ impl<'a> OutputFormatter<'a> {
                             self.output_formatter.ok.clone()
                         }
                     };
+                    let output = match self.instances_text() {
+                        Some(instances) => format!(
+                            "{}{}{}",
+                            output, self.output_formatter.instance_separator, instances
+                        ),
+                        None => output,
+                    };
                     return format!("{} | {}", output, metrics);
                 }
             }
@@ -216,15 +240,19 @@ impl<'a> OutputFormatter<'a> {
     fn build_detail(&self, prefix: &str) -> String {
         let mut v = Vec::new();
         for m in self.metrics.iter() {
-            if let Some(status) = m.status {
-                if status.is_worse_than(self.status) {
-                    v.push(std::format!(
-                        "{} is {}{}",
-                        m.name,
-                        float_string(&m.value),
-                        m.uom
-                    ));
+            if let Some(status) = m.status
+                && status.is_worse_than(self.status)
+            {
+                if let Some(template) = m.output {
+                    v.push(self.render_template(template));
+                    continue;
                 }
+                v.push(std::format!(
+                    "{} is {}{}",
+                    m.name,
+                    format_value(&m.value, m.decimals),
+                    m.uom
+                ));
             }
         }
         std::format!(
@@ -232,6 +260,79 @@ impl<'a> OutputFormatter<'a> {
             prefix,
             v.join::<&str>(&self.output_formatter.metric_separator)
         )
+    }
+
+    /// Evaluates an output template against the collected results.
+    fn eval_template(&self, template: &'a str) -> Result<ExprResult, String> {
+        let parser = Parser::new(self.collect, false);
+        parser.eval_str(template)
+    }
+
+    /// Evaluates an output template (a metric's `output` field) into a
+    /// single detail-message string.
+    ///
+    /// A vector result (the template references a per-instance macro, e.g.
+    /// `{metrics.cpu.instance}`) is flattened by joining its elements with
+    /// `instance_separator`, since a detail message is always one string.
+    fn render_template(&self, template: &'a str) -> String {
+        match self.eval_template(template) {
+            Ok(ExprResult::Str(s)) => s,
+            Ok(ExprResult::StrVector(v)) => v.join(&self.output_formatter.instance_separator),
+            Ok(other) => {
+                error!(
+                    "Output template evaluated to a non-textual result: {:?}",
+                    other
+                );
+                String::new()
+            }
+            Err(err) => {
+                error!("Error evaluating output template: {:?}", err);
+                String::new()
+            }
+        }
+    }
+
+    /// Renders `output.instance`, if configured, for appending to the OK
+    /// message. Returns `None` when unconfigured, so callers can skip the
+    /// separator entirely rather than appending an empty segment.
+    ///
+    /// `instance_display: "single"` (the default) only shows this segment
+    /// when the template resolves to exactly one instance: for a mode
+    /// covering several instances (e.g. a multi-core CPU), repeating a
+    /// per-instance breakdown on every OK check would be pure noise, so it
+    /// is only worth stating when there is nothing to disambiguate.
+    fn instances_text(&self) -> Option<String> {
+        let template = self.output_formatter.instance.as_deref()?;
+        match self.eval_template(template) {
+            Ok(ExprResult::Str(s)) => Some(s),
+            Ok(ExprResult::StrVector(v)) => {
+                if self.output_formatter.instance_display == "single" && v.len() != 1 {
+                    return None;
+                }
+                Some(v.join(&self.output_formatter.instance_separator))
+            }
+            Ok(other) => {
+                error!(
+                    "Output template evaluated to a non-textual result: {:?}",
+                    other
+                );
+                None
+            }
+            Err(err) => {
+                error!("Error evaluating output template: {:?}", err);
+                None
+            }
+        }
+    }
+}
+
+/// Renders a value with a fixed number of decimals when the metric
+/// requests one (Perl-parity templates like `2.00 %`), falling back to
+/// the trimmed-trailing-zeros default otherwise.
+pub fn format_value(value: &f64, decimals: Option<usize>) -> String {
+    match decimals {
+        Some(n) => format!("{:.*}", n, value),
+        None => float_string(value),
     }
 }
 
@@ -276,5 +377,78 @@ mod test {
 
         assert_eq!(float_string(&f), "0");
         assert_eq!(float_string(&9999999.999), "10000000");
+    }
+
+    #[test]
+    fn fixed_decimals_are_honoured() {
+        use super::format_value;
+
+        assert_eq!(format_value(&2.0, Some(2)), "2.00");
+        assert_eq!(format_value(&2.0, None), "2");
+    }
+
+    #[test]
+    fn cpu_ok_message_appends_the_single_instance_detail() {
+        use super::{ExprResult, Output, OutputFormatter, Perfdata, SnmpResult, Status};
+        use std::collections::HashMap;
+
+        let items = HashMap::from([
+            ("metrics.cpu".to_string(), ExprResult::Vector(vec![2.0])),
+            (
+                "metrics.cpu.instance".to_string(),
+                ExprResult::StrVector(vec!["0".to_string()]),
+            ),
+            (
+                "aggregations.total_cpu_avg".to_string(),
+                ExprResult::Number(2.0),
+            ),
+        ]);
+        let collect = vec![SnmpResult::new(items)];
+        let mut output = Output::new();
+        output.ok =
+            "OK: {Count(metrics.cpu)} CPU(s) average usage is {aggregations.total_cpu_avg:.2f} %"
+                .to_string();
+        output.instance =
+            Some("CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %".to_string());
+        let metrics: Vec<Perfdata> = vec![];
+        let formatter = OutputFormatter::new(Status::Ok, &collect, &metrics, &output);
+        let result = formatter.to_string();
+        assert_eq!(
+            result,
+            "OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | "
+        );
+    }
+
+    #[test]
+    fn warning_detail_uses_the_metric_output_template() {
+        use super::{ExprResult, Output, OutputFormatter, Perfdata, SnmpResult, Status};
+        use std::collections::HashMap;
+
+        let items = HashMap::from([
+            ("metrics.cpu".to_string(), ExprResult::Vector(vec![2.0])),
+            (
+                "metrics.cpu.instance".to_string(),
+                ExprResult::StrVector(vec!["0".to_string()]),
+            ),
+        ]);
+        let collect = vec![SnmpResult::new(items)];
+        let output = Output::new();
+        let m = Perfdata {
+            name: "0#cpu".to_string(),
+            value: 2.0,
+            uom: "%",
+            min: Some(0.0),
+            max: Some(100.0),
+            warning: Some("0:0".to_string()),
+            critical: None,
+            status: Some(Status::Warning),
+            decimals: Some(2),
+            output: Some("CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %"),
+            order: 1,
+        };
+        let metrics = vec![m];
+        let formatter = OutputFormatter::new(Status::Warning, &collect, &metrics, &output);
+        let result = formatter.to_string();
+        assert!(result.starts_with("WARNING: CPU '0' usage : 2.00 % | "));
     }
 }

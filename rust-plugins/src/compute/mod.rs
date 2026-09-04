@@ -8,13 +8,13 @@ pub mod ast;
 pub mod lexer;
 pub mod threshold;
 
-use self::ast::ExprResult;
+use self::ast::{ExprResult, Func};
 use self::lexer::{LexicalError, Tok};
 use crate::snmp::SnmpResult;
 use lalrpop_util::{ParseError, lalrpop_mod};
-use tracing::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
+use tracing::{debug, trace, warn};
 
 lalrpop_mod!(grammar);
 
@@ -49,10 +49,91 @@ pub struct Metric {
     pub warning: Option<String>,
     /// Critical threshold in Nagios format.
     pub critical: Option<String>,
+    /// Number of decimals used to render the value, for output parity with
+    /// the Perl plugins (which publish e.g. `2.00%` where the engine would
+    /// otherwise print `2%`). Absent: trailing zeros are trimmed.
+    pub decimals: Option<usize>,
+    /// Rendering template for this counter in detail messages, replacing
+    /// the default `name is value`. Mirrors the Perl modes'
+    /// `output_template`: `"CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %"`.
+    pub output: Option<String>,
+    /// Display rank of the counter (perfdata and detail messages).
+    ///
+    /// By default counters come out in declaration order, metrics then
+    /// aggregations. Perl publishes its groups in the order the mode
+    /// declares them, often global before instances: this field reproduces
+    /// that order without constraining computation order, which still runs
+    /// aggregations second.
+    #[serde(default)]
+    pub order: i32,
+    /// Whether this counter is published in perfdata.
+    ///
+    /// Some aggregations exist only to feed an output template (e.g. a raw
+    /// `total` used by `Bytes(aggregations.total)`) and would be redundant,
+    /// or outright wrong (no natural threshold), if republished themselves.
+    #[serde(default = "default_true")]
+    pub perfdata: bool,
 }
 
 fn empty_string() -> String {
     "".to_string()
+}
+
+fn default_true() -> bool {
+    true
+}
+
+/// Recognizes `Function(argument)` in an output template.
+fn parse_call(token: &str) -> Option<(&str, &str)> {
+    let open = token.find('(')?;
+    let close = token.strip_suffix(')')?.len();
+    Some((&token[..open], &token[open + 1..close]))
+}
+
+/// Applies a format specifier to a template value.
+///
+/// The result is always textual: a template builds a string, and a macro
+/// placed in **leading** position (`"{Count(...)} CPU(s)…"`) would otherwise
+/// render the numeric result, which would fail the concatenation that follows.
+///
+/// Only `.Nf` is recognized (N decimals), which covers the Perl modes'
+/// `output_template` (`'%.2f %%'`). An unknown specifier is ignored rather
+/// than failing the render: a degraded message beats a check in error.
+fn apply_spec(value: &ExprResult, spec: Option<&str>) -> ExprResult {
+    let Some(spec) = spec else {
+        return stringify(value);
+    };
+    let decimals = spec
+        .trim()
+        .strip_prefix('.')
+        .and_then(|rest| rest.strip_suffix('f'))
+        .and_then(|digits| digits.parse::<usize>().ok());
+    let Some(n) = decimals else {
+        warn!(
+            "unsupported format specifier '{}' in an output template",
+            spec
+        );
+        return stringify(value);
+    };
+    match value {
+        ExprResult::Number(v) => ExprResult::Str(format!("{:.*}", n, v)),
+        ExprResult::Vector(v) => {
+            ExprResult::StrVector(v.iter().map(|x| format!("{:.*}", n, x)).collect())
+        }
+        other => other.clone(),
+    }
+}
+
+/// Renders a value as text without changing its arity: vectors stay vectors
+/// (a per-instance template depends on it), only scalars become strings.
+fn stringify(value: &ExprResult) -> ExprResult {
+    match value {
+        ExprResult::Number(v) => ExprResult::Str(crate::output::float_string(v)),
+        ExprResult::Vector(v) => {
+            ExprResult::StrVector(v.iter().map(crate::output::float_string).collect())
+        }
+        other => other.clone(),
+    }
 }
 
 /// Describes all metrics and aggregations to compute from collected SNMP data.
@@ -106,14 +187,18 @@ impl<'a> Parser<'a> {
     /// Evaluates a string template with embedded identifiers (e.g., `"Interface {name}"`).
     ///
     /// Replaces `{identifier}` with values from SNMP results, handling both
-    /// scalar and vector values appropriately.
+    /// scalar and vector values appropriately. Two extensions on top of a
+    /// bare `{identifier}`, both needed for Perl-parity output templates:
+    /// a trailing `:.Nf` format spec (`{metrics.cpu:.2f}`), and a wrapping
+    /// presentation function (`{Count(metrics.cpu)}`).
     pub fn eval_str(&self, expr: &'a str) -> Result<ExprResult, String> {
         // Compiled once for the whole process: eval_str runs for every
         // template of every metric, recompiling the regex each time is waste.
         static MACRO_RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
         let re = MACRO_RE.get_or_init(|| {
             // The pattern is a compile-time constant: it cannot fail to build.
-            Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*\}").expect("static regex")
+            Regex::new(r"\{[a-zA-Z_][a-zA-Z0-9_.]*(?:\([a-zA-Z_][a-zA-Z0-9_.]*\))?(?::[^}]*)?\}")
+                .expect("static regex")
         });
         let mut suffix = expr;
         let mut result: ExprResult = ExprResult::Empty;
@@ -126,11 +211,23 @@ impl<'a> Parser<'a> {
                 if start > 0 {
                     result.join(&ExprResult::Str(suffix[0..start].to_string()));
                 }
-                let macro_name = &suffix[start + 1..end - 1];
+                let token = &suffix[start + 1..end - 1];
+                let (name_part, spec) = match token.find(':') {
+                    Some(idx) => (&token[..idx], Some(&token[idx + 1..])),
+                    None => (token, None),
+                };
+                let (func, macro_name) = match parse_call(name_part) {
+                    Some((func_name, arg)) => (Func::from_name(func_name), arg),
+                    None => (None, name_part),
+                };
                 let mut found = false;
                 for snmp_result in self.collect {
                     if let Some(v) = snmp_result.items.get(macro_name) {
-                        result.join(v);
+                        let value = match &func {
+                            Some(f) => f.apply(v.clone())?,
+                            None => v.clone(),
+                        };
+                        result.join(&apply_spec(&value, spec));
                         found = true;
                         break;
                     }
@@ -159,8 +256,8 @@ impl<'a> Parser<'a> {
 mod test {
     use crate::compute::{Parser, ast::ExprResult, grammar, lexer};
     use crate::snmp::SnmpResult;
-    use tracing::{debug, info};
     use std::collections::HashMap;
+    use tracing::{debug, info};
 
     fn init() {
         let _ = tracing_subscriber::fmt().with_test_writer().try_init();
@@ -809,5 +906,118 @@ mod test {
             ExprResult::Str(s) => assert_eq!(s, "testfoobar".to_string()),
             _ => panic!("Expected a string"),
         }
+    }
+
+    #[test]
+    fn format_spec_renders_a_fixed_number_of_decimals() {
+        init();
+        let items = HashMap::from([("cpu".to_string(), ExprResult::Number(2.0))]);
+        let collect = vec![SnmpResult::new(items)];
+        let parser = Parser::new(&collect, false);
+        let res = parser.eval_str("{cpu:.2f} %").unwrap();
+        assert_eq!(res, ExprResult::Str("2.00 %".to_string()));
+    }
+
+    #[test]
+    fn function_call_counts_a_vector_macro() {
+        init();
+        let items = HashMap::from([(
+            "metrics.cpu".to_string(),
+            ExprResult::Vector(vec![2.0, 3.0]),
+        )]);
+        let collect = vec![SnmpResult::new(items)];
+        let parser = Parser::new(&collect, false);
+        let res = parser.eval_str("{Count(metrics.cpu)} CPU(s)").unwrap();
+        assert_eq!(res, ExprResult::Str("2 CPU(s)".to_string()));
+    }
+
+    #[test]
+    fn function_call_scales_bytes_to_a_human_readable_unit() {
+        init();
+        let items = HashMap::from([(
+            "aggregations.total".to_string(),
+            ExprResult::Number(1023406080.0),
+        )]);
+        let collect = vec![SnmpResult::new(items)];
+        let parser = Parser::new(&collect, false);
+        let res = parser
+            .eval_str("Total: {Bytes(aggregations.total)}")
+            .unwrap();
+        assert_eq!(res, ExprResult::Str("Total: 976.00 MB".to_string()));
+    }
+
+    #[test]
+    fn cpu_output_template_matches_the_perl_parity_string() {
+        init();
+        let items = HashMap::from([
+            ("metrics.cpu".to_string(), ExprResult::Vector(vec![2.0])),
+            (
+                "metrics.cpu.instance".to_string(),
+                ExprResult::StrVector(vec!["0".to_string()]),
+            ),
+            (
+                "aggregations.total_cpu_avg".to_string(),
+                ExprResult::Number(2.0),
+            ),
+        ]);
+        let collect = vec![SnmpResult::new(items)];
+        let parser = Parser::new(&collect, false);
+        let ok = parser
+            .eval_str(
+                "{Count(metrics.cpu)} CPU(s) average usage is {aggregations.total_cpu_avg:.2f} %",
+            )
+            .unwrap();
+        assert_eq!(
+            ok,
+            ExprResult::Str("1 CPU(s) average usage is 2.00 %".to_string())
+        );
+        let instance = parser
+            .eval_str("CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %")
+            .unwrap();
+        assert_eq!(
+            instance,
+            ExprResult::StrVector(vec!["CPU '0' usage : 2.00 %".to_string()])
+        );
+    }
+
+    #[test]
+    fn swap_output_template_matches_the_perl_parity_string() {
+        init();
+        let items = HashMap::from([
+            (
+                "aggregations.total".to_string(),
+                ExprResult::Number(1023406080.0),
+            ),
+            (
+                "aggregations.used".to_string(),
+                ExprResult::Number(511406080.0),
+            ),
+            (
+                "aggregations.used_prct".to_string(),
+                ExprResult::Number(100.0 * 499420.0 / 999420.0),
+            ),
+            (
+                "aggregations.free".to_string(),
+                ExprResult::Number(512000000.0),
+            ),
+            (
+                "aggregations.free_prct".to_string(),
+                ExprResult::Number(100.0 * 500000.0 / 999420.0),
+            ),
+        ]);
+        let collect = vec![SnmpResult::new(items)];
+        let parser = Parser::new(&collect, false);
+        let res = parser
+            .eval_str(
+                "Swap Total: {Bytes(aggregations.total)} Used: {Bytes(aggregations.used)} ({aggregations.used_prct:.2f}%) Free: {Bytes(aggregations.free)} ({aggregations.free_prct:.2f}%)",
+            )
+            .unwrap();
+        assert_eq!(
+            res,
+            ExprResult::Str(
+                "Swap Total: 976.00 MB Used: 487.71 MB (49.97%) Free: 488.28 MB (50.03%)"
+                    .to_string()
+            )
+        );
     }
 }
