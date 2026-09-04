@@ -15,7 +15,7 @@ use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
-use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
+use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpConfig};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
@@ -132,6 +132,10 @@ pub struct Snmp {
     /// Optional label map used by [`snmp_bulk_walk_with_labels`] to split
     /// a subtree walk into named sub-vectors.
     labels: Option<HashMap<String, String>>,
+    /// Optional per-query override of the GetBulk `max-repetitions`
+    /// (defaults to the global value, see the `--maxrepetitions` CLI option).
+    #[serde(rename = "max-repetitions")]
+    max_repetitions: Option<u32>,
 }
 
 /// Groups all SNMP queries that must be executed before computing metrics.
@@ -165,20 +169,36 @@ pub struct CmdResult {
     pub output: String,
 }
 
-fn compute_status(value: &f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
-    if let Some(c) = crit {
-        let crit = Threshold::parse(c)?;
-        if crit.in_alert(*value) {
-            return Ok(Status::Critical);
+/// Parses a Nagios threshold specification once, with an error message that
+/// names the metric and the field. Called once per metric — never per value:
+/// re-parsing the same string for every element of a 10 000-interface table
+/// would be pure waste.
+fn parse_threshold(
+    spec: &Option<String>,
+    metric_name: &str,
+    field: &str,
+) -> Result<Option<Threshold>> {
+    spec.as_deref()
+        .map(Threshold::parse)
+        .transpose()
+        .map_err(|e| error::Error::InvalidJSON {
+            message: format!("Metric \"{}\", field \"{}\": {}", metric_name, field, e),
+        })
+}
+
+/// Evaluates a value against pre-parsed warning/critical thresholds.
+fn compute_status(value: f64, warn: Option<&Threshold>, crit: Option<&Threshold>) -> Status {
+    if let Some(crit) = crit {
+        if crit.in_alert(value) {
+            return Status::Critical;
         }
     }
-    if let Some(w) = warn {
-        let warn = Threshold::parse(w)?;
-        if warn.in_alert(*value) {
-            return Ok(Status::Warning);
+    if let Some(warn) = warn {
+        if warn.in_alert(value) {
+            return Status::Warning;
         }
     }
-    Ok(Status::Ok)
+    Status::Ok
 }
 
 impl Command {
@@ -270,12 +290,13 @@ impl Command {
     /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
     fn execute_snmp_collect(
         &self,
-        target: &str,
-        version: &str,
-        community: &str,
+        config: &SnmpConfig,
         check_format: bool,
     ) -> Result<Vec<SnmpResult>> {
         let mut collect: Vec<SnmpResult> = Vec::new();
+        // Single deadline for ALL queries of this collection: the global
+        // time budget covers the sum of the walks and gets, not each one.
+        let deadline = config.deadline();
 
         if check_format {
             // In check-format mode, don't make SNMP requests and initialize with dummy values.
@@ -302,15 +323,22 @@ impl Command {
         for s in self.collect.snmp.iter() {
             match s.query {
                 QueryType::Walk => {
+                    let max_repetitions = s.max_repetitions.unwrap_or(config.max_repetitions);
                     if let Some(lab) = &s.labels {
                         let r = snmp_bulk_walk_with_labels(
-                            target, version, community, &s.oid, &s.name, &lab,
+                            config,
+                            deadline,
+                            &s.oid,
+                            &s.name,
+                            lab,
+                            max_repetitions,
                         )?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
                     } else {
-                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
+                        let r =
+                            snmp_bulk_walk(config, deadline, &s.oid, &s.name, max_repetitions)?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
@@ -324,7 +352,7 @@ impl Command {
         }
 
         if !to_get.is_empty() {
-            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name);
             collect.push(r?);
         }
         if collect.is_empty() {
@@ -336,9 +364,7 @@ impl Command {
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
     ///
     /// # Arguments
-    /// * `target` - The target address in "host:port" format
-    /// * `version` - SNMP version string (e.g., "2c")
-    /// * `community` - SNMP community string
+    /// * `config` - SNMP connection parameters (target, community, timeouts, retries)
     /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
     /// * `check_format` - Dry-run mode ( validate macros )
@@ -349,16 +375,14 @@ impl Command {
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
     pub fn execute(
         &self,
-        target: &str,
-        version: &str,
-        community: &str,
+        config: &SnmpConfig,
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
         check_format: bool,
         check_response: bool,
         no_data_status: Status,
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
+        let mut collect = self.execute_snmp_collect(config, check_format)?;
 
         if check_response {
             return self.format_raw_response(&collect);
@@ -416,6 +440,9 @@ impl Command {
                 ExprResult::Vector(v) => Some(v[idx]),
                 _ => None,
             };
+            // Thresholds are parsed once per metric, then evaluated per value.
+            let warn_threshold = parse_threshold(&metric.warning, &metric.name, "warning")?;
+            let crit_threshold = parse_threshold(&metric.critical, &metric.name, "critical")?;
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
@@ -458,7 +485,7 @@ impl Command {
                         // and now concatenate to form the full perfdata
                         let name = format!("'{}#{}'", instance_name, metric.name);
                         let current_status =
-                            compute_status(item, &metric.warning, &metric.critical)?;
+                            compute_status(*item, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
@@ -504,7 +531,8 @@ impl Command {
                             continue;
                         }
                     }
-                    let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                    let current_status =
+                        compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                     status = worst(status, current_status);
                     let w = match metric.warning {
                         Some(ref w) => Some(w.as_str()),
@@ -599,6 +627,9 @@ impl Command {
                 } else {
                     None
                 };
+                // Thresholds are parsed once per aggregation, then evaluated per value.
+                let warn_threshold = parse_threshold(&metric.warning, &metric.name, "warning")?;
+                let crit_threshold = parse_threshold(&metric.critical, &metric.name, "critical")?;
                 let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
                     message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e),
                 })?;
@@ -615,8 +646,11 @@ impl Command {
                                     res
                                 }
                             };
-                            let current_status =
-                                compute_status(item, &metric.warning, &metric.critical)?;
+                            let current_status = compute_status(
+                                *item,
+                                warn_threshold.as_ref(),
+                                crit_threshold.as_ref(),
+                            );
                             status = worst(status, current_status);
                             let w = match metric.warning {
                                 Some(ref w) => Some(w.as_str()),
@@ -642,7 +676,8 @@ impl Command {
                     }
                     ExprResult::Number(s) => {
                         let name = &metric.name;
-                        let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                        let current_status =
+                            compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
                         let w = match metric.warning {
                             Some(ref w) => Some(w.as_str()),
