@@ -39,13 +39,6 @@ sub new {
 
     return $self;
 }
-sub custom_power_status_output {
-    my ($self, %options) = @_;
-
-    return  "'" . $self->{result_values}->{display} . "' vm is " . $self->{result_values}->{power_state} . '. OS : ' .  $self->{result_values}->{os_version};
-
-
-}
 sub check_options {
     my ($self, %options) = @_;
     if (is_empty($options{option_results}->{vm_uuid}) and is_empty($options{option_results}->{vm_name})) {
@@ -72,7 +65,7 @@ sub set_counters {
             critical_default => '%{power_state} =~ /^Halted|Paused/i',
             set => {
                 key_values => [ { name => 'display' }, { name => 'power_state' }, { name => 'uuid' }, { name => 'os_version' } ],
-                closure_custom_output          => $self->can('custom_power_status_output'),
+                output_template => "'%{display}' vm is %{power_state}. OS: %{os_version}",
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }

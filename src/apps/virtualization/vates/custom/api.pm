@@ -41,10 +41,10 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'hostname:s' => { name => 'hostname' },
+            'hostname:s' => { name => 'hostname', not_empty => 1},
             'port:s'     => { name => 'port', default => '443' },
             'proto:s'    => { name => 'proto', default => 'https' },
-            'username:s' => { name => 'username' },
+            'username:s' => { name => 'username', not_empty => 1 },
             'password:s' => { name => 'password' },
             'timeout:s'  => { name => 'timeout', default => 10 },
             'api-url:s'  => {name => 'api_url', default => '/rest/v0/' },
@@ -72,12 +72,6 @@ sub check_options {
     if (!$self->{option_results}->{password} && !$self->{option_results}->{api_key}){
                 $self->{output}->option_exit(short_msg => "Need to specify --password or --api-key option.");
     }
-    if ($self->{option_results}->{hostname} eq '') {
-        $self->{output}->option_exit(short_msg => "Need to specify --hostname option.");
-    }
-    if ($self->{option_results}->{username} eq '') {
-        $self->{output}->option_exit(short_msg => "Need to specify --username option.");
-    }
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_cache}->check_options(option_results => $self->{option_results});
     # set auth header
@@ -93,7 +87,7 @@ sub request_api {
     my ($self, %options) = @_;
 
      my ($content) = $self->{http}->request(
-        method          => 'GET',
+        method          => $options{method},
         url_path        => $self->{option_results}->{api_url} . $options{endpoint},
         get_param       => $options{get_param},
         header          => $options{header},
