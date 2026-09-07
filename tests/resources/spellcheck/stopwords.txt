@@ -394,6 +394,7 @@ v1
 v2
 v2c
 v3
+Vates
 vCenter
 VCENTER
 vCPU
@@ -437,6 +438,7 @@ WildFire
 WLAN
 WLC
 WSMAN
+Xen
 XPath
 ZDX
 ZFS
