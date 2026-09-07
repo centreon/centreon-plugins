@@ -26,21 +26,6 @@ use centreon::plugins::misc qw/is_empty/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw(:counters :values);
 
-sub custom_ha_status_output {
-    my ($self, %options) = @_;
-
-    my $ha = ($self->{result_values}->{ha_enabled} eq 'true') ? 'enabled' : 'disabled';
-    return "'" . $self->{result_values}->{display} . "' pool has HA " . $ha;
-}
-
-sub custom_master_status_output {
-    my ($self, %options) = @_;
-
-    return "pool '" . $self->{result_values}->{display} . "' master is '" . $self->{result_values}->{master_name} .
-       "', power_state: " . $self->{result_values}->{master_power_state}  .
-       ", enabled: " . $self->{result_values}->{master_enabled} ;
-}
-
 sub new {
     my ($class, %options) = @_;
 

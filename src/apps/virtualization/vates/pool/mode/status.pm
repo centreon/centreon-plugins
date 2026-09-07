@@ -33,16 +33,6 @@ sub custom_ha_status_output {
     return "pool has HA " . $ha;
 }
 
-sub custom_master_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("pool '%s' master '%s' is %s",
-         $self->{result_values}->{display},
-        $self->{result_values}->{master_name},
-        $self->{result_values}->{master_power_state},
-    );
-}
-
 sub new {
     my ($class, %options) = @_;
 
@@ -94,7 +84,7 @@ sub set_counters {
                     { name => 'display' }, { name => 'master_name' },
                     { name => 'master_power_state' }
                 ],
-                closure_custom_output          => $self->can('custom_master_status_output'),
+                output_template => "pool '%{display}' master '%{master_name}' is %{master_power_state}",
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
