@@ -65,7 +65,7 @@ sub set_counters {
             critical_default => '%{power_state} =~ /^Halted|Paused/i',
             set => {
                 key_values => [ { name => 'display' }, { name => 'power_state' }, { name => 'uuid' }, { name => 'os_version' } ],
-                output_template => "'%{display}' vm is %{power_state}. OS: %{os_version}",
+                output_template => "'%{display}' vm is %{power_state}. OS : %{os_version}",
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
