@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Vates-Xen-Orchestra-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Vates Xen Orchestra virtual appliance using REST API",
+    "plugin_name": "centreon_vates_xen_orchestra_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/virtualization/vates/xenorchestra/",
+        "apps/virtualization/vates/custom/"
+    ]
+}
