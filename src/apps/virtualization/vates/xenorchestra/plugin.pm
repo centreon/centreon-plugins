@@ -30,8 +30,10 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'status'         => 'apps::virtualization::vates::xenorchestra::status',
-        'vm-status'         => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
+        'status'             => 'apps::virtualization::vates::xenorchestra::status',
+        'vm-status'          => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
+        'storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::storagerepository',
+
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';
