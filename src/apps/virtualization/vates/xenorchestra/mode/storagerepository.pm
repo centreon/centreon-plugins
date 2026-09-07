@@ -45,36 +45,51 @@ sub new {
     return $self;
 }
 
-sub set_counters {
+sub prefix_sr_output {
     my ($self, %options) = @_;
 
+    return "storage repository '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
         {
             name             => 'srs',
             type             => COUNTER_TYPE_INSTANCE,
+            cb_prefix_output => 'prefix_sr_output',
+            message_multiple => 'All storage repositories are ok',
             skipped_code => { NO_VALUE => 1 }
         }
     ];
     $self->{maps_counters}->{srs} = [
-
-       { label => 'usage', nlabel => 'storage.space.usage.bytes', set => {
-                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'size' }, { name => 'used_prct' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold')
+        { label => 'total-size', nlabel => 'storage.space.total.bytes', set => {
+                key_values => [ { name => 'size' }, { name => 'display' } ],
+                output_template => 'total size: %s%s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
+        { label => 'usage', nlabel => 'storage.space.usage.percentage', set => {
+                key_values => [ { name => 'used_prct' }, { name => 'display' } ],
+                output_template => 'used: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
     ];
-
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->request_api_get(endpoint => "srs", get_param => ["fields=*"]); # name_label,uuid,$pool,SR_type,shared,
+    my $response = $options{custom}->request_api_get(endpoint => "srs", get_param => ['fields=name_label,uuid,$pool,SR_type,shared,physical_usage,size']);
 
+    $self->{srs} = {};
     for my $sr (@$response){
         if (is_excluded($sr->{name_label}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})) {
             next
@@ -88,18 +103,18 @@ sub manage_selection {
         if (is_excluded($sr->{SR_type}, $self->{option_results}->{include_sr_type}, $self->{option_results}->{exclude_sr_type}, output => $self->{output})) {
             next
         }
-        if ($sr->{size} == 0) {
-            # exclude any storage with 0 capacity
+        if ($sr->{size} <= 0) {
+            $options{output}->output_add(long_msg => "skipping '$sr->{name_label}': repository size is 0.", debug => 1);
             next;
         }
-        $self->{srs}->{total}++;
-
-        $self->{usage}->{$sr->{name_label}} = {
-            display => $sr->{name_label},
-            used => $sr->{usage},
-            size => $sr->{physical_usage},
-            used_prct   => 100 * $sr->{usage} / $sr->{physical_usage}
+        $self->{srs}->{$sr->{uuid}} = {
+            display    => $sr->{name_label},
+            size       => $sr->{size},
+            used_prct  => 100 * $sr->{physical_usage} / $sr->{size}
         };
+    }
+    if (scalar(keys %{$self->{srs}}) == 0) {
+        $self->{output}->option_exit(short_msg => "No storage repository found, check filters");
     }
 
 }
@@ -115,61 +130,54 @@ A Storage Repository is a logical storage unit used to store ISO, virtual machin
 
 =over 8
 
-=item B<--include-vm-name>
+=item B<--include-name>
 
-Filter virtual machines by name (can be a regexp). Only matching VMs are checked.
+Filter storage repository by name (can be a regexp). Only matching storage repository are checked.
 
-=item B<--exclude-vm-name>
+=item B<--exclude-name>
 
-Exclude virtual machines by name (can be a regexp).
+Exclude storage repository by name (can be a regexp).
 
-=item B<--include-vm-uuid>
+=item B<--include-uuid>
 
-Filter virtual machines by uuid (can be a regexp). Only matching VMs are checked.
+Filter storage repository by uuid (can be a regexp). Only matching storage repository are checked.
 
-=item B<--exclude-vm-uuid>
+=item B<--exclude-uuid>
 
-Exclude virtual machines by uuid (can be a regexp).
+Exclude storage repository by uuid (can be a regexp).
 
-=item B<--warning-running>
+=item B<--include-pool>
 
-Threshold warning for the number of running VMs.
+Filter storage repository by pool uuid (can be a regexp). Only matching storage repository are checked.
 
-=item B<--critical-running>
+=item B<--exclude-pool>
 
-Threshold critical for the number of running VMs.
+Exclude storage repository by pool uuid (can be a regexp).
 
-=item B<--warning-halted>
+=item B<--include-sr-type>
 
-Threshold warning for the number of halted VMs.
+Filter storage repository by C<SR_type> (can be a regexp). Only matching storage repository are checked.
+Non exhaustive list of possible value : C<ext>, C<nfs>, C<udev>, C<iso>, C<linstor>.
 
-=item B<--critical-halted>
+=item B<--exclude-sr-type>
 
-Threshold critical for the number of halted VMs.
+Exclude storage repository by C<SR_type> (can be a regexp).
 
-=item B<--warning-paused>
+=item B<--warning-total-size>
 
-Threshold warning for the number of paused VMs.
+Threshold in bytes.
 
-=item B<--critical-paused>
+=item B<--critical-total-size>
 
-Threshold critical for the number of paused VMs.
+Threshold in bytes.
 
-=item B<--warning-suspended>
+=item B<--warning-usage>
 
-Threshold warning for the number of suspended VMs.
+Threshold in percentage.
 
-=item B<--critical-suspended>
+=item B<--critical-usage>
 
-Threshold critical for the number of suspended VMs.
-
-=item B<--warning-total>
-
-Threshold warning for the total number of VMs.
-
-=item B<--critical-total>
-
-Threshold critical for the total number of VMs.
+Threshold in percentage.
 
 =back
 
