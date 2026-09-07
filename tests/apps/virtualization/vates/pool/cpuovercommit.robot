@@ -43,3 +43,9 @@ Cpu over commit ${tc}
     ...    3
     ...    --pool-name=vates
     ...    OK: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:90;0:100;0;
+    ...    4
+    ...    --pool-name=vates --warning-cpu-overcommit-prct=20
+    ...    WARNING: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:20;0:100;0;
+    ...    5
+    ...    --pool-name=vates --critical-cpu-overcommit-prct=20
+    ...    CRITICAL: CPU overcommit ratio is 25.00 % | 'pool.cpu.overcommit.percentage'=25.00%;0:90;0:20;0;

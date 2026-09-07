@@ -30,6 +30,6 @@ Standard ${tc} - ${mode}
     ...    1
     ...    status
     ...    Mode:\n.*status
-    ...    3
+    ...    2
     ...    cpu-over-commit
     ...    Mode:\n.*CPU over commit
