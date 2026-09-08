@@ -15,12 +15,13 @@ use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
-use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
-use log::{debug, trace};
+use crate::snmp::{SnmpConfig, snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
+use crate::state::{Snapshot, StateStore, compute_rate};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::convert::Into;
+use tracing::{debug, debug_span, info_span, trace, warn};
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -33,9 +34,22 @@ pub struct Perfdata<'p> {
     pub uom: &'p str,
     pub min: Option<f64>,
     pub max: Option<f64>,
-    pub warning: Option<&'p str>,
-    pub critical: Option<&'p str>,
+    /// Thresholds in canonical form (`0:10`), as republished in perfdata.
+    pub warning: Option<String>,
+    pub critical: Option<String>,
     pub status: Option<Status>,
+}
+
+/// Logical name of a metric: `instance#metric` when it carries an instance,
+/// `metric` otherwise.
+///
+/// A scalar value has no instance: pinning an index on it (`0#used`) made no
+/// sense and broke parity with Perl, which publishes `used`.
+fn perfdata_name(instance: Option<&str>, metric: &str) -> String {
+    match instance {
+        Some(instance) => format!("{}#{}", instance, metric),
+        None => metric.to_string(),
+    }
 }
 
 /// Nagios-compatible plugin exit status.
@@ -112,6 +126,173 @@ fn worst(a: Status, b: Status) -> Status {
     if a.severity() > b.severity() { a } else { b }
 }
 
+/// Aligns a set of labeled columns on their common row indices.
+///
+/// Positional alignment is a silent-corruption trap: two columns of the same
+/// SNMP table can have different holes, and two tables (`ifTable`/`ifXTable`)
+/// different instance sets. This keeps only the rows present in **every**
+/// listed column, in ascending walk order, so that element-wise expressions,
+/// prefixes and rates always describe the same instance.
+///
+/// `targets` lists `(index in collect, item key)` pairs — the columns of one
+/// entry, or of a whole `join` group across entries.
+fn align_by_index(collect: &mut [SnmpResult], targets: &[(usize, String)]) {
+    use std::collections::BTreeSet;
+    if targets.len() < 2 {
+        return;
+    }
+    // Intersection of the row-index sets of every column.
+    let mut common: Option<BTreeSet<u32>> = None;
+    for (result_idx, key) in targets {
+        let set: BTreeSet<u32> = collect[*result_idx]
+            .indices
+            .get(key)
+            .map(|v| v.iter().copied().collect())
+            .unwrap_or_default();
+        common = Some(match common {
+            None => set,
+            Some(current) => current.intersection(&set).copied().collect(),
+        });
+    }
+    let Some(common) = common else { return };
+
+    let mut dropped = 0usize;
+    for (result_idx, key) in targets {
+        let result = &mut collect[*result_idx];
+        let Some(indices) = result.indices.get(key).cloned() else {
+            continue;
+        };
+        let keep: Vec<bool> = indices.iter().map(|i| common.contains(i)).collect();
+        if keep.iter().all(|k| *k) {
+            continue;
+        }
+        dropped += keep.iter().filter(|k| !**k).count();
+        // Columns are walked in ascending index order, so masking every
+        // column with the same common set preserves a shared order.
+        match result.items.get_mut(key) {
+            Some(ExprResult::Vector(values)) => {
+                let mut position = 0usize;
+                values.retain(|_| {
+                    let kept = keep.get(position).copied().unwrap_or(false);
+                    position += 1;
+                    kept
+                });
+            }
+            Some(ExprResult::StrVector(values)) => {
+                let mut position = 0usize;
+                values.retain(|_| {
+                    let kept = keep.get(position).copied().unwrap_or(false);
+                    position += 1;
+                    kept
+                });
+            }
+            _ => {}
+        }
+        if let Some(indices) = result.indices.get_mut(key) {
+            let mut position = 0usize;
+            indices.retain(|_| {
+                let kept = keep.get(position).copied().unwrap_or(false);
+                position += 1;
+                kept
+            });
+        }
+        // Rate samples of this key follow the same mask (same push order).
+        let mut position = 0usize;
+        result.samples.retain(|(sample_key, _, _)| {
+            if sample_key != key {
+                return true;
+            }
+            let kept = keep.get(position).copied().unwrap_or(false);
+            position += 1;
+            kept
+        });
+    }
+    if dropped > 0 {
+        warn!(
+            "index join: {} value(s) dropped (rows missing in at least one column)",
+            dropped
+        );
+    }
+}
+
+/// Item keys of a labeled entry (`<name>.<label>` per label).
+fn entry_label_keys(entry: &Snmp) -> Vec<String> {
+    entry
+        .labels
+        .as_ref()
+        .map(|labels| {
+            labels
+                .values()
+                .map(|label| format!("{}.{}", entry.name, label))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Current Unix time in seconds (never fails after 1970).
+fn unix_now() -> f64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs_f64())
+        .unwrap_or(0.0)
+}
+
+/// Replaces the collected counter values of a rate entry with per-second
+/// rates, using the snapshot persisted by the previous run.
+///
+/// The state is keyed by full OID: the identity of an instance across runs
+/// is its OID, never its position in the table. String columns (labels such
+/// as `ifDescr`) are left untouched — only numeric samples are transformed,
+/// so vectors stay aligned.
+///
+/// # Returns
+/// `Ok(true)` when there was no previous snapshot (first run): the caller
+/// reports `OK: Buffer creation` and exits 0, Perl-style.
+fn apply_rate(
+    result: &mut SnmpResult,
+    entry: &Snmp,
+    config: &SnmpConfig,
+    now: f64,
+) -> Result<bool> {
+    let store = StateStore::new(&config.statefile_dir);
+    let key = StateStore::rate_key(&config.target, &entry.name, &entry.oid);
+    let previous = store.load(&key);
+
+    let mut values = HashMap::new();
+    for (_, oid, value) in &result.samples {
+        values.insert(oid.clone(), *value);
+    }
+    store.save(
+        &key,
+        &Snapshot {
+            timestamp: now,
+            values,
+        },
+    )?;
+
+    let Some(previous) = previous else {
+        return Ok(true);
+    };
+    let dt = now - previous.timestamp;
+
+    // Rebuild each numeric vector in sample (= push) order. A missing
+    // previous instance, a counter reset or dt <= 0 yields one aligned 0.0
+    // sample: dropping it would desalign the column from its siblings.
+    let mut rates: HashMap<String, Vec<f64>> = HashMap::new();
+    for (item_key, oid, value) in &result.samples {
+        let rate = previous
+            .values
+            .get(oid)
+            .and_then(|old| compute_rate(*old, *value, dt))
+            .unwrap_or(0.0);
+        rates.entry(item_key.clone()).or_default().push(rate);
+    }
+    for (item_key, vector) in rates {
+        result.items.insert(item_key, ExprResult::Vector(vector));
+    }
+    Ok(false)
+}
+
 /// Type of SNMP query to perform for a given OID.
 #[derive(Deserialize, Debug)]
 enum QueryType {
@@ -132,6 +313,22 @@ pub struct Snmp {
     /// Optional label map used by [`snmp_bulk_walk_with_labels`] to split
     /// a subtree walk into named sub-vectors.
     labels: Option<HashMap<String, String>>,
+    /// Optional per-query override of the GetBulk `max-repetitions`
+    /// (defaults to the global value, see the `--maxrepetitions` CLI option).
+    #[serde(rename = "max-repetitions")]
+    max_repetitions: Option<u32>,
+    /// Optional join group: entries sharing the same group name are aligned
+    /// on their common row indices ACROSS entries (e.g. ifTable + ifXTable).
+    /// Columns within one labeled entry are always aligned by index.
+    join: Option<String>,
+    /// When `true`, every numeric value of this entry is converted into a
+    /// per-second rate using the previous run (state persisted under
+    /// `--statefile-dir`, keyed by full OID). First run: the plugin
+    /// reports `OK: Buffer creation` and exits 0, Perl-style. 32-bit
+    /// counter wraparound is corrected; a counter reset or a missing
+    /// previous instance yields one aligned 0.0 sample.
+    #[serde(default)]
+    rate: bool,
 }
 
 /// Groups all SNMP queries that must be executed before computing metrics.
@@ -165,20 +362,36 @@ pub struct CmdResult {
     pub output: String,
 }
 
-fn compute_status(value: &f64, warn: &Option<String>, crit: &Option<String>) -> Result<Status> {
-    if let Some(c) = crit {
-        let crit = Threshold::parse(c)?;
-        if crit.in_alert(*value) {
-            return Ok(Status::Critical);
+/// Parses a Nagios threshold specification once, with an error message that
+/// names the metric and the field. Called once per metric — never per value:
+/// re-parsing the same string for every element of a 10 000-interface table
+/// would be pure waste.
+fn parse_threshold(
+    spec: &Option<String>,
+    metric_name: &str,
+    field: &str,
+) -> Result<Option<Threshold>> {
+    spec.as_deref()
+        .map(Threshold::parse)
+        .transpose()
+        .map_err(|e| error::Error::InvalidJSON {
+            message: format!("Metric \"{}\", field \"{}\": {}", metric_name, field, e),
+        })
+}
+
+/// Evaluates a value against pre-parsed warning/critical thresholds.
+fn compute_status(value: f64, warn: Option<&Threshold>, crit: Option<&Threshold>) -> Status {
+    if let Some(crit) = crit {
+        if crit.in_alert(value) {
+            return Status::Critical;
         }
     }
-    if let Some(w) = warn {
-        let warn = Threshold::parse(w)?;
-        if warn.in_alert(*value) {
-            return Ok(Status::Warning);
+    if let Some(warn) = warn {
+        if warn.in_alert(value) {
+            return Status::Warning;
         }
     }
-    Ok(Status::Ok)
+    Status::Ok
 }
 
 impl Command {
@@ -268,14 +481,20 @@ impl Command {
     }
 
     /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
+    /// Returns the collected results, plus `true` when at least one rate
+    /// entry had no previous state (first run): the caller then reports
+    /// `OK: Buffer creation` instead of computing metrics.
     fn execute_snmp_collect(
         &self,
-        target: &str,
-        version: &str,
-        community: &str,
+        config: &SnmpConfig,
         check_format: bool,
-    ) -> Result<Vec<SnmpResult>> {
+    ) -> Result<(Vec<SnmpResult>, bool)> {
+        let _span = info_span!("collect").entered();
         let mut collect: Vec<SnmpResult> = Vec::new();
+        let mut buffer_creation = false;
+        // Single deadline for ALL queries of this collection: the global
+        // time budget covers the sum of the walks and gets, not each one.
+        let deadline = config.deadline();
 
         if check_format {
             // In check-format mode, don't make SNMP requests and initialize with dummy values.
@@ -295,26 +514,76 @@ impl Command {
                 }
                 collect.push(SnmpResult::new(items));
             }
-            return Ok(collect);
+            return Ok((collect, buffer_creation));
         }
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
+        // Cross-entry alignment groups: `join` field -> (result idx, key).
+        let mut join_groups: HashMap<String, Vec<(usize, String)>> = HashMap::new();
         for s in self.collect.snmp.iter() {
+            if s.join.is_some() && s.labels.is_none() {
+                warn!(
+                    "collect entry '{}': 'join' requires 'labels' (row indices), ignored",
+                    s.name
+                );
+            }
             match s.query {
                 QueryType::Walk => {
-                    if let Some(lab) = &s.labels {
-                        let r = snmp_bulk_walk_with_labels(
-                            target, version, community, &s.oid, &s.name, &lab,
-                        )?;
-                        if !r.items.is_empty() {
-                            collect.push(r);
-                        }
+                    let max_repetitions = s.max_repetitions.unwrap_or(config.max_repetitions);
+                    let mut r = if let Some(lab) = &s.labels {
+                        snmp_bulk_walk_with_labels(
+                            config,
+                            deadline,
+                            &s.oid,
+                            &s.name,
+                            lab,
+                            max_repetitions,
+                            s.rate,
+                        )?
                     } else {
-                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
-                        if !r.items.is_empty() {
-                            collect.push(r);
-                        }
+                        snmp_bulk_walk(config, deadline, &s.oid, &s.name, max_repetitions, s.rate)?
+                    };
+                    if s.labels.is_some() {
+                        // Columns of one entry are ALWAYS aligned on their
+                        // common row indices (positional alignment silently
+                        // corrupts data on tables with holes).
+                        let targets: Vec<(usize, String)> = entry_label_keys(s)
+                            .into_iter()
+                            .map(|key| (0usize, key))
+                            .collect();
+                        align_by_index(std::slice::from_mut(&mut r), &targets);
                     }
+                    if s.rate {
+                        buffer_creation |= apply_rate(&mut r, s, config, unix_now())?;
+                    }
+                    if !r.items.is_empty() {
+                        if s.labels.is_some()
+                            && let Some(group) = &s.join
+                        {
+                            join_groups.entry(group.clone()).or_default().extend(
+                                entry_label_keys(s)
+                                    .into_iter()
+                                    .map(|key| (collect.len(), key)),
+                            );
+                        }
+                        collect.push(r);
+                    }
+                }
+                // Rate entries need their samples isolated per entry, so
+                // they are queried individually instead of joining the
+                // batched get below.
+                QueryType::Get if s.rate => {
+                    let mut r = snmp_bulk_get(
+                        config,
+                        deadline,
+                        1,
+                        1,
+                        &vec![s.oid.as_str()],
+                        &vec![s.name.as_str()],
+                        true,
+                    )?;
+                    buffer_creation |= apply_rate(&mut r, s, config, unix_now())?;
+                    collect.push(r);
                 }
                 QueryType::Get => {
                     to_get.push(s.oid.as_str());
@@ -324,21 +593,34 @@ impl Command {
         }
 
         if !to_get.is_empty() {
-            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name, false);
             collect.push(r?);
         }
+
+        // Cross-entry alignment: every column of a `join` group is reduced
+        // to the row indices present in ALL of them (e.g. the ifTable +
+        // ifXTable instance sets).
+        for (group, targets) in &join_groups {
+            if targets.len() < 2 {
+                warn!(
+                    "join group '{}' references a single column, nothing to align",
+                    group
+                );
+                continue;
+            }
+            align_by_index(&mut collect, targets);
+        }
+
         if collect.is_empty() {
             return Err(error::Error::EmptyResponse {});
         }
-        Ok(collect)
+        Ok((collect, buffer_creation))
     }
 
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
     ///
     /// # Arguments
-    /// * `target` - The target address in "host:port" format
-    /// * `version` - SNMP version string (e.g., "2c")
-    /// * `community` - SNMP community string
+    /// * `config` - SNMP connection parameters (target, community, timeouts, retries)
     /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
     /// * `check_format` - Dry-run mode ( validate macros )
@@ -349,16 +631,24 @@ impl Command {
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
     pub fn execute(
         &self,
-        target: &str,
-        version: &str,
-        community: &str,
+        config: &SnmpConfig,
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
         check_format: bool,
         check_response: bool,
         no_data_status: Status,
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
+        let _check_span = info_span!("check").entered();
+        let (mut collect, buffer_creation) = self.execute_snmp_collect(config, check_format)?;
+
+        if buffer_creation {
+            // First run of a rate entry: no reference to compute rates from.
+            // Perl-style behavior: report the buffer build and exit OK.
+            return Ok(CmdResult {
+                status: Status::Ok,
+                output: "OK: Buffer creation".to_string(),
+            });
+        }
 
         if check_response {
             return self.format_raw_response(&collect);
@@ -383,6 +673,7 @@ impl Command {
         }
 
         for metric in self.compute.metrics.iter() {
+            let _span = debug_span!("metric", name = %metric.name).entered();
             let value = &metric.value;
             let parser = Parser::new(&collect, check_format);
             let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
@@ -416,6 +707,9 @@ impl Command {
                 ExprResult::Vector(v) => Some(v[idx]),
                 _ => None,
             };
+            // Thresholds are parsed once per metric, then evaluated per value.
+            let warn_threshold = parse_threshold(&metric.warning, &metric.name, "warning")?;
+            let crit_threshold = parse_threshold(&metric.critical, &metric.name, "critical")?;
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
@@ -434,7 +728,22 @@ impl Command {
                     for (i, item) in v.iter().enumerate() {
                         // first, compose the instance name
                         let instance_name = match &prefix_str {
-                            ExprResult::StrVector(v) => v[i].to_string(),
+                            // Guards against a prefix vector shorter than the
+                            // values (cross-entry reference without a `join`
+                            // group): fall back to the counter instead of
+                            // panicking out of bounds.
+                            ExprResult::StrVector(v) => match v.get(i) {
+                                Some(name) => name.to_string(),
+                                None => {
+                                    warn!(
+                                        "Metric \"{}\": prefix has fewer elements than values (missing 'join'?)",
+                                        metric.name
+                                    );
+                                    let res = idx.to_string();
+                                    idx += 1;
+                                    res
+                                }
+                            },
                             ExprResult::Str(s) => s.to_string(),
                             ExprResult::Empty => {
                                 let res = idx.to_string();
@@ -456,18 +765,12 @@ impl Command {
                             continue;
                         }
                         // and now concatenate to form the full perfdata
-                        let name = format!("'{}#{}'", instance_name, metric.name);
+                        let name = perfdata_name(Some(&instance_name), &metric.name);
                         let current_status =
-                            compute_status(item, &metric.warning, &metric.critical)?;
+                            compute_status(*item, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
-                        let w = match metric.warning {
-                            Some(ref w) => Some(w.as_str()),
-                            None => None,
-                        };
-                        let c = match metric.critical {
-                            Some(ref c) => Some(c.as_str()),
-                            None => None,
-                        };
+                        let w = warn_threshold.as_ref().map(|t| t.canonical());
+                        let c = crit_threshold.as_ref().map(|t| t.canonical());
                         let m = Perfdata {
                             name,
                             value: *item,
@@ -483,16 +786,10 @@ impl Command {
                     }
                 }
                 ExprResult::Number(s) => {
-                    let name = match &metric.prefix {
-                        Some(prefix) => {
-                            format!("{}#{}", prefix, metric.name)
-                        }
-                        None => {
-                            let res = format!("{}#{}", idx, metric.name);
-                            idx += 1;
-                            res
-                        }
-                    };
+                    // A scalar value has no instance in perfdata (Perl
+                    // publishes `cpu`, not `0#cpu`, when there's a single
+                    // core) — the filter regexes still need a name to match.
+                    let name = perfdata_name(metric.prefix.as_deref(), &metric.name);
                     if !re_in.is_empty() {
                         // If one filter is matched, we keep the metric
                         if !re_in.iter().any(|re| re.is_match(&name)) {
@@ -504,16 +801,11 @@ impl Command {
                             continue;
                         }
                     }
-                    let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                    let current_status =
+                        compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                     status = worst(status, current_status);
-                    let w = match metric.warning {
-                        Some(ref w) => Some(w.as_str()),
-                        None => None,
-                    };
-                    let c = match metric.critical {
-                        Some(ref c) => Some(c.as_str()),
-                        None => None,
-                    };
+                    let w = warn_threshold.as_ref().map(|t| t.canonical());
+                    let c = crit_threshold.as_ref().map(|t| t.canonical());
                     let m = Perfdata {
                         name,
                         value: *s,
@@ -553,6 +845,7 @@ impl Command {
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
             let mut my_res = SnmpResult::new(HashMap::new());
             for metric in aggregations {
+                let _span = debug_span!("aggregation", name = %metric.name).entered();
                 let value = &metric.value;
                 let parser = Parser::new(&collect, check_format);
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
@@ -599,33 +892,24 @@ impl Command {
                 } else {
                     None
                 };
+                // Thresholds are parsed once per aggregation, then evaluated per value.
+                let warn_threshold = parse_threshold(&metric.warning, &metric.name, "warning")?;
+                let crit_threshold = parse_threshold(&metric.critical, &metric.name, "critical")?;
                 let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
                     message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e),
                 })?;
                 match &value {
                     ExprResult::Vector(v) => {
                         for item in v {
-                            let name = match &metric.prefix {
-                                Some(prefix) => {
-                                    format!("{:?}#{}", prefix, metric.name)
-                                }
-                                None => {
-                                    let res = format!("{}#{}", idx, metric.name);
-                                    idx += 1;
-                                    res
-                                }
-                            };
-                            let current_status =
-                                compute_status(item, &metric.warning, &metric.critical)?;
+                            let name = perfdata_name(metric.prefix.as_deref(), &metric.name);
+                            let current_status = compute_status(
+                                *item,
+                                warn_threshold.as_ref(),
+                                crit_threshold.as_ref(),
+                            );
                             status = worst(status, current_status);
-                            let w = match metric.warning {
-                                Some(ref w) => Some(w.as_str()),
-                                None => None,
-                            };
-                            let c = match metric.critical {
-                                Some(ref c) => Some(c.as_str()),
-                                None => None,
-                            };
+                            let w = warn_threshold.as_ref().map(|t| t.canonical());
+                            let c = crit_threshold.as_ref().map(|t| t.canonical());
                             let m = Perfdata {
                                 name,
                                 value: *item,
@@ -641,19 +925,14 @@ impl Command {
                         }
                     }
                     ExprResult::Number(s) => {
-                        let name = &metric.name;
-                        let current_status = compute_status(s, &metric.warning, &metric.critical)?;
+                        let name = perfdata_name(None, &metric.name);
+                        let current_status =
+                            compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                         status = worst(status, current_status);
-                        let w = match metric.warning {
-                            Some(ref w) => Some(w.as_str()),
-                            None => None,
-                        };
-                        let c = match metric.critical {
-                            Some(ref c) => Some(c.as_str()),
-                            None => None,
-                        };
+                        let w = warn_threshold.as_ref().map(|t| t.canonical());
+                        let c = crit_threshold.as_ref().map(|t| t.canonical());
                         let m = Perfdata {
-                            name: name.to_string(),
+                            name,
                             value: *s,
                             uom: &metric.uom,
                             min,
@@ -676,6 +955,7 @@ impl Command {
 
         debug!("collect: {:#?}", collect);
         trace!("metrics: {:#?}", metrics);
+        let _span = debug_span!("output").entered();
         let output_formatter = OutputFormatter::new(status, &collect, &metrics, &self.output);
         let output = output_formatter.to_string();
         Ok(CmdResult { status, output })
@@ -748,5 +1028,234 @@ mod tests {
             err,
             error::Error::InvalidStatus { ref value } if value == "pending"
         ));
+    }
+
+    #[test]
+    fn scalar_metrics_carry_no_instance_index() {
+        // A scalar has no instance: `used`, not `0#used` — the index was
+        // meaningless and broke parity with Perl.
+        assert_eq!(perfdata_name(None, "used"), "used");
+        assert_eq!(perfdata_name(Some("eth0"), "traffic"), "eth0#traffic");
+    }
+}
+
+#[cfg(test)]
+mod rate_tests {
+    use super::*;
+    use crate::snmp::SnmpResult;
+
+    fn test_setup(dir_tag: &str) -> (SnmpConfig, Snmp) {
+        let dir =
+            std::env::temp_dir().join(format!("rate-test-{}-{}", dir_tag, std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let config = SnmpConfig {
+            target: "10.0.0.1:161".to_string(),
+            version: "2c".to_string(),
+            community: "public".to_string(),
+            timeout: std::time::Duration::from_secs(1),
+            retries: 0,
+            collect_timeout: std::time::Duration::from_secs(5),
+            max_repetitions: 10,
+            statefile_dir: dir,
+            v3: None,
+        };
+        let entry: Snmp = serde_json::from_str(
+            r#"{"name":"if","oid":"1.3.6.1.2.1.2.2.1","query":"Walk","rate":true}"#,
+        )
+        .expect("valid entry JSON");
+        (config, entry)
+    }
+
+    fn result_with(samples: Vec<(&str, &str, f64)>) -> SnmpResult {
+        let mut result = SnmpResult::new(HashMap::new());
+        let mut vector = Vec::new();
+        for (key, oid, value) in samples {
+            vector.push(value);
+            result
+                .samples
+                .push((key.to_string(), oid.to_string(), value));
+        }
+        result
+            .items
+            .insert("if".to_string(), ExprResult::Vector(vector));
+        result
+    }
+
+    #[test]
+    fn rate_entries_turn_counters_into_rates_across_runs() {
+        let (config, entry) = test_setup("basic");
+
+        // Run 1: no previous state -> buffer creation.
+        let mut run1 = result_with(vec![("if", "oid.10.1", 1000.0), ("if", "oid.10.2", 2000.0)]);
+        let first = apply_rate(&mut run1, &entry, &config, 100.0).expect("run 1");
+        assert!(first, "first run must report buffer creation");
+
+        // Run 2, 10s later, +600 and +1200 octets -> 60 and 120 per second.
+        let mut run2 = result_with(vec![("if", "oid.10.1", 1600.0), ("if", "oid.10.2", 3200.0)]);
+        let first = apply_rate(&mut run2, &entry, &config, 110.0).expect("run 2");
+        assert!(!first);
+        match run2.items.get("if") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![60.0, 120.0]),
+            other => panic!("expected rate Vector([60, 120]), got {:?}", other),
+        }
+
+        // Run 3: a NEW instance appears -> one aligned 0.0 sample, the known
+        // instances keep their rates.
+        let mut run3 = result_with(vec![
+            ("if", "oid.10.1", 2200.0),
+            ("if", "oid.10.2", 4400.0),
+            ("if", "oid.10.3", 500.0),
+        ]);
+        let first = apply_rate(&mut run3, &entry, &config, 120.0).expect("run 3");
+        assert!(!first);
+        match run3.items.get("if") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![60.0, 120.0, 0.0]),
+            other => panic!("expected Vector([60, 120, 0]), got {:?}", other),
+        }
+
+        let _ = std::fs::remove_dir_all(&config.statefile_dir);
+    }
+
+    #[test]
+    fn same_timestamp_yields_aligned_zeroes_not_a_division_by_zero() {
+        let (config, entry) = test_setup("dtzero");
+        let mut run1 = result_with(vec![("if", "oid.10.1", 1000.0)]);
+        apply_rate(&mut run1, &entry, &config, 100.0).expect("run 1");
+        let mut run2 = result_with(vec![("if", "oid.10.1", 1600.0)]);
+        apply_rate(&mut run2, &entry, &config, 100.0).expect("run 2");
+        match run2.items.get("if") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![0.0]),
+            other => panic!("expected Vector([0.0]), got {:?}", other),
+        }
+        let _ = std::fs::remove_dir_all(&config.statefile_dir);
+    }
+}
+
+#[cfg(test)]
+mod join_tests {
+    use super::*;
+    use crate::snmp::SnmpResult;
+
+    fn column(result: &mut SnmpResult, key: &str, rows: &[(u32, f64)]) {
+        result.items.insert(
+            key.to_string(),
+            ExprResult::Vector(rows.iter().map(|(_, v)| *v).collect()),
+        );
+        result
+            .indices
+            .insert(key.to_string(), rows.iter().map(|(i, _)| *i).collect());
+    }
+
+    fn str_column(result: &mut SnmpResult, key: &str, rows: &[(u32, &str)]) {
+        result.items.insert(
+            key.to_string(),
+            ExprResult::StrVector(rows.iter().map(|(_, v)| v.to_string()).collect()),
+        );
+        result
+            .indices
+            .insert(key.to_string(), rows.iter().map(|(i, _)| *i).collect());
+    }
+
+    #[test]
+    fn holes_are_dropped_consistently_across_columns() {
+        // Row 2 is missing in `out`; row 4 missing in `in`: only rows present
+        // everywhere survive, in ascending order, in every column.
+        let mut result = SnmpResult::new(HashMap::new());
+        column(&mut result, "if.in", &[(1, 10.0), (2, 20.0), (3, 30.0)]);
+        column(&mut result, "if.out", &[(1, 100.0), (3, 300.0), (4, 400.0)]);
+        str_column(
+            &mut result,
+            "if.descr",
+            &[(1, "eth1"), (2, "eth2"), (3, "eth3"), (4, "eth4")],
+        );
+        let targets = vec![
+            (0usize, "if.in".to_string()),
+            (0usize, "if.out".to_string()),
+            (0usize, "if.descr".to_string()),
+        ];
+        align_by_index(std::slice::from_mut(&mut result), &targets);
+
+        match result.items.get("if.in") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![10.0, 30.0]),
+            other => panic!("if.in: {:?}", other),
+        }
+        match result.items.get("if.out") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![100.0, 300.0]),
+            other => panic!("if.out: {:?}", other),
+        }
+        match result.items.get("if.descr") {
+            Some(ExprResult::StrVector(v)) => {
+                assert_eq!(v, &vec!["eth1".to_string(), "eth3".to_string()])
+            }
+            other => panic!("if.descr: {:?}", other),
+        }
+        assert_eq!(result.indices.get("if.in"), Some(&vec![1, 3]));
+    }
+
+    #[test]
+    fn disjoint_columns_align_to_empty_vectors() {
+        let mut result = SnmpResult::new(HashMap::new());
+        column(&mut result, "a.x", &[(1, 1.0)]);
+        column(&mut result, "a.y", &[(2, 2.0)]);
+        let targets = vec![(0usize, "a.x".to_string()), (0usize, "a.y".to_string())];
+        align_by_index(std::slice::from_mut(&mut result), &targets);
+        match result.items.get("a.x") {
+            Some(ExprResult::Vector(v)) => assert!(v.is_empty()),
+            other => panic!("a.x: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn rate_samples_follow_the_alignment_mask() {
+        let mut result = SnmpResult::new(HashMap::new());
+        column(&mut result, "if.in", &[(1, 10.0), (2, 20.0), (3, 30.0)]);
+        column(&mut result, "if.out", &[(1, 100.0), (3, 300.0)]);
+        result.samples = vec![
+            ("if.in".to_string(), "oid.10.1".to_string(), 10.0),
+            ("if.in".to_string(), "oid.10.2".to_string(), 20.0),
+            ("if.in".to_string(), "oid.10.3".to_string(), 30.0),
+            ("if.out".to_string(), "oid.16.1".to_string(), 100.0),
+            ("if.out".to_string(), "oid.16.3".to_string(), 300.0),
+        ];
+        let targets = vec![
+            (0usize, "if.in".to_string()),
+            (0usize, "if.out".to_string()),
+        ];
+        align_by_index(std::slice::from_mut(&mut result), &targets);
+        // The dropped row 2 disappears from the samples too: state and
+        // vectors stay parallel for apply_rate.
+        assert_eq!(
+            result.samples,
+            vec![
+                ("if.in".to_string(), "oid.10.1".to_string(), 10.0),
+                ("if.in".to_string(), "oid.10.3".to_string(), 30.0),
+                ("if.out".to_string(), "oid.16.1".to_string(), 100.0),
+                ("if.out".to_string(), "oid.16.3".to_string(), 300.0),
+            ]
+        );
+    }
+
+    #[test]
+    fn join_groups_align_across_collect_entries() {
+        // ifTable-like entry and ifXTable-like entry with different instance
+        // sets: the group keeps the intersection in both results.
+        let mut table = SnmpResult::new(HashMap::new());
+        column(&mut table, "if.in", &[(1, 10.0), (2, 20.0)]);
+        let mut xtable = SnmpResult::new(HashMap::new());
+        column(&mut xtable, "ifx.hcin", &[(2, 200.0), (3, 300.0)]);
+        let mut collect = vec![table, xtable];
+        let targets = vec![
+            (0usize, "if.in".to_string()),
+            (1usize, "ifx.hcin".to_string()),
+        ];
+        align_by_index(&mut collect, &targets);
+        match collect[0].items.get("if.in") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![20.0]),
+            other => panic!("if.in: {:?}", other),
+        }
+        match collect[1].items.get("ifx.hcin") {
+            Some(ExprResult::Vector(v)) => assert_eq!(v, &vec![200.0]),
+            other => panic!("ifx.hcin: {:?}", other),
+        }
     }
 }

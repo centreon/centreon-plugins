@@ -69,16 +69,16 @@ cgs-cpu ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    OK: avg.cpu.usage.percent is 2% | 'core.cpu.usage.percent'=2%;;;0;100 'avg.cpu.usage.percent'=2%;;;0;100
     ...    2
     ...    --warning-avg=0.1
-    ...    WARNING: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;0.1;;0;100
+    ...    WARNING: 'avg.cpu.usage.percent' is 2% | 'core.cpu.usage.percent'=2%;;;0;100 'avg.cpu.usage.percent'=2%;0:0.1;;0;100
     ...    3
     ...    --critical-avg=0.1
-    ...    CRITICAL: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;0.1;0;100
+    ...    CRITICAL: 'avg.cpu.usage.percent' is 2% | 'core.cpu.usage.percent'=2%;;;0;100 'avg.cpu.usage.percent'=2%;;0:0.1;0;100
     ...    4
     ...    --warning-core=0.1
-    ...    WARNING: 0#core.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;0.1;;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    WARNING: 'core.cpu.usage.percent' is 2% | 'core.cpu.usage.percent'=2%;0:0.1;;0;100 'avg.cpu.usage.percent'=2%;;;0;100
     ...    5
     ...    --critical-core=0.01
-    ...    CRITICAL: 0#core.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;0.01;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    CRITICAL: 'core.cpu.usage.percent' is 2% | 'core.cpu.usage.percent'=2%;;0:0.01;0;100 'avg.cpu.usage.percent'=2%;;;0;100
