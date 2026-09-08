@@ -81,10 +81,7 @@ sub gateway_long_output {
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "gateway '%s' ",
-        $options{instance_value}->{gatewayName}
-    );
+    return $self->custom_output(option => 'custom_prefix_short_gateway_output', values => $options{instance_value});
 }
 
 sub prefix_container_output {
@@ -104,7 +101,7 @@ sub set_counters {
         {
             name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
             group => [
-                { name => 'containers', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_container_output', skipped_code => { NO_VALUE() => 1 } }
+                { name => 'containers', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_container_output', message_multiple => 'all containers are ok', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -194,7 +191,8 @@ sub new {
         'exclude-gateway-id:s'        => { name => 'exclude_gateway_id',  default => '' },
         'include-container-name:s'    => { name => 'include_container_name',  default => '' },
         'exclude-container-name:s'    => { name => 'exclude_container_name',  default => '' },
-        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' },
+        'custom-prefix-short-gateway-output:s' => { name => 'custom_prefix_short_gateway_output' }
     });
 
     return $self;
@@ -203,6 +201,10 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_prefix_short_gateway_output})) {
+        $self->{option_results}->{custom_prefix_short_gateway_output} = "gateway '%(gatewayName)' ";
+    }
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
         $self->{option_results}->{custom_perfdata_instances} = '%(gatewayName) %(containerName)';

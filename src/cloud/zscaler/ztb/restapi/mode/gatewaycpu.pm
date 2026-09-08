@@ -47,10 +47,7 @@ sub gateway_long_output {
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "gateway '%s' ",
-        $options{instance_value}->{gatewayName}
-    );
+    return $self->custom_output(option => 'custom_prefix_short_gateway_output', values => $options{instance_value});
 }
 
 sub set_counters {
@@ -115,15 +112,16 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'include-site-name:s'         => { name => 'include_site_name',  default => '' },
-        'exclude-site-name:s'         => { name => 'exclude_site_name',  default => '' },
-        'include-cluster-name:s'      => { name => 'include_cluster_name',  default => '' },
-        'exclude-cluster-name:s'      => { name => 'exclude_cluster_name',  default => '' },
-        'include-gateway-name:s'      => { name => 'include_gateway_name',  default => '' },
-        'exclude-gateway-name:s'      => { name => 'exclude_gateway_name',  default => '' },
-        'include-gateway-id:s'        => { name => 'include_gateway_id',  default => '' },
-        'exclude-gateway-id:s'        => { name => 'exclude_gateway_id',  default => '' },
-        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
+        'include-site-name:s'                  => { name => 'include_site_name',  default => '' },
+        'exclude-site-name:s'                  => { name => 'exclude_site_name',  default => '' },
+        'include-cluster-name:s'               => { name => 'include_cluster_name',  default => '' },
+        'exclude-cluster-name:s'               => { name => 'exclude_cluster_name',  default => '' },
+        'include-gateway-name:s'               => { name => 'include_gateway_name',  default => '' },
+        'exclude-gateway-name:s'               => { name => 'exclude_gateway_name',  default => '' },
+        'include-gateway-id:s'                 => { name => 'include_gateway_id',  default => '' },
+        'exclude-gateway-id:s'                 => { name => 'exclude_gateway_id',  default => '' },
+        'custom-perfdata-instances:s'          => { name => 'custom_perfdata_instances' },
+        'custom-prefix-short-gateway-output:s' => { name => 'custom_prefix_short_gateway_output' }
     });
 
     return $self;
@@ -132,6 +130,10 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_prefix_short_gateway_output})) {
+        $self->{option_results}->{custom_prefix_short_gateway_output} = "gateway '%(gatewayName)' ";
+    }
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
         $self->{option_results}->{custom_perfdata_instances} = '%(gatewayName)';

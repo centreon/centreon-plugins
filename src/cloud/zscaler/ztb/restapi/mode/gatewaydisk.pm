@@ -81,10 +81,7 @@ sub gateway_long_output {
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "gateway '%s' ",
-        $options{instance_value}->{gatewayName}
-    );
+    return $self->custom_output(option => 'custom_prefix_short_gateway_output', values => $options{instance_value});
 }
 
 sub set_counters {
@@ -176,7 +173,8 @@ sub new {
         'exclude-gateway-name:s'      => { name => 'exclude_gateway_name',  default => '' },
         'include-gateway-id:s'        => { name => 'include_gateway_id',  default => '' },
         'exclude-gateway-id:s'        => { name => 'exclude_gateway_id',  default => '' },
-        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' }
+        'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' },
+        'custom-prefix-short-gateway-output:s' => { name => 'custom_prefix_short_gateway_output' }
     });
 
     return $self;
@@ -185,6 +183,10 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{custom_prefix_short_gateway_output})) {
+        $self->{option_results}->{custom_prefix_short_gateway_output} = "gateway '%(gatewayName)' ";
+    }
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
         $self->{option_results}->{custom_perfdata_instances} = '%(gatewayName)';
