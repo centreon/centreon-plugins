@@ -118,3 +118,15 @@ sub disco_show {
     }
 }
 1;
+
+__END__
+
+=head1 MODE
+
+List the storage repositories of a Xen Orchestra pool, for host discovery purposes.
+
+=over 8
+
+=back
+
+=cut
