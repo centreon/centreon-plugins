@@ -535,6 +535,141 @@
           "callbacks": []
         },
         {
+          "uuid": "04670896-ab2b-498c-9cb2-ee94f3ca8637",
+          "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"enabled\": true,\n    \"power_state\": \"Running\",\n    \"address\": \"192.168.122.8\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996)\"\n    },\n    \"memory\": {\n      \"usage\": 6203547648,\n      \"size\": 8589934592\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"4\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "host mode: vates found by name",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "name_label:vates",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "507ac4bf-52aa-4a19-b6c2-4be613bde0a1",
+          "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"enabled\": true,\n    \"power_state\": \"Running\",\n    \"address\": \"192.168.122.8\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996)\"\n    },\n    \"memory\": {\n      \"usage\": 6203547648,\n      \"size\": 8589934592\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"4\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "host mode: vates found by uuid",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "uuid:806ca3d4-a50f-43e7-b19a-9228b999028c",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "fe46da81-f5f6-418f-b5df-1c0105f9c031",
+          "body": "[\n  {\n    \"name_label\": \"vates3\",\n    \"uuid\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"enabled\": false,\n    \"power_state\": \"Halted\",\n    \"address\": \"192.168.122.81\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC (Q35 + ICH9, 2009)\"\n    },\n    \"memory\": {\n      \"usage\": 0,\n      \"size\": 4294967296\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"2\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"href\": \"/rest/v0/hosts/f71b4cd5-c0e5-4a94-bc96-eaefe4919104\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "host mode: vates3 (disabled/halted) found by name",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "name_label:vates3",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "65b0ebcf-7013-432f-91b8-15abc7b11faf",
+          "body": "[\n  {\n    \"name_label\": \"vates3\",\n    \"uuid\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"enabled\": false,\n    \"power_state\": \"Halted\",\n    \"address\": \"192.168.122.81\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC (Q35 + ICH9, 2009)\"\n    },\n    \"memory\": {\n      \"usage\": 0,\n      \"size\": 4294967296\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"2\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"href\": \"/rest/v0/hosts/f71b4cd5-c0e5-4a94-bc96-eaefe4919104\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "host mode: vates3 (disabled/halted) found by uuid",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "filter",
+              "value": "uuid:f71b4cd5-c0e5-4a94-bc96-eaefe4919104",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "5ae0569e-ba81-47b2-8cb2-c7869de16088",
+          "body": "[\n  {\n    \"name_label\": \"vates\",\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"name_description\": \"\",\n    \"enabled\": true,\n    \"power_state\": \"Running\",\n    \"address\": \"192.168.122.8\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC v2 (i440FX + PIIX, arch_caps fix, 1996)\"\n    },\n    \"memory\": {\n      \"usage\": 6203547648,\n      \"size\": 8589934592\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"4\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"tags\": [],\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  },\n  {\n    \"name_label\": \"vates2\",\n    \"uuid\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"name_description\": \"\",\n    \"enabled\": true,\n    \"power_state\": \"Running\",\n    \"address\": \"192.168.122.68\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC (Q35 + ICH9, 2009)\"\n    },\n    \"memory\": {\n      \"usage\": 1612414976,\n      \"size\": 4294967296\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"2\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"tags\": [],\n    \"href\": \"/rest/v0/hosts/4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\"\n  },\n  {\n    \"name_label\": \"vates3\",\n    \"uuid\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"name_description\": \"\",\n    \"enabled\": false,\n    \"power_state\": \"Halted\",\n    \"address\": \"192.168.122.81\",\n    \"bios_strings\": {\n      \"system-manufacturer\": \"QEMU\",\n      \"system-product-name\": \"Ubuntu 24.04 PC (Q35 + ICH9, 2009)\"\n    },\n    \"memory\": {\n      \"usage\": 0,\n      \"size\": 4294967296\n    },\n    \"CPUs\": {\n      \"cpu_count\": \"2\"\n    },\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"tags\": [],\n    \"href\": \"/rest/v0/hosts/f71b4cd5-c0e5-4a94-bc96-eaefe4919104\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "no filter for discovery",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "*",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
           "uuid": "0e05de96-8372-44ea-9126-ad78f07c63d0",
           "body": "[]",
           "latency": 0,
@@ -678,6 +813,37 @@
           "disableTemplating": false,
           "fallbackTo404": false,
           "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "e83bcdcd-b4b2-4d52-8237-ffb59227a095",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/v0/hosts/:UUID/stats",
+      "responses": [
+        {
+          "uuid": "904ddcb7-6a23-4f24-bd9e-59c17afdde87",
+          "body": "{\n  \"endTimestamp\": 1788863115,\n  \"interval\": 5,\n  \"stats\": {\n    \"cpus\": {\n      \"0\": [\n        35.5,\n        42.0,\n        50.0\n      ],\n      \"1\": [\n        55.0,\n        62.0,\n        70.0\n      ],\n      \"2\": [\n        28.0,\n        33.0,\n        40.0\n      ],\n      \"3\": [\n        65.0,\n        72.0,\n        80.0\n      ]\n    }\n  }\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "host cpu stats (4 cores)",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
           "crudKey": "id",
           "callbacks": []
         }
