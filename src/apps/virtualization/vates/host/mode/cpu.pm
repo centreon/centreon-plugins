@@ -89,21 +89,19 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $host = $options{custom}->get_host_info(fields => "name_label,enabled,power_state,uuid,CPUs");
+    # get_name_and_uuid only resolves identity (uuid/name_label) and caches it on disk, unlike
+    # get_host_info which always hits the API live. We don't need any other host field here: the
+    # "is the host actually reachable" check is deferred to the /stats call itself below.
+    my $host = $options{custom}->get_name_and_uuid(type => "host", api_endpoint => "hosts");
 
-    if ($host->{enabled} ne 'true' or $host->{power_state} ne 'Running') {
-        $self->{output}->option_exit(short_msg => "host '" . $host->{name_label} . "' is not enabled/running, can not get CPU usage data.");
-    }
+    # silently_fail lets us read the (non-200) error body ourselves instead of the http layer
+    # auto-exiting with a generic "500 ..." UNKNOWN: a disabled/halted host makes this endpoint
+    # fail with a XAPI "HOST_OFFLINE" error, which we can report with a clearer message.
+    my $host_stats = $options{custom}->request_api_get(endpoint => 'hosts/' . $host->{uuid} . '/stats', silently_fail => 1);
 
-    my $cpu_count = 0;
-    if (defined($host->{CPUs}) and ref($host->{CPUs}) eq "HASH" and defined($host->{CPUs}->{cpu_count})) {
-        $cpu_count = $host->{CPUs}->{cpu_count} + 0;
+    if (defined($host_stats->{error})) {
+        $self->{output}->option_exit(short_msg => "host '" . $host->{name_label} . "' is not enabled/running, can not get CPU usage data (" . $host_stats->{error} . ").");
     }
-    if ($cpu_count == 0) {
-        $self->{output}->option_exit(short_msg => "host '" . $host->{name_label} . "' reports a CPU count of 0, inconsistent data.");
-    }
-
-    my $host_stats = $options{custom}->request_api_get(endpoint => 'hosts/' . $host->{uuid} . '/stats');
 
     if (
         !defined($host_stats->{stats})
@@ -115,7 +113,9 @@ sub manage_selection {
     }
 
     # the API returns one time series (percentage) per physical core, the last value of each
-    # series is the most recent one. The aggregated usage is the average of all cores.
+    # series is the most recent one. The aggregated usage is the average of all cores, and the
+    # number of series is itself the live physical CPU count (no need for the separate,
+    # deprecated CPUs.cpu_count field on the host object).
     my $total = 0;
     my $cores = 0;
     for my $core (keys %{$host_stats->{stats}->{cpus}}) {
@@ -131,7 +131,7 @@ sub manage_selection {
     $self->{cpu} = {
         display    => $host->{name_label},
         prct_used  => $total / $cores,
-        cpu_count  => $cpu_count
+        cpu_count  => $cores
     };
 }
 

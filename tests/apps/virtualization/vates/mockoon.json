@@ -829,6 +829,33 @@
       "endpoint": "rest/v0/hosts/:UUID/stats",
       "responses": [
         {
+          "uuid": "6b2002ff-f4ec-40e2-a588-642060789d98",
+          "body": "{\n  \"error\": \"HOST_OFFLINE(OpaqueRef:2f22ba81-242d-b7e2-9e6b-95b98d931af3)\",\n  \"info\": \"This is a XenServer/XCP-ng error, not an XO error\"\n}\n",
+          "latency": 0,
+          "statusCode": 500,
+          "label": "vates3 (disabled/halted) is offline",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "params",
+              "modifier": "UUID",
+              "value": "f71b4cd5-c0e5-4a94-bc96-eaefe4919104",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
           "uuid": "904ddcb7-6a23-4f24-bd9e-59c17afdde87",
           "body": "{\n  \"endTimestamp\": 1788863115,\n  \"interval\": 5,\n  \"stats\": {\n    \"cpus\": {\n      \"0\": [\n        35.5,\n        42.0,\n        50.0\n      ],\n      \"1\": [\n        55.0,\n        62.0,\n        70.0\n      ],\n      \"2\": [\n        28.0,\n        33.0,\n        40.0\n      ],\n      \"3\": [\n        65.0,\n        72.0,\n        80.0\n      ]\n    }\n  }\n}\n",
           "latency": 0,
@@ -843,7 +870,7 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": false,
+          "default": true,
           "crudKey": "id",
           "callbacks": []
         }
