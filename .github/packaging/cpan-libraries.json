@@ -52,7 +52,7 @@
         "revision": "3"
       },
       "deb": {
-        "build_names": "bullseye-amd64,jammy,bullseye-arm64",
+        "build_names": "jammy",
         "preinstall_cpanlibs": "Dist::Build",
         "use_dh_make_perl": "false",
         "no-auto-depends": "true",
@@ -72,7 +72,7 @@
         "build_distribs": "el8,el9"
       },
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64,bookworm-arm64,trixie-arm64",
+        "build_names": "bookworm,trixie,jammy,noble,bookworm-arm64,trixie-arm64",
         "use_dh_make_perl": "false",
         "no-auto-depends": "true",
         "deb_dependencies": "libexporter-tiny-perl libxs-install-perl"
@@ -174,7 +174,7 @@
     {
       "name": "Hash::Ordered",
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,jammy"
+        "build_names": "bookworm,jammy"
       }
     },
     {
@@ -210,7 +210,7 @@
         "revision": "3"
       },
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64,bookworm-arm64,trixie-arm64",
+        "build_names": "bookworm,trixie,jammy,noble,bookworm-arm64,trixie-arm64",
         "use_dh_make_perl": "false",
         "no-auto-depends": "true",
         "deb_dependencies": "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libssh-4 libc6",
@@ -249,7 +249,7 @@
       "name": "Net::Amazon::Signature::V4",
       "rpm": {},
       "deb": {
-        "build_names": "bullseye-amd64,jammy,trixie"
+        "build_names": "jammy,trixie"
       }
     },
     {
@@ -260,7 +260,7 @@
         "revision": "3"
       },
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64,bookworm-arm64,trixie-arm64",
+        "build_names": "bookworm,trixie,jammy,noble,bookworm-arm64,trixie-arm64",
         "use_dh_make_perl": "false",
         "no-auto-depends": "true",
         "deb_dependencies": "libcarp-assert-perl libdynaloader-functions-perl libexporter-tiny-perl libdevel-overloadinfo-perl libcurl4",
@@ -290,7 +290,7 @@
       "name": "Net::MQTT::Simple",
       "deb": {
         "version": "1.29",
-        "build_names": "bullseye-amd64,bookworm,jammy"
+        "build_names": "bookworm,jammy"
       }
     },
     {
@@ -346,7 +346,6 @@
         "version": "0.53"
       },
       "deb": {
-        "build_names": "bullseye-amd64",
         "version": "0.53"
       }
     },
@@ -419,7 +418,7 @@
         "rpm_dependencies": "zeromq"
       },
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64,bookworm-arm64,trixie-arm64",
+        "build_names": "bookworm,trixie,jammy,noble,bookworm-arm64,trixie-arm64",
         "use_dh_make_perl": "false",
         "version": "0.01",
         "deb_dependencies": "libzmq5"

@@ -51,9 +51,6 @@ jobs:
             image: packaging-plugins-alma10
             distrib: el10
           - package_extension: deb
-            image: packaging-plugins-bullseye
-            distrib: bullseye
-          - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
           - package_extension: deb
@@ -160,8 +157,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -211,8 +206,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie

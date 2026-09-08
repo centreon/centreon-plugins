@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check official distribution repositories for already-packaged CPAN libs.
 
-Runs inside a distribution container (el8/el9/el10, bullseye, bookworm, …).
+Runs inside a distribution container (el8/el9/el10, bookworm, …).
 Queries the local package manager, filters out libs already packaged at the
 expected version, and writes a partial-matrix JSON consumed by generate-matrices.py.
 
