@@ -45,4 +45,4 @@ Host Memory ${tc}
     ...    OK: 72.22 % of the memory is used - 5.78GB out of 8.00GB total - free memory is 2386386944 B | 'host.memory.usage.percentage'=72.22%;0:80;0:95;0;100 'host.memory.usage.bytes'=6203547648B;;;0;8589934592 'host.memory.free.bytes'=2386386944B;;;0;
     ...    4
     ...    --host-name=vates3
-    ...    OK: 0.00 % of the memory is used - 0.00B out of 4.00GB total - free memory is 4294967296 B | 'host.memory.usage.percentage'=0.00%;0:80;0:95;0;100 'host.memory.usage.bytes'=0B;;;0;4294967296 'host.memory.free.bytes'=4294967296B;;;0;
+    ...    UNKNOWN: host 'vates3' is not enabled/running, can not get memory usage data.

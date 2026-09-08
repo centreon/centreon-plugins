@@ -112,7 +112,11 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $host = $options{custom}->get_host_info(fields => "name_label,memory,uuid");
+    my $host = $options{custom}->get_host_info(fields => "name_label,enabled,power_state,memory,uuid");
+
+    if ($host->{enabled} ne 'true' or $host->{power_state} ne 'Running') {
+        $self->{output}->option_exit(short_msg => "host '" . $host->{name_label} . "' is not enabled/running, can not get memory usage data.");
+    }
 
     if (
         !defined($host->{memory})
@@ -145,8 +149,8 @@ __END__
 =head1 MODE
 
 Check the memory usage of a Vates XCP-ng host. C<memory.usage> is the real memory in use
-(total minus free), not an allocation; a disabled/halted host naturally reports a low or null
-usage, which does not need special-casing since it simply will not cross the usage thresholds.
+(total minus free), not an allocation. The host must be enabled and running: a disabled/halted
+host returns UNKNOWN rather than a misleading near-zero usage.
 
 =over 8
 
