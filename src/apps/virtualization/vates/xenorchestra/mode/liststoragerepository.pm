@@ -44,12 +44,7 @@ sub run {
         endpoint => "srs", get_param => ['fields=*']);
 
     for my $sr (@{$response}) {
-        my $tags = '';
-        for my $tag (@{$sr->{tags}}) {
-            if (is_not_empty($tag)){
-                $tags .= $tag;
-            }
-        }
+        my $tags = join(', ', grep { is_not_empty($_) } @{$sr->{tags}});
         $self->{output}->output_add(
             long_msg => sprintf(
                 "  %s [uuid=%s] [type=%s] [content_type=%s] [allocationStrategy=%s] [inMaintenanceMode=%s] [name_description=%s] [shared=%s] [SR_type=%s] [pool_uuid=%s] [tags=%s]",
@@ -96,12 +91,7 @@ sub disco_show {
     my $response = $options{custom}->request_api_get(
         endpoint => "srs", get_param => ['fields=*']);
     for my $sr (@{$response}) {
-        my $tags = '';
-        for my $tag (@{$sr->{tags}}) {
-            if (is_not_empty($tag)){
-                $tags .= $tag;
-            }
-        }
+        my $tags = join(', ', grep { is_not_empty($_) } @{$sr->{tags}});
         $self->{output}->add_disco_entry(
             name               => $sr->{name_label},
             uuid               => $sr->{uuid},
