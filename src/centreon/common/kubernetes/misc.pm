@@ -25,7 +25,7 @@ use warnings;
 
 use Exporter 'import';
 use List::Util qw/any/;
-our @EXPORT_OK = qw/is_excluded_label/;
+our @EXPORT_OK = qw/is_excluded_label to_millicores/;
 
 sub is_excluded_label($$$%)
 {
@@ -72,6 +72,28 @@ sub is_excluded_label($$$%)
         $options{output}->output_add(long_msg => "skipping entry '".$options{display}."' not included by the label/annotation filter.")
             if %options && $options{output} && $options{output}->is_debug();
         return 1;
+    }
+
+    return 0;
+}
+
+# Kubernetes CPU quantities can be expressed in whole cores, millicores ('m'),
+# microcores ('u') or nanocores ('n').
+# metrics-server commonly uses 'n' for small usage values (e.g. "9559630n").
+sub to_millicores {
+    my (%options) = @_;
+
+    my $value = $options{value};
+    return 0 if !defined($value);
+
+    if ($value =~ /^(\d+)n$/) {
+        return $1 / 1000000;
+    } elsif ($value =~ /^(\d+)u$/) {
+        return $1 / 1000;
+    } elsif ($value =~ /^(\d+)m$/) {
+        return $1;
+    } elsif ($value =~ /^(\d+(?:\.\d+)?)$/) {
+        return $1 * 1000;
     }
 
     return 0;
