@@ -54,7 +54,7 @@ sub set_counters {
     $self->{maps_counters}->{pods} = [
         { label => 'pod-cpu-usage', nlabel => 'pod.cpu.usage.millicores', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
-                output_template => 'CPU usage: %{cpu_usage} millicores',
+                output_template => 'CPU usage: %{cpu_usage|%d} millicores',
                 perfdatas => [
                     { value => 'cpu_usage', template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
@@ -132,15 +132,19 @@ sub manage_selection {
         }
 
         my ($cpu_requests, $memory_requests) = (0, 0);
+        my $matched_container = 0;
         foreach my $container (@{$pod->{spec}->{containers}}) {
             next if defined($self->{option_results}->{filter_container_name}) && $self->{option_results}->{filter_container_name} ne ''
                 && $container->{name} !~ /$self->{option_results}->{filter_container_name}/;
 
+            $matched_container = 1;
             $cpu_requests += to_millicores(value => $container->{resources}->{requests}->{cpu})
                 if defined($container->{resources}->{requests}->{cpu});
             $memory_requests += convert_bytes_ng(value => $container->{resources}->{requests}->{memory})
                 if defined($container->{resources}->{requests}->{memory});
         }
+
+        next if !$matched_container;
 
         $pod_specs{$key} = { cpu_requests => $cpu_requests, memory_requests => $memory_requests };
     }
