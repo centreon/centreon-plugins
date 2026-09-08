@@ -76,3 +76,9 @@ Vm Status ${tc}
     ...    14
     ...    --include-vm-name=does-not-exist
     ...    UNKNOWN: no vm found, check include and exclude filters.
+    ...    15
+    ...    --include-vm-uuid=aaaaaaaa-0000-0000-0000-000000000001
+    ...    OK: 1 VM(s) running, 0 VM(s) halted, 0 VM(s) paused, 0 VM(s) suspended, 1 VM(s) total | 'vms.running.count'=1;;;0;1 'vms.halted.count'=0;;;0;1 'vms.paused.count'=0;;;0;1 'vms.suspended.count'=0;;;0;1 'vms.total.count'=1;;;0;1
+    ...    16
+    ...    --exclude-vm-uuid=aaaaaaaa-0000-0000-0000-000000000001
+    ...    OK: 2 VM(s) running, 2 VM(s) halted, 1 VM(s) paused, 1 VM(s) suspended, 6 VM(s) total | 'vms.running.count'=2;;;0;6 'vms.halted.count'=2;;;0;6 'vms.paused.count'=1;;;0;6 'vms.suspended.count'=1;;;0;6 'vms.total.count'=6;;;0;6
