@@ -138,6 +138,33 @@
           "callbacks": []
         },
         {
+          "uuid": "a53ad2bb-77fa-4772-9bba-ccdc24932550",
+          "body": "[\n  {\n    \"name_label\": \"vm-run-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000001\",\n    \"power_state\": \"Running\"\n  },\n  {\n    \"name_label\": \"vm-run-2\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000002\",\n    \"power_state\": \"Running\"\n  },\n  {\n    \"name_label\": \"vm-run-3\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000003\",\n    \"power_state\": \"Running\"\n  },\n  {\n    \"name_label\": \"vm-halt-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000004\",\n    \"power_state\": \"Halted\"\n  },\n  {\n    \"name_label\": \"vm-halt-2\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000005\",\n    \"power_state\": \"Halted\"\n  },\n  {\n    \"name_label\": \"vm-pause-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000006\",\n    \"power_state\": \"Paused\"\n  },\n  {\n    \"name_label\": \"vm-susp-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000007\",\n    \"power_state\": \"Suspended\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "xenorchestra vmstatus: 3 running, 2 halted, 1 paused, 1 suspended",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name_label,power_state,uuid",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
           "uuid": "4b88ed49-ee0a-457a-a859-1560b4868732",
           "body": "[]",
           "latency": 0,
