@@ -177,6 +177,29 @@ sub get_vm_info {
     }
     return $response->[0];
 }
+
+# used by the host modes to get one host's data, resolving --host-uuid or --host-name.
+# %options input :
+#   fields: comma separated list of fields to request from the API (defaults to the minimal status fields)
+sub get_host_info {
+    my ($self, %options) = @_;
+
+    my $fields = $options{fields} // "name_label,enabled,power_state,uuid";
+
+    # default filter use uuid, or name if not present.
+    my $filter = "uuid:" . $self->{option_results}->{host_uuid};
+    if (is_empty($self->{option_results}->{host_uuid})) {
+        $filter = "name_label:" . $self->{option_results}->{host_name};
+    }
+    my $response = $self->request_api_get(
+        endpoint  => "hosts",
+        get_param => [ "fields=" . $fields, "filter=" . $filter ],
+    );
+    if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1){
+        $self->{output}->option_exit(short_msg => "no host found, api did not return an array with one element. Please check --host-uuid and --host-name parameter or --debug.");
+    }
+    return $response->[0];
+}
 1;
 
 __END__
@@ -215,6 +238,14 @@ re-fetched once per C<--reload-cache-time> window instead of on every plugin exe
 Resolves C<--vm-uuid>/C<--vm-name> and returns the matching VM's C<name_label>, C<power_state>,
 C<uuid> and C<os_version> fields. Always live (not cached), since C<power_state> can change at
 any time.
+
+=head2 get_host_info
+
+    my $host = $api->get_host_info(fields => 'name_label,enabled,power_state,memory');
+
+Resolves C<--host-uuid>/C<--host-name> and returns the matching host's fields (the caller picks
+which fields to request, since the status/cpu/memory host modes each need a different subset).
+Always live (not cached).
 
 =head1 REST API OPTIONS
 
