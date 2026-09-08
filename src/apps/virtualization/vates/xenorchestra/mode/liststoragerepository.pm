@@ -56,7 +56,7 @@ sub run {
                 $sr->{uuid},
                 $sr->{type},
                 $sr->{content_type},
-                $sr->{allocationStrategy},
+                $sr->{allocationStrategy} // '',
                 $sr->{inMaintenanceMode},
                 $sr->{name_description},
                 $sr->{shared},
@@ -86,7 +86,7 @@ sub disco_format {
         'shared',
         'SR_type',
         'pool_uuid',
-        'tags' ]);
+        'tags']);
 }
 
 sub disco_show {
@@ -106,7 +106,7 @@ sub disco_show {
             uuid               => $sr->{uuid},
             type               => $sr->{type},
             content_type       => $sr->{content_type},
-            allocationStrategy => $sr->{allocationStrategy},
+            allocationStrategy => $sr->{allocationStrategy} // '',
             inMaintenanceMode  => $sr->{inMaintenanceMode},
             name_description   => $sr->{name_description},
             shared             => $sr->{shared},
