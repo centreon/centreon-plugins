@@ -243,6 +243,7 @@ Netasq
 Netconf
 Netscaler
 net-snmp
+ng
 NGINX
 NLCapacity
 --noeventlog
@@ -439,6 +440,7 @@ WildFire
 WLAN
 WLC
 WSMAN
+XCP
 Xen
 XPath
 ZDX
