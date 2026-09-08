@@ -20,7 +20,7 @@
 package apps::virtualization::vates::xenorchestra::mode::liststoragerepository;
 use strict;
 use warnings;
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 use centreon::plugins::misc qw/is_not_empty/;
 sub new {
     my ($class, %options) = @_;
