@@ -6,11 +6,13 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 # shellcheck source=.github/scripts/pulp/api.sh
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
-# use the org-variable values, falling back to the defaults when passed empty
-# (an unset org variable is forwarded as an empty string, overriding the default)
-PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
-PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
-
+# an unset org variable is forwarded as an empty string, overriding the default
+PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
+PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.int.centreon.com}"
+# stable shares its Domain with testing since the domain merge (PULP_STABLE_DOMAIN
+# now equals PULP_DOMAIN); the read/write phase switch is kept as a no-op
+PULP_DOMAIN="${PULP_DOMAIN:-default}"
+PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
 declare -A ARCH_CONTENT
 declare -A ARCH_RESULTS
 TOTAL_PACKAGES_COUNT=0
@@ -18,32 +20,34 @@ TOTAL_PACKAGES_COUNT=0
 for ARCH in noarch x86_64; do
   TESTING_REPOSITORY_NAME="$TESTING_REPOSITORY_PREFIX-$ARCH"
 
-  if ! pulp rpm repository show --name "$TESTING_REPOSITORY_NAME" >/dev/null 2>&1; then
+  if ! pulp_resource_exists "repositories/rpm/rpm" "$TESTING_REPOSITORY_NAME"; then
     echo "[INFO] Testing repository $TESTING_REPOSITORY_NAME does not exist"
     continue
   fi
 
   VERSION_HREF=$(pulp rpm repository show --name "$TESTING_REPOSITORY_NAME" | jq -r '.latest_version_href')
 
-  # packages of the module are identified by the label set at delivery time;
-  # keep both the href list (for the content modify call) and the package
-  # identity (name/version/release/arch/filename) to feed the promotion manifest
-  RESPONSE=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" -G \
-      --data-urlencode "repository_version=$VERSION_HREF" \
-      --data-urlencode "pulp_label_select=module=$MODULE_NAME" \
-      --data-urlencode "limit=1000" \
-      "$PULP_URL/api/v3/content/rpm/packages/"
-  )
+  # paginate: the testing repository keeps every delivered version, so the
+  # module listing can exceed a single page
+  RESULTS_FILE=$(mktemp)
+  url="$PULP_URL/$PULP_DOMAIN/api/v3/content/rpm/packages/?$(
+    printf 'repository_version=%s&pulp_label_select=%s&limit=1000' \
+      "$(jq -rn --arg v "$VERSION_HREF" '$v | @uri')" \
+      "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
+  )"
+  while [[ -n "$url" ]]; do
+    refresh_pulp_token
+    page=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$url")
+    echo "$page" | jq -c '.results[]' >> "$RESULTS_FILE"
+    url=$(echo "$page" | jq -r '.next // empty')
+  done
 
-  # fail on a truncated page: silently promoting a subset of the module's
-  # packages would publish an incomplete stable repository
-  if [[ $(echo "$RESPONSE" | jq '.count > (.results | length)') == "true" ]]; then
-    echo "::error::Package query on $TESTING_REPOSITORY_NAME is truncated ($(echo "$RESPONSE" | jq -r '.results | length')/$(echo "$RESPONSE" | jq -r '.count') results); pagination is required"
-    exit 1
-  fi
-
-  RESULTS=$(echo "$RESPONSE" | jq '[.results[] | {pulp_href, name, version, release, arch, location_href, sha256}]')
+  # only the LATEST build of each package is promoted; compare version/release
+  # segment by segment (numeric as numbers) since a plain string max ranks "0.9" above "0.10"
+  RESULTS=$(jq -s 'def vkey: [scan("[0-9]+|[^0-9]+") | (tonumber? // .)];
+    [.[] | {pulp_href, name, version, release, arch, location_href, sha256}]
+    | group_by(.name, .arch) | map(max_by([(.version | vkey), (.release | vkey)]))' "$RESULTS_FILE")
+  rm -f "$RESULTS_FILE"
   CONTENT=$(echo "$RESULTS" | jq '[.[].pulp_href]')
   ARCH_PACKAGES_COUNT=$(echo "$CONTENT" | jq 'length')
 
@@ -63,8 +67,13 @@ if [[ "$STABILITY" != "stable" ]]; then
   exit 0
 fi
 
+# everything from here on targets the stable-tier domain
+refresh_pulp_token
+switch_pulp_domain "$PULP_STABLE_DOMAIN"
+
 for ARCH in noarch x86_64; do
   CONTENT="${ARCH_CONTENT[$ARCH]:-[]}"
+  RESULTS="${ARCH_RESULTS[$ARCH]:-[]}"
   ARCH_PACKAGES_COUNT=$(echo "$CONTENT" | jq 'length')
 
   if [[ "$ARCH_PACKAGES_COUNT" -eq 0 ]]; then
@@ -74,41 +83,56 @@ for ARCH in noarch x86_64; do
 
   STABLE_REPOSITORY_NAME="$STABLE_REPOSITORY_PREFIX-$ARCH"
   STABLE_BASE_PATH="$STABLE_BASE_PATH_PREFIX/$ARCH"
+  LEGACY_STABLE_BASE_PATH=""
+  [[ -n "$LEGACY_STABLE_BASE_PATH_PREFIX" ]] && LEGACY_STABLE_BASE_PATH="$LEGACY_STABLE_BASE_PATH_PREFIX/$ARCH"
 
-  if ! pulp rpm repository show --name "$STABLE_REPOSITORY_NAME" >/dev/null 2>&1; then
+  if ! pulp_resource_exists "repositories/rpm/rpm" "$STABLE_REPOSITORY_NAME"; then
     echo "::error::stable rpm repository $STABLE_REPOSITORY_NAME does not exist. Pulp repositories and distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before promoting."
     exit 1
   fi
 
-  if ! pulp rpm distribution show --name "$STABLE_REPOSITORY_NAME" >/dev/null 2>&1; then
+  if ! pulp_resource_exists "distributions/rpm/rpm" "$STABLE_REPOSITORY_NAME"; then
     echo "::error::stable rpm distribution $STABLE_REPOSITORY_NAME does not exist. Pulp distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before promoting. Refusing to create it here to avoid an unguarded distribution."
     exit 1
   fi
 
   STABLE_REPOSITORY_HREF=$(pulp rpm repository show --name "$STABLE_REPOSITORY_NAME" | jq -r '.pulp_href')
 
+  # Same-domain promotion: testing and stable share their domain, so the
+  # testing content hrefs (already collected above) are associated with the
+  # stable repository directly — no re-download/re-upload, the packages keep
+  # their delivery-time labels (check-rpm.sh only needs "module").
   echo "[INFO] Promoting $ARCH_PACKAGES_COUNT packages to $STABLE_REPOSITORY_NAME"
   # pulp-cli repository content modify does not resolve content by pulp_href, use the api directly
-  TASK_HREF=$(
-    curl -fsSL -H "Authorization: Github $PULP_TOKEN" \
-      -X POST -H "Content-Type: application/json" \
-      -d "{\"add_content_units\": $CONTENT}" \
-      "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" | jq -r '.task'
-  )
-  wait_task "$TASK_HREF"
+  ADD_BODY_FILE=$(mktemp)
+  echo "$CONTENT" | jq -c '{add_content_units: .}' > "$ADD_BODY_FILE"
+  # retried like the deb path: concurrent promotions can race on the repository version
+  for modify_attempt in 1 2 3; do
+    TASK_HREF=$(start_modify_task "$PULP_URL${STABLE_REPOSITORY_HREF}modify/" "$ADD_BODY_FILE")
+    wait_task_race "$TASK_HREF" && rc=0 || rc=$?
+    if [[ $rc -eq 0 ]]; then
+      break
+    elif [[ $rc -eq 2 && $modify_attempt -lt 3 ]]; then
+      echo "[WARN] Stable repository modify was interrupted server-side, retrying"
+      sleep $((modify_attempt * 15))
+    else
+      echo "::error::Stable repository modify failed"
+      exit 1
+    fi
+  done
 
   echo "[INFO] Publishing repository $STABLE_REPOSITORY_NAME"
-  pulp rpm publication create --repository "$STABLE_REPOSITORY_NAME" >/dev/null
+  create_publication rpm "$STABLE_REPOSITORY_NAME"
 
   # record the promoted packages (with their stable target coordinates) so the
   # verification step verifies exactly this set against the stable repo
   while read -r PKG; do
     manifest_add "$(echo "$PKG" | jq -c \
-      --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "$STABLE_BASE_PATH" \
+      --arg repository "$STABLE_REPOSITORY_NAME" --arg base_path "${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}" \
       '{filename: (.location_href | sub(".*/"; "")), name, version, release, arch, sha256, repository: $repository, base_path: $base_path}')"
   done < <(echo "${ARCH_RESULTS[$ARCH]}" | jq -c '.[]')
 
-  echo "::notice::Packages are available at $PULP_CONTENT_URL/$STABLE_BASE_PATH/"
+  echo "::notice::Packages are available at $PULP_CONTENT_URL/${LEGACY_STABLE_BASE_PATH:-$PULP_STABLE_DOMAIN/$STABLE_BASE_PATH}/"
 done
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "rpm" "$STABILITY" "promote" "$PULP_CONTENT_URL"

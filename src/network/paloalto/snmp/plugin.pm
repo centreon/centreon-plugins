@@ -39,6 +39,7 @@ sub new {
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::paloalto::snmp::mode::memory',
         'panorama'        => 'network::paloalto::snmp::mode::panorama',
+        'sensors'         => 'snmp_standard::mode::entity',
         'sessions'        => 'network::paloalto::snmp::mode::sessions',
         'signatures'      => 'network::paloalto::snmp::mode::signatures'
     };

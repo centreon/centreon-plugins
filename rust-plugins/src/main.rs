@@ -28,6 +28,7 @@ mod snmp;
 
 use env_logger::Env;
 use generic::Command;
+use generic::Status;
 use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
@@ -48,6 +49,24 @@ fn json_to_command(file_name: &str) -> Result<Command, Error> {
 }
 
 fn main() -> Result<(), Error> {
+    match std::panic::catch_unwind(|| snmp_plugin()) {
+        std::result::Result::Ok(plugin_result) => plugin_result,
+        Err(e) => {
+            let message = e
+                .downcast_ref::<&str>()
+                .map(|s| s.to_string())
+                .or_else(|| e.downcast_ref::<String>().cloned())
+                .unwrap_or_else(|| "unknown panic payload".to_string());
+            println!(
+                "Unexpected error : '{}' while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information ",
+                message
+            );
+            std::process::exit(3);
+        }
+    }
+}
+
+fn snmp_plugin() -> Result<(), Error> {
     env_logger::Builder::from_env(
         Env::default()
             .default_filter_or("info")
@@ -63,6 +82,7 @@ fn main() -> Result<(), Error> {
     let mut snmp_community = "public".to_string();
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
+    let mut no_data_status = Status::Unknown;
     let mut check_format = false;
     let mut check_response = false;
     let mut list_counters = false;
@@ -110,6 +130,14 @@ fn main() -> Result<(), Error> {
                         trace!("New filter_out: {}", f);
                         filter_out.push(f);
                     }
+                    Long("no-data-status") => {
+                        let s = parser.value()?.into_string()?;
+                        no_data_status = s.parse::<Status>().unwrap_or_else(|e| {
+                            println!("UNKNOWN: {}", e);
+                            std::process::exit(3);
+                        });
+                        trace!("no_data_status: {:?}", no_data_status);
+                    }
                     Short('h') | Long("help") => {
                         let prog = std::env::args()
                             .next()
@@ -123,6 +151,7 @@ fn main() -> Result<(), Error> {
                         println!("  -j, --json <FILE>                JSON command definition file (required)");
                         println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
                         println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
+                        println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
@@ -177,7 +206,7 @@ fn main() -> Result<(), Error> {
                 }
             },
             Err(err) => {
-                eprintln!("Error: {}", err);
+                println!("Error: {}", err);
                 std::process::exit(1);
             }
         }
@@ -192,10 +221,10 @@ fn main() -> Result<(), Error> {
             }
             Err(e) => {
                 if check_format {
-                    eprintln!("JSON is INVALID: {}", e);
+                    println!("JSON is INVALID: {}", e);
                     std::process::exit(3);
                 } else {
-                    eprintln!("UNKNOWN: Cannot read JSON file '{}': {}", file, e);
+                    println!("UNKNOWN: Cannot read JSON file '{}': {}", file, e);
                     std::process::exit(3);
                 }
             }
@@ -216,7 +245,7 @@ fn main() -> Result<(), Error> {
     let cmd = match cmd {
         Some(cmd) => cmd,
         None => {
-            eprintln!("UNKNOWN: JSON is empty");
+            println!("UNKNOWN: JSON is empty");
             std::process::exit(3);
         }
     };
@@ -236,11 +265,12 @@ fn main() -> Result<(), Error> {
         &filter_out,
         check_format,
         check_response,
+        no_data_status,
     ).unwrap_or_else(|e| {
         if check_format {
-            eprintln!("JSON is INVALID: {}", e);
+            println!("JSON is INVALID: {}", e);
         } else {
-            eprintln!("UNKNOWN: {}", e);
+            println!("UNKNOWN: {}", e);
         }
         std::process::exit(3);
     });
@@ -249,6 +279,7 @@ fn main() -> Result<(), Error> {
         println!("JSON is valid");
     } else {
         println!("{}", result.output);
+        std::process::exit(result.status.into());
     }
 
     Ok(())

@@ -22,7 +22,7 @@
         "uom": "B",
         "min": 0,
         "max_expr": "{memTotalReal}",
-        "threshold-suffix": "memory-free-bytes"
+        "threshold-suffix": "free-bytes"
       },
       {
         "name": "memory.usage.bytes",
@@ -30,7 +30,7 @@
         "uom": "B",
         "min": 0,
         "max_expr": "{memTotalReal}",
-        "threshold-suffix": "memory-bytes"
+        "threshold-suffix": "bytes"
       },
       {
         "name": "memory.usage.percent",
@@ -38,7 +38,7 @@
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "memory-prct"
+        "threshold-suffix": "prct"
       }
     ]
   },

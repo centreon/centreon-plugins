@@ -26,10 +26,15 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Net::NTP;
+use IO::Socket;
+use Time::HiRes;
 
-# Need to patch Net::NTP for windows and comment:
-#   IO::Socket::INET6
-# Otherwise, we have a "cannot determine peer address" error.
+# The NTP exchange is performed directly in run() (UDP socket + select()-based
+# timeout) rather than through Net::NTP::get_ntp_response(): on Windows the
+# alarm()/$SIG{ALRM} timeout used by that function does not interrupt a blocking
+# recv(), so a non-responding server would make the plugin hang forever.
+# We also create the socket with IO::Socket::INET explicitly (not INET6) to
+# avoid the Windows "cannot determine peer address" error.
 
 sub new {
     my ($class, %options) = @_;
@@ -122,12 +127,36 @@ sub run {
         $ntp_hostname = $ntp_server;
     }
 
-    my %ntp;
-    # Need to set following patch: https://rt.cpan.org/Public/Bug/Display.html?id=59607
+    my $diff;
     eval {
         local $SIG{__WARN__} = sub { die $_[0] };
-        
-        %ntp = Net::NTP::get_ntp_response($ntp_hostname, $self->{option_results}->{ntp_port});
+
+        my $sock = IO::Socket::INET->new(
+            Proto    => 'udp',
+            PeerHost => $ntp_hostname,
+            PeerPort => $self->{option_results}->{ntp_port}
+        );
+        die "socket creation failed: $@\n" if (!defined($sock));
+
+        my $xmttime = Time::HiRes::time();
+        my $packet = Net::NTP::Packet->new_client_packet($xmttime);
+        $sock->send($packet->encode())
+            or die "send() failed: $!\n";
+
+        # select()-based timeout: works on sockets under Windows, unlike the
+        # alarm()/$SIG{ALRM} mechanism of Net::NTP::get_ntp_response().
+        my $rin = '';
+        vec($rin, fileno($sock), 1) = 1;
+        my $nfound = select($rin, undef, undef, $self->{option_results}->{timeout});
+        die "timeout while waiting for NTP response\n" if (!defined($nfound) || $nfound <= 0);
+
+        my $data;
+        $sock->recv($data, 960)
+            or die "recv() failed: $!\n";
+        my $rectime = Time::HiRes::time();
+
+        my $pkt = Net::NTP::Packet->decode($data, $rectime);
+        $diff = Net::NTP->offset($pkt, $xmttime, $rectime);
     };
     if ($@) {
         $self->{output}->output_add(
@@ -137,8 +166,6 @@ sub run {
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
-    my $diff = $ntp{Offset};
 
     my $exit = $self->{perfdata}->threshold_check(
         value => $diff, 

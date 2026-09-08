@@ -36,6 +36,10 @@ pub struct Output {
     /// If true, include affected metrics in the UNKNOWN message.
     #[serde(default = "default_bool_true")]
     detail_unknown: bool,
+    /// Message used when no metric is left once the filters are applied.
+    /// The status name given by `--no-data-status` is prepended to it.
+    #[serde(default = "default_no_data")]
+    pub no_data: String,
     /// String used to separate metric instances in the detail message.
     #[serde(default = "default_instance_separator")]
     instance_separator: String,
@@ -55,6 +59,9 @@ fn default_critical() -> String {
 }
 fn default_unknown() -> String {
     "UNKNOWN: ".to_string()
+}
+fn default_no_data() -> String {
+    "No data matching the filters".to_string()
 }
 fn default_instance_separator() -> String {
     " - ".to_string()
@@ -81,6 +88,7 @@ impl Output {
             detail_critical: true,
             unknown: default_unknown(),
             detail_unknown: true,
+            no_data: default_no_data(),
             instance_separator: default_instance_separator(),
             metric_separator: default_metric_separator(),
         }

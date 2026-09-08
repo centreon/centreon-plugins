@@ -24,8 +24,40 @@ pub enum Error {
     #[snafu(display("Unknown argument: {arg}\nUse --help to display available options"))]
     UnknownArgument { arg: String },
 
+    #[snafu(display(
+        "Invalid status '{}': expected one of OK, WARNING, CRITICAL, UNKNOWN",
+        value
+    ))]
+    InvalidStatus { value: String },
+
     #[snafu(display("{message}"))]
     InvalidJSON { message: String },
+
+    #[snafu(display("Could not parse oid {}", oid))]
+    InvalidOidParser { oid: String },
+
+    #[snafu(display("Could not encode Snmp PDU received from server"))]
+    InvalidSnmpPduEncode {},
+
+    #[snafu(display("Could not decode Snmp PDU received from server : {}", err))]
+    InvalidSnmpPduDecode { err: String },
+
+    #[snafu(display("Could not decode a value in the Snmp response : {}", detail))]
+    InvalidSnmpValue { detail: String },
+
+    #[snafu(display("Expected Type : {} for snmp oid", detail))]
+    InvalidSnmpType { detail: String },
+
+    #[snafu(display(
+        "Empty response from the server. Does the community have sufficient permissions ?"
+    ))]
+    EmptyResponse {},
+    #[snafu(display(
+        "Could not connect to {} is the hostname and the snmp community correct ? {}",
+        url,
+        os
+    ))]
+    FailedToConnectToHost { url: String, os: String },
 
     #[snafu(transparent)]
     Io { source: io::Error },

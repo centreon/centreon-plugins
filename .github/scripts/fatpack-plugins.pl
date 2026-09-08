@@ -82,13 +82,18 @@ foreach my $plugin (@plugins) {
     }
 
     if (-f $package_path . '/pkg.json') {
-        my $plugin_build_dir = $build_dir . '/' . $plugin;
-        File::Path::make_path($plugin_build_dir);
-
         open(my $fh, '<', $package_path . '/pkg.json');
         my $json_content = do { local $/; <$fh> };
         close($fh);
         my $config = JSON::decode_json($json_content);
+
+        # Packages shipping only package_files (the rust collections) embed no perl plugin: there is
+        # nothing to fatpack, and prepare-package-plugins.sh leaves the build directory out of the
+        # nfpm contents for them.
+        next if ref $config->{files} eq 'ARRAY' && !@{$config->{files}};
+
+        my $plugin_build_dir = $build_dir . '/' . $plugin;
+        File::Path::make_path($plugin_build_dir);
 
         # Prepare plugin layout.
         chdir($plugins_dir);

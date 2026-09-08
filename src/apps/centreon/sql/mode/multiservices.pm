@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package apps::centreon::sql::mode::multiservices;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters);
 
 use strict;
 use warnings;
@@ -137,7 +138,7 @@ sub custom_groups_output {
     my $msg_host = '';
     my $msg_svc = '';
 
-    if ($config_data->{formatting}->{display_details} eq 'true') {
+    if ($config_data->{formatting}->{display_details} eq 'true' || $config_data->{formatting}->{display_details} == 1) {
         $msg_host .= (defined($self->{instance_mode}->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_up}))
                         ? "HOSTS: [up: $self->{result_values}->{up} (" . join(' - ', @{$self->{instance_mode}->{inventory}->{groups}->{$self->{result_values}->{instance}}->{list_up}}) . ")]"
                         : "HOSTS: [up: $self->{result_values}->{up}]";
@@ -265,7 +266,9 @@ sub new {
         'warning-groups:s'  => { name => 'warning_groups' },
         'critical-groups:s' => { name => 'critical_groups' },
         'warning-total:s'   => { name => 'warning_total' },
-        'critical-total:s'  => { name => 'critical_total' }
+        'critical-total:s'  => { name => 'critical_total' },
+        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' }
+
     });
 
     return $self;
@@ -274,6 +277,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
 
     if (!defined($self->{option_results}->{config}) || $self->{option_results}->{config} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please define --config option");
@@ -306,24 +314,6 @@ sub check_options {
     }
     
     $self->change_macros(macros => ['warning_groups', 'critical_groups', 'warning_total', 'critical_total']);
-}
-
-sub prefix_totalh_output {
-    my ($self, %options) = @_;
-
-    return "Hosts state summary ";
-}
-
-sub prefix_totals_output {
-    my ($self, %options) = @_;
-
-    return "Services state summary ";
-}
-
-sub prefix_groups_output {
-    my ($self, %options) = @_;
-
-    return "Group '" . $options{instance_value}->{display} . "': ";
 }
 
 sub parse_json_config {
@@ -372,7 +362,7 @@ sub manage_query {
     my ($self, %options) = @_;
 
     my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
-                FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
+                FROM `" . $self->{option_results}->{centreon_storage_database} . "`.hosts,`" . $self->{option_results}->{centreon_storage_database} . "`.services WHERE hosts.host_id=services.host_id
                 AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
                 AND hosts.name = '" . $options{host} . "'
                 AND services.description = '" . $options{service} . "'";
@@ -406,21 +396,21 @@ sub manage_selection {
     $self->{groups} = {};
     $self->{hosts} = {};
 
-    if ($config_data->{counters}->{totalhosts} eq 'true') {
+    if ($config_data->{counters}->{totalhosts} eq 'true' || $config_data->{counters}->{totalhosts} == 1) {
         push @{$self->{maps_counters_type}}, {
-            name => 'totalhost', type => 0, cb_prefix_output => 'prefix_totalh_output',
+            name => 'totalhost', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Hosts state summary  ',
         };
         $self->{totalhost} = { up => 0, down => 0, unreachable => 0 };
     }
-    if ($config_data->{counters}->{totalservices} eq 'true') {
+    if ($config_data->{counters}->{totalservices} eq 'true' == $config_data->{counters}->{totalservices} == 1) {
         push @{$self->{maps_counters_type}}, {
-            name => 'totalservice', type => 0, cb_prefix_output => 'prefix_totals_output',
+            name => 'totalservice', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Services state summary ',
         };
         $self->{totalservice} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
     }
-    if ($config_data->{counters}->{groups} eq 'true') {
+    if ($config_data->{counters}->{groups} eq 'true' || $config_data->{counters}->{groups} == 1) {
         push @{$self->{maps_counters_type}}, {
-            name => 'logicalgroups', type => 1, cb_prefix_output => 'prefix_groups_output', message_multiple => $config_data->{formatting}->{groups_global_msg}
+            name => 'logicalgroups', type => COUNTER_TYPE_INSTANCE, prefix_output => "Group '%{display}' ", message_multiple => $config_data->{formatting}->{groups_global_msg}
         };
     }
 
@@ -437,7 +427,7 @@ sub manage_selection {
             };
 
             my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
-                         FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
+                         FROM `" . $self->{option_results}->{centreon_storage_database} . "`.hosts,`" . $self->{option_results}->{centreon_storage_database} . "`.services WHERE hosts.host_id=services.host_id
                          AND hosts.name NOT LIKE 'Module%' AND hosts.enabled=1 AND services.enabled=1
                          AND hosts.name LIKE '" . $config_data->{selection}->{$group}->{'host_name_filter'} . "'
                          AND services.description LIKE '" . $config_data->{selection}->{$group}->{'service_name_filter'} . "'";
@@ -500,19 +490,44 @@ __END__
 =item B<--config>
 
 Specify the config (can be a file or a json string directly).
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::multiservices ...>.
+
+=item B<--centreon-storage-database>
+
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--filter-counters>
 
-Can be 'totalhost','totalservice','groups'. Better to manage it in config file
+Can be C<totalhost>, C<totalservice>, 'groups'. Better to manage it in config file.
 
-=item B<--warning-*>
+=item B<--warning-total>
+
+Threshold for hosts and services.
+You can use the following variables: 
+- for hosts: %{total_up}, %{total_down}, %{total_unreachable} for hosts
+- for services: %{ok_total}, %{ok_warning}, %{ok_critical}, %{ok_unknown}.
+Example: C<< --warning-total='%{total_unreachable} > 4' >>.
+
+=item B<--critical-total>
+
+Threshold for hosts and services.
+You can use the following variables: 
+- for hosts: %{total_up}, %{total_down}, %{total_unreachable} for hosts
+- for services: %{ok_total}, %{ok_warning}, %{ok_critical}, %{ok_unknown}.
+Example: C<< --critical-total='%{critical_total} > 4' >>.
+
+=item B<--warning-groups>
+
+Threshold for groups.
+You can use the following variables: %{instance}, %{up}, %{down}, %{unreachable},
+%{ok}, %{warning}, %{critical}, %{unknown}.
+Example: C<< --warning-groups='%{instance} eq 'ESX' && %{down} > 2' >>.
+
+=item B<--critical-groups>
 
 Can be 'total' for host and service, 'groups' for groups.
-Example: --warning-total '%{total_unreachable} > 4' --warning-groups '%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4'
-
-=item B<--critical-*>
-
-Can be 'total' for host and service, 'groups' for groups
+Example: C<< --critical-groups='%{instance} eq 'ESX' && %{total_down} > 2 && %{critical_total} > 4' >>.
 
 =back
 

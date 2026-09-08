@@ -105,6 +105,14 @@ if __name__ == '__main__':
                 for pack_file in get_pack_from_path(test_path):
                     add_package_info(pack_file, False)
 
+        # Collections are referenced by their full path in the pkg.json 'package_files' of the
+        # package shipping them, so the path is matched as is.
+        with open('collections_directories.json') as collections_directories_file:
+            collections = json.load(collections_directories_file)
+            for collection in collections:
+                for pack_file in get_pack_from_path(collection):
+                    add_package_info(pack_file)
+
     with open('plugins.json', 'w') as outfile:
         json.dump(list_plugins, outfile, indent=4)
 

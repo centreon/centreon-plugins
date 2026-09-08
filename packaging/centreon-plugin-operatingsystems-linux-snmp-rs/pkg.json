@@ -1,0 +1,35 @@
+{
+    "pkg_name": "centreon-plugin-operatingsystems-linux-snmp-rs",
+    "pkg_summary": "Centreon Rust Plugin collections for Linux",
+    "plugin_name": "centreon-plugin-operatingsystems-linux-snmp-rs",
+    "files": [
+    ],
+    "package_files": [
+        {
+            "src": "../../rust-plugins/rs-collections/operatingsystems-linux-snmp/",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/cpu.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/processcount.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/storage.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        },
+        {
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/uptime.json",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/operatingsystems-linux-snmp/",
+            "file_mode": "0644"
+        }
+    ],
+    "skip_default_dependencies": true
+}

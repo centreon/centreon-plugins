@@ -1,0 +1,19 @@
+extends: default
+
+rules:
+  document-start: disable
+  line-length: disable
+  truthy:
+    check-keys: false
+    level: error
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+  comments:
+    ignore-shebangs: true
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  new-lines:
+    type: unix
+  new-line-at-end-of-file: enable

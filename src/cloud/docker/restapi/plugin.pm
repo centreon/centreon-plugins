@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     $self->{modes} = {
         'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
         'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
+        'list-services'     => 'cloud::docker::restapi::mode::listservices',
         'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
         'service-status'    => 'cloud::docker::restapi::mode::servicestatus'
     };

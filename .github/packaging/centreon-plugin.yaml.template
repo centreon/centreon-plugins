@@ -15,10 +15,7 @@ homepage: "https://centreon.com"
 license: "Apache-2.0"
 
 contents:
-  - src: "../../build/@PLUGIN_NAME@/*"
-    dst: "/usr/lib/centreon/plugins/"
-    file_info:
-      mode: 0775
+@FATPACK_CONTENTS@
 @CONTENTS@
   - src: "../../LICENSE.md"
     dst: "/usr/share/doc/@PACKAGE_NAME@/copyright"

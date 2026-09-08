@@ -52,8 +52,8 @@ inodes ${tc}
 cgs-inodes ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
-    ...    -j ${CURDIR}/generic-snmp/inodes.json
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp${/}inodes.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -72,7 +72,7 @@ cgs-inodes ${tc}
     ...    All inode partitions are OK | '/run#inodes.usage.percent'=0%;;;0;100 '/#inodes.usage.percent'=6%;;;0;100 '/dev/shm#inodes.usage.percent'=0%;;;0;100 '/run/lock#inodes.usage.percent'=0%;;;0;100 '/run/user/0#inodes.usage.percent'=0%;;;0;100
     ...    2
     ...    --check-format
-    ...    Check format of JSON file '${CURDIR}/generic-snmp/inodes.json' JSON is valid
+    ...    Check format of JSON file '${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp${/}inodes.json' JSON is valid
     ...    3
     ...    --warning-inodes=1
     ...    WARNING: '/#inodes.usage.percent' is 6% | '/run#inodes.usage.percent'=0%;1;;0;100 '/#inodes.usage.percent'=6%;1;;0;100 '/dev/shm#inodes.usage.percent'=0%;1;;0;100 '/run/lock#inodes.usage.percent'=0%;1;;0;100 '/run/user/0#inodes.usage.percent'=0%;1;;0;100

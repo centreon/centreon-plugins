@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,6 +20,7 @@
 
 package apps::cisco::dnac::restapi::mode::sites;
 
+use centreon::plugins::constants qw/:counters :values/;
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
@@ -37,38 +38,14 @@ sub custom_health_output {
     );
 }
 
-sub site_long_output {
-    my ($self, %options) = @_;
-
-    return "checking site '" . $options{instance_value}->{name} . "'";
-}
-
-sub prefix_site_output {
-    my ($self, %options) = @_;
-
-    return "Site '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_devices_output {
-    my ($self, %options) = @_;
-
-    return 'devices: ';
-}
-
-sub prefix_clients_output {
-    my ($self, %options) = @_;
-
-    return 'clients: ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'sites', type => 3, cb_prefix_output => 'prefix_site_output', cb_long_output => 'site_long_output', indent_long_output => '    ', message_multiple => 'All sites are ok',
+        { name => 'sites', type => COUNTER_TYPE_MULTIPLE, prefix_output => "Site '%{name}' ", long_output => "cheking site '%{name}' ", indent_long_output => '    ', message_multiple => 'All sites are ok',
             group => [
-                { name => 'devices', type => 0, cb_prefix_output => 'prefix_devices_output', skipped_code => { -10 => 1 } },
-                { name => 'clients', type => 0, cb_prefix_output => 'prefix_clients_output', skipped_code => { -10 => 1 } }
+                { name => 'devices', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'devices: ', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'clients', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'clients: ', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -197,18 +174,41 @@ Check sites.
 
 Filter sites by name (can be a regexp).
 
-=item B<--use-site-fullname>
+=item B<--use-site-full-name>
 
-Use site fullname (with parents name).
+Use site full name (with parents name).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-site-clients-healthy-usage>
 
-Thresholds.
-Can be: 'category-devices-health-good-usage', 'category-devices-health-good-usage-prct',
-'category-devices-health-unmonitored-usage', 'category-devices-health-unmonitored-usage-prct', 
-'category-devices-health-fair-usage', 'category-devices-health-fair-usage-prct',
-'category-devices-health-bad-usage', 'category-devices-health-bad-usage-prct', 
-'devices-total'.
+Threshold.
+
+=item B<--critical-site-clients-healthy-usage>
+
+Threshold.
+
+=item B<--warning-site-clients-healthy-usage-prct>
+
+Threshold.
+
+=item B<--critical-site-clients-healthy-usage-prct>
+
+Threshold.
+
+=item B<--warning-site-devices-healthy-usage>
+
+Threshold.
+
+=item B<--critical-site-devices-healthy-usage>
+
+Threshold.
+
+=item B<--warning-site-devices-healthy-usage-prct>
+
+Threshold.
+
+=item B<--critical-site-devices-healthy-usage-prct>
+
+Threshold.
 
 =back
 

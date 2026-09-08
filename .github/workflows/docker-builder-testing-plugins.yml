@@ -64,6 +64,11 @@ jobs:
             image: testing
             distrib: bookworm
             arch: amd64
+          - runner: ubuntu-24.04-arm
+            dockerfile: bookworm
+            image: testing
+            distrib: bookworm
+            arch: arm64
           - runner: ubuntu-24.04
             dockerfile: trixie
             image: testing

@@ -502,7 +502,7 @@ sub get_network_wireless_usage_history {
     return $self->request_api(
         endpoint => '/networks/' . $options{network_id} . '/wireless/usageHistory',
         get_param => [ 
-            'deviceSerial ='. $options{serial}, 
+            'deviceSerial='. $options{serial}, 
             'timespan=' . $self->{timespan} ],
         hostname => $self->get_shard_hostname(serial => $options{serial})
     )

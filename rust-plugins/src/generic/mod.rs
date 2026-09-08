@@ -14,13 +14,13 @@ pub mod error;
 use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
+use crate::snmp::SnmpResult;
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
-
-use crate::snmp::SnmpResult;
+use std::convert::Into;
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -49,14 +49,54 @@ pub enum Status {
     Critical = 2,
     Unknown = 3,
 }
+impl Into<i32> for Status {
+    fn into(self) -> i32 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Critical => 2,
+            Status::Unknown => 3,
+        }
+    }
+}
+impl Into<String> for Status {
+    fn into(self) -> String {
+        match self {
+            Status::Ok => "OK".to_string(),
+            Status::Warning => "WARNING".to_string(),
+            Status::Critical => "CRITICAL".to_string(),
+            Status::Unknown => "UNKNOWN".to_string(),
+        }
+    }
+}
+impl std::str::FromStr for Status {
+    type Err = error::Error;
 
+    /// Parses a status from its textual form, case-insensitively
+    /// (e.g. `"critical"`, `"CRITICAL"`).
+    fn from_str(s: &str) -> Result<Self> {
+        match s.trim().to_lowercase().as_str() {
+            "ok" => Ok(Status::Ok),
+            "warning" => Ok(Status::Warning),
+            "critical" => Ok(Status::Critical),
+            "unknown" => Ok(Status::Unknown),
+            _ => Err(error::Error::InvalidStatus {
+                value: s.to_string(),
+            }),
+        }
+    }
+}
 impl Status {
-    fn as_str(&self) -> &str {
-        match *self {
-            Status::Ok => "OK",
-            Status::Warning => "WARNING",
-            Status::Critical => "CRITICAL",
-            Status::Unknown => "UNKNOWN",
+    /// Returns the severity rank of the status, used to compare statuses.
+    ///
+    /// Severity order: `Ok < Warning < Unknown < Critical`.  It differs from the
+    /// exit code (see [`Into<i32>`]), where `Critical` is 2 and `Unknown` is 3.
+    fn severity(&self) -> u8 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Unknown => 2,
+            Status::Critical => 3,
         }
     }
 
@@ -64,40 +104,12 @@ impl Status {
     ///
     /// Severity order: `Ok < Warning < Unknown < Critical`.
     pub fn is_worse_than(&self, other: Status) -> bool {
-        let self_int = match self {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
-        let other_int = match other {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
-        self_int >= other_int
+        self.severity() >= other.severity()
     }
 }
 
 fn worst(a: Status, b: Status) -> Status {
-    let a_int = match a {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
-    let b_int = match b {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
-    if a_int > b_int {
-        return a;
-    } else {
-        return b;
-    }
+    if a.severity() > b.severity() { a } else { b }
 }
 
 /// Type of SNMP query to perform for a given OID.
@@ -241,7 +253,10 @@ impl Command {
         }
 
         let output = if lines.len() <= 1 {
-            format!("OK: {}", lines.first().unwrap_or(&"No response".to_string()))
+            format!(
+                "OK: {}",
+                lines.first().unwrap_or(&"No response".to_string())
+            )
         } else {
             format!("OK: Response received\n{}", lines.join("\n"))
         };
@@ -259,7 +274,7 @@ impl Command {
         version: &str,
         community: &str,
         check_format: bool,
-    ) -> Vec<SnmpResult> {
+    ) -> Result<Vec<SnmpResult>> {
         let mut collect: Vec<SnmpResult> = Vec::new();
 
         if check_format {
@@ -280,36 +295,42 @@ impl Command {
                 }
                 collect.push(SnmpResult::new(items));
             }
-        } else {
-            let mut to_get = Vec::new();
-            let mut get_name = Vec::new();
-            for s in self.collect.snmp.iter() {
-                match s.query {
-                    QueryType::Walk => {
-                        if let Some(lab) = &s.labels {
-                            let r = snmp_bulk_walk_with_labels(
-                                target, version, community, &s.oid, &s.name, &lab,
-                            );
+            return Ok(collect);
+        }
+        let mut to_get = Vec::new();
+        let mut get_name = Vec::new();
+        for s in self.collect.snmp.iter() {
+            match s.query {
+                QueryType::Walk => {
+                    if let Some(lab) = &s.labels {
+                        let r = snmp_bulk_walk_with_labels(
+                            target, version, community, &s.oid, &s.name, &lab,
+                        )?;
+                        if !r.items.is_empty() {
                             collect.push(r);
-                        } else {
-                            let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
+                        }
+                    } else {
+                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
+                        if !r.items.is_empty() {
                             collect.push(r);
                         }
                     }
-                    QueryType::Get => {
-                        to_get.push(s.oid.as_str());
-                        get_name.push(s.name.as_str());
-                    }
                 }
-            }
-
-            if !to_get.is_empty() {
-                let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-                collect.push(r);
+                QueryType::Get => {
+                    to_get.push(s.oid.as_str());
+                    get_name.push(s.name.as_str());
+                }
             }
         }
 
-        collect
+        if !to_get.is_empty() {
+            let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
+            collect.push(r?);
+        }
+        if collect.is_empty() {
+            return Err(error::Error::EmptyResponse {});
+        }
+        Ok(collect)
     }
 
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
@@ -322,6 +343,7 @@ impl Command {
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
     /// * `check_format` - Dry-run mode ( validate macros )
     /// * `check_response` - Display raw SNMP response without metrics computation
+    /// * `no_data_status` - Status to report when no metric is left once the filters are applied
     ///
     /// # Returns
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
@@ -334,8 +356,9 @@ impl Command {
         filter_out: &Vec<String>,
         check_format: bool,
         check_response: bool,
+        no_data_status: Status,
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community, check_format);
+        let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
 
         if check_response {
             return self.format_raw_response(&collect);
@@ -510,6 +533,22 @@ impl Command {
             debug!("New ID '{}' with content: {:?}", key, value);
             my_res.items.insert(key, value);
         }
+
+        // Nothing left to report: every instance has been discarded by the filters
+        // (or none was collected at all). Aggregations are skipped on purpose, as they
+        // would be computed on values that have just been filtered out.
+        if !self.compute.metrics.is_empty() && metrics.is_empty() {
+            debug!(
+                "No metric left, reporting the no-data status {:?}",
+                no_data_status
+            );
+            let status_str: String = no_data_status.into();
+            return Ok(CmdResult {
+                status: no_data_status,
+                output: format!("{}: {}", status_str, self.output.no_data),
+            });
+        }
+
         collect.push(my_res);
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
             let mut my_res = SnmpResult::new(HashMap::new());
@@ -648,8 +687,11 @@ impl Command {
 
         if !self.compute.metrics.is_empty() {
             for metric in &self.compute.metrics {
-                let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
-                println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                println!(
+                    "  {} (--warning-{}, --critical-{})",
+                    metric.name, suffix, suffix
+                );
             }
         }
 
@@ -657,10 +699,54 @@ impl Command {
             if !aggregations.is_empty() {
                 println!("Aggregations:");
                 for metric in aggregations {
-                    let suffix = metric.threshold_suffix.as_deref().unwrap_or( "(no suffix)" );
-                    println!("  {} (--warning-{}, --critical-{})", metric.name, suffix, suffix);
+                    let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                    println!(
+                        "  {} (--warning-{}, --critical-{})",
+                        metric.name, suffix, suffix
+                    );
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn status_exit_codes_follow_the_monitoring_plugins_guidelines() {
+        let codes: Vec<i32> = vec![
+            Status::Ok.into(),
+            Status::Warning.into(),
+            Status::Critical.into(),
+            Status::Unknown.into(),
+        ];
+        assert_eq!(codes, vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn worst_ranks_critical_above_unknown() {
+        assert_eq!(worst(Status::Ok, Status::Warning), Status::Warning);
+        assert_eq!(worst(Status::Warning, Status::Unknown), Status::Unknown);
+        assert_eq!(worst(Status::Unknown, Status::Critical), Status::Critical);
+        assert_eq!(worst(Status::Critical, Status::Unknown), Status::Critical);
+    }
+
+    #[test]
+    fn status_is_parsed_from_its_textual_form_whatever_the_case() {
+        assert_eq!("ok".parse::<Status>().unwrap(), Status::Ok);
+        assert_eq!("Warning".parse::<Status>().unwrap(), Status::Warning);
+        assert_eq!("CRITICAL".parse::<Status>().unwrap(), Status::Critical);
+        assert_eq!(" unknown ".parse::<Status>().unwrap(), Status::Unknown);
+    }
+
+    #[test]
+    fn parsing_an_unsupported_status_returns_an_error() {
+        let err = "pending".parse::<Status>().unwrap_err();
+        assert!(matches!(
+            err,
+            error::Error::InvalidStatus { ref value } if value == "pending"
+        ));
     }
 }

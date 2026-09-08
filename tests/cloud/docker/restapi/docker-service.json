@@ -1,0 +1,253 @@
+{
+    "uuid": "30d0341b-e312-453a-bbc4-b50a8df84912",
+    "lastMigration": 33,
+    "name": "Docker Slim v2",
+    "endpointPrefix": "",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "a2d7e156-cfb3-49ee-959e-7788fb010360",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "services",
+            "responses": [
+                {
+                    "uuid": "6d05fd6f-f99c-4312-94b7-91649e03e743",
+                    "body": "[\r\n  {\r\n    \"ID\": \"123\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon1\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 1\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"456\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon2\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 3\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"789\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon3\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    }\r\n  },\r\n  {\r\n    \"ID\": \"101112\",\r\n    \"Spec\": {\r\n      \"Name\": \"centreon4\",\r\n      \"Mode\": {\r\n        \"Replicated\": {\r\n          \"Replicas\": 2\r\n        }\r\n      }\r\n    }\r\n  }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "0eb3a878-9fb2-4bed-85c2-5fc88512af2d",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "tasks",
+            "responses": [
+                {
+                    "uuid": "7df43074-a078-4f11-83ee-17db97090412",
+                    "body": "[\r\n  {\r\n    \"ID\": \"abc\",\r\n    \"ServiceID\": \"123\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 100\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"def\",\r\n    \"ServiceID\": \"456\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 200\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"ghi\",\r\n    \"ServiceID\": \"456\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"running\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 300\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"jkl\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 400\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"mno\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"failed\",\r\n      \"Message\": \"failed\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 500\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"pqr\",\r\n    \"ServiceID\": \"789\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"running\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 600\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n    {\r\n    \"ID\": \"stu\",\r\n    \"ServiceID\": \"101112\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"running\",\r\n      \"Message\": \"started\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 700\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  },\r\n  {\r\n    \"ID\": \"vwx\",\r\n    \"ServiceID\": \"101112\",\r\n    \"NodeID\": \"node1\",\r\n    \"Status\": {\r\n      \"Timestamp\": \"2026-05-12T00:00:00.290032978Z\",\r\n      \"State\": \"complete\",\r\n      \"Message\": \"complete\",\r\n      \"ContainerStatus\": {\r\n        \"ContainerID\": \"container1\",\r\n        \"PID\": 800\r\n      }\r\n    },\r\n    \"DesiredState\": \"running\"\r\n  }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "13cc93e8-3b77-4b97-9e47-17b6178129d5",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "services/:serviceId",
+            "responses": [
+                {
+                    "uuid": "3bfbbbed-bdd1-4acd-8055-0def30107ebb",
+                    "body": "{\r\n  \"ID\": \"123\",\r\n  \"Spec\": {\r\n    \"Name\": \"centreon1\",\r\n    \"TaskTemplate\": {\r\n      \"RestartPolicy\": {\r\n        \"Condition\": \"any\",\r\n        \"MaxAttempts\": 0\r\n      }\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "serviceId",
+                            "value": "123",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "ea35fd0d-6833-442d-a134-1b36359147a2",
+                    "body": "{\r\n  \"ID\": \"456\",\r\n  \"Spec\": {\r\n    \"Name\": \"centreon2\",\r\n    \"TaskTemplate\": {\r\n      \"RestartPolicy\": {\r\n        \"Condition\": \"on-failure\",\r\n        \"MaxAttempts\": 0\r\n      }\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "serviceId",
+                            "value": "456",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "76a04ce2-7076-4ad7-bad5-04944ce3d3ff",
+                    "body": "{\r\n  \"ID\": \"789\",\r\n  \"Spec\": {\r\n    \"Name\": \"centreon3\",\r\n    \"TaskTemplate\": {\r\n      \"RestartPolicy\": {\r\n        \"Condition\": \"none\",\r\n        \"MaxAttempts\": 0\r\n      }\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "serviceId",
+                            "value": "789",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "9b29f296-b563-4e30-93c7-de31c8a03edf",
+                    "body": "{\r\n  \"ID\": \"101112\",\r\n  \"Spec\": {\r\n    \"Name\": \"centreon4\",\r\n    \"TaskTemplate\": {\r\n      \"RestartPolicy\": {\r\n        \"Condition\": \"any\",\r\n        \"MaxAttempts\": 0\r\n      }\r\n    }\r\n  }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "serviceId",
+                            "value": "101112",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "a2d7e156-cfb3-49ee-959e-7788fb010360"
+        },
+        {
+            "type": "route",
+            "uuid": "13cc93e8-3b77-4b97-9e47-17b6178129d5"
+        },
+        {
+            "type": "route",
+            "uuid": "0eb3a878-9fb2-4bed-85c2-5fc88512af2d"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+        },
+        {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+        },
+        {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
+}

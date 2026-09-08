@@ -9,8 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_PLUGIN_RUST_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}applications-protocol-snmp
 
 
 *** Test Cases ***
@@ -52,7 +52,8 @@ cpu ${tc}
 cgs-cpu ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}cpu.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -76,8 +77,8 @@ cgs-cpu ${tc}
     ...    --critical-avg=0.1
     ...    CRITICAL: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;0.1;0;100
     ...    4
-    ...    --warning-cpu=0.1
+    ...    --warning-core=0.1
     ...    WARNING: 0#core.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;0.1;;0;100 avg.cpu.usage.percent=2%;;;0;100
     ...    5
-    ...    --critical-cpu=0.01
+    ...    --critical-core=0.01
     ...    CRITICAL: 0#core.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;0.01;0;100 avg.cpu.usage.percent=2%;;;0;100
