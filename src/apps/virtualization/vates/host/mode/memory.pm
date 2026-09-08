@@ -149,8 +149,8 @@ __END__
 =head1 MODE
 
 Check the memory usage of a Vates XCP-ng host. C<memory.usage> is the real memory in use
-(total minus free), not an allocation. The host must be enabled and running: a disabled/halted
-host returns UNKNOWN rather than a misleading near-zero usage.
+(total minus free), not the allocation sum of every virtual machine.
+The host must be enabled and running: a disabled/halted host returns UNKNOWN
 
 =over 8
 
