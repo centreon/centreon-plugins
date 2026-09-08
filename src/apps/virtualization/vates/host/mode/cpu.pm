@@ -114,8 +114,7 @@ sub manage_selection {
 
     # the API returns one time series (percentage) per physical core, the last value of each
     # series is the most recent one. The aggregated usage is the average of all cores, and the
-    # number of series is itself the live physical CPU count (no need for the separate,
-    # deprecated CPUs.cpu_count field on the host object).
+    # number of series is itself the live physical CPU count.
     my $total = 0;
     my $cores = 0;
     for my $core (keys %{$host_stats->{stats}->{cpus}}) {
