@@ -33,6 +33,7 @@ sub new {
         'status'             => 'apps::virtualization::vates::xenorchestra::status',
         'vm-status'          => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
         'storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::storagerepository',
+        'list-storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::liststoragerepository',
 
     };
 
