@@ -219,7 +219,7 @@ impl<'a> OutputFormatter<'a> {
             if let Some(status) = m.status {
                 if status.is_worse_than(self.status) {
                     v.push(std::format!(
-                        "{} is {}{}",
+                        "'{}' is {}{}",
                         m.name,
                         float_string(&m.value),
                         m.uom

@@ -221,28 +221,28 @@ cgs-mem ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Memory Used: 1266544B - Free: 747712 - Total: 2014256 | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    OK: Memory Used: 1266544B - Free: 747712 - Total: 2014256 | 'memory.free.bytes'=747712B;;;0;2014256 'memory.usage.bytes'=1266544B;;;0;2014256 'memory.usage.percent'=62.88%;;;0;100
     ...    2
     ...    --warning-bytes=0.1
-    ...    WARNING: memory.usage.bytes is 1266544B | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;0.1;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    WARNING: 'memory.usage.bytes' is 1266544B | 'memory.free.bytes'=747712B;;;0;2014256 'memory.usage.bytes'=1266544B;0:0.1;;0;2014256 'memory.usage.percent'=62.88%;;;0;100
     ...    3
     ...    --critical-bytes=0.1
-    ...    CRITICAL: memory.usage.bytes is 1266544B | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;0.1;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    CRITICAL: 'memory.usage.bytes' is 1266544B | 'memory.free.bytes'=747712B;;;0;2014256 'memory.usage.bytes'=1266544B;;0:0.1;0;2014256 'memory.usage.percent'=62.88%;;;0;100
     ...    4
     ...    --warning-prct=0.1
-    ...    WARNING: memory.usage.percent is 62.88% | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;0.1;;0;100
+    ...    WARNING: 'memory.usage.percent' is 62.88% | 'memory.free.bytes'=747712B;;;0;2014256 'memory.usage.bytes'=1266544B;;;0;2014256 'memory.usage.percent'=62.88%;0:0.1;;0;100
     ...    5
     ...    --critical-prct=0.1
-    ...    CRITICAL: memory.usage.percent is 62.88% | memory.free.bytes=747712B;;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;0.1;0;100
+    ...    CRITICAL: 'memory.usage.percent' is 62.88% | 'memory.free.bytes'=747712B;;;0;2014256 'memory.usage.bytes'=1266544B;;;0;2014256 'memory.usage.percent'=62.88%;;0:0.1;0;100
     ...    6
     ...    --check-format
     ...    Check format of JSON file '${CGS_COLLECTIONS}${/}memory.json' JSON is valid
     ...    7
     ...    --warning-free-bytes=1
-    ...    WARNING: memory.free.bytes is 747712B | memory.free.bytes=747712B;1;;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    WARNING: 'memory.free.bytes' is 747712B | 'memory.free.bytes'=747712B;0:1;;0;2014256 'memory.usage.bytes'=1266544B;;;0;2014256 'memory.usage.percent'=62.88%;;;0;100
     ...    8
     ...    --critical-free-bytes=1
-    ...    CRITICAL: memory.free.bytes is 747712B | memory.free.bytes=747712B;;1;0;2014256 memory.usage.bytes=1266544B;;;0;2014256 memory.usage.percent=62.88%;;;0;100
+    ...    CRITICAL: 'memory.free.bytes' is 747712B | 'memory.free.bytes'=747712B;;0:1;0;2014256 'memory.usage.bytes'=1266544B;;;0;2014256 'memory.usage.percent'=62.88%;;;0;100
 
 cgs-mem-64 ${tc}
     [Tags]    os    linux    centreon-plugin-rust-snmp
@@ -264,25 +264,25 @@ cgs-mem-64 ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Memory Used: 6320981920B - Free: 20050780 - Total: 6341032700 | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    OK: Memory Used: 6320981920B - Free: 20050780 - Total: 6341032700 | 'memory.free.bytes'=20050780B;;;0;6341032700 'memory.usage.bytes'=6320981920B;;;0;6341032700 'memory.usage.percent'=99.68%;;;0;100
     ...    2
     ...    --warning-bytes=0.1
-    ...    WARNING: memory.usage.bytes is 6320981920B | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;0.1;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    WARNING: 'memory.usage.bytes' is 6320981920B | 'memory.free.bytes'=20050780B;;;0;6341032700 'memory.usage.bytes'=6320981920B;0:0.1;;0;6341032700 'memory.usage.percent'=99.68%;;;0;100
     ...    3
     ...    --critical-bytes=0.1
-    ...    CRITICAL: memory.usage.bytes is 6320981920B | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;0.1;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    CRITICAL: 'memory.usage.bytes' is 6320981920B | 'memory.free.bytes'=20050780B;;;0;6341032700 'memory.usage.bytes'=6320981920B;;0:0.1;0;6341032700 'memory.usage.percent'=99.68%;;;0;100
     ...    4
     ...    --warning-prct=0.1
-    ...    WARNING: memory.usage.percent is 99.68% | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;0.1;;0;100
+    ...    WARNING: 'memory.usage.percent' is 99.68% | 'memory.free.bytes'=20050780B;;;0;6341032700 'memory.usage.bytes'=6320981920B;;;0;6341032700 'memory.usage.percent'=99.68%;0:0.1;;0;100
     ...    5
     ...    --critical-prct=0.1
-    ...    CRITICAL: memory.usage.percent is 99.68% | memory.free.bytes=20050780B;;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;0.1;0;100
+    ...    CRITICAL: 'memory.usage.percent' is 99.68% | 'memory.free.bytes'=20050780B;;;0;6341032700 'memory.usage.bytes'=6320981920B;;;0;6341032700 'memory.usage.percent'=99.68%;;0:0.1;0;100
     ...    6
     ...    --check-format
     ...    Check format of JSON file '${CGS_COLLECTIONS}${/}memory-64.json' JSON is valid
     ...    7
     ...    --warning-free-bytes=1
-    ...    WARNING: memory.free.bytes is 20050780B | memory.free.bytes=20050780B;1;;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    WARNING: 'memory.free.bytes' is 20050780B | 'memory.free.bytes'=20050780B;0:1;;0;6341032700 'memory.usage.bytes'=6320981920B;;;0;6341032700 'memory.usage.percent'=99.68%;;;0;100
     ...    8
     ...    --critical-free-bytes=1
-    ...    CRITICAL: memory.free.bytes is 20050780B | memory.free.bytes=20050780B;;1;0;6341032700 memory.usage.bytes=6320981920B;;;0;6341032700 memory.usage.percent=99.68%;;;0;100
+    ...    CRITICAL: 'memory.free.bytes' is 20050780B | 'memory.free.bytes'=20050780B;;0:1;0;6341032700 'memory.usage.bytes'=6320981920B;;;0;6341032700 'memory.usage.percent'=99.68%;;;0;100

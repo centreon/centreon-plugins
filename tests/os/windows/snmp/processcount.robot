@@ -70,16 +70,16 @@ cgs-processcount ${tc}
     ...    All processes are OK | 'Anonymized 187#process.memory.bytes'=19980288B;;;0; 'Anonymized 187#process.cpu.percent'=51%;;;0;100
     ...    2
     ...    --filter-in 'Anonymized 187' --warning-process-memory=0.1
-    ...    WARNING: 'Anonymized 187#process.memory.bytes' is 19980288B | 'Anonymized 187#process.memory.bytes'=19980288B;0.1;;0; 'Anonymized 187#process.cpu.percent'=51%;;;0;100
+    ...    WARNING: 'Anonymized 187#process.memory.bytes' is 19980288B | 'Anonymized 187#process.memory.bytes'=19980288B;0:0.1;;0; 'Anonymized 187#process.cpu.percent'=51%;;;0;100
     ...    3
     ...    --filter-in 'Anonymized 187' --critical-process-memory=0.1
-    ...    CRITICAL: 'Anonymized 187#process.memory.bytes' is 19980288B | 'Anonymized 187#process.memory.bytes'=19980288B;;0.1;0; 'Anonymized 187#process.cpu.percent'=51%;;;0;100
+    ...    CRITICAL: 'Anonymized 187#process.memory.bytes' is 19980288B | 'Anonymized 187#process.memory.bytes'=19980288B;;0:0.1;0; 'Anonymized 187#process.cpu.percent'=51%;;;0;100
     ...    4
     ...    --filter-in 'Anonymized 187' --warning-process-cpu=0.1
-    ...    WARNING: 'Anonymized 187#process.cpu.percent' is 51% | 'Anonymized 187#process.memory.bytes'=19980288B;;;0; 'Anonymized 187#process.cpu.percent'=51%;0.1;;0;100
+    ...    WARNING: 'Anonymized 187#process.cpu.percent' is 51% | 'Anonymized 187#process.memory.bytes'=19980288B;;;0; 'Anonymized 187#process.cpu.percent'=51%;0:0.1;;0;100
     ...    5
     ...    --filter-in 'Anonymized 187' --critical-process-cpu=0.1
-    ...    CRITICAL: 'Anonymized 187#process.cpu.percent' is 51% | 'Anonymized 187#process.memory.bytes'=19980288B;;;0; 'Anonymized 187#process.cpu.percent'=51%;;0.1;0;100
+    ...    CRITICAL: 'Anonymized 187#process.cpu.percent' is 51% | 'Anonymized 187#process.memory.bytes'=19980288B;;;0; 'Anonymized 187#process.cpu.percent'=51%;;0:0.1;0;100
     ...    6
     ...    --filter-in 'not foundable' --critical-process-cpu=0.1
     ...    UNKNOWN: Process not found
