@@ -21,6 +21,7 @@ package apps::virtualization::vates::xenorchestra::mode::liststoragerepository;
 use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::misc qw/is_not_empty/;
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
