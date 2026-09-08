@@ -451,4 +451,57 @@ mod test {
         let result = formatter.to_string();
         assert!(result.starts_with("WARNING: CPU '0' usage : 2.00 % | "));
     }
+
+    #[test]
+    fn multi_instance_detail_renders_every_instance_even_when_only_one_breaches() {
+        use super::{ExprResult, Output, OutputFormatter, Perfdata, SnmpResult, Status};
+        use std::collections::HashMap;
+
+        // Two cores, only core 0 breaches a warning-core=0 threshold: the
+        // triggering metric's own `output` template still evaluates over
+        // the WHOLE vector (it isn't instance-scoped), so both cores show.
+        let items = HashMap::from([
+            (
+                "metrics.cpu".to_string(),
+                ExprResult::Vector(vec![1.0, 0.0]),
+            ),
+            (
+                "metrics.cpu.instance".to_string(),
+                ExprResult::StrVector(vec!["0".to_string(), "1".to_string()]),
+            ),
+        ]);
+        let collect = vec![SnmpResult::new(items)];
+        let output = Output::new();
+        let template = "CPU '{metrics.cpu.instance}' usage : {metrics.cpu:.2f} %";
+        let core0 = Perfdata {
+            name: "0#cpu".to_string(),
+            value: 1.0,
+            uom: "%",
+            min: Some(0.0),
+            max: Some(100.0),
+            warning: Some("0:0".to_string()),
+            critical: None,
+            status: Some(Status::Warning),
+            decimals: Some(2),
+            output: Some(template),
+            order: 1,
+        };
+        let core1 = Perfdata {
+            name: "1#cpu".to_string(),
+            value: 0.0,
+            uom: "%",
+            min: Some(0.0),
+            max: Some(100.0),
+            warning: Some("0:0".to_string()),
+            critical: None,
+            status: Some(Status::Ok),
+            decimals: Some(2),
+            output: Some(template),
+            order: 1,
+        };
+        let metrics = vec![core0, core1];
+        let formatter = OutputFormatter::new(Status::Warning, &collect, &metrics, &output);
+        let result = formatter.to_string();
+        assert!(result.starts_with("WARNING: CPU '0' usage : 1.00 % - CPU '1' usage : 0.00 % | "));
+    }
 }

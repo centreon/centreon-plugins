@@ -817,6 +817,29 @@ impl Command {
                             continue;
                         }
                     }
+                    // A collect walk that returns exactly one row collapses
+                    // to a scalar (see Expr::Id's eval): the instance macro
+                    // still needs a value, numbered the same way the vector
+                    // branch would for an unlabeled instance.
+                    let instance_name = match &metric.prefix {
+                        Some(prefix) => match parser.eval_str(prefix) {
+                            Ok(ExprResult::Str(s)) => s,
+                            _ => {
+                                let res = idx.to_string();
+                                idx += 1;
+                                res
+                            }
+                        },
+                        None => {
+                            let res = idx.to_string();
+                            idx += 1;
+                            res
+                        }
+                    };
+                    my_res.items.insert(
+                        format!("metrics.{}.instance", metric.name),
+                        ExprResult::StrVector(vec![instance_name]),
+                    );
                     let current_status =
                         compute_status(*s, warn_threshold.as_ref(), crit_threshold.as_ref());
                     status = worst(status, current_status);
