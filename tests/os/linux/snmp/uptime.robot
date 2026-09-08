@@ -60,10 +60,10 @@ cgs-uptime ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: Uptime: 2319.87s | system.uptime.seconds=2319.87s;;;0;
+    ...    OK: Uptime: 2319.87s | 'system.uptime.seconds'=2319.87s;;;0;
     ...    2
     ...    --warning-seconds=1800
-    ...    WARNING: system.uptime.seconds is 2319.87s | system.uptime.seconds=2319.87s;1800;;0;
+    ...    WARNING: 'system.uptime.seconds' is 2319.87s | 'system.uptime.seconds'=2319.87s;0:1800;;0;
     ...    3
     ...    --critical-seconds=1800
-    ...    CRITICAL: system.uptime.seconds is 2319.87s | system.uptime.seconds=2319.87s;;1800;0;
+    ...    CRITICAL: 'system.uptime.seconds' is 2319.87s | 'system.uptime.seconds'=2319.87s;;0:1800;0;

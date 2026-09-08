@@ -76,13 +76,13 @@ cgs-storage ${tc}
     ...    All storages are OK | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
     ...    3
     ...    --filter-in='^\/$' --warning-bytes=1000
-    ...    WARNING: '/#storage.usage.bytes' is 7394013184B | '/#storage.usage.bytes'=7394013184B;1000;;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
+    ...    WARNING: '/#storage.usage.bytes' is 7394013184B | '/#storage.usage.bytes'=7394013184B;0:1000;;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
     ...    4
     ...    --filter-in='^\/$' --critical-bytes=1000
-    ...    CRITICAL: '/#storage.usage.bytes' is 7394013184B | '/#storage.usage.bytes'=7394013184B;;1000;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
+    ...    CRITICAL: '/#storage.usage.bytes' is 7394013184B | '/#storage.usage.bytes'=7394013184B;;0:1000;0;105088212992 '/#storage.usage.percent'=7.04%;;;0;100
     ...    5
     ...    --filter-in='^\/$' --warning-prct=1
-    ...    WARNING: '/#storage.usage.percent' is 7.04% | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;1;;0;100
+    ...    WARNING: '/#storage.usage.percent' is 7.04% | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;0:1;;0;100
     ...    6
     ...    --filter-in='^\/$' --critical-prct=1
-    ...    CRITICAL: '/#storage.usage.percent' is 7.04% | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;;1;0;100
+    ...    CRITICAL: '/#storage.usage.percent' is 7.04% | '/#storage.usage.bytes'=7394013184B;;;0;105088212992 '/#storage.usage.percent'=7.04%;;0:1;0;100
