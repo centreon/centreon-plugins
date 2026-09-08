@@ -51,4 +51,4 @@ Host Cpu ${tc}
     ...    CRITICAL: CPU usage is 60.00 % | 'host.cpu.usage.percentage'=60.00%;0:80;0:1;0;100 'host.cpu.count'=4;;;0;
     ...    6
     ...    --host-name=vates3
-    ...    UNKNOWN: host 'vates3' is not enabled/running, can not get CPU usage data.
+    ...    UNKNOWN: host 'vates3' is not enabled/running, can not get CPU usage data (HOST_OFFLINE(OpaqueRef:2f22ba81-242d-b7e2-9e6b-95b98d931af3)).
