@@ -104,7 +104,7 @@ sub manage_selection {
             next
         }
         if ($sr->{size} <= 0) {
-            $options{output}->output_add(long_msg => "skipping '$sr->{name_label}': repository size is 0.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '$sr->{name_label}': repository size is 0.", debug => 1);
             next;
         }
         $self->{srs}->{$sr->{uuid}} = {
