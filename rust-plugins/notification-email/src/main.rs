@@ -11,6 +11,7 @@ mod cli;
 mod graph;
 mod mail;
 mod message;
+mod sparkline;
 mod style;
 mod template;
 

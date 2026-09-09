@@ -72,6 +72,14 @@ pub struct Cli {
     pub centreon_user: Option<String>,
     #[arg(long)]
     pub centreon_token: Option<String>,
+    #[arg(long)]
+    pub insecure: bool,
+    /// Prototype: REST API v2 token (revocable/expiring), used instead of
+    /// --centreon-user/--centreon-token to render an HTML sparkline from
+    /// /monitoring/hosts/{id}/services/{id}/metrics/performance/download
+    /// instead of fetching a PNG from generateImage.php.
+    #[arg(long)]
+    pub api_token: Option<String>,
 
     #[arg(long)]
     pub date: Option<String>,

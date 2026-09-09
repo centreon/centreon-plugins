@@ -3,6 +3,7 @@
 use super::{dynamic_href, event_context, Notification};
 use crate::cli::Args;
 use crate::graph::{self, GraphOutcome};
+use crate::sparkline::{self, SparklineOutcome};
 use crate::style;
 use crate::template::Template;
 
@@ -25,8 +26,33 @@ pub fn render(args: &Args) -> Notification {
     let ctx = event_context(notif_type, raw.notif_author.as_deref(), raw.notif_comment.as_deref());
 
     let cid = format!("{host_name}_{service_description}");
-    let graph_outcome = fetch_graph(args, host_name, service_description);
-    let graph_html = graph::graph_html(&graph_outcome, &cid);
+    let (graph_html, graph_png) = if raw.api_token.as_deref().filter(|t| !t.is_empty()).is_some() {
+        let outcome = sparkline::fetch(
+            raw.centreon_url.as_deref().unwrap_or_default(),
+            &raw.url_path,
+            raw.api_token.as_deref(),
+            host_id,
+            service_id,
+            raw.timeout,
+            raw.insecure,
+        );
+        match outcome {
+            SparklineOutcome::NotConfigured => (String::new(), None),
+            SparklineOutcome::Error(msg) => (format!("<p>Cannot retrieve chart: {msg}</p>"), None),
+            SparklineOutcome::Found(bytes) => (
+                format!("<img src=\"cid:{cid}\"  alt=\"Service Graph\" style=\"width:100%; height:auto;\">\n"),
+                Some(bytes),
+            ),
+        }
+    } else {
+        let outcome = fetch_graph(args, host_name, service_description);
+        let html = graph::graph_html(&outcome, &cid);
+        let png = match outcome {
+            GraphOutcome::Found(bytes) => Some(bytes),
+            _ => None,
+        };
+        (html, png)
+    };
 
     let href = dynamic_href(
         args,
@@ -83,11 +109,6 @@ pub fn render(args: &Args) -> Notification {
         .set_flag("includeComment", ctx.include_comment)
         .render(TEMPLATE);
 
-    let graph_png = match graph_outcome {
-        GraphOutcome::Found(bytes) => Some(bytes),
-        _ => None,
-    };
-
     Notification {
         subject,
         alt_message,
@@ -115,5 +136,5 @@ fn fetch_graph(args: &Args, host_name: &str, service_description: &str) -> Graph
         host_name,
         service_description,
     );
-    graph::fetch(&url, raw.timeout)
+    graph::fetch(&url, raw.timeout, raw.insecure)
 }

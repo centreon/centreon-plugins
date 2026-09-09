@@ -17,14 +17,19 @@ pub enum GraphOutcome {
     Found(Vec<u8>),
 }
 
-pub fn fetch(url: &str, timeout_secs: u64) -> GraphOutcome {
-    let agent = ureq::AgentBuilder::new()
-        .timeout(Duration::from_secs(timeout_secs))
-        .build();
+pub fn fetch(url: &str, timeout_secs: u64, insecure: bool) -> GraphOutcome {
+    let mut builder = ureq::AgentBuilder::new().timeout(Duration::from_secs(timeout_secs));
+    if insecure {
+        builder = builder.tls_config(std::sync::Arc::new(insecure_tls_config()));
+    }
+    let agent = builder.build();
 
     let response = match agent.get(url).call() {
         Ok(r) => r,
-        Err(_) => return GraphOutcome::NoGraph,
+        Err(e) => {
+            log::warn!("graph fetch failed for {url}: {e}");
+            return GraphOutcome::NoGraph;
+        }
     };
 
     if response.status() != 200 {
@@ -46,6 +51,33 @@ pub fn fetch(url: &str, timeout_secs: u64) -> GraphOutcome {
     }
 
     GraphOutcome::Found(bytes)
+}
+
+/// A rustls `ServerCertVerifier` that accepts any certificate, for `--insecure`
+/// - mirrors the Perl mode's `--insecure` (Net::SSLeay `SSL_VERIFY_NONE`),
+/// needed when `--centreon-url` points at a host with a self-signed or
+/// internal-CA certificate the container's trust store doesn't carry.
+struct NoCertVerification;
+
+impl rustls::client::ServerCertVerifier for NoCertVerification {
+    fn verify_server_cert(
+        &self,
+        _end_entity: &rustls::Certificate,
+        _intermediates: &[rustls::Certificate],
+        _server_name: &rustls::ServerName,
+        _scts: &mut dyn Iterator<Item = &[u8]>,
+        _ocsp_response: &[u8],
+        _now: std::time::SystemTime,
+    ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
+        Ok(rustls::client::ServerCertVerified::assertion())
+    }
+}
+
+pub(crate) fn insecure_tls_config() -> rustls::ClientConfig {
+    rustls::ClientConfig::builder()
+        .with_safe_defaults()
+        .with_custom_certificate_verifier(std::sync::Arc::new(NoCertVerification))
+        .with_no_client_auth()
 }
 
 /// Renders the `<img>`/error/placeholder markup that replaces `graphHtml` in

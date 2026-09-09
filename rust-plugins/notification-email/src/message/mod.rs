@@ -59,16 +59,19 @@ pub struct EventContext {
     pub include_comment: bool,
 }
 
-/// Reproduces `alert.pm`'s `/^flaping.*$/i` verbatim, including its missing
-/// second "p" — changing it would silently alter which notification types
-/// get an event-type label, so any fix belongs in a follow-up, not this port.
+/// `alert.pm`'s `/^flaping.*$/i` has a typo (missing second "p") that makes
+/// it never match Centreon Engine's actual `FLAPPINGSTART`/`FLAPPINGSTOP`
+/// notification types, so flapping notifications never get the "Flapping"
+/// event-type label in the Perl mode either. Fixed here rather than ported
+/// verbatim, since it silently drops real notification content for every
+/// user of this plugin, Perl or Rust.
 fn event_label(notif_type: &str) -> Option<&'static str> {
     let lower = notif_type.to_lowercase();
     if lower.starts_with("downtime") {
         Some("Scheduled Downtime")
     } else if lower == "acknowledgement" {
         Some("Acknowledged")
-    } else if lower.starts_with("flaping") {
+    } else if lower.starts_with("flapping") {
         Some("Flapping")
     } else {
         None
