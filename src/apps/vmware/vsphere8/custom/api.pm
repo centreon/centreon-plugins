@@ -58,7 +58,18 @@ sub new {
                 'vstats-interval:s' => { name => 'vstats_interval',     default => 60 },
                 'vstats-duration:s' => { name => 'vstats_duration',     default => 2764800 }, # 2764800 seconds in 32 days
                 'metrics-source:s'  => { name => 'metrics_source',       default => 'auto' },
-                'timeout:s'         => { name => 'timeout',             default => 10 }
+                'timeout:s'         => { name => 'timeout',             default => 10 },
+                # Real-Time Metrics source: it queries VCF Operations, not the vCenter,
+                # hence its own address, credentials and mapping overrides.
+                'rtm-hostname:s'    => { name => 'rtm_hostname' },
+                'rtm-port:s'        => { name => 'rtm_port',            default => '443' },
+                'rtm-proto:s'       => { name => 'rtm_proto',           default => 'https' },
+                'rtm-username:s'    => { name => 'rtm_username' },
+                'rtm-password:s'    => { name => 'rtm_password' },
+                'rtm-auth-source:s' => { name => 'rtm_auth_source' },
+                'rtm-base-path:s'   => { name => 'rtm_base_path',       default => '/data-query-service' },
+                'rtm-moid-label:s'  => { name => 'rtm_moid_label' },
+                'rtm-metric-map:s@' => { name => 'rtm_metric_map' }
             }
         );
     }
@@ -69,6 +80,7 @@ sub new {
     $self->{token_cache}     = centreon::plugins::statefile->new(%options);
     $self->{acq_specs_cache} = centreon::plugins::statefile->new(%options);
     $self->{vim25_cache}     = centreon::plugins::statefile->new(%options);
+    $self->{rtm_cache}       = centreon::plugins::statefile->new(%options);
     # kept to build the vim25 fallback lazily, only when a counter is actually needed
     $self->{custom_options}  = \%options;
 
@@ -96,9 +108,9 @@ sub check_options {
     $self->{vstats_duration} = $self->{option_results}->{vstats_duration};
     $self->{metrics_source}  = $self->{option_results}->{metrics_source} // 'auto';
 
-    if ($self->{metrics_source} !~ /^(auto|vstats|vim25)$/) {
+    if ($self->{metrics_source} !~ /^(auto|vstats|vim25|rtm)$/) {
         $self->{output}->option_exit(short_msg => "Unsupported --metrics-source '" . $self->{metrics_source}
-            . "'. Expected one of: auto, vstats, vim25.");
+            . "'. Expected one of: auto, vstats, vim25, rtm.");
     }
 
     if ($self->{hostname} eq '') {
@@ -114,6 +126,7 @@ sub check_options {
     $self->{token_cache}->check_options(option_results => $self->{option_results});
     $self->{acq_specs_cache}->check_options(option_results => $self->{option_results});
     $self->{vim25_cache}->check_options(option_results => $self->{option_results});
+    $self->{rtm_cache}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
@@ -336,8 +349,9 @@ sub vstats_unavailable_message {
         . $self->{http}->get_code() . "']. The vStats API is Tech Preview in vSphere 8.0 to 9.0 "
         . "and has been removed in vSphere 9.1, therefore performance counters cannot be "
         . "collected through it. Use --metrics-source=vim25 to read them from the "
-        . "PerformanceManager SOAP API instead. Modes that do not rely on performance "
-        . "counters (status, health, count, list...) are not affected.";
+        . "PerformanceManager SOAP API of the same vCenter, or --metrics-source=rtm to read "
+        . "them from the Real-Time Metrics API of VCF Operations. Modes that do not rely on "
+        . "performance counters (status, health, count, list...) are not affected.";
 }
 
 # vim25 PerformanceManager fallback, built only when a counter is actually requested
@@ -380,6 +394,30 @@ sub invalidate_acq_specs {
     $self->{acq_specs_stale} = 1;
 
     return 1;
+}
+
+# VCF Operations Real-Time Metrics source, built only when explicitly requested
+sub rtm {
+    my ($self, %options) = @_;
+
+    return $self->{rtm} if (defined($self->{rtm}));
+
+    centreon::plugins::misc::mymodule_load(
+        output    => $self->{output},
+        module    => 'apps::vmware::vsphere8::custom::rtm',
+        error_msg => "Cannot load module 'apps::vmware::vsphere8::custom::rtm'."
+    );
+
+    $self->{rtm} = apps::vmware::vsphere8::custom::rtm->new(
+        %{$self->{custom_options}},
+        noptions => 1,
+        output   => $self->{output},
+        cache    => $self->{rtm_cache}
+    );
+    $self->{rtm}->set_options(option_results => $self->{option_results});
+    $self->{rtm}->check_options();
+
+    return $self->{rtm};
 }
 
 sub get_all_acq_specs {
@@ -585,8 +623,10 @@ sub get_stats {
         $self->{output}->option_exit(short_msg => "get_stats method called without cid, will get all available stats for resource");
     }
 
-    # vim25 is either forced, or used as a fallback when vStats is gone (vSphere 9.1)
+    # vim25 is either forced, or used as a fallback when vStats is gone (vSphere 9.1).
+    # rtm is never automatic: it targets another appliance with its own credentials.
     return $self->vim25()->get_perf_value(%options) if ($self->{metrics_source} eq 'vim25');
+    return $self->rtm()->get_perf_value(%options)   if ($self->{metrics_source} eq 'rtm');
 
     if ( !$self->check_acq_spec(%options) ) {
         if ($self->{vstats_unavailable}) {
@@ -1093,12 +1133,63 @@ The C<vim25> source reads the same counters from the C<PerformanceManager> of th
 vim25 SOAP API, which vSphere 9.1 still serves. It requires neither the VMware Perl
 SDK nor the C<centreon_vmware> daemon.
 
+The C<rtm> source reads them from the Real-Time Metrics API of VCF Operations, the
+replacement Broadcom offers for vStats. It is not served by the vCenter, so it needs
+the C<--rtm-*> options below, and it is never selected by C<auto>.
+
 With C<auto>, C<vstats> is used and C<vim25> takes over when the vCenter no longer
-serves vStats, so the same command works from 8.0 to 9.1. Force C<vstats> or C<vim25>
-to pin one source, for instance to make an unsupported version fail loudly.
+serves vStats, so the same command works from 8.0 to 9.1. Force C<vstats>, C<vim25>
+or C<rtm> to pin one source, for instance to make an unsupported version fail loudly.
 
 Modes that do not read performance counters (status, health, count, list...) never
 use this option.
+
+=item B<--rtm-hostname>
+
+Define the address of the VCF Operations appliance serving the Real-Time Metrics API.
+Required by C<--metrics-source=rtm>.
+
+=item B<--rtm-port>
+
+Define the port of the VCF Operations appliance (default: 443).
+
+=item B<--rtm-proto>
+
+Define the protocol used to reach VCF Operations (default: C<https>).
+
+=item B<--rtm-username>
+
+Define the username used to authenticate against VCF Operations. Required by
+C<--metrics-source=rtm>.
+
+=item B<--rtm-password>
+
+Define the password used to authenticate against VCF Operations. Required by
+C<--metrics-source=rtm>.
+
+=item B<--rtm-auth-source>
+
+Define the VCF Operations authentication source of the account, when it is not the
+local one.
+
+=item B<--rtm-base-path>
+
+Define the base path of the Real-Time Metrics API (default: C</data-query-service>).
+The Prometheus endpoints are queried under that path, as C<< <base path>/v1/query >>.
+
+=item B<--rtm-moid-label>
+
+Define the metric label carrying the managed object id of the monitored resource, for
+instance C<moid>. When omitted, it is discovered on the first query and the value to
+use is reported in the long output.
+
+=item B<--rtm-metric-map>
+
+Map a counter id to the metric name it must be read from, as
+C<counter.id=metric_name>. Can be used several times. Use it when the appliance
+publishes a metric under a name the plugin does not know, as reported by the error
+message. Example:
+C<--rtm-metric-map='cpu.capacity.usage.HOST=vcenter_host_cpu_usage_mhz'>.
 
 =item B<--vstats-interval>
 
