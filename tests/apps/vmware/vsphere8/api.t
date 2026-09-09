@@ -5,6 +5,7 @@ use FindBin;
 use lib "$FindBin::RealBin/../../../../src";
 use apps::vmware::vsphere8::custom::api;
 use apps::vmware::vsphere8::custom::vim25;
+use apps::vmware::vsphere8::custom::rtm;
 
 
 # Mock options class
@@ -306,6 +307,120 @@ sub test_acq_specs_invalidation {
     is($api->{acq_specs_stale}, 1,      'the list is flagged as stale on invalidation');
 }
 
+# The Real-Time Metrics source targets VCF Operations, not the vCenter, and must never
+# report a value it could not resolve or convert safely.
+sub build_rtm {
+    my (%options) = @_;
+
+    my $rtm = apps::vmware::vsphere8::custom::rtm->new(
+        noptions => 1,
+        options  => MockOptions->new(),
+        output   => ExitingOutput->new()
+    );
+    $rtm->set_options(option_results => {
+        rtm_hostname => 'vcfops.example.tld',
+        rtm_username => 'svc-centreon',
+        rtm_password => 's3cret',
+        %options
+    });
+
+    return $rtm;
+}
+
+sub test_rtm_options {
+    my $rtm = build_rtm();
+    $rtm->check_options();
+    is($rtm->{hostname},  'vcfops.example.tld',   'the VCF Operations address is taken from --rtm-hostname');
+    is($rtm->{base_path}, '/data-query-service',  'the base path defaults to the data-query-service');
+    is($rtm->{port},      443,                    'the port defaults to 443');
+
+    # a trailing slash would produce a double slash in every query
+    my $trailing = build_rtm(rtm_base_path => '/data-query-service/');
+    $trailing->check_options();
+    is($trailing->{base_path}, '/data-query-service', 'a trailing slash is stripped from the base path');
+
+    # the source cannot silently fall back on the vCenter credentials
+    for my $missing (qw/rtm_hostname rtm_username rtm_password/) {
+        my $incomplete = build_rtm($missing => undef);
+        (my $option = $missing) =~ tr/_/-/;
+        like(dies { $incomplete->check_options() }, qr/needs the --\Q$option\E option/,
+            "--$option is required by the Real-Time Metrics source");
+    }
+
+    my $mapped = build_rtm(rtm_metric_map => [ 'cpu.capacity.usage.HOST=custom_metric' ]);
+    $mapped->check_options();
+    is($mapped->{metric_overrides}->{'cpu.capacity.usage.HOST'}, 'custom_metric',
+        'a --rtm-metric-map entry is parsed');
+
+    my $malformed = build_rtm(rtm_metric_map => [ 'no_equal_sign' ]);
+    like(dies { $malformed->check_options() }, qr/Malformed --rtm-metric-map/,
+        'a malformed --rtm-metric-map entry is refused');
+}
+
+sub test_rtm_metric_resolution {
+    my $rtm = build_rtm();
+    $rtm->check_options();
+    $rtm->{catalogue} = { 'vcenter_host_cpu_capacity_usage_megahertz' => 1, 'custom_metric' => 1 };
+
+    my $resolved = $rtm->resolve_metric(cid => 'cpu.capacity.usage.HOST');
+    is($resolved->{metric}, 'vcenter_host_cpu_capacity_usage_megahertz', 'a known counter resolves to its metric');
+    is($resolved->{target}, 'kHz',                                      'the target unit of the host CPU counter is kHz');
+
+    # a metric absent from the appliance catalogue must not be queried blindly
+    $rtm->{catalogue} = { 'something_else' => 1 };
+    like(dies { $rtm->resolve_metric(cid => 'cpu.capacity.usage.HOST') },
+        qr/is not advertised by the Real-Time Metrics API/, 'a metric missing from the catalogue is refused');
+
+    # an unknown counter tells the user how to map it
+    like(dies { $rtm->resolve_metric(cid => 'made.up.counter.HOST') },
+        qr/--rtm-metric-map/, 'an unmapped counter points at --rtm-metric-map');
+
+    # an override wins, and must not corrupt the shared mapping table
+    my $overridden = build_rtm(rtm_metric_map => [ 'cpu.capacity.usage.HOST=custom_metric' ]);
+    $overridden->check_options();
+    $overridden->{catalogue} = { 'custom_metric' => 1 };
+    is($overridden->resolve_metric(cid => 'cpu.capacity.usage.HOST')->{metric}, 'custom_metric',
+        'an override replaces the metric name');
+
+    my $untouched = build_rtm();
+    $untouched->check_options();
+    $untouched->{catalogue} = { 'vcenter_host_cpu_capacity_usage_megahertz' => 1 };
+    is($untouched->resolve_metric(cid => 'cpu.capacity.usage.HOST')->{metric},
+        'vcenter_host_cpu_capacity_usage_megahertz', 'the override did not leak into the package mapping');
+}
+
+sub test_rtm_unit_conversion {
+    my $rtm = build_rtm();
+    $rtm->check_options();
+
+    is($rtm->convert_unit(value => 3200, from => 'megahertz', to => 'kHz', cid => 'cpu.capacity.usage.HOST'),
+        3200000, 'megahertz are converted to kHz');
+    is($rtm->convert_unit(value => 1048576, from => 'kilobytes', to => 'MB', cid => 'mem.capacity.usable.HOST'),
+        1024, 'kilobytes are converted to MB');
+    # a ratio published as 0..1 has to become a percentage
+    is($rtm->convert_unit(value => 0.45, from => 'ratio', to => 'pct', cid => 'cpu.capacity.contention.HOST'),
+        45, 'a ratio is converted to a percentage');
+    is($rtm->convert_unit(value => 210, from => 'watts', to => 'W', cid => 'power.capacity.usage.HOST'),
+        210, 'identical units leave the value untouched');
+
+    like(dies { $rtm->convert_unit(value => 1, from => 'kilobytes', to => 'kHz', cid => 'bogus.HOST') },
+        qr/Refusing to report a wrong value/, 'a cross-dimension conversion is refused');
+    like(dies { $rtm->convert_unit(value => 1, from => 'furlongs', to => 'kHz', cid => 'bogus.HOST') },
+        qr/Unknown unit/, 'an unknown unit is refused');
+}
+
+sub test_rtm_label_escaping {
+    # a resource id is injected into a PromQL selector and must stay quoted
+    is(apps::vmware::vsphere8::custom::rtm::escape_label_value('host-35'), 'host-35',
+        'a plain resource id is left untouched');
+    is(apps::vmware::vsphere8::custom::rtm::escape_label_value('a"b'), 'a\\"b',
+        'a double quote is escaped in a label value');
+    is(apps::vmware::vsphere8::custom::rtm::escape_label_value('a\\b'), 'a\\\\b',
+        'a backslash is escaped in a label value');
+    is(apps::vmware::vsphere8::custom::rtm::escape_label_value(undef), '',
+        'an undefined value becomes an empty string');
+}
+
 sub main {
     #process_test('localhost', 443, 'https', '/v2', 10, 'user', 'pass');
     process_test('localhost', 3000, 'http', undef, 10, 'login', 'password');
@@ -315,6 +430,10 @@ sub main {
     test_vim25_xml_hardening();
     test_poisoned_cache_is_ignored();
     test_acq_specs_invalidation();
+    test_rtm_options();
+    test_rtm_metric_resolution();
+    test_rtm_unit_conversion();
+    test_rtm_label_escaping();
 }
 
 main();
