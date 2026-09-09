@@ -113,7 +113,7 @@ __END__
 
 =head1 MODE
 
-List the storage repositories of a Xen Orchestra pool, for host discovery purposes.
+List the storage repositories of a Xen Orchestra pool, for service discovery purposes.
 
 =over 8
 
