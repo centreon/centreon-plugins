@@ -67,3 +67,9 @@ pool status ${tc}
     ...    11
     ...    --pool-name=second --warning-ha-status='\\\%{ha_enabled} !~ /^true/i' --critical-ha-status=''
     ...    WARNING: pool has HA disabled
+    ...    12
+    ...    --pool-name=vates --warning-master-status='\\\%{master_power_state} =~ /^Running/i' --critical-master-status=''
+    ...    WARNING: pool 'vates' master 'vates' is Running
+    ...    13
+    ...    --pool-name=vates --warning-master-status='' --critical-master-status='\\\%{master_power_state} =~ /^Running/i'
+    ...    CRITICAL: pool 'vates' master 'vates' is Running
