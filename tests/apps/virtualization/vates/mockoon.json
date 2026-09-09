@@ -712,6 +712,72 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "ffa0a9c9-8019-431a-8a2f-6f50c1dc56a0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/v0/ping",
+      "responses": [
+        {
+          "uuid": "29b218fb-9b32-41ca-ab37-2b01cc36aa7f",
+          "body": "{\n  \"result\": \"pong\",\n  \"timestamp\": 1788957036421\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "auth OK",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic b2JpLXdhbjpDM1BPUjJQMg==",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e79b7d90-5d18-43bf-a115-85a9c08b0c74",
+          "body": "{\n  \"error\": \"invalid credentials\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "failed auth",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic b2JpLXdhbjpDM1BPUjJQMg==",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -742,6 +808,10 @@
     {
       "type": "route",
       "uuid": "b58920f8-e3c4-43c9-adf4-54437f1f491a"
+    },
+    {
+      "type": "route",
+      "uuid": "ffa0a9c9-8019-431a-8a2f-6f50c1dc56a0"
     }
   ],
   "proxyMode": false,
