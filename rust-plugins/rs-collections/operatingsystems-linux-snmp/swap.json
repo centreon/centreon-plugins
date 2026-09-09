@@ -17,33 +17,52 @@
     "metrics": [],
     "aggregations": [
       {
-        "name": "swap.free.bytes",
-        "value": "{memAvailSwap}",
+        "name": "used",
+        "value": "({memTotalSwap} - {memAvailSwap}) * 1024",
         "uom": "B",
         "min": 0,
-        "max_expr": "{memTotalSwap}",
-        "threshold-suffix": "free-bytes"
+        "max_expr": "{memTotalSwap} * 1024",
+        "threshold-suffix": "usage",
+        "output": "Swap Total: {Bytes(aggregations.total)} Used: {Bytes(aggregations.used)} ({aggregations.used_prct:.2f}%) Free: {Bytes(aggregations.free)} ({aggregations.free_prct:.2f}%)",
+        "order": 0
       },
       {
-        "name": "swap.usage.bytes",
-        "value": "{memTotalSwap} - {memAvailSwap}",
+        "name": "free",
+        "value": "{memAvailSwap} * 1024",
         "uom": "B",
         "min": 0,
-        "max_expr": "{memTotalSwap}",
-        "threshold-suffix": "bytes"
+        "max_expr": "{memTotalSwap} * 1024",
+        "threshold-suffix": "usage-free",
+        "output": "Swap Total: {Bytes(aggregations.total)} Used: {Bytes(aggregations.used)} ({aggregations.used_prct:.2f}%) Free: {Bytes(aggregations.free)} ({aggregations.free_prct:.2f}%)",
+        "order": 1
       },
       {
-        "name": "swap.usage.percent",
+        "name": "used_prct",
         "value": "100 * ({memTotalSwap} - {memAvailSwap}) / {memTotalSwap}",
         "uom": "%",
         "min": 0,
         "max": 100,
-        "threshold-suffix": "prct"
+        "threshold-suffix": "usage-prct",
+        "decimals": 2,
+        "output": "Used : {aggregations.used_prct:.2f} %",
+        "order": 2
+      },
+      {
+        "name": "free_prct",
+        "value": "100 * {memAvailSwap} / {memTotalSwap}",
+        "uom": "%",
+        "perfdata": false
+      },
+      {
+        "name": "total",
+        "value": "{memTotalSwap} * 1024",
+        "uom": "B",
+        "perfdata": false
       }
     ]
   },
   "output": {
-    "ok": "OK: Swap Used: {aggregations.swap.usage.bytes}B - Free: {aggregations.swap.free.bytes}B - Total: {memTotalSwap}B",
+    "ok": "OK: Swap Total: {Bytes(aggregations.total)} Used: {Bytes(aggregations.used)} ({aggregations.used_prct:.2f}%) Free: {Bytes(aggregations.free)} ({aggregations.free_prct:.2f}%)",
     "warning": "WARNING: ",
     "detail_warning": true,
     "critical": "CRITICAL: ",
