@@ -369,6 +369,19 @@ sub vim25 {
     return $self->{vim25};
 }
 
+# Called whenever an acquisition specification is created or extended: the list held in
+# memory no longer reflects the vCenter, and the statefile must not be refreshed from it
+# either. Without this, the cache was persisted mid-run with a partial view and every
+# later run re-created the specifications missing from that snapshot.
+sub invalidate_acq_specs {
+    my ($self, %options) = @_;
+
+    delete $self->{all_acq_specs};
+    $self->{acq_specs_stale} = 1;
+
+    return 1;
+}
+
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
@@ -376,11 +389,26 @@ sub get_all_acq_specs {
     return $self->{all_acq_specs} if ($self->{all_acq_specs} && @{$self->{all_acq_specs}});
 
     # if we can get it from the cache, we return it
-    if ($self->{acq_specs_cache}->read(
+    if (!$self->{acq_specs_stale} && $self->{acq_specs_cache}->read(
         statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . sha256_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
     )) {
-        $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
-        return $self->{all_acq_specs};
+        my $cached = $self->{acq_specs_cache}->get(name => 'acq_specs');
+        # An empty or malformed cached list is a cache miss, never an answer.
+        #
+        # This is what a vCenter whose vStats API has been removed left behind before
+        # this was fixed: returning it here would short-circuit the detection below and
+        # keep the plugin silent for exactly the platforms this fix targets, until
+        # someone deleted the statefile by hand. Falling through re-queries the API, so
+        # an already-affected poller heals on its very next check, with nothing to clean
+        # up manually.
+        #
+        # It is also what a healthy vCenter with no acquisition specification yet leaves
+        # behind, where re-querying picks up the specifications that were just created
+        # instead of creating them again on every run.
+        if (ref($cached) eq 'ARRAY' && @$cached) {
+            $self->{all_acq_specs} = $cached;
+            return $self->{all_acq_specs};
+        }
     }
     # Get all acq specs (first page)
     my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
@@ -404,11 +432,12 @@ sub get_all_acq_specs {
         push @acq_specs, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     }
 
-    # only a well-formed list is kept and cached: this prevents a corrupted or empty
-    # statefile from making every subsequent run collect nothing
     $self->{all_acq_specs} = \@acq_specs;
-    # store it in the cache for future runs
-    $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} });
+    # Only a complete, non-empty list is worth caching: an empty one is deliberately
+    # ignored on read, and a list read while specifications are being created is only a
+    # partial view of the vCenter.
+    $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} })
+        if (@acq_specs && !$self->{acq_specs_stale});
 
     return $self->{all_acq_specs};
 }
@@ -464,6 +493,9 @@ sub create_acq_spec {
     ) or return undef;
     $self->{output}->add_option_msg(long_msg => "The counter $options{cid} was not recorded for resource $options{rsrc_id} before. It will now (creating acq_spec).");
 
+    # the stored list no longer reflects the vCenter
+    $self->invalidate_acq_specs();
+
     return 1;
 }
 
@@ -493,7 +525,7 @@ sub extend_acq_spec {
     return undef if (defined($response) && ref($response) eq 'HASH' && scalar(keys %$response) > 0);
 
     # reset stored acq_specs since it's no longer accurate
-    $self->{all_acq_specs} = [];
+    $self->invalidate_acq_specs();
 
     return 1;
 }

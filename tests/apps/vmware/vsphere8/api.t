@@ -219,6 +219,93 @@ sub test_vim25_xml_hardening {
     is($vim25->parse_xml(content => ''),         undef, 'an empty payload returns undef');
 }
 
+# A statefile written before this fix holds an empty acq_specs list. Trusting it would
+# short-circuit the vStats detection and keep an already-affected poller silent, which
+# is the very population the fix targets. Such a cache must behave as a cache miss.
+{
+    package MockCache;
+    sub new { my ($class, %o) = @_; return bless { %o, writes => [] }, $class; }
+    sub read { return $_[0]->{readable} ? 1 : 0 }
+    sub get { return $_[0]->{content} }
+    sub write { my ($self, %o) = @_; push @{$self->{writes}}, $o{data}; return 1; }
+    sub check_options { }
+}
+
+sub build_api_with_cache {
+    my (%options) = @_;
+
+    my $api = apps::vmware::vsphere8::custom::api->new(
+        options => MockOptions->new(),
+        output  => ExitingOutput->new()
+    );
+    $api->{hostname}        = 'vcenter.example.tld';
+    $api->{port}            = 443;
+    $api->{username}        = 'svc-centreon';
+    $api->{http}            = MockHttp->new($options{http_code} // 404);
+    $api->{acq_specs_cache} = MockCache->new(readable => 1, content => $options{cached});
+    # what a vCenter 9.1 answers once the vStats backend is unregistered
+    $api->{mocked_response} = $options{response} // {};
+    no warnings 'redefine';
+    local *apps::vmware::vsphere8::custom::api::request_api = sub { return $_[0]->{mocked_response} };
+    return ($api, $api->get_all_acq_specs(rsrc_id => 'host-35'));
+}
+
+sub test_poisoned_cache_is_ignored {
+    # the exact statefile a 9.1 vCenter left behind before the fix
+    my ($api, $result) = build_api_with_cache(cached => []);
+    is($result, undef, 'an empty cached list does not short-circuit the vStats detection');
+    is($api->{vstats_unavailable}, 1, 'the vStats removal is detected despite the poisoned cache');
+    is(scalar @{$api->{acq_specs_cache}->{writes}}, 0, 'nothing is written back when vStats is unusable');
+
+    # a corrupted statefile must behave the same way
+    for my $case ([ 'undef', undef ], [ 'not a list', 'garbage' ], [ 'hash', {} ]) {
+        my ($label, $content) = @$case;
+        my (undef, $res) = build_api_with_cache(cached => $content);
+        is($res, undef, "a malformed cached value ($label) is treated as a cache miss");
+    }
+
+    # a populated cache is still trusted, and no request is made
+    my $spec = { counters => { cid_mid => { cid => 'cpu.capacity.usage.HOST' } },
+                 resources => [ { id_value => 'host-35', predicate => 'EQUAL', scheme => 'moid' } ],
+                 status => 'ENABLED', expiration => time() + 86400, id => '225' };
+    my ($cached_api, $cached_result) = build_api_with_cache(cached => [ $spec ]);
+    is(ref($cached_result), 'ARRAY',            'a populated cache is still used');
+    is(scalar @$cached_result, 1,               'the cached specification is returned as is');
+    ok(!$cached_api->{vstats_unavailable},      'a populated cache does not trigger the detection');
+
+    # a healthy vCenter answer is cached, an empty one is not
+    my ($healthy, $healthy_result) = build_api_with_cache(
+        cached    => [],
+        http_code => 200,
+        response  => { acq_specs => [ $spec ] }
+    );
+    is(scalar @$healthy_result, 1, 'the specification returned by the API is collected');
+    is(scalar @{$healthy->{acq_specs_cache}->{writes}}, 1, 'a non-empty result is written to the cache');
+
+    my ($empty, $empty_result) = build_api_with_cache(
+        cached    => [],
+        http_code => 200,
+        response  => { acq_specs => [] }
+    );
+    is(scalar @$empty_result, 0, 'an empty but well-formed API answer is not an error');
+    is(scalar @{$empty->{acq_specs_cache}->{writes}}, 0, 'an empty result is not persisted');
+}
+
+# Creating or extending a specification makes the stored list obsolete: it must not be
+# persisted afterwards, otherwise a partial snapshot makes every later run re-create the
+# specifications missing from it.
+sub test_acq_specs_invalidation {
+    my $api = apps::vmware::vsphere8::custom::api->new(
+        options => MockOptions->new(),
+        output  => ExitingOutput->new()
+    );
+    $api->{all_acq_specs} = [ { id => '225' } ];
+
+    $api->invalidate_acq_specs();
+    ok(!defined($api->{all_acq_specs}), 'the stored list is dropped on invalidation');
+    is($api->{acq_specs_stale}, 1,      'the list is flagged as stale on invalidation');
+}
+
 sub main {
     #process_test('localhost', 443, 'https', '/v2', 10, 'user', 'pass');
     process_test('localhost', 3000, 'http', undef, 10, 'login', 'password');
@@ -226,6 +313,8 @@ sub main {
     test_vim25_unit_conversion();
     test_vim25_counter_resolution();
     test_vim25_xml_hardening();
+    test_poisoned_cache_is_ignored();
+    test_acq_specs_invalidation();
 }
 
 main();
