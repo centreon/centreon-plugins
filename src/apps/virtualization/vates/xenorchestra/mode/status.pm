@@ -22,8 +22,6 @@ package apps::virtualization::vates::xenorchestra::mode::status;
 use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::misc qw/is_empty/;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/json_decode/;
 
@@ -52,10 +50,10 @@ sub set_counters {
         {
             label            => 'api-status',
             type             => COUNTER_TYPE_GROUP,
+            critical_default => '%{api_status} ne "ok"',
             set              => {
                 key_values                     => [ { name => 'api_status' } ],
                 output_template => "api returned '%{api_status}'",
-                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -63,10 +61,9 @@ sub set_counters {
 
 sub manage_selection {
     my ($self, %options) = @_;
-
     my $response = $options{custom}->request_api(
-        method => "GET",
-        endpoint      => "ping",
+        method          => "GET",
+        endpoint        => "ping",
         critical_status => '%{http_code} < 200 or %{http_code} >= 300',
     );
     my $json;
@@ -79,7 +76,6 @@ sub manage_selection {
     }
 
     if ($json->{error}) {
-        $self->{output}->set_status(exit_litteral => "CRITICAL");
         $self->{status} = { api_status => $json->{error}};
     }
     elsif ($json->{result} && $json->{result} eq "pong") {
@@ -97,46 +93,20 @@ __END__
 
 =head1 MODE
 
-Check the status of a Vates Xen Orchestra pool: master host availability, power state and High Availability if configured.
+Check the status of a Vates Xen Orchestra appliance
 
 =over 8
 
-=item B<--pool-uuid>
+=item B<--warning-api-status>
 
-Identify the pool by its exact uuid.
+Define the conditions to match for the API status to be WARNING. You can use the following
+variables: C<%{api_status}>.
 
-=item B<--pool-name>
+=item B<--critical-api-status>
 
-Identify the pool by its name (only one pool is expected).
-
-=item B<--is-ha>
-
-Convenience shortcut to check that HA is enabled/disabled as expected, without having to write a
-C<--critical-ha-status> expression by hand. Set to C<true> or C<1> to require HA enabled (equivalent
-to the default C<--critical-ha-status>); any other value disables the HA status check entirely
-(equivalent to C<--critical-ha-status=''>).
-
-=item B<--warning-master-status>
-
-Define the conditions to match for the master host status to be WARNING. You can use the following
-variables: C<%{display}>, C<%{master_name}>, C<%{master_power_state}>.
-
-=item B<--critical-master-status>
-
-Define the conditions to match for the master host status to be CRITICAL. You can use the following
-variables: C<%{display}>, C<%{master_name}>, C<%{master_power_state}>.
-Default: C<%{master_power_state} !~ /^Running/i>
-
-=item B<--warning-ha-status>
-
-Define the conditions to match for the pool's High Availability status to be WARNING. You can use
-the following variable: C<%{ha_enabled}>.
-
-=item B<--critical-ha-status>
-
-Define the conditions to match for the pool's High Availability status to be CRITICAL. You can use
-the following variable: C<%{ha_enabled}>.
-Default: C<%{ha_enabled} !~ /^true/i>
+Define the conditions to match for the API status to be CRITICAL. You can use the following
+variables: C<%{api_status}>.
+Default: %{api_status} ne "ok"
 
 =back
 
