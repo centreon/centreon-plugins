@@ -57,26 +57,64 @@ pub fn fetch(url: &str, timeout_secs: u64, insecure: bool) -> GraphOutcome {
 /// - mirrors the Perl mode's `--insecure` (Net::SSLeay `SSL_VERIFY_NONE`),
 /// needed when `--centreon-url` points at a host with a self-signed or
 /// internal-CA certificate the container's trust store doesn't carry.
-struct NoCertVerification;
+///
+/// Uses `ureq::rustls` (ureq's own re-export, `pub use rustls;` in its
+/// `lib.rs`) rather than a separately-versioned `rustls` dependency: with no
+/// `Cargo.lock` committed for this crate (workspace convention, see
+/// `rust-plugins/.gitignore`), a fresh resolve can pick a newer `ureq` built
+/// against a newer `rustls` than one we'd pin ourselves, and `AgentBuilder::
+/// tls_config` rejects a `ClientConfig` from a different `rustls` instance
+/// even at the same semver-major version (0.21.x from us vs. 0.23.x already
+/// pulled in by `ureq` - two distinct crate instances to the compiler).
+/// Importing through `ureq::rustls` instead always matches whatever `ureq`
+/// itself resolved to, so this can't drift out of sync again.
+use ureq::rustls;
 
-impl rustls::client::ServerCertVerifier for NoCertVerification {
+#[derive(Debug)]
+struct NoCertVerification(rustls::crypto::CryptoProvider);
+
+impl rustls::client::danger::ServerCertVerifier for NoCertVerification {
     fn verify_server_cert(
         &self,
-        _end_entity: &rustls::Certificate,
-        _intermediates: &[rustls::Certificate],
-        _server_name: &rustls::ServerName,
-        _scts: &mut dyn Iterator<Item = &[u8]>,
+        _end_entity: &rustls::pki_types::CertificateDer<'_>,
+        _intermediates: &[rustls::pki_types::CertificateDer<'_>],
+        _server_name: &rustls::pki_types::ServerName<'_>,
         _ocsp_response: &[u8],
-        _now: std::time::SystemTime,
-    ) -> Result<rustls::client::ServerCertVerified, rustls::Error> {
-        Ok(rustls::client::ServerCertVerified::assertion())
+        _now: rustls::pki_types::UnixTime,
+    ) -> Result<rustls::client::danger::ServerCertVerified, rustls::Error> {
+        Ok(rustls::client::danger::ServerCertVerified::assertion())
+    }
+
+    fn verify_tls12_signature(
+        &self,
+        message: &[u8],
+        cert: &rustls::pki_types::CertificateDer<'_>,
+        dss: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        rustls::crypto::verify_tls12_signature(message, cert, dss, &self.0.signature_verification_algorithms)
+    }
+
+    fn verify_tls13_signature(
+        &self,
+        message: &[u8],
+        cert: &rustls::pki_types::CertificateDer<'_>,
+        dss: &rustls::DigitallySignedStruct,
+    ) -> Result<rustls::client::danger::HandshakeSignatureValid, rustls::Error> {
+        rustls::crypto::verify_tls13_signature(message, cert, dss, &self.0.signature_verification_algorithms)
+    }
+
+    fn supported_verify_schemes(&self) -> Vec<rustls::SignatureScheme> {
+        self.0.signature_verification_algorithms.supported_schemes()
     }
 }
 
 pub(crate) fn insecure_tls_config() -> rustls::ClientConfig {
-    rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_custom_certificate_verifier(std::sync::Arc::new(NoCertVerification))
+    let provider = rustls::crypto::ring::default_provider();
+    rustls::ClientConfig::builder_with_provider(std::sync::Arc::new(provider.clone()))
+        .with_safe_default_protocol_versions()
+        .expect("rustls default protocol versions are always valid")
+        .dangerous()
+        .with_custom_certificate_verifier(std::sync::Arc::new(NoCertVerification(provider)))
         .with_no_client_auth()
 }
 
