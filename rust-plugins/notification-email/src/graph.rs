@@ -39,10 +39,10 @@ pub fn fetch(url: &str, timeout_secs: u64) -> GraphOutcome {
     if bytes.starts_with(b"OK") {
         return GraphOutcome::NoGraph;
     }
-    if let Ok(text) = std::str::from_utf8(&bytes) {
-        if text.contains("Access denied") || text.contains("Resource not found") || text.contains("Invalid token") {
-            return GraphOutcome::Error(text.to_string());
-        }
+    if let Ok(text) = std::str::from_utf8(&bytes)
+        && (text.contains("Access denied") || text.contains("Resource not found") || text.contains("Invalid token"))
+    {
+        return GraphOutcome::Error(text.to_string());
     }
 
     GraphOutcome::Found(bytes)
