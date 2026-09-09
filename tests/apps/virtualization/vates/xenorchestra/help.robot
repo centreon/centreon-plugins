@@ -35,4 +35,4 @@ Standard ${tc} - ${mode}
     ...    Mode:\n.*Storage repository status
     ...    3
     ...    list-storage-repository
-    ...    Mode:\n.*storage repositories.*for host\n.*discovery
+    ...    Mode:\n.*storage repositories.*for service\n.*discovery
