@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::hardware;
+package network::extreme::standard::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -74,7 +74,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::extreme::snmp::mode::components';
+    $self->{components_path} = 'network::extreme::standard::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'slot', 'temperature', 'poe'];
 }
 

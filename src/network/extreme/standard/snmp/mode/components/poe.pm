@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::components::poe;
+package network::extreme::standard::snmp::mode::components::poe;
 
 use strict;
 use warnings;
