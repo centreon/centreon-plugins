@@ -37,6 +37,7 @@ pub enum LexicalError {
     /// A character that cannot be tokenized was encountered.
     NotPossible,
     /// A brace was not properly matched (currently unused).
+    #[allow(dead_code)]
     UnmatchedBrace,
 }
 
@@ -169,10 +170,14 @@ impl<'input> Iterator for Lexer<'input> {
             }
         }
         // No more characters to process
-        return None;
+        None
     }
 }
 
+// These imports are used only inside #[test] fn bodies, which rustc strips
+// from a plain (non-test) build -- this module lacks #[cfg(test)] (see PR
+// #6410), so a plain `cargo clippy` sees them as unused.
+#[allow(unused_imports, dead_code)]
 mod test {
     use crate::compute::lexer::{Lexer, Tok};
 

@@ -17,14 +17,9 @@ extern crate rasn_snmp;
 use crate::Error::InvalidOidParser;
 use crate::compute::ast::ExprResult;
 use crate::generic::error::Error::EmptyResponse;
-use crate::generic::error::Error::FailedToConnectToHost;
-use crate::generic::error::Error::InvalidSnmpPduDecode;
-use crate::generic::error::Error::InvalidSnmpPduEncode;
-use crate::generic::error::Error::InvalidSnmpType;
 use crate::generic::error::Error::InvalidSnmpValue;
 use crate::generic::error::Result;
-use log::info;
-use log::{trace, warn};
+use log::warn;
 use rasn::types::ObjectIdentifier;
 use rasn_smi::v2::{ApplicationSyntax, ObjectSyntax, SimpleSyntax};
 use rasn_snmp::v2::BulkPdu;
@@ -36,7 +31,11 @@ use rasn_snmp::v2c::Message;
 use rasn_snmp::v3::VarBindValue::EndOfMibView;
 use std::collections::HashMap;
 use std::convert::TryInto;
-use std::net::UdpSocket;
+// FailedToConnectToHost/InvalidSnmpPduDecode/InvalidSnmpPduEncode/info/trace/
+// UdpSocket are used only by the #[cfg(not(test))] variant of
+// `get_data_from_udp` below, so a `cargo test`/`--tests` analysis pass sees
+// them as unused; keep them local to that function instead of importing
+// them crate-wide, so nothing needs blanket-allowing.
 
 /// The SNMP value type decoded from a single OID's response.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -151,9 +150,7 @@ pub struct SnmpResult {
 ///
 /// # Returns
 /// An Result<[`SnmpResult`]> containing the retrieved values indexed by name, or an error
-///
-
-pub fn snmp_bulk_get<'a>(
+pub fn snmp_bulk_get(
     target: &str,
     _version: &str,
     community: &str,
@@ -196,7 +193,7 @@ pub fn snmp_bulk_get<'a>(
     let message: Message<GetBulkRequest> = Message {
         version: 1.into(),
         community: community.to_string().as_bytes().into(),
-        data: get_request.into(),
+        data: get_request,
     };
     let decoded = get_data_from_udp(target, message)?;
 
@@ -219,7 +216,7 @@ pub fn snmp_bulk_get<'a>(
 ///
 /// # Returns
 /// An [`SnmpResult`] containing all values under the specified OID
-pub fn snmp_bulk_walk<'a>(
+pub fn snmp_bulk_walk(
     target: &str,
     _version: &str,
     community: &str,
@@ -251,11 +248,11 @@ pub fn snmp_bulk_walk<'a>(
         let message: Message<GetBulkRequest> = Message {
             version: 1.into(),
             community: community.to_string().as_bytes().into(),
-            data: get_request.into(),
+            data: get_request,
         };
 
         let decoded = get_data_from_udp(target, message)?;
-        let completed = retval.build_response(decoded, &oid, snmp_name, true)?;
+        let completed = retval.build_response(decoded, oid, snmp_name, true)?;
 
         if completed {
             break;
@@ -282,13 +279,13 @@ pub fn snmp_bulk_walk<'a>(
 ///
 /// # Returns
 /// An [`SnmpResult`] with values organized by label as separate vectors
-pub fn snmp_bulk_walk_with_labels<'a>(
+pub fn snmp_bulk_walk_with_labels(
     target: &str,
     _version: &str,
     community: &str,
     oid: &str,
     snmp_name: &str,
-    labels: &'a HashMap<String, String>,
+    labels: &HashMap<String, String>,
 ) -> Result<SnmpResult> {
     let oid_init = oid_to_vec(oid)?;
     let mut oid_tab = &oid_init;
@@ -316,14 +313,13 @@ pub fn snmp_bulk_walk_with_labels<'a>(
         let message: Message<GetBulkRequest> = Message {
             version: 1.into(),
             community: community.to_string().as_bytes().into(),
-            data: get_request.into(),
+            data: get_request,
         };
 
         // Send the message through an UDP socket
         let decoded = get_data_from_udp(target, message)?;
 
-        let completed =
-            retval.build_response_with_labels(decoded, &oid, snmp_name, labels, true)?;
+        let completed = retval.build_response_with_labels(decoded, oid, snmp_name, labels, true)?;
         if completed {
             break;
         }
@@ -417,7 +413,7 @@ impl SnmpResult {
                 };
 
                 for key in key_for(idx, &name) {
-                    _ = self.store(key, typ.clone())?;
+                    self.store(key, typ.clone())?;
                 }
             }
         }
@@ -427,12 +423,12 @@ impl SnmpResult {
     /// Parses an SNMP response and organizes values by label: the last segment
     /// of each OID identifies the column, and matching values are stored under
     /// `{snmp_name}.{label}`.
-    fn build_response_with_labels<'a>(
+    fn build_response_with_labels(
         &mut self,
         decoded: Message<Pdus>,
         oid: &str,
         snmp_name: &str,
-        labels: &'a HashMap<String, String>,
+        labels: &HashMap<String, String>,
         walk: bool,
     ) -> Result<bool> {
         self.process_response(decoded, oid, walk, |_idx, name| {
@@ -447,11 +443,11 @@ impl SnmpResult {
 
     /// Parses an SNMP response from a get request, storing each variable under
     /// its corresponding entry in `names`.
-    fn build_response_with_names<'a>(
+    fn build_response_with_names(
         &mut self,
         decoded: Message<Pdus>,
         oid: &str,
-        names: &Vec<&str>,
+        names: &[&str],
         walk: bool,
     ) -> Result<bool> {
         self.process_response(decoded, oid, walk, |idx, _name| {
@@ -461,7 +457,7 @@ impl SnmpResult {
 
     /// Parses an SNMP response and stores every variable's value under a single
     /// logical name (used for plain walks).
-    fn build_response<'a>(
+    fn build_response(
         &mut self,
         decoded: Message<Pdus>,
         oid: &str,
@@ -496,7 +492,7 @@ fn oid_to_vec(oid: &str) -> Result<Vec<u32>> {
             oid: oid.to_string(),
         })?);
     }
-    return Ok(oid_u32);
+    Ok(oid_u32)
 }
 
 /// Create an udp socket and send a snmp request on it, returning the response.
@@ -518,6 +514,12 @@ fn get_data_from_udp(_target: &str, message: Message<GetBulkRequest>) -> Result<
 }
 #[cfg(not(test))]
 fn get_data_from_udp(target: &str, message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
+    use crate::generic::error::Error::FailedToConnectToHost;
+    use crate::generic::error::Error::InvalidSnmpPduDecode;
+    use crate::generic::error::Error::InvalidSnmpPduEncode;
+    use log::{info, trace};
+    use std::net::UdpSocket;
+
     let socket = UdpSocket::bind("0.0.0.0:0")?;
     socket.connect(target)?;
     let duration = std::time::Duration::from_millis(1000);
@@ -871,7 +873,7 @@ mod tests {
 
     #[test]
     fn value_from_varbind_decodes_every_application_wide_type() {
-        let ip = IpAddress(FixedOctetString::try_from([192u8, 168, 1, 1]).unwrap());
+        let ip = IpAddress(FixedOctetString::from([192u8, 168, 1, 1]));
         let cases = vec![
             (
                 ApplicationSyntax::Address(ip),
@@ -1000,7 +1002,7 @@ mod tests {
         let decoded = response_message(vec![("1.3.6.1.2.1.1.3.0", 1), ("1.3.6.1.2.1.1.9.0", 2)]);
 
         let completed = result
-            .build_response_with_names(decoded, "", &vec!["uptime", "count"], false)
+            .build_response_with_names(decoded, "", &["uptime", "count"], false)
             .unwrap();
 
         assert!(!completed);
