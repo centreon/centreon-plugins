@@ -32,7 +32,7 @@ Pod Usage ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    OK: All pods usage are ok | 'default/cache-1#pod.cpu.usage.millicores'=10;;;0; 'default/cache-1#pod.memory.usage.bytes'=16777216B;;;0; 'default/multi-1#pod.cpu.usage.millicores'=25;;;0; 'default/multi-1#pod.cpu.usage.percentage'=12.50%;;;0;100 'default/multi-1#pod.memory.usage.bytes'=26214400B;;;0; 'default/multi-1#pod.memory.usage.percentage'=12.50%;;;0;100 'default/web-1#pod.cpu.usage.millicores'=50;;;0; 'default/web-1#pod.cpu.usage.percentage'=20.00%;;;0;100 'default/web-1#pod.memory.usage.bytes'=33554432B;;;0; 'default/web-1#pod.memory.usage.percentage'=50.00%;;;0;100
+    ...    OK: All pods usage are ok | 'default/cache-1#pod.cpu.usage.millicores'=10;;;0; 'default/cache-1#pod.memory.usage.bytes'=16777216B;;;0; 'default/idle-1#pod.cpu.usage.millicores'=0;;;0; 'default/idle-1#pod.cpu.usage.percentage'=0.00%;;;0;100 'default/idle-1#pod.memory.usage.bytes'=0B;;;0; 'default/idle-1#pod.memory.usage.percentage'=0.00%;;;0;100 'default/multi-1#pod.cpu.usage.millicores'=25;;;0; 'default/multi-1#pod.cpu.usage.percentage'=12.50%;;;0;100 'default/multi-1#pod.memory.usage.bytes'=26214400B;;;0; 'default/multi-1#pod.memory.usage.percentage'=12.50%;;;0;100 'default/web-1#pod.cpu.usage.millicores'=50;;;0; 'default/web-1#pod.cpu.usage.percentage'=20.00%;;;0;100 'default/web-1#pod.memory.usage.bytes'=33554432B;;;0; 'default/web-1#pod.memory.usage.percentage'=50.00%;;;0;100
     ...    2
     ...    --filter-name='multi-1' --filter-container-name='app'
     ...    OK: Pod 'default/multi-1' CPU usage: 20 millicores, CPU usage: 20.00% of requests, Memory usage: 20.00 MB, Memory usage: 20.00% of requests | 'default/multi-1#pod.cpu.usage.millicores'=20;;;0; 'default/multi-1#pod.cpu.usage.percentage'=20.00%;;;0;100 'default/multi-1#pod.memory.usage.bytes'=20971520B;;;0; 'default/multi-1#pod.memory.usage.percentage'=20.00%;;;0;100
@@ -45,3 +45,9 @@ Pod Usage ${tc}
     ...    5
     ...    --filter-name='web-1' --critical-pod-memory-percentage=40
     ...    CRITICAL: Pod 'default/web-1' Memory usage: 50.00% of requests | 'default/web-1#pod.cpu.usage.millicores'=50;;;0; 'default/web-1#pod.cpu.usage.percentage'=20.00%;;;0;100 'default/web-1#pod.memory.usage.bytes'=33554432B;;;0; 'default/web-1#pod.memory.usage.percentage'=50.00%;;0:40;0;100
+    ...    6
+    ...    --filter-name='idle-1' --warning-pod-cpu-percentage=1
+    ...    OK: Pod 'default/idle-1' CPU usage: 0 millicores, CPU usage: 0.00% of requests, Memory usage: 0.00 B, Memory usage: 0.00% of requests | 'default/idle-1#pod.cpu.usage.millicores'=0;;;0; 'default/idle-1#pod.cpu.usage.percentage'=0.00%;0:1;;0;100 'default/idle-1#pod.memory.usage.bytes'=0B;;;0; 'default/idle-1#pod.memory.usage.percentage'=0.00%;;;0;100
+    ...    7
+    ...    --command-options='--simulate-timeout' --timeout=1
+    ...    UNKNOWN: Command too long to execute (timeout)...
