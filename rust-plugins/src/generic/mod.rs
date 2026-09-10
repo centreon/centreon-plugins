@@ -12,8 +12,8 @@ extern crate serde_json;
 pub mod error;
 
 use self::error::Result;
-use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
-use crate::output::{Output, OutputFormatter};
+use crate::compute::{Compute, Metric, Parser, ast::ExprResult, threshold::Threshold};
+use crate::output::{Output, OutputFormatter, float_string};
 use crate::snmp::SnmpResult;
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
@@ -36,6 +36,49 @@ pub struct Perfdata<'p> {
     pub warning: Option<&'p str>,
     pub critical: Option<&'p str>,
     pub status: Option<Status>,
+    /// Human-readable label mapped from the raw value (`value-map` in the
+    /// JSON definition). Detail messages show it instead of the number.
+    pub label: Option<String>,
+    /// Whether this entry is emitted in the perfdata section
+    /// (`perfdata` field in the JSON definition, default `true`).
+    /// Detail messages are unaffected.
+    pub perfdata: bool,
+}
+
+/// Maps a raw numeric value to its human-readable label using the metric's
+/// `value-map`, falling back to `value-map-default` for unmapped values.
+///
+/// Matching uses **exact integer semantics**: only a whole value matches its
+/// decimal key (`2.0` matches `"2"`, `1.996` does not) — SNMP enumerations
+/// are always integers, and a non-integer value silently rounding onto a
+/// status label would hide a data problem. Non-integer or unmapped values
+/// fall back to `value-map-default`.
+///
+/// Returns `None` when the metric has no `value-map`, or when the value is
+/// unmapped and no default is configured (the caller then displays the raw
+/// number).
+///
+/// Labels are sanitized for output safety (see [`sanitize_label`]).
+fn map_value(value: f64, metric: &Metric) -> Option<String> {
+    let map = metric.value_map.as_ref()?;
+    let mapped = if value.is_finite() && value.fract() == 0.0 {
+        map.get(&format!("{}", value as i64))
+    } else {
+        None
+    };
+    mapped
+        .or(metric.value_map_default.as_ref())
+        .map(|label| sanitize_label(label))
+}
+
+/// Replaces characters that would corrupt the Nagios output format with
+/// spaces: `|` starts the perfdata section, control characters (newlines,
+/// tabs, ...) break line-based parsing on the poller side.
+fn sanitize_label(label: &str) -> String {
+    label
+        .chars()
+        .map(|c| if c == '|' || c.is_control() { ' ' } else { c })
+        .collect()
 }
 
 /// Nagios-compatible plugin exit status.
@@ -477,6 +520,8 @@ impl Command {
                             warning: w,
                             critical: c,
                             status: Some(current_status),
+                            label: map_value(*item, metric),
+                            perfdata: metric.perfdata,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -523,11 +568,31 @@ impl Command {
                         warning: w,
                         critical: c,
                         status: Some(current_status),
+                        label: map_value(*s, metric),
+                        perfdata: metric.perfdata,
                     };
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
                 }
                 _ => panic!("Aggregation must be applied to a vector"),
+            }
+            // Expose the mapped labels to output/prefix templates as
+            // `{metrics.<name>.label}` (aligned with the metric values).
+            if metric.value_map.is_some() {
+                let labels = match &value {
+                    ExprResult::Vector(v) => ExprResult::StrVector(
+                        v.iter()
+                            .map(|x| map_value(*x, metric).unwrap_or_else(|| float_string(x)))
+                            .collect(),
+                    ),
+                    ExprResult::Number(n) => {
+                        ExprResult::Str(map_value(*n, metric).unwrap_or_else(|| float_string(n)))
+                    }
+                    _ => ExprResult::Empty,
+                };
+                let label_key = format!("metrics.{}.label", metric.name);
+                debug!("New ID '{}' with content: {:?}", label_key, labels);
+                my_res.items.insert(label_key, labels);
             }
             let key = format!("metrics.{}", metric.name);
             debug!("New ID '{}' with content: {:?}", key, value);
@@ -635,6 +700,8 @@ impl Command {
                                 warning: w,
                                 critical: c,
                                 status: Some(current_status),
+                                label: map_value(*item, metric),
+                                perfdata: metric.perfdata,
                             };
                             trace!("New metric '{}' with value {:?}", m.name, m.value);
                             metrics.push(m);
@@ -661,6 +728,8 @@ impl Command {
                             warning: w,
                             critical: c,
                             status: Some(current_status),
+                            label: map_value(*s, metric),
+                            perfdata: metric.perfdata,
                         };
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
@@ -748,5 +817,55 @@ mod tests {
             err,
             error::Error::InvalidStatus { ref value } if value == "pending"
         ));
+    }
+
+    fn metric_from(json: &str) -> Metric {
+        serde_json::from_str(json).expect("valid metric JSON")
+    }
+
+    #[test]
+    fn value_map_deserializes_maps_and_falls_back_to_default() {
+        let m = metric_from(
+            r#"{"name":"status","value":"{x}","value-map":{"1":"up","2":"down"},"value-map-default":"unmapped","perfdata":false}"#,
+        );
+        assert!(!m.perfdata);
+        assert_eq!(map_value(1.0, &m).as_deref(), Some("up"));
+        assert_eq!(map_value(2.0, &m).as_deref(), Some("down"));
+        assert_eq!(map_value(7.0, &m).as_deref(), Some("unmapped"));
+    }
+
+    #[test]
+    fn no_value_map_yields_none_and_perfdata_defaults_to_true() {
+        let m = metric_from(r#"{"name":"cpu","value":"{x}"}"#);
+        assert!(m.perfdata);
+        assert_eq!(map_value(1.0, &m), None);
+    }
+
+    #[test]
+    fn unmapped_value_without_default_yields_none() {
+        let m = metric_from(r#"{"name":"status","value":"{x}","value-map":{"1":"up"}}"#);
+        assert_eq!(map_value(3.0, &m), None);
+    }
+
+    #[test]
+    fn non_integer_values_never_match_a_key() {
+        // Exact integer semantics: 1.996 must NOT round onto the "2" key.
+        let m = metric_from(r#"{"name":"status","value":"{x}","value-map":{"2":"down"}}"#);
+        assert_eq!(map_value(1.996, &m), None);
+        assert_eq!(map_value(2.0, &m).as_deref(), Some("down"));
+
+        let m = metric_from(
+            r#"{"name":"status","value":"{x}","value-map":{"2":"down"},"value-map-default":"unmapped"}"#,
+        );
+        assert_eq!(map_value(1.996, &m).as_deref(), Some("unmapped"));
+        assert_eq!(map_value(f64::NAN, &m).as_deref(), Some("unmapped"));
+    }
+
+    #[test]
+    fn labels_are_sanitized_for_output_safety() {
+        // `|` starts the perfdata section and control characters break
+        // line-based parsing: both are replaced with spaces at display time.
+        let m = metric_from(r#"{"name":"status","value":"{x}","value-map":{"1":"up|down\nbad"}}"#);
+        assert_eq!(map_value(1.0, &m).as_deref(), Some("up down bad"));
     }
 }

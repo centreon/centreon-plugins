@@ -95,6 +95,19 @@ impl Output {
     }
 }
 
+/// Joins the human-readable output text with the perfdata section.
+///
+/// The ` | ` separator is only emitted when there is perfdata to show —
+/// a status-only plugin (all metrics flagged `perfdata: false`) must not
+/// end with a dangling pipe.
+fn join_output(text: &str, metrics: &str) -> String {
+    if metrics.is_empty() {
+        text.trim_end().to_string()
+    } else {
+        format!("{} | {}", text, metrics)
+    }
+}
+
 /// Formats plugin results into Nagios-compatible output string.
 pub struct OutputFormatter<'a> {
     status: Status,
@@ -124,6 +137,9 @@ impl<'a> OutputFormatter<'a> {
         let metrics = self
             .metrics
             .iter()
+            // Metrics flagged `perfdata: false` (e.g. mapped status metrics)
+            // are excluded from perfdata but still drive detail messages.
+            .filter(|m| m.perfdata)
             .map(|m| {
                 format!(
                     "{}={}{};{};{};{};{}",
@@ -148,7 +164,7 @@ impl<'a> OutputFormatter<'a> {
             Status::Ok => {
                 if self.output_formatter.detail_ok {
                     let detail = self.build_detail(&self.output_formatter.ok);
-                    return format!("{} | {}", detail, metrics);
+                    return join_output(&detail, &metrics);
                 } else {
                     let parser = Parser::new(&self.collect, false);
                     let res = parser.eval_str(&self.output_formatter.ok);
@@ -179,31 +195,31 @@ impl<'a> OutputFormatter<'a> {
                             self.output_formatter.ok.clone()
                         }
                     };
-                    return format!("{} | {}", output, metrics);
+                    return join_output(&output, &metrics);
                 }
             }
             Status::Warning => {
                 if self.output_formatter.detail_warning {
                     let detail = self.build_detail(&self.output_formatter.warning);
-                    return format!("{} | {}", detail, metrics);
+                    return join_output(&detail, &metrics);
                 } else {
-                    return format!("{} | {}", self.output_formatter.warning, metrics);
+                    return join_output(&self.output_formatter.warning, &metrics);
                 }
             }
             Status::Critical => {
                 if self.output_formatter.detail_critical {
                     let detail = self.build_detail(&self.output_formatter.critical);
-                    return format!("{} | {}", detail, metrics);
+                    return join_output(&detail, &metrics);
                 } else {
-                    return format!("{} | {}", self.output_formatter.critical, metrics);
+                    return join_output(&self.output_formatter.critical, &metrics);
                 }
             }
             Status::Unknown => {
                 if self.output_formatter.detail_unknown {
                     let detail = self.build_detail(&self.output_formatter.unknown);
-                    return format!("{} | {}", detail, metrics);
+                    return join_output(&detail, &metrics);
                 } else {
-                    return format!("{} | {}", self.output_formatter.unknown, metrics);
+                    return join_output(&self.output_formatter.unknown, &metrics);
                 }
             }
         }
@@ -211,17 +227,19 @@ impl<'a> OutputFormatter<'a> {
 
     /// Builds a detailed message string including the prefix and metrics that
     /// triggered the current status.
+    ///
+    /// When a metric carries a mapped label (`value-map`), the label is shown
+    /// instead of the raw number (e.g. `status is down`, not `status is 2`).
     fn build_detail(&self, prefix: &str) -> String {
         let mut v = Vec::new();
         for m in self.metrics.iter() {
             if let Some(status) = m.status {
                 if status.is_worse_than(self.status) {
-                    v.push(std::format!(
-                        "{} is {}{}",
-                        m.name,
-                        float_string(&m.value),
-                        m.uom
-                    ));
+                    let displayed = match &m.label {
+                        Some(label) => label.clone(),
+                        None => format!("{}{}", float_string(&m.value), m.uom),
+                    };
+                    v.push(std::format!("{} is {}", m.name, displayed));
                 }
             }
         }
@@ -274,5 +292,71 @@ mod test {
 
         assert_eq!(float_string(&f), "0");
         assert_eq!(float_string(&9999999.999), "10000000");
+    }
+}
+
+#[cfg(test)]
+mod value_map_tests {
+    use super::*;
+
+    fn perfdata<'p>(
+        name: &str,
+        value: f64,
+        status: Status,
+        label: Option<String>,
+        perfdata: bool,
+    ) -> Perfdata<'p> {
+        Perfdata {
+            name: name.to_string(),
+            value,
+            uom: "",
+            min: None,
+            max: None,
+            warning: None,
+            critical: None,
+            status: Some(status),
+            label,
+            perfdata,
+        }
+    }
+
+    #[test]
+    fn detail_shows_mapped_label_and_perfdata_flag_hides_metric() {
+        let collect: Vec<SnmpResult> = vec![];
+        let output = Output::new();
+        let metrics = vec![
+            perfdata(
+                "'eth0#interface.status'",
+                2.0,
+                Status::Critical,
+                Some("down".to_string()),
+                false,
+            ),
+            perfdata("cpu", 42.0, Status::Ok, None, true),
+        ];
+        let formatter = OutputFormatter::new(Status::Critical, &collect, &metrics, &output);
+        let s = formatter.to_string();
+        // The label replaces the raw number in the detail message...
+        assert!(s.contains("'eth0#interface.status' is down"), "got: {}", s);
+        // ...and the status metric is excluded from the perfdata section,
+        // while the regular metric remains.
+        assert!(!s.contains("interface.status'=2"), "got: {}", s);
+        assert!(s.contains("cpu=42"), "got: {}", s);
+    }
+
+    #[test]
+    fn empty_perfdata_omits_the_pipe_separator() {
+        let collect: Vec<SnmpResult> = vec![];
+        let output = Output::new();
+        let metrics = vec![perfdata(
+            "'eth0#interface.status'",
+            1.0,
+            Status::Ok,
+            Some("up".to_string()),
+            false,
+        )];
+        let formatter = OutputFormatter::new(Status::Ok, &collect, &metrics, &output);
+        let s = formatter.to_string();
+        assert!(!s.contains('|'), "no dangling pipe expected, got: {}", s);
     }
 }

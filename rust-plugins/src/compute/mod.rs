@@ -49,6 +49,27 @@ pub struct Metric {
     pub warning: Option<String>,
     /// Critical threshold in Nagios format.
     pub critical: Option<String>,
+    /// Optional mapping from raw numeric values to human-readable labels
+    /// (e.g. `{"1": "up", "2": "down"}` for `ifOperStatus`). Keys are the
+    /// decimal string form of the value. When set, detail messages show the
+    /// label instead of the number, and the mapped labels are exposed to
+    /// output/prefix templates as `{metrics.<name>.label}`.
+    /// Thresholds keep operating on the raw numeric value (e.g. `"1:1"`
+    /// alerts whenever the status is not `up`).
+    #[serde(rename = "value-map")]
+    pub value_map: Option<std::collections::HashMap<String, String>>,
+    /// Label used when a value is absent from `value_map`
+    /// (default: the raw number is displayed).
+    #[serde(rename = "value-map-default")]
+    pub value_map_default: Option<String>,
+    /// Whether this metric appears in perfdata (default: `true`).
+    /// Status-like metrics mapped to labels usually don't belong in perfdata.
+    #[serde(default = "default_true")]
+    pub perfdata: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 fn empty_string() -> String {
