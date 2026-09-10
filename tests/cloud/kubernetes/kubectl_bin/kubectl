@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Test-only trigger: any invocation carrying --simulate-timeout hangs past
+# the plugin's configured --timeout, to exercise its timeout handling.
+case "$*" in
+    *--simulate-timeout*)
+        sleep 5
+        exit 0
+        ;;
+esac
+
 if [ "$1" = "get" ] && [ "$2" = "nodes" ]; then
 cat<<EOF
 {
@@ -543,6 +552,33 @@ cat<<EOF
             "status": {
                 "phase": "Pending"
             }
+        },
+        {
+            "metadata": {
+                "name": "idle-1",
+                "namespace": "default",
+                "uid": "uuid-idle-1",
+                "creationTimestamp": "2026-06-20T10:00:00Z"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "idle",
+                        "image": "busybox:1.36",
+                        "resources": {
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "64Mi"
+                            }
+                        }
+                    }
+                ],
+                "nodeName": "test-node-1",
+                "restartPolicy": "Always"
+            },
+            "status": {
+                "phase": "Running"
+            }
         }
     ],
     "kind": "List",
@@ -575,6 +611,23 @@ cat<<'EOF'
           "usage": {
             "cpu": "50m",
             "memory": "32Mi"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "idle-1",
+        "namespace": "default"
+      },
+      "timestamp": "2026-06-20T10:05:00Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "idle",
+          "usage": {
+            "cpu": "0m",
+            "memory": "0Mi"
           }
         }
       ]
