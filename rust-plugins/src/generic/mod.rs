@@ -15,7 +15,7 @@ use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
 use crate::snmp::SnmpResult;
-use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels, SnmpConfig};
+use crate::snmp::{SnmpConfig, snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
@@ -304,9 +304,7 @@ impl Command {
             match s.query {
                 QueryType::Walk => {
                     if let Some(lab) = &s.labels {
-                        let r = snmp_bulk_walk_with_labels(
-                            config, deadline, &s.oid, &s.name, lab,
-                        )?;
+                        let r = snmp_bulk_walk_with_labels(config, deadline, &s.oid, &s.name, lab)?;
                         if !r.items.is_empty() {
                             collect.push(r);
                         }
@@ -325,7 +323,7 @@ impl Command {
         }
 
         if !to_get.is_empty() {
-            let r = snmp_bulk_get(config, deadline, 1, 1, &to_get, &get_name);
+            let r = snmp_bulk_get(config, deadline, &to_get, &get_name);
             collect.push(r?);
         }
         if collect.is_empty() {

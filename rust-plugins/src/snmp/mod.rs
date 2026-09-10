@@ -33,6 +33,8 @@ use rasn::types::ObjectIdentifier;
 use rasn_smi::v2::{ApplicationSyntax, ObjectSyntax, SimpleSyntax};
 use rasn_snmp::v2::BulkPdu;
 use rasn_snmp::v2::GetBulkRequest;
+use rasn_snmp::v2::GetRequest;
+use rasn_snmp::v2::Pdu;
 use rasn_snmp::v2::Pdus;
 use rasn_snmp::v2::VarBind;
 use rasn_snmp::v2::VarBindValue;
@@ -259,34 +261,35 @@ pub struct SnmpResult {
     processed: usize,
 }
 
-/// Retrieves values for multiple OIDs in a single bulk request.
+/// Retrieves the exact values of multiple OIDs in a single `GetRequest`.
+///
+/// A plain `GetRequest` — not `GetBulkRequest` — is required here: GetBulk
+/// (even with `max-repetitions=1`) always answers with the value at the
+/// *next* OID in the tree, never the requested one. That shift is silently
+/// masked for a `x.0`-style scalar (the next leaf after the parent node,
+/// with the trailing `0` stripped, IS `x.0`), which is how this function
+/// worked before — but it silently returns the WRONG value for any
+/// non-`.0` OID, such as a specific row of a multi-row table (e.g.
+/// `laLoad.1`/`.2`/`.3`), which never triggered the shift-by-one column
+/// this once relied on.
 ///
 /// # Arguments
 /// * `config` - Connection parameters (target, community, timeouts, retries)
 /// * `deadline` - Global deadline of the whole collection
-/// * `non_repeaters` - Number of non-repeating OIDs (typically 0 or 1)
-/// * `max_repetitions` - Maximum repetitions per OID
 /// * `oid` - Vector of OID strings to query
 /// * `names` - Vector of logical names (one per OID)
 ///
 /// # Returns
 /// An Result<[`SnmpResult`]> containing the retrieved values indexed by name, or an error
-///
-
 pub fn snmp_bulk_get<'a>(
     config: &SnmpConfig,
     deadline: Instant,
-    non_repeaters: u32,
-    max_repetitions: u32,
     oid_list: &Vec<&str>,
     names: &Vec<&str>,
 ) -> Result<SnmpResult> {
     let mut oids_tab: Vec<Vec<u32>> = vec![];
     for oid_str in oid_list {
-        let mut oid = oid_to_vec(oid_str)?;
-        // As we only use bulk requests, we have to skip the trailing 0 if it exists or the first OID we are trying to get will never be requested
-        let _ = oid.pop_if(|val| *val == 0);
-        oids_tab.push(oid);
+        oids_tab.push(oid_to_vec(oid_str)?);
     }
 
     let mut retval = SnmpResult::new(HashMap::new());
@@ -300,13 +303,16 @@ pub fn snmp_bulk_get<'a>(
         })
         .collect::<Vec<VarBind>>();
 
-    let message = build_bulk_message(
-        config,
-        request_id,
-        variable_bindings,
-        non_repeaters,
-        max_repetitions,
-    );
+    let message = Message {
+        version: 1.into(),
+        community: config.community.as_bytes().into(),
+        data: Pdus::GetRequest(GetRequest(Pdu {
+            request_id,
+            error_status: 0,
+            error_index: 0,
+            variable_bindings,
+        })),
+    };
     let decoded = send_request(config, deadline, request_id, &message)?;
 
     let _completed = retval.build_response_with_names(decoded, "", names, false)?;
@@ -400,8 +406,7 @@ pub fn snmp_bulk_walk_with_labels<'a>(
         // never be mistaken for the current one.
         request_id = request_id.wrapping_add(1);
 
-        let completed =
-            retval.build_response_with_labels(decoded, oid, snmp_name, labels, true)?;
+        let completed = retval.build_response_with_labels(decoded, oid, snmp_name, labels, true)?;
         if completed {
             break;
         }
@@ -612,7 +617,7 @@ fn build_bulk_message(
     variable_bindings: Vec<VarBind>,
     non_repeaters: u32,
     max_repetitions: u32,
-) -> Message<GetBulkRequest> {
+) -> Message<Pdus> {
     let pdu = BulkPdu {
         request_id,
         variable_bindings,
@@ -622,7 +627,7 @@ fn build_bulk_message(
     Message {
         version: 1.into(),
         community: config.community.as_bytes().into(),
-        data: GetBulkRequest(pdu),
+        data: Pdus::GetBulkRequest(GetBulkRequest(pdu)),
     }
 }
 
@@ -654,14 +659,15 @@ fn send_request(
     config: &SnmpConfig,
     deadline: Instant,
     request_id: i32,
-    message: &Message<GetBulkRequest>,
+    message: &Message<Pdus>,
 ) -> Result<Message<Pdus>> {
     if Instant::now() >= deadline {
         return Err(CollectTimeout {
             seconds: config.collect_timeout.as_secs(),
         });
     }
-    let decoded = tests::fake_snmp_agent(message.clone())?;
+    let encoded: Vec<u8> = rasn::der::encode(message).map_err(|_| InvalidSnmpPduEncode {})?;
+    let decoded = tests::fake_snmp_agent(&encoded)?;
     match check_response(&decoded, request_id, &config.community)? {
         ResponseCheck::Valid => Ok(decoded),
         ResponseCheck::Discard => Err(RequestTimeout {
@@ -676,7 +682,7 @@ fn send_request(
     config: &SnmpConfig,
     deadline: Instant,
     request_id: i32,
-    message: &Message<GetBulkRequest>,
+    message: &Message<Pdus>,
 ) -> Result<Message<Pdus>> {
     let encoded: Vec<u8> = rasn::der::encode(message).map_err(|_| InvalidSnmpPduEncode {})?;
     let socket = UdpSocket::bind("0.0.0.0:0")?;
@@ -772,33 +778,46 @@ mod tests {
         }
     }
 
-    /// A fake SNMP agent: given a GetBulk request, returns canned rows so
-    /// `snmp_bulk_walk`'s request/response loop can be exercised without a
-    /// real network. The scenario is picked purely from the requested OID, so
-    /// tests stay deterministic and safe to run in parallel.
-    pub(super) fn fake_snmp_agent(message: Message<GetBulkRequest>) -> Result<Message<Pdus>> {
-        let request = message.data.0;
+    /// A fake SNMP agent: decodes whatever PDU was actually sent (a plain
+    /// `GetRequest` from `snmp_bulk_get`, or a `GetBulkRequest` walk step)
+    /// and returns canned data, so both code paths can be exercised without
+    /// a real network. The scenario is picked purely from the requested
+    /// OID, so tests stay deterministic and safe to run in parallel.
+    pub(super) fn fake_snmp_agent(encoded: &[u8]) -> Result<Message<Pdus>> {
+        let message: Message<Pdus> =
+            rasn::der::decode(encoded).map_err(|e| InvalidSnmpPduDecode { err: e.to_string() })?;
+        match message.data {
+            // snmp_bulk_get: a plain Get answers each requested OID exactly,
+            // unlike a walk which always requests exactly one OID per round
+            // trip and expects the *next* one(s) in the tree.
+            Pdus::GetRequest(GetRequest(request)) => {
+                let requested_str = request.variable_bindings[0].name.to_string();
+                if requested_str.starts_with(TRANSPORT_ERROR_OID) {
+                    return Err(EmptyResponse {});
+                }
+                let oids: Vec<String> = request
+                    .variable_bindings
+                    .iter()
+                    .map(|vb| vb.name.to_string())
+                    .collect();
+                let vars = oids
+                    .iter()
+                    .enumerate()
+                    .map(|(i, oid)| (oid.as_str(), (i as i64 + 1) * 100))
+                    .collect();
+                Ok(response_message(vars))
+            }
+            Pdus::GetBulkRequest(GetBulkRequest(request)) => fake_walk_step(request),
+            _ => panic!("fake_snmp_agent: unexpected request PDU"),
+        }
+    }
+
+    /// Simulates one GetBulk walk step (see `fake_snmp_agent`'s second arm).
+    fn fake_walk_step(request: BulkPdu) -> Result<Message<Pdus>> {
         let requested_str = request.variable_bindings[0].name.to_string();
 
         if requested_str.starts_with(TRANSPORT_ERROR_OID) {
             return Err(EmptyResponse {});
-        }
-
-        // A "get" request (snmp_bulk_get) asks for several distinct,
-        // single-instance OIDs in one request, unlike a walk which always
-        // requests exactly one OID per round trip. Answer each directly.
-        if request.variable_bindings.len() > 1 {
-            let oids: Vec<String> = request
-                .variable_bindings
-                .iter()
-                .map(|vb| vb.name.to_string())
-                .collect();
-            let vars = oids
-                .iter()
-                .enumerate()
-                .map(|(i, oid)| (oid.as_str(), (i as i64 + 1) * 100))
-                .collect();
-            return Ok(response_message(vars));
         }
 
         let (table_prefix, table_len, out_of_subtree): (&str, i64, Option<(&str, i64)>) =
@@ -894,8 +913,6 @@ mod tests {
         let result = snmp_bulk_get(
             &config,
             config.deadline(),
-            2,
-            0,
             &vec!["1.3.6.1.2.1.1.3.0", "1.3.6.1.2.1.1.5.0"],
             &vec!["uptime", "name"],
         )
@@ -914,15 +931,13 @@ mod tests {
         let result = snmp_bulk_get(
             &config,
             config.deadline(),
-            1,
-            0,
             &vec![TRANSPORT_ERROR_OID],
             &vec!["x"],
         );
         assert!(result.is_err());
 
         // propagates invalid-oid errors before any network call
-        let result = snmp_bulk_get(&config, config.deadline(), 1, 0, &vec![""], &vec!["x"]);
+        let result = snmp_bulk_get(&config, config.deadline(), &vec![""], &vec!["x"]);
         assert!(result.is_err());
     }
 
@@ -933,14 +948,9 @@ mod tests {
         let mut labels = HashMap::new();
         // label contain the oid last number as key and the name of the property as value.
         labels.insert("2".to_string(), "core".to_string());
-        let result = snmp_bulk_walk_with_labels(
-            &config,
-            config.deadline(),
-            CPU_TABLE_OID,
-            "cpu",
-            &labels,
-        )
-        .unwrap();
+        let result =
+            snmp_bulk_walk_with_labels(&config, config.deadline(), CPU_TABLE_OID, "cpu", &labels)
+                .unwrap();
         match result.items.get("cpu.core").unwrap() {
             ExprResult::Vector(v) => assert_eq!(
                 v,
@@ -979,8 +989,7 @@ mod tests {
         assert!(result.is_err());
 
         // propagates invalid-oid errors before any network call
-        let result =
-            snmp_bulk_walk_with_labels(&config, config.deadline(), "", "x", &labels);
+        let result = snmp_bulk_walk_with_labels(&config, config.deadline(), "", "x", &labels);
         assert!(result.is_err());
     }
 
