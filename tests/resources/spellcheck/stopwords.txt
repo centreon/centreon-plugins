@@ -307,6 +307,7 @@ psu
 PVX
 QoS
 Qtree
+qwinsta
 queue-messages-inflighted
 quts
 raidvolume

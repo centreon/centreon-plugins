@@ -188,37 +188,46 @@ sub read_qwinsta {
     my @lines = split /\n/, $sessions;
     my $header = shift @lines;
 
-    my @position_wrap = ();
-    while ($header =~ /(\s+(\S+))/g) {
-        push @position_wrap, { begin => $-[1], word_begin => $-[2], end => $+[1], label => $2 };
-    }
+    # Try to parse columns by splitting on two or more spaces which is more
+    # robust with localized headers (multibyte chars) than byte-position parsing.
+    my @hdrs = map { my $h = $_; $h =~ s/^\s+|\s+$//g; $h } grep { $_ ne '' } split(/\s{2,}/, $header);
     my $session_data = [];
     foreach my $line (@lines) {
         $line =~ s/^>/ /;
         my $data = {};
-        for (my $pos = 0; $pos <= $#position_wrap; $pos++) {
-            my $area;
 
-            if (length($line) < $position_wrap[$pos]->{begin}) {
-                $area = '';
-            } else {
-                if ($pos + 1 <= $#position_wrap) {
-                    $area = substr($line, $position_wrap[$pos]->{begin}, ($position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin}) + ($position_wrap[$pos + 1]->{word_begin} - $position_wrap[$pos]->{end}));
-                } else {
-                    $area = substr($line, $position_wrap[$pos]->{begin});
-                }
+        my @cols = map { my $c = $_; $c =~ s/^\s+|\s+$//g; $c } grep { defined($_) && $_ ne '' } split(/\s{2,}/, $line);
+
+        # If splitting worked and headers/cols count match, map directly.
+        if (scalar(@hdrs) && scalar(@cols) && scalar(@hdrs) <= scalar(@cols)) {
+            for (my $i = 0; $i <= $#hdrs; $i++) {
+                $data->{$hdrs[$i]} = defined($cols[$i]) && $cols[$i] ne '' ? $cols[$i] : '-';
             }
-
-            $data->{$position_wrap[$pos]->{label}} = '-';
-            while ($area =~ /([^\s]+)/g) {
-                if (($-[1] >= $position_wrap[$pos]->{word_begin} - $position_wrap[$pos]->{begin} && $-[1] <= $position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin}) 
-                    ||
-                    ($+[1] >= $position_wrap[$pos]->{word_begin} - $position_wrap[$pos]->{begin} && $+[1] <= $position_wrap[$pos]->{end} - $position_wrap[$pos]->{begin})) {
-                    $data->{$position_wrap[$pos]->{label}} = $1;
-                    last;
-                }
+        } else {
+            # Fallback to previous behaviour: try to extract tokens by whitespace
+            my @tokens = grep { $_ ne '' } split(/\s+/, $line);
+            # Heuristic: find the index of the numeric ID token
+            my $id_idx = -1;
+            for (my $i = 0; $i <= $#tokens; $i++) {
+                if ($tokens[$i] =~ /^\d+$/) { $id_idx = $i; }
+            }
+            # Map tokens to common columns when possible
+            if ($id_idx >= 0) {
+                my $id = $tokens[$id_idx];
+                my $state = $tokens[$id_idx + 1] // '-';
+                my $type = $tokens[$id_idx + 2] // '-';
+                my $device = $tokens[$id_idx + 3] // '-';
+                my $username = ($id_idx - 1 >= 0) ? $tokens[$id_idx - 1] : '-';
+                my $sessionname = join(' ', @tokens[0 .. ($id_idx - ($username ne '-' ? 2 : 1))]) || '-';
+                $data->{$hdrs[0] // 'SESSIONNAME'} = $sessionname;
+                $data->{$hdrs[1] // 'USERNAME'} = $username;
+                $data->{$hdrs[2] // 'ID'} = $id;
+                $data->{$hdrs[3] // 'STATE'} = $state;
+                $data->{$hdrs[4] // 'TYPE'} = $type;
+                $data->{$hdrs[5] // 'DEVICE'} = $device;
             }
         }
+
         push @$session_data, $data;
     }
 
