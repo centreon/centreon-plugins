@@ -151,6 +151,7 @@ in-mcast
 interface-dsl-name
 InterrupibleSleep
 in-ucast
+io
 io-cards
 iops
 IpAddr
@@ -175,6 +176,7 @@ jobqueues
 Jolokia
 journalctl
 JSONPath
+k8s
 Kairos
 kccevent
 keepass
@@ -209,6 +211,7 @@ Meraki
 MIB
 Microkernel
 Mikrotik
+millicores
 milliwatt
 milliwatts
 MMC
