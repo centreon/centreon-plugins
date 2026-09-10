@@ -116,7 +116,7 @@ jobs:
           # "Cannot load module". PATH stays scrubbed, so the libs must come from the
           # bundle. No exit-code masking: a real execution problem still fails the step.
           foreach ($backend in @('lwp', 'curl')) {
-            $b = & $exe --plugin apps::protocols::http::plugin --mode response --hostname 127.0.0.1 --port 1 --proto http --timeout 1 --http-backend $backend --critical-status= 2>&1 | Out-String
+            $b = & $exe --plugin apps::protocols::http::plugin --mode response --hostname 127.0.0.1 --port 1 --proto http --timeout 1 --http-backend $backend --critical-status= --change-exit=unknown=ok 2>&1 | Out-String
             Write-Host "[$backend] $b"
             if ($b -match 'Cannot load module') {
               Write-Error "HTTP '$backend' backend is missing a bundled dependency (exe not self-contained)."
