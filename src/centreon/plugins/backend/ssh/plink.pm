@@ -106,6 +106,13 @@ sub execute {
     return ($content, $exit_code);
 }
 
+sub execute_scenario {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'Unsupported method for sshcli backend: execute_scenario');
+    $self->{output}->option_exit();
+}
+
 1;
 
 __END__
