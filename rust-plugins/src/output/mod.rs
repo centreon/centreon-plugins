@@ -6,7 +6,7 @@ use crate::compute::Parser;
 use crate::compute::ast::ExprResult;
 use crate::generic::{Perfdata, Status};
 use crate::snmp::SnmpResult;
-use log::error;
+use tracing::error;
 use serde::Deserialize;
 
 /// Configurable status messages and separators for plugin output.
