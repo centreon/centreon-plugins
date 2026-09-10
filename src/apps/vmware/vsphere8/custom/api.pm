@@ -57,6 +57,7 @@ sub new {
                 'password:s'        => { name => 'password' },
                 'vstats-interval:s' => { name => 'vstats_interval',     default => 60 },
                 'vstats-duration:s' => { name => 'vstats_duration',     default => 2764800 }, # 2764800 seconds in 32 days
+                'metrics-source:s'  => { name => 'metrics_source',       default => 'auto' },
                 'timeout:s'         => { name => 'timeout',             default => 10 }
             }
         );
@@ -67,6 +68,9 @@ sub new {
     $self->{http}            = centreon::plugins::http->new(%options, 'default_backend' => 'curl');
     $self->{token_cache}     = centreon::plugins::statefile->new(%options);
     $self->{acq_specs_cache} = centreon::plugins::statefile->new(%options);
+    $self->{vim25_cache}     = centreon::plugins::statefile->new(%options);
+    # kept to build the vim25 fallback lazily, only when a counter is actually needed
+    $self->{custom_options}  = \%options;
 
     return $self;
 }
@@ -90,6 +94,12 @@ sub check_options {
     $self->{password}        = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
     $self->{vstats_interval} = $self->{option_results}->{vstats_interval};
     $self->{vstats_duration} = $self->{option_results}->{vstats_duration};
+    $self->{metrics_source}  = $self->{option_results}->{metrics_source} // 'auto';
+
+    if ($self->{metrics_source} !~ /^(auto|vstats|vim25)$/) {
+        $self->{output}->option_exit(short_msg => "Unsupported --metrics-source '" . $self->{metrics_source}
+            . "'. Expected one of: auto, vstats, vim25.");
+    }
 
     if ($self->{hostname} eq '') {
         $self->{output}->option_exit(short_msg => "Need to specify --hostname option.");
@@ -103,6 +113,7 @@ sub check_options {
 
     $self->{token_cache}->check_options(option_results => $self->{option_results});
     $self->{acq_specs_cache}->check_options(option_results => $self->{option_results});
+    $self->{vim25_cache}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
@@ -304,6 +315,73 @@ sub get_vm_guest_identity {
     return $api_response;
 }
 
+# The vStats API (namespace com.vmware.vstats.*) was shipped as Tech Preview in vSphere 8.0
+# and has been REMOVED in vSphere 9.1 ("the vStats APIs (previously in Tech Preview) are
+# removed", VCF 9.1 Product Support Notes). On 9.1 the backend service is no longer
+# registered: /stats/acq-specs and /stats/data/dp fail the same way for GET and POST, while
+# the 9.1 API Explorer still advertises them.
+# Without this guard the response simply has no acq_specs collection, the plugin collects
+# nothing, caches that emptiness and reports "no data at the moment" instead of failing.
+sub vstats_response_is_usable {
+    my ($self, %options) = @_;
+
+    return (ref($options{response}) eq 'HASH' && ref($options{response}->{acq_specs}) eq 'ARRAY') ? 1 : 0;
+}
+
+sub vstats_unavailable_message {
+    my ($self, %options) = @_;
+
+    return "vStats API unusable on '" . $self->{hostname}
+        . "': endpoint '/api/stats/acq-specs' returned no acq_specs collection [http code: '"
+        . $self->{http}->get_code() . "']. The vStats API is Tech Preview in vSphere 8.0 to 9.0 "
+        . "and has been removed in vSphere 9.1, therefore performance counters cannot be "
+        . "collected through it. Use --metrics-source=vim25 to read them from the "
+        . "PerformanceManager SOAP API instead. Modes that do not rely on performance "
+        . "counters (status, health, count, list...) are not affected.";
+}
+
+# vim25 PerformanceManager fallback, built only when a counter is actually requested
+sub vim25 {
+    my ($self, %options) = @_;
+
+    return $self->{vim25} if (defined($self->{vim25}));
+
+    centreon::plugins::misc::mymodule_load(
+        output    => $self->{output},
+        module    => 'apps::vmware::vsphere8::custom::vim25',
+        error_msg => "Cannot load module 'apps::vmware::vsphere8::custom::vim25'."
+    );
+
+    $self->{vim25} = apps::vmware::vsphere8::custom::vim25->new(
+        %{$self->{custom_options}},
+        noptions => 1,
+        output   => $self->{output},
+        cache    => $self->{vim25_cache},
+        hostname => $self->{hostname},
+        port     => $self->{port},
+        proto    => $self->{proto},
+        username => $self->{username},
+        password => $self->{password},
+        timeout  => $self->{timeout}
+    );
+    $self->{vim25}->set_options(option_results => $self->{option_results});
+
+    return $self->{vim25};
+}
+
+# Called whenever an acquisition specification is created or extended: the list held in
+# memory no longer reflects the vCenter, and the statefile must not be refreshed from it
+# either. Without this, the cache was persisted mid-run with a partial view and every
+# later run re-created the specifications missing from that snapshot.
+sub invalidate_acq_specs {
+    my ($self, %options) = @_;
+
+    delete $self->{all_acq_specs};
+    $self->{acq_specs_stale} = 1;
+
+    return 1;
+}
+
 sub get_all_acq_specs {
     my ($self, %options) = @_;
 
@@ -311,29 +389,56 @@ sub get_all_acq_specs {
     return $self->{all_acq_specs} if ($self->{all_acq_specs} && @{$self->{all_acq_specs}});
 
     # if we can get it from the cache, we return it
-    if ($self->{acq_specs_cache}->read(
+    if (!$self->{acq_specs_stale} && $self->{acq_specs_cache}->read(
         statefile => 'vsphere8_api_acq_specs_' . $options{rsrc_id} . '_' . sha256_hex($self->{hostname} . ':' . $self->{port} . '_' . $self->{username})
     )) {
-        $self->{all_acq_specs} = $self->{acq_specs_cache}->get(name => 'acq_specs');
-        return $self->{all_acq_specs};
+        my $cached = $self->{acq_specs_cache}->get(name => 'acq_specs');
+        # An empty or malformed cached list is a cache miss, never an answer.
+        #
+        # This is what a vCenter whose vStats API has been removed left behind before
+        # this was fixed: returning it here would short-circuit the detection below and
+        # keep the plugin silent for exactly the platforms this fix targets, until
+        # someone deleted the statefile by hand. Falling through re-queries the API, so
+        # an already-affected poller heals on its very next check, with nothing to clean
+        # up manually.
+        #
+        # It is also what a healthy vCenter with no acquisition specification yet leaves
+        # behind, where re-querying picks up the specifications that were just created
+        # instead of creating them again on every run.
+        if (ref($cached) eq 'ARRAY' && @$cached) {
+            $self->{all_acq_specs} = $cached;
+            return $self->{all_acq_specs};
+        }
     }
     # Get all acq specs (first page)
     my $response =  $self->request_api(endpoint => '/stats/acq-specs') ;
+    # give up instead of collecting nothing when the vStats API is not usable;
+    # get_stats() decides whether to fall back to vim25 or to fail explicitly
+    if (!$self->vstats_response_is_usable(response => $response)) {
+        $self->{vstats_unavailable} = 1;
+        return undef;
+    }
 
     # store only acq_specs related to the considered resource
-    push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
+    my @acq_specs = grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     # If the whole acq-specs takes more than one page, the API will return a "next" value
     while ($response->{next}) {
         $response = $self->request_api(endpoint => '/stats/acq-specs', get_param => [ 'page=' . $response->{next} ] );
+        if (!$self->vstats_response_is_usable(response => $response)) {
+            $self->{vstats_unavailable} = 1;
+            return undef;
+        }
         # store only acq_specs related to the considered resource
-        push @{$self->{all_acq_specs}}, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
+        push @acq_specs, grep {$_->{resources}->[0]->{id_value} eq $options{rsrc_id}} @{$response->{acq_specs}};
     }
 
-    # store it in the cache for future runs
-    $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} });
-    # in some cases the statefile was corrupted and the plugin was stuck
-    # only return a result if it looks ok, else we store an empty array
-    $self->{all_acq_specs} = [] unless ref($self->{all_acq_specs}) eq 'ARRAY' && @{$self->{all_acq_specs}};
+    $self->{all_acq_specs} = \@acq_specs;
+    # Only a complete, non-empty list is worth caching: an empty one is deliberately
+    # ignored on read, and a list read while specifications are being created is only a
+    # partial view of the vCenter.
+    $self->{acq_specs_cache}->write(data => { updated => time(), acq_specs => $self->{all_acq_specs} })
+        if (@acq_specs && !$self->{acq_specs_stale});
+
     return $self->{all_acq_specs};
 }
 
@@ -388,6 +493,9 @@ sub create_acq_spec {
     ) or return undef;
     $self->{output}->add_option_msg(long_msg => "The counter $options{cid} was not recorded for resource $options{rsrc_id} before. It will now (creating acq_spec).");
 
+    # the stored list no longer reflects the vCenter
+    $self->invalidate_acq_specs();
+
     return 1;
 }
 
@@ -417,7 +525,7 @@ sub extend_acq_spec {
     return undef if (defined($response) && ref($response) eq 'HASH' && scalar(keys %$response) > 0);
 
     # reset stored acq_specs since it's no longer accurate
-    $self->{all_acq_specs} = [];
+    $self->invalidate_acq_specs();
 
     return 1;
 }
@@ -427,6 +535,7 @@ sub get_acq_spec {
 
     # If it is not available in cache call get_all_acq_specs()
     my $acq_specs = $self->get_all_acq_specs(%options);
+    return undef if (!defined($acq_specs));
     for my $spec (@$acq_specs) {
         # Ignore acq_specs not related to the counter_id
         next if ($options{cid} ne $spec->{counters}->{cid_mid}->{cid});
@@ -446,6 +555,9 @@ sub check_acq_spec {
     my ($self, %options) = @_;
 
     my $acq_spec = $self->get_acq_spec(%options);
+
+    # do not try to create an acq_spec on a vCenter where vStats no longer exists
+    return undef if ($self->{vstats_unavailable});
 
     if ( !defined($acq_spec) ) {
         # acq_spec not found => we need to create it
@@ -473,7 +585,14 @@ sub get_stats {
         $self->{output}->option_exit(short_msg => "get_stats method called without cid, will get all available stats for resource");
     }
 
+    # vim25 is either forced, or used as a fallback when vStats is gone (vSphere 9.1)
+    return $self->vim25()->get_perf_value(%options) if ($self->{metrics_source} eq 'vim25');
+
     if ( !$self->check_acq_spec(%options) ) {
+        if ($self->{vstats_unavailable}) {
+            return $self->vim25()->get_perf_value(%options) if ($self->{metrics_source} eq 'auto');
+            $self->{output}->option_exit(short_msg => $self->vstats_unavailable_message());
+        }
         $self->{output}->option_exit(short_msg => "get_stats method failed to check_acq_spec()");
     }
 
@@ -962,6 +1081,24 @@ Define the username for authentication.
 =item B<--password>
 
 Define the password for authentication.
+
+=item B<--metrics-source>
+
+Define where performance counters are read from (default: C<auto>).
+
+The C<vstats> source is the REST vStats API. It is available from vSphere 8.0 to 9.0
+only: it was shipped as Tech Preview and has been removed in vSphere 9.1.
+
+The C<vim25> source reads the same counters from the C<PerformanceManager> of the
+vim25 SOAP API, which vSphere 9.1 still serves. It requires neither the VMware Perl
+SDK nor the C<centreon_vmware> daemon.
+
+With C<auto>, C<vstats> is used and C<vim25> takes over when the vCenter no longer
+serves vStats, so the same command works from 8.0 to 9.1. Force C<vstats> or C<vim25>
+to pin one source, for instance to make an unsupported version fail loudly.
+
+Modes that do not read performance counters (status, health, count, list...) never
+use this option.
 
 =item B<--vstats-interval>
 
