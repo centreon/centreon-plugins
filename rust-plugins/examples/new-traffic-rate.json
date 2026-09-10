@@ -1,0 +1,35 @@
+{
+  "collect": {
+    "snmp": [
+      {
+        "name": "if",
+        "oid": "1.3.6.1.2.1.2.2.1",
+        "query": "Walk",
+        "labels": {
+          "1.2": "descr",
+          "1.10": "in",
+          "1.16": "out"
+        },
+        "rate": true
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [
+      {
+        "name": "traffic.in.bytespersecond",
+        "value": "{if.in}",
+        "prefix": "{if.descr}",
+        "uom": "B/s",
+        "threshold-suffix": "in"
+      },
+      {
+        "name": "traffic.out.bytespersecond",
+        "value": "{if.out}",
+        "prefix": "{if.descr}",
+        "uom": "B/s",
+        "threshold-suffix": "out"
+      }
+    ]
+  }
+}
