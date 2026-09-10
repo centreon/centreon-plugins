@@ -18,11 +18,11 @@ pub Product: Box<ast::Expr<'input>> = {
 pub Function: Box<ast::Expr<'input>> = {
     <f:"id"> "(" <a:Var> ")" => {
       match f {
-	b"Average" => return Box::new(ast::Expr::Fn(ast::Func::Average, a)),
-	b"Max" => return Box::new(ast::Expr::Fn(ast::Func::Max, a)),
-	b"Min" => return Box::new(ast::Expr::Fn(ast::Func::Min, a)),
+	b"Average" => Box::new(ast::Expr::Fn(ast::Func::Average, a)),
+	b"Max" => Box::new(ast::Expr::Fn(ast::Func::Max, a)),
+	b"Min" => Box::new(ast::Expr::Fn(ast::Func::Min, a)),
 	// FIXME DBO: This case is an error case...
-	_ => return a,
+	_ => a,
       }
     }
 };

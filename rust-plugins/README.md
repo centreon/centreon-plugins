@@ -71,3 +71,25 @@ In this example, the output is built using several internal variables that are:
 So you could also define others variables for the output.
 
 In the query entry, there is also an `idx` variable that is an integer enumerating the entries og the query. It is used to build the name of the variable in the output. It starts from 0.
+
+# Development — quality gate
+
+Before opening a pull request touching `rust-plugins/`, run:
+
+```bash
+./scripts/check.sh
+```
+
+It matches what the `lint` and `build` jobs of `.github/workflows/generic-plugins.yml`
+enforce in CI (`cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
+`cargo test`), plus a stricter local-only check: a scan proving that no
+`panic!`/`unwrap()` is reachable outside `#[cfg(test)]` modules — a panic
+reachable from untrusted input (a malformed JSON definition, a malicious SNMP
+response) turns a reportable `UNKNOWN` into a plugin crash.
+
+The toolchain is pinned by `rust-toolchain.toml` so everyone lints with the
+same rustc/clippy/rustfmt versions.
+
+If you use the repository's git hooks (`git config core.hooksPath .githooks`),
+the gate also runs automatically on commit whenever a staged file is under
+`rust-plugins/` (see `.githooks/pre-commit.d/25_rust_plugins.sh`).
