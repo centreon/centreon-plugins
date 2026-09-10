@@ -1,0 +1,234 @@
+name: Notification Email (Rust)
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/notification-email.yml'
+      - 'rust-plugins/Cargo.toml'
+      - 'rust-plugins/notification-email/**'
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - '.github/workflows/notification-email.yml'
+      - 'rust-plugins/Cargo.toml'
+      - 'rust-plugins/notification-email/**'
+
+jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  get-environment:
+    needs: [dependency-scan]
+    uses: ./.github/workflows/get-environment.yml
+    with:
+      version_file: rust-plugins/notification-email/Cargo.toml
+
+  build:
+    needs: [get-environment]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled()
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+            target: x86_64-unknown-linux-musl
+            cc_env_var: CC_x86_64_unknown_linux_musl
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+            target: aarch64-unknown-linux-musl
+            cc_env_var: CC_aarch64_unknown_linux_musl
+    runs-on: ${{ matrix.runner }}
+
+    name: "Build the notification-email plugin ${{ matrix.arch }}"
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Unlike the pure-Rust SNMP plugin, this crate's SMTP TLS support (lettre's
+      # rustls-tls, via ring) needs a C compiler for the target: musl-tools provides
+      # `musl-gcc`, a *native* compiler retargeted to musl (this is why each
+      # architecture below still builds on its own native runner rather than
+      # cross-compiling, same as the SNMP plugin's build job).
+      - name: Install musl C toolchain
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+        shell: bash
+
+      - name: Unit tests
+        run: |
+          # Cargo scopes an unqualified `cargo test`/`build` run from a member
+          # directory to that package alone; the shared workspace target/ dir
+          # (one level up) is unaffected by which member directory this runs from.
+          cd rust-plugins/notification-email
+          cargo test
+        shell: bash
+
+      - name: Build optimized binary
+        env:
+          # musl-tools names its wrapper plain `musl-gcc`, not the
+          # <target-triple>-gcc name cc-rs looks for by default.
+          CC_x86_64_unknown_linux_musl: musl-gcc
+          CC_aarch64_unknown_linux_musl: musl-gcc
+        run: |
+          cd rust-plugins/notification-email
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }}
+          mkdir -p ../target/release
+          cp ../target/${{ matrix.target }}/release/centreon-plugin-notification-email ../target/release/
+        shell: bash
+
+      - name: Check the binary has no dynamic dependency
+        run: |
+          cd rust-plugins
+          if objdump -p target/release/centreon-plugin-notification-email | grep NEEDED; then
+            echo "::error::Binary links against shared libraries and will not run on every supported distribution"
+            exit 1
+          fi
+          echo "Binary is statically linked, it does not depend on the system libc"
+        shell: bash
+
+      - name: Save binary to cache
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: rust-plugins/target/release/
+          key: ${{ github.sha }}-${{ github.run_id }}-build-notification-email-${{ matrix.arch }}
+
+      # Add to your PR the label upload-artifacts to get the binaries as artifacts
+      - if: ${{ contains(github.event.pull_request.labels.*.name, 'upload-artifacts') }}
+        name: Upload binary artifacts
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: binaries-notification-email-${{ matrix.arch }}
+          path: rust-plugins/target/release/centreon-plugin-notification-email
+          retention-days: 1
+
+  package:
+    needs: [get-environment, build]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability != 'stable' &&
+      ! cancelled()
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package_extension: rpm
+            image: packaging-plugins-alma8
+            distrib: el8
+            arch: x86_64
+            binary_arch: amd64
+          - package_extension: rpm
+            image: packaging-plugins-alma9
+            distrib: el9
+            arch: x86_64
+            binary_arch: amd64
+          - package_extension: rpm
+            image: packaging-plugins-alma10
+            distrib: el10
+            arch: x86_64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+            arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-bookworm
+            distrib: bookworm
+            arch: arm64
+            binary_arch: arm64
+          - package_extension: deb
+            image: packaging-plugins-trixie
+            distrib: trixie
+            arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-trixie
+            distrib: trixie
+            arch: arm64
+            binary_arch: arm64
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
+            arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-jammy
+            distrib: jammy
+            arch: arm64
+            binary_arch: arm64
+          - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
+            arch: amd64
+            binary_arch: amd64
+          - package_extension: deb
+            image: packaging-plugins-noble
+            distrib: noble
+            arch: arm64
+            binary_arch: arm64
+
+    container:
+      image: ${{ vars.DOCKER_INTERNAL_REGISTRY_URL }}/${{ matrix.image }}
+      credentials:
+        username: ${{ secrets.HARBOR_CENTREON_PULL_USERNAME }}
+        password: ${{ secrets.HARBOR_CENTREON_PULL_TOKEN }}
+
+    name: Package ${{ matrix.distrib }} ${{ matrix.arch }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Restore binary from cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: rust-plugins/target/release/
+          key: ${{ github.sha }}-${{ github.run_id }}-build-notification-email-${{ matrix.binary_arch }}
+          fail-on-cache-miss: true
+
+      - name: Build package
+        uses: ./.github/actions/package-nfpm
+        with:
+          nfpm_file_pattern: "rust-plugins/packaging/centreon-notification-email.yaml"
+          distrib: ${{ matrix.distrib }}
+          package_extension: ${{ matrix.package_extension }}
+          version: ${{ needs.get-environment.outputs.version }}
+          release: 1
+          arch: ${{ matrix.arch }}
+          commit_hash: ${{ github.sha }}
+          cache_key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-notification-email-${{ matrix.distrib }}-${{ matrix.arch }}
+          rpm_gpg_key: ${{ secrets.RPM_GPG_SIGNING_KEY }}
+          rpm_gpg_signing_key_id: ${{ secrets.RPM_GPG_SIGNING_KEY_ID }}
+          rpm_gpg_signing_passphrase: ${{ secrets.RPM_GPG_SIGNING_PASSPHRASE }}
+          stability: ${{ needs.get-environment.outputs.stability }}
+
+      - name: Save to cache
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: ./*.${{ matrix.package_extension }}
+          key: ${{ github.sha }}-${{ github.run_id }}-${{ matrix.package_extension }}-notification-email-${{ matrix.distrib }}-${{ matrix.arch }}
+
+  # Deliberately no `test-notification-email` job: there are no Robot Framework
+  # tests for this plugin yet (the Perl mode has none either). Add one here,
+  # mirroring generic-plugins.yml's `test-generic-plugins` job, once tests exist.
+  #
+  # Deliberately no delivery jobs (Artifactory/Pulp): this crate is a first,
+  # not-yet-fully-validated port (no byte-for-byte comparison against the Perl
+  # plugin's output for the service/BAM/meta-service paths, no STARTTLS test
+  # against a real server). Publishing packages to production repositories on
+  # every push to develop/master is a separate decision - add
+  # `deliver-packages`/`deliver-packages-pulp` jobs mirroring generic-plugins.yml
+  # once this has been validated and that decision is made.

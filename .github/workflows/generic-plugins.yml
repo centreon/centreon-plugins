@@ -9,7 +9,9 @@ on:
   pull_request:
     paths:
       - '.github/workflows/generic-plugins.yml'
-      - 'rust-plugins/**'
+      - 'rust-plugins/Cargo.toml'
+      - 'rust-plugins/snmp/**'
+      - 'rust-plugins/rs-collections/**'
       - 'packaging/centreon-plugin-*-snmp-rs/**'
       - 'tests/resources/**'
       - 'tests/os/linux/snmp/**'
@@ -20,7 +22,9 @@ on:
       - master
     paths:
       - '.github/workflows/generic-plugins.yml'
-      - 'rust-plugins/**'
+      - 'rust-plugins/Cargo.toml'
+      - 'rust-plugins/snmp/**'
+      - 'rust-plugins/rs-collections/**'
       - 'packaging/centreon-plugin-*-snmp-rs/**'
       - 'tests/resources/**'
       - 'tests/os/linux/snmp/**'
@@ -62,7 +66,12 @@ jobs:
 
       - name: Unit tests
         run: |
-          cd rust-plugins
+          # Runs from the snmp/ member directory (not the rust-plugins/ workspace
+          # root) so this only ever tests centreon-plugin-rust-snmp: Cargo scopes
+          # an unqualified `cargo test`/`build` to the package in the current
+          # directory, and the shared workspace target/ dir is unaffected by which
+          # member directory the command is run from.
+          cd rust-plugins/snmp
           cargo test
         shell: bash
 
@@ -75,12 +84,13 @@ jobs:
       # of the musl targets is the host cc, which cannot link objects of a foreign architecture.
       - name: Build optimized binary
         run: |
-          cd rust-plugins
+          cd rust-plugins/snmp
           rustup target add ${{ matrix.target }}
           cargo build --release --target ${{ matrix.target }}
-          # Keep the artifact where the cache, the nfpm configuration and the test job expect it.
-          mkdir -p target/release
-          cp target/${{ matrix.target }}/release/centreon-plugin-rust-snmp target/release/
+          # Keep the artifact where the cache, the nfpm configuration and the test job expect it
+          # (the workspace-shared target/ dir, one level up from this member directory).
+          mkdir -p ../target/release
+          cp ../target/${{ matrix.target }}/release/centreon-plugin-rust-snmp ../target/release/
         shell: bash
 
       - name: Check the binary has no dynamic dependency
