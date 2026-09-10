@@ -54,14 +54,13 @@ pub enum ValueType {
 impl ValueType {
     /// Converts this value to a float for storage in a numeric [`ExprResult`].
     ///
-    /// # Panics
-    /// Panics if called on a [`ValueType::String`]; callers must only reach
-    /// this path for OIDs whose previously stored values were numeric.
-    fn as_f64(&self) -> f64 {
+    /// Returns `None` for [`ValueType::String`]; callers must only reach this
+    /// path for OIDs whose previously stored values were numeric.
+    fn as_f64(&self) -> Option<f64> {
         match self {
-            ValueType::Integer(i) => *i as f64,
-            ValueType::Counter64(i) => *i as f64,
-            ValueType::String(_) => panic!("Expected a numeric SNMP value, got a string"),
+            ValueType::Integer(i) => Some(*i as f64),
+            ValueType::Counter64(i) => Some(*i as f64),
+            ValueType::String(_) => None,
         }
     }
 }
@@ -362,7 +361,9 @@ impl SnmpResult {
                 }
             },
             _ => {
-                let value = typ.as_f64();
+                let value = typ.as_f64().ok_or_else(|| InvalidSnmpValue {
+                    detail: "Expected a numeric SNMP value, got a string".to_string(),
+                })?;
                 match self.items.entry(key) {
                     std::collections::hash_map::Entry::Occupied(mut e) => match e.get_mut() {
                         ExprResult::Vector(v) => v.push(value),

@@ -413,7 +413,7 @@ impl Command {
 
             let compute_threshold = |idx: usize, expr: &ExprResult| match &expr {
                 ExprResult::Number(value) => Some(*value),
-                ExprResult::Vector(v) => Some(v[idx]),
+                ExprResult::Vector(v) => v.get(idx).copied(),
                 _ => None,
             };
             match &value {
@@ -434,7 +434,7 @@ impl Command {
                     for (i, item) in v.iter().enumerate() {
                         // first, compose the instance name
                         let instance_name = match &prefix_str {
-                            ExprResult::StrVector(v) => v[i].to_string(),
+                            ExprResult::StrVector(v) => v.get(i).cloned().unwrap_or_default(),
                             ExprResult::Str(s) => s.to_string(),
                             ExprResult::Empty => {
                                 let res = idx.to_string();
@@ -442,7 +442,12 @@ impl Command {
                                 res
                             }
                             _ => {
-                                panic!("A label must be a string");
+                                return Err(error::Error::InvalidJSON {
+                                    message: format!(
+                                        "Metric \"{}\": field \"prefix\" must evaluate to a string",
+                                        metric.name
+                                    ),
+                                });
                             }
                         };
                         // then apply filters exclusion and inclusion filters
@@ -527,7 +532,14 @@ impl Command {
                     trace!("New metric '{}' with value {:?}", m.name, m.value);
                     metrics.push(m);
                 }
-                _ => panic!("Aggregation must be applied to a vector"),
+                _ => {
+                    return Err(error::Error::InvalidJSON {
+                        message: format!(
+                            "Metric \"{}\": field \"value\" must evaluate to a number or a vector",
+                            metric.name
+                        ),
+                    });
+                }
             }
             let key = format!("metrics.{}", metric.name);
             debug!("New ID '{}' with content: {:?}", key, value);
@@ -567,10 +579,25 @@ impl Command {
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
-                            assert!(v.len() == 1);
+                            if v.len() != 1 {
+                                return Err(error::Error::InvalidJSON {
+                                    message: format!(
+                                        "Aggregation \"{}\": field \"max_expr\" must evaluate to a single value, got {}",
+                                        metric.name,
+                                        v.len()
+                                    ),
+                                });
+                            }
                             v[0]
                         }
-                        _ => panic!("Aggregation must be applied to a vector"),
+                        _ => {
+                            return Err(error::Error::InvalidJSON {
+                                message: format!(
+                                    "Aggregation \"{}\": field \"max_expr\" must evaluate to a number or a vector",
+                                    metric.name
+                                ),
+                            });
+                        }
                     })
                 } else if let Some(max_value) = metric.max {
                     Some(max_value)
@@ -589,10 +616,25 @@ impl Command {
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
-                            assert!(v.len() == 1);
+                            if v.len() != 1 {
+                                return Err(error::Error::InvalidJSON {
+                                    message: format!(
+                                        "Aggregation \"{}\": field \"min_expr\" must evaluate to a single value, got {}",
+                                        metric.name,
+                                        v.len()
+                                    ),
+                                });
+                            }
                             v[0]
                         }
-                        _ => panic!("Aggregation must be applied to a vector"),
+                        _ => {
+                            return Err(error::Error::InvalidJSON {
+                                message: format!(
+                                    "Aggregation \"{}\": field \"min_expr\" must evaluate to a number or a vector",
+                                    metric.name
+                                ),
+                            });
+                        }
                     })
                 } else if let Some(min_value) = metric.min {
                     Some(min_value)
@@ -665,7 +707,14 @@ impl Command {
                         trace!("New metric '{}' with value {:?}", m.name, m.value);
                         metrics.push(m);
                     }
-                    _ => panic!("Aggregation must be applied to a vector"),
+                    _ => {
+                        return Err(error::Error::InvalidJSON {
+                            message: format!(
+                                "Aggregation \"{}\": field \"value\" must evaluate to a number or a vector",
+                                metric.name
+                            ),
+                        });
+                    }
                 }
                 let key = format!("aggregations.{}", metric.name);
                 debug!("New ID '{}' with content: {:?}", key, value);
