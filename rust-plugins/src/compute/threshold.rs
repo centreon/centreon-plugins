@@ -129,6 +129,7 @@ impl Threshold {
     }
 }
 
+#[cfg(test)]
 mod test {
     use crate::compute::threshold::Threshold;
     use crate::generic::error::Error;
