@@ -131,8 +131,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: packaging-plugins-bullseye
-            distrib: bullseye
           - image: packaging-plugins-bookworm
             distrib: bookworm
           - image: packaging-plugins-trixie
@@ -192,8 +190,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -242,8 +238,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie

@@ -9,7 +9,7 @@ Test Timeout        120s
 *** Variables ***
 ${MOCKOON_JSON}     ${CURDIR}${/}..${/}mockoon.json
 
-${CMD}              ${CENTREON_PLUGINS} --plugin=apps::virtualization::vates::vm::plugin
+${CMD}              ${CENTREON_PLUGINS} --plugin=apps::virtualization::vates::pool::plugin
 ...                 --password=C3POR2P2
 ...                 --username=obi-wan
 ...                 --mode=discovery
@@ -20,13 +20,15 @@ ${CMD}              ${CENTREON_PLUGINS} --plugin=apps::virtualization::vates::vm
 
 *** Test Cases ***
 Discovery ${tc}
-    [Tags]    apps    api    vmware    vsphere8    vm    discovery
+    [Tags]    apps    api    vates    vm    discovery
     ${command}    Catenate    ${CMD} ${extra_options}
 
     Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
 
     Examples:    tc    extra_options    expected_result    --
-    ...    1    ${EMPTY}
+    ...    1
+    ...    ${EMPTY}
     ...    "discovered_items":2
-    ...    2    --filter-power-states=Running
+    ...    2
+    ...    --filter-ha='true'
     ...    "discovered_items":1

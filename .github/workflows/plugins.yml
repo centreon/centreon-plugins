@@ -198,7 +198,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -210,13 +210,6 @@ jobs:
           - package_extension: rpm
             image: unit-tests-alma10
             distrib: el10
-          - package_extension: deb
-            image: unit-tests-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bullseye-arm64
-            runner_name: ubuntu-24.04-arm
-            distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
@@ -319,9 +312,6 @@ jobs:
             image: packaging:alma10
             distrib: el10
           - package_extension: deb
-            image: packaging:bullseye
-            distrib: bullseye
-          - package_extension: deb
             image: packaging:bookworm
             distrib: bookworm
           - package_extension: deb
@@ -390,7 +380,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bullseye, testing:bookworm, testing:trixie, testing:noble]
+        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bookworm, testing:trixie, testing:noble]
         include:
           - skip_robot_tests: false
           - package_extension: rpm
@@ -406,10 +396,6 @@ jobs:
             distrib: el10
             arch: amd64
             skip_robot_tests: true
-          - package_extension: deb
-            image: testing:bullseye
-            distrib: bullseye
-            arch: amd64
           - package_extension: deb
             image: testing:bookworm
             distrib: bookworm
@@ -427,10 +413,6 @@ jobs:
             image: testing:noble
             distrib: noble
             arch: amd64
-          - package_extension: deb
-            image: testing:bullseye
-            distrib: bullseye
-            arch: arm64
 
     name: "test-plugins ${{ matrix.distrib }} ${{ matrix.arch }}"
 
@@ -467,8 +449,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -518,8 +498,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie

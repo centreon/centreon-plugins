@@ -50,16 +50,6 @@ jobs:
             distrib: alma10
             arch: amd64
           - runner: ubuntu-24.04
-            dockerfile: bullseye
-            image: testing
-            distrib: bullseye
-            arch: amd64
-          - runner: ubuntu-24.04-arm
-            dockerfile: bullseye
-            image: testing
-            distrib: bullseye
-            arch: arm64
-          - runner: ubuntu-24.04
             dockerfile: bookworm
             image: testing
             distrib: bookworm

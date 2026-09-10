@@ -84,7 +84,7 @@ La source de vérité unique pour toutes les bibliothèques CPAN à gérer est `
         "build_distribs": "el8,el9"
       },
       "deb": {
-        "build_names": "bullseye-amd64,bookworm,trixie,jammy,noble,bullseye-arm64",
+        "build_names": "bookworm,trixie,jammy,noble",
         "use_dh_make_perl": "false",
         "no-auto-depends": "true",
         "deb_dependencies": "libexporter-tiny-perl libxs-install-perl"
@@ -180,7 +180,7 @@ Pour chaque distribution :
 
 En parallèle avec `check-official-repos`, tire les 9 images Docker de packaging internes depuis le registry Harbor de Centreon et les sauvegarde dans le cache GitHub Actions.
 
-Images tirées : `packaging-plugins-alma8/9/10`, `packaging-plugins-bullseye` (amd64 + arm64), `packaging-plugins-bookworm`, `packaging-plugins-trixie`, `packaging-plugins-jammy`, `packaging-plugins-noble`.
+Images tirées : `packaging-plugins-alma8/9/10`, `packaging-plugins-bookworm`, `packaging-plugins-trixie`, `packaging-plugins-jammy`, `packaging-plugins-noble`.
 
 Ces images contiennent les outils nécessaires pour construire des paquets (rpmbuild, fpm, dh-make-perl, etc.) avec tous les headers de développement requis pré-installés.
 
@@ -249,7 +249,6 @@ Installe et teste toutes les bibliothèques packagées sur les 9 distributions s
 | el8 | RPM | amd64 |
 | el9 | RPM | amd64 |
 | el10 | RPM | amd64 |
-| bullseye | DEB | amd64 + arm64 |
 | bookworm | DEB | amd64 |
 | trixie | DEB | amd64 |
 | jammy | DEB | amd64 |
@@ -290,8 +289,6 @@ Ajoute le label `skip-workflow-perl-cpan-libraries` à la PR après une livraiso
 | el8 | AlmaLinux 8 | RPM | `package-rpm` |
 | el9 | AlmaLinux 9 | RPM | `package-rpm` |
 | el10 | AlmaLinux 10 | RPM | `package-rpm` |
-| bullseye (amd64) | Debian 11 | DEB | `package-deb` |
-| bullseye (arm64) | Debian 11 | DEB | `package-deb` |
 | bookworm | Debian 12 | DEB | `package-deb` |
 | trixie | Debian 13 | DEB | `package-deb` |
 | jammy | Ubuntu 22.04 | DEB | `package-deb` |

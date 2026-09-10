@@ -142,16 +142,6 @@ jobs:
             arch: x86_64
             binary_arch: amd64
           - package_extension: deb
-            image: packaging-plugins-bullseye
-            distrib: bullseye
-            arch: amd64
-            binary_arch: amd64
-          - package_extension: deb
-            image: packaging-plugins-bullseye
-            distrib: bullseye
-            arch: arm64
-            binary_arch: arm64
-          - package_extension: deb
             image: packaging-plugins-bookworm
             distrib: bookworm
             arch: amd64
@@ -315,12 +305,6 @@ jobs:
           - distrib: el10
             package_extension: rpm
             arch: x86_64
-          - distrib: bullseye
-            package_extension: deb
-            arch: amd64
-          - distrib: bullseye
-            package_extension: deb
-            arch: arm64
           - distrib: bookworm
             package_extension: deb
             arch: amd64
@@ -391,12 +375,6 @@ jobs:
           - distrib: el10
             package_extension: rpm
             arch: x86_64
-          - distrib: bullseye
-            package_extension: deb
-            arch: amd64
-          - distrib: bullseye
-            package_extension: deb
-            arch: arm64
           - distrib: bookworm
             package_extension: deb
             arch: amd64

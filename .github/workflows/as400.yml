@@ -51,10 +51,6 @@ jobs:
             distrib: el10
             java_major_version: "21"
           - package_extension: deb
-            image: packaging-plugins-java-bullseye
-            distrib: bullseye
-            java_major_version: "17"
-          - package_extension: deb
             image: packaging-plugins-java-bookworm
             distrib: bookworm
             java_major_version: "17"
@@ -153,8 +149,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -203,8 +197,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
