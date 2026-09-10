@@ -927,6 +927,14 @@ sub custom_perfdata_instances {
     return $instances;
 }
 
+sub custom_output {
+    my ($self, %options) = @_;
+
+    my $value = $self->{option_results}->{ $options{option} };
+    $value =~ s/%\(([a-zA-Z0-9\._:\-]+?)\)/$options{values}->{$1}/g;
+    return $value;
+}
+
 1;
 
 __END__
