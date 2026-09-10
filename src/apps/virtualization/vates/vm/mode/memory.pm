@@ -114,6 +114,7 @@ sub manage_selection {
 
     my $vm_info = $options{custom}->get_vm_info();
 
+
     if ($vm_info->{power_state} ne "Running"){
         $self->{output}->option_exit(short_msg => "vm '" . $vm_info->{name_label} . "' is not started, can not get memory usage data.");
     }

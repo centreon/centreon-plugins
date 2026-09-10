@@ -88,15 +88,11 @@ sub request_api {
     my ($self, %options) = @_;
 
      my ($content) = $self->{http}->request(
-        method          => $options{method},
-        url_path        => $self->{option_results}->{api_url} . $options{endpoint},
-        get_param       => $options{get_param},
-        header          => $options{header},
-        # lets a caller inspect a non-2xx JSON error body instead of the http layer
-        # auto-exiting on it (used by get_vm_stats to tell "vm halted" from a real error).
-        silently_fail   => $options{silently_fail}
+         method          => $options{method},
+         url_path        => $self->{option_results}->{api_url} . $options{endpoint},
+         %options
      );
-    return json_decode($content, booleans_as_strings => 1);
+    return $content;
 
 }
 
@@ -105,7 +101,7 @@ sub request_api_get {
 
     my ($content) = $self->request_api(%options, method => "GET");
 
-    return $content;
+    return json_decode($content, booleans_as_strings => 1);
 }
 
 # get_name_and_uuid( type => 'pool', 'api_endpoint' => 'pools');
