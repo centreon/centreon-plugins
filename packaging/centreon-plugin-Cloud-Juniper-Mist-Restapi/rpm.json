@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "perl(Crypt::OpenSSL::X509)"
+    ]
+}

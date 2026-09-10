@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "libcrypt-openssl-x509-perl"
+    ]
+}
