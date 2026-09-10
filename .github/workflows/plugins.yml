@@ -86,7 +86,9 @@ jobs:
           list-files: shell
           filters: |
             common:
-              - added|deleted|modified: src/centreon/**
+              # Only the cross-plugin engine forces a full rebuild/test; src/centreon/common/**
+              # is already covered by the "plugins" filter below and resolved per package.
+              - added|deleted|modified: src/centreon/plugins/**
               - modified: .github/packaging/centreon-plugin.yaml.template
             packages:
               - added|modified: packaging/**
