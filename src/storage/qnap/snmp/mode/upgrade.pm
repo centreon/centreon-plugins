@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -68,19 +68,40 @@ sub new {
     return $self;
 }
 
-my $mapping = {
+# QTS OS
+my $mapping_qts = {
     model   => { oid => '.1.3.6.1.4.1.55062.1.12.3' }, # systemModel
     version => { oid => '.1.3.6.1.4.1.55062.1.12.6' }, # firmwareVersion
     upgrade => { oid => '.1.3.6.1.4.1.55062.1.12.7' }  # firmwareUpgradeAvailable
+};
+# QuTS hero OS
+my $mapping_qts_hero = {
+    model   => { oid => '.1.3.6.1.4.1.55062.2.12.3' }, # systemModel
+    version => { oid => '.1.3.6.1.4.1.55062.2.12.6' }, # firmwareVersion
+    upgrade => { oid => '.1.3.6.1.4.1.55062.2.12.7' }  # firmwareUpgradeAvailable
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
-        nothing_quit => 1
+        oids => [
+            map($_->{oid} . '.0', values(%$mapping_qts)),
+            map($_->{oid} . '.0', values(%$mapping_quts_hero))
+        ],
+        nothing_quit => 0
     );
+
+    my $mapping;
+    if (defined($snmp_result->{ $mapping_qts->{model}->{oid} . '.0' })) {
+        $mapping = $mapping_qts;
+    } elsif (defined($snmp_result->{ $mapping_quts_hero->{model}->{oid} . '.0' })) {
+        $mapping = $mapping_quts_hero;
+    } else {
+        $self->{output}->add_option_msg(short_msg => 'Cannot find firmware upgrade information (unsupported QNAP OS/MIB version)');
+        $self->{output}->option_exit();
+    }
+
     $snmp_result->{$mapping->{version}->{oid} . '.0'} =~ s/\r*\n*$//;
     $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => 0);
     $self->{global}->{upgrade} = $self->{global}->{upgrade} ? 'available' : 'unavailable';
@@ -92,7 +113,7 @@ __END__
 
 =head1 MODE
 
-Check upgrade status (only works with QTS OS).
+Check upgrade status (works with QTS and QTS hero OS).
 
 =over 8
 
