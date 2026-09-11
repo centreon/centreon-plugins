@@ -435,6 +435,9 @@ sub run_instances {
     # Sort values
     my $sort_sub = $self->get_sort_sub(%options);
 
+    $self->{output}->output_add( severity => 'UNKNOWN', short_msg => 'No data !')
+    unless %{$self->{$options{config}->{name}}};
+
     # Now the loop begins with the desired sorting method
     foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
@@ -632,6 +635,9 @@ sub run_multiple_instances {
 
     # Sort values
     my $sort_sub = $self->get_sort_sub(%options);
+
+    $self->{output}->output_add( severity => 'UNKNOWN', short_msg => 'No data !')
+    unless %{$self->{$options{config}->{name}}};
 
     # Now the loop begins with the desired sorting method
     foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
