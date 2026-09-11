@@ -25,9 +25,32 @@ use base qw(cloud::azure::management::monitor::mode::health);
 use strict;
 use warnings;
 
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
+
+    $options{options}->add_options(arguments => {
+        'server:s' => { name => 'server' }
+    });
+
+    return $self;
+}
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    my $resource = $self->{option_results}->{resource};
+    my $server = $self->{option_results}->{server};
+    if ($resource !~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Sql\/servers\/.*\/databases\/.*$/) {
+        if (!defined($server) || $server eq '') {
+            $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group and --server option OR --resource <id>.');
+            $self->{output}->option_exit();
+        }
+
+        $self->{az_resource_type} = 'servers/' . $server . '/databases';
+    }
 
     $self->{az_resource_namespace} = 'Microsoft.Sql' if (!defined($self->{az_resource_namespace}) || $self->{az_resource_namespace} eq '');
     $self->{az_resource_type} = 'servers/databases' if (!defined($self->{az_resource_type}) || $self->{az_resource_type} eq '');
@@ -51,6 +74,10 @@ Set resource name or ID (required).
 =item B<--resource-group>
 
 Set resource group (required if resource's name is used).
+
+=item B<--server>
+
+Set server name (required if resource's name is used).
 
 =item B<--warning-status>
 
