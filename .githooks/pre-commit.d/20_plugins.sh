@@ -1,31 +1,14 @@
 #!/bin/bash
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Directory of this script, without forking to dirname
+script_dir="${BASH_SOURCE[0]%/*}"
+if [[ "${script_dir}" == "${BASH_SOURCE[0]}" ]]; then
+  script_dir='.'
+fi
+# shellcheck source=../lib/common.sh
+source "${script_dir}/../lib/common.sh"
 
-# global errors counter
-errors=0
 tmpfile="/tmp/check$$"
-
-function info() {
-    echo -e "${GREEN}INFO${NC}: $*"
-}
-
-function warning() {
-    echo -e "${YELLOW}WARNING${NC}: $*"
-}
-
-function error() {
-    echo -e "${RED}ERROR${NC}: $*"
-    : $((errors++))
-}
-
-function fatal() {
-    echo -e "${RED}FATAL${NC}: $*"
-    exit 1
-}
 
 function check_tabs_crlf() {
     local file="$1"
@@ -39,6 +22,7 @@ function check_constants() {
     local file="$1"
 
     info "--> Checking constants utilization"
+    [[ "$file" =~ src/centreon/plugins/.*\.pm ]] && return 0
 
     grep -nH -- "-\(1\|2\|10\)[[:space:]]*=>[[:space:]]*1" "$file" > "$tmpfile"
     grep -nH "\<type[[:space:]]*=>[[:space:]]*[0-9]" "$file" >> "$tmpfile"
