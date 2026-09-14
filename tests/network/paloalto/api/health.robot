@@ -42,7 +42,7 @@ Health ${tc}
     ...    OK: Panorama total devices: 3, connected devices: 3, total templates: 0, template assignments: 0, plugins checked: 0, jobs checked: 0 - All devices are ok | 'panorama.devices.total.count'=3;;;0; 'panorama.devices.connected.count'=3;;;0; 'panorama.templates.total.count'=0;;;0; 'panorama.templates.assigned.count'=0;;;0; 'panorama.plugins.total.count'=0;;;0; 'panorama.jobs.total.count'=0;;;0;
     ...    2
     ...    --filter-counters=1
-    ...    OK:
+    ...    UNKNOWN: No data!
     ...    3
     ...    --include-device-serial=1
     ...    OK: Panorama total devices: 0, connected devices: 0, total templates: 0, template assignments: 0, plugins checked: 0, jobs checked: 0 | 'panorama.devices.total.count'=0;;;0; 'panorama.devices.connected.count'=0;;;0; 'panorama.templates.total.count'=0;;;0; 'panorama.templates.assigned.count'=0;;;0; 'panorama.plugins.total.count'=0;;;0; 'panorama.jobs.total.count'=0;;;0;
