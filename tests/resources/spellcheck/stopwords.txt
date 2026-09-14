@@ -48,6 +48,8 @@ blocked-by-uf
 bootable
 BPL
 --cacert-file
+canister
+canisters
 cardtemperature
 CDN
 centreon
@@ -88,6 +90,7 @@ dfsrevent
 --display-transform-dst
 --display-transform-src
 dns-resolve-time
+DRAID
 DSM
 --dyn-mode
 Ekara
@@ -102,6 +105,8 @@ F5OS
 failover
 fanspeed
 FCCapacity
+FCM
+FCMs
 fibre
 FibreAlliance
 --filter-fs
@@ -109,6 +114,8 @@ FibreAlliance
 --filter-ppid
 --filter-vdom
 --filter-vm
+FlashCore
+FlashSystem
 --force-64bits-counters
 --force-counters32
 --force-counters64
@@ -161,6 +168,7 @@ iPushPro
 ipv4
 ipv6
 ISAM
+iSCSI
 iSendPro
 IVE
 Iwsva
@@ -189,7 +197,14 @@ libSSH
 Libvirt
 license-instances-usage-prct
 Loggly
+lsdrive
+lseventlog
+lsmdisk
 LSP
+lspartition
+lssystem
+lssystemstats
+lsvdisk
 LTE
 LUN
 LUNs
@@ -200,6 +215,8 @@ MAPI
 MBean
 Mbps
 McAfee
+mdisk
+mdisks
 Mellanox
 memAvailReal
 memBuffer
@@ -250,12 +267,14 @@ NLCapacity
 -NoLogo
 --nomachineaccount
 notapplicable
+NPIV
 NRPE
 NSClient
 --ntlmv2
 NTLMv2
 NTP
 Nutanix
+NVMe
 NVOS
 OAuth
 OAuth2
@@ -308,6 +327,7 @@ PVX
 QoS
 Qtree
 queue-messages-inflighted
+quorum
 quts
 raidvolume
 redis-cli
@@ -322,6 +342,10 @@ RSS
 rssi
 RTT
 Rubrik
+Storwize
+vdisk
+Virtualize
+WWPN
 µs
 Sansymphony
 SAS
