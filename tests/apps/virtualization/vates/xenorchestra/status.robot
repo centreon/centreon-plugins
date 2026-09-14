@@ -39,7 +39,13 @@ Vm Status ${tc}
     ...    OK: api returned 'ok'
     ...    2
     ...    --username=wrong-username
-    ...    OK: api returned 'invalid credentials'
+    ...    CRITICAL: api returned 'invalid credentials'
     ...    3
     ...    --port=3999
     ...    UNKNOWN: curl perform error : Couldn't connect to server
+    ...    4
+    ...    --warning-api-status='\\\%{api_status} eq "ok"'
+    ...    WARNING: api returned 'ok'
+    ...    5
+    ...    --critical-api-status='\\\%{api_status} eq "ok"'
+    ...    CRITICAL: api returned 'ok'

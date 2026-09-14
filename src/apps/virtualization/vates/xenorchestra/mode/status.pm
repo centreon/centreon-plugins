@@ -24,7 +24,7 @@ use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/json_decode/;
-
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub new {
     my ($class, %options) = @_;
@@ -52,6 +52,7 @@ sub set_counters {
             type             => COUNTER_TYPE_GROUP,
             critical_default => '%{api_status} ne "ok"',
             set              => {
+                closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 key_values                     => [ { name => 'api_status' } ],
                 output_template => "api returned '%{api_status}'",
             }

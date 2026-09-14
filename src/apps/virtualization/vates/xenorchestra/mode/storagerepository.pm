@@ -45,12 +45,6 @@ sub new {
     return $self;
 }
 
-sub prefix_sr_output {
-    my ($self, %options) = @_;
-
-    return "storage repository '" . $options{instance_value}->{display} . "' ";
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -58,7 +52,8 @@ sub set_counters {
         {
             name             => 'srs',
             type             => COUNTER_TYPE_INSTANCE,
-            cb_prefix_output => 'prefix_sr_output',
+            message_separator => ', ',
+            prefix_output => "storage repository '%{display}' ",
             message_multiple => 'All storage repositories are ok',
             skipped_code => { NO_VALUE => 1 }
         }
