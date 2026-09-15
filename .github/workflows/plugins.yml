@@ -485,7 +485,6 @@ jobs:
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     runs-on: centreon-ubuntu-22.04
-    continue-on-error: true
     permissions:
       contents: read
       id-token: write
@@ -564,7 +563,6 @@ jobs:
         # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
         if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
         id: deliver_pulp
-        continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
         with:
           module_name: plugins
@@ -583,7 +581,6 @@ jobs:
         # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
         if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
         id: promote_pulp
-        continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
         with:
           module_name: plugins
@@ -596,12 +593,6 @@ jobs:
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
-
-      - name: Warn if the Pulp delivery failed
-        if: steps.deliver_pulp.outcome == 'failure' || steps.promote_pulp.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "::warning::Pulp delivery/promotion failed (non-blocking during the Artifactory-to-Pulp migration; Artifactory delivery remains authoritative). See the 'Deliver packages on Pulp' / 'Promote packages on Pulp' step."
 
   deliver-sources:
     needs: [get-environment, fatpacker]
