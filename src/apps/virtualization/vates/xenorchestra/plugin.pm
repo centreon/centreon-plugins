@@ -19,7 +19,7 @@
 #
 package apps::virtualization::vates::xenorchestra::plugin;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use base qw(centreon::plugins::script_custom);
 
 
@@ -30,8 +30,10 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'status'         => 'apps::virtualization::vates::xenorchestra::status',
-        'vm-status'         => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
+        'status'                  => 'apps::virtualization::vates::xenorchestra::mode::status',
+        'vm-status'               => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
+        'storage-repository'      => 'apps::virtualization::vates::xenorchestra::mode::storagerepository',
+        'list-storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::liststoragerepository',
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';
