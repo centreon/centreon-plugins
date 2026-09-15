@@ -250,6 +250,14 @@ sub output_add {
     }
 }
 
+sub has_short_output {
+    my ($self, %options) = @_;
+
+    # Tells whether at least one short message has been added, whatever its severity.
+    # Used by the counter template to detect a mode that collected nothing at all.
+    return (scalar(grep { defined($_) } values(%{$self->{global_short_concat_outputs}})) > 0) ? 1 : 0;
+}
+
 sub perfdata_add {
     my ($self, %options) = @_;
 

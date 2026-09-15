@@ -26,7 +26,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
-use centreon::plugins::constants qw/:counters/;
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc qw/is_empty exprintf/;
 use JSON::XS;
 
@@ -185,7 +185,13 @@ sub new {
         'filter-counters-block:s' => { name => 'filter_counters_block' },
         'filter-counters:s'       => { name => 'filter_counters' },
         'display-ok-counters:s'   => { name => 'display_ok_counters' },
-        'list-counters'           => { name => 'list_counters' }
+        'list-counters'           => { name => 'list_counters' },
+        'no-data-status:s'        => {
+            name      => 'no_data_status',
+            default   => 'unknown',
+            is_in     => [ 'ok', 'warning', 'critical', 'unknown' ],
+            not_empty => 1
+        }
     });
     $self->{statefile_value} = undef;
     if ($options{statefile}) {
@@ -328,6 +334,8 @@ sub run_global {
         $options{config}->{message_separator}: ', ';
     my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
     my @exits;
+    # Number of counters that actually got a value, to tell an empty block from a filled one
+    my $values_count = 0;
     foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
         my $obj = $_->{obj};
 
@@ -337,6 +345,13 @@ sub run_global {
         $obj->set(instance => defined($force_instance) ? $force_instance : $options{config}->{name});
 
         my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{$options{config}->{name}});
+
+        # Only NO_VALUE means the counter got nothing. Any other code (buffer creation,
+        # counter not moved...) means data was collected but is not exploitable yet.
+        if ($value_check != NO_VALUE) {
+            $values_count++;
+            $self->{counters_with_values}++;
+        }
 
         next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
         if ($value_check != 0) {
@@ -398,8 +413,13 @@ sub run_global {
     } else {
         if ($long_msg ne '' && $multiple_parent == 0) {
             if ($called_multiple == 0) {
-                $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
-                    if ($display_short == 1);
+                if ($values_count == 0) {
+                    # Every counter was skipped for lack of value: this block collected nothing.
+                    # Keep the detail in the long output and let run() report --no-data-status.
+                    $self->{output}->output_add(long_msg => $prefix_output . $long_msg . $suffix_output);
+                } elsif ($display_short == 1) {
+                    $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
+                }
             } else {
                 $self->run_multiple_prefix_output(
                     severity => 'ok',
@@ -453,6 +473,7 @@ sub run_instances {
                 new_datas => $self->{new_datas},
                 values => $self->{$options{config}->{name}}->{$id}
             );
+            $self->{counters_with_values}++ if ($value_check != NO_VALUE);
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -657,6 +678,7 @@ sub run_multiple_instances {
                 new_datas => $self->{new_datas},
                 values => $self->{$options{config}->{name}}->{$id}
             );
+            $self->{counters_with_values}++ if ($value_check != NO_VALUE);
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -820,6 +842,7 @@ sub run {
     
     $self->manage_selection(%options);
     
+    $self->{counters_with_values} = 0;
     $self->{new_datas} = undef;
     if (defined($self->{statefile_value})) {
         $self->{new_datas} = {};
@@ -838,6 +861,15 @@ sub run {
             $self->run_multiple(config => $entry);
         }
     }
+
+    # Nothing to display and no counter got a value at all: the mode collected nothing and
+    # would display an empty 'OK:' output. Report the status asked through --no-data-status.
+    # A counter waiting for its next run (buffer creation, counter not moved...) does hold
+    # data, so such a mode is left alone.
+    $self->{output}->output_add(
+        severity => $self->{option_results}->{no_data_status},
+        short_msg => 'No data!'
+    ) if (!$self->{output}->has_short_output() && $self->{counters_with_values} == 0);
 
     if (defined($self->{statefile_value})) {
         $self->{statefile_value}->write(data => $self->{new_datas});
@@ -949,6 +981,13 @@ Warning threshold.
 =item B<--critical-xxx>
 
 Critical threshold.
+
+=item B<--no-data-status>
+
+Status to return when the mode collects no data at all: no instance was found,
+or every counter was skipped for lack of value. Without this option the plugin
+would display an empty (or meaningless) C<OK:> output.
+Can be: 'ok', 'warning', 'critical', 'unknown' (default: 'unknown').
 
 =back
 
