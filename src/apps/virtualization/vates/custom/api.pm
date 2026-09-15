@@ -117,13 +117,13 @@ sub request_api_get {
 # return : either exit the plugin or one object (hashmap ref)
 sub request_api_get_one {
     my ($self, %options) = @_;
-
+    my $fields = $options{fields} // "*";
     my ($filter_field,$filter_value) = ('','');
     $filter_field = $options{filter}->[0] // '';
     $filter_value = $options{filter}->[1] // '';
 
     if (!defined($options{get_param})) {
-        $options{get_param} = ['fields=' . $options{fields} // "*"];
+        $options{get_param} = ['fields=' . $fields];
     }
     # Override api filtering only if not present.
     if (!grep(/^filter=/, @{$options{get_param}})) {
