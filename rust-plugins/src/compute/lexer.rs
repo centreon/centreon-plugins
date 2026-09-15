@@ -20,8 +20,8 @@
 
 //! Lexical analyzer for tokenizing mathematical expressions.
 
-use log::{error, trace};
 use std::str;
+use tracing::{error, trace};
 
 /// Type alias for LALRPOP's expected token type with location and error information.
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
@@ -197,7 +197,7 @@ mod test {
     use crate::compute::lexer::{Lexer, Tok};
 
     fn init() {
-        let _ = env_logger::builder().is_test(true).try_init();
+        let _ = tracing_subscriber::fmt().with_test_writer().try_init();
     }
 
     #[test]
