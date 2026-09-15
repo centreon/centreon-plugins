@@ -300,7 +300,7 @@ impl ExprResult {
     /// the numbers to strings before concatenation, padding to match lengths
     /// where necessary.
     pub fn join(&mut self, other: &ExprResult) {
-        trace!("[join] self: {:?} - other: {:?}", &self, &other);
+        trace!("[join] self: {:?} - other: {:?}", self, other);
         match self {
             ExprResult::Empty => match other {
                 ExprResult::StrVector(vv) => {
@@ -310,9 +310,8 @@ impl ExprResult {
                     *self = ExprResult::Str(s.clone());
                 }
                 ExprResult::Vector(vv) => {
-                    *self = ExprResult::StrVector(
-                        vv.iter().map(|n| crate::output::float_string(n)).collect(),
-                    );
+                    *self =
+                        ExprResult::StrVector(vv.iter().map(crate::output::float_string).collect());
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
@@ -367,7 +366,7 @@ impl ExprResult {
                     *s = format!("{}{}", s, ss);
                 }
                 ExprResult::Number(n) => {
-                    trace!("[join] n: {:?}", &n);
+                    trace!("[join] n: {:?}", n);
                     *s = format!("{}{}", s, crate::output::float_string(n));
                 }
                 _ => panic!("Unable to join objects others than strings"),
@@ -395,7 +394,7 @@ impl<'input> Expr<'input> {
         match self {
             Expr::Id(key) => {
                 let k = str::from_utf8(key)
-                    .map_err(|_| return "Error reading a macro : invalid utf8 string")?;
+                    .map_err(|_| "Error reading a macro : invalid utf8 string")?;
                 for result in collect {
                     if result.items.contains_key(k) {
                         return Ok(());
@@ -425,7 +424,7 @@ impl<'input> Expr<'input> {
             Expr::Number(n) => Ok(ExprResult::Number(*n)),
             Expr::Id(key) => {
                 let k = str::from_utf8(key)
-                    .map_err(|_| return "Error while eval() an expression : invalid utf8 string")?;
+                    .map_err(|_| "Error while eval() an expression : invalid utf8 string")?;
                 for result in collect {
                     match result.items.get(k) {
                         Some(item) => match item {
@@ -493,11 +492,12 @@ impl<'input> Expr<'input> {
     }
 
     /// Returns the byte representation of an identifier expression, or a default error message.
+    #[allow(dead_code)]
     pub fn eval_as_str(&self) -> &[u8] {
         if let Expr::Id(id) = self {
-            return id;
+            id
         } else {
-            return b"Bad value";
+            b"Bad value"
         }
     }
 }

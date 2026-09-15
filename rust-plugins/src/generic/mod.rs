@@ -40,7 +40,6 @@ use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
-use std::convert::Into;
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -69,9 +68,9 @@ pub enum Status {
     Critical = 2,
     Unknown = 3,
 }
-impl Into<i32> for Status {
-    fn into(self) -> i32 {
-        match self {
+impl From<Status> for i32 {
+    fn from(val: Status) -> Self {
+        match val {
             Status::Ok => 0,
             Status::Warning => 1,
             Status::Critical => 2,
@@ -79,9 +78,9 @@ impl Into<i32> for Status {
         }
     }
 }
-impl Into<String> for Status {
-    fn into(self) -> String {
-        match self {
+impl From<Status> for String {
+    fn from(val: Status) -> Self {
+        match val {
             Status::Ok => "OK".to_string(),
             Status::Warning => "WARNING".to_string(),
             Status::Critical => "CRITICAL".to_string(),
@@ -110,7 +109,7 @@ impl Status {
     /// Returns the severity rank of the status, used to compare statuses.
     ///
     /// Severity order: `Ok < Warning < Unknown < Critical`.  It differs from the
-    /// exit code (see [`Into<i32>`]), where `Critical` is 2 and `Unknown` is 3.
+    /// exit code (see `From<Status> for i32`), where `Critical` is 2 and `Unknown` is 3.
     fn severity(&self) -> u8 {
         match self {
             Status::Ok => 0,
@@ -216,18 +215,17 @@ impl Command {
         {
             debug!("Adding warning to metric {}", metric.name);
             metric.warning = Some(value);
-        } else if let Some(aggregations) = self.compute.aggregations.as_mut() {
-            if let Some(metric) =
+        } else if let Some(aggregations) = self.compute.aggregations.as_mut()
+            && let Some(metric) =
                 aggregations
                     .iter_mut()
                     .find(|metric| match &metric.threshold_suffix {
                         Some(suffix) => suffix == name,
                         None => false,
                     })
-            {
-                debug!("Adding warning to aggregation metric {}", metric.name);
-                metric.warning = Some(value);
-            }
+        {
+            debug!("Adding warning to aggregation metric {}", metric.name);
+            metric.warning = Some(value);
         }
     }
 
@@ -245,23 +243,22 @@ impl Command {
         {
             metric.critical = Some(value);
             debug!("Adding critical to metric {}", metric.name);
-        } else if let Some(aggregations) = self.compute.aggregations.as_mut() {
-            if let Some(metric) =
+        } else if let Some(aggregations) = self.compute.aggregations.as_mut()
+            && let Some(metric) =
                 aggregations
                     .iter_mut()
                     .find(|metric| match &metric.threshold_suffix {
                         Some(suffix) => suffix == name,
                         None => false,
                     })
-            {
-                debug!("Adding critical to aggregation metric {}", metric.name);
-                metric.critical = Some(value);
-            }
+        {
+            debug!("Adding critical to aggregation metric {}", metric.name);
+            metric.critical = Some(value);
         }
     }
 
     /// Formats raw SNMP response for simple display
-    fn format_raw_response(&self, collect: &Vec<SnmpResult>) -> Result<CmdResult> {
+    fn format_raw_response(&self, collect: &[SnmpResult]) -> Result<CmdResult> {
         let mut lines = Vec::new();
 
         for result in collect.iter() {
@@ -324,7 +321,7 @@ impl Command {
                 QueryType::Walk => {
                     if let Some(lab) = &s.labels {
                         let r = snmp_bulk_walk_with_labels(
-                            target, version, community, &s.oid, &s.name, &lab,
+                            target, version, community, &s.oid, &s.name, lab,
                         )?;
                         if !r.items.is_empty() {
                             collect.push(r);
@@ -367,13 +364,14 @@ impl Command {
     ///
     /// # Returns
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
+    #[allow(clippy::too_many_arguments)]
     pub fn execute(
         &self,
         target: &str,
         version: &str,
         community: &str,
-        filter_in: &Vec<String>,
-        filter_out: &Vec<String>,
+        filter_in: &[String],
+        filter_out: &[String],
         check_format: bool,
         check_response: bool,
         no_data_status: Status,
@@ -410,7 +408,7 @@ impl Command {
             })?;
             let min = if let Some(min_expr) = metric.min_expr.as_ref() {
                 parser
-                    .eval(&min_expr)
+                    .eval(min_expr)
                     .map_err(|e| error::Error::InvalidJSON {
                         message: format!("Metric \"{}\", field \"min_expr\": {}", metric.name, e),
                     })?
@@ -421,7 +419,7 @@ impl Command {
             };
             let max = if let Some(max_expr) = metric.max_expr.as_ref() {
                 parser
-                    .eval(&max_expr)
+                    .eval(max_expr)
                     .map_err(|e| error::Error::InvalidJSON {
                         message: format!("Metric \"{}\", field \"max_expr\": {}", metric.name, e),
                     })?
@@ -470,8 +468,7 @@ impl Command {
                         {
                             continue;
                         }
-                        if (!re_in.is_empty()
-                            && !re_in.iter().any(|re| re.is_match(&instance_name)))
+                        if !re_in.is_empty() && !re_in.iter().any(|re| re.is_match(&instance_name))
                         {
                             continue;
                         }
@@ -480,14 +477,8 @@ impl Command {
                         let current_status =
                             compute_status(item, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
-                        let w = match metric.warning {
-                            Some(ref w) => Some(w.as_str()),
-                            None => None,
-                        };
-                        let c = match metric.critical {
-                            Some(ref c) => Some(c.as_str()),
-                            None => None,
-                        };
+                        let w = metric.warning.as_deref();
+                        let c = metric.critical.as_deref();
                         let m = Perfdata {
                             name,
                             value: *item,
@@ -519,21 +510,13 @@ impl Command {
                             continue;
                         }
                     }
-                    if !re_out.is_empty() {
-                        if re_out.iter().any(|re| re.is_match(&name)) {
-                            continue;
-                        }
+                    if !re_out.is_empty() && re_out.iter().any(|re| re.is_match(&name)) {
+                        continue;
                     }
                     let current_status = compute_status(s, &metric.warning, &metric.critical)?;
                     status = worst(status, current_status);
-                    let w = match metric.warning {
-                        Some(ref w) => Some(w.as_str()),
-                        None => None,
-                    };
-                    let c = match metric.critical {
-                        Some(ref c) => Some(c.as_str()),
-                        None => None,
-                    };
+                    let w = metric.warning.as_deref();
+                    let c = metric.critical.as_deref();
                     let m = Perfdata {
                         name,
                         value: *s,
@@ -577,7 +560,7 @@ impl Command {
                 let parser = Parser::new(&collect, check_format);
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
                     let res = parser
-                        .eval(&max_expr)
+                        .eval(max_expr)
                         .map_err(|e| error::Error::InvalidJSON {
                             message: format!(
                                 "Aggregation \"{}\", field \"max_expr\": {}",
@@ -592,14 +575,12 @@ impl Command {
                         }
                         _ => panic!("Aggregation must be applied to a vector"),
                     })
-                } else if let Some(max_value) = metric.max {
-                    Some(max_value)
                 } else {
-                    None
+                    metric.max
                 };
                 let min = if let Some(min_expr) = metric.min_expr.as_ref() {
                     let res = parser
-                        .eval(&min_expr)
+                        .eval(min_expr)
                         .map_err(|e| error::Error::InvalidJSON {
                             message: format!(
                                 "Aggregation \"{}\", field \"min_expr\": {}",
@@ -614,10 +595,8 @@ impl Command {
                         }
                         _ => panic!("Aggregation must be applied to a vector"),
                     })
-                } else if let Some(min_value) = metric.min {
-                    Some(min_value)
                 } else {
-                    None
+                    metric.min
                 };
                 let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
                     message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e),
@@ -638,14 +617,8 @@ impl Command {
                             let current_status =
                                 compute_status(item, &metric.warning, &metric.critical)?;
                             status = worst(status, current_status);
-                            let w = match metric.warning {
-                                Some(ref w) => Some(w.as_str()),
-                                None => None,
-                            };
-                            let c = match metric.critical {
-                                Some(ref c) => Some(c.as_str()),
-                                None => None,
-                            };
+                            let w = metric.warning.as_deref();
+                            let c = metric.critical.as_deref();
                             let m = Perfdata {
                                 name,
                                 value: *item,
@@ -664,14 +637,8 @@ impl Command {
                         let name = &metric.name;
                         let current_status = compute_status(s, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
-                        let w = match metric.warning {
-                            Some(ref w) => Some(w.as_str()),
-                            None => None,
-                        };
-                        let c = match metric.critical {
-                            Some(ref c) => Some(c.as_str()),
-                            None => None,
-                        };
+                        let w = metric.warning.as_deref();
+                        let c = metric.critical.as_deref();
                         let m = Perfdata {
                             name: name.to_string(),
                             value: *s,
@@ -715,16 +682,16 @@ impl Command {
             }
         }
 
-        if let Some(aggregations) = self.compute.aggregations.as_ref() {
-            if !aggregations.is_empty() {
-                println!("Aggregations:");
-                for metric in aggregations {
-                    let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
-                    println!(
-                        "  {} (--warning-{}, --critical-{})",
-                        metric.name, suffix, suffix
-                    );
-                }
+        if let Some(aggregations) = self.compute.aggregations.as_ref()
+            && !aggregations.is_empty()
+        {
+            println!("Aggregations:");
+            for metric in aggregations {
+                let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                println!(
+                    "  {} (--warning-{}, --critical-{})",
+                    metric.name, suffix, suffix
+                );
             }
         }
     }
