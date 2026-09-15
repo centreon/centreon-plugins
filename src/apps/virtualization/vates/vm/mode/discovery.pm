@@ -78,12 +78,10 @@ sub run {
             $vm_disco->{os_distro} = $vm->{os_version}->{distro} // '';
             $vm_disco->{os_uname} = $vm->{os_version}->{uname} // '';
         }
-        # Example : { "0/ipv4/0": "192.168.122.2", "0/ipv6/0": "fe80::c4eb:d6ff:fec6:41f3" },
-        $vm_disco->{ip_addresses} = {};
+        $vm_disco->{ip_addresses} = [];
         if (is_not_empty($vm->{addresses}) and ref $vm->{addresses} eq "HASH") {
-            $vm_disco->{ip_addresses} = $vm->{addresses};
             while ( my ($k, $v) = each %{$vm->{addresses}} ) {
-
+                push(@{$vm_disco->{ip_addresses}}, $v);
                 if ($v eq "127.0.0.1" or $v eq "localhost") {
                     next;
                 }
