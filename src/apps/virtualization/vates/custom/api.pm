@@ -76,7 +76,7 @@ sub check_options {
     $self->{http}->set_options(%{$self->{option_results}});
     $self->{statefile_cache}->check_options(option_results => $self->{option_results});
     # set auth header
-    $self->{auth_header} = MIME::Base64::encode_base64($self->{option_results}->{username} . ':' . $self->{option_results}->{password});
+    $self->{auth_header} = MIME::Base64::encode_base64($self->{option_results}->{username} . ':' . $self->{option_results}->{password}, '');
     chomp($self->{auth_header});
     # registered through add_header (not passed to request()) so it merges with, instead of
     # overriding, any --header value supplied on the command line.
