@@ -54,7 +54,7 @@
           "description": "Kind of SNMP operation. Values are case sensitive.",
           "type": "string",
           "enum": ["Get", "Walk"],
-          "oneOf": [
+          "anyOf": [
             { "const": "Get", "title": "Retrieve a single leaf OID value." },
             { "const": "Walk", "title": "Traverse the subtree under `oid` with repeated GetBulk requests." }
           ]
