@@ -208,14 +208,22 @@ fn snmp_plugin() -> Result<(), Error> {
                                 }
                             }
                             Arg::Long(name) => {
-                                return Err(Error::UnknownArgument {
-                                    arg: format!("--{}", name),
-                                });
+                                println!(
+                                    "UNKNOWN: {}",
+                                    Error::UnknownArgument {
+                                        arg: format!("--{}", name),
+                                    }
+                                );
+                                std::process::exit(3);
                             }
                             Arg::Short(c) => {
-                                return Err(Error::UnknownArgument {
-                                    arg: format!("-{}", c),
-                                });
+                                println!(
+                                    "UNKNOWN: {}",
+                                    Error::UnknownArgument {
+                                        arg: format!("-{}", c),
+                                    }
+                                );
+                                std::process::exit(3);
                             }
                             _ => {}
                         }
@@ -226,8 +234,8 @@ fn snmp_plugin() -> Result<(), Error> {
                 }
             },
             Err(err) => {
-                println!("Error: {}", err);
-                std::process::exit(1);
+                println!("UNKNOWN: {}", err);
+                std::process::exit(3);
             }
         }
     }
