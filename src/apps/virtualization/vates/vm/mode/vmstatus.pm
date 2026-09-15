@@ -81,14 +81,7 @@ sub manage_selection {
     if (is_empty($self->{option_results}->{vm_uuid})){
         $filter = "name_label:". $self->{option_results}->{vm_name};
     }
-    my $response = $options{custom}->request_api_get(
-        endpoint  => "vms",
-        get_param => [ "fields=name_label,power_state,uuid,os_version", "filter=" . $filter ],
-    );
-    if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1){
-        $self->{output}->option_exit(short_msg => "no vm found, api did not return an array with one element. Please check --vm-uuid and --vm-name parameter or --debug.");
-    }
-    my $vm = $response->[0];
+    my $vm = $options{custom}->get_vm_info();
 
     if (! $vm->{os_version} or ! $vm->{os_version}->{name}){
         $vm->{os_version}->{name} = "Unknown";
