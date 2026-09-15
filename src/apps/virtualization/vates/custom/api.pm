@@ -101,7 +101,7 @@ sub request_api_get {
 
     my ($content) = $self->request_api(%options, method => "GET");
 
-    return json_decode($content, booleans_as_strings => 1);
+    return json_decode($content, booleans_as_strings => 1, output => $self->{output});
 }
 
 # return one object from the Rest api by filtering on a parametrized field of the object
