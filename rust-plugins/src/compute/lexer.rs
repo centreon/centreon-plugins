@@ -193,6 +193,7 @@ impl<'input> Iterator for Lexer<'input> {
     }
 }
 
+#[cfg(test)]
 mod test {
     use crate::compute::lexer::{Lexer, Tok};
 
