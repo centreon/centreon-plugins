@@ -268,6 +268,17 @@ sub get_host_info {
     );
 
 }
+# Some api answers can contain empty value as tag, this remove them.
+sub clean_tags_array {
+    my ($self, $tags) = @_;
+    my @result = ();
+    for my $tag (@{$tags}) {
+        if (is_not_empty($tag)) {
+            push(@result, $tag);
+        }
+    }
+    return @result;
+}
 1;
 
 __END__

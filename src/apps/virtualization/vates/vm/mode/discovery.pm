@@ -97,14 +97,7 @@ sub run {
             }
 
         }
-
-        # there can be empty tag in the api answer, this allows to trim empty tags.
-        $vm_disco->{tags} = [];
-        for my $tag (@{$vm->{tags}}){
-            if (is_not_empty($tag)) {
-                push(@{$vm_disco->{tags}}, $tag);
-            }
-        }
+        $vm_disco->{tags} = $options{custom}->clean_tags_array($vm->{tags});
 
         push(@{$disco_stats->{results}}, $vm_disco);
     }

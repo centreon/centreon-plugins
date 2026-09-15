@@ -62,13 +62,8 @@ sub run {
         $pool_disco->{name_description} = $pool->{name_description} // '';
         $pool_disco->{HA_enabled} = $pool->{HA_enabled} // "";
 
-        # there can be empty tag in the api answer, this allows to trim empty tags.
-        $pool_disco->{tags} = [];
-        for my $tag (@{$pool->{tags}}){
-            if (is_not_empty($tag)) {
-                push(@{$pool_disco->{tags}}, $tag);
-            }
-        }
+        $pool_disco->{tags} = $options{custom}->clean_tags_array($pool->{tags});
+
         $pool_disco->{cpu_cores} = '';
         $pool_disco->{cpu_sockets} = '';
         if ($pool->{cpus} && ref($pool->{cpus}) eq "HASH") {
