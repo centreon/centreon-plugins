@@ -54,7 +54,6 @@ sub set_counters {
         {
             name             => 'vms',
             type             => COUNTER_TYPE_INSTANCE,
-            cb_prefix_output => 'prefix_vm_output',
             message_multiple => 'All VMs are ok'
         }
     ];
