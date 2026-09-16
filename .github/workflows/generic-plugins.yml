@@ -387,6 +387,7 @@ jobs:
           - distrib: trixie
             package_extension: deb
             arch: arm64
+
     name: deliver ${{ matrix.distrib }} ${{ matrix.arch }} on pulp
     steps:
       - name: Checkout sources

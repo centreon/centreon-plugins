@@ -504,6 +504,7 @@ jobs:
             package_extension: deb
           - distrib: trixie
             package_extension: deb
+
     name: deliver ${{ matrix.distrib }} on pulp
     steps:
       - name: Checkout sources
