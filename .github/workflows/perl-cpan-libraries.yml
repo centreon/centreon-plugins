@@ -632,8 +632,7 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
-        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
+        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
         uses: ./.github/actions/package-delivery-pulp
         with:
@@ -650,8 +649,7 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
-        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
+        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
         id: promote_pulp
         uses: ./.github/actions/promote-to-stable-pulp
         with:
