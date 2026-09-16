@@ -198,6 +198,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # the plugins domain has no ubuntu repositories: jammy/noble stay artifactory-only
         include:
           - distrib: el8
             package_extension: rpm
@@ -209,12 +210,6 @@ jobs:
             package_extension: deb
           - distrib: trixie
             package_extension: deb
-          - distrib: jammy
-            package_extension: deb
-          - distrib: noble
-            package_extension: deb
-
-
     name: deliver ${{ matrix.distrib }} on pulp
     steps:
       - name: Checkout sources

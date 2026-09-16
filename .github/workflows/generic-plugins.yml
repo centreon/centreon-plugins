@@ -364,6 +364,7 @@ jobs:
       matrix:
         # package-delivery-pulp takes no arch input: each row simply restores the cache holding
         # its own architecture and uploads it.
+        # the plugins domain has no ubuntu repositories: jammy/noble stay artifactory-only
         include:
           - distrib: el8
             package_extension: rpm
@@ -386,19 +387,6 @@ jobs:
           - distrib: trixie
             package_extension: deb
             arch: arm64
-          - distrib: jammy
-            package_extension: deb
-            arch: amd64
-          - distrib: jammy
-            package_extension: deb
-            arch: arm64
-          - distrib: noble
-            package_extension: deb
-            arch: amd64
-          - distrib: noble
-            package_extension: deb
-            arch: arm64
-
     name: deliver ${{ matrix.distrib }} ${{ matrix.arch }} on pulp
     steps:
       - name: Checkout sources
