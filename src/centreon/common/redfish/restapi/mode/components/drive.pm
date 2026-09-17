@@ -46,19 +46,20 @@ sub check {
 
             $drive->{Status}->{Health} = defined($drive->{Status}->{Health}) ? $drive->{Status}->{Health} : 'n/a';
             $drive->{Status}->{State} = defined($drive->{Status}->{State}) ? $drive->{Status}->{State} : 'n/a';
+            my $location = defined($drive->{PhysicalLocation}->{PartLocation}->{ServiceLabel}) ? $drive->{PhysicalLocation}->{PartLocation}->{ServiceLabel} : 'n/a';
             next if ($self->check_filter(section => 'drive', instance => $instance));
             $self->{components}->{drive}->{total}++;
-            
+
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "drive '%s/%s/%s' status is '%s' [instance: %s, state: %s, location: %s]",
                     $system_name,
                     $storage_name,
                     $drive->{Id},
-                    $drive->{Status}->{Health}, 
+                    $drive->{Status}->{Health},
                     $instance,
                     $drive->{Status}->{State},
-                    $drive->{PhysicalLocation}->{PartLocation}->{ServiceLabel}
+                    $location
                 )
             );
 
