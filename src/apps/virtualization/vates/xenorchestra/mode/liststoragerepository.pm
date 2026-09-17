@@ -41,7 +41,9 @@ sub run {
     my ($self, %options) = @_;
 
     my $response = $options{custom}->request_api_get(
-        endpoint => "srs", get_param => ['fields=*']);
+        endpoint => "srs",
+        get_param => ['fields=*']
+    );
 
     for my $sr (@{$response}) {
         my $tags = join(', ', grep { is_not_empty($_) } @{$sr->{tags}});
@@ -72,7 +74,8 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['name',
+    $self->{output}->add_disco_format(elements => [
+        'name',
         'uuid',
         'type',
         'content_type',
@@ -103,7 +106,7 @@ sub disco_show {
             shared             => $sr->{shared},
             SR_type            => $sr->{SR_type},
             pool_uuid          => $sr->{'$pool'},
-            tags               => $tags,
+            tags               => $tags
         );
     }
 }

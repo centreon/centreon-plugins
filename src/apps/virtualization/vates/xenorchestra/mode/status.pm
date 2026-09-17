@@ -54,7 +54,7 @@ sub set_counters {
             set              => {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
                 key_values                     => [ { name => 'api_status' } ],
-                output_template => "api returned '%{api_status}'",
+                output_template                => "api returned '%{api_status}'",
             }
         }
     ];
@@ -65,7 +65,7 @@ sub manage_selection {
     my $response = $options{custom}->request_api(
         method          => "GET",
         endpoint        => "ping",
-        critical_status => '%{http_code} < 200 or %{http_code} >= 300',
+        critical_status => '%{http_code} < 200 or %{http_code} >= 300'
     );
     my $json;
     eval {

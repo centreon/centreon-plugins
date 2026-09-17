@@ -31,14 +31,14 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'include-name:s' => { name => 'include_name' },
-            'exclude-name:s' => { name => 'exclude_name' },
-            'include-uuid:s' => { name => 'include_uuid' },
-            'exclude-uuid:s' => { name => 'exclude_uuid' },
-            'include-pool:s' => { name => 'include_pool' },
-            'exclude-pool:s' => { name => 'exclude_pool' },
+            'include-name:s'    => { name => 'include_name' },
+            'exclude-name:s'    => { name => 'exclude_name' },
+            'include-uuid:s'    => { name => 'include_uuid' },
+            'exclude-uuid:s'    => { name => 'exclude_uuid' },
+            'include-pool:s'    => { name => 'include_pool' },
+            'exclude-pool:s'    => { name => 'exclude_pool' },
             'include-sr-type:s' => { name => 'include_sr_type' },
-            'exclude-sr-type:s' => { name => 'exclude_sr_type' },
+            'exclude-sr-type:s' => { name => 'exclude_sr_type' }
         }
     );
 
@@ -50,12 +50,12 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         {
-            name             => 'srs',
-            type             => COUNTER_TYPE_INSTANCE,
+            name              => 'srs',
+            type              => COUNTER_TYPE_INSTANCE,
             message_separator => ', ',
-            prefix_output => "storage repository '%{display}' ",
-            message_multiple => 'All storage repositories are ok',
-            skipped_code => { NO_VALUE => 1 }
+            prefix_output     => "storage repository '%{display}' ",
+            message_multiple  => 'All storage repositories are ok',
+            skipped_code      => { NO_VALUE => 1 }
         }
     ];
     $self->{maps_counters}->{srs} = [

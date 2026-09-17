@@ -33,7 +33,7 @@ sub new {
         'status'                  => 'apps::virtualization::vates::xenorchestra::mode::status',
         'vm-status'               => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
         'storage-repository'      => 'apps::virtualization::vates::xenorchestra::mode::storagerepository',
-        'list-storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::liststoragerepository',
+        'list-storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::liststoragerepository'
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';
