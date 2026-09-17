@@ -62,7 +62,7 @@ cgs-no-connection ${tc}
     ...    --
     ...    1
     ...    --hostname='128.0.20.20'
-    ...    UNKNOWN: Could not connect to 128.0.20.20:2024 is the hostname and the snmp community correct ? Resource temporarily unavailable (os error 11)
+    ...    UNKNOWN: No valid SNMP response from 128.0.20.20:2024 after 3 attempts (timeout 1s per attempt)
     ...    2
     ...    --snmp-community='badCommunity'
-    ...    UNKNOWN: Could not connect to 127.0.0.1:2024 is the hostname and the snmp community correct ? Resource temporarily unavailable (os error 11)
+    ...    UNKNOWN: No valid SNMP response from 127.0.0.1:2024 after 3 attempts (timeout 1s per attempt)
