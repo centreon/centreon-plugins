@@ -89,18 +89,16 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # get_name_and_uuid only resolves identity (uuid/name_label) and caches it on disk, unlike
-    # get_host_info which always hits the API live. We don't need any other host field here: the
-    # "is the host actually reachable" check is deferred to the /stats call itself below.
+    # using get_name_and_uuid instead of get_host_info to profit from caching
+    # the "is the host actually started/reachable" check is deferred to the /stats call itself below.
     my $host = $options{custom}->get_name_and_uuid(type => "host", api_endpoint => "hosts");
 
-    # silently_fail lets us read the (non-200) error body ourselves instead of the http layer
-    # auto-exiting with a generic "500 ..." UNKNOWN: a disabled/halted host makes this endpoint
-    # fail with a XAPI "HOST_OFFLINE" error, which we can report with a clearer message.
+    # silently_fail lets us read the (non-200) error body ourselves instead of the http layer exiting upon failure.
     my $host_stats = $options{custom}->request_api_get(endpoint => 'hosts/' . $host->{uuid} . '/stats', silently_fail => 1);
 
     if (defined($host_stats->{error})) {
-        $self->{output}->option_exit(short_msg => "host '" . $host->{name_label} . "' is not enabled/running, can not get CPU usage data (" . $host_stats->{error} . ").");
+        $self->{output}->option_exit(short_msg =>
+            "host '" . $host->{name_label} . "' is not enabled/running, can not get CPU usage data (" . $host_stats->{error} . ").");
     }
 
     if (
@@ -109,7 +107,8 @@ sub manage_selection {
         or ref($host_stats->{stats}->{cpus}) ne "HASH"
         or scalar(keys %{$host_stats->{stats}->{cpus}}) == 0
     ) {
-        $self->{output}->option_exit(short_msg => "Field cpus not found in API response for host '" . $host->{name_label} . "'. Please check --debug or the Swagger documentation.");
+        $self->{output}->option_exit(short_msg =>
+            "Field cpus not found in API response for host '" . $host->{name_label} . "'. Please check --debug or the Swagger documentation.");
     }
 
     # the API returns one time series (percentage) per physical core, the last value of each
@@ -124,7 +123,8 @@ sub manage_selection {
         $cores++;
     }
     if ($cores == 0) {
-        $self->{output}->option_exit(short_msg => "Field cpus is empty in API response for host '" . $host->{name_label} . "'. Please check --debug or the Swagger documentation.");
+        $self->{output}->option_exit(short_msg =>
+            "Field cpus is empty in API response for host '" . $host->{name_label} . "'. Please check --debug or the Swagger documentation.");
     }
 
     $self->{cpu} = {

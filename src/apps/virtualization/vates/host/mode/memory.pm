@@ -115,7 +115,8 @@ sub manage_selection {
     my $host = $options{custom}->get_host_info(fields => "name_label,enabled,power_state,memory,uuid");
 
     if ($host->{enabled} ne 'true' or $host->{power_state} ne 'Running') {
-        $self->{output}->option_exit(short_msg => "host '" . $host->{name_label} . "' is not enabled/running, can not get memory usage data.");
+        $self->{output}->option_exit(short_msg =>
+            "host '" . $host->{name_label} . "' is not enabled/running, can not get memory usage data.");
     }
 
     if (
@@ -124,14 +125,16 @@ sub manage_selection {
         or !defined($host->{memory}->{size})
         or !defined($host->{memory}->{usage})
     ) {
-        $self->{output}->option_exit(short_msg => "Field memory not found in API response for host '" . $host->{name_label} . "'. Please check --debug or the Swagger documentation.");
+        $self->{output}->option_exit(short_msg =>
+            "Field memory not found in API response for host '" . $host->{name_label} . "'. Please check --debug or the Swagger documentation.");
     }
 
     my $total = $host->{memory}->{size};
     my $used  = $host->{memory}->{usage};
 
     if ($total == 0) {
-        $self->{output}->option_exit(short_msg => "'" . $host->{uuid} . "' host reports a total memory of 0, inconsistent data.");
+        $self->{output}->option_exit(short_msg =>
+            "'" . $host->{uuid} . "' host reports a total memory of 0, inconsistent data.");
     }
 
     $self->{memory} = {
