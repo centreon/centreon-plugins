@@ -1,16 +1,23 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/centreon/centreon-plugins/develop/rust-plugins/schema/rs-collection.schema.json",
+  "$id": "https://centreon.github.io/centreon-plugins/rs-collections/snmp/v0/rs-collection.schema.json",
   "title": "Centreon Rust SNMP collection",
   "description": "Declarative definition of a check executed by the `centreon-plugin-rust-snmp` binary (see `rust-plugins/`).\n\nA collection describes three stages, run in order:\n\n1. `collect` — the SNMP queries to perform against the target;\n2. `compute` — the metrics (and optional aggregations) derived from the collected values, with their thresholds;\n3. `output` — how the resulting status and metrics are rendered as a Monitoring Plugins compatible message.\n\nThe file is passed to the binary with `--json` / `-j`.",
   "type": "object",
-  "required": ["collect", "compute"],
+  "required": ["format_version", "collect", "compute"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
       "type": "string",
-      "description": "Optional reference to this schema, so editors provide completion and inline documentation.",
-      "examples": ["../../schema/rs-collection.schema.json"]
+      "description": "Reference to this schema, so editors provide completion and inline documentation. It is read by editors only: the plugin ignores it, and a validator must be given the schema explicitly.\n\nUse the published URL rather than a relative path: a collection is read wherever it is installed or copied, not only inside a checkout of the repository. It carries the format version, and must be the URL of the version the `format_version` key names.",
+      "examples": [
+        "https://centreon.github.io/centreon-plugins/rs-collections/snmp/v0/rs-collection.schema.json"
+      ]
+    },
+    "format_version": {
+      "description": "Version of the collection format this file targets. The plugin refuses a collection whose version it does not support, instead of failing on an unexpected key.\n\nThe format is versioned independently of the plugin package: only a change breaking existing collections increments it. Version `0` is the beta format and carries no stability guarantee — it may break until the first stable release, which will be version `1`.",
+      "type": "integer",
+      "const": 0
     },
     "collect": { "$ref": "#/$defs/collect" },
     "compute": { "$ref": "#/$defs/compute" },
