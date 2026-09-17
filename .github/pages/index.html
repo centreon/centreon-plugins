@@ -54,22 +54,22 @@
   <main>
     <h1>Centreon Plugins — schema references</h1>
     <p class="lead">
-      Generated from the JSON Schema files of the
+      Format of the JSON collection files consumed by the
+      <code>centreon-plugin-rust-snmp</code> binary, generated from the JSON Schema files of the
       <a href="https://github.com/centreon/centreon-plugins">centreon-plugins</a>
       repository, on every change to the <code>develop</code> branch.
+      One reference per format version: a collection keeps validating against the version it
+      was written for.
     </p>
     <ul>
-      <li>
-        <a class="card" href="rs-collections/snmp/">
-          <strong>Rust SNMP collection</strong>
-          <span>Format of the JSON collection files consumed by the <code>centreon-plugin-rust-snmp</code> binary.</span>
-        </a>
-      </li>
+      <!-- SCHEMA_VERSIONS -->
     </ul>
   </main>
   <footer>
-    Machine-readable source:
-    <a href="https://github.com/centreon/centreon-plugins/blob/develop/rust-plugins/schema/rs-collection.schema.json">rs-collection.schema.json</a>
+    Each reference above serves its own machine-readable
+    <code>rs-collection.schema.json</code>: point the <code>$schema</code> key of a collection at
+    that URL to get completion in your editor. The URL carries the format version, and a published
+    one never changes.
   </footer>
 </body>
 </html>

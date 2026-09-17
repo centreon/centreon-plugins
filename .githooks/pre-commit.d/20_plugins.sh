@@ -87,6 +87,20 @@ function check_json_schema() {
     fi
 }
 
+function check_rs_collection() {
+    local file="$1"
+
+    # a Rust SNMP collection is recognised by where it lives
+    [[ "$file" == "$rs_collections_dir"/*/*.json ]] || return 0
+
+    # the very script the CI runs, so a commit cannot pass a check the pipeline fails
+    info "--> Checking the collection against the format version it declares"
+    if ! $rs_collections_validator "$file" > "$tmpfile" 2>&1 ; then
+        error "$file is not a valid collection"
+        cat "$tmpfile"
+    fi
+}
+
 jq=$(type -p jq) || fatal "Could not locate jq command"
 # Determining the robotidy command
 robocop_path=$(type -p robocop)
@@ -96,6 +110,9 @@ yamllint_path=$(type -p yamllint)
 check_jsonschema_path=$(type -p check-jsonschema)
 # JSON Schema draft this repository standardises on
 json_schema_draft="https://json-schema.org/draft/2020-12/schema"
+# Rust SNMP collections, and the script validating them, shared with the CI
+rs_collections_dir="rust-plugins/rs-collections"
+rs_collections_validator=".github/scripts/validate-rs-collections.sh"
 
 # Get list of committed files
 mapfile -t committed_files < <(git diff --cached --name-only --diff-filter=ACMR)
@@ -157,6 +174,7 @@ for file in "${committed_files[@]}"; do
             jq '.' "$file" >/dev/null 2>&1 || error "JSON file $file is not valid"
             check_tabs_crlf "$file"
             check_json_schema "$file"
+            check_rs_collection "$file"
           ;;
         yml|yaml)
             if [[ -z "$yamllint_path" ]] ; then
