@@ -102,6 +102,37 @@ use centreon::plugins::constants qw(:counters :values);
 }
 
 {
+    # COUNTER_TYPE_GROUP holding several instances whose sub blocks are all empty.
+    # 'message_multiple' is emitted for >= 2 instances, before any counter runs.
+    package Test::Mode::EmptyGroupInstances;
+    use base qw(Test::Mode::PartialGroup);
+
+    sub manage_selection {
+        my ($self, %options) = @_;
+
+        $self->{servers} = {
+            srv1 => { name => 'srv1', disks => {} },
+            srv2 => { name => 'srv2', disks => {} }
+        };
+    }
+}
+
+{
+    # Same, for COUNTER_TYPE_MULTIPLE
+    package Test::Mode::EmptyMultipleInstances;
+    use base qw(Test::Mode::EmptyMultiple);
+
+    sub manage_selection {
+        my ($self, %options) = @_;
+
+        $self->{servers} = {
+            srv1 => { name => 'srv1', disks => {} },
+            srv2 => { name => 'srv2', disks => {} }
+        };
+    }
+}
+
+{
     # COUNTER_TYPE_GLOBAL: 'total' is fed, 'missing' is not (NO_VALUE)
     package Test::Mode::Global;
     use base qw(centreon::plugins::templates::counter);
@@ -213,6 +244,14 @@ sub short {
     return $output->{global_short_concat_outputs}->{ uc($severity) };
 }
 
+# Severity the plugin would exit with. Messages of a lower severity are never
+# displayed, so this is what the user actually sees.
+sub status {
+    my ($output) = @_;
+
+    return $output->{myerrors}->{ $output->{global_status} };
+}
+
 sub long {
     my ($output) = @_;
 
@@ -240,6 +279,23 @@ subtest 'empty multiple block reports no data' => sub {
     my $output = run_mode('Test::Mode::EmptyMultiple');
 
     is(short($output, 'unknown'), 'No data!', 'UNKNOWN: No data!');
+};
+
+# 'message_multiple' is emitted before the instance loop, so it reaches the OK
+# bucket even when every sub block turns out to be empty. What matters is that it
+# never becomes the status the user sees.
+subtest 'several group instances with only empty sub blocks report no data' => sub {
+    my $output = run_mode('Test::Mode::EmptyGroupInstances');
+
+    is(short($output, 'unknown'), 'No data!', 'UNKNOWN: No data!');
+    is(status($output), 'UNKNOWN', "'All servers are ok' does not end up as the exit status");
+};
+
+subtest 'several multiple instances with only empty sub blocks report no data' => sub {
+    my $output = run_mode('Test::Mode::EmptyMultipleInstances');
+
+    is(short($output, 'unknown'), 'No data!', 'UNKNOWN: No data!');
+    is(status($output), 'UNKNOWN', "'All servers are ok' does not end up as the exit status");
 };
 
 subtest 'global block whose counters all lack values reports no data' => sub {

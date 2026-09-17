@@ -250,12 +250,16 @@ sub output_add {
     }
 }
 
-sub has_short_output {
+sub short_output_count {
     my ($self, %options) = @_;
 
-    # Tells whether at least one short message has been added, whatever its severity.
-    # Used by the counter template to detect a mode that collected nothing at all.
-    return (scalar(grep { defined($_) } values(%{$self->{global_short_concat_outputs}})) > 0) ? 1 : 0;
+    # Number of short messages added so far, whatever their severity. The counter
+    # template uses it to tell apart the messages that report something from the ones
+    # it emitted itself before knowing anything.
+    my $count = 0;
+    $count += scalar(@$_) foreach (values(%{$self->{global_short_outputs}}));
+
+    return $count;
 }
 
 sub perfdata_add {
