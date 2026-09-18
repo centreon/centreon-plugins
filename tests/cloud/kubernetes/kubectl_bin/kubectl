@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# Test-only trigger: any invocation carrying --simulate-timeout hangs past
+# the plugin's configured --timeout, to exercise its timeout handling.
+case "$*" in
+    *--simulate-timeout*)
+        sleep 5
+        exit 0
+        ;;
+esac
+
 if [ "$1" = "get" ] && [ "$2" = "nodes" ]; then
 cat<<EOF
 {
@@ -430,6 +439,146 @@ cat<<EOF
                 "qosClass": "Burstable",
                 "startTime": "2026-04-22T12:00:09Z"
             }
+        },
+        {
+            "metadata": {
+                "name": "web-1",
+                "namespace": "default",
+                "uid": "uuid-web-1",
+                "creationTimestamp": "2026-06-20T10:00:00Z"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "web",
+                        "image": "busybox:1.36",
+                        "resources": {
+                            "requests": {
+                                "cpu": "250m",
+                                "memory": "64Mi"
+                            }
+                        }
+                    }
+                ],
+                "nodeName": "test-node-1",
+                "restartPolicy": "Always"
+            },
+            "status": {
+                "phase": "Running"
+            }
+        },
+        {
+            "metadata": {
+                "name": "cache-1",
+                "namespace": "default",
+                "uid": "uuid-cache-1",
+                "creationTimestamp": "2026-06-20T10:00:00Z"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "cache",
+                        "image": "busybox:1.36",
+                        "resources": {}
+                    }
+                ],
+                "nodeName": "test-node-1",
+                "restartPolicy": "Always"
+            },
+            "status": {
+                "phase": "Running"
+            }
+        },
+        {
+            "metadata": {
+                "name": "multi-1",
+                "namespace": "default",
+                "uid": "uuid-multi-1",
+                "creationTimestamp": "2026-06-20T10:00:00Z"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "app",
+                        "image": "busybox:1.36",
+                        "resources": {
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            }
+                        }
+                    },
+                    {
+                        "name": "sidecar",
+                        "image": "busybox:1.36",
+                        "resources": {
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "100Mi"
+                            }
+                        }
+                    }
+                ],
+                "nodeName": "test-node-1",
+                "restartPolicy": "Always"
+            },
+            "status": {
+                "phase": "Running"
+            }
+        },
+        {
+            "metadata": {
+                "name": "pending-1",
+                "namespace": "kube-system",
+                "uid": "uuid-pending-1",
+                "creationTimestamp": "2026-06-20T10:00:00Z"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "impossible",
+                        "image": "busybox:1.36",
+                        "resources": {
+                            "requests": {
+                                "cpu": "1000",
+                                "memory": "1000Gi"
+                            }
+                        }
+                    }
+                ],
+                "nodeName": "test-node-1",
+                "restartPolicy": "Always"
+            },
+            "status": {
+                "phase": "Pending"
+            }
+        },
+        {
+            "metadata": {
+                "name": "idle-1",
+                "namespace": "default",
+                "uid": "uuid-idle-1",
+                "creationTimestamp": "2026-06-20T10:00:00Z"
+            },
+            "spec": {
+                "containers": [
+                    {
+                        "name": "idle",
+                        "image": "busybox:1.36",
+                        "resources": {
+                            "requests": {
+                                "cpu": "100m",
+                                "memory": "64Mi"
+                            }
+                        }
+                    }
+                ],
+                "nodeName": "test-node-1",
+                "restartPolicy": "Always"
+            },
+            "status": {
+                "phase": "Running"
+            }
         }
     ],
     "kind": "List",
@@ -438,6 +587,97 @@ cat<<EOF
     }
 }
 EOF
+fi
+
+if [ "$1" = "get" ]; then
+    case "$2" in
+        --raw=*/apis/metrics.k8s.io/v1beta1/pods*)
+cat<<'EOF'
+{
+  "kind": "PodMetricsList",
+  "apiVersion": "metrics.k8s.io/v1beta1",
+  "metadata": {},
+  "items": [
+    {
+      "metadata": {
+        "name": "web-1",
+        "namespace": "default"
+      },
+      "timestamp": "2026-06-20T10:05:00Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "web",
+          "usage": {
+            "cpu": "50m",
+            "memory": "32Mi"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "idle-1",
+        "namespace": "default"
+      },
+      "timestamp": "2026-06-20T10:05:00Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "idle",
+          "usage": {
+            "cpu": "0m",
+            "memory": "0Mi"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "cache-1",
+        "namespace": "default"
+      },
+      "timestamp": "2026-06-20T10:05:00Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "cache",
+          "usage": {
+            "cpu": "10m",
+            "memory": "16Mi"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "name": "multi-1",
+        "namespace": "default"
+      },
+      "timestamp": "2026-06-20T10:05:00Z",
+      "window": "30s",
+      "containers": [
+        {
+          "name": "app",
+          "usage": {
+            "cpu": "20m",
+            "memory": "20Mi"
+          }
+        },
+        {
+          "name": "sidecar",
+          "usage": {
+            "cpu": "5m",
+            "memory": "5Mi"
+          }
+        }
+      ]
+    }
+  ]
+}
+EOF
+            ;;
+    esac
 fi
 
 if [ "$1" = "get" ] && [ "$2" = "resourcequotas" ]; then
