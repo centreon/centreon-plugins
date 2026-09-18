@@ -73,3 +73,9 @@ Storage Repository ${tc}
     ...    13
     ...    --include-pool=00969214-df4d-83cb-78d5-bec9181903d4
     ...    OK: All storage repositories are ok | 'DVD drives#storage.space.total.bytes'=1073741312B;;;0; 'DVD drives#storage.space.usage.percentage'=100.00%;;;0;100 'Local storage#storage.space.total.bytes'=61488377856B;;;0; 'Local storage#storage.space.usage.percentage'=12.22%;;;0;100 'ISO#storage.space.total.bytes'=18843783168B;;;0; 'ISO#storage.space.usage.percentage'=17.73%;;;0;100 'nfs-HA-storage#storage.space.total.bytes'=400732192768B;;;0; 'nfs-HA-storage#storage.space.usage.percentage'=33.12%;;;0;100 'DVD drives#storage.space.total.bytes'=1073741312B;;;0; 'DVD drives#storage.space.usage.percentage'=100.00%;;;0;100 'HA#storage.space.total.bytes'=32143048704B;;;0; 'HA#storage.space.usage.percentage'=7.08%;;;0;100
+    ...    14
+    ...    --include-host-names="vates3"
+    ...    OK: storage repository 'DVD drives' total size: 1024.00MB, used: 100.00 % | 'DVD drives#storage.space.total.bytes'=1073741312B;;;0; 'DVD drives#storage.space.usage.percentage'=100.00%;;;0;100
+    ...    15
+    ...    --exclude-host-names='^vates$'
+    ...    OK: storage repository 'DVD drives' total size: 1024.00MB, used: 100.00 % | 'DVD drives#storage.space.total.bytes'=1073741312B;;;0; 'DVD drives#storage.space.usage.percentage'=100.00%;;;0;100

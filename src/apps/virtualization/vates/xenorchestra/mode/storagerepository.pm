@@ -21,7 +21,7 @@ package apps::virtualization::vates::xenorchestra::mode::storagerepository;
 use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::misc qw/is_excluded is_not_empty/;
 use centreon::plugins::constants qw(:counters :values);
 
 sub new {
@@ -31,14 +31,17 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'include-name:s'    => { name => 'include_name' },
-            'exclude-name:s'    => { name => 'exclude_name' },
-            'include-uuid:s'    => { name => 'include_uuid' },
-            'exclude-uuid:s'    => { name => 'exclude_uuid' },
-            'include-pool:s'    => { name => 'include_pool' },
-            'exclude-pool:s'    => { name => 'exclude_pool' },
-            'include-sr-type:s' => { name => 'include_sr_type' },
-            'exclude-sr-type:s' => { name => 'exclude_sr_type' }
+            'include-name:s'                   => { name => 'include_name' },
+            'exclude-name:s'                   => { name => 'exclude_name' },
+            'include-uuid:s'                   => { name => 'include_uuid' },
+            'exclude-uuid:s'                   => { name => 'exclude_uuid' },
+            'include-host-names:s'             => { name => 'include_host_name', default => '' },
+            'exclude-host-names:s'             => { name => 'exclude_host_name', default => '' },
+            'include-pool:s'                   => { name => 'include_pool' },
+            'exclude-pool:s'                   => { name => 'exclude_pool' },
+            'include-sr-type:s'                => { name => 'include_sr_type' },
+            'exclude-sr-type:s'                => { name => 'exclude_sr_type' },
+            'host-storage-config-cache-time:s' => {name => 'host_storage_config_cache_time', default => 10, numeric => 1, }
         }
     );
 
@@ -82,10 +85,13 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->request_api_get(endpoint => "srs", get_param => ['fields=name_label,uuid,$pool,SR_type,shared,physical_usage,size']);
+    my $response = $options{custom}->request_api_get(
+        endpoint => "srs",
+        get_param => ['fields=name_label,uuid,$pool,SR_type,shared,physical_usage,size,$PBDs']
+    );
 
     $self->{srs} = {};
-    for my $sr (@$response){
+    STORAGE_REPOSITORY: for my $sr (@$response) {
         if (is_excluded($sr->{name_label}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})) {
             next
         }
@@ -101,6 +107,17 @@ sub manage_selection {
         if ($sr->{size} <= 0) {
             $self->{output}->output_add(long_msg => "skipping '$sr->{name_label}': repository size is 0.", debug => 1);
             next;
+        }
+        # if we filter on host name, we should try to cache the PBD and host property for a small amount of time.
+        if (is_not_empty($self->{option_results}->{include_host_name}) or is_not_empty($self->{option_results}->{exclude_host_name})){
+            my $pbds = $options{custom}->get_pbd_to_host(cache_time => $self->{option_results}->{host_storage_config_cache_time});
+
+            for my $pbd (@{$sr->{'$PBDs'}}) {
+                if (is_excluded($pbds->{$pbd}, $self->{option_results}->{include_host_name}, $self->{option_results}->{exclude_host_name}, output => $self->{output})) {
+                    next STORAGE_REPOSITORY;
+                }
+            }
+
         }
         $self->{srs}->{$sr->{uuid}} = {
             display    => $sr->{name_label},
@@ -157,6 +174,21 @@ Non exhaustive list of possible value : C<ext>, C<nfs>, C<udev>, C<iso>, C<linst
 =item B<--exclude-sr-type>
 
 Exclude storage repository by C<SR_type> (can be a regexp).
+
+=item B<--include-host-names>
+
+Filter storage repository by C<host names> (can be a regexp). One storage repository can be split across multiples physical hosts.
+Only storage repository present on matching hosts are checked.
+
+=item B<--exclude-host-names>
+
+Exclude storage repository by C<host names> (can be a regexp).
+
+=item B<--host-storage-config-cache-time>
+
+for C<--include-host-names> and C<--exclude-host-names>, cache the Storage Repository -> Physical Block Device -> host relation.
+Cache time is expressed in minutes.
+Default : 10
 
 =item B<--warning-total-size>
 

@@ -47,10 +47,22 @@ sub run {
 
     for my $sr (@{$response}) {
         my $tags = join(', ', grep { is_not_empty($_) } @{$sr->{tags}});
+        my $pbds = $options{custom}->get_pbd_to_host(cache_time => 0);
+
+        my @host_storage_name;
+
+        for my $pbd (@{$sr->{'$PBDs'}}) {
+            if ($pbds->{$pbd}) {
+                push(@host_storage_name, $pbds->{$pbd});
+            }
+        }
+        my $filter_host_names = (scalar(@host_storage_name)) ? '^' . join("|",@host_storage_name) . '$' : '';
         $self->{output}->output_add(
             long_msg => sprintf(
-                "  %s [uuid=%s] [type=%s] [content_type=%s] [allocationStrategy=%s] [inMaintenanceMode=%s] [name_description=%s] [shared=%s] [SR_type=%s] [pool_uuid=%s] [tags=%s]",
+                "  %s [host_filter=%s] [host_display=%s] [uuid=%s] [type=%s] [content_type=%s] [allocationStrategy=%s] [inMaintenanceMode=%s] [name_description=%s] [shared=%s] [SR_type=%s] [pool_uuid=%s] [tags=%s]",
                 $sr->{name_label},
+                $filter_host_names,
+                join("-",@host_storage_name),
                 $sr->{uuid},
                 $sr->{type},
                 $sr->{content_type},
@@ -76,6 +88,8 @@ sub disco_format {
 
     $self->{output}->add_disco_format(elements => [
         'name',
+        'hosts_filter',
+        'host_display',
         'uuid',
         'type',
         'content_type',
@@ -93,9 +107,23 @@ sub disco_show {
 
     my $response = $options{custom}->request_api_get(
         endpoint => "srs", get_param => ['fields=*']);
+
+
+    my $pbds = $options{custom}->get_pbd_to_host(cache_time => 0);
+
     for my $sr (@{$response}) {
         my $tags = join(', ', grep { is_not_empty($_) } @{$sr->{tags}});
+        my @host_storage_name;
+
+        for my $pbd (@{$sr->{'$PBDs'}}) {
+            if ($pbds->{$pbd}) {
+                push(@host_storage_name, $pbds->{$pbd});
+            }
+        }
+        my $filter_host_names = (scalar(@host_storage_name)) ? '^' . join("|",@host_storage_name) . '$' : '';
         $self->{output}->add_disco_entry(
+            hosts_filter       => $filter_host_names,
+            hosts_display       => join("-",@host_storage_name),
             name               => $sr->{name_label},
             uuid               => $sr->{uuid},
             type               => $sr->{type},
