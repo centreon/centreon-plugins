@@ -25,60 +25,34 @@ mapfile -t E_SHA256     < <(echo "$PACKAGES_JSON" | jq -r '.[].sha256')
 mapfile -t E_REPOSITORY < <(echo "$PACKAGES_JSON" | jq -r '.[].repository')
 mapfile -t E_BASEPATH   < <(echo "$PACKAGES_JSON" | jq -r '.[].base_path')
 mapfile -t E_SUITE      < <(echo "$PACKAGES_JSON" | jq -r '.[].suite')
-mapfile -t E_RELPATH    < <(echo "$PACKAGES_JSON" | jq -r '.[].relative_path')
 
 # --- physical presence: content units in the repository's latest version ----
-# newest first, stopping as soon as every expected package of the repository
-# has been seen: the shared plugins repository holds 10k+ module packages and
-# deep offset pagination both costs the server dearly and eventually fails,
-# while the freshly delivered packages are the newest content by construction.
-# The listing goes to a file and grep reads the file: piping it into grep -q
-# would SIGPIPE the writer on the (early-exiting) first match, and pipefail
-# then turns every successful match into a false negative.
-declare -A PRESENT_BY_REPO   # repo -> file holding one relative_path per line
+# one lookup per expected package, by sha256 within the repository version: the
+# shared repositories hold 10k+ packages and listing them, even newest first,
+# is slow enough to hit the gateway timeout, which then read as "absent" while
+# the package was published and fetchable. --retry covers those transient 5xx.
+declare -A VERSION_BY_REPO   # repo -> latest_version_href, empty when missing
 for repo in $(printf '%s\n' "${E_REPOSITORY[@]}" | sort -u); do
-  PRESENT_BY_REPO[$repo]=$(mktemp)
-  version_href=$(pulp deb repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
-  if [[ -z "$version_href" ]]; then
-    echo "[WARN] Repository $repo does not exist or has no version"
-    continue
-  fi
-  url="$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/packages/?$(
-    printf 'repository_version=%s&pulp_label_select=%s&ordering=-pulp_created&limit=1000' \
-      "$(jq -rn --arg v "$version_href" '$v | @uri')" \
-      "$(jq -rn --arg v "module=$MODULE_NAME" '$v | @uri')"
-  )"
-  pages=0
-  while [[ -n "$url" ]] && ((pages < 20)); do
-    page=$(curl -fsSL -H "Authorization: Bearer $PULP_TOKEN" "$url") || {
-      echo "[WARN] presence page fetch failed for $repo ($url)" >&2
-      break
-    }
-    if ((pages == 0)); then
-      echo "[INFO] Repository $repo holds $(echo "$page" | jq -r '.count') module package(s) in its latest version"
-    fi
-    echo "$page" | jq -r '.results[].relative_path' >> "${PRESENT_BY_REPO[$repo]}"
-    pages=$((pages + 1))
-    all_found=true
-    for i in "${!E_FILENAME[@]}"; do
-      [[ "${E_REPOSITORY[$i]}" == "$repo" ]] || continue
-      if ! grep -Fxq "${E_RELPATH[$i]}" "${PRESENT_BY_REPO[$repo]}"; then
-        all_found=false
-        break
-      fi
-    done
-    [[ "$all_found" == "true" ]] && break
-    url=$(echo "$page" | jq -r '.next // empty')
-  done
+  VERSION_BY_REPO[$repo]=$(pulp deb repository show --name "$repo" 2>/dev/null | jq -r '.latest_version_href // empty')
+  [[ -n "${VERSION_BY_REPO[$repo]}" ]] || echo "[WARN] Repository $repo does not exist or has no version"
 done
 
 declare -A PRESENT_IDX
 for i in "${!E_FILENAME[@]}"; do
-  if grep -Fxq "${E_RELPATH[$i]}" "${PRESENT_BY_REPO[${E_REPOSITORY[$i]}]}"; then
-    PRESENT_IDX[$i]=true
-  else
-    PRESENT_IDX[$i]=false
-  fi
+  PRESENT_IDX[$i]=false
+  version_href=${VERSION_BY_REPO[${E_REPOSITORY[$i]}]}
+  [[ -n "$version_href" ]] || continue
+  ((i % 40 == 0)) && refresh_pulp_token
+  url="$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/packages/?$(
+    printf 'repository_version=%s&sha256=%s&fields=pulp_href&limit=1' \
+      "$(jq -rn --arg v "$version_href" '$v | @uri')" "${E_SHA256[$i]}"
+  )"
+  count=$(curl -fsSL --retry 3 --retry-delay 5 --retry-all-errors \
+            -H "Authorization: Bearer $PULP_TOKEN" "$url" | jq -r '.count // 0') || {
+    echo "[WARN] presence lookup failed for ${E_FILENAME[$i]} in ${E_REPOSITORY[$i]} ($url)" >&2
+    continue
+  }
+  [[ "${count:-0}" -gt 0 ]] && PRESENT_IDX[$i]=true
 done
 
 # --- metadata resolvability + fetchability, with a bounded retry window -----
