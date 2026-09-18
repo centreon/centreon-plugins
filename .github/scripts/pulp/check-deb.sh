@@ -47,7 +47,7 @@ for i in "${!E_FILENAME[@]}"; do
     printf 'repository_version=%s&sha256=%s&fields=pulp_href&limit=1' \
       "$(jq -rn --arg v "$version_href" '$v | @uri')" "${E_SHA256[$i]}"
   )"
-  count=$(curl -fsSL --retry 3 --retry-delay 5 --retry-all-errors \
+  count=$(curl -fsSL --retry 3 --retry-delay 5 \
             -H "Authorization: Bearer $PULP_TOKEN" "$url" | jq -r '.count // 0') || {
     echo "[WARN] presence lookup failed for ${E_FILENAME[$i]} in ${E_REPOSITORY[$i]} ($url)" >&2
     continue
