@@ -187,7 +187,7 @@ __END__
 
 =head1 MODE
 
-Check Kubernetes pod CPU and memory usage (from the metrics.k8s.io API), against resource requests.
+Check Kubernetes pod CPU and memory usage (from the C<metrics.k8s.io> API), against resource requests.
 
 Requires metrics-server to be installed and reachable in the cluster.
 

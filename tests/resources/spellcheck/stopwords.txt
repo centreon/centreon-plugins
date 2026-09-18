@@ -151,7 +151,6 @@ in-mcast
 interface-dsl-name
 InterrupibleSleep
 in-ucast
-io
 io-cards
 iops
 IpAddr
@@ -176,7 +175,6 @@ jobqueues
 Jolokia
 journalctl
 JSONPath
-k8s
 Kairos
 kccevent
 keepass
@@ -209,6 +207,7 @@ memBuffer
 memTotalReal
 Meraki
 MIB
+microcores
 Microkernel
 Mikrotik
 millicores
@@ -242,6 +241,7 @@ nagios
 Nagios
 NagVis
 --nagvis-perfdata
+nanocores
 Netasq
 Netconf
 Netscaler

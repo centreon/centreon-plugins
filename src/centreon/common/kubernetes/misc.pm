@@ -77,9 +77,6 @@ sub is_excluded_label($$$%)
     return 0;
 }
 
-# Kubernetes CPU quantities can be expressed in whole cores, millicores ('m'),
-# microcores ('u') or nanocores ('n').
-# metrics-server commonly uses 'n' for small usage values (e.g. "9559630n").
 sub to_millicores {
     my (%options) = @_;
 
@@ -100,3 +97,21 @@ sub to_millicores {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+centreon::common::kubernetes::misc - Shared helpers for the Kubernetes plugins.
+
+=head1 METHODS
+
+=head2 to_millicores
+
+    my $millicores = to_millicores(value => $value);
+
+Converts a Kubernetes CPU quantity to millicores. Kubernetes CPU quantities can be expressed in
+whole cores, millicores (C<m>), microcores (C<u>) or nanocores (C<n>). C<metrics-server> commonly
+uses C<n> for small usage values (e.g. C<9559630n>).
+
+=cut
