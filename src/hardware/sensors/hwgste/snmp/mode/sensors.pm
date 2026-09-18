@@ -24,15 +24,17 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
+
 use hardware::sensors::hwgste::snmp::mode::components::resources qw($mapping);
 
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity)$';
-    
+    $self->{regexp_threshold_numeric_check_section_option} =
+        '^(temperature|humidity|co2)$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         default => [
             ['invalid', 'UNKNOWN'],
@@ -44,27 +46,59 @@ sub set_system {
         ]
     };
 
-    $self->{components_path} = 'hardware::sensors::hwgste::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'humidity'];
+    $self->{components_path} =
+        'hardware::sensors::hwgste::snmp::mode::components';
+
+    $self->{components_module} = [
+        'temperature',
+        'humidity',
+        'co2',
+        'water'
+    ];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
 
     $self->{snmp} = $options{snmp};
+
     $self->{results} = $self->{snmp}->get_multiple_table(
-        oids => [{ oid => $mapping->{branch_sensors}->{hwgste} }, { oid => $mapping->{branch_sensors}->{hwgste2} }]
+        oids => [
+            { oid => $mapping->{branch_sensors}->{hwgste} },
+            { oid => $mapping->{branch_sensors}->{hwgste2} }
+        ]
     );
+
     $self->{branch} = 'hwgste';
-    if (defined($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) && 
-        scalar(keys %{$self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }}) > 0) {
+
+    if (
+        defined(
+            $self->{results}->{
+                $mapping->{branch_sensors}->{hwgste2}
+            }
+        )
+        &&
+        scalar(
+            keys %{
+                $self->{results}->{
+                    $mapping->{branch_sensors}->{hwgste2}
+                }
+            }
+        ) > 0
+    ) {
         $self->{branch} = 'hwgste2';
     }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
+
+    my $self = $class->SUPER::new(
+        package   => __PACKAGE__,
+        %options,
+        no_absent => 1
+    );
+
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -73,8 +107,6 @@ sub new {
 }
 
 1;
-
-__END__
 
 =head1 MODE
 
@@ -85,40 +117,36 @@ Check HWg-STE sensors.
 =item B<--component>
 
 Which component to check (default: '.*').
-Can be: 'temperature', 'humidity'.
+
+Can be:
+'temperature',
+'humidity',
+'co2',
+'water'.
 
 =item B<--filter>
 
 Exclude some parts.
-You can also exclude items from specific instances: --filter=sensor,10
 
-=item B<--absent-problem>
+You can also exclude items from specific instances:
 
-Return an error if a component is not 'present' (default is skipping).
-It can be set globally or for a specific instance: --absent-problem='component_name' or --absent-problem='component_name,instance_value'.
-
-=item B<--threshold-overload>
-
-Use this option to override the status returned by the plugin when the status label matches a regular expression (syntax: section,[instance,]status,regexp).
-Example: --threshold-overload='sensor,CRITICAL,^(?!(normal)$)'
+    --filter=temperature,2
 
 =item B<--warning>
 
-Set warning threshold for temperature, humidity (syntax: type,instance,threshold)
-Example: --warning='temperature,.*,30'
+Numeric warning thresholds available for:
+
+    temperature
+    humidity
+    co2
 
 =item B<--critical>
 
-Set critical threshold for temperature, humidity (syntax: type,instance,threshold)
-Example: --critical='humidty,.*,40'
+Numeric critical thresholds available for:
 
-=item B<--warning-count-*>
-
-Define the warning threshold for the number of components of one type (replace '*' with the component type).
-
-=item B<--critical-count-*>
-
-Define the critical threshold for the number of components of one type (replace '*' with the component type).
+    temperature
+    humidity
+    co2
 
 =back
 
