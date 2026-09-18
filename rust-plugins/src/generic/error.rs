@@ -53,6 +53,20 @@ pub enum Error {
     #[snafu(display("{message}"))]
     InvalidJSON { message: String },
 
+    #[snafu(display(
+        "The collection declares no format version: add \"format_version\": {} to it",
+        expected
+    ))]
+    MissingFormatVersion { expected: u32 },
+
+    #[snafu(display(
+        "The collection targets the format version {}, this plugin only supports the version {}. Upgrade the plugin, or use a collection written for the version {}.",
+        found,
+        expected,
+        expected
+    ))]
+    UnsupportedFormatVersion { found: u32, expected: u32 },
+
     #[snafu(display("Could not parse oid {}", oid))]
     InvalidOidParser { oid: String },
 
