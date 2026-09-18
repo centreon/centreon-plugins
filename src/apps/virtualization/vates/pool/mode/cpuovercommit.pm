@@ -23,7 +23,6 @@ use strict;
 use warnings;
 use base qw(centreon::plugins::templates::counter);
 use centreon::plugins::misc qw/is_empty/;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use centreon::plugins::constants qw(:counters :values);
 
 sub new {

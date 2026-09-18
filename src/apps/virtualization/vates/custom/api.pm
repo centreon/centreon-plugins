@@ -88,15 +88,11 @@ sub request_api {
     my ($self, %options) = @_;
 
      my ($content) = $self->{http}->request(
-        method          => $options{method},
-        url_path        => $self->{option_results}->{api_url} . $options{endpoint},
-        get_param       => $options{get_param},
-        header          => $options{header},
-        # lets a caller inspect a non-2xx JSON error body instead of the http layer
-        # auto-exiting on it (used by get_vm_stats to tell "vm halted" from a real error).
-        silently_fail   => $options{silently_fail}
+         method          => $options{method},
+         url_path        => $self->{option_results}->{api_url} . $options{endpoint},
+         %options
      );
-    return json_decode($content, booleans_as_strings => 1);
+    return $content;
 
 }
 
@@ -105,7 +101,7 @@ sub request_api_get {
 
     my ($content) = $self->request_api(%options, method => "GET");
 
-    return $content;
+    return json_decode($content, booleans_as_strings => 1);
 }
 
 # get_name_and_uuid( type => 'pool', 'api_endpoint' => 'pools');
@@ -155,6 +151,46 @@ sub get_name_and_uuid {
     }
 
     return $cached_uuid;
+}
+
+# Storage repository don't show directly which host name it live on. Physical Block Devices are a glue between host and SR
+# this allows to cache the PBD uuid and host name_label relation for easier access.
+sub get_pbd_to_host {
+    my ($self, %options) = @_;
+    my $cache_time = $options{cache_time}  // 0;
+    my $has_cache_file = $self->{statefile_cache}->read(
+        statefile => 'vates_uuid_to_name' . sha1_hex(
+            $self->{option_results}->{hostname} . '_' .
+                $self->{option_results}->{username})
+    );
+    my $cached_pbd_host = $self->{statefile_cache}->get(name => 'values');
+    my $last_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
+
+    if ($has_cache_file == 0
+        or !defined($cached_pbd_host)
+        or (time() - $last_timestamp) > ($cache_time * 60)) {
+
+        my $hosts_response = $self->request_api_get(
+            endpoint  => 'hosts',
+            get_param => ['fields=name_label,uuid']
+        );
+        my $hosts = {};
+        for my $host (@$hosts_response){
+            $hosts->{$host->{uuid}} = $host->{name_label};
+        }
+        my $pbds_response = $self->request_api_get(
+            endpoint  => 'PBDS',
+            get_param => ['fields=uuid,host']
+        );
+        my $pbds = {};
+        for my $pbd (@$pbds_response){
+            $pbds->{$pbd->{uuid}} = $hosts->{$pbd->{host}};
+        }
+        $cached_pbd_host = $pbds;
+        $self->{statefile_cache}->write(data => { values => $cached_pbd_host, last_timestamp => time() });
+
+    }
+    return $cached_pbd_host;
 }
 
 # used to get overview of one vm with power state, and uuid/name
@@ -207,6 +243,14 @@ instead of letting the HTTP layer exit on error.
 Resolves C<--E<lt>typeE<gt>-name>/C<--E<lt>typeE<gt>-uuid> (whichever was provided) to
 C<{ uuid =E<gt> ..., name_label =E<gt> ... }>, caching the mapping on disk so it is only
 re-fetched once per C<--reload-cache-time> window instead of on every plugin execution.
+
+=head2 get_pbd_to_host
+
+    my $pbds = $api->get_pbd_to_host(cache_time => 0);
+
+Resolves Physical Block Devices C<PBD> to the host name_label they are on.
+Can cache result if C<cache_time> is set. (no cache by default).
+Mainly useful for storage repository which don't output hosts name they are present on.
 
 =head2 get_vm_info
 
