@@ -41,7 +41,7 @@
     },
     "snmpQuery": {
       "title": "SNMP query",
-      "description": "One SNMP query and the macro namespace under which its values are exposed to the compute stage.",
+      "description": "One SNMP query retrieving either a single value (Get) or more (Walk). Each value are made availlable under a macro namespace for the compute stage.",
       "type": "object",
       "required": ["name", "oid", "query"],
       "additionalProperties": false,
@@ -89,19 +89,19 @@
       "properties": {
         "metrics": {
           "type": "array",
-          "description": "First-pass metrics, computed from the `collect` macros. May be empty when the check only reports aggregations or a plain status message.\n\nEach metric is exposed to the aggregation pass as `{metrics.<name>}`.",
+          "description": "Metrics that are computed based on data from the `collect` section (ie uses only macros from this section). May be empty when the check only reports aggregations or a plain status message.\n\nEach metric is exposed to the aggregation pass as `{metrics.<name>}`.",
           "items": { "$ref": "#/$defs/metric" }
         },
         "aggregations": {
           "type": "array",
-          "description": "Second-pass metrics, computed after `metrics` and able to reference them as `{metrics.<name>}` — typically to sum or average a per-instance metric into a global one.\n\nThe pass is skipped entirely when every instance has been discarded by `--filter-in` / `--filter-out`. Each aggregation is exposed as `{aggregations.<name>}`, usable in `output` templates.",
+"description": "Metrics that can be computed based on data from both `collect` and `metrics` sections (referencing them as `{metrics.<name>}`). A typical use is to compute an average of a per-instance metric into a global one.\n\nEach aggregation is exposed as `{aggregations.<name>}`, usable in the `output` section.\n\nAvailable aggregations are:\n- `Average()`\n- `Min()`\n- `Max()`",
           "items": { "$ref": "#/$defs/metric" }
         }
       }
     },
     "metric": {
       "title": "Metric",
-      "description": "A value to compute, threshold and report as perfdata.",
+      "description": "A value to compute, compare against thresholds and report as perfdata.",
       "type": "object",
       "required": ["name", "value"],
       "additionalProperties": false,
