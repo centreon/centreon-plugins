@@ -22,6 +22,7 @@ package centreon::common::redfish::restapi::mode::components::drive;
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw(value_of);
 
 sub check {
     my ($self) = @_;
@@ -44,9 +45,9 @@ sub check {
 
             my $instance = $system_id . '.' . $storage->{Id} . '.' . $drive->{Id};
 
-            $drive->{Status}->{Health} = defined($drive->{Status}->{Health}) ? $drive->{Status}->{Health} : 'n/a';
-            $drive->{Status}->{State} = defined($drive->{Status}->{State}) ? $drive->{Status}->{State} : 'n/a';
-            my $location = defined($drive->{PhysicalLocation}->{PartLocation}->{ServiceLabel}) ? $drive->{PhysicalLocation}->{PartLocation}->{ServiceLabel} : 'n/a';
+            $drive->{Status}->{Health} = value_of($drive, '->{Status}->{Health}', 'n/a');
+            $drive->{Status}->{State} = value_of($drive, '->{Status}->{State}', 'n/a');
+            my $location = value_of($drive, '->{PhysicalLocation}->{PartLocation}->{ServiceLabel}', 'n/a');
             next if ($self->check_filter(section => 'drive', instance => $instance));
             $self->{components}->{drive}->{total}++;
 
