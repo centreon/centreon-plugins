@@ -123,12 +123,13 @@
         },
         "prefix": {
           "type": "string",
-          "description": "Template naming each instance of a vector metric, interpolated with the collected macros — usually the label column of the walked table.\n\nWhen omitted, instances are numbered from 0. The resulting name is what `--filter-in` and `--filter-out` match against.\n\nThe template is only interpolated for a metric evaluating to a vector; for a scalar metric, and for any aggregation, the string is used as-is.",
+          "description": "Template naming the instances to use as a prefix for the perfdata names (cf. the `name` attribute). Usually based on a macros from the `labels` section in the definition of a `Walk` collect section.\n\nThe `--filter-in` and `--filter-out` command-line arguments will filter by matching this interpolated string to include or exclude elements.\n\nThis attribute is only interpolated for a metric coming out of a `Walk`. When it comes from a `Get` or an aggregation, the string is used as defined in the `name` attribute.\n\nWhen omitted, instances are numbered from 0.",
           "examples": ["{storage.description}", "{inodes.path}"]
         },
         "uom": {
           "type": "string",
-          "description": "Unit of measurement appended to the perfdata value, as defined by the Monitoring Plugins guidelines. Empty by default (dimensionless).",
+          "description": "Unit of measurement linked to the current perfdata, as defined by the Monitoring Plugins guidelines. Empty by default (dimensionless).",
+
           "default": "",
           "examples": ["", "%", "B", "s", "ms", "c"]
         },
@@ -225,7 +226,7 @@
         },
         "no_data": {
           "type": "string",
-          "description": "Message reported when no metric is left once `--filter-in` / `--filter-out` have been applied. The status name given by `--no-data-status` is prepended to it.",
+          "description": "Message reported when no metric is left once `--filter-in` / `--filter-out` have been applied. The status given by the `--no-data-status` command-line option (either `ok`, `warning`, `critical`, `unknown` (default) is prepended to it.",
           "default": "No data matching the filters",
           "examples": ["No process matching the filters"]
         },

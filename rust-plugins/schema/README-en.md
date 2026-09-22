@@ -99,9 +99,6 @@ Given file paths, it checks only those. Beyond running the schema validation, it
 collection declaring no `format_version`, one declaring a version this repository knows nothing
 about, and one whose `$schema` key names another version than its `format_version`.
 
-This is the very script the `pre-commit` hook and the CI run, so a commit cannot pass a check the
-pipeline fails. Without `check-jsonschema` it warns and still performs the checks that need `jq`
-alone, except under GitHub Actions where its absence is an error.
 
 To check the validity of a schema itself rather than a collection:
 
