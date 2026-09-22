@@ -554,8 +554,9 @@ jobs:
       needs.get-environment.outputs.skip_workflow == 'false' &&
       (contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) || ( needs.get-environment.outputs.stability == 'stable' && github.event_name != 'workflow_dispatch')) &&
       ! cancelled() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+      ! contains(needs.sign-rpm.result, 'failure') &&
+      ! contains(needs.download-and-cache-deb.result, 'failure') &&
+      ! contains(needs.get-environment.result, 'failure')
     runs-on: centreon-ubuntu-22.04
     permissions:
       contents: read
