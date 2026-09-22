@@ -177,7 +177,7 @@
     },
     "output": {
       "title": "Output stage",
-      "description": "Status messages and separators used to render the plugin output. The whole object is optional; every field falls back to its default.\n\nMessages are templates: `{metrics.<name>}` and `{aggregations.<name>}` are replaced by the computed values.",
+      "description": "Status messages and separators used to render the plugin output. The whole object is optional; every field falls back to its default: a generic message in case the state is OK, the details of non-OK metrics otherwise.\n\nMessages are templates: `{metrics.<name>}` and `{aggregations.<name>}` are replaced by the computed values.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
