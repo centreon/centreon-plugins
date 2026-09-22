@@ -108,7 +108,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Metric name, reported in the perfdata and used to reference the result as `{metrics.<name>}` or `{aggregations.<name>}`.\n\nFor a metric evaluating to a vector, the perfdata is named `'<instance>#<name>'`, the instance coming from `prefix`.",
+          "description": "Metric name, reported in the perfdata and used to reference the result as `{metrics.<name>}` or `{aggregations.<name>}`.\n\nFor a metric that exist for multiple instances (with `Walk` queries), the perfdata is named `'<instance>#<name>'`, the instance's name being specified under the `prefix` attribute.",
           "minLength": 1,
           "examples": ["storage.usage.bytes", "system.uptime.seconds"]
         },
@@ -157,12 +157,10 @@
           "examples": ["usage", "prct", "seconds"]
         },
         "warning": {
-          "$ref": "#/$defs/threshold",
-          "description": "Default WARNING threshold, overridden by `--warning-<threshold-suffix>`."
+          "$ref": "#/$defs/threshold"
         },
         "critical": {
-          "$ref": "#/$defs/threshold",
-          "description": "Default CRITICAL threshold, overridden by `--critical-<threshold-suffix>`."
+          "$ref": "#/$defs/threshold"
         }
       }
     },
@@ -173,7 +171,7 @@
     },
     "threshold": {
       "type": "string",
-      "description": "Alert range in Monitoring Plugins threshold format (https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT):\n\n- `end` — alert if value > end (equivalent to `0:end`)\n- `start:` — alert if value < start\n- `~:end` — alert if value > end, no lower bound\n- `start:end` — alert if value is outside the range\n- `@start:end` — inverted: alert if value is inside the range",
+      "description": "Alert range in Monitoring Plugins threshold format (https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT):\n\n- `n` — alert if value < 0 or value > n (equivalent to `0:n`)\n- `n:` — alert if value < n\n- `~:n` — alert if value > n, no lower bound\n- `n:m` — alert if value is outside the range\n- `@n:m` — inverted: alert if value is inside the range",
       "pattern": "^\\s*@?\\s*(?:(?:~|[-+]?[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)\\s*:\\s*(?:[-+]?[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)?|[-+]?[0-9]+(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)\\s*$",
       "examples": ["80", "10:20", "~:90", "5:", "@0:10"]
     },

@@ -143,8 +143,6 @@ pub const FORMAT_VERSION: u32 = 0;
 const SCHEMA_BASE_URL: &str = "https://centreon.github.io/centreon-plugins/rs-collections/snmp";
 
 /// URL of the published schema of the collection format this plugin supports.
-///
-/// Built from [`FORMAT_VERSION`], so it can only ever name the format actually enforced.
 pub fn schema_url() -> String {
     format!("{SCHEMA_BASE_URL}/v{FORMAT_VERSION}/rs-collection.schema.json")
 }
