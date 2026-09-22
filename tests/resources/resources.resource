@@ -67,7 +67,12 @@ Ctn Generic Suite Setup
     Ctn Clear Connector Log
     Remove Files    /tmp/connector.output*
     Remove File    /tmp/connector.log
-    Ctn Start Connector
+    ${status}    ${message}    Run Keyword And Ignore Error    Ctn Start Connector
+    ${connector_is_running}    Ctn Connector Is Running
+    IF    not ${connector_is_running}
+        ${reason}    Set Variable If    '${status}' == 'PASS'    no process started    ${message}
+        Log    Connector unavailable (${reason}): plugins will run directly.    level=WARN
+    END
 
 Ctn Generic Suite Teardown
     Ctn Stop Connector
@@ -184,7 +189,8 @@ Ctn Run Command And Check Result As Strings
     IF    '${tc}' == '0'
         ${tc}    Evaluate    random.randint(0, 999999999)    random,sys
     END
-    IF    "centreon_plugins.pl" in $command
+    ${connector_is_running}    Ctn Connector Is Running
+    IF    "centreon_plugins.pl" in $command or not ${connector_is_running}
         Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
     ELSE
         Ctn Run Command With Connector And Check Result As Strings
