@@ -49,7 +49,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label            => 'api-status',
-            type             => COUNTER_TYPE_GROUP,
+            type             => COUNTER_KIND_TEXT,
             critical_default => '%{api_status} ne "ok"',
             set              => {
                 closure_custom_threshold_check => \&catalog_status_threshold_ng,
