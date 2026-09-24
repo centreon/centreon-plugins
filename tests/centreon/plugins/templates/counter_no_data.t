@@ -133,6 +133,76 @@ use centreon::plugins::constants qw(:counters :values);
 }
 
 {
+    # Exactly one instance, whose counter has no value. A block holding a single instance
+    # goes through a different branch of the template than a block holding several.
+    package Test::Mode::OneInstance;
+    use base qw(Test::Mode::EmptyInstance);
+
+    sub manage_selection { $_[0]->{items} = { item1 => { display => 'item1' } }; }
+}
+
+{
+    # Same, for a GROUP holding a single top level instance
+    package Test::Mode::OneGroup;
+    use base qw(Test::Mode::PartialGroup);
+
+    sub manage_selection {
+        $_[0]->{servers} = { srv1 => { name => 'srv1', disks => { sda => {} } } };
+    }
+}
+
+{
+    # Same, for a MULTIPLE holding a single top level instance
+    package Test::Mode::OneMultiple;
+    use base qw(Test::Mode::EmptyMultiple);
+
+    sub manage_selection {
+        $_[0]->{servers} = { srv1 => { name => 'srv1', disks => { sda => {} } } };
+    }
+}
+
+{
+    # A GROUP counting the problems of its sub block: no alarm means zero problems, which
+    # is a measurement backed by a perfdata, not an absence of data.
+    package Test::Mode::ProblemCounterGroup;
+    use base qw(centreon::plugins::templates::counter);
+    use centreon::plugins::constants qw(:counters);
+
+    sub set_counters {
+        my ($self, %options) = @_;
+
+        $self->{maps_counters_type} = [
+            { name => 'alarms', type => COUNTER_TYPE_GROUP, message_multiple => '0 problem(s) detected',
+              display_counter_problem => { label => 'alerts', min => 0 },
+              group => [ { name => 'alarm' } ] }
+        ];
+        $self->{maps_counters}->{alarm} = [
+            { label => 'status', threshold => 0, set => {
+                    key_values => [ { name => 'status' } ],
+                    output_template => 'status: %s',
+                    closure_custom_perfdata => sub { return 0; }
+                }
+            }
+        ];
+    }
+
+    sub manage_selection { $_[0]->{alarms} = { global => { alarm => {} } }; }
+}
+
+{
+    # A mode reporting something by itself, without any counter value
+    package Test::Mode::OwnMessage;
+    use base qw(Test::Mode::EmptyInstance);
+
+    sub manage_selection {
+        my ($self, %options) = @_;
+
+        $self->{items} = {};
+        $self->{output}->output_add(severity => 'OK', short_msg => 'No process found');
+    }
+}
+
+{
     # COUNTER_TYPE_GLOBAL: 'total' is fed, 'missing' is not (NO_VALUE)
     package Test::Mode::Global;
     use base qw(centreon::plugins::templates::counter);
@@ -298,6 +368,29 @@ subtest 'several multiple instances with only empty sub blocks report no data' =
     is(status($output), 'UNKNOWN', "'All servers are ok' does not end up as the exit status");
 };
 
+# A block holding exactly one instance does not emit 'message_multiple': it displays the
+# instance itself. That line is built by the template too, and proves nothing either.
+subtest 'a single instance without value reports no data' => sub {
+    my $output = run_mode('Test::Mode::OneInstance');
+
+    is(short($output, 'unknown'), 'No data!', 'UNKNOWN: No data!');
+    is(status($output), 'UNKNOWN', 'the instance line does not end up as the exit status');
+    like(long($output), qr/skipped \(no value\(s\)\)/, 'the detail is kept in the long output');
+};
+
+subtest 'a single group instance without value reports no data' => sub {
+    my $output = run_mode('Test::Mode::OneGroup');
+
+    is(short($output, 'unknown'), 'No data!', 'UNKNOWN: No data!');
+    is(status($output), 'UNKNOWN', "'0 problem(s) detected' does not end up as the exit status");
+};
+
+subtest 'a single multiple instance without value reports no data' => sub {
+    my $output = run_mode('Test::Mode::OneMultiple');
+
+    is(short($output, 'unknown'), 'No data!', 'UNKNOWN: No data!');
+};
+
 subtest 'global block whose counters all lack values reports no data' => sub {
     local $Test::Mode::Global::DATA = {};
     my $output = run_mode('Test::Mode::Global');
@@ -316,6 +409,20 @@ subtest 'a filled instance inside a group prevents the no data report' => sub {
 
     is(short($output, 'unknown'), undef, 'an empty sub block is not a no data case');
     is(short($output, 'ok'), 'All servers are ok', 'the regular message is kept');
+};
+
+subtest 'a group counting its problems is not a no data case' => sub {
+    my $output = run_mode('Test::Mode::ProblemCounterGroup');
+
+    is(short($output, 'unknown'), undef, 'zero problems is a result, not an absence of data');
+    is(short($output, 'ok'), '0 problem(s) detected', 'the regular message is kept');
+};
+
+subtest 'a message emitted by the mode itself is not a no data case' => sub {
+    my $output = run_mode('Test::Mode::OwnMessage');
+
+    is(short($output, 'unknown'), undef, 'the mode reported something, the fallback stays out');
+    is(short($output, 'ok'), 'No process found', 'its message is kept');
 };
 
 subtest 'a partially filled global block keeps its short output' => sub {

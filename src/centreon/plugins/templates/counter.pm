@@ -536,13 +536,13 @@ sub run_instances {
         }
         
         if ($self->{multiple} == 0)  {
-            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
+            $self->add_template_short_output(short_msg => $prefix_output . $long_msg . $suffix_output)
                 if ($display_short == 1);
         }
     }
     
     if ($no_message_multiple == 0 && $self->{multiple} == 1 && $resume == 0) {
-        $self->message_multiple_output(short_msg => $options{config}->{message_multiple})
+        $self->add_template_short_output(short_msg => $options{config}->{message_multiple})
             if ($display_short == 1);
     }
 }
@@ -556,7 +556,7 @@ sub run_group {
         $multiple = 0;
     }
 
-    $self->message_multiple_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
+    $self->add_template_short_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
         if ($multiple == 1);
 
     my $format_output = defined($options{config}->{format_output}) ? $options{config}->{format_output} : '%s problem(s) detected';
@@ -596,7 +596,7 @@ sub run_group {
             $prefix_output = '' if (!defined($prefix_output));
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
-                $self->{output}->output_add(
+                $self->add_template_short_output(
                     severity => $self->{most_critical_instance},
                     short_msg => sprintf("${prefix_output}" . $format_output, $self->{lproblems})
                 );
@@ -622,6 +622,9 @@ sub run_group {
             value => $total_problems,
             min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max}
         );
+        # counting the problems of the block, zero included, is a measurement: the block
+        # reports '0 problem(s) detected' backed by a perfdata, not an absence of data.
+        $self->{counters_with_values}++;
     }
 }
 
@@ -733,26 +736,27 @@ sub run_multiple_instances {
         }
 
         if ($multiple == 0 && $multiple_parent == 0) {
-            $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output)
+            $self->add_template_short_output(severity => 'ok', use_prefix => 1, short_msg => $prefix_output . $long_msg . $suffix_output)
                 if ($display_short == 1);
         }
     }
 
     if ($no_message_multiple == 0 && $multiple == 1 && $multiple_parent == 0) {
-        $self->message_multiple_output(severity => 'ok', use_prefix => 1, short_msg => $options{config}->{message_multiple})
+        $self->add_template_short_output(severity => 'ok', use_prefix => 1, short_msg => $options{config}->{message_multiple})
             if ($display_short == 1);
     }
 }
 
-sub message_multiple_output {
+sub add_template_short_output {
     my ($self, %options) = @_;
 
-    # 'message_multiple' claims a whole block is fine. It comes from the block
-    # configuration, not from the collected values, so run() has to tell it apart from a
-    # message that really reports something. Counting what it adds is the only reliable
-    # way: run_multiple_prefix_output() may emit a prefix message on top of it.
-    return if (is_empty($options{short_msg}));
-
+    # Short output the template builds on its own: a 'message_multiple' claim coming from
+    # the block configuration, or an instance line made of prefix, counter output and
+    # suffix. None of them proves a value was collected, so run() must be able to tell
+    # them apart from a message a mode deliberately emitted. Counting what they add is the
+    # only reliable way: run_multiple_prefix_output() may emit a prefix message on top.
+    # A line holding real values is counted here too, harmlessly: counters_with_values is
+    # then above zero and blocks the fallback on its own.
     my $before = $self->{output}->short_output_count();
 
     if ($options{use_prefix}) {
@@ -767,9 +771,7 @@ sub message_multiple_output {
         );
     }
 
-    # if we didn't add short outputs compared to before, then we don't increase the message_multiple_count
-    # which is used to evaluate if the plugin could gather data and is able to return information
-    $self->{message_multiple_count} += $self->{output}->short_output_count() - $before;
+    $self->{template_short_output_count} += $self->{output}->short_output_count() - $before;
 }
 
 sub run_multiple_prefix_output {
@@ -796,7 +798,7 @@ sub run_multiple {
         $multiple = 0;
     }
 
-    $self->message_multiple_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
+    $self->add_template_short_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
         if ($multiple == 1);
 
     foreach my $instance (sort keys %{$self->{$options{config}->{name}}}) {
@@ -863,7 +865,7 @@ sub run {
     $self->manage_selection(%options);
     
     $self->{counters_with_values} = 0;
-    $self->{message_multiple_count} = 0;
+    $self->{template_short_output_count} = 0;
     $self->{new_datas} = undef;
     if (defined($self->{statefile_value})) {
         $self->{new_datas} = {};
@@ -883,16 +885,16 @@ sub run {
         }
     }
 
-    # No counter got a value and the only short messages are the 'message_multiple' claims
-    # the template emitted on its own: the mode collected nothing and would display an empty
-    # 'OK:' output, or an unearned 'All xxx are ok'. Report --no-data-status instead.
-    # A counter waiting for its next run (buffer creation, counter not moved...) does hold
-    # data, so such a mode is left alone.
+    # No counter got a value and every short message was emitted by the template itself:
+    # the mode collected nothing and would display an empty 'OK:' output, an unearned
+    # 'All xxx are ok' or a lone prefix. Report --no-data-status instead. A mode that added
+    # a short message of its own is left alone, and so is a counter waiting for its next run
+    # (buffer creation, counter not moved...) since it does hold data.
     $self->{output}->output_add(
         severity => $self->{option_results}->{no_data_status},
         short_msg => 'No data!'
     ) if ($self->{counters_with_values} == 0
-          && $self->{output}->short_output_count() == $self->{message_multiple_count});
+          && $self->{output}->short_output_count() == $self->{template_short_output_count});
 
     if (defined($self->{statefile_value})) {
         $self->{statefile_value}->write(data => $self->{new_datas});
