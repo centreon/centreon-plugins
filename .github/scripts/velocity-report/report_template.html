@@ -100,6 +100,19 @@ tr:hover td { background: color-mix(in srgb, var(--chip) 60%, transparent); }
 .bar-track div { height: 100%; border-radius: 0 3px 3px 0; }
 .status-open { color: var(--ok); } .status-dormant { color: var(--warn); } .status-closed { color: var(--crit); }
 .empty { color: var(--ink-3); font-style: italic; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; font-size: 12px; border: 0; background: var(--surface); color: var(--ink-2); padding: 5px 11px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:focus-visible, .controls select:focus-visible, .controls input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.controls label { font-size: 12px; color: var(--ink-2); display: inline-flex; gap: 6px; align-items: center; }
+.controls select { font: inherit; font-size: 12px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); max-width: 220px; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 28px; }
+.stats div { display: grid; gap: 2px; }
+.stats span { font-size: 12px; color: var(--ink-2); }
+.stats b { font: 500 20px/1.1 var(--mono); font-variant-numeric: tabular-nums; }
+details summary { cursor: pointer; color: var(--ink-2); font-size: 13px; }
 @media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .kpi b { font-size: 22px; } .bar-row { grid-template-columns: 100px 1fr auto; } }
 </style>
@@ -113,6 +126,22 @@ tr:hover td { background: color-mix(in srgb, var(--chip) 60%, transparent); }
   </header>
 
   <div class="kpis" id="kpis"></div>
+
+  <section id="lines">
+    <div class="sec-head"><h2>Lignes de code générées</h2><p>Lignes écrites par jour, semaine ou mois. « Livré » : code arrivé sur les branches d'intégration, daté du merge. « Livré + en cours » ajoute les commits des branches non intégrées (PR ouverte, brouillon, fermée ou sans PR), datés de leur écriture.</p></div>
+    <div class="panel">
+      <div class="controls">
+        <div class="seg" id="ln-gran" role="group" aria-label="Granularité"><button type="button" data-v="day">Jour</button><button type="button" data-v="week" aria-pressed="true">Semaine</button><button type="button" data-v="month">Mois</button></div>
+        <div class="seg" id="ln-scope" role="group" aria-label="Périmètre"><button type="button" data-v="i" aria-pressed="true">Livré</button><button type="button" data-v="all">Livré + en cours</button></div>
+        <div class="seg" id="ln-measure" role="group" aria-label="Mesure"><button type="button" data-v="add" aria-pressed="true">Ajoutées</button><button type="button" data-v="del">Supprimées</button><button type="button" data-v="both">Ajoutées + supprimées</button></div>
+        <label for="ln-who">Qui <select id="ln-who"></select></label>
+        <label for="ln-fix"><input type="checkbox" id="ln-fix"> Inclure les fixtures de test</label>
+      </div>
+      <div class="stats" id="ln-stats"></div>
+      <div class="chart" id="ch-daylines"></div>
+      <details><summary>Voir les valeurs en tableau</summary><div class="table-wrap" style="max-height:360px;margin-top:8px"><table id="t-lines"></table></div></details>
+    </div>
+  </section>
 
   <section>
     <div class="sec-head"><h2>Débit de livraison</h2><p>PR mergées par semaine sur les branches d'intégration, selon la catégorie de l'auteur. Les contributions externes reprises dans une PR interne comptent côté interne.</p></div>
@@ -255,18 +284,18 @@ const R = /*__REPORT_DATA__*/null;
   const monthLabel = (m) => new Date(m + "-01T00:00:00Z").toLocaleDateString("fr-FR", { month: "short", year: "2-digit", timeZone: "UTC" });
 
   function stacked(el, labels, series, opts = {}) {
-    const W = 560, H = 220, m = { l: 40, r: 8, t: 10, b: 26 };
+    const W = opts.W || 560, H = opts.H || 220, m = { l: 40, r: 8, t: 10, b: 26 };
     const n = labels.length, iw = W - m.l - m.r, ih = H - m.t - m.b;
     const totals = labels.map((_, i) => series.reduce((s, sr) => s + (sr.values[i] || 0), 0));
     const max = niceMax(Math.max(...totals, 1));
-    const bw = iw / n, gap = Math.min(2, bw * 0.2);
+    const bw = iw / n, gap = bw < 3 ? 0 : Math.min(2, bw * 0.2);
     let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.aria || "")}">`;
     for (const t of ticks(max)) {
       const y = m.t + ih - (t / max) * ih;
       svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y}" y2="${y}" style="stroke:var(--grid)"/>`;
       svg += `<text x="${m.l - 6}" y="${y + 4}" text-anchor="end">${shortNum(t)}</text>`;
     }
-    const every = Math.ceil(n / 8);
+    const every = Math.ceil(n / (opts.maxLabels || 8));
     labels.forEach((lab, i) => {
       const x = m.l + i * bw;
       let y = m.t + ih;
@@ -361,6 +390,87 @@ const R = /*__REPORT_DATA__*/null;
     { name: "Bots", color: CAT.bot.color, values: S.branch_commits.bot },
     { name: "Agent IA", color: CAT.ai.color, values: S.branch_commits.ai },
   ], { labelFmt: weekLabel, tipLabel: (w) => "Semaine du " + weekLabel(w), aria: "Commits hors intégration" });
+
+  // ---------- lines of code per day / week / month
+  (function linesSection() {
+    const CL = R.commit_lines || [], LP = R.line_people || [];
+    const st = { gran: "week", scope: "i", measure: "add", who: "all", fix: false };
+    const who = $("ln-who");
+    const peopleOpts = LP.map((p, i) => ({ i, p })).filter((x) => CL.some((c) => c[1] === x.i))
+      .sort((a, b) => a.p.name.localeCompare(b.p.name));
+    who.innerHTML = `<option value="all">Tout le monde</option>` +
+      ["internal", "external", "bot", "ai"].map((c) => `<option value="cat:${c}">${CAT[c].label}</option>`).join("") +
+      `<optgroup label="Personnes">${peopleOpts.map((x) => `<option value="p:${x.i}">${esc(x.p.name)}</option>`).join("")}</optgroup>`;
+    const DUP = new Set(["merged", "merged_or_empty"]); // branch commits already counted through the squash commit
+    const iso = (d) => d.toISOString().slice(0, 10);
+    const bucketOf = (day) => {
+      if (st.gran === "day") return day;
+      if (st.gran === "month") return day.slice(0, 7);
+      const d = new Date(day + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return iso(d);
+    };
+    function axis() {
+      const out = [], seen = new Set();
+      const end = new Date(R.meta.until + "T00:00:00Z");
+      for (let d = new Date(R.meta.since + "T00:00:00Z"); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+        const b = bucketOf(iso(d)); if (!seen.has(b)) { seen.add(b); out.push(b); }
+      }
+      return out;
+    }
+    const dayLabel = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { day: "2-digit", month: "short", timeZone: "UTC" });
+    const longDay = (d) => new Date(d + "T00:00:00Z").toLocaleDateString("fr-FR", { weekday: "short", day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" });
+    const labelFmt = (b) => st.gran === "month" ? monthLabel(b) : dayLabel(b);
+    const tipLabel = (b) => st.gran === "month" ? monthLabel(b) : st.gran === "week" ? "Semaine du " + dayLabel(b) : longDay(b);
+    function render() {
+      const labels = axis(), idx = new Map(labels.map((b, i) => [b, i]));
+      const cats = ["internal", "external", "bot", "ai"];
+      const vals = Object.fromEntries(cats.map((c) => [c, new Array(labels.length).fill(0)]));
+      let add = 0, del = 0;
+      for (const [day, pi, kind, bstatus, ca, cd, fa, fd] of CL) {
+        if (st.scope === "i" && kind !== "i") continue;
+        if (kind === "b" && DUP.has(bstatus)) continue;
+        const p = LP[pi];
+        if (st.who.startsWith("cat:") && p.category !== st.who.slice(4)) continue;
+        if (st.who.startsWith("p:") && pi !== +st.who.slice(2)) continue;
+        const i = idx.get(bucketOf(day)); if (i == null) continue;
+        const a = ca + (st.fix ? fa : 0), d = cd + (st.fix ? fd : 0);
+        add += a; del += d;
+        vals[p.category][i] += st.measure === "add" ? a : st.measure === "del" ? d : a + d;
+      }
+      const totals = labels.map((_, i) => cats.reduce((s, c) => s + vals[c][i], 0));
+      const total = totals.reduce((a, b) => a + b, 0);
+      let wd = 0; const end = new Date(R.meta.until + "T00:00:00Z");
+      for (let d = new Date(R.meta.since + "T00:00:00Z"); d <= end; d.setUTCDate(d.getUTCDate() + 1)) if (d.getUTCDay() % 6) wd++;
+      const peak = totals.reduce((best, v, i) => v > best.v ? { v, i } : best, { v: -1, i: 0 });
+      const active = totals.filter((v) => v > 0).length;
+      const unit = { day: "jour", week: "semaine", month: "mois" }[st.gran];
+      $("ln-stats").innerHTML = [
+        ["Total sur la période", fmt(total)],
+        ["Moyenne par jour ouvré", fmt(total / Math.max(wd, 1))],
+        ["Moyenne par semaine", fmt(total / Math.max(wd / 5, 1))],
+        [`Pic (${unit})`, peak.v > 0 ? `${fmt(peak.v)} <span style="font:12px var(--sans);color:var(--ink-3)">${esc(tipLabel(labels[peak.i]))}</span>` : "–"],
+        [`${unit[0].toUpperCase() + unit.slice(1)}s avec du code`, `${fmt(active)} / ${fmt(labels.length)}`],
+        ["Ajouts / suppressions", `<span style="color:var(--ok)">+${fmt(add)}</span> <span style="color:var(--crit)">−${fmt(del)}</span>`],
+      ].map(([l, v]) => `<div><span>${l}</span><b>${v}</b></div>`).join("");
+      stacked($("ch-daylines"), labels, cats.filter((c) => vals[c].some((v) => v)).map((c) => ({ name: CAT[c].label, color: CAT[c].color, values: vals[c] })),
+        { W: 1100, H: 260, maxLabels: 12, labelFmt, tipLabel, aria: "Lignes de code par " + unit });
+      const used = cats.filter((c) => vals[c].some((v) => v));
+      const rows = labels.map((b, i) => ({ b, total: totals[i], ...Object.fromEntries(used.map((c) => [c, vals[c][i]])) })).filter((r) => r.total).reverse();
+      $("t-lines").innerHTML = `<thead><tr><th>${unit[0].toUpperCase() + unit.slice(1)}</th>${used.map((c) => `<th class="n">${CAT[c].label}</th>`).join("")}<th class="n">Total</th></tr></thead><tbody>` +
+        (rows.length ? rows.map((r) => `<tr><td>${esc(tipLabel(r.b))}</td>${used.map((c) => `<td class="n">${fmt(r[c])}</td>`).join("")}<td class="n"><b>${fmt(r.total)}</b></td></tr>`).join("") : `<tr><td class="empty">Aucune ligne sur la période</td></tr>`) + "</tbody>";
+    }
+    for (const [id, key] of [["ln-gran", "gran"], ["ln-scope", "scope"], ["ln-measure", "measure"]]) {
+      $(id).addEventListener("click", (e) => {
+        const b = e.target.closest("button"); if (!b) return;
+        st[key] = b.dataset.v;
+        $(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+        render();
+      });
+      $(id).querySelectorAll("button").forEach((x) => { if (!x.hasAttribute("aria-pressed")) x.setAttribute("aria-pressed", "false"); });
+    }
+    who.addEventListener("change", () => { st.who = who.value; render(); });
+    $("ln-fix").addEventListener("change", (e) => { st.fix = e.target.checked; render(); });
+    render();
+  })();
 
   // ---------- sortable tables
   function table(el, cols, rows, opts = {}) {

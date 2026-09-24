@@ -42,6 +42,14 @@ Sur une année de `centreon-plugins`, le script fait environ 650 appels API et t
 
 ## Ce qui est mesuré
 
+**Lignes de code générées** (section interactive en tête du rapport)
+- par jour, semaine ou mois ; lignes ajoutées, supprimées ou les deux ;
+- périmètre « livré » (branches d'intégration, daté du merge) ou « livré + en cours »
+  (commits des branches non intégrées, datés de leur écriture ; les branches déjà
+  mergées sont exclues pour ne pas compter deux fois le même code) ;
+- filtre par catégorie ou par personne, fixtures de test incluses ou non ;
+- total, moyenne par jour ouvré et par semaine, pic, et tableau des valeurs.
+
 **Livraison (branches d'intégration)**
 - PR mergées par semaine et par catégorie d'auteur, taille des PR ;
 - lead time (ouverture → merge), délai avant la première review par une autre personne ;

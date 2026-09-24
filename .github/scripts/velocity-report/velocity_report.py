@@ -621,7 +621,8 @@ def build_report(args, cfg):
 
     # --- commit metrics
     def commit_stats(c):
-        stats = {"add": 0, "del": 0, "files": 0, "areas": Counter(), "domains": Counter(), "code": 0}
+        stats = {"add": 0, "del": 0, "files": 0, "areas": Counter(), "domains": Counter(), "code": 0,
+                 "code_add": 0, "code_del": 0}
         for path, add, dele in c["files"]:
             area = classifier.area(path)
             if area is None:
@@ -632,6 +633,8 @@ def build_report(args, cfg):
             stats["areas"][area] += add + dele
             if area not in cfg["non_code_areas"]:
                 stats["code"] += add + dele
+                stats["code_add"] += add
+                stats["code_del"] += dele
             dom = classifier.domain(path)
             if dom:
                 stats["domains"][dom] += add + dele
@@ -944,6 +947,19 @@ def aggregate(args, cfg, people, commits, prs, branches, merges, integration, si
         "branches_without_pr": status_counter["no_pr_active"] + status_counter["no_pr_dormant"],
     }
 
+    line_index = {}
+    commit_lines = []
+    for c in sorted(commits, key=lambda c: c["date"]):
+        if c["person"] not in line_index:
+            line_index[c["person"]] = len(line_index)
+        commit_lines.append([
+            parse_date(c["date"]).astimezone(dt.timezone.utc).date().isoformat(), line_index[c["person"]],
+            "i" if c["kind"] == "integrated" else "b", c.get("branch_status") or "",
+            c["code_add"], c["code_del"], c["add"] - c["code_add"], c["del"] - c["code_del"],
+        ])
+    line_people = [{"name": people[pid]["name"], "category": people[pid]["category"],
+                    "team": team_of(people[pid], cfg)} for pid in line_index]
+
     def month_series(src):
         return {c: [median(src[m][c]) if src[m][c] else None for m in months] for c in ("internal", "external")}
 
@@ -992,6 +1008,11 @@ def aggregate(args, cfg, people, commits, prs, branches, merges, integration, si
         "branches": [{k: b[k] for k in ("name", "last_commit", "age_days", "person_name", "category",
                                          "ahead", "behind", "pr", "status")} for b in branch_rows],
         "pull_requests": [slim_pr(p) for p in prs],
+        "line_people": line_people,
+        # one row per commit in the window, for day / week line charts built in the page:
+        # [date (UTC, YYYY-MM-DD), person index, kind (i = integrated, b = branch only),
+        #  branch status, code added, code deleted, fixtures added, fixtures deleted]
+        "commit_lines": commit_lines,
     }
 
 
