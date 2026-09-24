@@ -1,0 +1,14 @@
+{
+  "internal_domains": ["centreon.com"],
+  "internal": [],
+  "external": [],
+  "bots": ["dependabot[bot]", "github-actions[bot]", "technique-ci", "renovate[bot]"],
+  "aliases": [
+    ["login:gfontaineCentreon", "email:gfontaine@centreon.com"]
+  ],
+  "teams": {
+    "Equipe A": ["login-github-1", "prenom.nom@centreon.com"],
+    "Equipe B": ["login-github-2", "Prénom Nom"]
+  },
+  "stale_days": 30
+}

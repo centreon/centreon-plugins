@@ -1,0 +1,533 @@
+<title>Vélocité des équipes</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f5f6f9;
+  --surface: #ffffff;
+  --ink: #151821;
+  --ink-2: #4d5467;
+  --ink-3: #767d90;
+  --line: #e1e4eb;
+  --grid: #eceef3;
+  --accent: #1f5fb8;
+  --c-internal: #2a78d6;
+  --c-external: #eb6834;
+  --c-carried: #1baf7a;
+  --c-bot: #a3a8b4;
+  --c-ai: #4a3aa7;
+  --ok: #1d7f4e;
+  --warn: #a86400;
+  --crit: #c23b3a;
+  --chip: #eef1f6;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111318; --surface: #191c23; --ink: #f1f2f5; --ink-2: #b9bdc9; --ink-3: #8a90a0;
+    --line: #2b2f39; --grid: #242832; --accent: #6ea3f0;
+    --c-internal: #3987e5; --c-external: #d95926; --c-carried: #199e70; --c-bot: #6c7180; --c-ai: #9085e9;
+    --ok: #4cc38a; --warn: #e2a13a; --crit: #ef6b6a; --chip: #232731;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111318; --surface: #191c23; --ink: #f1f2f5; --ink-2: #b9bdc9; --ink-3: #8a90a0;
+  --line: #2b2f39; --grid: #242832; --accent: #6ea3f0;
+  --c-internal: #3987e5; --c-external: #d95926; --c-carried: #199e70; --c-bot: #6c7180; --c-ai: #9085e9;
+  --ok: #4cc38a; --warn: #e2a13a; --crit: #ef6b6a; --chip: #232731;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 var(--sans); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 28px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
+h1 { font-size: 26px; letter-spacing: -0.01em; }
+h2 { font-size: 18px; }
+h3 { font-size: 14px; color: var(--ink-2); font-weight: 500; }
+p { margin: 0; }
+a { color: var(--accent); }
+.num, td.n, .kpi b { font-variant-numeric: tabular-nums; }
+.eyebrow { font: 500 11px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+header.top { display: grid; gap: 10px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-2); font-size: 13px; }
+.meta code { font-family: var(--mono); font-size: 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.kpi { background: var(--surface); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.kpi span { font-size: 12px; color: var(--ink-2); }
+.kpi b { font: 500 26px/1.1 var(--mono); letter-spacing: -0.02em; }
+.kpi small { font-size: 12px; color: var(--ink-3); }
+section { display: grid; gap: 14px; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.sec-head p { color: var(--ink-3); font-size: 13px; max-width: 70ch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.chart { position: relative; width: 100%; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--ink-3); font: 11px var(--sans); }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 6px; font-size: 12px; line-height: 1.4; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); z-index: 5; }
+.tip b { font-weight: 600; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-weight: 500; color: var(--ink-2); font-size: 12px; position: sticky; top: 0; background: var(--surface); }
+th[data-k] { cursor: pointer; user-select: none; }
+th[data-k]:hover { color: var(--ink); }
+th.sorted::after { content: " ↓"; }
+th.sorted.asc::after { content: " ↑"; }
+td.n, th.n { text-align: right; }
+td.t { white-space: normal; min-width: 240px; }
+tr:hover td { background: color-mix(in srgb, var(--chip) 60%, transparent); }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; background: var(--chip); font-size: 12px; color: var(--ink-2); }
+.pill i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.filters button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filters button:focus-visible, th[data-k]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.filters input { font: inherit; font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); min-width: 0; width: 200px; max-width: 100%; }
+.outcome { display: flex; height: 28px; border-radius: 4px; overflow: hidden; gap: 2px; }
+.outcome div { display: flex; align-items: center; justify-content: center; color: #fff; font: 500 12px var(--mono); min-width: 0; }
+.muted { color: var(--ink-3); }
+.note { color: var(--ink-2); font-size: 13px; max-width: 80ch; display: grid; gap: 8px; }
+.note li { margin-bottom: 4px; }
+.bar-row { display: grid; grid-template-columns: minmax(110px, 180px) 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+.bar-track { height: 14px; display: flex; gap: 2px; }
+.bar-track div { height: 100%; border-radius: 0 3px 3px 0; }
+.status-open { color: var(--ok); } .status-dormant { color: var(--warn); } .status-closed { color: var(--crit); }
+.empty { color: var(--ink-3); font-style: italic; }
+@media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .kpi b { font-size: 22px; } .bar-row { grid-template-columns: 100px 1fr auto; } }
+</style>
+
+<div class="wrap" id="app">
+  <header class="top">
+    <span class="eyebrow">Rapport de vélocité · génération de code</span>
+    <h1 id="title">Vélocité des équipes</h1>
+    <div class="meta" id="meta"></div>
+    <div class="legend" id="legend"></div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <div class="sec-head"><h2>Débit de livraison</h2><p>PR mergées par semaine sur les branches d'intégration, selon la catégorie de l'auteur. Les contributions externes reprises dans une PR interne comptent côté interne.</p></div>
+    <div class="grid2">
+      <div class="panel"><h3>PR mergées par semaine</h3><div class="chart" id="ch-merged"></div></div>
+      <div class="panel"><h3>Lignes de code livrées par semaine <span class="muted">(ajouts + suppressions, hors fixtures)</span></h3><div class="chart" id="ch-lines"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Délais</h2><p>Médianes mensuelles. Lead time : de l'ouverture de la PR au merge. Première review : première review soumise par une autre personne que l'auteur.</p></div>
+    <div class="grid2">
+      <div class="panel"><h3>Lead time médian (jours)</h3><div class="chart" id="ch-lead"></div></div>
+      <div class="panel"><h3>Délai médian avant première review (jours)</h3><div class="chart" id="ch-review"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Interne et externe</h2><p>Synthèse par catégorie de contributeur (et par équipe si un fichier de configuration les définit).</p></div>
+    <div class="panel"><div class="table-wrap"><table id="t-groups"></table></div></div>
+    <div class="panel" id="teams-panel" hidden><h3>Par équipe</h3><div class="table-wrap"><table id="t-teams"></table></div></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Contributions externes</h2><p>Les PR externes sont souvent fermées puis reprises dans une PR interne qui crédite l'auteur (<code>Co-authored-by</code>). Elles sont comptées ici comme « intégrées via PR interne ».</p></div>
+    <div class="panel">
+      <h3 id="ext-title">Devenir des PR externes ouvertes sur la période</h3>
+      <div class="outcome" id="ext-outcome"></div>
+      <div class="legend" id="ext-legend"></div>
+      <div class="kpis" id="ext-kpis" style="margin-top:4px"></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Contributions externes intégrées par semaine</h3><div class="chart" id="ch-ext"></div></div>
+      <div class="panel"><h3>PR externes intégrées via une PR interne</h3><div class="table-wrap"><table id="t-carried"></table></div></div>
+    </div>
+    <div class="panel"><h3>PR externes en attente <span class="muted">(les plus anciennes d'abord)</span></h3><div class="table-wrap" style="max-height:360px"><table id="t-ext-open"></table></div></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Contributeurs</h2><p>Cliquer sur un en-tête pour trier. « Commits hors develop » : commits présents uniquement sur des branches non intégrées.</p></div>
+    <div class="panel">
+      <div class="filters" id="people-filters">
+        <input id="people-search" type="search" placeholder="Filtrer par nom ou login" aria-label="Filtrer par nom ou login">
+      </div>
+      <div class="table-wrap" style="max-height:620px"><table id="t-people"></table></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Où va l'effort</h2><p>Lignes livrées (ajouts + suppressions) sur les branches d'intégration, par zone du dépôt et par domaine de plugins.</p></div>
+    <div class="grid2">
+      <div class="panel"><h3>Par zone du dépôt</h3><div id="areas" style="display:grid;gap:8px"></div></div>
+      <div class="panel"><h3>Par domaine (<code>src/&lt;domaine&gt;</code>, <code>tests/&lt;domaine&gt;</code>)</h3><div id="domains" style="display:grid;gap:8px"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Branches et travail en cours</h2><p>Toutes les branches du dépôt hors intégration, avec ou sans PR. « En avance » : commits absents des branches d'intégration.</p></div>
+    <div class="grid2">
+      <div class="panel"><h3>Commits hors branches d'intégration par semaine</h3><div class="chart" id="ch-wip"></div></div>
+      <div class="panel"><h3>Statut des branches</h3><div id="branch-status" style="display:grid;gap:8px"></div></div>
+    </div>
+    <div class="panel">
+      <div class="filters" id="branch-filters"></div>
+      <div class="table-wrap" style="max-height:520px"><table id="t-branches"></table></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Méthode et limites</h2></div>
+    <div class="note" id="method"></div>
+  </section>
+</div>
+
+<script>
+const R = /*__REPORT_DATA__*/null;
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const fmt = (n, d = 0) => n == null ? "–" : Number(n).toLocaleString("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: d });
+  const days = (h) => h == null ? "–" : (h < 48 ? fmt(h, 0) + " h" : fmt(h / 24, 1) + " j");
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const CAT = {
+    internal: { label: "Interne", color: "var(--c-internal)" },
+    external: { label: "Externe", color: "var(--c-external)" },
+    carried: { label: "Externe via PR interne", color: "var(--c-carried)" },
+    bot: { label: "Bots", color: "var(--c-bot)" },
+    ai: { label: "Agent IA", color: "var(--c-ai)" },
+  };
+  const pill = (cat) => `<span class="pill"><i style="background:${CAT[cat].color}"></i>${CAT[cat].label}</span>`;
+  const repoUrl = /^[\w.-]+\/[\w.-]+$/.test(R.meta.repository) ? "https://github.com/" + R.meta.repository : null;
+  const prLink = (n) => n == null ? "–" : (repoUrl ? `<a href="${repoUrl}/pull/${n}" target="_blank" rel="noopener">#${n}</a>` : "#" + n);
+  const K = R.kpis;
+
+  // ---------- header
+  $("title").textContent = "Vélocité des équipes · " + R.meta.repository;
+  $("meta").innerHTML = [
+    `Période <b class="num">${R.meta.since} → ${R.meta.until}</b>`,
+    `Intégration <code>${R.meta.integration_branches.map((b) => b.split("/").pop()).join(", ")}</code>`,
+    `${K.branches} autres branches analysées`,
+    R.meta.github ? "Données PR : API GitHub" : "Données PR : indisponibles (git seul)",
+    `Généré le ${R.meta.generated_at.slice(0, 16).replace("T", " ")} UTC`,
+  ].map((x) => `<span>${x}</span>`).join("");
+  $("legend").innerHTML = ["internal", "external", "carried", "bot"].map((c) => `<span><i style="background:${CAT[c].color}"></i>${CAT[c].label}</span>`).join("");
+
+  // ---------- KPIs
+  const kpi = (label, value, sub) => `<div class="kpi"><span>${label}</span><b>${value}</b><small>${sub || "&nbsp;"}</small></div>`;
+  const ext = R.external;
+  $("kpis").innerHTML = [
+    kpi("PR mergées (humains)", fmt(K.prs_merged_human), `${fmt(K.prs_merged_per_week, 1)} / semaine · +${fmt(K.prs_merged_bot)} bots`),
+    kpi("Lead time médian", days(K.lead_time_median_h), `P90 ${days(K.lead_time_p90_h)}`),
+    kpi("Première review", days(K.first_review_median_h), "médiane, PR humaines"),
+    kpi("Taille médiane d'une PR", fmt(K.pr_size_median), "lignes de code modifiées"),
+    kpi("Contributeurs actifs", `${fmt(K.active_internal)} · ${fmt(K.active_external)}`, "internes · externes"),
+    kpi("Intégration externe", ext.integration_rate == null ? "–" : fmt(ext.integration_rate * 100) + " %", `${fmt((ext.outcomes.merged || 0) + (ext.outcomes.carried || 0))} PR sur ${fmt((ext.outcomes.merged || 0) + (ext.outcomes.carried || 0) + (ext.outcomes.closed || 0))} tranchées`),
+    kpi("PR ouvertes", fmt(K.open_prs), `dont ${fmt(K.open_prs_external)} externes`),
+    kpi("PR assistées par IA", fmt(K.ai_assisted_prs), "marqueur Claude / Copilot dans la PR"),
+  ].join("");
+
+  // ---------- charts
+  const tip = document.createElement("div");
+  tip.className = "tip"; tip.hidden = true;
+  function showTip(container, x, y, html) {
+    if (tip.parentNode !== container) container.appendChild(tip);
+    tip.innerHTML = html; tip.hidden = false;
+    const w = container.clientWidth;
+    tip.style.left = Math.min(Math.max(x, 70), w - 70) + "px";
+    tip.style.top = y + "px";
+  }
+  const hideTip = () => { tip.hidden = true; };
+
+  function niceMax(v) {
+    if (v <= 0) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    const f = v / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+  }
+  function ticks(max, n = 4) { return Array.from({ length: n + 1 }, (_, i) => (max / n) * i); }
+  const shortNum = (v) => v >= 1000 ? fmt(v / 1000, v >= 10000 ? 0 : 1) + " k" : fmt(v, v < 10 && v % 1 ? 1 : 0);
+  const weekLabel = (w) => { const d = new Date(w + "T00:00:00Z"); return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", timeZone: "UTC" }); };
+  const monthLabel = (m) => new Date(m + "-01T00:00:00Z").toLocaleDateString("fr-FR", { month: "short", year: "2-digit", timeZone: "UTC" });
+
+  function stacked(el, labels, series, opts = {}) {
+    const W = 560, H = 220, m = { l: 40, r: 8, t: 10, b: 26 };
+    const n = labels.length, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const totals = labels.map((_, i) => series.reduce((s, sr) => s + (sr.values[i] || 0), 0));
+    const max = niceMax(Math.max(...totals, 1));
+    const bw = iw / n, gap = Math.min(2, bw * 0.2);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.aria || "")}">`;
+    for (const t of ticks(max)) {
+      const y = m.t + ih - (t / max) * ih;
+      svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${y}" y2="${y}" style="stroke:var(--grid)"/>`;
+      svg += `<text x="${m.l - 6}" y="${y + 4}" text-anchor="end">${shortNum(t)}</text>`;
+    }
+    const every = Math.ceil(n / 8);
+    labels.forEach((lab, i) => {
+      const x = m.l + i * bw;
+      let y = m.t + ih;
+      series.forEach((sr, si) => {
+        const v = sr.values[i] || 0;
+        if (!v) return;
+        const h = (v / max) * ih;
+        const top = si === series.length - 1 || series.slice(si + 1).every((s) => !(s.values[i] || 0));
+        const hh = Math.max(h - (top ? 0 : 1), 0.5);
+        svg += top
+          ? `<path d="M${x + gap / 2},${y} v${-hh + Math.min(3, hh)} q0,-${Math.min(3, hh)} ${Math.min(3, hh)},-${Math.min(3, hh)} h${bw - gap - 2 * Math.min(3, hh)} q${Math.min(3, hh)},0 ${Math.min(3, hh)},${Math.min(3, hh)} v${hh - Math.min(3, hh)} z" style="fill:${sr.color}"/>`
+          : `<rect x="${x + gap / 2}" y="${y - hh}" width="${bw - gap}" height="${hh}" style="fill:${sr.color}"/>`;
+        y -= h;
+      });
+      if (i % every === 0) svg += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle">${esc(opts.labelFmt ? opts.labelFmt(lab) : lab)}</text>`;
+      svg += `<rect data-i="${i}" x="${x}" y="${m.t}" width="${bw}" height="${ih}" style="fill:transparent"/>`;
+    });
+    svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${m.t + ih}" y2="${m.t + ih}" style="stroke:var(--line)"/></svg>`;
+    el.innerHTML = svg;
+    el.querySelector("svg").addEventListener("mousemove", (e) => {
+      const i = e.target.dataset && e.target.dataset.i;
+      if (i == null) return hideTip();
+      const rect = el.getBoundingClientRect();
+      const rows = series.filter((s) => s.values[i]).map((s) => `<div><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${s.color};margin-right:6px"></i>${s.name} <b>${fmt(s.values[i])}</b></div>`).join("");
+      showTip(el, e.clientX - rect.left, e.clientY - rect.top, `<div><b>${esc(opts.tipLabel ? opts.tipLabel(labels[i]) : labels[i])}</b> · total ${fmt(totals[i])}</div>${rows || "<div>aucun</div>"}`);
+    });
+    el.addEventListener("mouseleave", hideTip);
+  }
+
+  function lines(el, labels, series, opts = {}) {
+    const W = 560, H = 220, m = { l: 40, r: 12, t: 12, b: 26 };
+    const n = labels.length, iw = W - m.l - m.r, ih = H - m.t - m.b;
+    const all = series.flatMap((s) => s.values.filter((v) => v != null));
+    const max = niceMax(Math.max(...all, 1));
+    const X = (i) => m.l + (n === 1 ? iw / 2 : (i / (n - 1)) * iw);
+    const Y = (v) => m.t + ih - (v / max) * ih;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opts.aria || "")}">`;
+    for (const t of ticks(max)) {
+      svg += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(t)}" y2="${Y(t)}" style="stroke:var(--grid)"/><text x="${m.l - 6}" y="${Y(t) + 4}" text-anchor="end">${shortNum(t)}</text>`;
+    }
+    const every = Math.ceil(n / 7);
+    labels.forEach((lab, i) => { if (i % every === 0) svg += `<text x="${X(i)}" y="${H - 8}" text-anchor="middle">${esc(opts.labelFmt ? opts.labelFmt(lab) : lab)}</text>`; });
+    series.forEach((s) => {
+      let d = "", pen = false;
+      s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + X(i) + "," + Y(v); pen = true; });
+      svg += `<path d="${d}" style="fill:none;stroke:${s.color};stroke-width:2;stroke-linejoin:round;stroke-linecap:round"/>`;
+      s.values.forEach((v, i) => { if (v != null) svg += `<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" style="fill:${s.color};stroke:var(--surface);stroke-width:2"/>`; });
+    });
+    svg += `<line class="xh" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" style="stroke:var(--ink-3);stroke-dasharray:3 3" visibility="hidden"/>`;
+    svg += `<rect class="hit" x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" style="fill:transparent"/></svg>`;
+    el.innerHTML = svg;
+    const svgEl = el.querySelector("svg"), xh = el.querySelector(".xh");
+    svgEl.addEventListener("mousemove", (e) => {
+      const r = svgEl.getBoundingClientRect();
+      const sx = (e.clientX - r.left) * (W / r.width);
+      const i = Math.max(0, Math.min(n - 1, Math.round(((sx - m.l) / iw) * (n - 1))));
+      xh.setAttribute("x1", X(i)); xh.setAttribute("x2", X(i)); xh.setAttribute("visibility", "visible");
+      const rows = series.map((s) => `<div><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:6px"></i>${s.name} <b>${s.values[i] == null ? "–" : (opts.valFmt ? opts.valFmt(s.values[i]) : fmt(s.values[i], 1))}</b></div>`).join("");
+      const er = el.getBoundingClientRect();
+      showTip(el, (X(i) / W) * r.width, e.clientY - er.top, `<div><b>${esc(opts.labelFmt ? opts.labelFmt(labels[i]) : labels[i])}</b></div>${rows}`);
+    });
+    el.addEventListener("mouseleave", () => { hideTip(); xh.setAttribute("visibility", "hidden"); });
+  }
+
+  const S = R.series;
+  stacked($("ch-merged"), R.weeks, [
+    { name: "Interne", color: CAT.internal.color, values: S.merged_prs.internal },
+    { name: "Externe", color: CAT.external.color, values: S.merged_prs.external },
+    { name: "Bots", color: CAT.bot.color, values: S.merged_prs.bot },
+  ], { labelFmt: weekLabel, tipLabel: (w) => "Semaine du " + weekLabel(w), aria: "PR mergées par semaine" });
+  stacked($("ch-lines"), R.weeks, [
+    { name: "Interne", color: CAT.internal.color, values: S.code_lines.internal },
+    { name: "Externe", color: CAT.external.color, values: S.code_lines.external },
+    { name: "Bots", color: CAT.bot.color, values: S.code_lines.bot },
+  ], { labelFmt: weekLabel, tipLabel: (w) => "Semaine du " + weekLabel(w), aria: "Lignes livrées par semaine" });
+  const toDays = (arr) => arr.map((v) => v == null ? null : v / 24);
+  lines($("ch-lead"), R.months, [
+    { name: "Interne", color: CAT.internal.color, values: toDays(S.lead_time_median_h.internal) },
+    { name: "Externe", color: CAT.external.color, values: toDays(S.lead_time_median_h.external) },
+  ], { labelFmt: monthLabel, valFmt: (v) => fmt(v, 1) + " j", aria: "Lead time médian mensuel" });
+  lines($("ch-review"), R.months, [
+    { name: "Interne", color: CAT.internal.color, values: toDays(S.first_review_median_h.internal) },
+    { name: "Externe", color: CAT.external.color, values: toDays(S.first_review_median_h.external) },
+  ], { labelFmt: monthLabel, valFmt: (v) => fmt(v, 1) + " j", aria: "Délai médian avant première review" });
+  stacked($("ch-ext"), R.weeks, [
+    { name: "Mergée directement", color: CAT.external.color, values: S.external_integrated.merged },
+    { name: "Via PR interne", color: CAT.carried.color, values: S.external_integrated.carried },
+  ], { labelFmt: weekLabel, tipLabel: (w) => "Semaine du " + weekLabel(w), aria: "Contributions externes intégrées" });
+  stacked($("ch-wip"), R.weeks, [
+    { name: "Interne", color: CAT.internal.color, values: S.branch_commits.internal },
+    { name: "Externe", color: CAT.external.color, values: S.branch_commits.external },
+    { name: "Bots", color: CAT.bot.color, values: S.branch_commits.bot },
+    { name: "Agent IA", color: CAT.ai.color, values: S.branch_commits.ai },
+  ], { labelFmt: weekLabel, tipLabel: (w) => "Semaine du " + weekLabel(w), aria: "Commits hors intégration" });
+
+  // ---------- sortable tables
+  function table(el, cols, rows, opts = {}) {
+    let key = opts.sort || null, asc = !!opts.asc;
+    function render() {
+      const data = rows.slice();
+      if (key) {
+        const col = cols.find((c) => c.k === key);
+        const val = col.sortVal || ((r) => r[key]);
+        data.sort((a, b) => {
+          const va = val(a), vb = val(b);
+          if (va == null && vb == null) return 0;
+          if (va == null) return 1;
+          if (vb == null) return -1;
+          return (typeof va === "string" ? va.localeCompare(vb) : va - vb) * (asc ? 1 : -1);
+        });
+      }
+      el.innerHTML = `<thead><tr>${cols.map((c) => `<th data-k="${c.k}" tabindex="0" class="${c.n ? "n" : ""} ${key === c.k ? "sorted" + (asc ? " asc" : "") : ""}" title="${esc(c.title || "")}">${c.label}</th>`).join("")}</tr></thead>
+        <tbody>${data.length ? data.map((r) => `<tr>${cols.map((c) => `<td class="${c.n ? "n" : ""}${c.wrap ? " t" : ""}">${c.f ? c.f(r) : esc(r[c.k])}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="empty">Aucune donnée</td></tr>`}</tbody>`;
+    }
+    el.addEventListener("click", (e) => { const th = e.target.closest("th[data-k]"); if (!th) return; const k = th.dataset.k; asc = key === k ? !asc : false; key = k; render(); });
+    el.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches("th[data-k]")) e.target.click(); });
+    render();
+    return { set(newRows) { rows = newRows; render(); } };
+  }
+  const N = (k, label, f, title) => ({ k, label, n: true, f: f || ((r) => fmt(r[k])), title });
+
+  const groupLabel = (g) => CAT[g] ? pill(g) : esc(g);
+  const groupCols = [
+    { k: "group", label: "Groupe", f: (r) => groupLabel(r.group) },
+    N("contributors", "Contributeurs"),
+    N("prs_opened", "PR ouvertes"),
+    N("prs_merged", "PR mergées"),
+    N("prs_carried", "Reprises en interne", null, "PR fermées puis intégrées via une PR interne"),
+    N("integration_rate", "Taux d'intégration", (r) => r.integration_rate == null ? "–" : fmt(r.integration_rate * 100) + " %", "(mergées + reprises) / (mergées + fermées)"),
+    N("lead_time_median_h", "Lead time méd.", (r) => days(r.lead_time_median_h)),
+    N("lead_time_p90_h", "Lead time P90", (r) => days(r.lead_time_p90_h)),
+    N("reviews_given", "Reviews données"),
+    N("commits_integrated", "Commits livrés"),
+    N("code_lines", "Lignes livrées"),
+    N("coauthored_commits", "Co-signatures", null, "Commits livrés où la personne apparaît en Co-authored-by"),
+    N("carried_external", "Portage externe", null, "Commits livrés qui reprennent une contribution externe"),
+    N("commits_branch", "Commits hors develop"),
+  ];
+  table($("t-groups"), groupCols, R.by_category, { sort: "prs_merged" });
+  if (R.by_team.length) { $("teams-panel").hidden = false; table($("t-teams"), groupCols, R.by_team, { sort: "prs_merged" }); }
+
+  // ---------- external
+  const O = ext.outcomes, oTotal = Object.values(O).reduce((a, b) => a + b, 0) || 1;
+  const outcomes = [
+    ["merged", "Mergées directement", "var(--c-external)"],
+    ["carried", "Intégrées via PR interne", "var(--c-carried)"],
+    ["closed", "Fermées sans intégration", "var(--c-bot)"],
+    ["open", "Encore ouvertes", "var(--ink-3)"],
+  ];
+  $("ext-title").textContent = `Devenir des ${fmt(ext.prs)} PR externes ouvertes sur la période`;
+  $("ext-outcome").innerHTML = outcomes.filter(([k]) => O[k]).map(([k, l, c]) => `<div style="flex:${O[k]};background:${c}" title="${l} : ${O[k]}">${O[k] / oTotal > 0.05 ? O[k] : ""}</div>`).join("");
+  $("ext-legend").innerHTML = outcomes.map(([k, l, c]) => `<span><i style="background:${c}"></i>${l} <b class="num">${fmt(O[k] || 0)}</b></span>`).join("");
+  $("ext-kpis").innerHTML = [
+    kpi("Délai médian d'intégration", days(ext.integration_delay_median_h), "de l'ouverture au merge (direct ou repris)"),
+    kpi("Première review externe", days(ext.first_review_median_h), "médiane"),
+    kpi("Commits co-signés par un externe", fmt(ext.coauthored_commits), "sur les branches d'intégration"),
+    kpi("Nouveaux contributeurs", fmt(ext.first_time_contributors.length), "première PR sur le dépôt"),
+  ].join("");
+  table($("t-carried"), [
+    { k: "number", label: "PR externe", f: (r) => prLink(r.number) },
+    { k: "login", label: "Auteur" },
+    { k: "title", label: "Titre", wrap: true },
+    { k: "carried_by", label: "Reprise par", f: (r) => prLink(r.carried_by) },
+    N("delay", "Délai", (r) => days(r.integrated_at ? (new Date(r.integrated_at) - new Date(r.created_at)) / 36e5 : null), "Ouverture de la PR externe → merge de la PR interne"),
+  ], ext.carried, {});
+  const now = new Date(R.meta.until + "T23:59:59Z");
+  const ageDays = (r) => Math.round((now - new Date(r.created_at)) / 864e5);
+  table($("t-ext-open"), [
+    { k: "number", label: "PR", f: (r) => prLink(r.number) },
+    { k: "login", label: "Auteur" },
+    { k: "association", label: "Statut GitHub", f: (r) => r.association === "FIRST_TIME_CONTRIBUTOR" ? "Première contribution" : esc((r.association || "").toLowerCase()) },
+    { k: "title", label: "Titre", wrap: true },
+    N("age", "Âge", (r) => fmt(ageDays(r)) + " j", "Depuis l'ouverture"),
+    N("first_review_h", "1re review", (r) => r.first_review_h == null ? '<span class="status-dormant">aucune</span>' : days(r.first_review_h)),
+  ], ext.open.map((r) => ({ ...r, age: ageDays(r) })), { sort: "age" });
+
+  // ---------- people
+  const cats = ["all", "internal", "external", "bot", "ai"];
+  let catFilter = "internal", query = "";
+  const pf = $("people-filters");
+  pf.insertAdjacentHTML("afterbegin", cats.map((c) => `<button type="button" data-c="${c}" aria-pressed="${c === catFilter}">${c === "all" ? "Tous" : CAT[c].label}</button>`).join(""));
+  const peopleCols = [
+    { k: "name", label: "Personne", f: (r) => `${esc(r.name)}${r.logins.length ? ` <span class="muted">@${esc(r.logins[0])}</span>` : ""}` },
+    { k: "category", label: "Type", f: (r) => pill(r.category) },
+    ...(R.meta.has_teams ? [{ k: "team", label: "Équipe" }] : []),
+    N("prs_merged", "PR mergées"),
+    N("prs_opened", "PR ouvertes"),
+    N("prs_carried", "Reprises en interne", (r) => r.prs_carried ? fmt(r.prs_carried) : "–", "PR fermées puis intégrées via une PR interne"),
+    N("lead_time_median_h", "Lead time méd.", (r) => days(r.lead_time_median_h)),
+    N("reviews_given", "Reviews données"),
+    N("commits_integrated", "Commits livrés"),
+    N("lines_added", "+ lignes", (r) => `<span style="color:var(--ok)">${fmt(r.lines_added)}</span>`),
+    N("lines_deleted", "− lignes", (r) => `<span style="color:var(--crit)">${fmt(r.lines_deleted)}</span>`),
+    N("coauthored_commits", "Co-signatures", (r) => r.coauthored_commits ? fmt(r.coauthored_commits) : "–"),
+    N("commits_branch", "Commits hors develop"),
+    N("wip_lines", "Lignes en cours", null, "Lignes des commits sur des branches non intégrées (PR ouverte, brouillon ou sans PR)"),
+    N("active_weeks", "Semaines actives", (r) => `${fmt(r.active_weeks)} <span class="muted">(${fmt(r.activity_rate * 100)} %)</span>`),
+    N("ai_prs", "PR IA", (r) => r.ai_prs ? fmt(r.ai_prs) : "–", "PR mergées portant un marqueur d'assistance IA"),
+    { k: "top_domains", label: "Domaines principaux", f: (r) => esc((r.top_domains.length ? r.top_domains : r.top_areas).join(", ")), sortVal: (r) => r.top_domains.join(",") },
+  ];
+  const peopleTable = table($("t-people"), peopleCols, [], { sort: "prs_merged" });
+  function refreshPeople() {
+    const q = query.toLowerCase();
+    peopleTable.set(R.people.filter((p) => (catFilter === "all" || p.category === catFilter) && (!q || p.name.toLowerCase().includes(q) || p.logins.some((l) => l.toLowerCase().includes(q)))));
+    pf.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.c === catFilter)));
+  }
+  pf.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { catFilter = b.dataset.c; refreshPeople(); } });
+  $("people-search").addEventListener("input", (e) => { query = e.target.value; refreshPeople(); });
+  refreshPeople();
+
+  // ---------- areas / domains
+  function hbars(el, totalsByCat, limit) {
+    const keys = new Set();
+    for (const c of ["internal", "external", "bot"]) Object.keys(totalsByCat[c] || {}).forEach((k) => keys.add(k));
+    const rows = [...keys].map((k) => ({ k, v: ["internal", "external", "bot"].map((c) => (totalsByCat[c] || {})[k] || 0) }))
+      .map((r) => ({ ...r, t: r.v.reduce((a, b) => a + b, 0) })).sort((a, b) => b.t - a.t).slice(0, limit);
+    const max = Math.max(...rows.map((r) => r.t), 1);
+    el.innerHTML = rows.length ? rows.map((r) => `<div class="bar-row"><span title="${esc(r.k)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.k)}</span>
+      <div class="bar-track">${r.v.map((v, i) => v ? `<div title="${["Interne", "Externe", "Bots"][i]} : ${fmt(v)}" style="width:${(v / max) * 100}%;background:${[CAT.internal.color, CAT.external.color, CAT.bot.color][i]}"></div>` : "").join("")}</div>
+      <span class="num muted">${shortNum(r.t)}</span></div>`).join("") : '<p class="empty">Aucune donnée</p>';
+  }
+  hbars($("areas"), R.areas, 10);
+  hbars($("domains"), R.domains, 12);
+
+  // ---------- branches
+  const ST = {
+    open: ["PR ouverte", "status-open"], draft: ["PR brouillon", "status-open"], merged: ["PR mergée (branche conservée)", "muted"],
+    closed: ["PR fermée sans merge", "status-closed"], no_pr_active: ["Sans PR, active", "status-open"],
+    no_pr_dormant: ["Sans PR, dormante", "status-dormant"], merged_or_empty: ["Déjà intégrée / vide", "muted"],
+  };
+  const bs = R.branch_status, bsMax = Math.max(...Object.values(bs), 1);
+  $("branch-status").innerHTML = Object.keys(ST).filter((k) => bs[k]).map((k) => `<div class="bar-row"><span class="${ST[k][1]}">${ST[k][0]}</span><div class="bar-track"><div style="width:${(bs[k] / bsMax) * 100}%;background:var(--c-internal);opacity:.75"></div></div><span class="num">${bs[k]}</span></div>`).join("");
+  let bFilter = "all";
+  const bf = $("branch-filters");
+  bf.innerHTML = `<button type="button" data-s="all" aria-pressed="true">Toutes (${R.branches.length})</button>` + Object.keys(ST).filter((k) => bs[k]).map((k) => `<button type="button" data-s="${k}" aria-pressed="false">${ST[k][0]} (${bs[k]})</button>`).join("");
+  const branchTable = table($("t-branches"), [
+    { k: "name", label: "Branche", f: (r) => `<code style="font-family:var(--mono);font-size:12px">${esc(r.name)}</code>` },
+    { k: "status", label: "Statut", f: (r) => `<span class="${(ST[r.status] || ["", ""])[1]}">${(ST[r.status] || [r.status])[0]}</span>` },
+    { k: "pr", label: "PR", f: (r) => prLink(r.pr) },
+    { k: "person_name", label: "Dernier auteur", f: (r) => `${esc(r.person_name)} ${r.category !== "internal" ? pill(r.category) : ""}` },
+    N("age_days", "Dernier commit", (r) => fmt(r.age_days) + " j"),
+    N("ahead", "En avance"),
+    N("behind", "En retard"),
+  ], R.branches, { sort: "age_days", asc: true });
+  bf.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    bFilter = b.dataset.s;
+    bf.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    branchTable.set(R.branches.filter((r) => bFilter === "all" || r.status === bFilter));
+  });
+
+  // ---------- method
+  $("method").innerHTML = `
+    <ul>
+      <li><b>Sources.</b> Historique git complet de toutes les branches distantes (branches d'intégration <code>${R.meta.integration_branches.join(", ")}</code> et ${K.branches} autres branches) ${R.meta.github ? "et API GitHub (PR, reviews, statut de l'auteur dans l'organisation)" : "; l'API GitHub n'a pas été utilisée"}.</li>
+      <li><b>Interne / externe.</b> Interne si la personne a utilisé une adresse <code>@${R.meta.internal_domains.join(", @")}</code> pendant la période ou si GitHub la déclare membre de l'organisation. Un ancien salarié qui contribue depuis une adresse personnelle est compté comme externe. Les exceptions se règlent dans le fichier de configuration (listes <code>internal</code>, <code>external</code>, <code>aliases</code>).</li>
+      <li><b>Contributions externes reprises.</b> Une PR externe fermée compte comme « intégrée via PR interne » si une PR interne mergée la mentionne, ou si un commit livré co-signé par son auteur porte un titre proche (même chemin de plugin ou mots communs).</li>
+      <li><b>Code livré.</b> Commits non-merge atteignables depuis les branches d'intégration, datés du merge. Les squash merges comptent donc une fois par PR. Les fichiers générés (<code>${R.meta.exclude_paths.join("</code>, <code>")}</code>) sont exclus ; les fixtures de test (snmpwalk, mockoon) sont comptées à part et exclues des « lignes de code ».</li>
+      <li><b>Travail en cours.</b> Commits présents uniquement sur des branches non intégrées, rattachés à la branche la plus récemment active qui les contient. Les branches supprimées après merge ne sont plus visibles : leurs commits intermédiaires sont résumés par le squash commit.</li>
+      <li><b>Assistance IA.</b> Détectée par des marqueurs explicites (<code>Co-authored-by</code> Claude/Copilot, « Generated with Claude Code »…). Le chiffre est un minimum : le code généré sans marqueur n'est pas identifiable.</li>
+      <li><b>Lecture.</b> Ces indicateurs mesurent un flux d'activité, pas la valeur livrée ni la performance individuelle. Un volume de lignes élevé peut refléter un nouveau plugin généré ou des fixtures ; une personne qui fait beaucoup de reviews livre moins de code. À utiliser pour repérer des goulets (délais de review, PR externes en attente, branches dormantes), pas pour classer des personnes.</li>
+    </ul>`;
+})();
+</script>
