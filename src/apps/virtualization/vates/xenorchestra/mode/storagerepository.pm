@@ -41,7 +41,7 @@ sub new {
             'exclude-pool:s'                   => { name => 'exclude_pool' },
             'include-sr-type:s'                => { name => 'include_sr_type' },
             'exclude-sr-type:s'                => { name => 'exclude_sr_type' },
-            'host-storage-config-cache-time:s' => {name => 'host_storage_config_cache_time', default => 10, numeric => 1, }
+            'host-storage-config-cache-time:s' => {name => 'host_storage_config_cache_time', default => 10, numeric => 1 }
         }
     );
 

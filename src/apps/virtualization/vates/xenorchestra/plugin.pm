@@ -30,10 +30,10 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'list-storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::liststoragerepository',
         'status'                  => 'apps::virtualization::vates::xenorchestra::mode::status',
-        'vm-status'               => 'apps::virtualization::vates::xenorchestra::mode::vmstatus',
         'storage-repository'      => 'apps::virtualization::vates::xenorchestra::mode::storagerepository',
-        'list-storage-repository' => 'apps::virtualization::vates::xenorchestra::mode::liststoragerepository'
+        'vm-status'               => 'apps::virtualization::vates::xenorchestra::mode::vmstatus'
     };
 
     $self->{custom_modes}->{api} = 'apps::virtualization::vates::custom::api';

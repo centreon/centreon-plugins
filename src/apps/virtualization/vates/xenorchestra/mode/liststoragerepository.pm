@@ -106,7 +106,9 @@ sub disco_show {
     my ($self, %options) = @_;
 
     my $response = $options{custom}->request_api_get(
-        endpoint => "srs", get_param => ['fields=*']);
+        endpoint => "srs",
+        get_param => ['fields=*']
+        );
 
 
     my $pbds = $options{custom}->get_pbd_to_host(cache_time => 0);
@@ -123,7 +125,7 @@ sub disco_show {
         my $filter_host_names = (scalar(@host_storage_name)) ? '^' . join("|",@host_storage_name) . '$' : '';
         $self->{output}->add_disco_entry(
             hosts_filter       => $filter_host_names,
-            hosts_display       => join("-",@host_storage_name),
+            hosts_display      => join("-",@host_storage_name),
             name               => $sr->{name_label},
             uuid               => $sr->{uuid},
             type               => $sr->{type},

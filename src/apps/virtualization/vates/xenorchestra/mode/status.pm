@@ -77,13 +77,13 @@ sub manage_selection {
     }
 
     if ($json->{error}) {
-        $self->{status} = { api_status => $json->{error}};
+        $self->{status} = { api_status => $json->{error} };
     }
     elsif ($json->{result} && $json->{result} eq "pong") {
-        $self->{status} = { api_status => "ok"};
+        $self->{status} = { api_status => "ok" };
     }
     else {
-        $self->{status} = { api_status => $response};
+        $self->{status} = { api_status => $response };
     }
 
 }
