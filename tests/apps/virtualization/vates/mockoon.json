@@ -138,6 +138,33 @@
           "callbacks": []
         },
         {
+          "uuid": "a53ad2bb-77fa-4772-9bba-ccdc24932550",
+          "body": "[\n  {\n    \"name_label\": \"vm-run-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000001\",\n    \"power_state\": \"Running\"\n  },\n  {\n    \"name_label\": \"vm-run-2\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000002\",\n    \"power_state\": \"Running\"\n  },\n  {\n    \"name_label\": \"vm-run-3\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000003\",\n    \"power_state\": \"Running\"\n  },\n  {\n    \"name_label\": \"vm-halt-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000004\",\n    \"power_state\": \"Halted\"\n  },\n  {\n    \"name_label\": \"vm-halt-2\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000005\",\n    \"power_state\": \"Halted\"\n  },\n  {\n    \"name_label\": \"vm-pause-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000006\",\n    \"power_state\": \"Paused\"\n  },\n  {\n    \"name_label\": \"vm-susp-1\",\n    \"uuid\": \"aaaaaaaa-0000-0000-0000-000000000007\",\n    \"power_state\": \"Suspended\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "xenorchestra vmstatus: 3 running, 2 halted, 1 paused, 1 suspended",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name_label,power_state,uuid",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
           "uuid": "4b88ed49-ee0a-457a-a859-1560b4868732",
           "body": "[]",
           "latency": 0,
@@ -535,6 +562,33 @@
           "callbacks": []
         },
         {
+          "uuid": "c151d262-3113-44ae-9fbd-8a8c9cad892b",
+          "body": "[\n  {\n    \"uuid\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"name_label\": \"vates\",\n    \"href\": \"/rest/v0/hosts/806ca3d4-a50f-43e7-b19a-9228b999028c\"\n  },\n  {\n    \"uuid\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"name_label\": \"vates3\",\n    \"href\": \"/rest/v0/hosts/f71b4cd5-c0e5-4a94-bc96-eaefe4919104\"\n  },\n  {\n    \"uuid\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"name_label\": \"vates2\",\n    \"href\": \"/rest/v0/hosts/4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Storage repository discovery",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "name_label,uuid",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
           "uuid": "0e05de96-8372-44ea-9126-ad78f07c63d0",
           "body": "[]",
           "latency": 0,
@@ -567,7 +621,7 @@
       "responses": [
         {
           "uuid": "2d378401-78e4-487f-8451-f03e4192f836",
-          "body": "[\n  {\n    \"name_label\": \"DVD drives\",\n    \"physical_usage\": 1073741312,\n    \"size\": 1073741312,\n    \"href\": \"/rest/v0/srs/2b080701-641c-c1ba-6320-7631a0c8b452\"\n  },\n  {\n    \"name_label\": \"Local storage\",\n    \"physical_usage\": 7369142272,\n    \"size\": 61488377856,\n    \"href\": \"/rest/v0/srs/6c9bb023-f6da-0fe5-647c-23aae1dca3c7\"\n  },\n  {\n    \"name_label\": \"Removable storage\",\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"href\": \"/rest/v0/srs/8459c9c0-26cc-ac1d-7604-1d2516d5d2b3\"\n  },\n  {\n    \"name_label\": \"XCP-ng Tools\",\n    \"physical_usage\": -1,\n    \"size\": -1,\n    \"href\": \"/rest/v0/srs/13ef4c75-f235-d3e8-354b-602588775129\"\n  },\n  {\n    \"name_label\": \"DVD drives\",\n    \"physical_usage\": 1073741312,\n    \"size\": 1073741312,\n    \"href\": \"/rest/v0/srs/da92118c-28a5-7342-5f0f-2da33889f402\"\n  },\n  {\n    \"name_label\": \"Removable storage\",\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"href\": \"/rest/v0/srs/289ada4a-690d-0200-9798-6ba61a2733f5\"\n  },\n  {\n    \"name_label\": \"Removable storage\",\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"href\": \"/rest/v0/srs/e205b9ea-fbdf-6461-cd6c-0d6b606d2237\"\n  },\n  {\n    \"name_label\": \"nfs-HA-storage\",\n    \"physical_usage\": 133763694592,\n    \"size\": 401619288064,\n    \"href\": \"/rest/v0/srs/89384d98-8d32-bc6b-1ada-dc8471126182\"\n  },\n  {\n    \"name_label\": \"DVD drives\",\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"href\": \"/rest/v0/srs/6f69a241-378e-e71e-2800-7a2157d78262\"\n  },\n  {\n    \"name_label\": \"ISO\",\n    \"physical_usage\": 3340140544,\n    \"size\": 18843783168,\n    \"href\": \"/rest/v0/srs/708e914c-ddb6-73c1-c0ee-be0c9f0d3735\"\n  },\n  {\n    \"name_label\": \"HA\",\n    \"physical_usage\": 2273192960,\n    \"size\": 32143048704,\n    \"href\": \"/rest/v0/srs/feb9d63f-6291-52f0-ec46-257c35048e73\"\n  }\n]",
+          "body": "[\n  {\n    \"name_label\": \"DVD drives\",\n    \"uuid\": \"2b080701-641c-c1ba-6320-7631a0c8b452\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"udev\",\n    \"shared\": false,\n    \"physical_usage\": 1073741312,\n    \"size\": 1073741312,\n    \"$PBDs\": [\n      \"c1e06c55-5254-d7d7-6947-8994b49eb02e\"\n    ],\n    \"href\": \"/rest/v0/srs/2b080701-641c-c1ba-6320-7631a0c8b452\"\n  },\n  {\n    \"name_label\": \"Local storage\",\n    \"uuid\": \"6c9bb023-f6da-0fe5-647c-23aae1dca3c7\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"ext\",\n    \"shared\": false,\n    \"physical_usage\": 7512027136,\n    \"size\": 61488377856,\n    \"$PBDs\": [\n      \"062abf02-5f58-2922-4d11-8783e9f1d4fd\"\n    ],\n    \"href\": \"/rest/v0/srs/6c9bb023-f6da-0fe5-647c-23aae1dca3c7\"\n  },\n  {\n    \"name_label\": \"XCP-ng Tools\",\n    \"uuid\": \"13ef4c75-f235-d3e8-354b-602588775129\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"iso\",\n    \"shared\": true,\n    \"physical_usage\": -1,\n    \"size\": -1,\n    \"$PBDs\": [\n      \"b411b528-8424-41b4-1ac9-b3f6272ec807\",\n      \"27ad4fa9-cdd3-287e-8dd9-1f28425435ae\",\n      \"8f75bfff-15be-3e5e-5b67-5a301902984a\"\n    ],\n    \"href\": \"/rest/v0/srs/13ef4c75-f235-d3e8-354b-602588775129\"\n  },\n  {\n    \"name_label\": \"DVD drives\",\n    \"uuid\": \"da92118c-28a5-7342-5f0f-2da33889f402\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"udev\",\n    \"shared\": false,\n    \"physical_usage\": 1073741312,\n    \"size\": 1073741312,\n    \"$PBDs\": [\n      \"42286860-3c72-6b87-9e17-5813505cae2f\"\n    ],\n    \"href\": \"/rest/v0/srs/da92118c-28a5-7342-5f0f-2da33889f402\"\n  },\n  {\n    \"name_label\": \"Removable storage\",\n    \"uuid\": \"289ada4a-690d-0200-9798-6ba61a2733f5\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"udev\",\n    \"shared\": false,\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"$PBDs\": [\n      \"c7274de4-af99-7ffc-fb05-2fd687d81ad7\"\n    ],\n    \"href\": \"/rest/v0/srs/289ada4a-690d-0200-9798-6ba61a2733f5\"\n  },\n  {\n    \"name_label\": \"Removable storage\",\n    \"uuid\": \"e205b9ea-fbdf-6461-cd6c-0d6b606d2237\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"udev\",\n    \"shared\": false,\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"$PBDs\": [\n      \"e334c0ed-e2a6-d02e-29b0-9ab270aa5bca\"\n    ],\n    \"href\": \"/rest/v0/srs/e205b9ea-fbdf-6461-cd6c-0d6b606d2237\"\n  },\n  {\n    \"name_label\": \"Removable storage\",\n    \"uuid\": \"8459c9c0-26cc-ac1d-7604-1d2516d5d2b3\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"udev\",\n    \"shared\": false,\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"$PBDs\": [\n      \"b7c7c3d9-acc6-7689-7cdf-b56fe6d5d741\"\n    ],\n    \"href\": \"/rest/v0/srs/8459c9c0-26cc-ac1d-7604-1d2516d5d2b3\"\n  },\n  {\n    \"name_label\": \"DVD drives\",\n    \"uuid\": \"6f69a241-378e-e71e-2800-7a2157d78262\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"udev\",\n    \"shared\": false,\n    \"physical_usage\": 0,\n    \"size\": 0,\n    \"$PBDs\": [\n      \"4760a36f-f992-4a69-3e4b-e4bcc1551036\"\n    ],\n    \"href\": \"/rest/v0/srs/6f69a241-378e-e71e-2800-7a2157d78262\"\n  },\n  {\n    \"name_label\": \"HA\",\n    \"uuid\": \"feb9d63f-6291-52f0-ec46-257c35048e73\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"linstor\",\n    \"shared\": true,\n    \"physical_usage\": 2276422656,\n    \"size\": 32143048704,\n    \"$PBDs\": [\n      \"08d6fbe1-2ca4-31ab-878f-90e2f089e9ba\",\n      \"3f55b40f-5b94-bb7e-700a-255b708271ca\",\n      \"de5d01dc-0bb7-ea76-7ce5-b36e5c79599f\"\n    ],\n    \"href\": \"/rest/v0/srs/feb9d63f-6291-52f0-ec46-257c35048e73\"\n  },\n  {\n    \"name_label\": \"nfs-HA-storage\",\n    \"uuid\": \"89384d98-8d32-bc6b-1ada-dc8471126182\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"nfs\",\n    \"shared\": true,\n    \"physical_usage\": 132722458624,\n    \"size\": 400732192768,\n    \"$PBDs\": [\n      \"d07605e8-cc2a-88af-5461-e24abdd8cb55\",\n      \"ecb98a3f-43c0-e9b6-7572-74af4ab4dd80\",\n      \"cf64f266-cdde-4665-dc62-01dfd7e087d9\"\n    ],\n    \"href\": \"/rest/v0/srs/89384d98-8d32-bc6b-1ada-dc8471126182\"\n  },\n  {\n    \"name_label\": \"ISO\",\n    \"uuid\": \"708e914c-ddb6-73c1-c0ee-be0c9f0d3735\",\n    \"$pool\": \"00969214-df4d-83cb-78d5-bec9181903d4\",\n    \"SR_type\": \"iso\",\n    \"shared\": false,\n    \"physical_usage\": 3340357632,\n    \"size\": 18843783168,\n    \"$PBDs\": [\n      \"9bc33103-2918-d30a-12cb-f6b5b84a9471\"\n    ],\n    \"href\": \"/rest/v0/srs/708e914c-ddb6-73c1-c0ee-be0c9f0d3735\"\n  }\n]\n",
           "latency": 0,
           "statusCode": 200,
           "label": "filter fields",
@@ -580,7 +634,7 @@
             {
               "target": "query",
               "modifier": "fields",
-              "value": "name_label,physical_usage,size",
+              "value": "name_label,uuid,$pool,SR_type,shared,physical_usage,size,$PBDs",
               "invert": false,
               "operator": "equals"
             }
@@ -685,6 +739,130 @@
       "responseMode": null,
       "streamingMode": null,
       "streamingInterval": 0
+    },
+    {
+      "uuid": "ffa0a9c9-8019-431a-8a2f-6f50c1dc56a0",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/v0/ping",
+      "responses": [
+        {
+          "uuid": "29b218fb-9b32-41ca-ab37-2b01cc36aa7f",
+          "body": "{\n  \"result\": \"pong\",\n  \"timestamp\": 1788957036421\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "auth OK",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic b2JpLXdhbjpDM1BPUjJQMg==",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e79b7d90-5d18-43bf-a115-85a9c08b0c74",
+          "body": "{\n  \"error\": \"invalid credentials\"\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "failed auth",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Authorization",
+              "value": "Basic b2JpLXdhbjpDM1BPUjJQMg==",
+              "invert": true,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "c8eaa1cc-8a55-42c3-92e9-8fdb2b08f128",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "rest/v0/PBDS",
+      "responses": [
+        {
+          "uuid": "e871deff-c3f3-4c63-a02f-154dd6d87e5e",
+          "body": "[\n  {\n    \"uuid\": \"08d6fbe1-2ca4-31ab-878f-90e2f089e9ba\",\n    \"host\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"href\": \"/rest/v0/PBDS/08d6fbe1-2ca4-31ab-878f-90e2f089e9ba\"\n  },\n  {\n    \"uuid\": \"3f55b40f-5b94-bb7e-700a-255b708271ca\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/3f55b40f-5b94-bb7e-700a-255b708271ca\"\n  },\n  {\n    \"uuid\": \"062abf02-5f58-2922-4d11-8783e9f1d4fd\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/062abf02-5f58-2922-4d11-8783e9f1d4fd\"\n  },\n  {\n    \"uuid\": \"d07605e8-cc2a-88af-5461-e24abdd8cb55\",\n    \"host\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"href\": \"/rest/v0/PBDS/d07605e8-cc2a-88af-5461-e24abdd8cb55\"\n  },\n  {\n    \"uuid\": \"9bc33103-2918-d30a-12cb-f6b5b84a9471\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/9bc33103-2918-d30a-12cb-f6b5b84a9471\"\n  },\n  {\n    \"uuid\": \"de5d01dc-0bb7-ea76-7ce5-b36e5c79599f\",\n    \"host\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"href\": \"/rest/v0/PBDS/de5d01dc-0bb7-ea76-7ce5-b36e5c79599f\"\n  },\n  {\n    \"uuid\": \"b411b528-8424-41b4-1ac9-b3f6272ec807\",\n    \"host\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"href\": \"/rest/v0/PBDS/b411b528-8424-41b4-1ac9-b3f6272ec807\"\n  },\n  {\n    \"uuid\": \"ecb98a3f-43c0-e9b6-7572-74af4ab4dd80\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/ecb98a3f-43c0-e9b6-7572-74af4ab4dd80\"\n  },\n  {\n    \"uuid\": \"27ad4fa9-cdd3-287e-8dd9-1f28425435ae\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/27ad4fa9-cdd3-287e-8dd9-1f28425435ae\"\n  },\n  {\n    \"uuid\": \"cf64f266-cdde-4665-dc62-01dfd7e087d9\",\n    \"host\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"href\": \"/rest/v0/PBDS/cf64f266-cdde-4665-dc62-01dfd7e087d9\"\n  },\n  {\n    \"uuid\": \"c7274de4-af99-7ffc-fb05-2fd687d81ad7\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/c7274de4-af99-7ffc-fb05-2fd687d81ad7\"\n  },\n  {\n    \"uuid\": \"c1e06c55-5254-d7d7-6947-8994b49eb02e\",\n    \"host\": \"806ca3d4-a50f-43e7-b19a-9228b999028c\",\n    \"href\": \"/rest/v0/PBDS/c1e06c55-5254-d7d7-6947-8994b49eb02e\"\n  },\n  {\n    \"uuid\": \"b7c7c3d9-acc6-7689-7cdf-b56fe6d5d741\",\n    \"host\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"href\": \"/rest/v0/PBDS/b7c7c3d9-acc6-7689-7cdf-b56fe6d5d741\"\n  },\n  {\n    \"uuid\": \"42286860-3c72-6b87-9e17-5813505cae2f\",\n    \"host\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"href\": \"/rest/v0/PBDS/42286860-3c72-6b87-9e17-5813505cae2f\"\n  },\n  {\n    \"uuid\": \"e334c0ed-e2a6-d02e-29b0-9ab270aa5bca\",\n    \"host\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"href\": \"/rest/v0/PBDS/e334c0ed-e2a6-d02e-29b0-9ab270aa5bca\"\n  },\n  {\n    \"uuid\": \"4760a36f-f992-4a69-3e4b-e4bcc1551036\",\n    \"host\": \"4dbfc1e1-8256-4e9a-bf4c-20d42fe9f0d3\",\n    \"href\": \"/rest/v0/PBDS/4760a36f-f992-4a69-3e4b-e4bcc1551036\"\n  },\n  {\n    \"uuid\": \"8f75bfff-15be-3e5e-5b67-5a301902984a\",\n    \"host\": \"f71b4cd5-c0e5-4a94-bc96-eaefe4919104\",\n    \"href\": \"/rest/v0/PBDS/8f75bfff-15be-3e5e-5b67-5a301902984a\"\n  }\n]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "storage repository <-> host link",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "fields",
+              "value": "uuid,host",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "cd474ac3-290c-41d8-b9fd-e6768266a6c4",
+          "body": "{\"error\": \"unknown error\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "error",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [
@@ -715,6 +893,14 @@
     {
       "type": "route",
       "uuid": "b58920f8-e3c4-43c9-adf4-54437f1f491a"
+    },
+    {
+      "type": "route",
+      "uuid": "ffa0a9c9-8019-431a-8a2f-6f50c1dc56a0"
+    },
+    {
+      "type": "route",
+      "uuid": "c8eaa1cc-8a55-42c3-92e9-8fdb2b08f128"
     }
   ],
   "proxyMode": false,

@@ -109,7 +109,7 @@ sub manage_selection {
         if (is_excluded($vm->{name_label}, $self->{option_results}->{include_vm_name}, $self->{option_results}->{exclude_vm_name}, output => $self->{output})) {
             next
         }
-        if (is_excluded($vm->{name_label}, $self->{option_results}->{include_vm_uuid}, $self->{option_results}->{exclude_vm_uuid}, output => $self->{output})) {
+        if (is_excluded($vm->{uuid}, $self->{option_results}->{include_vm_uuid}, $self->{option_results}->{exclude_vm_uuid}, output => $self->{output})) {
             next
         }
         $self->{vms}->{total}++;
