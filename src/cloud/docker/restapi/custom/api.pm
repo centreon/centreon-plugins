@@ -344,7 +344,7 @@ sub internal_api_list_services {
 
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/services',
+        url_path => '/services?status=true',
         unknown_status => '', critical_status => '', warning_status => ''
     );
     my $services;
@@ -424,7 +424,7 @@ sub api_list_services {
                     service => {
                         service_id     => $task->{ServiceID},
                         service_name   => $service->{Spec}->{Name},
-                        replicas       => $service->{Spec}->{Mode}->{Replicated}->{Replicas} // 0,
+                        replicas       => $service->{ServiceStatus}->{DesiredTasks},
                         restart_policy => $service->{Spec}->{TaskTemplate}->{RestartPolicy}->{Condition},
                         total          => 0,
                         running        => 0,
