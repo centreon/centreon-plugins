@@ -207,7 +207,8 @@ Ctn Run Command And Check Result As Regexp
     IF    '${tc}' == '0'
         ${tc}    Evaluate    random.randint(0, 999999999)    random,sys
     END
-    IF    "centreon_plugins.pl" in $command
+    ${connector_is_running}    Ctn Connector Is Running
+    IF    "centreon_plugins.pl" in $command or not ${connector_is_running}
         Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}    ${flags}
     ELSE
         Ctn Run Command With Connector And Check Result As Regexp
