@@ -90,6 +90,16 @@ def ctn_kill_connector():
     else:
         print("No connector to stop.")
 
+def ctn_connector_is_running() -> bool:
+    """Tells whether the connector is started and still alive.
+
+    ctn_start_connector() catches FileNotFoundError when the connector binary is
+    missing, so a successful start does not mean there is a process to talk to.
+    """
+    return (connector is not None
+            and connector.process is not None
+            and connector.process.poll() is None)
+
 def ctn_send_to_connector(idf: int, command: str, timeout: int = 5, output_file=None, command_log="/tmp/connector.commands.log"):
     global connector
     if connector:
