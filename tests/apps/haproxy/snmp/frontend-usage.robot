@@ -16,6 +16,7 @@ ${CMD}      ${CENTREON_PLUGINS}
 ...         --snmp-port=${SNMPPORT}
 ...         --snmp-version=${SNMPVERSION}
 
+
 *** Test Cases ***
 Frontend-usage-legacy ${tc}
     [Tags]    apps    haproxy    snmp
@@ -36,7 +37,7 @@ Frontend-usage-legacy ${tc}
     ...    OK: Frontend 'frontend' status: OPEN, current sessions: 24, total-sessions : Buffer creation, traffic-in : Buffer creation, traffic-out : Buffer creation | 'frontend#frontend.sessions.current.count'=24;;;0;
     ...    2
     ...    --filter-counters=NONE
-    ...    OK: Frontend 'frontend'
+    ...    UNKNOWN: No data!
     ...    3
     ...    --filter-name=NONE
     ...    UNKNOWN: No frontend found.
@@ -71,7 +72,6 @@ Frontend-usage-legacy ${tc}
     ...    --critical-traffic-out=1:
     ...    CRITICAL: Frontend 'frontend' traffic out: 0.00 b/s | 'frontend#frontend.sessions.current.count'=24;;;0; 'frontend#frontend.sessions.total.count'=0;;;0; 'frontend#frontend.traffic.in.bitpersecond'=0.00b/s;;;0; 'frontend#frontend.traffic.out.bitpersecond'=0.00b/s;;1:;0;
 
-*** Test Cases ***
 Frontend-usage ${tc}
     [Tags]    apps    haproxy    snmp
     ${command}    Catenate
@@ -91,7 +91,7 @@ Frontend-usage ${tc}
     ...    OK: Frontend 'frontend' status: OPEN, current sessions: 24, total sessions: 0, traffic in: 0.00 b/s, traffic out: 0.00 b/s | 'frontend#frontend.sessions.current.count'=24;;;0; 'frontend#frontend.sessions.total.count'=0;;;0; 'frontend#frontend.traffic.in.bitpersecond'=0.00b/s;;;0; 'frontend#frontend.traffic.out.bitpersecond'=0.00b/s;;;0;
     ...    2
     ...    --filter-counters=NONE
-    ...    OK: Frontend 'frontend'
+    ...    UNKNOWN: No data!
     ...    3
     ...    --filter-name=NONE
     ...    UNKNOWN: No frontend found.

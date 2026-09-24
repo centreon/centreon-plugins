@@ -5,14 +5,14 @@ Reads the partial-matrix JSON files produced by check-official-repos.py and
 generates flat include-only matrices written to GITHUB_OUTPUT (or printed to
 stdout when GITHUB_OUTPUT is not set, useful for local debugging).
 
-Optionally filters out packages already present in the Centreon stable
-Artifactory repository at the expected version.
+Optionally filters out packages already present in the Centreon repository
+(Pulp via packages.centreon.com or Artifactory) at the expected version.
 
 Usage:
     # CI (after all check-official-repos jobs)
     python3 generate-matrices.py \\
         --partial-matrices-dir official-repos/ \\
-        --artifactory-url https://centreon.jfrog.io \\
+        --artifactory-url https://packages.centreon.com \\
         .github/packaging/cpan-libraries.json
 
     # Local debug (no filtering, cpanm used for version info if available)
