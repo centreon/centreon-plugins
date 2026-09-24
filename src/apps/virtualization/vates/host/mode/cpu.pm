@@ -59,7 +59,7 @@ sub set_counters {
     $self->{maps_counters}->{cpu} = [
         {
             label             => 'cpu-usage-prct',
-            type              => COUNTER_TYPE_INSTANCE,
+            type              => COUNTER_KIND_METRIC,
             nlabel            => 'host.cpu.usage.percentage',
             warning_default   => '80',
             critical_default  => '95',
@@ -73,7 +73,7 @@ sub set_counters {
         },
         {
             label  => 'cpu-count',
-            type   => COUNTER_TYPE_INSTANCE,
+            type   => COUNTER_KIND_METRIC,
             nlabel => 'host.cpu.count',
             set    => {
                 key_values      => [ { name => 'cpu_count' }, { name => 'display' } ],
@@ -155,17 +155,19 @@ Identify the host by its name (only one host is expected).
 
 =item B<--warning-cpu-usage-prct>
 
-Threshold warning for the CPU usage percentage.
-Default: 80
+Threshold. Default: 80
 
 =item B<--critical-cpu-usage-prct>
 
-Threshold critical for the CPU usage percentage.
-Default: 95
+Threshold. Default: 95
 
-=item B<--warning-cpu-count> / B<--critical-cpu-count>
+=item B<--warning-cpu-count>
 
-Threshold on the number of physical CPUs reported by the host. Informative counter, no default.
+Threshold.
+
+=item B<--critical-cpu-count>
+
+Threshold.
 
 =back
 

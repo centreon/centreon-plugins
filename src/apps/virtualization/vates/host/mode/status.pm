@@ -60,7 +60,7 @@ sub set_counters {
     $self->{maps_counters}->{host} = [
         {
             label            => 'status',
-            type             => COUNTER_TYPE_GROUP,
+            type             => COUNTER_KIND_TEXT,
             critical_default => '%{enabled} !~ /^true/i || %{power_state} !~ /^Running/i',
             set              => {
                 key_values => [

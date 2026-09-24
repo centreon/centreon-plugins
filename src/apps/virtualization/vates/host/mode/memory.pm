@@ -69,7 +69,7 @@ sub set_counters {
     $self->{maps_counters}->{memory} = [
         {
             label             => 'memory-usage-prct',
-            type              => COUNTER_TYPE_INSTANCE,
+            type              => COUNTER_KIND_METRIC,
             nlabel            => 'host.memory.usage.percentage',
             warning_default   => '80',
             critical_default  => '95',
@@ -83,7 +83,7 @@ sub set_counters {
         },
         {
             label  => 'memory-usage-bytes',
-            type   => COUNTER_TYPE_INSTANCE,
+            type   => COUNTER_KIND_METRIC,
             nlabel => 'host.memory.usage.bytes',
             set    => {
                 key_values            => [ { name => 'used_bytes' }, { name => 'total_bytes' } ],
@@ -96,7 +96,7 @@ sub set_counters {
         },
         {
             label  => 'memory-free-bytes',
-            type   => COUNTER_TYPE_INSTANCE,
+            type   => COUNTER_KIND_METRIC,
             nlabel => 'host.memory.free.bytes',
             set    => {
                 key_values      => [ { name => 'free_bytes' } ],
@@ -164,29 +164,27 @@ Identify the host by its name (only one host is expected).
 
 =item B<--warning-memory-usage-prct>
 
-Threshold warning for the memory usage percentage.
-Default: 80
+Threshold in percentage. Default: 80
 
 =item B<--critical-memory-usage-prct>
 
-Threshold critical for the memory usage percentage.
-Default: 95
+Threshold in percentage. Default: 95
 
 =item B<--warning-memory-usage-bytes>
 
-Threshold warning for the memory used, in bytes.
+Threshold in bytes.
 
 =item B<--critical-memory-usage-bytes>
 
-Threshold critical for the memory used, in bytes.
+Threshold in bytes.
 
 =item B<--warning-memory-free-bytes>
 
-Threshold warning for the free memory, in bytes.
+Threshold in bytes.
 
 =item B<--critical-memory-free-bytes>
 
-Threshold critical for the free memory, in bytes.
+Threshold in bytes.
 
 =back
 

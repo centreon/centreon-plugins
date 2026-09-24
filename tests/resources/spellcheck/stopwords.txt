@@ -243,7 +243,6 @@ Netasq
 Netconf
 Netscaler
 net-snmp
-ng
 NGINX
 NLCapacity
 --noeventlog
@@ -308,9 +307,9 @@ psu
 PVX
 QoS
 Qtree
-qwinsta
 queue-messages-inflighted
 quts
+qwinsta
 raidvolume
 redis-cli
 ReplicaJobSession
@@ -440,7 +439,7 @@ WildFire
 WLAN
 WLC
 WSMAN
-XCP
+XCP-ng
 Xen
 XPath
 ZDX
