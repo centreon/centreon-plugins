@@ -25,7 +25,7 @@ use warnings;
 
 use Exporter 'import';
 use List::Util qw/any/;
-our @EXPORT_OK = qw/is_excluded_label/;
+our @EXPORT_OK = qw/is_excluded_label to_millicores/;
 
 sub is_excluded_label($$$%)
 {
@@ -77,4 +77,41 @@ sub is_excluded_label($$$%)
     return 0;
 }
 
+sub to_millicores {
+    my (%options) = @_;
+
+    my $value = $options{value};
+    return 0 if !defined($value);
+
+    if ($value =~ /^(\d+)n$/) {
+        return $1 / 1000000;
+    } elsif ($value =~ /^(\d+)u$/) {
+        return $1 / 1000;
+    } elsif ($value =~ /^(\d+)m$/) {
+        return $1;
+    } elsif ($value =~ /^(\d+(?:\.\d+)?)$/) {
+        return $1 * 1000;
+    }
+
+    return 0;
+}
+
 1;
+
+__END__
+
+=head1 NAME
+
+centreon::common::kubernetes::misc - Shared helpers for the Kubernetes plugins.
+
+=head1 METHODS
+
+=head2 to_millicores
+
+    my $millicores = to_millicores(value => $value);
+
+Converts a Kubernetes CPU quantity to millicores. Kubernetes CPU quantities can be expressed in
+whole cores, millicores (C<m>), microcores (C<u>) or nanocores (C<n>). C<metrics-server> commonly
+uses C<n> for small usage values (e.g. C<9559630n>).
+
+=cut
