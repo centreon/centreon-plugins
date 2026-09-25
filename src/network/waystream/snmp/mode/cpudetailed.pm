@@ -24,51 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::SHA qw(sha256_hex);
 use centreon::plugins::constants qw(:counters :values);
 
-sub custom_cpu_calc {
-    my ($self, %options) = @_;
-
-    return NO_VALUE() if (!defined($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}));
-    if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
-        $self->{error_msg} = "Buffer creation";
-        return BUFFER_CREATION();
-    }
-
-    if (!defined($self->{instance_mode}->{total_cpu})) {
-        $self->{instance_mode}->{total_cpu} = 0;
-        foreach (keys %{$options{new_datas}}) {
-            if (/$self->{instance}_/) {
-                my $new_total = $options{new_datas}->{$_};
-                next if (!defined($options{old_datas}->{$_}));
-                my $old_total = $options{old_datas}->{$_};
-
-                my $diff_total = $new_total - $old_total;
-                if ($diff_total < 0) {
-                    $self->{instance_mode}->{total_cpu} += $old_total;
-                } else {
-                    $self->{instance_mode}->{total_cpu} += $diff_total;
-                }
-            }
-        }
-    }
-
-    if ($self->{instance_mode}->{total_cpu} <= 0) {
-        $self->{error_msg} = "counter not moved";
-        return -12;
-    }
-
-    if ($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} > $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}) {
-        $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} = 0;
-    }
-    $self->{result_values}->{prct_used} =
-        ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} -
-            $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}) * 100 /
-            $self->{instance_mode}->{total_cpu};
-
-    return 0;
-}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -77,86 +34,68 @@ sub set_counters {
         {
             name => 'global',
             type => COUNTER_TYPE_GLOBAL,
-            prefix_output => 'CPU Usage: ',
+            cb_prefix_output => 'prefix_cpu_output',
             skipped_code => { NO_VALUE() => 1 }
         },
     ];
     $self->{maps_counters}->{global} = [
         { label => 'user', nlabel => 'cpu.user.utilization.percentage', set => {
-            key_values                        => [],
-            closure_custom_calc               => $self->can('custom_cpu_calc'),
-            closure_custom_calc_extra_options => { label_ref => 'wsCPUUserLoad' },
-            manual_keys                       => 1,
-            threshold_use                     => 'prct_used',
-            output_use                        => 'prct_used',
+            key_values                        => [ { name => 'wsCPUUserLoad' }],
             output_template                   => 'User %.2f %%',
             perfdatas                         =>
                 [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { value => 'wsCPUUserLoad', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
         }
         },
         { label => 'nice', nlabel => 'cpu.nice.utilization.percentage', set => {
-            key_values                        => [],
-            closure_custom_calc               => $self->can('custom_cpu_calc'),
-            closure_custom_calc_extra_options => { label_ref => 'wsCPUNiceLoad' },
-            manual_keys                       => 1,
-            threshold_use                     => 'prct_used',
-            output_use                        => 'prct_used',
+            key_values                        => [ { name => 'wsCPUNiceLoad' }],
             output_template                   => 'Nice %.2f %%',
             perfdatas                         =>
                 [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
         }
         },
         { label => 'system', nlabel => 'cpu.system.utilization.percentage', set => {
-            key_values                        => [],
-            closure_custom_calc               => $self->can('custom_cpu_calc'),
-            closure_custom_calc_extra_options => { label_ref => 'wsCPUSystemLoad' },
-            manual_keys                       => 1,
-            threshold_use                     => 'prct_used',
-            output_use                        => 'prct_used',
+            key_values                        => [ { name => 'wsCPUSystemLoad' }],
             output_template                   => 'System %.2f %%',
             perfdatas                         =>
                 [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
         }
         },
         { label => 'idle', nlabel => 'cpu.idle.utilization.percentage', set => {
-            key_values                        => [],
-            closure_custom_calc               => $self->can('custom_cpu_calc'),
-            closure_custom_calc_extra_options => { label_ref => 'wsCPUIdleLoad' },
-            manual_keys                       => 1,
-            threshold_use                     => 'prct_used',
-            output_use                        => 'prct_used',
+            key_values                        => [ { name => 'wsCPUIdleLoad' }],
             output_template                   => 'Idle %.2f %%',
             perfdatas                         =>
                 [
-                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
         }
         },
         { label => 'interrupt', nlabel => 'cpu.interrupt.utilization.percentage', set => {
-            key_values                        => [],
-            closure_custom_calc               => $self->can('custom_cpu_calc'),
-            closure_custom_calc_extra_options => { label_ref => 'wsCPUInterruptLoad' },
-            manual_keys                       => 1,
-            threshold_use                     => 'prct_used',
-            output_use                        => 'prct_used',
+            key_values                        => [ { name => 'wsCPUInterruptLoad' }],
             output_template                   => 'Interrupt %.2f %%',
-            perfdatas                         => [
-                { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
-            ],
+            perfdatas                         =>
+                [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
+                ],
         }
         }
     ];
 }
 
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return 'CPU Usage: ';
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -184,10 +123,9 @@ sub manage_selection {
 
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
 
-    $self->{cache_name} = "snmpstandard_" . $options{snmp}->get_hostname() . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ?
-            sha256_hex($self->{option_results}->{filter_counters}) :
-            sha256_hex('all'));
+    foreach (keys %{$result}) {
+        $result->{$_} = $result->{$_} / 10;
+    }
 
     $self->{global} = { %$result };
 }
