@@ -196,8 +196,9 @@ sub create_user_and_exit {
         method   => 'PUT'
     );
     print "Role '$copied_role->{id}' attached to user '$username' (id: $created_user->{id}). You can now use this user in Centreon Infra Monitoring configuration\n";
-}
     exit 0;
+}
+
 sub request_api {
     my ($self, %options) = @_;
 
@@ -255,7 +256,7 @@ sub request_api_get_one {
     $self->{output}->option_exit(short_msg => "no object '$filter_value' found. Please check filtering parameter or --debug.");
 }
 
-# get_name_and_uuid( type => 'pool', 'api_endpoint' => 'pools');Z
+# get_name_and_uuid( type => 'pool', 'api_endpoint' => 'pools');
 # check --{type}-name and --{type}-uuid and retrieve the other value from the api.
 # it caches the mapping on disk for --reload-cache-time second
 # %options input :
@@ -499,6 +500,7 @@ Define an optional additional header to send with every HTTP request (repeatable
 =item B<--create-xoa-read-only-user>
 
 Allow to interactively create a read-only user in Xen Orchestra. exit upon user creation completion.
+B<For setup only. Do not use this option in your monitoring configuration.>
 
 =back
 
