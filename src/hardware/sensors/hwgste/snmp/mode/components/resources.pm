@@ -45,6 +45,7 @@ our @EXPORT_OK = qw($mapping);
     2 => 'F',
     3 => 'K',
     4 => '%',
+    5 => 'water',
 );
 
 $mapping = {
