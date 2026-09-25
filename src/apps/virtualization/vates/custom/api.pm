@@ -83,10 +83,7 @@ sub check_options {
     $self->{http}->add_header(key => 'Authorization', value => 'Basic ' . $self->{auth_header});
 
     # allow to create an user in Xen orchestra api and exit once the user created.
-    if ($self->{option_results}->{create_xoa_read_only_user}) {
-        $self->create_user_and_exit();
-        exit 0;
-    }
+    $self->create_user_and_exit() if ($self->{option_results}->{create_xoa_read_only_user});
     return 0;
 }
 # prompt_stdin(label => '...')
@@ -200,6 +197,7 @@ sub create_user_and_exit {
     );
     print "Role '$copied_role->{id}' attached to user '$username' (id: $created_user->{id}). You can now use this user in Centreon Infra Monitoring configuration\n";
 }
+    exit 0;
 sub request_api {
     my ($self, %options) = @_;
 
