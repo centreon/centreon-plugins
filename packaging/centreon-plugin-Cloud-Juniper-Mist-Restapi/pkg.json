@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Cloud-Juniper-Mist-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Juniper Mist cloud-managed networks using the Mist REST API",
+    "plugin_name": "centreon_juniper_mist_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "cloud/juniper/mist/restapi/"
+    ]
+}
