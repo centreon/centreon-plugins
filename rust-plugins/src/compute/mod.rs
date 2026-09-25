@@ -138,13 +138,13 @@ impl<'a> Parser<'a> {
                 let start = m.start();
                 let end = m.end();
                 if start > 0 {
-                    result.join(&ExprResult::Str(suffix[0..start].to_string()));
+                    result.join(&ExprResult::Str(suffix[0..start].to_string()))?;
                 }
                 let macro_name = &suffix[start + 1..end - 1];
                 let mut found = false;
                 for snmp_result in self.collect {
                     if let Some(v) = snmp_result.items.get(macro_name) {
-                        result.join(v);
+                        result.join(v)?;
                         found = true;
                         break;
                     }
@@ -153,7 +153,7 @@ impl<'a> Parser<'a> {
                     if self.check_format {
                         return Err(format!("Undefined macro in expression: {{{}}}", macro_name));
                     } else {
-                        result.join(&ExprResult::Str("".to_string()));
+                        result.join(&ExprResult::Str("".to_string()))?;
                     }
                 }
                 debug!(
@@ -162,7 +162,7 @@ impl<'a> Parser<'a> {
                 );
                 suffix = &suffix[end..];
             } else {
-                result.join(&ExprResult::Str(suffix.to_string()));
+                result.join(&ExprResult::Str(suffix.to_string()))?;
                 break;
             }
         }
@@ -819,7 +819,7 @@ mod test {
     fn join_str_str_str() {
         let mut a = ExprResult::Str("test".to_string());
         let b = ExprResult::Str("foobar".to_string());
-        a.join(&b);
+        a.join(&b).unwrap();
         match a {
             ExprResult::Str(s) => assert_eq!(s, "testfoobar".to_string()),
             _ => panic!("Expected a string"),

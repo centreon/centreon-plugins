@@ -70,11 +70,11 @@ pub enum ExprResult {
 }
 
 impl std::ops::Add for ExprResult {
-    type Output = ExprResult;
+    type Output = Result<ExprResult, String>;
 
     fn add(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a + b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => Ok(ExprResult::Number(a + b)),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -83,7 +83,7 @@ impl std::ops::Add for ExprResult {
                     for i in 0..len_a {
                         result.push(a[i] + b[i]);
                     }
-                    ExprResult::Vector(result)
+                    Ok(ExprResult::Vector(result))
                 } else {
                     warn!(
                         "Trying to add to arrays of different lengths: {} and {}",
@@ -94,13 +94,13 @@ impl std::ops::Add for ExprResult {
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] += value;
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     } else {
                         let mut result = b;
                         for (idx, value) in a.iter().enumerate() {
                             result[idx] += value;
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     }
                 }
             }
@@ -109,26 +109,26 @@ impl std::ops::Add for ExprResult {
                 for value in result.iter_mut() {
                     *value += a;
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
             (ExprResult::Vector(a), ExprResult::Number(b)) => {
                 let mut result = a;
                 for value in result.iter_mut() {
                     *value += b;
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
-            _ => panic!("Invalid operation"),
+            _ => Err("Cannot add these expression results: expected numbers or vectors".to_string()),
         }
     }
 }
 
 impl std::ops::Sub for ExprResult {
-    type Output = ExprResult;
+    type Output = Result<ExprResult, String>;
 
     fn sub(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a - b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => Ok(ExprResult::Number(a - b)),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -137,7 +137,7 @@ impl std::ops::Sub for ExprResult {
                     for i in 0..len_a {
                         result.push(a[i] - b[i]);
                     }
-                    ExprResult::Vector(result)
+                    Ok(ExprResult::Vector(result))
                 } else {
                     warn!(
                         "Trying to subtract arrays of different lengths: {} and {}",
@@ -148,7 +148,7 @@ impl std::ops::Sub for ExprResult {
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] -= value;
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     } else {
                         let mut result = b;
                         for (idx, value) in result.iter_mut().enumerate() {
@@ -158,7 +158,7 @@ impl std::ops::Sub for ExprResult {
                                 *value = -*value;
                             }
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     }
                 }
             }
@@ -167,26 +167,26 @@ impl std::ops::Sub for ExprResult {
                 for (idx, value) in result.iter_mut().enumerate() {
                     *value = a - b[idx];
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
             (ExprResult::Vector(a), ExprResult::Number(b)) => {
                 let mut result = a;
                 for value in result.iter_mut() {
                     *value -= b;
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
-            _ => panic!("Invalid operation"),
+            _ => Err("Cannot subtract these expression results: expected numbers or vectors".to_string()),
         }
     }
 }
 
 impl std::ops::Mul for ExprResult {
-    type Output = ExprResult;
+    type Output = Result<ExprResult, String>;
 
     fn mul(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a * b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => Ok(ExprResult::Number(a * b)),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -195,7 +195,7 @@ impl std::ops::Mul for ExprResult {
                     for i in 0..len_a {
                         result.push(a[i] * b[i]);
                     }
-                    ExprResult::Vector(result)
+                    Ok(ExprResult::Vector(result))
                 } else {
                     warn!(
                         "Trying to multiply arrays of different lengths: {} and {}",
@@ -206,13 +206,13 @@ impl std::ops::Mul for ExprResult {
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] *= value;
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     } else {
                         let mut result = b;
                         for (idx, value) in a.iter().enumerate() {
                             result[idx] *= value;
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     }
                 }
             }
@@ -221,26 +221,26 @@ impl std::ops::Mul for ExprResult {
                 for value in result.iter_mut() {
                     *value *= a;
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
             (ExprResult::Vector(a), ExprResult::Number(b)) => {
                 let mut result = a.clone();
                 for value in result.iter_mut() {
                     *value *= b;
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
-            _ => panic!("Invalid operation"),
+            _ => Err("Cannot multiply these expression results: expected numbers or vectors".to_string()),
         }
     }
 }
 
 impl std::ops::Div for ExprResult {
-    type Output = ExprResult;
+    type Output = Result<ExprResult, String>;
 
     fn div(self, other: Self) -> Self::Output {
         match (self, other) {
-            (ExprResult::Number(a), ExprResult::Number(b)) => ExprResult::Number(a / b),
+            (ExprResult::Number(a), ExprResult::Number(b)) => Ok(ExprResult::Number(a / b)),
             (ExprResult::Vector(a), ExprResult::Vector(b)) => {
                 let len_a = a.len();
                 let len_b = b.len();
@@ -249,7 +249,7 @@ impl std::ops::Div for ExprResult {
                     for i in 0..len_a {
                         result.push(a[i] / b[i]);
                     }
-                    ExprResult::Vector(result)
+                    Ok(ExprResult::Vector(result))
                 } else {
                     warn!(
                         "Trying to divide arrays of different lengths: {} and {}",
@@ -260,7 +260,7 @@ impl std::ops::Div for ExprResult {
                         for (idx, value) in b.iter().enumerate() {
                             result[idx] /= value;
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     } else {
                         let mut result = b;
                         for (idx, value) in result.iter_mut().enumerate() {
@@ -270,7 +270,7 @@ impl std::ops::Div for ExprResult {
                                 *value = 1_f64 / *value;
                             }
                         }
-                        ExprResult::Vector(result)
+                        Ok(ExprResult::Vector(result))
                     }
                 }
             }
@@ -279,16 +279,16 @@ impl std::ops::Div for ExprResult {
                 for (idx, value) in result.iter_mut().enumerate() {
                     *value = a / b[idx];
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
             (ExprResult::Vector(a), ExprResult::Number(b)) => {
                 let mut result = a;
                 for value in result.iter_mut() {
                     *value /= b;
                 }
-                ExprResult::Vector(result)
+                Ok(ExprResult::Vector(result))
             }
-            _ => panic!("Invalid operation"),
+            _ => Err("Cannot divide these expression results: expected numbers or vectors".to_string()),
         }
     }
 }
@@ -299,7 +299,7 @@ impl ExprResult {
     /// When `self` is a string vector and `other` is a numeric vector, converts
     /// the numbers to strings before concatenation, padding to match lengths
     /// where necessary.
-    pub fn join(&mut self, other: &ExprResult) {
+    pub fn join(&mut self, other: &ExprResult) -> Result<(), String> {
         trace!("[join] self: {:?} - other: {:?}", &self, &other);
         match self {
             ExprResult::Empty => match other {
@@ -314,7 +314,7 @@ impl ExprResult {
                         vv.iter().map(|n| crate::output::float_string(n)).collect(),
                     );
                 }
-                _ => panic!("Unable to join objects others than strings"),
+                _ => return Err("Unable to join objects others than strings".to_string()),
             },
             ExprResult::StrVector(v) => match other {
                 ExprResult::StrVector(vv) => {
@@ -352,7 +352,7 @@ impl ExprResult {
                 ExprResult::Str(s) => {
                     *v = v.iter().map(|a| format!("{}{}", a, s)).collect();
                 }
-                _ => panic!("Unable to join objects others than strings"),
+                _ => return Err("Unable to join objects others than strings".to_string()),
             },
             ExprResult::Str(s) => match other {
                 ExprResult::StrVector(vv) => {
@@ -370,12 +370,13 @@ impl ExprResult {
                     trace!("[join] n: {:?}", &n);
                     *s = format!("{}{}", s, crate::output::float_string(n));
                 }
-                _ => panic!("Unable to join objects others than strings"),
+                _ => return Err("Unable to join objects others than strings".to_string()),
             },
             _ => {
-                panic!("Unable to join objects that are not strings");
+                return Err("Unable to join objects that are not strings".to_string());
             }
         }
+        Ok(())
     }
 
     pub fn values(&self) -> Vec<String> {
@@ -438,17 +439,22 @@ impl<'input> Expr<'input> {
                                     return Ok(ExprResult::Vector(n.clone()));
                                 }
                             }
-                            _ => panic!("Should be a number"),
+                            _ => {
+                                return Err(format!(
+                                    "Macro '{{{}}}' does not hold a numeric value",
+                                    k
+                                ));
+                            }
                         },
                         None => continue,
                     }
                 }
                 Ok(ExprResult::Number(0.0))
             }
-            Expr::OpPlus(left, right) => Ok(left.eval(collect)? + right.eval(collect)?),
-            Expr::OpMinus(left, right) => Ok(left.eval(collect)? - right.eval(collect)?),
-            Expr::OpStar(left, right) => Ok(left.eval(collect)? * right.eval(collect)?),
-            Expr::OpSlash(left, right) => Ok(left.eval(collect)? / right.eval(collect)?),
+            Expr::OpPlus(left, right) => left.eval(collect)? + right.eval(collect)?,
+            Expr::OpMinus(left, right) => left.eval(collect)? - right.eval(collect)?,
+            Expr::OpStar(left, right) => left.eval(collect)? * right.eval(collect)?,
+            Expr::OpSlash(left, right) => left.eval(collect)? / right.eval(collect)?,
             Expr::Fn(func, expr) => {
                 let v = expr.eval(collect)?;
                 match func {
@@ -469,7 +475,7 @@ impl<'input> Expr<'input> {
                                 Ok(ExprResult::Number(f64::NAN))
                             }
                         }
-                        _ => panic!("Invalid operation"),
+                        _ => Err("Average() requires a number or a vector".to_string()),
                     },
                     Func::Min => match v {
                         ExprResult::Number(n) => Ok(ExprResult::Number(n)),
@@ -477,7 +483,7 @@ impl<'input> Expr<'input> {
                             let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
                             Ok(ExprResult::Number(min))
                         }
-                        _ => panic!("Invalid operation"),
+                        _ => Err("Min() requires a number or a vector".to_string()),
                     },
                     Func::Max => match v {
                         ExprResult::Number(n) => Ok(ExprResult::Number(n)),
@@ -485,7 +491,7 @@ impl<'input> Expr<'input> {
                             let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
                             Ok(ExprResult::Number(max))
                         }
-                        _ => panic!("Invalid operation"),
+                        _ => Err("Max() requires a number or a vector".to_string()),
                     },
                 }
             }
