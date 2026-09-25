@@ -1,4 +1,6 @@
 {
+  "$schema": "https://centreon.github.io/centreon-plugins/rs-collections/snmp/v0/rs-collection.schema.json",
+  "format_version": 0,
   "collect": {
     "snmp": [
       {
