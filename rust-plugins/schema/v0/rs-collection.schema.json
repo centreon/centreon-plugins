@@ -41,7 +41,7 @@
     },
     "snmpQuery": {
       "title": "SNMP query",
-      "description": "One SNMP query retrieving either a single value (Get) or more (Walk). Each value are made availlable under a macro namespace for the compute stage.",
+      "description": "One SNMP query retrieving either a single value (Get) or more (Walk). Each value are made available under a macro namespace for the compute stage.",
       "type": "object",
       "required": ["name", "oid", "query"],
       "additionalProperties": false,
