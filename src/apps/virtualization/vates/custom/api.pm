@@ -41,16 +41,16 @@ sub new {
 
     $options{options}->add_options(
         arguments => {
-            'hostname:s' => { name => 'hostname', not_empty => 1},
-            'port:s'     => { name => 'port', default => '443' },
-            'proto:s'    => { name => 'proto', default => 'https' },
-            'username:s' => { name => 'username', not_empty => 1 },
-            'password:s' => { name => 'password' },
-            'timeout:s'  => { name => 'timeout', default => 10 },
-            'api-url:s'  => {name => 'api_url', default => '/rest/v0/' },
-            'header:s@'  => { name => 'header' },
-            'reload-cache-time:s'  => {name => 'reload_cache_time', default => 1440 },
-
+            'hostname:s'                  => { name => 'hostname', not_empty => 1 },
+            'port:s'                      => { name => 'port', default => '443' },
+            'proto:s'                     => { name => 'proto', default => 'https' },
+            'username:s'                  => { name => 'username', not_empty => 1 },
+            'password:s'                  => { name => 'password' },
+            'timeout:s'                   => { name => 'timeout', default => 10 },
+            'api-url:s'                   => { name => 'api_url', default => '/rest/v0/' },
+            'header:s@'                   => { name => 'header' },
+            'reload-cache-time:s'         => { name => 'reload_cache_time', default => 1440 },
+            'create-xoa-read-only-user'   => {name => 'create_xoa_read_only_user'}
         });
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -82,7 +82,123 @@ sub check_options {
     # overriding, any --header value supplied on the command line.
     $self->{http}->add_header(key => 'Authorization', value => 'Basic ' . $self->{auth_header});
 
+    # allow to create an user in Xen orchestra api and exit once the user created.
+    if ($self->{option_results}->{create_xoa_read_only_user}) {
+        $self->create_user_and_exit();
+        exit 0;
+    }
     return 0;
+}
+# prompt_stdin(label => '...')
+# Reads one line from STDIN, bounded by --timeout so a run without an attended
+# terminal (cron, empty pipe) does not hang the plugin forever.
+sub prompt_stdin {
+    my ($self, %options) = @_;
+
+    my $value;
+    eval {
+        local $SIG{ALRM} = sub { die "timeout\n"; };
+        alarm($self->{option_results}->{timeout});
+        local $| = 1;
+        print $options{label} . ': ';
+        $value = <STDIN>;
+        alarm(0);
+    };
+    alarm(0);
+    if ($@) {
+        $self->{output}->option_exit(
+            short_msg => "No input received for '" . $options{label} . "' after " . $self->{option_results}->{timeout} . 's, aborting.'
+        );
+    }
+    if (is_empty($value)) {
+        $self->{output}->option_exit(short_msg => "No value provided for '" . $options{label} . "', aborting.");
+    }
+    chomp($value);
+    return $value;
+}
+
+# create_user_and_exit()
+# Interactively creates a read-only Xen Orchestra user: asks for the new
+# user's name/password on STDIN (each bounded by --timeout, see prompt_stdin),
+# creates it through the REST API, then duplicates the 'read only' ACL role
+# template and attaches the copy to that user.
+sub create_user_and_exit {
+    my ($self) = @_;
+
+    my $username = $self->prompt_stdin(label => 'Name of the read-only Xen Orchestra user to create');
+    my $password = $self->prompt_stdin(label => 'Password for that user');
+
+    my $created_user = json_decode(
+        $self->request_api(
+            endpoint        => 'users',
+            method          => 'POST',
+            unknown_status    => '',
+            query_form_post => json_encode(
+                { name => $username, password => $password, permission => 'none' },
+                output => $self->{output}
+            ),
+            header => ['Content-Type: application/json']
+        ),
+        output => $self->{output}
+    );
+    if (is_not_empty($created_user->{error})) {
+        if ($created_user->{error} =~ /the user .* already exists/) {
+            $self->{output}->option_exit(
+                short_msg => "user $username already exist, nothing to do.",
+                exit_litteral => "ok");
+        }
+           $self->{output}->option_exit(
+               short_msg => "API error : " . $created_user->{error},
+               exit_litteral => "unknown");
+    }
+    if (is_empty($created_user) or is_empty($created_user->{id})) {
+        $self->{output}->option_exit(short_msg => "Could not create user '$username' on the Xen Orchestra API (no id returned).");
+    }
+    print "User '$username' created (id: $created_user->{id}).\n";
+
+    my $roles = $self->request_api_get(
+        endpoint  => 'acl-roles',
+        get_param => ['fields=id,name,isTemplate', 'filter=name:read only']
+    );
+    my $read_only_role;
+    if (ref($roles) eq 'ARRAY') {
+        for my $role (@$roles) {
+            if (lc($role->{name}) eq 'read only') {
+                $read_only_role = $role;
+                last;
+            }
+        }
+    }
+    if (!defined($read_only_role)) {
+        $self->{output}->option_exit(short_msg => "Could not find the 'read only' ACL role template on the Xen Orchestra API.");
+    }
+    print "'read only' ACL role template id: $read_only_role->{id}\n";
+
+    # the template role itself cannot be assigned to a user: it has to be
+    # duplicated into a plain (non-template) role first.
+    my $copied_role = json_decode(
+        $self->request_api(
+            endpoint        => 'acl-roles/' . $read_only_role->{id} . '/actions/copy',
+            method          => 'POST',
+            get_param       => ['sync=true'],
+            query_form_post => json_encode(
+                { name => $username . ' - read only' },
+                output => $self->{output}
+            ),
+            header => ['Content-Type: application/json']
+        ),
+        output => $self->{output}
+    );
+    if (is_empty($copied_role) or is_empty($copied_role->{id})) {
+        $self->{output}->option_exit(short_msg => "Could not duplicate the 'read only' ACL role template on the Xen Orchestra API.");
+    }
+    print "'read only' role duplicated for '$username' (id: $copied_role->{id}).\n";
+
+    $self->request_api(
+        endpoint => 'acl-roles/' . $copied_role->{id} . '/users/' . $created_user->{id},
+        method   => 'PUT'
+    );
+    print "Role '$copied_role->{id}' attached to user '$username' (id: $created_user->{id}). You can now use this user in Centreon Infra Monitoring configuration\n";
 }
 sub request_api {
     my ($self, %options) = @_;
@@ -381,6 +497,10 @@ Define the API prefix (default: /rest/v0/).
 =item B<--header>
 
 Define an optional additional header to send with every HTTP request (repeatable).
+
+=item B<--create-xoa-read-only-user>
+
+Allow to interactively create a read-only user in Xen Orchestra. exit upon user creation completion.
 
 =back
 
