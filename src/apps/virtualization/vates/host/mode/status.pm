@@ -106,6 +106,9 @@ __END__
 
 Check the status of a Vates XCP-ng host: enabled state and power state.
 
+Since a XCP-ng host is not meaningfully reachable via a plain network ping, this mode is meant to
+be used as the Centreon host check command for the host template (no dedicated service needed).
+
 =over 8
 
 =item B<--host-uuid>
