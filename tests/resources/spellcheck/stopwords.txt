@@ -307,9 +307,9 @@ psu
 PVX
 QoS
 Qtree
-qwinsta
 queue-messages-inflighted
 quts
+qwinsta
 raidvolume
 redis-cli
 ReplicaJobSession
@@ -439,6 +439,7 @@ WildFire
 WLAN
 WLC
 WSMAN
+XCP-ng
 Xen
 XPath
 ZDX

@@ -104,6 +104,19 @@ sub request_api_get {
     return json_decode($content, booleans_as_strings => 1);
 }
 
+# the XO REST API's 'filter=field:value' does a substring match, not an exact one
+# (e.g. 'name_label:vates' also matches 'vates2'/'vates3'), so any lookup expected to
+# return exactly one object must narrow the candidates down to the exact match itself.
+sub _narrow_to_exact_match {
+    my ($self, %options) = @_;
+
+    return $options{response} if (!defined($options{response}) or ref($options{response}) ne "ARRAY" or scalar(@{$options{response}}) <= 1);
+
+    my @exact = grep { defined($_->{$options{field}}) and $_->{$options{field}} eq $options{value} } @{$options{response}};
+    return \@exact if (scalar(@exact) == 1);
+    return $options{response};
+}
+
 # get_name_and_uuid( type => 'pool', 'api_endpoint' => 'pools');
 # check --{type}-name and --{type}-uuid and retrieve the other value from the api.
 # it caches the mapping on disk for --reload-cache-time window second
@@ -131,10 +144,12 @@ sub get_name_and_uuid {
         or (time() - $last_timestamp) > ($self->{option_results}->{reload_cache_time} * 60)
     ) {
         my $filter = '';
+        my ($match_field, $match_value) = ('uuid', $self->{option_results}->{$obj_uuid});
 
         if (is_not_empty($self->{option_results}->{$obj_name})) {
 
             $filter = "name_label:" . $self->{option_results}->{$obj_name};
+            ($match_field, $match_value) = ('name_label', $self->{option_results}->{$obj_name});
         }
         else {
             $filter = "uuid:" . $self->{option_results}->{$obj_uuid};
@@ -143,6 +158,7 @@ sub get_name_and_uuid {
             endpoint  => $options{api_endpoint} // $options{type},
             get_param => [ 'fields=uuid,name_label', 'filter=' . $filter]
         );
+        $response = $self->_narrow_to_exact_match(response => $response, field => $match_field, value => $match_value);
         if (!defined($response) or ref($response) ne 'ARRAY' or scalar @$response != 1) {
             $self->{output}->option_exit(short_msg => "no $options{type} found, api did not return an array with one element. Please check --$options{type}-uuid and --$options{type}-name parameter or --debug.");
         }
@@ -200,16 +216,45 @@ sub get_vm_info {
     my $fields = "name_label,power_state,uuid,os_version";
 
     # default filter use uuid, or name if not present.
+    my ($match_field, $match_value) = ('uuid', $self->{option_results}->{vm_uuid});
     my $filter = "uuid:". $self->{option_results}->{vm_uuid};
     if (is_empty($self->{option_results}->{vm_uuid})){
         $filter = "name_label:". $self->{option_results}->{vm_name};
+        ($match_field, $match_value) = ('name_label', $self->{option_results}->{vm_name});
     }
     my $response = $self->request_api_get(
         endpoint  => "vms",
         get_param => [ "fields=" . $fields, "filter=" . $filter ],
     );
+    $response = $self->_narrow_to_exact_match(response => $response, field => $match_field, value => $match_value);
     if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1){
         $self->{output}->option_exit(short_msg => "no vm found, api did not return an array with one element. Please check --vm-uuid and --vm-name parameter or --debug.");
+    }
+    return $response->[0];
+}
+
+# used by the host modes to get one host's data, resolving --host-uuid or --host-name.
+# %options input :
+#   fields: comma separated list of fields to request from the API (defaults to the minimal status fields)
+sub get_host_info {
+    my ($self, %options) = @_;
+
+    my $fields = $options{fields} // "name_label,enabled,power_state,uuid";
+
+    # default filter use uuid, or name if not present.
+    my ($match_field, $match_value) = ('uuid', $self->{option_results}->{host_uuid});
+    my $filter = "uuid:" . $self->{option_results}->{host_uuid};
+    if (is_empty($self->{option_results}->{host_uuid})) {
+        $filter = "name_label:" . $self->{option_results}->{host_name};
+        ($match_field, $match_value) = ('name_label', $self->{option_results}->{host_name});
+    }
+    my $response = $self->request_api_get(
+        endpoint  => "hosts",
+        get_param => [ "fields=" . $fields, "filter=" . $filter ],
+    );
+    $response = $self->_narrow_to_exact_match(response => $response, field => $match_field, value => $match_value);
+    if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1){
+        $self->{output}->option_exit(short_msg => "no host found, api did not return an array with one element. Please check --host-uuid and --host-name parameter or --debug.");
     }
     return $response->[0];
 }
@@ -259,6 +304,14 @@ Mainly useful for storage repository which don't output hosts name they are pres
 Resolves C<--vm-uuid>/C<--vm-name> and returns the matching VM's C<name_label>, C<power_state>,
 C<uuid> and C<os_version> fields. Always live (not cached), since C<power_state> can change at
 any time.
+
+=head2 get_host_info
+
+    my $host = $api->get_host_info(fields => 'name_label,enabled,power_state,memory');
+
+Resolves C<--host-uuid>/C<--host-name> and returns the matching host's fields (the caller picks
+which fields to request, since the status/cpu/memory host modes each need a different subset).
+Always live (not cached).
 
 =head1 REST API OPTIONS
 
