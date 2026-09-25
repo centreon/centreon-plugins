@@ -148,7 +148,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     if (!defined($self->{option_results}->{no_ps})) {
-        my $ps = centreon::common::powershell::veeam::jobstatus::get_powershell(job_source => $self->{option_results}->{job_source});
+        my $ps = centreon::common::powershell::veeam::jobstatus::get_powershell(
+            job_source   => $self->{option_results}->{job_source},
+            filter_name  => $self->{option_results}->{filter_name},
+            exclude_name => $self->{option_results}->{exclude_name}
+        );
         if (defined($self->{option_results}->{ps_display})) {
             $self->{output}->output_add(
                 severity => 'OK',
