@@ -108,20 +108,30 @@ jobs:
 
           # Exercise each HTTP backend with a real request so its native XS stack is
           # loaded (lwp -> Net::SSLeay/OpenSSL; curl -> Net::Curl/libcurl, loaded
-          # lazily only on an actual curl request). The target port is dead, so
-          # --critical-status= neutralises the resulting 500/timeout: a working
-          # backend then exits OK (0), while a missing bundled DLL still surfaces as
-          # "Cannot load module". PATH stays scrubbed, so the libs must come from the
-          # bundle. No exit-code masking: a real execution problem still fails the step.
+          # lazily only on an actual curl request). The target port is dead, so the
+          # request fails either way: lwp maps any failure to an HTTP 500 and curl maps
+          # a timeout to a 450, both neutralised by --critical-status= (exit OK), while
+          # curl reports an immediate connection refusal as a "curl perform error"
+          # (UNKNOWN). Which one happens depends on the host TCP stack, so both prove
+          # the backend was loaded. A missing bundled DLL still surfaces as "Cannot
+          # load module", and any other exit code fails the step. PATH stays scrubbed,
+          # so the libs must come from the bundle.
           foreach ($backend in @('lwp', 'curl')) {
             $b = & $exe --plugin apps::protocols::http::plugin --mode response --hostname 127.0.0.1 --port 1 --proto http --timeout 1 --http-backend $backend --critical-status= 2>&1 | Out-String
-            Write-Host "[$backend] $b"
+            $rc = $LASTEXITCODE
+            Write-Host "[$backend] (exit $rc) $b"
             if ($b -match 'Cannot load module') {
               Write-Error "HTTP '$backend' backend is missing a bundled dependency (exe not self-contained)."
               exit 1
             }
+            $expected = ($rc -eq 0) -or ($backend -eq 'curl' -and $b -match 'curl perform error')
+            if (-not $expected) {
+              Write-Error "HTTP '$backend' backend smoke-test failed unexpectedly (exit $rc)."
+              exit 1
+            }
           }
           Write-Host "HTTP backends (lwp, curl) load OK."
+          exit 0
 
       - name: Upload executable artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
