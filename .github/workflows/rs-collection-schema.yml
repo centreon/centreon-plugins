@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - '.github/workflows/rs-collection-schema.yml'
       - '.github/pages/index.html'
       - '.github/scripts/build-schema-doc.sh'
       - '.github/scripts/validate-rs-collections.sh'
@@ -18,7 +17,6 @@ on:
     branches:
       - develop
     paths:
-      - '.github/workflows/rs-collection-schema.yml'
       - '.github/pages/index.html'
       - '.github/scripts/build-schema-doc.sh'
       - '.github/scripts/validate-rs-collections.sh'

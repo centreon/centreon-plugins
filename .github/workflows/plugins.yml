@@ -17,8 +17,6 @@ on:
     - cron: "30 1 * * 1"
   pull_request:
     paths:
-      - '.github/workflows/plugins.yml'
-      - '.github/workflows/plugins-robot-tests.yml'
       - '.github/scripts/list-plugins-to-build-and-test.py'
       - '.github/scripts/prepare-package-plugins.sh'
       - '.github/scripts/fatpack-plugins.pl'
@@ -35,8 +33,6 @@ on:
       - develop
       - master
     paths:
-      - '.github/workflows/plugins.yml'
-      - '.github/workflows/plugins-robot-tests.yml'
       - '.github/scripts/list-plugins-to-build-and-test.py'
       - '.github/scripts/prepare-package-plugins.sh'
       - '.github/scripts/fatpack-plugins.pl'
