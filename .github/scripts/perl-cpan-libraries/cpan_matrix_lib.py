@@ -5,6 +5,7 @@ Used by:
   generate-matrices.py     –  merges partial JSONs into final CI matrices
 """
 
+import gzip
 import json
 import re
 import shutil
@@ -12,6 +13,7 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 
 # ── Matrix defaults ────────────────────────────────────────────────────────────
@@ -161,8 +163,9 @@ def dist_to_deb_package(dist_name, fallback_module_name=""):
 
     Falls back to deriving from fallback_module_name (CPAN module name) when dist_name is empty.
     "ARGV::Struct" → "libargv-struct-perl",  "Libssh::Session" → "libssh-session-perl"
+    "Crypt-Blowfish_PP" → "libcrypt-blowfish-pp-perl"  (no '_' allowed in deb package names)
     """
-    name = (dist_name or fallback_module_name.replace("::", "-")).lower()
+    name = (dist_name or fallback_module_name.replace("::", "-")).lower().replace("_", "-")
     if not name:
         return ""
     return f"{name}-perl" if name.startswith("lib") else f"lib{name}-perl"
@@ -386,3 +389,102 @@ def get_centreon_deb_packages(base_url, distrib, stability, arch="amd64", family
             packages.update(_fetch_packages_index(base_url, repo, distrib, "all"))
         _deb_packages_cache[cache_key] = packages
     return _deb_packages_cache[cache_key]
+
+
+# ── Published (version, revision) lookups, read from the public repo metadata ──
+
+_RPM_REPO_NS = {"repo": "http://linux.duke.edu/metadata/repo"}
+_RPM_COMMON_NS = "{http://linux.duke.edu/metadata/common}"
+
+_published_cache: dict = {}
+
+
+def _fetch_bytes(base_url, path):
+    """GET {base_url}/{path} from an allowed host; return None on any error."""
+    url = f"{base_url}/{path}"
+    for candidate in (base_url, url):
+        parsed = urllib.parse.urlparse(candidate)
+        if parsed.scheme != "https" or parsed.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
+            print(f"  WARNING: {candidate} is not an allowed Centreon repository URL, skipping.", file=sys.stderr)
+            return None
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return resp.read()
+    except Exception as exc:
+        print(f"  WARNING: could not fetch {url}: {exc}", file=sys.stderr)
+        return None
+
+
+def get_centreon_rpm_published(base_url, distrib, stability):
+    """Return {cpan_dist_name: {(version, revision), …}} from the RPM repo metadata.
+
+    Every published build is kept (noarch and x86_64), e.g. perl-JSON-Path 1.0.6-2.el9
+      → "JSON-Path": {("1.0.6", "2")}
+    """
+    cache_key = ("rpm", distrib, stability)
+    if cache_key in _published_cache:
+        return _published_cache[cache_key]
+    result: dict = {}
+    for arch in ("noarch", "x86_64"):
+        repo_path = f"rpm-plugins/{distrib}/{stability}/{arch}"
+        repomd = _fetch_bytes(base_url, f"{repo_path}/repodata/repomd.xml")
+        if repomd is None:
+            continue
+        location = ET.fromstring(repomd).find("repo:data[@type='primary']/repo:location", _RPM_REPO_NS)
+        if location is None:
+            continue
+        primary = _fetch_bytes(base_url, f"{repo_path}/{location.get('href')}")
+        if primary is None:
+            continue
+        for pkg in ET.fromstring(gzip.decompress(primary)).iter(f"{_RPM_COMMON_NS}package"):
+            name = pkg.findtext(f"{_RPM_COMMON_NS}name", "")
+            version = pkg.find(f"{_RPM_COMMON_NS}version")
+            if not name.startswith("perl-") or version is None:
+                continue
+            revision = version.get("rel", "").split(".")[0]
+            result.setdefault(name[len("perl-"):], set()).add((version.get("ver", ""), revision))
+    _published_cache[cache_key] = result
+    return result
+
+
+def get_centreon_deb_published(base_url, distrib, stability, arch="amd64", family="debian"):
+    """Return {pkg_name: {(version, revision), …}} from the DEB Packages indexes ({arch} + all).
+
+    Every published build is kept, e.g. libssh-session-perl 1.1-2+deb12u1
+      → "libssh-session-perl": {("1.1", "2")}
+    """
+    repo = f"ubuntu-plugins-{stability}" if family == "ubuntu" else f"apt-plugins-{stability}"
+    cache_key = ("deb", repo, distrib, arch)
+    if cache_key in _published_cache:
+        return _published_cache[cache_key]
+    result: dict = {}
+    for index_arch in {arch, "all"}:
+        content = _fetch_bytes(base_url, f"artifactory/{repo}/dists/{distrib}/main/binary-{index_arch}/Packages")
+        if content is None:
+            continue
+        for stanza in content.decode("utf-8", errors="replace").split("\n\n"):
+            fields = dict(line.split(": ", 1) for line in stanza.splitlines() if ": " in line)
+            upstream = _DEB_VERSION_RE.match(re.sub(r"^\d+:", "", fields.get("Version", "").strip()))
+            if "Package" not in fields or not upstream:
+                continue
+            # "1.1-2+deb12u1" / "0.06-1-0ubuntu.24.04" → 2 / 1, legacy "0.06+deb12u1-1" → 1,
+            # no revision at all ("0.06") → None, which matches any revision
+            rest = upstream.string[upstream.end():]
+            lead, trail = re.match(r"\d+", rest), re.search(r"-(\d+)$", rest)
+            revision = lead.group(0) if lead else trail.group(1) if trail else None
+            result.setdefault(fields["Package"].strip(), set()).add((upstream.group(1), revision))
+    _published_cache[cache_key] = result
+    return result
+
+
+def published_matches(published, required_version, required_revision=None):
+    """True when one of the published (version, revision) pairs satisfies the requirement.
+
+    A None revision (published or required) is not compared.
+    """
+    return any(
+        versions_match(version, required_version)
+        and (revision is None or required_revision is None or revision == required_revision)
+        for version, revision in published
+    )
