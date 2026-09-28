@@ -102,9 +102,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-       'filter-product-id:s'   => { name => 'filter_product_id', default => '' },
-       'filter-product-name:s' => { name => 'filter_product_name', default => '' },
-       'display-incidents'     => { name => 'display_incidents' }
+       'filter-product-id:s'        => { name => 'filter_product_id', default => '' },
+       'include-product-name:s'     => { name => 'include_product_name',  default => '' },
+       'exclude-product-name:s'     => { name => 'exclude_product_name',  default => '' },
+       'include-region-name:s'      => { name => 'include_region_name',  default => '' },
+       'exclude-region-name:s'      => { name => 'exclude_region_name',  default => '' },
+       'include-environment-name:s' => { name => 'include_environment_name',  default => '' },
+       'exclude-environment-name:s' => { name => 'exclude_environment_name',  default => '' },
+       'display-incidents'          => { name => 'display_incidents' }
     });
 
     return $self;
@@ -115,10 +120,10 @@ sub manage_selection {
 
     $self->{global} = { detected => 0 };
     $self->{products} = {};
-    my $products = $options{custom}->get_products();
+    my ($products, $environments) = $options{custom}->get_products_environments();
     foreach my $id (keys %$products) {
         next if is_excluded($id, $self->{option_results}->{filter_product_id});
-        next if is_excluded($products->{$id}, $self->{option_results}->{filter_product_name});
+        next if is_excluded($products->{$id}, $self->{option_results}->{include_product_name}, $self->{option_results}->{exclude_product_name});
 
         $self->{global}->{detected}++;
         $self->{products}->{$id} = {
@@ -135,14 +140,39 @@ sub manage_selection {
         next if (!defined($self->{products}->{$id}));
 
         foreach my $incident (@{$incidents->{$id}}) {
+            my $next = 1;
+            foreach (@{$incident->{locationImpactRegion}}) {
+                if (is_excluded($_ , '', $self->{option_results}->{exclude_region_name})) {
+                    $next = 1;
+                    last;
+                }
+                next if (is_excluded($_, $self->{option_results}->{include_region_name}));
+
+                $next = 0;
+            }
+            next if ($next == 1);
+
+            $next = 1;
+            foreach (@{$incident->{locationImpactEnvironment}}) {
+                if (is_excluded($environments->{ $_ }, '', $self->{option_results}->{exclude_environment_name})) {
+                    $next = 1;
+                    last;
+                }
+                next if (is_excluded($environments->{ $_ }, $self->{option_results}->{include_environment_name}));
+
+                $next = 0;
+            }
+            next if ($next == 1);
+
             $self->{products}->{$id}->{ lc($incident->{severity}) }++;
             if (defined($self->{option_results}->{display_incidents})) {
                 $self->{output}->output_add(
                     long_msg => sprintf(
-                        "incident '%s' [severity: %s] [customerImpact: %s]: %s",
+                        "incident '%s' [severity: %s] [customerImpact: %s] [region: %s]: %s",
                         $self->{products}->{$id}->{productName},
                         $incident->{severity},
                         $incident->{customerImpact},
+                        join(', ', @{$incident->{locationImpactRegion}}),
                         scalar(localtime($incident->{statusTime}))
                     )
                 );
@@ -165,9 +195,29 @@ Check current incidents.
 
 Filter products by ID (can be a regexp).
 
-=item B<--filter-product-name>
+=item B<--include-product-name>
 
-Filter product by name (can be a regexp).
+Include product names (regexp).
+
+=item B<--exclude-product-name>
+
+Exclude product names (regexp).
+
+=item B<--include-region-name>
+
+Include region names (regexp).
+
+=item B<--exclude-region-name>
+
+Exclude region names (regexp).
+
+=item B<--include-environment-name>
+
+Include environment names (regexp).
+
+=item B<--exclude-environment-name>
+
+Exclude environment names (regexp).
 
 =item B<--display-incidents>
 

@@ -132,7 +132,9 @@ sub get_incidents {
                 statusTime => $productinc->{history}->{$times[0]}->{statusTime},
                 severity => $productinc->{history}->{$times[0]}->{severity},
                 customerImpact => $productinc->{history}->{$times[0]}->{customerImpact},
-                messageEn => $response->{incidentEvent}->{messages}->{en}->{ $productinc->{history}->{$times[0]}->{messageToken} }->{textMessage}
+                messageEn => $response->{incidentEvent}->{messages}->{en}->{ $productinc->{history}->{$times[0]}->{messageToken} }->{textMessage},
+                locationImpactRegion => $productinc->{history}->{$times[0]}->{locationImpact}->{serviceRegions},
+                locationImpactEnvironment => $productinc->{history}->{$times[0]}->{locationImpact}->{serviceEnvironments}
             };
         }
     }
@@ -140,7 +142,7 @@ sub get_incidents {
     return $current_incidents;
 }
 
-sub get_products {
+sub get_products_environments {
     my ($self, %options) = @_;
 
     my $response = $self->request_api(endpoint => '/adobestatus/SnowServiceRegistry');
@@ -150,7 +152,12 @@ sub get_products {
         $products->{ $_->{id} } = $_->{name};
     }
 
-    return $products;
+    my $environments = {};
+    foreach (values %{$response->{environments}}) {
+        $environments->{ $_->{id} } = $_->{name};
+    }
+
+    return ($products, $environments);
 }
 
 1;
