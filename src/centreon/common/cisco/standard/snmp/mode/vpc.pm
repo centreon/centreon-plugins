@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::misc qw/normalize_mac/;
 
 sub custom_keepalive_status_output {
     my ($self, %options) = @_;
@@ -88,7 +89,7 @@ sub prefix_host_output {
 sub prefix_peer_output {
     my ($self, %options) = @_;
 
-    return "peer '" . $options{instance_value}->{macaddress} . "' ";
+    return "peer '" . normalize_mac($options{instance_value}->{macaddress}) . "' ";
 }
 
 sub prefix_keepalive_output {
@@ -329,7 +330,7 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'cisco_standard_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_counters}) ? sha256_hex($self->{option_results}->{filter_counters}) : sha256_hex('all'));
 }
 
 1;
@@ -338,7 +339,7 @@ __END__
 
 =head1 MODE
 
-Check virtual port-channel (vPC).
+Check virtual port-channel (C<vPC>).
 
 =over 8
 
@@ -387,11 +388,45 @@ You can use the following variables: %{link_status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{link_status} eq "down"').
 You can use the following variables: %{link_status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-host-links-down>
 
-Thresholds.
-Can be: 'host-links-up', 'host-links-down', 'host-links-downstar',
-'keepalive-messages-sent', 'keepalive-messages-received'. 
+Threshold.
+
+=item B<--critical-host-links-down>
+
+Threshold.
+
+=item B<--warning-host-links-downstar>
+
+Threshold.
+
+=item B<--critical-host-links-downstar>
+
+Threshold.
+
+=item B<--warning-host-links-up>
+
+Threshold.
+
+=item B<--critical-host-links-up>
+
+Threshold.
+
+=item B<--warning-keepalive-messages-received>
+
+Threshold.
+
+=item B<--critical-keepalive-messages-received>
+
+Threshold.
+
+=item B<--warning-keepalive-messages-sent>
+
+Threshold.
+
+=item B<--critical-keepalive-messages-sent>
+
+Threshold.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,8 +51,10 @@ sub new {
         'node-usage'                    => 'cloud::kubernetes::mode::nodeusage',
         'persistentvolume-status'       => 'cloud::kubernetes::mode::persistentvolumestatus',
         'pod-status'                    => 'cloud::kubernetes::mode::podstatus',
+        'pod-usage'                     => 'cloud::kubernetes::mode::podusage',
         'replicaset-status'             => 'cloud::kubernetes::mode::replicasetstatus',
         'replicationcontroller-status'  => 'cloud::kubernetes::mode::replicationcontrollerstatus',
+        'resourcequota-status'          => 'cloud::kubernetes::mode::resourcequotastatus',
         'statefulset-status'            => 'cloud::kubernetes::mode::statefulsetstatus'
     };
 

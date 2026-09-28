@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,9 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -154,18 +155,18 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'vms', type => 1, cb_prefix_output => 'prefix_vms_output', message_multiple => 'All vms are ok', skipped_code => { -10 => 1, -11 => 1 } }
+        { name => 'vms', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_vms_output', message_multiple => 'All vms are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{vms} = [
-         { label => 'vm-status', type => 2, set => {
-                key_values => [ { name => 'state' }, { name => 'name' } ],
+         { label => 'vm-status', type => COUNTER_KIND_TEXT, set => {
+                key_values => [ { name => 'state' }, { name => 'name' }, { name => 'tags' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
-        { label => 'cpu', nlabel => 'vm.cpu.utilization.percentage', set => {
+        { label => 'cpu', type => COUNTER_KIND_METRIC, nlabel => 'vm.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_total_usage', diff => 1 }, { name => 'cpu_number' }, { name => 'display' } ],
                 output_template => 'cpu usage: %.2f %%',
                 closure_custom_calc => $self->can('custom_cpu_calc'),
@@ -175,7 +176,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', type => COUNTER_KIND_METRIC, set => {
                 key_values => [ { name => 'memory_usage' }, { name => 'memory_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_output => $self->can('custom_memory_output'),
@@ -183,7 +184,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_memory_threshold')
             }
         },
-        { label => 'read-iops', nlabel => 'vm.read.usage.iops', set => {
+        { label => 'read-iops', type => COUNTER_KIND_METRIC, nlabel => 'vm.read.usage.iops', set => {
                 key_values => [ { name => 'read_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read iops: %.2f',
                 perfdatas => [
@@ -191,7 +192,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'write-iops', nlabel => 'vm.write.usage.iops', set => {
+        { label => 'write-iops', type => COUNTER_KIND_METRIC, nlabel => 'vm.write.usage.iops', set => {
                 key_values => [ { name => 'write_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write iops: %.2f',
                 perfdatas => [
@@ -199,7 +200,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'swap', set => {
+        { label => 'swap', type => COUNTER_KIND_METRIC, set => {
                 key_values => [ { name => 'swap_usage' }, { name => 'swap_total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_swap_calc'),
                 closure_custom_output => $self->can('custom_swap_output'),
@@ -207,7 +208,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_swap_threshold')
             }
         },
-        { label => 'traffic-in', nlabel => 'vm.traffic.in.bitspersecond', set => {
+        { label => 'traffic-in', type => COUNTER_KIND_METRIC, nlabel => 'vm.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'traffic in: %s %s/s',
@@ -216,7 +217,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-out', nlabel => 'vm.traffic.out.bitspersecond', set => {
+        { label => 'traffic-out', type => COUNTER_KIND_METRIC, nlabel => 'vm.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'traffic out: %s %s/s',
@@ -236,8 +237,11 @@ sub new {
     $options{options}->add_options(arguments => {
         'vm-id:s'             => { name => 'vm_id',             default => '' },
         'vm-name:s'           => { name => 'vm_name',           default => '' },
-        'filter-name:s'       => { name => 'filter_name',       default => '' },
+        'include-name:s'      => { name => 'include_name',       default => '' },
+        'filter-name:s'       => { redirect => 'include_name' },
         'exclude-name:s'      => { name => 'exclude_name',      default => '' },
+        'include-tags:s'      => { name => 'include_tags',       default => '' },
+        'exclude-tags:s'      => { name => 'exclude_tags',      default => '' },
         'include-node-name:s' => { name => 'include_node_name', default => '' },
         'exclude-node-name:s' => { name => 'exclude_node_name', default => '' },
         'use-name'            => { name => 'use_name' }
@@ -260,8 +264,10 @@ sub manage_selection {
     my $result = $options{custom}->api_get_vms(
         vm_id => $self->{option_results}->{vm_id},
         vm_name => $self->{option_results}->{vm_name},
-        filter_name => $self->{option_results}->{filter_name},
+        include_name => $self->{option_results}->{include_name},
         exclude_name => $self->{option_results}->{exclude_name},
+        include_tags  => $self->{option_results}->{include_tags},
+        exclude_tags => $self->{option_results}->{exclude_tags},
         include_node_name => $self->{option_results}->{include_node_name},
         exclude_node_name => $self->{option_results}->{exclude_node_name},
         statefile => $self->{statefile_cache_vms}
@@ -279,6 +285,7 @@ sub manage_selection {
             display => defined($self->{option_results}->{use_name}) ? $vm_name : $vm_id,
             name => $vm_name,
             state => $result->{$vm_id}->{State},
+            tags  => $result->{$vm_id}->{Tags},
             read_io => $result->{$vm_id}->{Stats}->{diskread},
             write_io => $result->{$vm_id}->{Stats}->{diskwrite},
             cpu_total_usage => $result->{$vm_id}->{Stats}->{cpu},
@@ -299,13 +306,15 @@ sub manage_selection {
 
     my $hostnames = $options{custom}->get_hostnames();
     $self->{cache_name} = 'proxmox_' . $self->{mode} . '_' .$hostnames . '_' . $options{custom}->get_port() . '_' .
-        md5_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
-            (defined($self->{option_results}->{exclude_name}) ? $self->{option_results}->{exclude_name} : '') . '_' .
-            (defined($self->{option_results}->{include_node_name}) ? $self->{option_results}->{include_node_name} : '') . '_' .
-            (defined($self->{option_results}->{vm_id}) ? $self->{option_results}->{vm_id} : '') . '_' .
-            (defined($self->{option_results}->{vm_name}) ? $self->{option_results}->{vm_name} : '')
+        sha256_hex(
+            ($self->{option_results}->{filter_counters} // '') . '_' .
+            ($self->{option_results}->{include_name} // '') . '_' .
+            ($self->{option_results}->{exclude_name} // '') . '_' .
+            ($self->{option_results}->{include_tags} // '') . '_' .
+            ($self->{option_results}->{exclude_tags} // '') . '_' .
+            ($self->{option_results}->{include_node_name} // '') . '_' .
+            ($self->{option_results}->{vm_id} // '') . '_' .
+            ($self->{option_results}->{vm_name} // '')
         );
 }
 
@@ -331,13 +340,21 @@ Exact virtual machine name (if multiple names: names separated by ':').
 
 Use virtual machine name for perfdata and display.
 
-=item B<--filter-name>
+=item B<--include-name>
 
-Filter by virtual machine name (can be a regexp).
+Filter by virtual machine name (can be a regexp). Option C<--filter-name> is a deprecated alias.
 
 =item B<--exclude-name>
 
 Exclude by virtual machine name (can be a regexp).
+
+=item B<--include-tags>
+
+Filter by virtual machine tags (can be a regexp).
+
+=item B<--exclude-tags>
+
+Exclude by virtual machine tags (can be a regexp).
 
 =item B<--include-node-name>
 
@@ -347,22 +364,61 @@ Filter only virtual machine running on specified node name (can be a regexp).
 
 Exclude virtual machine running on specified node name (can be a regexp).
 
-=item B<--filter-counters>
+=item B<--warning-cpu>
 
-Only display some counters (regexp can be used).
-Example: C<--filter-counters='^vm-status$'>
+Threshold in percentage.
 
-=item B<--warning-*>
+=item B<--critical-cpu>
 
-Warning threshold.
-Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
-'cpu' (%), 'memory' (%), 'swap' (%).
+Threshold in percentage.
 
-=item B<--critical-*>
+=item B<--warning-memory>
 
-Critical threshold.
-Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
-'cpu' (%), 'memory' (%), 'swap' (%).
+Threshold.
+
+=item B<--critical-memory>
+
+Threshold.
+
+=item B<--warning-read-iops>
+
+Threshold in iops.
+
+=item B<--critical-read-iops>
+
+Threshold in iops.
+
+=item B<--warning-swap>
+
+Threshold.
+
+=item B<--critical-swap>
+
+Threshold.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
+
+=item B<--warning-write-iops>
+
+Threshold in iops.
+
+=item B<--critical-write-iops>
+
+Threshold in iops.
 
 =item B<--warning-vm-status>
 

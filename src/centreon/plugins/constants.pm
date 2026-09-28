@@ -40,17 +40,23 @@ use constant {
 
     # Only used with COUNTER_TYPE_MULTIPLE counters
     COUNTER_MULTIPLE_INSTANCE    => 0, # counter global to the instance
-    COUNTER_MULTIPLE_SUBINSTANCE => 1, # counter defined per subinstance
+    COUNTER_MULTIPLE_SUBINSTANCE => 1, # counter defined per sub instance
 
     # Define the nature of a counter ( numeric or text )
     COUNTER_KIND_METRIC  => 1, # numeric counter with thesholds and perfdata
     COUNTER_KIND_TEXT    => 2, # text counter with status check and no perfdata
+
+    # Unit conversion constants
+    CONVERT_NONE         => 0, # No conversion
+    CONVERT_STORAGE      => 1, # Convert units using factor 1024
+    CONVERT_NETWORK      => 2, # Convert units using factore 1000
 
     MSG_JSON_DECODE_ERROR => 'Cannot decode response (add --debug option to display returned content)'
 };
 
 our %EXPORT_TAGS = (
     values                 => [ qw(NO_VALUE BUFFER_CREATION RUN_OK NOT_PROCESSED) ],
+    unit_conversion        => [ qw(CONVERT_NONE CONVERT_STORAGE CONVERT_NETWORK) ],
     counter_types          => [ qw(COUNTER_TYPE_GLOBAL COUNTER_TYPE_INSTANCE COUNTER_TYPE_GROUP COUNTER_TYPE_MULTIPLE) ],
     counter_multiple_types => [ qw(COUNTER_MULTIPLE_INSTANCE COUNTER_MULTIPLE_SUBINSTANCE) ],
     counter_kinds          => [ qw(COUNTER_KIND_METRIC COUNTER_KIND_TEXT) ],
@@ -134,7 +140,7 @@ Counter global to the instance.
 
 =item B<COUNTER_MULTIPLE_SUBINSTANCE (1)>
 
-Counter defined per subinstance.
+Counter defined per sub instance.
 
 =back
 

@@ -1,3 +1,23 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 //! Core plugin logic: command definition, SNMP collection, metric evaluation, and status reporting.
 //!
 //! A [`Command`] is deserialized from JSON and describes what to collect via SNMP
@@ -14,13 +34,13 @@ pub mod error;
 use self::error::Result;
 use crate::compute::{Compute, Parser, ast::ExprResult, threshold::Threshold};
 use crate::output::{Output, OutputFormatter};
+use crate::snmp::SnmpResult;
 use crate::snmp::{snmp_bulk_get, snmp_bulk_walk, snmp_bulk_walk_with_labels};
 use log::{debug, trace};
 use regex::Regex;
 use serde::Deserialize;
 use std::collections::HashMap;
-
-use crate::snmp::SnmpResult;
+use std::convert::Into;
 
 /// A single metric data point, ready to be included in plugin output.
 ///
@@ -49,14 +69,54 @@ pub enum Status {
     Critical = 2,
     Unknown = 3,
 }
+impl Into<i32> for Status {
+    fn into(self) -> i32 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Critical => 2,
+            Status::Unknown => 3,
+        }
+    }
+}
+impl Into<String> for Status {
+    fn into(self) -> String {
+        match self {
+            Status::Ok => "OK".to_string(),
+            Status::Warning => "WARNING".to_string(),
+            Status::Critical => "CRITICAL".to_string(),
+            Status::Unknown => "UNKNOWN".to_string(),
+        }
+    }
+}
+impl std::str::FromStr for Status {
+    type Err = error::Error;
 
+    /// Parses a status from its textual form, case-insensitively
+    /// (e.g. `"critical"`, `"CRITICAL"`).
+    fn from_str(s: &str) -> Result<Self> {
+        match s.trim().to_lowercase().as_str() {
+            "ok" => Ok(Status::Ok),
+            "warning" => Ok(Status::Warning),
+            "critical" => Ok(Status::Critical),
+            "unknown" => Ok(Status::Unknown),
+            _ => Err(error::Error::InvalidStatus {
+                value: s.to_string(),
+            }),
+        }
+    }
+}
 impl Status {
-    fn as_str(&self) -> &str {
-        match *self {
-            Status::Ok => "OK",
-            Status::Warning => "WARNING",
-            Status::Critical => "CRITICAL",
-            Status::Unknown => "UNKNOWN",
+    /// Returns the severity rank of the status, used to compare statuses.
+    ///
+    /// Severity order: `Ok < Warning < Unknown < Critical`.  It differs from the
+    /// exit code (see [`Into<i32>`]), where `Critical` is 2 and `Unknown` is 3.
+    fn severity(&self) -> u8 {
+        match self {
+            Status::Ok => 0,
+            Status::Warning => 1,
+            Status::Unknown => 2,
+            Status::Critical => 3,
         }
     }
 
@@ -64,40 +124,27 @@ impl Status {
     ///
     /// Severity order: `Ok < Warning < Unknown < Critical`.
     pub fn is_worse_than(&self, other: Status) -> bool {
-        let self_int = match self {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
-        let other_int = match other {
-            Status::Ok => 0,
-            Status::Warning => 1,
-            Status::Critical => 3,
-            Status::Unknown => 2,
-        };
-        self_int >= other_int
+        self.severity() >= other.severity()
     }
 }
 
 fn worst(a: Status, b: Status) -> Status {
-    let a_int = match a {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
-    let b_int = match b {
-        Status::Ok => 0,
-        Status::Warning => 1,
-        Status::Critical => 3,
-        Status::Unknown => 2,
-    };
-    if a_int > b_int {
-        return a;
-    } else {
-        return b;
-    }
+    if a.severity() > b.severity() { a } else { b }
+}
+
+/// Version of the collection format this plugin understands.
+///
+/// Versioned independently of the plugin package: only a change breaking existing
+/// collections increments it. Version 0 is the beta format and carries no stability
+/// guarantee; the first stable format will be version 1.
+pub const FORMAT_VERSION: u32 = 0;
+
+/// Base URL the collection format schemas are published under.
+const SCHEMA_BASE_URL: &str = "https://centreon.github.io/centreon-plugins/rs-collections/snmp";
+
+/// URL of the published schema of the collection format this plugin supports.
+pub fn schema_url() -> String {
+    format!("{SCHEMA_BASE_URL}/v{FORMAT_VERSION}/rs-collection.schema.json")
 }
 
 /// Type of SNMP query to perform for a given OID.
@@ -134,10 +181,34 @@ pub struct Collect {
 /// formatting.  Use [`Command::execute`] to run the full pipeline.
 #[derive(Deserialize, Debug)]
 pub struct Command {
+    /// Version of the collection format the file targets, checked against
+    /// [`FORMAT_VERSION`] before anything is collected.  Read as an option so that
+    /// a missing key is reported on its own rather than as a deserialization error.
+    format_version: Option<u32>,
     collect: Collect,
     compute: Compute,
     #[serde(default = "default_output")]
     pub output: Output,
+}
+
+impl Command {
+    /// Checks that this plugin supports the format version the collection targets.
+    ///
+    /// # Errors
+    /// Returns an error when the collection declares no version, or one this plugin
+    /// does not support.
+    pub fn check_format_version(&self) -> Result<()> {
+        match self.format_version {
+            None => Err(error::Error::MissingFormatVersion {
+                expected: FORMAT_VERSION,
+            }),
+            Some(found) if found != FORMAT_VERSION => Err(error::Error::UnsupportedFormatVersion {
+                found,
+                expected: FORMAT_VERSION,
+            }),
+            Some(_) => Ok(()),
+        }
+    }
 }
 
 fn default_output() -> Output {
@@ -228,14 +299,63 @@ impl Command {
         }
     }
 
+    /// Formats raw SNMP response for simple display
+    fn format_raw_response(&self, collect: &Vec<SnmpResult>) -> Result<CmdResult> {
+        let mut lines = Vec::new();
+
+        for result in collect.iter() {
+            for (name, expr_result) in &result.items {
+                for val in expr_result.values() {
+                    lines.push(format!("{}: {}", name, val));
+                }
+            }
+        }
+
+        let output = if lines.len() <= 1 {
+            format!(
+                "OK: {}",
+                lines.first().unwrap_or(&"No response".to_string())
+            )
+        } else {
+            format!("OK: Response received\n{}", lines.join("\n"))
+        };
+
+        Ok(CmdResult {
+            status: Status::Ok,
+            output,
+        })
+    }
+
     /// Executes all configured SNMP queries (Get and Walk operations) and returns the results.
     fn execute_snmp_collect(
         &self,
         target: &str,
         version: &str,
         community: &str,
-    ) -> Vec<SnmpResult> {
+        check_format: bool,
+    ) -> Result<Vec<SnmpResult>> {
         let mut collect: Vec<SnmpResult> = Vec::new();
+
+        if check_format {
+            // In check-format mode, don't make SNMP requests and initialize with dummy values.
+            // Get queries return a single value; Walk queries return multiple values.
+            for s in self.collect.snmp.iter() {
+                let mut items = HashMap::new();
+                let dummy = match s.query {
+                    QueryType::Get => ExprResult::Vector(vec![0.0]),
+                    QueryType::Walk => ExprResult::Vector(vec![0.0, 0.0]),
+                };
+                items.insert(s.name.clone(), dummy);
+                if let Some(lab) = &s.labels {
+                    for label_val in lab.values() {
+                        let key = format!("{}.{}", s.name, label_val);
+                        items.insert(key, ExprResult::Vector(vec![0.0, 0.0]));
+                    }
+                }
+                collect.push(SnmpResult::new(items));
+            }
+            return Ok(collect);
+        }
         let mut to_get = Vec::new();
         let mut get_name = Vec::new();
         for s in self.collect.snmp.iter() {
@@ -244,11 +364,15 @@ impl Command {
                     if let Some(lab) = &s.labels {
                         let r = snmp_bulk_walk_with_labels(
                             target, version, community, &s.oid, &s.name, &lab,
-                        );
-                        collect.push(r);
+                        )?;
+                        if !r.items.is_empty() {
+                            collect.push(r);
+                        }
                     } else {
-                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name);
-                        collect.push(r);
+                        let r = snmp_bulk_walk(target, version, community, &s.oid, &s.name)?;
+                        if !r.items.is_empty() {
+                            collect.push(r);
+                        }
                     }
                 }
                 QueryType::Get => {
@@ -260,9 +384,12 @@ impl Command {
 
         if !to_get.is_empty() {
             let r = snmp_bulk_get(target, version, community, 1, 1, &to_get, &get_name);
-            collect.push(r);
+            collect.push(r?);
         }
-        collect
+        if collect.is_empty() {
+            return Err(error::Error::EmptyResponse {});
+        }
+        Ok(collect)
     }
 
     /// Executes the complete plugin pipeline: SNMP collection, metric computation, filtering, and output formatting.
@@ -273,6 +400,9 @@ impl Command {
     /// * `community` - SNMP community string
     /// * `filter_in` - Regex patterns; metrics matching any pattern are kept (empty = keep all)
     /// * `filter_out` - Regex patterns; metrics matching any pattern are excluded
+    /// * `check_format` - Dry-run mode ( validate macros )
+    /// * `check_response` - Display raw SNMP response without metrics computation
+    /// * `no_data_status` - Status to report when no metric is left once the filters are applied
     ///
     /// # Returns
     /// A [`CmdResult`] containing the overall [`Status`] and Nagios-compatible output string.
@@ -283,8 +413,15 @@ impl Command {
         community: &str,
         filter_in: &Vec<String>,
         filter_out: &Vec<String>,
+        check_format: bool,
+        check_response: bool,
+        no_data_status: Status,
     ) -> Result<CmdResult> {
-        let mut collect = self.execute_snmp_collect(target, version, community);
+        let mut collect = self.execute_snmp_collect(target, version, community, check_format)?;
+
+        if check_response {
+            return self.format_raw_response(&collect);
+        }
 
         let mut idx: u32 = 0;
         let mut metrics = vec![];
@@ -306,17 +443,27 @@ impl Command {
 
         for metric in self.compute.metrics.iter() {
             let value = &metric.value;
-            let parser = Parser::new(&collect);
-            let value = parser.eval(value).unwrap();
+            let parser = Parser::new(&collect, check_format);
+            let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
+                message: format!("Metric \"{}\", field \"value\": {}", metric.name, e),
+            })?;
             let min = if let Some(min_expr) = metric.min_expr.as_ref() {
-                parser.eval(&min_expr).unwrap()
+                parser
+                    .eval(&min_expr)
+                    .map_err(|e| error::Error::InvalidJSON {
+                        message: format!("Metric \"{}\", field \"min_expr\": {}", metric.name, e),
+                    })?
             } else if let Some(min_value) = metric.min {
                 ExprResult::Number(min_value)
             } else {
                 ExprResult::Empty
             };
             let max = if let Some(max_expr) = metric.max_expr.as_ref() {
-                parser.eval(&max_expr).unwrap()
+                parser
+                    .eval(&max_expr)
+                    .map_err(|e| error::Error::InvalidJSON {
+                        message: format!("Metric \"{}\", field \"max_expr\": {}", metric.name, e),
+                    })?
             } else if let Some(max_value) = metric.max {
                 ExprResult::Number(max_value)
             } else {
@@ -331,16 +478,25 @@ impl Command {
             match &value {
                 ExprResult::Vector(v) => {
                     let prefix_str = match &metric.prefix {
-                        Some(prefix) => parser.eval_str(prefix).unwrap(),
+                        Some(prefix) => {
+                            parser
+                                .eval_str(prefix)
+                                .map_err(|e| error::Error::InvalidJSON {
+                                    message: format!(
+                                        "Metric \"{}\", field \"prefix\": {}",
+                                        metric.name, e
+                                    ),
+                                })?
+                        }
                         None => ExprResult::Empty,
                     };
                     for (i, item) in v.iter().enumerate() {
-                        let name = match &prefix_str {
-                            ExprResult::StrVector(v) => {
-                                format!("{:?}#{}", v[i], metric.name)
-                            }
+                        // first, compose the instance name
+                        let instance_name = match &prefix_str {
+                            ExprResult::StrVector(v) => v[i].to_string(),
+                            ExprResult::Str(s) => s.to_string(),
                             ExprResult::Empty => {
-                                let res = format!("{}#{}", idx, metric.name);
+                                let res = idx.to_string();
                                 idx += 1;
                                 res
                             }
@@ -348,16 +504,18 @@ impl Command {
                                 panic!("A label must be a string");
                             }
                         };
-                        if !re_in.is_empty() {
-                            if !re_in.iter().any(|re| re.is_match(&name)) {
-                                continue;
-                            }
+                        // then apply filters exclusion and inclusion filters
+                        if !re_out.is_empty() && re_out.iter().any(|re| re.is_match(&instance_name))
+                        {
+                            continue;
                         }
-                        if !re_out.is_empty() {
-                            if re_out.iter().any(|re| re.is_match(&name)) {
-                                continue;
-                            }
+                        if (!re_in.is_empty()
+                            && !re_in.iter().any(|re| re.is_match(&instance_name)))
+                        {
+                            continue;
                         }
+                        // and now concatenate to form the full perfdata
+                        let name = format!("'{}#{}'", instance_name, metric.name);
                         let current_status =
                             compute_status(item, &metric.warning, &metric.critical)?;
                         status = worst(status, current_status);
@@ -386,7 +544,7 @@ impl Command {
                 ExprResult::Number(s) => {
                     let name = match &metric.prefix {
                         Some(prefix) => {
-                            format!("{:?}#{}", prefix, metric.name)
+                            format!("{}#{}", prefix, metric.name)
                         }
                         None => {
                             let res = format!("{}#{}", idx, metric.name);
@@ -434,14 +592,37 @@ impl Command {
             debug!("New ID '{}' with content: {:?}", key, value);
             my_res.items.insert(key, value);
         }
+
+        // Nothing left to report: every instance has been discarded by the filters
+        // (or none was collected at all). Aggregations are skipped on purpose, as they
+        // would be computed on values that have just been filtered out.
+        if !self.compute.metrics.is_empty() && metrics.is_empty() {
+            debug!(
+                "No metric left, reporting the no-data status {:?}",
+                no_data_status
+            );
+            let status_str: String = no_data_status.into();
+            return Ok(CmdResult {
+                status: no_data_status,
+                output: format!("{}: {}", status_str, self.output.no_data),
+            });
+        }
+
         collect.push(my_res);
         if let Some(aggregations) = self.compute.aggregations.as_ref() {
             let mut my_res = SnmpResult::new(HashMap::new());
             for metric in aggregations {
                 let value = &metric.value;
-                let parser = Parser::new(&collect);
+                let parser = Parser::new(&collect, check_format);
                 let max = if let Some(max_expr) = metric.max_expr.as_ref() {
-                    let res = parser.eval(&max_expr).unwrap();
+                    let res = parser
+                        .eval(&max_expr)
+                        .map_err(|e| error::Error::InvalidJSON {
+                            message: format!(
+                                "Aggregation \"{}\", field \"max_expr\": {}",
+                                metric.name, e
+                            ),
+                        })?;
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
@@ -456,7 +637,14 @@ impl Command {
                     None
                 };
                 let min = if let Some(min_expr) = metric.min_expr.as_ref() {
-                    let res = parser.eval(&min_expr).unwrap();
+                    let res = parser
+                        .eval(&min_expr)
+                        .map_err(|e| error::Error::InvalidJSON {
+                            message: format!(
+                                "Aggregation \"{}\", field \"min_expr\": {}",
+                                metric.name, e
+                            ),
+                        })?;
                     Some(match res {
                         ExprResult::Number(v) => v,
                         ExprResult::Vector(v) => {
@@ -470,7 +658,9 @@ impl Command {
                 } else {
                     None
                 };
-                let value = parser.eval(value).unwrap();
+                let value = parser.eval(value).map_err(|e| error::Error::InvalidJSON {
+                    message: format!("Aggregation \"{}\", field \"value\": {}", metric.name, e),
+                })?;
                 match &value {
                     ExprResult::Vector(v) => {
                         for item in v {
@@ -548,5 +738,91 @@ impl Command {
         let output_formatter = OutputFormatter::new(status, &collect, &metrics, &self.output);
         let output = output_formatter.to_string();
         Ok(CmdResult { status, output })
+    }
+
+    /// Lists all available metrics
+    pub fn list_counters(&self) {
+        println!("Available metrics:");
+
+        if !self.compute.metrics.is_empty() {
+            for metric in &self.compute.metrics {
+                let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                println!(
+                    "  {} (--warning-{}, --critical-{})",
+                    metric.name, suffix, suffix
+                );
+            }
+        }
+
+        if let Some(aggregations) = self.compute.aggregations.as_ref() {
+            if !aggregations.is_empty() {
+                println!("Aggregations:");
+                for metric in aggregations {
+                    let suffix = metric.threshold_suffix.as_deref().unwrap_or("(no suffix)");
+                    println!(
+                        "  {} (--warning-{}, --critical-{})",
+                        metric.name, suffix, suffix
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_advertised_schema_url_is_the_one_the_supported_format_publishes() {
+        // the schema of the format this plugin enforces has to be the one the URL points
+        // at, so that --version cannot send anyone to another format's reference
+        let path = format!(
+            "{}/schema/v{}/rs-collection.schema.json",
+            env!("CARGO_MANIFEST_DIR"),
+            FORMAT_VERSION
+        );
+        let schema: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}")),
+        )
+        .unwrap_or_else(|e| panic!("{path}: {e}"));
+
+        assert_eq!(schema["$id"].as_str(), Some(schema_url().as_str()));
+    }
+
+    #[test]
+    fn status_exit_codes_follow_the_monitoring_plugins_guidelines() {
+        let codes: Vec<i32> = vec![
+            Status::Ok.into(),
+            Status::Warning.into(),
+            Status::Critical.into(),
+            Status::Unknown.into(),
+        ];
+        assert_eq!(codes, vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn worst_ranks_critical_above_unknown() {
+        assert_eq!(worst(Status::Ok, Status::Warning), Status::Warning);
+        assert_eq!(worst(Status::Warning, Status::Unknown), Status::Unknown);
+        assert_eq!(worst(Status::Unknown, Status::Critical), Status::Critical);
+        assert_eq!(worst(Status::Critical, Status::Unknown), Status::Critical);
+    }
+
+    #[test]
+    fn status_is_parsed_from_its_textual_form_whatever_the_case() {
+        assert_eq!("ok".parse::<Status>().unwrap(), Status::Ok);
+        assert_eq!("Warning".parse::<Status>().unwrap(), Status::Warning);
+        assert_eq!("CRITICAL".parse::<Status>().unwrap(), Status::Critical);
+        assert_eq!(" unknown ".parse::<Status>().unwrap(), Status::Unknown);
+    }
+
+    #[test]
+    fn parsing_an_unsupported_status_returns_an_error() {
+        let err = "pending".parse::<Status>().unwrap_err();
+        assert!(matches!(
+            err,
+            error::Error::InvalidStatus { ref value } if value == "pending"
+        ));
     }
 }

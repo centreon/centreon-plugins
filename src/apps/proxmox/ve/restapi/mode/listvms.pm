@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,13 +24,21 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw(is_excluded);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'include-name:s' => { name => 'include_name', default => '' },
+        'filter-name:s'  => { redirect => 'include_name' },
+        'exclude-name:s' => { name => 'exclude_name', default => '' },
+        'include-tags:s'  => { name => 'include_tags', default => '' },
+        'exclude-tags:s' => { name => 'exclude_tags', default => '' },
+        'node-name:s'    => { name => 'node_name', default => '' },
+    });
 
     return $self;
 }
@@ -43,7 +51,18 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{vms} = $options{custom}->api_list_vms();
+    my $all_vms  = $options{custom}->api_list_vms();
+    $self->{vms} = {};
+
+    foreach my $vm_id (keys %{$all_vms}) {
+        my $vm = $all_vms->{$vm_id};
+
+        next if is_excluded($vm->{Name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
+        next if is_excluded($vm->{Tags}, $self->{option_results}->{include_tags}, $self->{option_results}->{exclude_tags}, output => $self->{output});
+        next if is_excluded($vm->{Node}, $self->{option_results}->{node_name}, undef, output => $self->{output});
+
+        $self->{vms}->{$vm_id} = $vm;
+    }
 }
 
 sub run {
@@ -55,7 +74,8 @@ sub run {
             "[node = '" . $self->{vms}->{$vm_id}->{Node} . "']" .
             "[state = '" . $self->{vms}->{$vm_id}->{State} . "']" .
             "[vmid = '" . $self->{vms}->{$vm_id}->{Vmid} . "']" .
-            "[type = '" . $self->{vms}->{$vm_id}->{Type} . "']"
+            "[type = '" . $self->{vms}->{$vm_id}->{Type} . "']" .
+            "[tags = '" . ($self->{vms}->{$vm_id}->{Tags} // '') . "']"
         );
     }
 
@@ -68,7 +88,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['id', 'name', 'node' ,'state','type','vmid']);
+      $self->{output}->add_disco_format(elements => ['id', 'name', 'node' ,'state','type','vmid','tags']);
 }
 
 sub disco_show {
@@ -83,6 +103,7 @@ sub disco_show {
             id => $vm_id,
             type => $self->{vms}->{$vm_id}->{Type},
             vmid =>$self->{vms}->{$vm_id}->{Vmid},
+            tags => $self->{vms}->{$vm_id}->{Tags},
         );
     }
 }

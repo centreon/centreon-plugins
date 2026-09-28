@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Rubrik-Graphql",
+    "pkg_summary": "Centreon Plugin to monitor Rubrik using GraphQL API",
+    "plugin_name": "centreon_rubrik_graphql.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/backup/rubrik/graphql/"
+    ]
+}

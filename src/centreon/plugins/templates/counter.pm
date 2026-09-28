@@ -26,14 +26,73 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
-use centreon::plugins::constants qw/:counters/;
-use centreon::plugins::misc qw/is_empty/;
+use centreon::plugins::constants qw/:counters :values/;
+use centreon::plugins::misc qw/is_empty exprintf/;
 use JSON::XS;
 
 my $sort_subs = {
     num => sub { $a <=> $b },
     cmp => sub { $a cmp $b },
 };
+
+# There are different ways to configure sorting:
+#
+# Simple sorting on a single key:
+#   sort_attribute => 'key',
+#   sort_method => 'cmp',
+#
+# Sorting on multiple keys using the same comparison method:
+#   sort_attribute => [ 'key1', 'key4' ],
+#   sort_method => 'cmp',
+#
+# Sorting on multiple keys, each using its own comparison method:
+#   sort_attribute => {
+#     key1 => 'cmp',
+#     key4 => 'num'
+#   }
+sub get_sort_sub
+{
+    my ($self, %options) = @_;
+
+    # The default sort method is cmp (string comparison)
+    my $sort_method = 'cmp';
+    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
+    $sort_method = $options{config}->{sort_method}
+        if (defined($options{config}->{sort_method}));
+
+    # In the absence of sort_attribute the sort method is set now
+    my $sort_sub = $sort_subs->{$sort_method};
+
+    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
+    if (defined($options{config}->{sort_attribute})) {
+        my $sort_attribute = $options{config}->{sort_attribute};
+        if (ref $sort_attribute eq 'ARRAY') {
+            $sort_sub = sub {
+                for my $attr (@$sort_attribute) {
+                    my ($item_sort_value, $item_sort_method) = ref $attr eq 'HASH' ? %{$attr} : ( $attr, $sort_method );
+                    my $ordered;
+                    if ($item_sort_method eq 'cmp') {
+                        $ordered = $self->{$options{config}->{name}}->{$a}->{$item_sort_value} cmp $self->{$options{config}->{name}}->{$b}->{$item_sort_value};
+                    } else {
+                        $ordered = $self->{$options{config}->{name}}->{$a}->{$item_sort_value} <=> $self->{$options{config}->{name}}->{$b}->{$item_sort_value};
+                    }
+                    return $ordered if $ordered;
+                 }
+                 return 0;
+            };
+        } else {
+            $sort_sub = sub {
+                if ($sort_method eq 'cmp') {
+                    return $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute};
+                } else {
+                    return $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute};
+                }
+            };
+        }
+    }
+
+    return $sort_sub;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -126,10 +185,16 @@ sub new {
         'filter-counters-block:s' => { name => 'filter_counters_block' },
         'filter-counters:s'       => { name => 'filter_counters' },
         'display-ok-counters:s'   => { name => 'display_ok_counters' },
-        'list-counters'           => { name => 'list_counters' }
+        'list-counters'           => { name => 'list_counters' },
+        'no-data-status:s'        => {
+            name      => 'no_data_status',
+            default   => 'unknown',
+            is_in     => [ 'ok', 'warning', 'critical', 'unknown' ],
+            not_empty => 1
+        }
     });
     $self->{statefile_value} = undef;
-    if (defined($options{statefile}) && $options{statefile}) {
+    if ($options{statefile}) {
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'centreon::plugins::statefile',
@@ -249,9 +314,7 @@ sub check_options {
 
     $self->change_macros(macros => $change_macros_opt) if (scalar(@$change_macros_opt) > 0);
 
-    if (defined($self->{statefile_value})) {
-        $self->{statefile_value}->check_options(%options);
-    }
+    $self->{statefile_value}->check_options(%options) if $self->{statefile_value};
 }
 
 sub run_global {
@@ -271,6 +334,8 @@ sub run_global {
         $options{config}->{message_separator}: ', ';
     my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
     my @exits;
+    # Number of counters that actually got a value, to tell an empty block from a filled one
+    my $values_count = 0;
     foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
         my $obj = $_->{obj};
 
@@ -280,6 +345,13 @@ sub run_global {
         $obj->set(instance => defined($force_instance) ? $force_instance : $options{config}->{name});
 
         my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{$options{config}->{name}});
+
+        # Only NO_VALUE means the counter got nothing. Any other code (buffer creation,
+        # counter not moved...) means data was collected but is not exploitable yet.
+        if ($value_check != NO_VALUE) {
+            $values_count++;
+            $self->{counters_with_values}++;
+        }
 
         next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
         if ($value_check != 0) {
@@ -307,13 +379,19 @@ sub run_global {
     }
 
     my ($prefix_output, $suffix_output);
-    $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_prefix_output}));
-    $prefix_output = '' if (!defined($prefix_output));
+    if (defined $options{config}->{prefix_output}) {
+        $prefix_output = $options{config}->{prefix_output};
+    } elsif (defined $options{config}->{cb_prefix_output}) {
+        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
+    $prefix_output //= '';
 
-    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) 
-        if (defined($options{config}->{cb_suffix_output}));
-    $suffix_output = '' if (!defined($suffix_output));
+    if (defined $options{config}->{suffix_output}) {
+        $suffix_output = $options{config}->{suffix_output};
+    } elsif (defined $options{config}->{cb_suffix_output}) {
+        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) // '';
+    }
+    $suffix_output //= '';
 
     if ($called_multiple == 1 && $long_msg ne '') {
         $self->{output}->output_add(long_msg => $options{indent_long_output} . $prefix_output. $long_msg . $suffix_output);
@@ -335,8 +413,13 @@ sub run_global {
     } else {
         if ($long_msg ne '' && $multiple_parent == 0) {
             if ($called_multiple == 0) {
-                $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
-                    if ($display_short == 1);
+                if ($values_count == 0) {
+                    # Every counter was skipped for lack of value: this block collected nothing.
+                    # Keep the detail in the long output and let run() report --no-data-status.
+                    $self->{output}->output_add(long_msg => $prefix_output . $long_msg . $suffix_output);
+                } elsif ($display_short == 1) {
+                    $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
+                }
             } else {
                 $self->run_multiple_prefix_output(
                     severity => 'ok',
@@ -369,24 +452,8 @@ sub run_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
 
-    # The default sort method is cmp (string comparison)
-    my $sort_method = 'cmp';
-    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
-    $sort_method = $options{config}->{sort_method}
-        if (defined($options{config}->{sort_method}));
-
-    # In the absence of sort_attribute the sort method is set now
-    my $sort_sub = $sort_subs->{$sort_method};
-
-    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
-    if (defined($options{config}->{sort_attribute})) {
-        my $sort_attribute = $options{config}->{sort_attribute};
-        if ($sort_method eq 'cmp') {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        } else {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        }
-    }
+    # Sort values
+    my $sort_sub = $self->get_sort_sub(%options);
 
     # Now the loop begins with the desired sorting method
     foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
@@ -406,6 +473,7 @@ sub run_instances {
                 new_datas => $self->{new_datas},
                 values => $self->{$options{config}->{name}}->{$id}
             );
+            $self->{counters_with_values}++ if ($value_check != NO_VALUE);
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -433,12 +501,18 @@ sub run_instances {
         }
 
         my ($prefix_output, $suffix_output);
-        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
-            if (defined($options{config}->{cb_prefix_output}));
+        if ($options{config}->{prefix_output}) {
+            $prefix_output = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined $options{config}->{cb_prefix_output}) {
+            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
+        }
         $prefix_output = '' if (!defined($prefix_output));
         
-        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
-        if (defined($options{config}->{cb_suffix_output}));
+        if ($options{config}->{suffix_output}) {
+            $suffix_output = exprintf($options{config}->{suffix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined $options{config}->{cb_suffix_output}) {
+            $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output});
+        }
         $suffix_output = '' if (!defined($suffix_output));
 
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
@@ -462,13 +536,13 @@ sub run_instances {
         }
         
         if ($self->{multiple} == 0)  {
-            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
+            $self->add_template_short_output(short_msg => $prefix_output . $long_msg . $suffix_output)
                 if ($display_short == 1);
         }
     }
     
     if ($no_message_multiple == 0 && $self->{multiple} == 1 && $resume == 0) {
-        $self->{output}->output_add(short_msg => $options{config}->{message_multiple})
+        $self->add_template_short_output(short_msg => $options{config}->{message_multiple})
             if ($display_short == 1);
     }
 }
@@ -481,20 +555,20 @@ sub run_group {
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
     }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => $options{config}->{message_multiple}
-        );
-    }
+
+    $self->add_template_short_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
+        if ($multiple == 1);
 
     my $format_output = defined($options{config}->{format_output}) ? $options{config}->{format_output} : '%s problem(s) detected';
 
     my ($global_exit, $total_problems) = ([], 0);
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         $self->{most_critical_instance} = 'ok';
-        if (defined($options{config}->{cb_long_output})) {
+        if (defined($options{config}->{long_output})) {
+            $self->{output}->output_add(
+                long_msg => exprintf($options{config}->{long_output}, $self->{$options{config}->{name}}->{$id})
+            );
+        } elsif (defined($options{config}->{cb_long_output})) {
             $self->{output}->output_add(
                 long_msg => $self->call_object_callback(
                     method_name => $options{config}->{cb_long_output},
@@ -514,19 +588,22 @@ sub run_group {
             $total_problems += $self->{lproblems};
             
             my $prefix_output;
-            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
-                if (defined($options{config}->{cb_prefix_output}));
+            if (defined($options{config}->{prefix_output})) {
+              $prefix_output = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$id});
+            } elsif (defined($options{config}->{cb_prefix_output})) {
+              $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
+            }
             $prefix_output = '' if (!defined($prefix_output));
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
-                $self->{output}->output_add(
+                $self->add_template_short_output(
                     severity => $self->{most_critical_instance},
                     short_msg => sprintf("${prefix_output}" . $format_output, $self->{lproblems})
                 );
             }
         }
     }
-    
+
     if ($multiple == 1) {
         my $exit = $self->{output}->get_most_critical(status => [ @{$global_exit} ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
@@ -545,6 +622,9 @@ sub run_group {
             value => $total_problems,
             min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max}
         );
+        # counting the problems of the block, zero included, is a measurement: the block
+        # reports '0 problem(s) detected' backed by a perfdata, not an absence of data.
+        $self->{counters_with_values}++;
     }
 }
 
@@ -569,24 +649,9 @@ sub run_multiple_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator} : ', ';
 
-    # The default sort method is cmp (string comparison)
-    my $sort_method = 'cmp';
-    # If configured otherwise, we take it from the counter (only other method is 'num' for '<=>')
-    $sort_method = $options{config}->{sort_method}
-        if (defined($options{config}->{sort_method}));
 
-    # In the absence of sort_attribute the sort method is set now
-    my $sort_sub = $sort_subs->{$sort_method};
-
-    # If sort_attribute is set, then we'll redefine how things are sorted depending on the specified sort_method
-    if (defined($options{config}->{sort_attribute})) {
-        my $sort_attribute = $options{config}->{sort_attribute};
-        if ($sort_method eq 'cmp') {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} cmp $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        } else {
-            $sort_sub = sub { $self->{$options{config}->{name}}->{$a}->{$sort_attribute} <=> $self->{$options{config}->{name}}->{$b}->{$sort_attribute}};
-        }
-    }
+    # Sort values
+    my $sort_sub = $self->get_sort_sub(%options);
 
     # Now the loop begins with the desired sorting method
     foreach my $id (sort { $sort_sub->() } keys %{$self->{$options{config}->{name}}}) {
@@ -612,6 +677,7 @@ sub run_multiple_instances {
                 new_datas => $self->{new_datas},
                 values => $self->{$options{config}->{name}}->{$id}
             );
+            $self->{counters_with_values}++ if ($value_check != NO_VALUE);
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -642,12 +708,18 @@ sub run_multiple_instances {
         }
 
         my ($prefix_output, $suffix_output);
-        $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id})
-            if (defined($options{config}->{cb_prefix_output}));
+        if (defined($options{config}->{prefix_output})) {
+            $prefix_output = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined($options{config}->{cb_prefix_output})) {
+            $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $id, instance_value => $self->{$options{config}->{name}}->{$id});
+        }
         $prefix_output = '' if (!defined($prefix_output));
 
-        $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
-        if (defined($options{config}->{cb_suffix_output}));
+        if (defined($options{config}->{suffix_output})) {
+            $suffix_output = exprintf($options{config}->{suffix_output}, $self->{$options{config}->{name}}->{$id});
+        } elsif (defined($options{config}->{cb_suffix_output})) {
+            $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output});
+        }
         $suffix_output = '' if (!defined($suffix_output));
 
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
@@ -664,15 +736,42 @@ sub run_multiple_instances {
         }
 
         if ($multiple == 0 && $multiple_parent == 0) {
-            $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output)
+            $self->add_template_short_output(severity => 'ok', use_prefix => 1, short_msg => $prefix_output . $long_msg . $suffix_output)
                 if ($display_short == 1);
         }
     }
 
     if ($no_message_multiple == 0 && $multiple == 1 && $multiple_parent == 0) {
-        $self->run_multiple_prefix_output(severity => 'ok', short_msg => $options{config}->{message_multiple})
+        $self->add_template_short_output(severity => 'ok', use_prefix => 1, short_msg => $options{config}->{message_multiple})
             if ($display_short == 1);
     }
+}
+
+sub add_template_short_output {
+    my ($self, %options) = @_;
+
+    # Short output the template builds on its own: a 'message_multiple' claim coming from
+    # the block configuration, or an instance line made of prefix, counter output and
+    # suffix. None of them proves a value was collected, so run() must be able to tell
+    # them apart from a message a mode deliberately emitted. Counting what they add is the
+    # only reliable way: run_multiple_prefix_output() may emit a prefix message on top.
+    # A line holding real values is counted here too, harmlessly: counters_with_values is
+    # then above zero and blocks the fallback on its own.
+    my $before = $self->{output}->short_output_count();
+
+    if ($options{use_prefix}) {
+        $self->run_multiple_prefix_output(
+            severity => $options{severity} // 'OK',
+            short_msg => $options{short_msg}
+        );
+    } else {
+        $self->{output}->output_add(
+            severity => $options{severity} // 'OK',
+            short_msg => $options{short_msg}
+        );
+    }
+
+    $self->{template_short_output_count} += $self->{output}->short_output_count() - $before;
 }
 
 sub run_multiple_prefix_output {
@@ -699,15 +798,15 @@ sub run_multiple {
         $multiple = 0;
     }
 
-    if ($multiple == 1) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => $options{config}->{message_multiple}
-        );
-    }
+    $self->add_template_short_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
+        if ($multiple == 1);
 
     foreach my $instance (sort keys %{$self->{$options{config}->{name}}}) {
-        if (defined($options{config}->{cb_long_output})) {
+        if (defined($options{config}->{long_output})) {
+            $self->{output}->output_add(
+                long_msg => exprintf($options{config}->{long_output}, $self->{$options{config}->{name}}->{$instance})
+            );
+        } elsif (defined($options{config}->{cb_long_output})) {
             $self->{output}->output_add(
                 long_msg => $self->call_object_callback(
                     method_name => $options{config}->{cb_long_output},
@@ -719,8 +818,11 @@ sub run_multiple {
 
         $self->{prefix_multiple_output} = '';
         $self->{prefix_multiple_output_done} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
-        $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $instance, instance_value => $self->{$options{config}->{name}}->{$instance})
-             if (defined($options{config}->{cb_prefix_output}));
+        if (defined($options{config}->{prefix_output})) {
+            $self->{prefix_multiple_output} = exprintf($options{config}->{prefix_output}, $self->{$options{config}->{name}}->{$instance});
+        } elsif (defined($options{config}->{cb_prefix_output})) {
+            $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance => $instance, instance_value => $self->{$options{config}->{name}}->{$instance})
+        }
         my $indent_long_output = '';
         $indent_long_output = $options{config}->{indent_long_output}
             if (defined($options{config}->{indent_long_output}));
@@ -762,6 +864,8 @@ sub run {
     
     $self->manage_selection(%options);
     
+    $self->{counters_with_values} = 0;
+    $self->{template_short_output_count} = 0;
     $self->{new_datas} = undef;
     if (defined($self->{statefile_value})) {
         $self->{new_datas} = {};
@@ -781,6 +885,17 @@ sub run {
         }
     }
 
+    # No counter got a value and every short message was emitted by the template itself:
+    # the mode collected nothing and would display an empty 'OK:' output, an unearned
+    # 'All xxx are ok' or a lone prefix. Report --no-data-status instead. A mode that added
+    # a short message of its own is left alone, and so is a counter waiting for its next run
+    # (buffer creation, counter not moved...) since it does hold data.
+    $self->{output}->output_add(
+        severity => $self->{option_results}->{no_data_status},
+        short_msg => 'No data!'
+    ) if ($self->{counters_with_values} == 0
+          && $self->{output}->short_output_count() == $self->{template_short_output_count});
+
     if (defined($self->{statefile_value})) {
         $self->{statefile_value}->write(data => $self->{new_datas});
     }
@@ -792,9 +907,9 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     # example for snmp
-    #use Digest::MD5 qw(md5_hex);
+    #use Digest::SHA qw(sha255_hex);
     #$self->{cache_name} = "choose_name_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
-    #    (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    #    (defined($self->{option_results}->{filter_counters}) ? sha256_hex($self->{option_results}->{filter_counters}) : sha256_hex('all'));
 }
 
 sub compat_threshold_counter {
@@ -891,6 +1006,13 @@ Warning threshold.
 =item B<--critical-xxx>
 
 Critical threshold.
+
+=item B<--no-data-status>
+
+Status to return when the mode collects no data at all: no instance was found,
+or every counter was skipped for lack of value. Without this option the plugin
+would display an empty (or meaningless) C<OK:> output.
+Can be: 'ok', 'warning', 'critical', 'unknown' (default: 'unknown').
 
 =back
 

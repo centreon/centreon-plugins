@@ -1,0 +1,8 @@
+{
+    "dependencies": [
+        "perl(DateTime)",
+        "perl(DateTime::Format::Strptime)",
+        "perl(XML::Simple)",
+        "perl(URI::Escape)"
+    ]
+}

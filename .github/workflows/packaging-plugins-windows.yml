@@ -1,0 +1,306 @@
+name: packaging-plugins-windows
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+      - master
+    paths:
+      - ".github/workflows/packaging-plugins-windows.yml"
+      - ".github/actions/setup-strawberry-perl/action.yml"
+      - ".github/scripts/build_centreon_plugins_64.bat"
+      - ".github/scripts/windows/**"
+      - "src/apps/backup/backupexec/local/**"
+      - "src/apps/backup/veeam/local/**"
+      - "src/apps/microsoft/exchange/local/**"
+      - "src/apps/microsoft/hyperv/2012/local/**"
+      - "src/apps/microsoft/sccm/local/**"
+      - "src/apps/microsoft/wsus/local/**"
+      - "src/centreon/plugins/misc.pm"
+      - "src/centreon/common/powershell/**"
+      - "src/os/windows/local/**"
+      - "src/storage/dell/compellent/local/**"
+  # 'labeled' is included so that adding the 'build-nsclient' label to an
+  # existing PR triggers a run (see the build-installer gate) without a new commit.
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches:
+      - develop
+      - master
+    paths:
+      - ".github/workflows/packaging-plugins-windows.yml"
+      - ".github/actions/setup-strawberry-perl/action.yml"
+      - ".github/scripts/build_centreon_plugins_64.bat"
+      - ".github/scripts/windows/**"
+      - "src/apps/backup/backupexec/local/**"
+      - "src/apps/backup/veeam/local/**"
+      - "src/apps/microsoft/exchange/local/**"
+      - "src/apps/microsoft/hyperv/2012/local/**"
+      - "src/apps/microsoft/sccm/local/**"
+      - "src/apps/microsoft/wsus/local/**"
+      - "src/centreon/plugins/misc.pm"
+      - "src/centreon/common/powershell/**"
+      - "src/os/windows/local/**"
+      - "src/storage/dell/compellent/local/**"
+
+jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  get-environment:
+    needs: [dependency-scan]
+    uses: ./.github/workflows/get-environment.yml
+
+  # Sole owner of the centreon_plugins.exe build; its artifact is consumed by
+  # build-installer (same run) and is available on its own for exe-only needs.
+  build-exe:
+    needs: [get-environment]
+    if: needs.get-environment.outputs.skip_workflow == 'false'
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Strawberry Perl
+        uses: ./.github/actions/setup-strawberry-perl
+
+      - name: Add Strawberry Perl to PATH
+        shell: powershell
+        run: |
+          Add-Content $env:GITHUB_PATH "C:\Strawberry\perl\bin"
+          Add-Content $env:GITHUB_PATH "C:\Strawberry\perl\site\bin"
+          Add-Content $env:GITHUB_PATH "C:\Strawberry\c\bin"
+
+      - name: Setup build directory structure
+        shell: cmd
+        run: |
+          mklink /J ".github\scripts\centreon-plugins" "."
+          mkdir ".github\scripts\resources\scripts\x64\centreon"
+
+      - name: Build Windows executable
+        shell: cmd
+        run: .github\scripts\build_centreon_plugins_64.bat
+
+      - name: Smoke-test the executable (standalone, version, HTTP backends)
+        shell: pwsh
+        run: |
+          $exe = ".github\scripts\resources\scripts\x64\centreon\centreon_plugins.exe"
+          # Run with a minimal PATH so the exe cannot borrow perl5xx.dll (or any
+          # other DLL) from the runner's Strawberry install. This verifies the
+          # packed executable is truly self-contained, as it must be on a target
+          # machine without Perl.
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $output = & $exe --plugin apps::centreon::local::plugin --mode centreon-plugins-version 2>&1 | Out-String
+          Write-Host $output
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Executable failed to run standalone (exit $LASTEXITCODE) - it is probably not self-contained (missing bundled DLL)."
+            exit 1
+          }
+          if ($output -notmatch "Centreon Plugins Global Version '\d{6}00'") {
+            Write-Error "Version smoke-test failed: expected a 'YYYYMM00' version tag in the output."
+            exit 1
+          }
+          Write-Host "Standalone version smoke-test OK."
+
+          # Exercise each HTTP backend with a real request so its native XS stack is
+          # loaded (lwp -> Net::SSLeay/OpenSSL; curl -> Net::Curl/libcurl, loaded
+          # lazily only on an actual curl request). The target port is dead, so
+          # --critical-status= neutralises the resulting 500/timeout: a working
+          # backend then exits OK (0), while a missing bundled DLL still surfaces as
+          # "Cannot load module". PATH stays scrubbed, so the libs must come from the
+          # bundle. No exit-code masking: a real execution problem still fails the step.
+          foreach ($backend in @('lwp', 'curl')) {
+            $b = & $exe --plugin apps::protocols::http::plugin --mode response --hostname 127.0.0.1 --port 1 --proto http --timeout 1 --http-backend $backend --critical-status= 2>&1 | Out-String
+            Write-Host "[$backend] $b"
+            if ($b -match 'Cannot load module') {
+              Write-Error "HTTP '$backend' backend is missing a bundled dependency (exe not self-contained)."
+              exit 1
+            }
+          }
+          Write-Host "HTTP backends (lwp, curl) load OK."
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: centreon_plugins_windows_x64
+          path: .github\scripts\resources\scripts\x64\centreon\centreon_plugins.exe
+          retention-days: 7
+          if-no-files-found: error
+
+  # NSClient++ installer. Runs on a release (stable), on a PR carrying the
+  # 'build-nsclient' label, or on a manual dispatch. Consumes the exe artifact
+  # built by build-exe in the same run (no rebuild).
+  build-installer:
+    needs: [get-environment, build-exe]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' && (
+        needs.get-environment.outputs.stability == 'stable' ||
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'pull_request' &&
+          contains(github.event.pull_request.labels.*.name, 'build-nsclient'))
+      )
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Download plugin executable
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: centreon_plugins_windows_x64
+          path: .github\scripts\windows\nsclient\resources\scripts\x64\centreon
+
+      - name: Read pinned versions
+        id: versions
+        shell: pwsh
+        run: |
+          $v = Get-Content .github/scripts/windows/versions.json | ConvertFrom-Json
+          "nsclient_version=$($v.nsclient.version)" >> $env:GITHUB_OUTPUT
+          "nsclient_msi=$($v.nsclient.msi_filename)" >> $env:GITHUB_OUTPUT
+          "nsclient_msi_url=$($v.nsclient.msi_url)" >> $env:GITHUB_OUTPUT
+          "nsclient_msi_sha256=$($v.nsclient.msi_sha256)" >> $env:GITHUB_OUTPUT
+          "nsis_version=$($v.nsis.version)" >> $env:GITHUB_OUTPUT
+
+      - name: Restore NSClient++ msi from cache
+        id: msi-cache
+        uses: actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: .github\scripts\windows\nsclient\resources\${{ steps.versions.outputs.nsclient_msi }}
+          key: nsclient-msi-${{ steps.versions.outputs.nsclient_version }}
+
+      - name: Ensure NSClient++ msi is present and valid
+        shell: pwsh
+        run: |
+          $msi = ".github/scripts/windows/nsclient/resources/${{ steps.versions.outputs.nsclient_msi }}"
+          $expected = "${{ steps.versions.outputs.nsclient_msi_sha256 }}".ToLower()
+          $needDownload = $true
+          if (Test-Path $msi) {
+            $actual = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLower()
+            if ($actual -eq $expected) {
+              $needDownload = $false
+              Write-Host "Cached msi checksum OK"
+            } else {
+              Write-Host "Cached msi checksum mismatch (got $actual), re-downloading"
+            }
+          }
+          if ($needDownload) {
+            Invoke-WebRequest -Uri "${{ steps.versions.outputs.nsclient_msi_url }}" -OutFile $msi
+            $actual = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLower()
+            if ($actual -ne $expected) {
+              Write-Error "Downloaded msi checksum mismatch: expected $expected, got $actual"
+              exit 1
+            }
+            Write-Host "Downloaded msi checksum OK"
+          }
+
+      - name: Save NSClient++ msi to cache
+        if: steps.msi-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: .github\scripts\windows\nsclient\resources\${{ steps.versions.outputs.nsclient_msi }}
+          key: nsclient-msi-${{ steps.versions.outputs.nsclient_version }}
+
+      - name: Install NSIS and third-party plugins
+        shell: pwsh
+        run: |
+          choco install nsis --version=${{ steps.versions.outputs.nsis_version }} -y --no-progress
+          $nsis = "C:\Program Files (x86)\NSIS"
+          Add-Content $env:GITHUB_PATH $nsis
+          # ANSI plugins (NSIS 2.x era) go in the x86-ansi plugin dir; the .nsi
+          # forces an ANSI build (Unicode false) so they load.
+          Copy-Item ".github/scripts/windows/nsclient/plugins/ZipDLL.dll"   "$nsis\Plugins\x86-ansi\" -Force
+          Copy-Item ".github/scripts/windows/nsclient/plugins/registry.dll" "$nsis\Plugins\x86-ansi\" -Force
+          Copy-Item ".github/scripts/windows/nsclient/plugins/zipdll.nsh"   "$nsis\Include\" -Force
+          Copy-Item ".github/scripts/windows/nsclient/plugins/Registry.nsh" "$nsis\Include\" -Force
+
+      - name: Build NSClient++ installer
+        shell: cmd
+        env:
+          PACKAGE_VERSION: ${{ needs.get-environment.outputs.version }}
+          PRODUCT_VERSION: ${{ steps.versions.outputs.nsclient_version }}
+          MSI_NSCLIENT: ${{ steps.versions.outputs.nsclient_msi }}
+        run: .github\scripts\windows\nsclient\build-nsclient-installer.bat
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: centreon-nsclient-installer-x64
+          path: .github\scripts\windows\nsclient\Centreon-NSClient-*-x64.exe
+          retention-days: 7
+          if-no-files-found: error
+
+  # Release-only: publish the built executables as assets of a DRAFT GitHub
+  # release, with notes grouped by conventional-commit type.
+  create-github-release:
+    needs: [get-environment, build-exe, build-installer]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      needs.get-environment.outputs.stability == 'stable'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Download plugin executable
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: centreon_plugins_windows_x64
+          path: release-assets
+
+      - name: Download NSClient installer
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: centreon-nsclient-installer-x64
+          path: release-assets
+
+      - name: Create or update the draft GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.get-environment.outputs.version }}
+        run: |
+          set -euo pipefail
+          tag="windows-${VERSION}"
+          title="Centreon NSClient Release ${VERSION}"
+          previous_tag="$(git tag -l 'windows-*' --sort=-creatordate | head -n1 || true)"
+
+          .github/scripts/windows/generate-release-notes.sh "${previous_tag}" \
+            src/apps/backup/backupexec/local \
+            src/apps/backup/veeam/local \
+            src/apps/microsoft/exchange/local \
+            src/apps/microsoft/hyperv/2012/local \
+            src/apps/microsoft/sccm/local \
+            src/apps/microsoft/wsus/local \
+            src/centreon/plugins/misc.pm \
+            src/os/windows/local \
+            src/storage/dell/compellent/local \
+            src/centreon/common/powershell > release-notes.md
+
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release edit "${tag}" --draft --title "${title}" --notes-file release-notes.md
+            gh release upload "${tag}" release-assets/* --clobber
+          else
+            gh release create "${tag}" --draft --target "${{ github.sha }}" \
+              --title "${title}" --notes-file release-notes.md release-assets/*
+          fi
+
+  set-skip-label:
+    needs: [get-environment, build-exe, build-installer]
+    if: |
+      needs.get-environment.outputs.skip_workflow == 'false' &&
+      ! cancelled() &&
+      ! contains(needs.*.result, 'failure') &&
+      ! contains(needs.*.result, 'cancelled')
+    uses: ./.github/workflows/set-pull-request-skip-label.yml

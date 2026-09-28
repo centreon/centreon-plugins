@@ -25,24 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::powershell::veeam::functions qw/veeam_to_psversion/;
-use centreon::common::powershell::veeam::jobstatus;
+use centreon::common::powershell::veeam::jobstatus qw/:job_source/;
 use apps::backup::veeam::wsman::mode::resources::types qw($job_type $job_result);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::constants qw(:values :counters);
 use centreon::plugins::misc;
 use JSON::XS;
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return 'status: ' . $self->{result_values}->{status} . ' [type: ' . $self->{result_values}->{type}  . ']';
-}
-
-sub custom_long_output {
-    my ($self, %options) = @_;
-
-    return 'started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
-}
 
 sub custom_long_calc {
     my ($self, %options) = @_;
@@ -64,7 +52,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL },
-        { name => 'job', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 } }
+        { name => 'job', type => COUNTER_TYPE_INSTANCE, prefix_output => "Job '%{display}' ", message_multiple => 'All jobs are ok', skipped_code => { NOT_PROCESSED() => 1, NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -85,7 +73,7 @@ sub set_counters {
                     { name => 'type' }, { name => 'is_running' },
                     { name => 'is_continuous' }, { name => 'scheduled' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
+                output_template => 'status: %{status} [type: %{type}]',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
@@ -97,7 +85,7 @@ sub set_counters {
                     { name => 'is_running' }, { name => 'is_continuous' }
                 ],
                 closure_custom_calc => $self->can('custom_long_calc'),
-                closure_custom_output => $self->can('custom_long_output'),
+                output_template => 'started since: %{elapsed|change_seconds}',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
@@ -116,14 +104,16 @@ sub new {
         'filter-name:s'       => { name => 'filter_name' },
         'exclude-name:s'      => { name => 'exclude_name' },
         'filter-type:s'       => { name => 'filter_type' },
-        'filter-end-time:s'   => { name => 'filter_end_time', default => 86400 },
-        'filter-start-time:s' => { name => 'filter_start_time' },
+        'filter-end-time:s'   => { name => 'filter_end_time', default => 86400, type => 'numeric' },
+        'filter-start-time:s' => { name => 'filter_start_time', type => 'numeric' },
         'ok-status:s'         => { name => 'ok_status', default => '' },
         'warning-status:s'    => { name => 'warning_status', default => '' },
         'critical-status:s'   => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /success/i' },
         'warning-long:s'      => { name => 'warning_long' },
         'critical-long:s'     => { name => 'critical_long' },
-        'veeam-version:s'     => { name => 'veeam_version', default => '12' },
+        'veeam-version:s'     => { name => 'veeam_version', default => '12', type => 'numeric' },
+        'job-source:s'        => { name => 'job_source', default => VEEAM_JOB_SOURCE_ALL, not_empty => 1,
+                                   is_in => [ VEEAM_JOB_SOURCE_ALL, VEEAM_JOB_SOURCE_STANDARD, VEEAM_JOB_SOURCE_AGENT ] }
     });
 
     return $self;
@@ -136,16 +126,11 @@ sub check_options {
     $self->change_macros(macros => ['ok_status', 'warning_status', 'critical_status', 'warning_long', 'critical_long']);
 }
 
-sub prefix_job_output {
-    my ($self, %options) = @_;
-
-    return "Job '" . $options{instance_value}->{display} . "' ";
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $ps = centreon::common::powershell::veeam::jobstatus::get_powershell(veeam_version => $self->{option_results}->{veeam_version});
+    my $ps = centreon::common::powershell::veeam::jobstatus::get_powershell( veeam_version => $self->{option_results}->{veeam_version},
+                                                                             job_source => $self->{option_results}->{job_source} );
     if (defined($self->{option_results}->{ps_display})) {
         $self->{output}->output_add(
             severity => 'OK',
@@ -158,6 +143,7 @@ sub manage_selection {
     my $result = $options{wsman}->execute_powershell(
         powershell_version => veeam_to_psversion($self->{option_results}->{veeam_version}),
         label => 'jobstatus',
+        can_trim => 1,
         content => $ps
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
@@ -194,6 +180,7 @@ sub manage_selection {
             $session = $sessions->[1];
         }
 
+        $session->{$_} //= '' foreach qw/creationTimeUTC endTimeUTC result/;
         $session->{creationTimeUTC} =~ s/,/\./;
         $session->{endTimeUTC} =~ s/,/\./;
 
@@ -202,7 +189,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{exclude_name}) && $self->{option_results}->{exclude_name} ne '' &&
             $job->{name} =~ /$self->{option_results}->{exclude_name}/);
 
-        my $job_type = defined($job_type->{ $job->{type} }) ? $job_type->{ $job->{type} } : 'unknown';
+        my $job_type = $job->{mode} // $job_type->{ $job->{type} } // 'unknown';
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $job_type !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
@@ -230,8 +217,7 @@ sub manage_selection {
             is_continuous => $job->{isContinuous},
             is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($session->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
             scheduled => $job->{scheduled} =~ /True|1/i ? 1 : 0, 
-            status => defined($job_result->{ $session->{result} }) && $job_result->{ $session->{result} } ne '' ?
-                $job_result->{ $session->{result} } : '-'
+            status => $job_result->{ $session->{result} }  // '-'
         };
         $self->{global}->{total}++;
     }
@@ -259,6 +245,11 @@ Display powershell script.
 =item B<--ps-exec-only>
 
 Print powershell output.
+
+=item B<--job-source>
+
+Define which Veeam job source to use (default: all).
+Possible values are: B<all> (retrieve both standard jobs and agent jobs), B<standard> (retrieve only jobs returned by C<Get-VBRJob>), or B<agent> (retrieve only jobs returned by C<Get-VBRComputerBackupJob>).
 
 =item B<--filter-name>
 

@@ -1,0 +1,72 @@
+{
+  "$schema": "https://centreon.github.io/centreon-plugins/rs-collections/snmp/v0/rs-collection.schema.json",
+  "format_version": 0,
+  "collect": {
+    "snmp": [
+      {
+        "name": "memTotalReal",
+        "oid": ".1.3.6.1.4.1.2021.4.5.0",
+        "query": "Get"
+      },
+      {
+        "name": "memAvailReal",
+        "oid": ".1.3.6.1.4.1.2021.4.6.0",
+        "query": "Get"
+      },
+      {
+        "name": "memBuffer",
+        "oid": ".1.3.6.1.4.1.2021.4.14.0",
+        "query": "Get"
+      },
+      {
+        "name": "memCached",
+        "oid": ".1.3.6.1.4.1.2021.4.15.0",
+        "query": "Get"
+      }
+    ]
+  },
+  "compute": {
+    "metrics": [],
+    "aggregations": [
+      {
+        "name": "memory.free.bytes",
+        "value": "({memAvailReal} + {memBuffer} + {memCached}) * 1024",
+        "uom": "B",
+        "min": 0,
+        "max_expr": "{memTotalReal} * 1024",
+        "threshold-suffix": "free-bytes"
+      },
+      {
+        "name": "memory.usage.bytes",
+        "value": "({memTotalReal} - {memAvailReal} - {memBuffer} - {memCached}) * 1024",
+        "uom": "B",
+        "min": 0,
+        "max_expr": "{memTotalReal} * 1024",
+        "threshold-suffix": "bytes"
+      },
+      {
+        "name": "memory.usage.percent",
+        "value": "100 * ({memTotalReal} - {memAvailReal} - {memBuffer} - {memCached}) / {memTotalReal}",
+        "uom": "%",
+        "min": 0,
+        "max": 100,
+        "threshold-suffix": "prct"
+      },
+      {
+        "name": "memory.total.bytes",
+        "value": "{memTotalReal} * 1024",
+        "uom": "B",
+        "min": 0
+      }
+    ]
+  },
+  "output": {
+    "ok": "OK: Memory Used: {aggregations.memory.usage.bytes}B - Free: {aggregations.memory.free.bytes}B - Total: {aggregations.memory.total.bytes}B",
+    "warning": "WARNING: ",
+    "detail_warning": true,
+    "critical": "CRITICAL: ",
+    "detail_critical": true,
+    "instance_separator": " - ",
+    "metric_separator": ", "
+  }
+}

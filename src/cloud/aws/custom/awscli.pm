@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -314,10 +314,18 @@ sub cloudwatch_get_alarms {
 
     my $alarm_results = [];
     foreach my $alarm (@{$raw_results->{MetricAlarms}}) {
+        my $metric;
+        if (defined $alarm->{MetricName}) {
+            $metric = $alarm->{MetricName};
+        } elsif (ref $alarm->{Metrics} eq 'ARRAY') {
+            $metric = 'Multiple metrics';
+        } else {
+            $metric = '';
+        }
         push @$alarm_results, {
             AlarmName => $alarm->{AlarmName},
             StateValue => $alarm->{StateValue},
-            MetricName => $alarm->{MetricName},
+            MetricName => $metric,
             StateReason => $alarm->{StateReason},
             StateUpdatedTimestamp => $alarm->{StateUpdatedTimestamp},
         };

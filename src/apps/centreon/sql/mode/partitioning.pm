@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -122,26 +122,27 @@ __END__
 =head1 MODE
 
 Check that partitions for MySQL/MariaDB tables are correctly created.
-The mode should be used with mysql plugin and dyn-mode option.
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::partitioning ...>.
 
 =over 8
 
 =item B<--tablename>
 
 This option is mandatory (can be multiple).
-Example: centreon_storage.data_bin
+Example: centreon_storage.data_bin.
 
 =item B<--warning>
 
-Warning threshold (number of retention forward days)
+Warning threshold (number of retention forward days).
 
 =item B<--critical>
 
-Critical threshold (number of retention forward days)
+Critical threshold (number of retention forward days).
 
 =item B<--timezone>
 
-Timezone use for partitioning (if not set, we use current server execution timezone)
+Timezone use for partitioning (if not set, we use current server execution timezone).
 
 =back
 

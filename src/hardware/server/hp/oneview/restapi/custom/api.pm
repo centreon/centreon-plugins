@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -165,7 +165,7 @@ sub decode_api_response {
 sub authenticate {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'hp_oneview_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile => 'hp_oneview_' . sha256_hex($self->{option_results}->{hostname}) . '_' . sha256_hex($self->{option_results}->{api_username}));
     my $session_id = $self->{cache}->get(name => 'session_id');
     
     if ($has_cache_file == 0 || !defined($session_id)) {
@@ -243,13 +243,44 @@ sub request_api {
     return $self->decode_api_response(content => $content);
 }
 
+sub request_api_paginated {
+    my ($self, %options) = @_;
+
+    my $result = $self->request_api(url_path => $options{url_path});
+    my $members = [];
+    my $pages = 0;
+    while (1) {
+        if (!defined($result->{members})) {
+            $self->{output}->add_option_msg(short_msg => "Unexpected paginated API response: missing 'members' field");
+            $self->{output}->option_exit();
+        }
+        push @$members, @{$result->{members}};
+
+        last if (!defined($result->{nextPageUri}) || $result->{nextPageUri} eq '');
+
+        if ($result->{nextPageUri} !~ m{^/(?!/)[^\@]*$}) {
+            $self->{output}->add_option_msg(short_msg => "Unexpected pagination URI returned by the API: '" . $result->{nextPageUri} . "'");
+            $self->{output}->option_exit();
+        }
+        if ($pages++ > 50) {
+            $self->{output}->add_option_msg(short_msg => 'Pagination did not terminate normally (possible API loop)');
+            $self->{output}->option_exit();
+        }
+
+        $result = $self->request_api(url_path => $result->{nextPageUri});
+    }
+    $result->{members} = $members;
+
+    return $result;
+}
+
 1;
 
 __END__
 
 =head1 NAME
 
-HP OneView Rest API
+HP OneView Rest API.
 
 =head1 REST API OPTIONS
 
@@ -257,7 +288,7 @@ HP OneView Rest API
 
 =item B<--hostname>
 
-Set hostname or IP of vsca.
+Set hostname or IP of vCSA.
 
 =item B<--port>
 

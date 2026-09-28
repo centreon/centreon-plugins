@@ -102,3 +102,65 @@ cover
 ```
 
 Then open the coverage.html file in the cover_db/ folder to navigate your code with coverage.
+
+## Create robot tests
+
+You may use [this bash script](../resources/tools/generate_robot_files.sh) to create robot test files that will need 
+very few further customization.
+
+### SNMP
+
+```bash
+./resources/tools/generate_robot_files.sh os::freebsd::snmp::plugin cpu
+```
+
+It will print this:
+
+```
+INFO: Generating tests for mode cpu
+INFO: Writing test file ./resources/tools/../../tests/os/freebsd/snmp/cpu.robot
+INFO: Tests have been generated in ./resources/tools/../../tests/os/freebsd/snmp
+```
+
+Then open ./resources/tools/../../tests/os/freebsd/snmp/cpu.robot and customize the community (`snmpwalk_file_base_name`
+by default, replace it with the name of your snmpwalk file, without the extension) and every occurrence of 
+`put the real expected output here`.
+
+Then start snmpsim and run your test file
+
+```
+robot ./resources/tools/../../tests/os/freebsd/snmp/cpu.robot
+```
+
+Please make all tests pass before sending your robot file.
+
+### Other protocols (using --custommode)
+
+```bash
+./resources/tools/generate_robot_files.sh apps::automation::ansible::tower::plugin jobs
+```
+
+It will print this:
+
+```
+INFO: Generating tests for mode jobs
+WARN: ./tests/apps/automation/ansible/tower/jobs.robot already exists! Backing it up to /home/omercier/projets/centreon-plugins-bis/resources/tools/../../tests/apps/automation/ansible/tower/jobs.robot_2026-06-02_18-13-09.26559
+INFO: Writing test file ./tests/apps/automation/ansible/tower/jobs.robot
+INFO: Tests have been generated in ./tests/apps/automation/ansible/tower
+```
+
+> You may get this error: `FATAL: Not parsing --warning-*/--critical-* thresholds`. It means you have to split the
+> options' documentation into one section per option (--warning-counter1, --warning-counter2, etc.).
+
+Then open ./resources/tools/../../tests/os/freebsd/snmp/cpu.robot and customize the community (`snmpwalk_file_base_name`
+by default, replace it with the name of your snmpwalk file, without the extension) and every occurrence of 
+`put the real expected output here`.
+
+Then start snmpsim and run your test file
+
+```
+robot ./resources/tools/../../tests/os/freebsd/snmp/cpu.robot
+```
+
+Please make all tests pass before sending your robot file.
+

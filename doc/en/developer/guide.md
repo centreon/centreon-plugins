@@ -7,4 +7,5 @@ Table of contents
 3. [How to develop a plugin to monitor a REST API](tutorial-api.md)
 4. [How to develop a plugin to monitor a device supporting SNMP](tutorial-snmp.md)
 5. \[Coming soon\][How to develop a Service Discovery mode](tutorial-service_discovery.md)
+6. [How to have my pull request accepted quickly ?](fast_track.md)
 *******

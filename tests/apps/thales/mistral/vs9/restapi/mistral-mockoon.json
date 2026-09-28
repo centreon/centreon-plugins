@@ -1,0 +1,754 @@
+{
+  "uuid": "853b4a40-4212-43cf-95f0-5c90294ae212",
+  "lastMigration": 33,
+  "name": "Mistral.mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "0f2d47bb-a2f4-4f5f-ad9f-eb1dd9961386",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "api/auth/login",
+      "responses": [
+        {
+          "uuid": "191db620-e249-4aff-bfe3-34aacacbd052",
+          "body": "{\"access_token\":\"QWERTY\",\"expires_in\":600,\"refresh_expires_in\":1800,\"refresh_token\":\"AZERTY\",\"token_type\":\"Bearer\",\"not-before-policy\":0,\"session_state\":\"aaaaa-cccc-eeee-3333-12121221\",\"scope\":\"profile email\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": " set-cookie",
+              "value": "AUTH_BEARER=QWERY"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "0d2bc35d-9ceb-4718-834b-56ba2f4184a9",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/version",
+      "responses": [
+        {
+          "uuid": "50ab8be7-b326-4999-9c3b-15b1a7cff8c2",
+          "body": "{\"mmc\":\"9.2.4.19\",\"dunisia\":\"1.2.4.19\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "9ecfd7f0-48d3-44e0-8ab2-a5e4a8a90edc",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGwHws",
+      "responses": [
+        {
+          "uuid": "a0790341-e43d-45be-b94b-588e023ead4e",
+          "body": "{\n  \"links\" : [ {\n    \"rel\" : \"self\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGwHws?projection=gatewayHwData&page=0&size=50000\"\n  }, {\n    \"rel\" : \"profile\",\n    \"href\" : \"https://localhost:8443/api/profile/ssIpsecGwHws\"\n  }, {\n    \"rel\" : \"search\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/search\"\n  } ],\n  \"content\" : [ \n    {\n    \"confRollback\" : false,\n    \"frameVersion\" : \"TRC7540-2\",\n    \"serialNumber\" : \"DASERIAL\",\n    \"gatewayConf\" : {\n      \"administrationIp\" : \"10.10.100.20\",\n      \"lastConfManual\" : false,\n      \"offline\" : false,\n      \"active\" : true,\n      \"name\" : \"gw-adm-a-2\",\n      \"id\" : 178,\n      \"description\" : \"\",\n      \"links\" : [ {\n        \"rel\" : \"masterCluster\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/masterCluster{?projection}\"\n      }, {\n        \"rel\" : \"trustedArea\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/trustedArea{?projection}\"\n      }, {\n        \"rel\" : \"hardwarePrePair\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/hardwarePrePair{?projection}\"\n      }, {\n        \"rel\" : \"managementCenters\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/managementCenters{?projection}\"\n      }, {\n        \"rel\" : \"tags\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/tags\"\n      }, {\n        \"rel\" : \"mobilityDhcpServer\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/mobilityDhcpServer{?projection}\"\n      }, {\n        \"rel\" : \"certificatesCaNotLinked\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/certificatesCaNotLinked{?projection}\"\n      }, {\n        \"rel\" : \"primaryRedIpRoutingTables\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/primaryRedIpRoutingTables{?projection}\"\n      }, {\n        \"rel\" : \"relayDhcpServers\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/relayDhcpServers{?projection}\"\n      }, {\n        \"rel\" : \"backupCluster\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/backupCluster{?projection}\"\n      }, {\n        \"rel\" : \"hardware\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/hardware{?projection}\"\n      }, {\n        \"rel\" : \"blkIpRoutingTable\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/blkIpRoutingTable{?projection}\"\n      }, {\n        \"rel\" : \"physicalInterfaces\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/physicalInterfaces{?projection}\"\n      }, {\n        \"rel\" : \"topology\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/topology{?projection}\"\n      }, {\n        \"rel\" : \"managerInterfaces\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/managerInterfaces{?projection}\"\n      }, {\n        \"rel\" : \"redIpRoutingTable\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/redIpRoutingTable{?projection}\"\n      }, {\n        \"rel\" : \"syslogServers\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178/syslogServers{?projection}\"\n      }, {\n        \"rel\" : \"self\",\n        \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGws/178{?projection}\"\n      } ]\n    },\n    \"manufacturingDatetime\" : \"2026-03-10T10:18:16.148+00:00\",\n    \"platformModel\" : \"HW\",\n    \"productName\" : \"IP9001\",\n    \"firmwareVersionOther\" : \"9.2.4.10\",\n    \"firmwareDownloadVersion\" : \"\",\n    \"firmwareDownloadState\" : \"DOWNLOADED\",\n    \"firmwareVersionCurrent\" : \"9.2.4.12\",\n    \"name\" : \"gw-adm-a-2\",\n    \"id\" : 471,\n    \"tags\" : [ ],\n    \"links\" : [ {\n      \"rel\" : \"self\",\n      \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGwHws/471\"\n    }, {\n      \"rel\" : \"ssIpsecGwHw\",\n      \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGwHws/471{?projection}\"\n    }, {\n      \"rel\" : \"tags\",\n      \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGwHws/471/tags\"\n    }, {\n      \"rel\" : \"configurationHistoric\",\n      \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGwHws/471/configurationHistoric\"\n    }, {\n      \"rel\" : \"gatewayConf\",\n      \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGwHws/471/gatewayConf{?projection}\"\n    }, {\n      \"rel\" : \"certificates\",\n      \"href\" : \"https://172.16.3.172:8443/api/ssIpsecGwHws/471/certificates{?projection}\"\n    } ]\n  },\n    {\n    \"confRollback\" : false,\n    \"frameVersion\" : \"ANO-2\",\n    \"serialNumber\" : \"987654.000001\",\n    \"gatewayConf\" : {\n      \"administrationIp\" : \"10.10.10.10\",\n      \"lastConfManual\" : false,\n      \"offline\" : false,\n      \"active\" : true,\n      \"name\" : \"gw-ano-1\",\n      \"id\" : 999,\n      \"description\" : \"\",\n      \"links\" : [ {\n        \"rel\" : \"masterCluster\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/masterCluster{?projection}\"\n      }, {\n        \"rel\" : \"trustedArea\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/trustedArea{?projection}\"\n      }, {\n        \"rel\" : \"hardwarePrePair\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/hardwarePrePair{?projection}\"\n      }, {\n        \"rel\" : \"managementCenters\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/managementCenters{?projection}\"\n      }, {\n        \"rel\" : \"tags\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/tags\"\n      }, {\n        \"rel\" : \"mobilityDhcpServer\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/mobilityDhcpServer{?projection}\"\n      }, {\n        \"rel\" : \"certificatesCaNotLinked\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/certificatesCaNotLinked{?projection}\"\n      }, {\n        \"rel\" : \"primaryRedIpRoutingTables\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/primaryRedIpRoutingTables{?projection}\"\n      }, {\n        \"rel\" : \"relayDhcpServers\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/relayDhcpServers{?projection}\"\n      }, {\n        \"rel\" : \"backupCluster\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/backupCluster{?projection}\"\n      }, {\n        \"rel\" : \"hardware\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/hardware{?projection}\"\n      }, {\n        \"rel\" : \"blkIpRoutingTable\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/blkIpRoutingTable{?projection}\"\n      }, {\n        \"rel\" : \"physicalInterfaces\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/physicalInterfaces{?projection}\"\n      }, {\n        \"rel\" : \"topology\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/topology{?projection}\"\n      }, {\n        \"rel\" : \"managerInterfaces\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/managerInterfaces{?projection}\"\n      }, {\n        \"rel\" : \"redIpRoutingTable\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/redIpRoutingTable{?projection}\"\n      }, {\n        \"rel\" : \"syslogServers\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/syslogServers{?projection}\"\n      }, {\n        \"rel\" : \"self\",\n        \"href\" : \"https://localhost:8443/api/ssIpsecGws/999{?projection}\"\n      } ]\n    },\n    \"manufacturingDatetime\" : \"2026-03-10T10:18:15.988+00:00\",\n    \"platformModel\" : \"HW\",\n    \"productName\" : \"IP9001\",\n    \"firmwareVersionOther\" : \"9.2.4.10\",\n    \"firmwareDownloadVersion\" : \"\",\n    \"firmwareDownloadState\" : \"DOWNLOADED\",\n    \"firmwareVersionCurrent\" : \"9.2.4.12\",\n    \"name\" : \"gw-adm-a-1\",\n    \"id\" : 470,\n    \"tags\" : [ ],\n    \"links\" : [ {\n      \"rel\" : \"self\",\n      \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/470\"\n    }, {\n      \"rel\" : \"ssIpsecGwHw\",\n      \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/470{?projection}\"\n    }, {\n      \"rel\" : \"tags\",\n      \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/470/tags\"\n    }, {\n      \"rel\" : \"configurationHistoric\",\n      \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/470/configurationHistoric\"\n    }, {\n      \"rel\" : \"gatewayConf\",\n      \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/470/gatewayConf{?projection}\"\n    }, {\n      \"rel\" : \"certificates\",\n      \"href\" : \"https://localhost:8443/api/ssIpsecGwHws/470/certificates{?projection}\"\n    } ]\n  } ],\n  \"page\" : {\n    \"size\" : 50000,\n    \"totalElements\" : 6,\n    \"totalPages\" : 1,\n    \"number\" : 0\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "5bd6b42d-5cdd-40a0-9160-831949726bb3",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGws/\\d+",
+      "responses": [
+        {
+          "uuid": "666f8810-7462-4290-b4f4-66050de83b33",
+          "body": "{\n  \"iras\" : false,\n  \"configurationId\" : 9,\n  \"gatewayBlackIpRemote\" : {\n    \"id\" : 193,\n    \"type\" : \"IPV4\",\n    \"address\" : \"100.100.100.10\",\n    \"netmask\" : 24\n  },\n  \"ownBlackIpRemote\" : false,\n  \"gatewayRedIp\" : {\n    \"id\" : 185,\n    \"type\" : \"IPV4\",\n    \"address\" : \"192.168.100.10\",\n    \"netmask\" : 24\n  },\n  \"privateAddress\" : {\n    \"id\" : 193,\n    \"type\" : \"IPV4\",\n    \"address\" : \"100.100.100.10\",\n    \"netmask\" : 24\n  },\n  \"serialNumber\" : \"DASERIAL\",\n  \"administrationIp\" : \"10.10.100.10\",\n  \"offline\" : false,\n  \"machine\" : \"IP9001\",\n  \"gatewayCluster\" : {\n    \"masterOriginId\" : 177,\n    \"backupOriginId\" : 178,\n    \"virtualIpList\" : [ {\n      \"id\" : 238,\n      \"address\" : \"192.168.100.254\",\n      \"netmask\" : 24,\n      \"interface_name\" : \"red1\"\n    }, {\n      \"id\" : 239,\n      \"address\" : \"192.168.102.254\",\n      \"netmask\" : 24,\n      \"interface_name\" : \"interfacep1\"\n    } ],\n    \"name\" : \"HAC-ANO-A\",\n    \"id\" : 237,\n    \"identifier\" : 1,\n    \"links\" : [ {\n      \"rel\" : \"masterOrigin\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/masterOrigin\"\n    }, {\n      \"rel\" : \"carpBackupIp\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/carpBackupIp\"\n    }, {\n      \"rel\" : \"backupOrigin\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/backupOrigin\"\n    }, {\n      \"rel\" : \"vlanList\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/vlanList{?projection}\"\n    }, {\n      \"rel\" : \"topology\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/topology{?projection}\"\n    }, {\n      \"rel\" : \"carpMasterIp\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/carpMasterIp\"\n    }, {\n      \"rel\" : \"haManagementCenter\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/haManagementCenter{?projection}\"\n    }, {\n      \"rel\" : \"virtualIpList\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237/virtualIpList\"\n    }, {\n      \"rel\" : \"self\",\n      \"href\" : \"https://localhost:8443/api/highAvailabilityClusters/237{?projection}\"\n    } ]\n  },\n  \"redPhysicalInterfaces\" : [ {\n    \"id\" : 183,\n    \"name\" : \"red1\",\n    \"description\" : \"\",\n    \"domain\" : \"RED\",\n    \"connection_type\" : \"ETH\",\n    \"soft_interface\" : false,\n    \"is_admin\" : false,\n    \"dhcp_relay\" : false\n  }, {\n    \"id\" : 188,\n    \"name\" : \"redsfp1\",\n    \"description\" : \"\",\n    \"domain\" : \"RED\",\n    \"connection_type\" : \"SFP\",\n    \"soft_interface\" : false,\n    \"is_admin\" : false,\n    \"dhcp_relay\" : false\n  } ],\n  \"blackPhysicalInterfaces\" : [ {\n    \"id\" : 191,\n    \"name\" : \"blk1\",\n    \"description\" : \"\",\n    \"domain\" : \"BLACK\",\n    \"default_gateway\" : \"100.100.100.254\",\n    \"connection_type\" : \"ETH\",\n    \"soft_interface\" : false,\n    \"is_admin\" : true,\n    \"dhcp_relay\" : false\n  } ],\n  \"active\" : true,\n  \"name\" : \"gw-ano-1\",\n  \"id\" : 177,\n  \"links\" : [ {\n    \"rel\" : \"self\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999\"\n  }, {\n    \"rel\" : \"ssIpsecGw\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999{?projection}\"\n  }, {\n    \"rel\" : \"masterCluster\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/masterCluster{?projection}\"\n  }, {\n    \"rel\" : \"trustedArea\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/trustedArea{?projection}\"\n  }, {\n    \"rel\" : \"hardwarePrePair\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/hardwarePrePair{?projection}\"\n  }, {\n    \"rel\" : \"managementCenters\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/managementCenters{?projection}\"\n  }, {\n    \"rel\" : \"tags\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/tags\"\n  }, {\n    \"rel\" : \"mobilityDhcpServer\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/mobilityDhcpServer{?projection}\"\n  }, {\n    \"rel\" : \"certificatesCaNotLinked\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/certificatesCaNotLinked{?projection}\"\n  }, {\n    \"rel\" : \"primaryRedIpRoutingTables\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/primaryRedIpRoutingTables{?projection}\"\n  }, {\n    \"rel\" : \"relayDhcpServers\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/relayDhcpServers{?projection}\"\n  }, {\n    \"rel\" : \"backupCluster\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/backupCluster{?projection}\"\n  }, {\n    \"rel\" : \"hardware\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/hardware{?projection}\"\n  }, {\n    \"rel\" : \"blkIpRoutingTable\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/blkIpRoutingTable{?projection}\"\n  }, {\n    \"rel\" : \"physicalInterfaces\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/physicalInterfaces{?projection}\"\n  }, {\n    \"rel\" : \"topology\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/topology{?projection}\"\n  }, {\n    \"rel\" : \"managerInterfaces\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/managerInterfaces{?projection}\"\n  }, {\n    \"rel\" : \"redIpRoutingTable\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/redIpRoutingTable{?projection}\"\n  }, {\n    \"rel\" : \"syslogServers\",\n    \"href\" : \"https://localhost:8443/api/ssIpsecGws/999/syslogServers{?projection}\"\n  } ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "62868863-651e-4281-8219-2a685b79fa65",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/clusters",
+      "responses": [
+        {
+          "uuid": "be7f9162-acb6-4e02-9b2c-e23fc6bf21cb",
+          "body": "[{\"availableForSwitching\":true,\"backupOrigin\":{\"name\":\"ano-1\",\"id\":182},\"timeToSwitch\":3,\"backupOriginRole\":\"BACKUP\",\"masterOriginRole\":\"MASTER\",\"carpMasterIp\":{\"id\":226,\"type\":\"IPV4\",\"address\":\"192.168.20.10\",\"netmask\":24},\"carpBackupIp\":{\"id\":234,\"type\":\"IPV4\",\"address\":\"192.168.20.20\",\"netmask\":24},\"realMaster\":{\"name\":\"ano-2\",\"id\":181},\"gatewaysClusterStatus\":\"HAC_OPERATIONAL\",\"masterOriginStatus\":{\"connectedStatus\":\"CONNECTED\"},\"backupOriginStatus\":{\"connectedStatus\":\"CONNECTED\"},\"masterOrigin\":{\"name\":\"ano-3\",\"id\":181},\"name\":\"HAC_ANO-2\",\"id\":240,\"identifier\":2},{\"availableForSwitching\":true,\"backupOrigin\":{\"name\":\"ano-3\",\"id\":178},\"timeToSwitch\":3,\"backupOriginRole\":\"BACKUP\",\"masterOriginRole\":\"MASTER\",\"carpMasterIp\":{\"id\":187,\"type\":\"IPV4\",\"address\":\"10.10.100.10\",\"netmask\":24},\"carpBackupIp\":{\"id\":198,\"type\":\"IPV4\",\"address\":\"10.10.100.20\",\"netmask\":24},\"realMaster\":{\"name\":\"ano-5\",\"id\":177},\"gatewaysClusterStatus\":\"HAC_OPERATIONAL\",\"masterOriginStatus\":{\"connectedStatus\":\"CONNECTED\"},\"backupOriginStatus\":{\"connectedStatus\":\"CONNECTED\"},\"masterOrigin\":{\"name\":\"ano-6\",\"id\":177},\"name\":\"HAC-ANO-8\",\"id\":237,\"identifier\":1}]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "40980772-94f0-4889-8778-40e799fb09ae",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGwHws/status",
+      "responses": [
+        {
+          "uuid": "51807782-9656-44c7-b6f6-f2624a30c887",
+          "body": "{\n  \"1111-2222-3333-4444\" : {\n    \"id\" : 654,\n    \"lastCheck\" : \"2026-03-16T15:31:51.460+00:00\",\n    \"connectedStatus\" : \"CONNECTED\",\n    \"connectionAttempts\" : 0,\n    \"busy\" : false,\n    \"autoTestingCheckAttempts\" : 0,\n    \"autotestStates\" : [ ],\n    \"statusEpochMilli\" : 1773675396992\n  },\n  \"12345678.000004\" : {\n    \"id\" : 619,\n    \"lastCheck\" : \"2026-03-16T15:30:33.705+00:00\",\n    \"connectedStatus\" : \"CONNECTED\",\n    \"connectionAttempts\" : 0,\n    \"busy\" : false,\n    \"autoTestingCheckAttempts\" : 0,\n    \"autotestStates\" : [ ],\n    \"statusEpochMilli\" : 1773675396992\n  },\n  \"12341234.000010\" : {\n    \"id\" : 1189,\n    \"lastCheck\" : \"2026-03-16T15:31:16.251+00:00\",\n    \"connectedStatus\" : \"DISCONNECTED\",\n    \"connectionAttempts\" : 4,\n    \"busy\" : false,\n    \"autoTestingCheckAttempts\" : 0,\n    \"autotestStates\" : [ ],\n    \"statusEpochMilli\" : 1773675396992\n  },\n  \"987654.000001\" : {\n    \"id\" : 470,\n    \"lastCheck\" : \"2026-03-16T15:30:33.598+00:00\",\n    \"connectedStatus\" : \"CONNECTED\",\n    \"connectionAttempts\" : 0,\n    \"busy\" : false,\n    \"autoTestingCheckAttempts\" : 0,\n    \"autotestStates\" : [ ],\n    \"statusEpochMilli\" : 1773675396992\n  },\n  \"DASERIAL\" : {\n    \"id\" : 471,\n    \"lastCheck\" : \"2026-03-16T15:30:33.267+00:00\",\n    \"connectedStatus\" : \"CONNECTED\",\n    \"connectionAttempts\" : 0,\n    \"busy\" : false,\n    \"autoTestingCheckAttempts\" : 0,\n    \"autotestStates\" : [ ],\n    \"statusEpochMilli\" : 1773675396992\n  },\n  \"12341234.000003\" : {\n    \"id\" : 575,\n    \"lastCheck\" : \"2026-03-16T15:30:32.837+00:00\",\n    \"connectedStatus\" : \"CONNECTED\",\n    \"connectionAttempts\" : 0,\n    \"busy\" : false,\n    \"autoTestingCheckAttempts\" : 0,\n    \"autotestStates\" : [ ],\n    \"statusEpochMilli\" : 1773675396992\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "05ded88e-a50d-4461-96f8-5b34d1317c2d",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/certificateGws",
+      "responses": [
+        {
+          "uuid": "714f0460-2600-45e5-ad9f-e8a480236fb1",
+          "body": "{\n  \"links\" : [ {\n    \"rel\" : \"self\",\n    \"href\" : \"https://localhost:8443/api/certificateGws?projection=withGatewayHw&page=0&size=50000\"\n  }, {\n    \"rel\" : \"profile\",\n    \"href\" : \"https://localhost:8443/api/profile/certificateGws\"\n  }, {\n    \"rel\" : \"search\",\n    \"href\" : \"https://localhost:8443/api/certificateGws/search\"\n  } ],\n  \"content\" : [ {\n    \"collectionValue\" : true,\n    \"relTargetType\" : \"com.test.centreon.back.model.CertificateGw\",\n    \"rel\" : null,\n    \"value\" : [ ]\n  } ],\n  \"page\" : {\n    \"size\" : 50000,\n    \"totalElements\" : 0,\n    \"totalPages\" : 0,\n    \"number\" : 0\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "16651e5e-1137-4253-abc0-0d37e46c785c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/managementCenters/cluster",
+      "responses": [
+        {
+          "uuid": "996fb11d-0433-43e0-8043-e58a17858d00",
+          "body": " {\n  \"state\" : \"OK\",\n  \"statusList\" : {\n    \"ANO-A.local\" : \"NONE\",\n    \"ANO-B.local\" : \"PRIMARY\"\n  },\n  \"failoverModeList\" : {\n    \"ANO-B.local\" : \"AUTOMATIC\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "78829247-f19d-4dab-ab6d-0bfbf2f6ab98",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/certificates/ca",
+      "responses": [
+        {
+          "uuid": "509ee484-3c63-4b3f-94af-ca6c5b7353bb",
+          "body": "[{\"issuerOrganizationUnit\":\"1111 98765432\",\"issuerCountryName\":\"FR\",\"nearlyExpired\":false,\"crlExpired\":false,\"expired\":false,\"future\":false,\"validityPeriodEnd\":\"2045-11-11T15:15:44.000+00:00\",\"subjectCommonName\":\"COMMON-RMGT\",\"issuerCommonName\":\"AC_ROOT\",\"validityPeriodBegin\":\"2025-10-29T15:15:44.000+00:00\",\"serialNumber\":\"abcdefgh\",\"certificatesGw\":[],\"sha1FingerPrint\":\"01:01:01:01:01:01\",\"subjectCountryName\":\"FR\",\"subjectOrganization\":\"Chezwouam France\",\"subjectOrganizationUnit\":\"Cholet\",\"ssIpsecGwsNotLinked\":[],\"certificatesMmc\":[{\"nearlyExpired\":false,\"expired\":false,\"future\":false,\"validityPeriodEnd\":\"2026-11-25T15:18:48.000+00:00\",\"subjectCommonName\":\"mmc-base.local\",\"issuerCommonName\":\"ITSME_VS1-A\",\"validityPeriodBegin\":\"2025-11-25T15:18:48.000+00:00\",\"serialNumber\":\"989898989898\",\"usages\":[\"SYS_AUTH\"],\"name\":\"local.local\",\"id\":16},{\"nearlyExpired\":false,\"expired\":false,\"future\":false,\"validityPeriodEnd\":\"2026-11-25T15:18:28.000+00:00\",\"subjectCommonName\":\"extra.local\",\"issuerCommonName\":\"NONE_VS1-RMGT\",\"validityPeriodBegin\":\"2025-11-25T15:18:28.000+00:00\",\"serialNumber\":\"abcdefg\",\"usages\":[\"RMGT_AUTH\"],\"name\":\"extra.local\",\"id\":290},{\"nearlyExpired\":false,\"expired\":false,\"future\":false,\"validityPeriodEnd\":\"2026-11-25T15:18:44.000+00:00\",\"subjectCommonName\":\"extra-b.local\",\"issuerCommonName\":\"NONE_VS1-RMGT\",\"validityPeriodBegin\":\"2025-11-25T15:18:44.000+00:00\",\"serialNumber\":\"987654321\",\"usages\":[\"RMGT_AUTH\"],\"name\":\"huhu.local\",\"id\":325}],\"usages\":[\"RMGT_AUTH\"],\"revoked\":false,\"algName\":\"tutu\",\"csr\":false,\"issuerOrganization\":\"Support\",\"tags\":[],\"name\":\"ca.crt\",\"id\":14,\"active\":true}]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "50d2a179-f209-4417-8d16-11d687098b99",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGwHws/\\d+/vpnStatistics",
+      "responses": [
+        {
+          "uuid": "3f517219-702f-41d9-9e6b-4090225d1a96",
+          "body": "{\n  \"ikev2State\" : {\n    \"xmlns\" : \"urn:ietf:params:xml:ns:yang:mistral-ipsec\",\n    \"serviceState\" : \"RUNNING\",\n    \"ikeSaState\" : [ {\n      \"name\" : \"-1877415198_45\",\n      \"saState\" : \"CONNECTING\",\n      \"saLifetime\" : {\n        \"timeSoft\" : 0,\n        \"timeCurrent\" : 0\n      },\n      \"remoteIpBlack\" : \"100.100.10.10\",\n      \"remoteIpRed\" : \"\",\n      \"ok\" : false\n    }, {\n      \"name\" : \"108184537_44\",\n      \"saState\" : \"ESTABLISHED\",\n      \"saLifetime\" : {\n        \"timeSoft\" : 74448,\n        \"timeCurrent\" : 16629\n      },\n      \"remoteIpBlack\" : \"100.100.200.10\",\n      \"remoteIpRed\" : \"\",\n      \"ok\" : true\n    }, {\n      \"name\" : \"-1770408719_42\",\n      \"saState\" : \"ESTABLISHED\",\n      \"saLifetime\" : {\n        \"timeSoft\" : 70587,\n        \"timeCurrent\" : 23160\n      },\n      \"remoteIpBlack\" : \"100.100.30.10\",\n      \"remoteIpRed\" : \"\",\n      \"ok\" : true\n    }, {\n      \"name\" : \"-1801428527_41\",\n      \"saState\" : \"ESTABLISHED\",\n      \"saLifetime\" : {\n        \"timeSoft\" : 73135,\n        \"timeCurrent\" : 29367\n      },\n      \"remoteIpBlack\" : \"100.100.20.10\",\n      \"remoteIpRed\" : \"\",\n      \"ok\" : true\n    } ]\n  },\n  \"sadState\" : {\n    \"listSaName\" : [ {\n      \"name\" : \"804296985_44_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3246909803,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 7821,\n          \"timeSoft\" : 10536,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 917156.0,\n          \"byteSoft\" : 1.2068537397869E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 7993.0,\n          \"packetSoft\" : 1.2367057383909544E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"804296985_44_100.100.200.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3388539421,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 7821,\n          \"timeSoft\" : 11058,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 849248.0,\n          \"byteSoft\" : 1.1727390252426E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 8372.0,\n          \"packetSoft\" : 1.3806485897014673E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-2102713877_44_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3339623883,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 7781,\n          \"timeSoft\" : 10155,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 805792.0,\n          \"byteSoft\" : 1.2308179278485E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 7748.0,\n          \"packetSoft\" : 1.132187477486359E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-2102713877_44_100.100.200.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3239313339,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 7781,\n          \"timeSoft\" : 10434,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 805480.0,\n          \"byteSoft\" : 1.1402238078229E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 7745.0,\n          \"packetSoft\" : 1.136371527767336E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1683044391_44_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3239719887,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 7117,\n          \"timeSoft\" : 11498,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 3966636.0,\n          \"byteSoft\" : 1.1790025960095E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 16957.0,\n          \"packetSoft\" : 1.1969752669425658E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1683044391_44_100.100.200.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3364208439,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 7117,\n          \"timeSoft\" : 11469,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 3372232.0,\n          \"byteSoft\" : 1.3025785550103E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 17037.0,\n          \"packetSoft\" : 1.2275657961281841E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1611793448_44_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3257579680,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 6823,\n          \"timeSoft\" : 9936,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 3098372.0,\n          \"byteSoft\" : 1.3169105342031E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 9571.0,\n          \"packetSoft\" : 1.4338167466318889E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1611793448_44_100.100.200.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3263857759,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 6823,\n          \"timeSoft\" : 11193,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 986496.0,\n          \"byteSoft\" : 1.3724610848353E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 9123.0,\n          \"packetSoft\" : 1.1072122921381423E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-82481654_42_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3413845717,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 5250,\n          \"timeSoft\" : 11053,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 0.0,\n          \"byteSoft\" : 1.1431789912842E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 0.0,\n          \"packetSoft\" : 1.1226054025284053E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-82481654_42_100.100.30.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3245787387,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 5250,\n          \"timeSoft\" : 8786,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 543296.0,\n          \"byteSoft\" : 1.3864317426458E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 5224.0,\n          \"packetSoft\" : 1.1801664882586997E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1622882490_42_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3446861,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 4820,\n          \"timeSoft\" : 9516,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 748600.0,\n          \"byteSoft\" : 1.2634093622491E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 1361.0,\n          \"packetSoft\" : 1.3101686254558878E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1622882490_42_100.100.30.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3283926135,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 4820,\n          \"timeSoft\" : 10531,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 637824.0,\n          \"byteSoft\" : 1.2055945511162E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 6052.0,\n          \"packetSoft\" : 1.4052093512501113E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1052062677_41_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3285471473,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 2841,\n          \"timeSoft\" : 9788,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 294112.0,\n          \"byteSoft\" : 1.394998490084E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 2828.0,\n          \"packetSoft\" : 1.1908355651508842E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"-1052062677_41_100.100.20.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3481968378,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 2841,\n          \"timeSoft\" : 9986,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 294112.0,\n          \"byteSoft\" : 1.259258674141E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 2828.0,\n          \"packetSoft\" : 1.2525540745983033E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"415173799_41_100.100.100.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3352699939,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 2076,\n          \"timeSoft\" : 10217,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 531516.0,\n          \"byteSoft\" : 1.2564194528013E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 2678.0,\n          \"packetSoft\" : 1.3540138272720892E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    }, {\n      \"name\" : \"415173799_41_100.100.20.10\",\n      \"listSaState\" : [ {\n        \"state\" : \"INSTALLED\",\n        \"spi\" : 3270289022,\n        \"udpEncaps\" : true,\n        \"pathMtu\" : 1500,\n        \"snCounter\" : {\n          \"dscpCounter\" : [ { } ]\n        },\n        \"lifetime\" : {\n          \"timeCurrent\" : 2076,\n          \"timeSoft\" : 10921,\n          \"timeHard\" : 14400,\n          \"byteCurrent\" : 259312.0,\n          \"byteSoft\" : 1.2499228753522E13,\n          \"byteHard\" : 1.8E13,\n          \"packetCurrent\" : 2645.0,\n          \"packetSoft\" : 1.2131817036073611E19,\n          \"packetHard\" : 1.8446744073709552E19,\n          \"overrun\" : false\n        },\n        \"ok\" : true\n      } ]\n    } ]\n  },\n  \"spdState\" : {\n    \"listSpState\" : [ {\n      \"index\" : 0,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 26,\n      \"priority\" : 536870904\n    }, {\n      \"index\" : 1,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 36,\n      \"priority\" : 536870903\n    }, {\n      \"index\" : 2,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870902\n    }, {\n      \"index\" : 3,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870901\n    }, {\n      \"index\" : 4,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870900\n    }, {\n      \"index\" : 5,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870899\n    }, {\n      \"index\" : 6,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"172.17.0.0/16\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870907\n    }, {\n      \"index\" : 7,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"172.17.0.0/16\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870910\n    }, {\n      \"index\" : 8,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"172.17.0.0/16\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870906\n    }, {\n      \"index\" : 9,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"172.17.0.0/16\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870906\n    }, {\n      \"index\" : 10,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"172.17.0.0/16\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870905\n    }, {\n      \"index\" : 11,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"172.17.0.0/16\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870908\n    }, {\n      \"index\" : 12,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870898\n    }, {\n      \"index\" : 13,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870897\n    }, {\n      \"index\" : 14,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870896\n    }, {\n      \"index\" : 15,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870895\n    }, {\n      \"index\" : 16,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870894\n    }, {\n      \"index\" : 17,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870893\n    }, {\n      \"index\" : 18,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.102.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870892\n    }, {\n      \"index\" : 19,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.102.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870891\n    }, {\n      \"index\" : 20,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.102.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870890\n    }, {\n      \"index\" : 21,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.102.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.20.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870889\n    }, {\n      \"index\" : 22,\n      \"spi\" : 3285471473,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.102.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870888\n    }, {\n      \"index\" : 23,\n      \"spi\" : 3481968378,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.102.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.20.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870887\n    }, {\n      \"index\" : 24,\n      \"spi\" : 3352699939,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.20.10/32\",\n        \"firstPort\" : 6513,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.100.100/32\",\n        \"firstPort\" : 6514,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 69995,\n      \"priority\" : 536870876\n    }, {\n      \"index\" : 25,\n      \"spi\" : 3270289022,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.100.100/32\",\n        \"firstPort\" : 6514,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.20.10/32\",\n        \"firstPort\" : 6513,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 60445,\n      \"priority\" : 536870875\n    }, {\n      \"index\" : 26,\n      \"spi\" : 3446861100,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.20.20/32\",\n        \"firstPort\" : 6513,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.100.100/32\",\n        \"firstPort\" : 6514,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 70242,\n      \"priority\" : 536870878\n    }, {\n      \"index\" : 27,\n      \"spi\" : 3283926135,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"10.10.100.100/32\",\n        \"firstPort\" : 6514,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.20.20/32\",\n        \"firstPort\" : 6513,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 60936,\n      \"priority\" : 536870877\n    }, {\n      \"index\" : 28,\n      \"spi\" : 3239719887,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.200.100/32\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"10.10.100.100/32\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 52505,\n      \"priority\" : 536870874\n    }, {\n      \"index\" : 40,\n      \"spi\" : 3339623883,\n      \"direction\" : \"INBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.200.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870880\n    }, {\n      \"index\" : 41,\n      \"spi\" : 3239313339,\n      \"direction\" : \"OUTBOUND\",\n      \"policy\" : \"PROTECT\",\n      \"sourceTs\" : {\n        \"ipAddress\" : \"192.168.100.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"destinationTs\" : {\n        \"ipAddress\" : \"192.168.200.0/24\",\n        \"firstPort\" : 0,\n        \"lastPort\" : 65535\n      },\n      \"matchCounter\" : 0,\n      \"priority\" : 536870879\n    } ]\n  },\n  \"ikev2NetConf\" : {\n    \"connections\" : {\n      \"udpLocalPort\" : 500,\n      \"natTraversalLocalPort\" : 4500,\n      \"listIkeConnections\" : [ {\n        \"name\" : \"108184537\",\n        \"connectionMode\" : \"tunnel-initiator-responder\",\n        \"rripAllocator\" : \"none\",\n        \"ikeAuthMethods\" : [ \"ecdsa-bp-256\" ],\n        \"ikeOcspCertReqActivated\" : false,\n        \"ikeEncryptions\" : [ \"aes256gcm16-prfsha256-ecp256bp\" ],\n        \"ikeLifetime\" : 86400,\n        \"dpdEnabled\" : true,\n        \"dpdPeriod\" : 30,\n        \"local\" : {\n          \"ipv4\" : \"100.100.100.10\",\n          \"localIdentifier\" : \"gw-adm-a-1\"\n        },\n        \"remote\" : {\n          \"ipv4\" : \"100.100.200.10\",\n          \"remoteIdentifier\" : \"gw-adm-b-1\"\n        },\n        \"saChilds\" : [ {\n          \"saName\" : \"804296985\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"10.10.100.10/32\",\n            \"firstPort\" : 6513,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"192.168.200.100/32\",\n            \"firstPort\" : 6514,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        }, {\n          \"saName\" : \"-2102713877\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"192.168.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"10.10.200.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"192.168.200.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        }, {\n          \"saName\" : \"-1683044391\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"10.10.100.100/32\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"192.168.200.100/32\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        }, {\n          \"saName\" : \"-1611793448\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"10.10.100.100/32\",\n            \"firstPort\" : 6514,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"192.168.200.10/32\",\n            \"firstPort\" : 6513,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        } ],\n        \"ikeAuthLocal\" : \"ecdsa\"\n      }, {\n        \"name\" : \"-1801428527\",\n        \"connectionMode\" : \"tunnel-initiator-responder\",\n        \"rripAllocator\" : \"none\",\n        \"ikeAuthMethods\" : [ \"ecdsa-bp-256\" ],\n        \"ikeEncryptions\" : [ \"aes256gcm16-prfsha256-ecp256bp\" ],\n        \"ikeLifetime\" : 86400,\n        \"dpdEnabled\" : true,\n        \"dpdPeriod\" : 30,\n        \"local\" : {\n          \"ipv4\" : \"100.100.100.10\",\n          \"localIdentifier\" : \"gw-adm-a-1\"\n        },\n        \"remote\" : {\n          \"ipv4\" : \"100.100.20.10\",\n          \"remoteIdentifier\" : \"gw-clt-2-1\"\n        },\n        \"saChilds\" : [ {\n          \"saName\" : \"-1052062677\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"192.168.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"172.17.0.0/16\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"192.168.102.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"192.168.20.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.20.20.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.20.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        }, {\n          \"saName\" : \"415173799\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"10.10.100.100/32\",\n            \"firstPort\" : 6514,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"10.10.20.10/32\",\n            \"firstPort\" : 6513,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        } ],\n        \"ikeAuthLocal\" : \"ecdsa\"\n      }, {\n        \"name\" : \"-1877415198\",\n        \"connectionMode\" : \"tunnel-initiator-responder\",\n        \"rripAllocator\" : \"none\",\n        \"ikeAuthMethods\" : [ \"ecdsa-bp-256\" ],\n        \"ikeOcspCertReqActivated\" : true,\n        \"ikeEncryptions\" : [ \"aes256gcm16-prfsha256-ecp256bp\" ],\n        \"ikeLifetime\" : 86400,\n        \"dpdEnabled\" : true,\n        \"dpdPeriod\" : 30,\n        \"local\" : {\n          \"ipv4\" : \"100.100.100.10\",\n          \"localIdentifier\" : \"gw-adm-a-1\"\n        },\n        \"remote\" : {\n          \"ipv4\" : \"100.100.10.10\",\n          \"remoteIdentifier\" : \"gw-clt-1\"\n        },\n        \"saChilds\" : [ {\n          \"saName\" : \"-2053778601\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"10.10.100.100/32\",\n            \"firstPort\" : 6514,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"10.10.10.10/32\",\n            \"firstPort\" : 6513,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        }, {\n          \"saName\" : \"-1896799366\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"192.168.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"192.168.102.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"10.30.10.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"192.168.10.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.20.10.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.10.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"172.100.0.0/16\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 1,\n          \"tsMark\" : 0\n        } ],\n        \"ikeAuthLocal\" : \"ecdsa\"\n      }, {\n        \"name\" : \"-1770408719\",\n        \"connectionMode\" : \"tunnel-initiator-responder\",\n        \"rripAllocator\" : \"none\",\n        \"ikeAuthMethods\" : [ \"ecdsa-bp-256\" ],\n        \"ikeOcspCertReqActivated\" : false,\n        \"ikeEncryptions\" : [ \"aes256gcm16-prfsha256-ecp256bp\" ],\n        \"ikeLifetime\" : 86400,\n        \"dpdEnabled\" : true,\n        \"dpdPeriod\" : 30,\n        \"local\" : {\n          \"ipv4\" : \"100.100.100.10\",\n          \"localIdentifier\" : \"gw-adm-a-1\"\n        },\n        \"remote\" : {\n          \"ipv4\" : \"100.100.30.10\",\n          \"remoteIdentifier\" : \"gw-clt-2-2\"\n        },\n        \"saChilds\" : [ {\n          \"saName\" : \"-1622882490\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"10.10.100.100/32\",\n            \"firstPort\" : 6514,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"10.10.20.20/32\",\n            \"firstPort\" : 6513,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 2,\n          \"tsMark\" : 0\n        }, {\n          \"saName\" : \"-82481654\",\n          \"localTs\" : [ {\n            \"ipAddress\" : \"192.168.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"172.17.0.0/16\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.100.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"192.168.102.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"remoteTs\" : [ {\n            \"ipAddress\" : \"192.168.20.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.20.20.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          }, {\n            \"ipAddress\" : \"10.10.20.0/24\",\n            \"firstPort\" : 0,\n            \"lastPort\" : 65535\n          } ],\n          \"priority\" : 2,\n          \"tsMark\" : 0\n        } ],\n        \"ikeAuthLocal\" : \"ecdsa\"\n      } ]\n    }\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "e0c17a97-c1c8-4b41-94c6-211eefafb6dc",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGwHws/\\d+/interfacesStatistics",
+      "responses": [
+        {
+          "uuid": "6875f101-c70d-49e8-b6a0-109477743702",
+          "body": "{\n  \"listInterfaces\" : [ {\n    \"interfaceStats\" : {\n      \"inOctets\" : 730923372,\n      \"inDiscards\" : 0,\n      \"inErrors\" : 0,\n      \"outOctets\" : 454803443,\n      \"outDiscards\" : 0,\n      \"outErrors\" : 0,\n      \"inUnicastPkts\" : 1042665,\n      \"inBroadcastPkts\" : 41354,\n      \"inMulticastPkts\" : 1325765,\n      \"outUnicastPkts\" : 871346,\n      \"inUnknownProtos\" : 0,\n      \"outBroadcastPkts\" : 4579,\n      \"outMulticastPkts\" : 4025\n    },\n    \"ethernetStats\" : {\n      \"autoNegotiation\" : {\n        \"enable\" : true\n      },\n      \"duplex\" : \"full\",\n      \"speed\" : 1.0,\n      \"frameStatistics\" : {\n        \"frame\" : {\n          \"inTotalPkts\" : 2409784.0,\n          \"inErrorFcsPkts\" : 0.0,\n          \"inErrorUndersizePkts\" : 0.0,\n          \"inErrorOversizePkts\" : 0.0,\n          \"outPkts\" : 879950.0\n        }\n      }\n    },\n    \"ipv4Statistics\" : {\n      \"forwarding\" : false,\n      \"mtu\" : 1500,\n      \"address\" : [ {\n        \"ip\" : \"192.168.100.10\",\n        \"prefixLength\" : 24,\n        \"origin\" : \"STATIC\"\n      }, {\n        \"ip\" : \"192.168.100.254\",\n        \"prefixLength\" : 24,\n        \"origin\" : \"OTHER\"\n      } ]\n    },\n    \"name\" : \"red1\",\n    \"type\" : \"ianaift:ethernetCsmacd\",\n    \"lastChange\" : \"2026-03-10T10:26:59.000+00:00\",\n    \"ifIndex\" : 1.0,\n    \"physAddress\" : \"00:07:32:70:b2:b3\",\n    \"speed\" : 1.0E9,\n    \"operatingStatus\" : \"UP\"\n  }, {\n    \"interfaceStats\" : {\n      \"inOctets\" : 571653,\n      \"inDiscards\" : 0,\n      \"inErrors\" : 0,\n      \"outOctets\" : 180,\n      \"outDiscards\" : 0,\n      \"outErrors\" : 0,\n      \"inUnicastPkts\" : 0,\n      \"inBroadcastPkts\" : 0,\n      \"inMulticastPkts\" : 8121,\n      \"outUnicastPkts\" : 0,\n      \"inUnknownProtos\" : 0,\n      \"outBroadcastPkts\" : 3,\n      \"outMulticastPkts\" : 0\n    },\n    \"ethernetStats\" : {\n      \"autoNegotiation\" : {\n        \"enable\" : true\n      },\n      \"duplex\" : \"full\",\n      \"speed\" : 1.0,\n      \"frameStatistics\" : {\n        \"frame\" : {\n          \"inTotalPkts\" : 8121.0,\n          \"inErrorFcsPkts\" : 0.0,\n          \"inErrorUndersizePkts\" : 0.0,\n          \"inErrorOversizePkts\" : 0.0,\n          \"outPkts\" : 3.0\n        }\n      }\n    },\n    \"ipv4Statistics\" : {\n      \"forwarding\" : false,\n      \"mtu\" : 1500,\n      \"address\" : [ {\n        \"ip\" : \"192.168.102.254\",\n        \"prefixLength\" : 24,\n        \"origin\" : \"OTHER\"\n      }, {\n        \"ip\" : \"192.168.102.10\",\n        \"prefixLength\" : 24,\n        \"origin\" : \"STATIC\"\n      } ]\n    },\n    \"name\" : \"redsfp1\",\n    \"type\" : \"ianaift:ethernetCsmacd\",\n    \"lastChange\" : \"2026-03-10T10:26:59.000+00:00\",\n    \"ifIndex\" : 256.0,\n    \"physAddress\" : \"00:07:32:70:b2:b1\",\n    \"speed\" : 1.0E9,\n    \"operatingStatus\" : \"UP\"\n  }, {\n    \"interfaceStats\" : {\n      \"inOctets\" : 973700054,\n      \"inDiscards\" : 0,\n      \"inErrors\" : 0,\n      \"outOctets\" : 1426408766,\n      \"outDiscards\" : 0,\n      \"outErrors\" : 0,\n      \"inUnicastPkts\" : 3911603,\n      \"inBroadcastPkts\" : 19,\n      \"inMulticastPkts\" : 0,\n      \"outUnicastPkts\" : 5303047,\n      \"inUnknownProtos\" : 0,\n      \"outBroadcastPkts\" : 4,\n      \"outMulticastPkts\" : 0\n    },\n    \"ethernetStats\" : {\n      \"autoNegotiation\" : {\n        \"enable\" : true\n      },\n      \"duplex\" : \"full\",\n      \"speed\" : 1.0,\n      \"frameStatistics\" : {\n        \"frame\" : {\n          \"inTotalPkts\" : 3911622.0,\n          \"inErrorFcsPkts\" : 0.0,\n          \"inErrorUndersizePkts\" : 0.0,\n          \"inErrorOversizePkts\" : 0.0,\n          \"outPkts\" : 5303051.0\n        }\n      }\n    },\n    \"ipv4Statistics\" : {\n      \"forwarding\" : false,\n      \"mtu\" : 1500,\n      \"address\" : [ {\n        \"ip\" : \"100.100.100.10\",\n        \"prefixLength\" : 24,\n        \"origin\" : \"STATIC\"\n      } ]\n    },\n    \"name\" : \"blk1\",\n    \"type\" : \"ianaift:ethernetCsmacd\",\n    \"lastChange\" : \"2026-03-10T10:27:00.000+00:00\",\n    \"ifIndex\" : 1.0,\n    \"physAddress\" : \"00:07:32:70:b2:b4\",\n    \"speed\" : 1.0E9,\n    \"operatingStatus\" : \"UP\"\n  } ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "20df85ae-daa2-4de2-a011-ba9d8a33d5cf",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGwHws/\\d+/mistralStateStatistics",
+      "responses": [
+        {
+          "uuid": "79f7d7c6-a5e5-4083-9d30-721747d1a8e4",
+          "body": " {\n  \"xmlns\" : \"urn:ietf:params:xml:ns:yang:mistral\",\n  \"serialNumber\" : \"DASERIAL\",\n  \"configurationId\" : 9,\n  \"firmwareCurrent\" : {\n    \"version\" : \"9.2.4.12\",\n    \"build\" : 112\n  },\n  \"firmwareOther\" : {\n    \"version\" : \"9.2.4.10\",\n    \"build\" : 113\n  },\n  \"firmwareDownloadState\" : \"INITIALIZATION\",\n  \"firmwareDownloadPercent\" : \"0\",\n  \"configurationState\" : \"CONFIGURED\",\n  \"operatingState\" : \"OPERATING\",\n  \"temperature\" : \"58\",\n  \"autotestStates\" : [ {\n    \"name\" : \"Log\",\n    \"state\" : \"SUCCESS\"\n  }, {\n    \"name\" : \"Crypto(IPsec)\",\n    \"state\" : \"SUCCESS\"\n  }, {\n    \"name\" : \"Crypto(TLS,IKE)\",\n    \"state\" : \"SUCCESS\"\n  } ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "72519d57-fd17-4211-9236-21935c21cb06",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/ssIpsecGwHws/\\d+/systemStateStatistics",
+      "responses": [
+        {
+          "uuid": "6fca74c4-a844-4d6a-a590-86173389744b",
+          "body": "{\n  \"platform\" : {\n    \"osName\" : \"OS400\",\n    \"osRelease\" : \"1.1.1.1\",\n    \"osVersion\" : \"NA\",\n    \"machine\" : \"ANO-2\"\n  },\n  \"clock\" : {\n    \"currentDatetime\" : \"2026-03-16T15:36:49.000+00:00\",\n    \"bootDatetime\" : \"2026-03-10T10:26:42.000+00:00\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "ba655018-439b-4bf6-bcb6-24749bab5ee6",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/managementCenters",
+      "responses": [
+        {
+          "uuid": "55375503-0fca-46be-8540-5d9acc2aac79",
+          "body": "{\n  \"state\" : \"OK\",\n  \"statusList\" : {\n    \"mmc-b.local\" : \"NONE\",\n    \"mmc-a.local\" : \"PRIMARY\"\n  },\n  \"failoverModeList\" : {\n    \"mmc-a.local\" : \"AUTOMATIC\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "0f2d47bb-a2f4-4f5f-ad9f-eb1dd9961386"
+    },
+    {
+      "type": "route",
+      "uuid": "0d2bc35d-9ceb-4718-834b-56ba2f4184a9"
+    },
+    {
+      "type": "route",
+      "uuid": "9ecfd7f0-48d3-44e0-8ab2-a5e4a8a90edc"
+    },
+    {
+      "type": "route",
+      "uuid": "5bd6b42d-5cdd-40a0-9160-831949726bb3"
+    },
+    {
+      "type": "route",
+      "uuid": "62868863-651e-4281-8219-2a685b79fa65"
+    },
+    {
+      "type": "route",
+      "uuid": "40980772-94f0-4889-8778-40e799fb09ae"
+    },
+    {
+      "type": "route",
+      "uuid": "05ded88e-a50d-4461-96f8-5b34d1317c2d"
+    },
+    {
+      "type": "route",
+      "uuid": "16651e5e-1137-4253-abc0-0d37e46c785c"
+    },
+    {
+      "type": "route",
+      "uuid": "78829247-f19d-4dab-ab6d-0bfbf2f6ab98"
+    },
+    {
+      "type": "route",
+      "uuid": "50d2a179-f209-4417-8d16-11d687098b99"
+    },
+    {
+      "type": "route",
+      "uuid": "e0c17a97-c1c8-4b41-94c6-211eefafb6dc"
+    },
+    {
+      "type": "route",
+      "uuid": "20df85ae-daa2-4de2-a011-ba9d8a33d5cf"
+    },
+    {
+      "type": "route",
+      "uuid": "72519d57-fd17-4211-9236-21935c21cb06"
+    },
+    {
+      "type": "route",
+      "uuid": "ba655018-439b-4bf6-bcb6-24749bab5ee6"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

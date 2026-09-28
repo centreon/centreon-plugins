@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,12 +36,6 @@ sub new {
     return $self;
 }
 
-sub get_vms {
-    my ($self, %options) = @_;
-    # Retrieve the data
-    return $options{custom}->request_api('endpoint' => '/vcenter/vm', 'method' => 'GET');
-}
-
 sub get_datastore {
     my ($self, %options) = @_;
     # if a datastore_id option is given, prepare to append it to the endpoint path
@@ -64,6 +58,12 @@ sub request_api {
     my ($self, %options) = @_;
 
     return $options{custom}->request_api(%options);
+}
+
+sub get_vms_by_host {
+    my ($self, %options) = @_;
+
+    return $options{custom}->get_vms_by_host(%options);
 }
 
 sub check_options {
@@ -101,13 +101,15 @@ apps::vmware::vsphere8::vcenter::mode - Template for modes monitoring VMware vCe
 
         $self->set_options(option_results => $option_results);
         $self->check_options();
-        my $vm_data = $self->get_vms(%options);
+        my $vms_by_host    = $self->get_vms_by_host(%options);
         my $datastore_data = $self->get_datastore(%options);
     }
 
 =head1 DESCRIPTION
 
-This module provides methods to interact with the VMware vSphere 8 REST API. It handles generic API requests and VMs GET requests.
+This module provides convenience methods for modes that monitor a VMware vCenter through the
+vSphere 8 REST API. It delegates all HTTP communication to C<api.pm> and exposes higher-level
+helpers for retrieving VMs, datastores, clusters, and raw API responses.
 
 =head1 METHODS
 
@@ -132,11 +134,12 @@ Retrieves the vCenter's datastores or only one datastore's specifics in case the
 
 =back
 
-=head2 get_vms
+=head2 get_cluster
 
-    my $all_vms = $self->get_vms(%options);
+    my $all_clusters  = $self->get_cluster(%options);
+    my $one_cluster   = $self->get_cluster(%options, cluster_id => 'cluster-12');
 
-Retrieves the vCenter's virtual machines list.
+Retrieves the vCenter's clusters, or a single cluster when C<cluster_id> is provided.
 
 =over 4
 
@@ -146,25 +149,62 @@ Retrieves the vCenter's virtual machines list.
 
 =item * C<custom> - The custom_mode object, defined in C<api.pm> and declared in C<plugin.pm> (mandatory).
 
-=back
+=item * C<cluster_id> - The ID of a specific cluster (optional).
 
 =back
 
-Returns the list of all the virtual machines with the following attributes for each VM:
+=back
+
+=head2 request_api
+
+    my $response = $self->request_api(endpoint => '/vcenter/vm', method => 'GET');
+
+Thin wrapper that forwards any C<%options> to C<< $options{custom}->request_api >>. Use this
+when no higher-level helper covers the endpoint you need.
 
 =over 4
 
-=item * C<vm>: ID of the virtual machine.
+=item * C<%options> - Passed through to C<api.pm>'s C<request_api>. Useful keys:
 
-=item * C<name>: name of the virtual machine.
+=over 8
 
-=item * C<cpu_count>: number of vCPU.
+=item * C<custom> - The custom_mode object (mandatory).
 
-=item * C<power_state>: state of the VM. Can be POWERED_ON, POWERED_OFF, SUSPENDED.
+=item * C<endpoint> - The API endpoint path, e.g. C</vcenter/vm> (mandatory).
 
-=item * C<memory_size_MiB>: amount of memory allocated to the virtual machine.
+=item * C<method> - The HTTP method: C<GET>, C<POST>, C<PATCH> (default: C<GET>).
+
+=item * C<get_param> - Array reference of query parameters.
 
 =back
+
+=back
+
+=head2 get_vms_by_host
+
+    my $vms = $self->get_vms_by_host(%options);
+    my $vms = $self->get_vms_by_host(%options, get_param => ['power_states=POWERED_ON']);
+
+Retrieves all virtual machines grouped by ESX host. Delegates to C<api.pm>'s C<get_vms_by_host>,
+which works around the 4000-element API limit by issuing one request per ESX host.
+
+=over 4
+
+=item * C<%options> - A hash of options. The following keys are supported:
+
+=over 8
+
+=item * C<custom> - The custom_mode object, defined in C<api.pm> and declared in C<plugin.pm> (mandatory).
+
+=item * C<get_param> - An array reference of extra query parameters forwarded to each per-host
+VM request (e.g. C<['power_states=POWERED_ON']>).
+
+=back
+
+=back
+
+Returns a hash reference keyed by VM ID. Each value contains: C<vm>, C<name>, C<power_state>,
+C<cpu_count>, C<memory_size_MiB>, and C<host> (the ESX host ID the VM runs on).
 
 =cut
 

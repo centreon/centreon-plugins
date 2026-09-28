@@ -1,7 +1,27 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 //! Abstract syntax tree and expression evaluation.
 
 use crate::snmp::SnmpResult;
-use log::{info, warn};
+use log::{info, trace, warn};
 use std::str;
 
 /// An expression node in the AST.
@@ -35,7 +55,7 @@ pub enum Func {
 }
 
 /// Result of evaluating an expression: either a numeric value/vector or a string.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExprResult {
     /// A vector of floating-point values.
     Vector(Vec<f64>),
@@ -280,6 +300,7 @@ impl ExprResult {
     /// the numbers to strings before concatenation, padding to match lengths
     /// where necessary.
     pub fn join(&mut self, other: &ExprResult) {
+        trace!("[join] self: {:?} - other: {:?}", &self, &other);
         match self {
             ExprResult::Empty => match other {
                 ExprResult::StrVector(vv) => {
@@ -287,6 +308,11 @@ impl ExprResult {
                 }
                 ExprResult::Str(s) => {
                     *self = ExprResult::Str(s.clone());
+                }
+                ExprResult::Vector(vv) => {
+                    *self = ExprResult::StrVector(
+                        vv.iter().map(|n| crate::output::float_string(n)).collect(),
+                    );
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
@@ -341,7 +367,8 @@ impl ExprResult {
                     *s = format!("{}{}", s, ss);
                 }
                 ExprResult::Number(n) => {
-                    *s = format!("{}{:.2}", s, crate::output::float_string(n));
+                    trace!("[join] n: {:?}", &n);
+                    *s = format!("{}{}", s, crate::output::float_string(n));
                 }
                 _ => panic!("Unable to join objects others than strings"),
             },
@@ -350,28 +377,65 @@ impl ExprResult {
             }
         }
     }
+
+    pub fn values(&self) -> Vec<String> {
+        match self {
+            ExprResult::Vector(v) => v.iter().map(ToString::to_string).collect(),
+            ExprResult::Number(v) => vec![v.to_string()],
+            ExprResult::Str(v) => vec![v.clone()],
+            ExprResult::StrVector(v) => v.clone(),
+            ExprResult::Empty => Vec::new(),
+        }
+    }
 }
 
 impl<'input> Expr<'input> {
+    /// Check that all macros exist in the collected results
+    pub fn validate_macros(&self, collect: &Vec<SnmpResult>) -> Result<(), String> {
+        match self {
+            Expr::Id(key) => {
+                let k = str::from_utf8(key)
+                    .map_err(|_| return "Error reading a macro : invalid utf8 string")?;
+                for result in collect {
+                    if result.items.contains_key(k) {
+                        return Ok(());
+                    }
+                }
+                Err(format!("Undefined macro in expression: {{{}}}", k))
+            }
+            Expr::Number(_) => Ok(()),
+            Expr::OpPlus(left, right)
+            | Expr::OpMinus(left, right)
+            | Expr::OpStar(left, right)
+            | Expr::OpSlash(left, right) => {
+                left.validate_macros(collect)?;
+                right.validate_macros(collect)?;
+                Ok(())
+            }
+            Expr::Fn(_, expr) => expr.validate_macros(collect),
+        }
+    }
+
     /// Recursively evaluates this expression against the collected SNMP results.
     ///
     /// Resolves identifiers by searching through the `collect` vector, applies
     /// operators element-wise for vectors, and evaluates functions.
-    pub fn eval(&self, collect: &Vec<SnmpResult>) -> ExprResult {
+    pub fn eval(&self, collect: &Vec<SnmpResult>) -> Result<ExprResult, String> {
         match self {
-            Expr::Number(n) => ExprResult::Number(*n),
+            Expr::Number(n) => Ok(ExprResult::Number(*n)),
             Expr::Id(key) => {
-                let k = str::from_utf8(key).unwrap();
+                let k = str::from_utf8(key)
+                    .map_err(|_| return "Error while eval() an expression : invalid utf8 string")?;
                 for result in collect {
                     match result.items.get(k) {
                         Some(item) => match item {
                             ExprResult::Vector(n) => {
                                 if n.len() == 1 {
                                     info!("ID '{}' has value {}", k, n[0]);
-                                    return ExprResult::Number(n[0]);
+                                    return Ok(ExprResult::Number(n[0]));
                                 } else {
                                     info!("ID '{}' has value {:?}", k, n);
-                                    return ExprResult::Vector(n.clone());
+                                    return Ok(ExprResult::Vector(n.clone()));
                                 }
                             }
                             _ => panic!("Should be a number"),
@@ -379,17 +443,17 @@ impl<'input> Expr<'input> {
                         None => continue,
                     }
                 }
-                ExprResult::Number(0.0)
+                Ok(ExprResult::Number(0.0))
             }
-            Expr::OpPlus(left, right) => left.eval(collect) + right.eval(collect),
-            Expr::OpMinus(left, right) => left.eval(collect) - right.eval(collect),
-            Expr::OpStar(left, right) => left.eval(collect) * right.eval(collect),
-            Expr::OpSlash(left, right) => left.eval(collect) / right.eval(collect),
+            Expr::OpPlus(left, right) => Ok(left.eval(collect)? + right.eval(collect)?),
+            Expr::OpMinus(left, right) => Ok(left.eval(collect)? - right.eval(collect)?),
+            Expr::OpStar(left, right) => Ok(left.eval(collect)? * right.eval(collect)?),
+            Expr::OpSlash(left, right) => Ok(left.eval(collect)? / right.eval(collect)?),
             Expr::Fn(func, expr) => {
-                let v = expr.eval(collect);
+                let v = expr.eval(collect)?;
                 match func {
                     Func::Average => match v {
-                        ExprResult::Number(n) => ExprResult::Number(n),
+                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
                         ExprResult::Vector(v) => {
                             let mut sum = 0.0;
                             let mut count = 0;
@@ -400,26 +464,26 @@ impl<'input> Expr<'input> {
                                 }
                             }
                             if count > 0 {
-                                return ExprResult::Number(sum / count as f64);
+                                Ok(ExprResult::Number(sum / count as f64))
                             } else {
-                                return ExprResult::Number(f64::NAN);
+                                Ok(ExprResult::Number(f64::NAN))
                             }
                         }
                         _ => panic!("Invalid operation"),
                     },
                     Func::Min => match v {
-                        ExprResult::Number(n) => ExprResult::Number(n),
+                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
                         ExprResult::Vector(v) => {
                             let min = v.iter().cloned().fold(f64::INFINITY, f64::min);
-                            ExprResult::Number(min)
+                            Ok(ExprResult::Number(min))
                         }
                         _ => panic!("Invalid operation"),
                     },
                     Func::Max => match v {
-                        ExprResult::Number(n) => ExprResult::Number(n),
+                        ExprResult::Number(n) => Ok(ExprResult::Number(n)),
                         ExprResult::Vector(v) => {
                             let max = v.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-                            ExprResult::Number(max)
+                            Ok(ExprResult::Number(max))
                         }
                         _ => panic!("Invalid operation"),
                     },

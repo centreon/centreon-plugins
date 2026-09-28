@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Hardware-Storage-Hitachi-Eseries-Local",
+    "pkg_summary": "Centreon Plugin to monitor Hitachi E-Series storage via local CLI",
+    "plugin_name": "centreon_hitachi_eseries_local.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "storage/hitachi/eseries/local/"
+    ]
+}

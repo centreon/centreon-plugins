@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,7 +24,8 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
+use centreon::plugins::constants qw/:values :counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
@@ -129,12 +130,12 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { -10 => 1, -11 => 1 } },
-        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } }
+        { name => 'containers', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers are ok', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'containers_traffic', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok' }
     ];
 
     $self->{maps_counters}->{containers} = [
-         { label => 'container-status', type => 2, set => {
+         { label => 'container-status', type => COUNTER_KIND_TEXT, set => {
                 key_values => [ { name => 'state' }, { name => 'health' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -275,7 +276,10 @@ sub manage_selection {
             $self->{containers}->{$container_id}->{cpu_number} = scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}});
         }
 
-        $self->{containers}->{$container_id}->{memory_usage} = $result->{$container_id}->{Stats}->{memory_stats}->{usage} - $result->{$container_id}->{Stats}->{memory_stats}->{stats}->{inactive_file} // 0;
+        # https://docs.docker.com/reference/cli/docker/container/stats/
+        # On cgroup v1 hosts the cache usage to subtract is defined as total_inactive_file, on cgroup v2 hosts it is defined as inactive_file
+        my $inactive = $result->{$container_id}->{Stats}->{memory_stats}->{stats}->{total_inactive_file} // $result->{$container_id}->{Stats}->{memory_stats}->{stats}->{inactive_file} // 0;
+        $self->{containers}->{$container_id}->{memory_usage} = $result->{$container_id}->{Stats}->{memory_stats}->{usage} - $inactive;
         $self->{containers}->{$container_id}->{memory_total} = $result->{$container_id}->{Stats}->{memory_stats}->{limit};
 
         foreach my $interface (keys %{$result->{$container_id}->{Stats}->{networks}}) {
@@ -296,7 +300,7 @@ sub manage_selection {
 
     my $hostnames = $options{custom}->get_hostnames();
     $self->{cache_name} = 'docker_' . $self->{mode} . '_' . join('_', @$hostnames) . '_' . $options{custom}->get_port() . '_' .
-        md5_hex(
+        sha256_hex(
             (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
             (defined($self->{option_results}->{filter_name}) ? $self->{option_results}->{filter_name} : '') . '_' .
             (defined($self->{option_results}->{container_id}) ? $self->{option_results}->{container_id} : '') . '_' .
@@ -354,11 +358,53 @@ You can use the following variables: C<%{name}>, C<%{state}>, C<%{health}>.
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: C<%{name}>, C<%{state}>, C<%{health}>.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-cpu>
 
-Thresholds.
-Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out', 
-'cpu' (%), 'memory' (%).
+Threshold in percentage.
+
+=item B<--critical-cpu>
+
+Threshold in percentage.
+
+=item B<--warning-memory>
+
+Threshold.
+
+=item B<--critical-memory>
+
+Threshold.
+
+=item B<--warning-read-iops>
+
+Threshold in iops.
+
+=item B<--critical-read-iops>
+
+Threshold in iops.
+
+=item B<--warning-traffic-in>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-in>
+
+Threshold in b/s.
+
+=item B<--warning-traffic-out>
+
+Threshold in b/s.
+
+=item B<--critical-traffic-out>
+
+Threshold in b/s.
+
+=item B<--warning-write-iops>
+
+Threshold in iops.
+
+=item B<--critical-write-iops>
+
+Threshold in iops.
 
 =back
 

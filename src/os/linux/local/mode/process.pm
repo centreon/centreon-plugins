@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc qw/trim is_excluded change_seconds check_security_whitelist/;
 use centreon::plugins::constants qw(:values :counters);
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
 use Time::HiRes;
 
 sub custom_cpu_calc {
@@ -407,7 +407,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = 'linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
-        join '_', map { md5_hex($self->{option_results}->{$_}  || 'all') } qw(filter_counters filter_command filter_arg filter_state filter_ppid);
+        sha256_hex(join '_', map { $self->{option_results}->{$_}  || 'all' } qw(filter_counters filter_command filter_arg filter_state filter_ppid));
     $self->parse_output(custom => $options{custom});
 
     $self->add_extra_metrics(custom => $options{custom});
@@ -440,7 +440,7 @@ Monitor memory usage. It's inaccurate but it provides a trend.
 
 Monitor disk I/O.
 
-=item B<--add-open-files
+=item B<--add-open-files>
 
 Monitor open file usage per process.
 This functionality requires that the centreon_linux_local_process.pl script be installed

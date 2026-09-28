@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::constants qw/:values :counters/;
 
 sub custom_device_status_output {
     my ($self, %options) = @_;
@@ -73,11 +73,11 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'devices', type => 3, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok', 
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'devices', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_device_output', cb_long_output => 'device_long_output', indent_long_output => '    ', message_multiple => 'All devices are ok', 
             group => [
-                { name => 'status', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'vpns', type => 1, display_long => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All VPNs are ok', skipped_code => { -10 => 1 } }
+                { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
+                { name => 'vpns', type => COUNTER_MULTIPLE_SUBINSTANCE, display_long => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All VPNs are ok', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -96,7 +96,7 @@ sub set_counters {
     $self->{maps_counters}->{status} = [
         {
             label => 'device-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             unknown_default => '%{status} =~ /offline/i',
             set => {
                 key_values => [ { name => 'deviceStatus' }, { name => 'deviceMode' }, { name => 'deviceSerial' } ],
@@ -110,7 +110,7 @@ sub set_counters {
     $self->{maps_counters}->{vpns} = [
         {
             label => 'vpn-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             critical_default => '%{deviceStatus} =~ /online/i and %{vpnStatus} =~ /unreachable/i',
             set => {
                 key_values => [
@@ -286,10 +286,29 @@ You can use the following variables: %{vpnStatus}, %{vpnName}, %{vpnType}, %{dev
 Define the conditions to match for the status to be CRITICAL (default: '%{deviceStatus} =~ /online/i and %{vpnStatus} =~ /unreachable/i').
 You can use the following variables: %{vpnStatus}, %{vpnName}, %{vpnType}, %{deviceStatus}, %{deviceSerial}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-device-status>
 
-Thresholds.
-Can be: 'total-unreachable'.
+Threshold.
+
+=item B<--critical-device-status>
+
+Threshold.
+
+=item B<--warning-total-unreachable>
+
+Threshold.
+
+=item B<--critical-total-unreachable>
+
+Threshold.
+
+=item B<--warning-vpn-status>
+
+Threshold.
+
+=item B<--critical-vpn-status>
+
+Threshold.
 
 =back
 

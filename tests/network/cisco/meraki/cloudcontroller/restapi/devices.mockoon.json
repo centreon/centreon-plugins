@@ -1,0 +1,528 @@
+{
+    "uuid": "05d4e801-fda9-4df8-bb11-72a9561d1df5",
+    "lastMigration": 33,
+    "name": "Meraki Simpl",
+    "endpointPrefix": "api/v1",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "0.0.0.0",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "009fea89-c10f-4a24-a454-e6212945c126",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations",
+            "responses": [
+                {
+                    "uuid": "2d63a658-b868-4db0-978e-c4610ce1ba96",
+                    "body": "[\r\n    {\r\n      \"id\": \"ORGID\",\r\n      \"name\": \"1001 VIES HABITAT\",\r\n      \"url\": \"https://localhost/o/NQkU0cWc/manage/organization/overview\",\r\n      \"samlConsumerUrl\": \"https://172.16.20.58/saml/login/NQkU0cWc/RV3RrcB2UCVa\",\r\n      \"samlConsumerUrls\": [\r\n        \"https://localhost/saml/login/NQkU0cWc/RV3RrcB2UCVa\"\r\n      ],\r\n      \"api\": {\r\n        \"enabled\": true\r\n      },\r\n      \"licensing\": {\r\n        \"model\": \"per-device\"\r\n      },\r\n      \"cloud\": {\r\n        \"region\": {\r\n          \"name\": \"Europe\",\r\n          \"host\": {\r\n            \"name\": \"Europe\"\r\n          }\r\n        }\r\n      },\r\n      \"management\": {\r\n        \"details\": [\r\n          {\r\n            \"name\": \"customer number\",\r\n            \"value\": \"56417983\"\r\n          }\r\n        ]\r\n      }\r\n    }\r\n  ]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "14d04e40-8fab-4271-a156-e2d1ce2f6989",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations/ORGID/apiRequests/overview",
+            "responses": [
+                {
+                    "uuid": "2ac6540f-864e-468e-aa0f-9f3178fdb065",
+                    "body": "{\n  \"responseCodeCounts\": {\n    \"200\": 10,\n    \"201\": 0,\n    \"202\": 0,\n    \"203\": 0,\n    \"204\": 0,\n    \"205\": 0,\n    \"206\": 0,\n    \"207\": 0,\n    \"208\": 0,\n    \"226\": 0,\n    \"300\": 0,\n    \"301\": 0,\n    \"302\": 0,\n    \"303\": 0,\n    \"304\": 0,\n    \"305\": 0,\n    \"306\": 0,\n    \"307\": 0,\n    \"308\": 0,\n    \"400\": 0,\n    \"401\": 0,\n    \"402\": 0,\n    \"403\": 0,\n    \"404\": 0,\n    \"405\": 0,\n    \"406\": 0,\n    \"407\": 0,\n    \"408\": 0,\n    \"409\": 0,\n    \"410\": 0,\n    \"411\": 0,\n    \"412\": 0,\n    \"413\": 0,\n    \"414\": 0,\n    \"415\": 0,\n    \"416\": 0,\n    \"417\": 0,\n    \"421\": 0,\n    \"422\": 0,\n    \"423\": 0,\n    \"424\": 0,\n    \"425\": 0,\n    \"426\": 0,\n    \"428\": 0,\n    \"429\": 0,\n    \"431\": 0,\n    \"451\": 0,\n    \"500\": 0\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "9119bc50-621d-48e5-b396-6ee4974bc1f9",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations/ORGID/devices",
+            "responses": [
+                {
+                    "uuid": "467e877d-ff39-4b89-bef3-9dd07f4b99e0",
+                    "body": "[\r\n    {\r\n        \"name\": \"My AP MR\",\r\n        \"lat\": 37.4180951010362,\r\n        \"lng\": -122.098531723022,\r\n        \"address\": \"Rue Chateau des rentiers\",\r\n        \"notes\": \"My AP's note\",\r\n        \"tags\": [ \"recently-added\" ],\r\n        \"networkId\": \"NETWORKID\",\r\n        \"serial\": \"MRID\",\r\n        \"model\": \"MRXX\",\r\n        \"imei\": \"123456789000000\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"lanIp\": \"1.2.3.4\",\r\n        \"firmware\": \"wireless-25-14\",\r\n        \"productType\": \"wireless\",\r\n        \"details\": [\r\n            {\r\n                \"name\": \"Catalyst serial\",\r\n                \"value\": \"123ABC\"\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"name\": \"My AP MG\",\r\n        \"lat\": 37.4180951010361,\r\n        \"lng\": -122.098531723021,\r\n        \"address\": \"Rue Chateau des rentiers\",\r\n        \"notes\": \"My AP's note\",\r\n        \"tags\": [ \"recently-added\" ],\r\n        \"networkId\": \"NETWORKID\",\r\n        \"serial\": \"MGID\",\r\n        \"model\": \"MGXX\",\r\n        \"imei\": \"123456789000001\",\r\n        \"mac\": \"00:11:22:33:44:56\",\r\n        \"lanIp\": \"1.2.3.5\",\r\n        \"firmware\": \"wireless-25-14\",\r\n        \"productType\": \"wireless\",\r\n        \"details\": [\r\n            {\r\n                \"name\": \"Catalyst serial\",\r\n                \"value\": \"123ABC\"\r\n            }\r\n        ]\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "",
+                            "value": "",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "f15a0d35-efa0-4167-9d62-ed591cf2a38d",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations/ORGID/networks",
+            "responses": [
+                {
+                    "uuid": "5064887d-da60-4829-8d78-cc6aa204c52b",
+                    "body": "[\r\n    {\r\n        \"id\": \"NETWORKID\",\r\n        \"organizationId\": \"123456\",\r\n        \"name\": \"Main Office\",\r\n        \"productTypes\": [\r\n            \"appliance\",\r\n            \"switch\",\r\n            \"wireless\"\r\n        ],\r\n        \"timeZone\": \"Europe/Paris\",\r\n        \"tags\": [ \"tag1\" ],\r\n        \"enrollmentString\": \"my-enrollment-string\",\r\n        \"url\": \"https://n1.meraki.com//n//manage/nodes/list\",\r\n        \"notes\": \"Additional description of the network\",\r\n        \"isBoundToConfigTemplate\": false\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "9a8ba0fb-9403-4f9f-9b0f-29e98fb08b80",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations/ORGID/devices/statuses",
+            "responses": [
+                {
+                    "uuid": "d13c5d3f-813c-4cdb-b6ca-f45a0788e94c",
+                    "body": "[\r\n    {\r\n        \"name\": \"My AP MR\",\r\n        \"serial\": \"MRID\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"publicIp\": \"123.123.123.1\",\r\n        \"networkId\": \"NETWORKID\",\r\n        \"status\": \"online\",\r\n        \"lastReportedAt\": \"2018-02-11T00:00:00.090210Z\",\r\n        \"lanIp\": \"1.2.3.4\",\r\n        \"gateway\": \"1.2.3.6\",\r\n        \"ipType\": \"dhcp\",\r\n        \"primaryDns\": \"8.8.8.8\",\r\n        \"secondaryDns\": \"8.8.4.4\",\r\n        \"productType\": \"wireless\",\r\n        \"components\": {\r\n            \"powerSupplies\": [\r\n                {\r\n                    \"slot\": 1,\r\n                    \"serial\": \"QABC-1234-5678\",\r\n                    \"model\": \"PWR-MS320-1025WAC\",\r\n                    \"status\": \"powering\",\r\n                    \"poe\": {\r\n                        \"unit\": \"watts\",\r\n                        \"maximum\": 740\r\n                    }\r\n                }\r\n            ]\r\n        },\r\n        \"model\": \"MRXX\",\r\n        \"tags\": [ \"tag1\", \"tag2\" ]\r\n    },\r\n    {\r\n        \"name\": \"My AP MG\",\r\n        \"serial\": \"MGID\",\r\n        \"mac\": \"00:11:22:33:44:55\",\r\n        \"publicIp\": \"123.123.123.1\",\r\n        \"networkId\": \"NETWORKID\",\r\n        \"status\": \"online\",\r\n        \"lastReportedAt\": \"2018-02-11T00:00:00.090210Z\",\r\n        \"lanIp\": \"1.2.3.5\",\r\n        \"gateway\": \"1.2.3.6\",\r\n        \"ipType\": \"dhcp\",\r\n        \"primaryDns\": \"8.8.8.8\",\r\n        \"secondaryDns\": \"8.8.4.4\",\r\n        \"productType\": \"wireless\",\r\n        \"components\": {\r\n            \"powerSupplies\": [\r\n                {\r\n                    \"slot\": 1,\r\n                    \"serial\": \"QABC-1234-5678\",\r\n                    \"model\": \"PWR-MS320-1025WAC\",\r\n                    \"status\": \"powering\",\r\n                    \"poe\": {\r\n                        \"unit\": \"watts\",\r\n                        \"maximum\": 740\r\n                    }\r\n                }\r\n            ]\r\n        },\r\n        \"model\": \"MGXX\",\r\n        \"tags\": [ \"tag1\", \"tag2\" ]\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "6f8f9b77-06ea-4aec-98e8-6f65b3610208",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations/ORGID/appliance/vpn/statuses",
+            "responses": [
+                {
+                    "uuid": "f27acedd-c48a-4577-ac58-d91084888d05",
+                    "body": "[\r\n          {\r\n              \"networkId\": \"NETWORKID\",\r\n              \"networkName\": \"San Francisco Office\",\r\n              \"deviceSerial\": \"Q234-ABCD-1234\",\r\n              \"deviceStatus\": \"online\",\r\n              \"uplinks\": [\r\n                  {\r\n                      \"interface\": \"wan1\",\r\n                      \"publicIp\": \"1.2.3.4\"\r\n                  }\r\n              ],\r\n              \"vpnMode\": \"hub\",\r\n              \"exportedSubnets\": [\r\n                  {\r\n                      \"subnet\": \"192.168.0.0/24\",\r\n                      \"name\": \"sales-vlan\"\r\n                  }\r\n              ],\r\n              \"merakiVpnPeers\": [\r\n                  {\r\n                      \"networkId\": \"L_1234\",\r\n                      \"networkName\": \"New York Office\",\r\n                      \"reachability\": \"reachable\"\r\n                  }\r\n              ],\r\n              \"thirdPartyVpnPeers\": [\r\n                  {\r\n                      \"name\": \"Tokyo Office\",\r\n                      \"publicIp\": \"222.111.222.111\",\r\n                      \"reachability\": \"reachable\"\r\n                  }\r\n              ]\r\n          }\r\n      ]\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "a83e89c3-d3e3-4158-9f29-3711508988da",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "organizations/ORGID/uplinks/statuses",
+            "responses": [
+                {
+                    "uuid": "fdf392f3-06cf-46e0-8827-77cf0e6e3071",
+                    "body": "[\r\n    {\r\n        \"networkId\": \"NETWORKID\",\r\n        \"serial\": \"DEVICESERIAL\",\r\n        \"model\": \"MX68C\",\r\n        \"lastReportedAt\": \"2018-02-11T00:00:00Z\",\r\n        \"highAvailability\": {\r\n            \"enabled\": true,\r\n            \"role\": \"primary\"\r\n        },\r\n        \"uplinks\": [\r\n            {\r\n                \"interface\": \"wan1\",\r\n                \"status\": \"active\",\r\n                \"ip\": \"1.2.3.4\",\r\n                \"gateway\": \"1.2.3.5\",\r\n                \"publicIp\": \"123.123.123.1\",\r\n                \"primaryDns\": \"8.8.8.8\",\r\n                \"secondaryDns\": \"8.8.4.4\",\r\n                \"ipAssignedBy\": \"static\",\r\n                \"provider\": \"at&amp;t\",\r\n                \"signalStat\": {\r\n                    \"rsrp\": \"-120\",\r\n                    \"rsrq\": \"-13\"\r\n                },\r\n                \"mcc\": \"123\",\r\n                \"mnc\": \"123\",\r\n                \"roaming\": { \"status\": \"home\" },\r\n                \"connectionType\": \"4g\",\r\n                \"apn\": \"internet\",\r\n                \"dns1\": \"111.111.111.111\",\r\n                \"dns2\": \"222.222.222.222\",\r\n                \"signalType\": \"4G\",\r\n                \"mtu\": 1500,\r\n                \"iccid\": \"123456789\",\r\n                \"imsi\": \"123456789012345\",\r\n                \"msisdn\": \"123456789012345\"\r\n            }\r\n        ]\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "e5a4597f-3d84-4277-9bd7-c695676fd030",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "networks/NETWORKID/wireless/devices/connectionStats",
+            "responses": [
+                {
+                    "uuid": "236cf15c-860c-47a4-a3b5-15fdb78e0346",
+                    "body": "[\r\n    {\r\n        \"serial\": \"MGID\",\r\n        \"connectionStats\": {\r\n            \"assoc\": 0,\r\n            \"auth\": 1,\r\n            \"dhcp\": 0,\r\n            \"dns\": 0,\r\n            \"success\": 43\r\n        }\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "98befe4b-bc35-4f34-81a7-9b426e62b2e9",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "devices/MGID/clients",
+            "responses": [
+                {
+                    "uuid": "e475ed9a-3361-40a0-b778-1c75c72caf40",
+                    "body": "[\r\n    {\r\n        \"id\": \"k74272e\",\r\n        \"mac\": \"22:33:44:55:66:77\",\r\n        \"description\": \"Miles's phone\",\r\n        \"mdnsName\": \"Miles's phone\",\r\n        \"dhcpHostname\": \"MilesPhone\",\r\n        \"user\": \"milesmeraki\",\r\n        \"ip\": \"1.2.3.4\",\r\n        \"vlan\": \"100\",\r\n        \"namedVlan\": \"My VLAN\",\r\n        \"switchport\": \"My switch port\",\r\n        \"adaptivePolicyGroup\": \"101\",\r\n        \"usage\": { \"sent\": 138, \"recv\": 61 }\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "885c6cdf-82b5-4850-8e50-b02762b1f3a2",
+                    "body": "[\r\n    {\r\n        \"id\": \"k74272e\",\r\n        \"mac\": \"22:33:44:55:66:77\",\r\n        \"description\": \"Miles's phone\",\r\n        \"mdnsName\": \"Miles's phone\",\r\n        \"dhcpHostname\": \"MilesPhone\",\r\n        \"user\": \"milesmeraki\",\r\n        \"ip\": \"1.2.3.4\",\r\n        \"vlan\": \"100\",\r\n        \"namedVlan\": \"My VLAN\",\r\n        \"switchport\": \"My switch port\",\r\n        \"adaptivePolicyGroup\": \"101\",\r\n        \"usage\": { \"sent\": 200, \"recv\": 30 }\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "a6e0d6c5-d46f-4b6a-934b-a0e8ec410c86",
+                    "body": "[\r\n    {\r\n        \"id\": \"k74272e\",\r\n        \"mac\": \"22:33:44:55:66:77\",\r\n        \"description\": \"Miles's phone\",\r\n        \"mdnsName\": \"Miles's phone\",\r\n        \"dhcpHostname\": \"MilesPhone\",\r\n        \"user\": \"milesmeraki\",\r\n        \"ip\": \"1.2.3.4\",\r\n        \"vlan\": \"100\",\r\n        \"namedVlan\": \"My VLAN\",\r\n        \"switchport\": \"My switch port\",\r\n        \"adaptivePolicyGroup\": \"101\",\r\n        \"usage\": { \"sent\": 400, \"recv\": 67 }\r\n    }\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": "SEQUENTIAL",
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "3424a53e-4c34-4997-8db2-17ddf7154810",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "devices/MRID/wireless/connectionStats",
+            "responses": [
+                {
+                    "uuid": "a8113f77-d9a7-4531-aa87-6123a3b800f8",
+                    "body": "{\r\n    \"serial\": \"MRXX\",\r\n    \"connectionStats\": {\r\n        \"assoc\": 0,\r\n        \"auth\": 1,\r\n        \"dhcp\": 0,\r\n        \"dns\": 0,\r\n        \"success\": 40\r\n    }\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "654bf7e0-b226-406d-9a2d-e5f26d3d7474",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "networks/NETWORKID/wireless/usageHistory",
+            "responses": [
+                {
+                    "uuid": "7258f9c8-ab0f-4b0f-ba40-bbbd507b5e17",
+                    "body": "[\r\n  {\"startTs\": \"2025-12-15T13:15:00Z\", \"endTs\": \"2025-12-15T13:20:00Z\", \"totalKbps\": 32783, \"sentKbps\": 9366, \"receivedKbps\": 23417},\r\n  {\"startTs\": \"2025-12-15T13:20:00Z\", \"endTs\": \"2025-12-15T13:25:00Z\", \"totalKbps\": 10554, \"sentKbps\": 3431, \"receivedKbps\": 7123},\r\n  {\"startTs\": \"2025-12-15T13:25:00Z\", \"endTs\": \"2025-12-15T13:30:00Z\", \"totalKbps\": 40030, \"sentKbps\": 11817, \"receivedKbps\": 28213}\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "a9915e9b-f73e-4b39-9703-51af2837b9c3",
+                    "body": "[\r\n  {\"startTs\": \"2025-12-15T13:30:00Z\", \"endTs\": \"2025-12-15T13:35:00Z\", \"totalKbps\": 30966, \"sentKbps\": 9555, \"receivedKbps\": 21411},\r\n  {\"startTs\": \"2025-12-15T13:35:00Z\", \"endTs\": \"2025-12-15T13:40:00Z\", \"totalKbps\": 22871, \"sentKbps\": 8206, \"receivedKbps\": 14665},\r\n  {\"startTs\": \"2025-12-15T13:40:00Z\", \"endTs\": \"2025-12-15T13:45:00Z\", \"totalKbps\": 22305, \"sentKbps\": 9039, \"receivedKbps\": 13266},\r\n  {\"startTs\": \"2025-12-15T13:45:00Z\", \"endTs\": \"2025-12-15T13:50:00Z\", \"totalKbps\": 30727, \"sentKbps\": 13940, \"receivedKbps\": 16786}\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "6817994c-b72d-4cf9-af86-f92f42ed5a77",
+                    "body": "[\r\n  {\"startTs\": \"2025-12-15T13:55:00Z\", \"endTs\": \"2025-12-15T14:00:00Z\", \"totalKbps\": 23379, \"sentKbps\": 6421, \"receivedKbps\": 16958},\r\n  {\"startTs\": \"2025-12-15T14:00:00Z\", \"endTs\": \"2025-12-15T14:05:00Z\", \"totalKbps\": 21344, \"sentKbps\": 7296, \"receivedKbps\": 14048},\r\n  {\"startTs\": \"2025-12-15T14:05:00Z\", \"endTs\": \"2025-12-15T14:10:00Z\", \"totalKbps\": 26661, \"sentKbps\": 12897, \"receivedKbps\": 13764},\r\n  {\"startTs\": \"2025-12-15T14:10:00Z\", \"endTs\": \"2025-12-15T14:15:00Z\", \"totalKbps\": 22659, \"sentKbps\": 11921, \"receivedKbps\": 10739}\r\n]",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": "SEQUENTIAL",
+            "streamingMode": null,
+            "streamingInterval": 0
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "009fea89-c10f-4a24-a454-e6212945c126"
+        },
+        {
+            "type": "route",
+            "uuid": "14d04e40-8fab-4271-a156-e2d1ce2f6989"
+        },
+        {
+            "type": "route",
+            "uuid": "9119bc50-621d-48e5-b396-6ee4974bc1f9"
+        },
+        {
+            "type": "route",
+            "uuid": "f15a0d35-efa0-4167-9d62-ed591cf2a38d"
+        },
+        {
+            "type": "route",
+            "uuid": "9a8ba0fb-9403-4f9f-9b0f-29e98fb08b80"
+        },
+        {
+            "type": "route",
+            "uuid": "6f8f9b77-06ea-4aec-98e8-6f65b3610208"
+        },
+        {
+            "type": "route",
+            "uuid": "a83e89c3-d3e3-4158-9f29-3711508988da"
+        },
+        {
+            "type": "route",
+            "uuid": "e5a4597f-3d84-4277-9bd7-c695676fd030"
+        },
+        {
+            "type": "route",
+            "uuid": "98befe4b-bc35-4f34-81a7-9b426e62b2e9"
+        },
+        {
+            "type": "route",
+            "uuid": "3424a53e-4c34-4997-8db2-17ddf7154810"
+        },
+        {
+            "type": "route",
+            "uuid": "654bf7e0-b226-406d-9a2d-e5f26d3d7474"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+        },
+        {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+        },
+        {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
+}

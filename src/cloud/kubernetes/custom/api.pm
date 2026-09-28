@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,9 +23,7 @@ package cloud::kubernetes::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use DateTime;
 use JSON::XS;
-use URI::Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -327,12 +325,37 @@ sub kubernetes_list_pods {
     return $response;
 }
 
+sub kubernetes_list_pod_metrics {
+    my ($self, %options) = @_;
+
+    my $url_path = $self->{namespace} ne ''
+        ? '/apis/metrics.k8s.io/v1beta1/namespaces/' . $self->{namespace} . '/pods'
+        : '/apis/metrics.k8s.io/v1beta1/pods';
+
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+
+    return $response->{items};
+}
+
 sub kubernetes_list_pvs {
     my ($self, %options) = @_;
 
     my $response = $self->request_api_paginate(
         method => 'GET',
         url_path => '/api/v1/persistentvolumes'
+    );
+
+    return $response;
+}
+
+sub kubernetes_list_resourcequotas {
+    my ($self, %options) = @_;
+
+    my $url_path = $self->{namespace} ne '' ? '/api/v1/namespaces/' . $self->{namespace} . '/resourcequotas' : '/api/v1/resourcequotas';
+
+    my $response = $self->request_api_paginate(
+        method => 'GET',
+        url_path => $url_path
     );
 
     return $response;

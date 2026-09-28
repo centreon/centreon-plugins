@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+set -eu
+
+# Pre-push dispatcher: runs all executable scripts in pre-push.d/.
+#
+# Each script receives the same stdin (list of refs being pushed) and the
+# same arguments. A non-zero exit from any script aborts the push.
+
+hook_dir="$(cd "$(dirname "$0")" && pwd)"
+script_dir="${hook_dir}/pre-push.d"
+
+# Check if directory exist
+if [ ! -d "$script_dir" ]; then
+  echo "Error: directory '$script_dir' does not exist." >&2
+  exit 0
+fi
+
+# buffer stdin so every script gets the same input
+input=$(cat)
+
+exit_code=0
+for script in "$script_dir"/*; do
+  # Check if scripts are executable and run them
+  [ -x "$script" ] || continue
+  echo "$input" | "$script" "$@" || exit_code=$?
+done
+
+exit $exit_code

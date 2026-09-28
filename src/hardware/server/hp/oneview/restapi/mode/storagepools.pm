@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package hardware::server::hp::oneview::restapi::mode::storagepools;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:values :counters);
 
 use strict;
 use warnings;
@@ -51,7 +52,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All storage pools are ok' },
+        { name => 'pool', type => COUNTER_TYPE_INSTANCE, prefix_output => "Storage pool '%{display}' ", message_multiple => 'All storage pools are ok' },
     ];
     
     $self->{maps_counters}->{pool} = [
@@ -115,16 +116,10 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-sub prefix_pool_output {
-    my ($self, %options) = @_;
-    
-    return "Storage pool '" . $options{instance_value}->{display} . "' ";
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/rest/storage-pools?start=0&count=-1');
+    my $results = $options{custom}->request_api_paginated(url_path => '/rest/storage-pools?start=0&count=-1');
 
     $self->{pool} = {};
     foreach (@{$results->{members}}) {
@@ -185,10 +180,29 @@ You can use the following variables: %{status}, %{display}
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /critical/i').
 You can use the following variables: %{status}, %{display}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-usage>
 
-Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Threshold in bytes.
+
+=item B<--critical-usage>
+
+Threshold in bytes.
+
+=item B<--warning-usage-free>
+
+Threshold in bytes.
+
+=item B<--critical-usage-free>
+
+Threshold in bytes.
+
+=item B<--warning-usage-prct>
+
+Threshold in percentage.
+
+=item B<--critical-usage-prct>
+
+Threshold in percentage.
 
 =back
 

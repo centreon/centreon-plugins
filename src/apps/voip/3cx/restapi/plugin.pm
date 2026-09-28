@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     $self->{version} = '1.0';
     $self->{modes} = {
         'extension' => 'apps::voip::3cx::restapi::mode::extension',
+        'license'   => 'apps::voip::3cx::restapi::mode::license',
         'system'    => 'apps::voip::3cx::restapi::mode::system'
     };
 
@@ -48,7 +49,7 @@ __END__
 
 Monitor 3CX resources through its HTTPS API.
 
-Requirements: at least 3CX 15.5.
+Requirements: at least 3CX 20.0.
 
 =over 8
 

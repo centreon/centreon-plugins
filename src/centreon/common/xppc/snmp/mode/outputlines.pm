@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -40,48 +41,53 @@ sub prefix_global_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } }
+        {
+            name             => 'global',
+            type             => COUNTER_TYPE_GLOBAL,
+            cb_prefix_output => 'prefix_global_output',
+            skipped_code     => { NO_VALUE() => 1 }
+        }
     ];
 
     $self->{maps_counters}->{global} = [
         {
-            label => 'status',
-            type => 2,
-            unknown_default => '%{status} =~ /unknown/i',
-            warning_default => '%{status} =~ /rebooting|onBypass/i',
+            label            => 'status',
+            type             => COUNTER_KIND_TEXT,
+            unknown_default  => '%{status} =~ /unknown/i',
+            warning_default  => '%{status} =~ /rebooting|onBypass/i',
             critical_default => '%{status} =~ /onBattery/i',
-            set => {
-                key_values => [ { name => 'status' } ],
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+            set              => {
+                key_values                     => [ { name => 'status' } ],
+                closure_custom_output          => $self->can('custom_status_output'),
+                closure_custom_perfdata        => sub {return 0;},
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'load', nlabel => 'lines.output.load.percentage', set => {
-                key_values => [ { name => 'upsSmartOutputLoad', no_value => -1 } ],
-                output_template => 'load: %.2f %%',
-                perfdatas => [
-                    { template => '%.2f', min => 0, max => 100 }
-                ]
-            }
+            key_values      => [ { name => 'upsSmartOutputLoad', no_value => -1 } ],
+            output_template => 'load: %.2f %%',
+            perfdatas       => [
+                { template => '%.2f', min => 0, max => 100 }
+            ]
+        }
         },
-        { label => 'frequence', nlabel => 'lines.output.frequence.hertz', set => {
-                key_values => [ { name => 'upsSmartOutputFrequency', no_value => 0 } ],
-                output_template => 'frequence: %.2f Hz',
-                perfdatas => [
-                    { template => '%.2f', unit => 'Hz' }
-                ]
-            }
+        { label => 'frequency', nlabel => 'lines.output.frequency.hertz', set => {
+            key_values      => [ { name => 'upsSmartOutputFrequency', no_value => 0 } ],
+            output_template => 'frequency: %.2f Hz',
+            perfdatas       => [
+                { template => '%.2f', unit => 'Hz' }
+            ]
+        }
         },
         { label => 'voltage', nlabel => 'lines.output.voltage.volt', set => {
-                key_values => [ { name => 'upsSmartOutputVoltage', no_value => 0 } ],
-                output_template => 'voltage: %s V',
-                perfdatas => [
-                    { template => '%s', unit => 'V' }
-                ]
-            }
+            key_values      => [ { name => 'upsSmartOutputVoltage', no_value => 0 } ],
+            output_template => 'voltage: %s V',
+            perfdatas       => [
+                { template => '%s', unit => 'V' }
+            ]
+        }
         }
     ];
 }
@@ -92,6 +98,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'warning-frequence:s'                      => { redirect => 'warning-lines-output-frequency-hertz' },
+        'warning-lines-output-frequence-hertz:s'   => { redirect => 'warning-lines-output-frequency-hertz' },
+        'critical-frequence:s'                     => { redirect => 'critical-lines-output-frequency-hertz' },
+        'critical-lines-output-frequence-hertz:s'  => { redirect => 'critical-lines-output-frequency-hertz' }
     });
 
     return $self;
@@ -107,22 +117,26 @@ my $map_status = {
 
 my $mapping = {
     upsBaseOutputStatus     => { oid => '.1.3.6.1.4.1.935.1.1.1.4.1.1', map => $map_status },
-    upsSmartOutputVoltage   => { oid => '.1.3.6.1.4.1.935.1.1.1.4.2.1' }, # in dV
-    upsSmartOutputFrequency => { oid => '.1.3.6.1.4.1.935.1.1.1.4.2.2' }, # in tenth of Hz
-    upsSmartOutputLoad      => { oid => '.1.3.6.1.4.1.935.1.1.1.4.2.3' }  # in %
+    upsSmartOutputVoltage   => { oid => '.1.3.6.1.4.1.935.1.1.1.4.2.1' },# in dV
+    upsSmartOutputFrequency => { oid => '.1.3.6.1.4.1.935.1.1.1.4.2.2' },# in tenth of Hz
+    upsSmartOutputLoad      => { oid => '.1.3.6.1.4.1.935.1.1.1.4.2.3' }# in %
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        oids         => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
     );
 
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    $result->{upsSmartOutputFrequency} = defined($result->{upsSmartOutputFrequency}) ? $result->{upsSmartOutputFrequency} * 0.1 : 0;
-    $result->{upsSmartOutputVoltage} = defined($result->{upsSmartOutputVoltage}) ? $result->{upsSmartOutputVoltage} * 0.1 : 0;
+    $result->{upsSmartOutputFrequency} = defined($result->{upsSmartOutputFrequency}) ?
+        $result->{upsSmartOutputFrequency} * 0.1 :
+        0;
+    $result->{upsSmartOutputVoltage} = defined($result->{upsSmartOutputVoltage}) ?
+        $result->{upsSmartOutputVoltage} * 0.1 :
+        0;
     $result->{status} = $result->{upsBaseOutputStatus};
 
     $self->{global} = $result;
@@ -152,10 +166,29 @@ You can use the following variables: %{status}.
 Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /onBattery/i').
 You can use the following variables: %{status}.
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-load>
 
-Thresholds.
-Can be: 'load', 'voltage', 'current', 'power'.
+Threshold.
+
+=item B<--critical-load>
+
+Threshold.
+
+=item B<--warning-voltage>
+
+Threshold in Volts.
+
+=item B<--critical-voltage>
+
+Threshold in Volts.
+
+=item B<--warning-frequency>
+
+Threshold in Hertz.
+
+=item B<--critical-frequency>
+
+Threshold in Hertz.
 
 =back
 

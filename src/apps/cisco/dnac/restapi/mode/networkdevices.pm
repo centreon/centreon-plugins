@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,6 +20,7 @@
 
 package apps::cisco::dnac::restapi::mode::networkdevices;
 
+use centreon::plugins::constants qw/:counters :values/;
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
@@ -36,59 +37,17 @@ sub custom_health_output {
     );
 }
 
-sub category_long_output {
-    my ($self, %options) = @_;
-
-    return "checking network category '" . $options{instance_value}->{name} . "'";
-}
-
-sub prefix_category_output {
-    my ($self, %options) = @_;
-
-    return "Network category '" . $options{instance_value}->{name} . "' ";
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Network devices ';
-}
-
-sub prefix_good_output {
-    my ($self, %options) = @_;
-
-    return 'good devices: ';
-}
-
-sub prefix_fair_output {
-    my ($self, %options) = @_;
-
-    return 'fair devices: ';
-}
-
-sub prefix_bad_output {
-    my ($self, %options) = @_;
-
-    return 'bad devices: ';
-}
-
-sub prefix_unmonitored_output {
-    my ($self, %options) = @_;
-
-    return 'unmonitored devices: ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
-        { name => 'categories', type => 3, cb_prefix_output => 'prefix_categorie_output', cb_long_output => 'category_long_output', indent_long_output => '    ', message_multiple => 'All network categories are ok',
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Network devices ', skipped_code => { NO_VALUE() => 1 } },
+        { name => 'categories', type => COUNTER_TYPE_MULTIPLE, prefix_output => "Network category '%{name}' ", long_output => "checking network category '%{name}'", indent_long_output => '    ', message_multiple => 'All network categories are ok',
             group => [
-                { name => 'good', type => 0, cb_prefix_output => 'prefix_good_output', skipped_code => { -10 => 1 } },
-                { name => 'fair', type => 0, cb_prefix_output => 'prefix_fair_output', skipped_code => { -10 => 1 } },
-                { name => 'bad', type => 0, cb_prefix_output => 'prefix_bad_output', skipped_code => { -10 => 1 } },
-                { name => 'unmonitored', type => 0, cb_prefix_output => 'prefix_unmonitored_output', skipped_code => { -10 => 1 } }
+                { name => 'good', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'good devices: ', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'fair', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'fair devices: ', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'bad', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'bad devices: ', skipped_code => { NO_VALUE() => 1 } },
+                { name => 'unmonitored', type => COUNTER_MULTIPLE_INSTANCE, prefix_output => 'unmonitored devices: ', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -115,7 +74,7 @@ sub set_counters {
                 }
             },
             { label => 'category-devices-health-' . $_ . '-usage-prct', nlabel => 'category.network.devices.health.' . $_ . '.percentage', display_ok => 0, set => {
-                    key_values => [ { name => 'count' }, { name => 'prct' }, { name => 'total' } ],
+                    key_values => [ { name => 'prct' }, { name => 'count' }, { name => 'total' } ],
                     closure_custom_output => $self->can('custom_health_output'),
                     perfdatas => [
                         { template => '%.2f', min => 0, max => 100, label_extra_instance => 1 }
@@ -179,7 +138,7 @@ sub manage_selection {
                 name => $_->{category},
                 total => $_->{totalCount},
                 count => $_->{unmonCount},
-                prct => $_->{unmonCount} * 100 / $_->{totalCount}
+                prct => defined($_->{unmonCount}) ? $_->{unmonCount} * 100 / $_->{totalCount} : 0
             }
         };
 
@@ -201,14 +160,77 @@ Check network devices by categories.
 
 Filter categories by name (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-category-devices-health-bad-usage>
 
-Thresholds.
-Can be: 'category-devices-health-good-usage', 'category-devices-health-good-usage-prct',
-'category-devices-health-unmonitored-usage', 'category-devices-health-unmonitored-usage-prct', 
-'category-devices-health-fair-usage', 'category-devices-health-fair-usage-prct',
-'category-devices-health-bad-usage', 'category-devices-health-bad-usage-prct', 
-'devices-total'.
+Threshold.
+
+=item B<--critical-category-devices-health-bad-usage>
+
+Threshold.
+
+=item B<--warning-category-devices-health-bad-usage-prct>
+
+Threshold.
+
+=item B<--critical-category-devices-health-bad-usage-prct>
+
+Threshold.
+
+=item B<--warning-category-devices-health-fair-usage>
+
+Threshold.
+
+=item B<--critical-category-devices-health-fair-usage>
+
+Threshold.
+
+=item B<--warning-category-devices-health-fair-usage-prct>
+
+Threshold.
+
+=item B<--critical-category-devices-health-fair-usage-prct>
+
+Threshold.
+
+=item B<--warning-category-devices-health-good-usage>
+
+Threshold.
+
+=item B<--critical-category-devices-health-good-usage>
+
+Threshold.
+
+=item B<--warning-category-devices-health-good-usage-prct>
+
+Threshold.
+
+=item B<--critical-category-devices-health-good-usage-prct>
+
+Threshold.
+
+=item B<--warning-category-devices-health-unmonitored-usage>
+
+Threshold.
+
+=item B<--critical-category-devices-health-unmonitored-usage>
+
+Threshold.
+
+=item B<--warning-category-devices-health-unmonitored-usage-prct>
+
+Threshold.
+
+=item B<--critical-category-devices-health-unmonitored-usage-prct>
+
+Threshold.
+
+=item B<--warning-devices-total>
+
+Threshold.
+
+=item B<--critical-devices-total>
+
+Threshold.
 
 =back
 

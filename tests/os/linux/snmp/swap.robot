@@ -9,8 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP}
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
 
 
 *** Test Cases ***
@@ -100,12 +100,11 @@ swap ${tc}
     ...    '30'
     ...    CRITICAL: Used : 49.97 % | 'used'=511406080B;;;0;1023406080 'free'=512000000B;;;0;1023406080 'used_prct'=49.97%;0:10;0:30;0;100
 
-
 cgs-swap ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
-    ...    -j ${CURDIR}/generic-snmp/swap.json
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}swap.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -121,26 +120,34 @@ cgs-swap ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    OK: Swap Used: 511406080B - Free: 512000000B - Total: 1023406080B | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    2
-    ...    --warning-swap-bytes=0.1
-    ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
+    ...    --warning-bytes=0.1
+    ...    WARNING: swap.usage.bytes is 511406080B | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;0.1;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    3
-    ...    --critical-swap-bytes=0.1
-    ...    CRITICAL: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;;0.1;0; swap.usage.percent=49.97%;;;0;100
+    ...    --critical-bytes=0.1
+    ...    CRITICAL: swap.usage.bytes is 511406080B | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;0.1;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    4
-    ...    --warning-swap-prct=0.1
-    ...    WARNING: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
+    ...    --warning-prct=0.1
+    ...    WARNING: swap.usage.percent is 49.97% | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;0.1;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    5
-    ...    --critical-swap-prct=0.1
-    ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
-
+    ...    --critical-prct=0.1
+    ...    CRITICAL: swap.usage.percent is 49.97% | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;0.1;0;100 swap.total.bytes=1023406080B;;;0;
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CGS_COLLECTIONS}${/}swap.json' JSON is valid
+    ...    7
+    ...    --warning-free-bytes=1
+    ...    WARNING: swap.free.bytes is 512000000B | swap.free.bytes=512000000B;1;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
+    ...    8
+    ...    --critical-free-bytes=1
+    ...    CRITICAL: swap.free.bytes is 512000000B | swap.free.bytes=512000000B;;1;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
 
 cgs-swap-64 ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
-    ...    -j ${CURDIR}/generic-snmp/swap-64.json
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}swap-64.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -156,17 +163,25 @@ cgs-swap-64 ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    Everything is OK | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;;0;100
+    ...    OK: Swap Used: 511406080B - Free: 512000000B - Total: 1023406080B | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    2
-    ...    --warning-swap-bytes=0.1
-    ...    WARNING: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;0.1;;0; swap.usage.percent=49.97%;;;0;100
+    ...    --warning-bytes=0.1
+    ...    WARNING: swap.usage.bytes is 511406080B | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;0.1;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    3
-    ...    --critical-swap-bytes=0.1
-    ...    CRITICAL: swap.usage.bytes is 499420B | swap.usage.bytes=499420B;;0.1;0; swap.usage.percent=49.97%;;;0;100
+    ...    --critical-bytes=0.1
+    ...    CRITICAL: swap.usage.bytes is 511406080B | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;0.1;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    4
-    ...    --warning-swap-prct=0.1
-    ...    WARNING: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;0.1;;0;100
+    ...    --warning-prct=0.1
+    ...    WARNING: swap.usage.percent is 49.97% | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;0.1;;0;100 swap.total.bytes=1023406080B;;;0;
     ...    5
-    ...    --critical-swap-prct=0.1
-    ...    CRITICAL: swap.usage.percent is 49.97098317023874% | swap.usage.bytes=499420B;;;0; swap.usage.percent=49.97%;;0.1;0;100
-
+    ...    --critical-prct=0.1
+    ...    CRITICAL: swap.usage.percent is 49.97% | swap.free.bytes=512000000B;;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;0.1;0;100 swap.total.bytes=1023406080B;;;0;
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CGS_COLLECTIONS}${/}swap-64.json' JSON is valid
+    ...    7
+    ...    --warning-free-bytes=1
+    ...    WARNING: swap.free.bytes is 512000000B | swap.free.bytes=512000000B;1;;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;
+    ...    8
+    ...    --critical-free-bytes=1
+    ...    CRITICAL: swap.free.bytes is 512000000B | swap.free.bytes=512000000B;;1;0;1023406080 swap.usage.bytes=511406080B;;;0;1023406080 swap.usage.percent=49.97%;;;0;100 swap.total.bytes=1023406080B;;;0;

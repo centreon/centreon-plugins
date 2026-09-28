@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package snmp_standard::mode::arp;
 
 use base qw(centreon::plugins::templates::counter);
 
+use centreon::plugins::constants qw(:counters);
 use strict;
 use warnings;
 
@@ -29,11 +30,11 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, message_separator => ' - ' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-entries', nlabel => 'arp.total.entries.count', set => {
+        { label => 'total-entries', type => COUNTER_KIND_METRIC, nlabel => 'arp.total.entries.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total entries %s',
                 perfdatas => [
@@ -41,7 +42,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'duplicate-macaddr', nlabel => 'arp.duplicate.macaddr.count', set => {
+        { label => 'duplicate-macaddr', type => COUNTER_KIND_METRIC, nlabel => 'arp.duplicate.macaddr.count', set => {
                 key_values => [ { name => 'duplicate_macaddress' } ],
                 output_template => 'duplicate mac address %s',
                 perfdatas => [
@@ -49,7 +50,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'duplicate-ipaddr', nlabel => 'arp.duplicate.ipaddr.count', set => {
+        { label => 'duplicate-ipaddr', type => COUNTER_KIND_METRIC, nlabel => 'arp.duplicate.ipaddr.count', set => {
                 key_values => [ { name => 'duplicate_ipaddress' } ],
                 output_template => 'duplicate ip address %s',
                 perfdatas => [
@@ -157,7 +158,7 @@ __END__
 
 =head1 MODE
 
-Check arp table.
+Check ARP table.
 
 =over 8
 
@@ -167,12 +168,31 @@ Filter mac addresses (can be a regexp).
 
 =item B<--filter-ipaddr>
 
-Filter ip addresses (can be a regexp).
+Filter IP addresses (can be a regexp).
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-duplicate-ipaddr>
 
-Thresholds.
-Can be: 'total-entries', 'duplicate-macaddr', 'duplicate-ipaddr'. 
+Threshold.
+
+=item B<--critical-duplicate-ipaddr>
+
+Threshold.
+
+=item B<--warning-duplicate-macaddr>
+
+Threshold.
+
+=item B<--critical-duplicate-macaddr>
+
+Threshold.
+
+=item B<--warning-total-entries>
+
+Threshold.
+
+=item B<--critical-total-entries>
+
+Threshold.
 
 =back
 

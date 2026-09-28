@@ -29,7 +29,12 @@ selinux/**                          @centreon/owners-pipelines
 .yamlfix.toml                 @centreon/owners-pipelines
 
 # Security Codeowners rules
-.gitleaks.toml                @centreon/owners-security
-.gitleaksignore               @centreon/owners-security
-.githooks/pre-commit          @centreon/owners-security
-**/secu-*.yml                 @centreon/owners-security
+.githooks/pre-commit                 @centreon/owners-security
+.githooks/pre-commit.d/*_gitleaks.sh @centreon/owners-security
+.githooks/pre-push                   @centreon/owners-security
+.githooks/pre-push.d/*_gitleaks.sh   @centreon/owners-security
+.gitleaks.toml                       @centreon/owners-security
+.gitleaksignore                      @centreon/owners-security
+**/dependency-analysis.yml           @centreon/owners-security
+**/gitleaks-analysis.yml             @centreon/owners-security
+**/secu-*.yml                        @centreon/owners-security

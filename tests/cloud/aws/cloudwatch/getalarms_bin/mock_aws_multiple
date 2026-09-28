@@ -1,0 +1,111 @@
+#!/bin/sh
+
+cat<<EOF
+{
+    "CompositeAlarms": [],
+    "MetricAlarms": [
+        {
+            "EvaluationPeriods": 1,
+            "TreatMissingData": "breaching",
+            "AlarmArn": "arn:aws:cloudwatch:us-east-1:123456789012:alarm:myalarm",
+            "StateUpdatedTimestamp": "2025-08-29T16:00:06.722Z",
+            "AlarmConfigurationUpdatedTimestamp": "2025-06-27T22:05:20.591Z",
+            "ComparisonOperator": "GreaterThanThreshold",
+            "AlarmActions": [],
+            "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2025-08-29T16:00:06.719+0000\",\"startDate\":\"2025-08-29T15:55:00.000+0000\",\"period\":300,\"recentDatapoints\":[0.0],\"threshold\":0.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2025-08-29T15:55:00.000+0000\",\"value\":0.0}]}",
+            "StateValue": "OK",
+            "Metrics": [
+                {
+                    "ReturnData": true,
+                    "Expression": "AVG(e1)",
+                    "Id": "e2",
+                    "Label": "Instance StatusCheckFailed"
+                },
+                {
+                    "ReturnData": false,
+                    "Period": 300,
+                    "Expression": "SELECT AVG(StatusCheckFailed_Instance) FROM \"AWS/EC2\" GROUP BY InstanceId",
+                    "Id": "e1",
+                    "Label": "Instance"
+                }
+            ],
+            "Threshold": 0.0,
+            "AlarmName": "Instance StatusCheckFailed",
+            "DatapointsToAlarm": 1,
+            "StateReason": "Threshold Crossed: 1 out of the last 1 datapoints [0.0 (29/08/25 15:55:00)] was not greater than the threshold (0.0) (minimum 1 datapoint for ALARM -> OK transition).",
+            "InsufficientDataActions": [],
+            "OKActions": [],
+            "ActionsEnabled": true,
+            "Dimensions": []
+        },
+        {
+            "EvaluationPeriods": 1,
+            "TreatMissingData": "breaching",
+            "AlarmArn": "arn:aws:cloudwatch:us-east-1:123456789012:alarm:myalarm_2",
+            "StateUpdatedTimestamp": "2025-07-08T16:03:29.125Z",
+            "AlarmConfigurationUpdatedTimestamp": "2025-07-04T13:59:54.353Z",
+            "ComparisonOperator": "GreaterThanThreshold",
+            "AlarmActions": [],
+            "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2025-07-08T16:03:29.123+0000\",\"startDate\":\"2025-07-08T15:58:00.000+0000\",\"period\":300,\"recentDatapoints\":[0.0],\"threshold\":0.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2025-07-08T15:58:00.000+0000\",\"value\":0.0}]}",
+            "StateValue": "OK",
+            "Metrics": [
+                {
+                    "ReturnData": true,
+                    "Expression": "AVG(e1)",
+                    "Id": "e2",
+                    "Label": "System StatusCheckFailed"
+                },
+                {
+                    "ReturnData": false,
+                    "Period": 300,
+                    "Expression": "SELECT AVG(StatusCheckFailed_System) FROM \"AWS/EC2\" GROUP BY InstanceId",
+                    "Id": "e1",
+                    "Label": "AVG System StatusCheckFailed"
+                }
+            ],
+            "Threshold": 0.0,
+            "AlarmName": "Instance System StatusCheckFailed",
+            "DatapointsToAlarm": 1,
+            "StateReason": "Threshold Crossed: 1 out of the last 1 datapoints [0.0 (08/07/25 15:58:00)] was not greater than the threshold (0.0) (minimum 1 datapoint for ALARM -> OK transition).",
+            "InsufficientDataActions": [],
+            "OKActions": [],
+            "ActionsEnabled": true,
+            "Dimensions": []
+        },
+        {
+            "EvaluationPeriods": 1,
+            "TreatMissingData": "breaching",
+            "AlarmArn": "arn:aws:cloudwatch:us-east-1:123456789012:alarm:myalarm_3",
+            "StateUpdatedTimestamp": "2025-09-18T03:08:15.294Z",
+            "AlarmConfigurationUpdatedTimestamp": "2025-09-02T15:08:20.105Z",
+            "ComparisonOperator": "GreaterThanThreshold",
+            "AlarmActions": [],
+            "StateReasonData": "{\"version\":\"1.0\",\"queryDate\":\"2025-09-18T03:08:15.292+0000\",\"period\":300,\"recentDatapoints\":[],\"threshold\":40.0,\"evaluatedDatapoints\":[{\"timestamp\":\"2025-09-18T03:03:00.000+0000\"}]}",
+            "StateValue": "ALARM",
+            "Metrics": [
+                {
+                    "ReturnData": true,
+                    "Expression": "MAX(e1)",
+                    "Id": "e2",
+                    "Label": "Instance memory usage"
+                },
+                {
+                    "ReturnData": false,
+                    "Period": 300,
+                    "Expression": "SELECT AVG(mem_used_percent) FROM SCHEMA(CWAgent,InstanceId) GROUP BY InstanceId ORDER BY AVG() DESC",
+                    "Id": "e1",
+                    "Label": "Instance"
+                }
+            ],
+            "Threshold": 40.0,
+            "AlarmName": "Instance memory",
+            "DatapointsToAlarm": 1,
+            "StateReason": "Threshold Crossed: no datapoints were received for 1 period and 1 missing datapoint was treated as [Breaching].",
+            "InsufficientDataActions": [],
+            "OKActions": [],
+            "ActionsEnabled": true,
+            "Dimensions": []
+        }
+    ]
+}
+EOF

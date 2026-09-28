@@ -53,13 +53,17 @@ sub check_options {
 
     $self->{option_results} = $options{option_results};
 
-    $self->{output}->exit_options(short_msg => "Missing lock filename !")
-         unless $self->{option_results}->{lockfile};
+    $self->{option_results}->{lockfile} //= 'global.lck';
 
     $self->{output}->exit_options(short_msg => "Missing lockfile_dir !")
          unless $self->{option_results}->{lockfile_dir};
 }
 
+sub set_lockfile_name {
+    my ($self, $name) = @_;
+
+    $self->{option_results}->{lockfile} = $name;
+}
 
 sub try_lock {
     my ($self, %options) = @_;
@@ -69,6 +73,8 @@ sub try_lock {
             if $self->{output};
         return 0;
     }
+
+    $self->{option_results}->{lockfile} = $options{lockfile} if defined $options{lockfile};
 
     $self->{filename} = $self->{option_results}->{lockfile_dir} . '/' . $self->{option_results}->{lockfile};
 
@@ -208,8 +214,6 @@ Creates a new instance of the C<lockfile> object.
 
 =back
 
-=back
-
 =head2 try_lock
 
     $obj->try_lock();
@@ -219,6 +223,18 @@ Try to acquire a lock by creating a lock file. If the lock file already exists, 
 =over 4
 
 =item * C<%options> - A hash of options.
+
+=back
+
+=head2 set_lockfile_name
+
+    $obj->set_lockfile_name($name);
+
+Set lock file name to use.
+
+=over 4
+
+=item * C<$name> - Lock file name to use ( default is C<global.lck> )
 
 =back
 

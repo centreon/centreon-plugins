@@ -1,5 +1,5 @@
 {
-  "uuid": "dd7d9589-c42b-42e9-8790-f11c8a0f344d",
+  "uuid": "7ad7be0d-8d10-4789-9459-4e4d1469dac6",
   "lastMigration": 33,
   "name": "Vmware8 restapi.mockoon",
   "endpointPrefix": "",
@@ -9,14 +9,14 @@
   "folders": [],
   "routes": [
     {
-      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c",
+      "uuid": "97816b8b-bed8-456d-9f94-a6df2f2b7ba1",
       "type": "http",
       "documentation": "",
       "method": "post",
       "endpoint": "api/session",
       "responses": [
         {
-          "uuid": "d037b485-9952-467c-985c-415b9033e4d9",
+          "uuid": "6470a935-a0c4-41a2-b190-aeda7cdade21",
           "body": "\"32c9819179813376a9bbda43e9c84165\"",
           "latency": 0,
           "statusCode": 201,
@@ -128,11 +128,11 @@
       "endpoint": "api/vcenter/vm",
       "responses": [
         {
-          "uuid": "96a6828b-5fa1-496d-bd7f-84df9a152f78",
-          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-5678\",\n    \"name\": \"my_other_vm\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 2\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"my_favourite_vm\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-12345\",\n    \"name\": \"my_suspended_vm\",\n    \"power_state\": \"SUSPENDED\",\n    \"cpu_count\": 4\n  }\n]",
+          "uuid": "caf53414-cf7c-401d-a98e-58cad6c16346",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-5678\",\n    \"name\": \"my_other_vm\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 2\n  }\n]",
           "latency": 0,
           "statusCode": 200,
-          "label": "",
+          "label": "VMs from host-22",
           "headers": [
             {
               "key": "access-control-allow-headers",
@@ -163,7 +163,171 @@
           "filePath": "",
           "databucketID": "",
           "sendFileAsBody": false,
-          "rules": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "hosts",
+              "value": "host-22",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "04d0cd1b-2095-4b22-b6f0-d2d8b5b3418e",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"my_favourite_vm\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "VMs from host-35",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "hosts",
+              "value": "host-35",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "496f00fc-9ac3-4af5-a58c-8dd1b4b9e542",
+          "body": "[\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-12345\",\n    \"name\": \"my_suspended_vm\",\n    \"power_state\": \"SUSPENDED\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "VMs from host-28",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "hosts",
+              "value": "host-28",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "96a6828b-5fa1-496d-bd7f-84df9a152f78",
+          "body": "[\n  {\n    \"memory_size_MiB\": 2048,\n    \"vm\": \"vm-5678\",\n    \"name\": \"my_other_vm\",\n    \"power_state\": \"POWERED_OFF\",\n    \"cpu_count\": 2\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-1234\",\n    \"name\": \"my_favourite_vm\",\n    \"power_state\": \"POWERED_ON\",\n    \"cpu_count\": 4\n  },\n  {\n    \"memory_size_MiB\": 4096,\n    \"vm\": \"vm-12345\",\n    \"name\": \"my_suspended_vm\",\n    \"power_state\": \"SUSPENDED\",\n    \"cpu_count\": 4\n  }\n]",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Vms from all hosts",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "host",
+              "value": "",
+              "invert": false,
+              "operator": "null"
+            }
+          ],
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
@@ -796,7 +960,7 @@
   "rootChildren": [
     {
       "type": "route",
-      "uuid": "24bee589-6166-4849-bc82-937ea7a5480c"
+      "uuid": "97816b8b-bed8-456d-9f94-a6df2f2b7ba1"
     },
     {
       "type": "route",

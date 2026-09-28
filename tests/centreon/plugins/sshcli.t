@@ -24,6 +24,7 @@ my $_fake_ssh = '/tmp/test_fake_ssh_'.$$;
     sub new { bless {}, shift }
     sub add_option_msg { }
     sub option_exit { die }
+    sub is_debug { 0 }
 }
 
 sub process_test {

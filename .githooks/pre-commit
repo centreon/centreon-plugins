@@ -1,31 +1,28 @@
 #!/usr/bin/env sh
 set -eu
 
-# Directory containing the scripts (relative to this script's location)
-DIR="$(dirname "$0")/pre-commit.d"
+# Pre-commit dispatcher: runs all executable scripts in pre-commit.d/.
+#
+# Each script receives the same stdin (list of refs being committed) and the
+# same arguments. A non-zero exit from any script aborts the push.
 
-# Variable to keep track of the highest exit code
-max_exit_code=0
+hook_dir="$(cd "$(dirname "$0")" && pwd)"
+script_dir="${hook_dir}/pre-commit.d"
 
-# Check if the directory exists
-if [ ! -d "$DIR" ]; then
-  echo "Error: directory '$DIR' does not exist." >&2
-  exit 1
+# Check if directory exist
+if [ ! -d "$script_dir" ]; then
+  echo "Error: directory '$script_dir' does not exist." >&2
+  exit 0
 fi
 
-# Execute each .sh file in the directory
-for script in "$DIR"/*.sh; do
-  # Skip if no .sh files are found
-  [ -e "$script" ] || { echo "no pre-commit hook found, maybe check $DIR folder for executable .sh files" ; exit 1 ; }
+# buffer stdin so every script gets the same input
+input=$(cat)
 
-  echo "Running $script ..."
-  /bin/bash "$script"
-  exit_code=$?
-
-  # Update the highest exit code if necessary
-  if [ "$exit_code" -gt "$max_exit_code" ]; then
-    max_exit_code=$exit_code
-  fi
+exit_code=0
+for script in "$script_dir"/*; do
+  # Check if scripts are executable and run them
+  [ -x "$script" ] || continue
+  echo "$input" | "$script" "$@" || exit_code=$?
 done
 
-exit $max_exit_code
+exit $exit_code

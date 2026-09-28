@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,8 @@ use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use Digest::SHA qw(sha256_hex);
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -120,18 +121,27 @@ sub get_connection_info {
     return $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port};
 }
 
+sub minimal_api_version {
+    my ($self, %options) = @_;
+
+    return centreon::plugins::misc::minimal_version($self->{api_version}, $options{version});
+}
+
 sub get_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache_connect}->read(statefile => 'thales_mistral_connect_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache_connect}->read(statefile => 'thales_mistral_connect_' . sha256_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $token = $self->{cache_connect}->get(name => 'token');
-    my $md5_secret_cache = $self->{cache_connect}->get(name => 'md5_secret');
-    my $md5_secret = md5_hex($self->{api_username} . $self->{api_password});
+    $self->{api_version} = $self->{cache_connect}->get(name => 'api_version');
+    my $sha256_secret_cache = $self->{cache_connect}->get(name => 'sha256_secret');
+    my $sha256_secret = sha256_hex($self->{api_username} . $self->{api_password});
 
     if ($has_cache_file == 0 ||
         !defined($token) ||
-        (defined($md5_secret_cache) && $md5_secret_cache ne $md5_secret)
+        !defined($self->{api_version}) ||
+        (defined($sha256_secret_cache) && $sha256_secret_cache ne $sha256_secret)
         ) {
+        # Login
         my $json_request = {
             username => $self->{api_username},
             password => $self->{api_password}
@@ -161,15 +171,36 @@ sub get_token {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response (auth login)");
             $self->{output}->option_exit();
         }
 
         $token = $decoded->{access_token};
+
+        # API version
+        $content = $self->{http}->request(
+            method => 'GET',
+            url_path => '/api/version',
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status}
+        );
+
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response (api version)");
+            $self->{output}->option_exit();
+        }
+
+        $self->{api_version} = $decoded->{mmc};
+
         my $datas = {
             updated => time(),
             token => $token,
-            md5_secret => $md5_secret
+            api_version => $self->{api_version},
+            sha256_secret => $sha256_secret
         };
         $self->{cache_connect}->write(data => $datas);
     }
@@ -189,6 +220,7 @@ sub request_api {
 
     $self->settings();
     my $token = $self->get_token();
+
     my ($content) = $self->{http}->request(
         url_path => '/api' . $options{endpoint},
         get_param => $options{get_param},
@@ -221,6 +253,7 @@ sub request_api {
     eval {
         $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
     };
+
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
@@ -229,10 +262,27 @@ sub request_api {
     return $decoded;
 }
 
+sub get_certificates_ca_with_signed_certificates {
+    my ($self, %options) = @_;
+
+    # need to connect first to have the version
+    $self->settings();
+    $self->get_token();
+
+    if ($self->minimal_api_version(version => '9.2.4.18')) {
+        return $self->request_api(endpoint => '/certificates/ca');
+    }
+    
+    return $self->request_api(
+        endpoint => '/certificateCas',
+        get_param => ['projection=withSignedCertificates']
+    );
+}
+
 sub get_clusters {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_clusters_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_clusters_' . sha256_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $updated = $self->{cache}->get(name => 'updated');
     my $clusters = $self->{cache}->get(name => 'clusters');
     if ($has_cache_file == 0 || !defined($updated) || ((time() - $updated) > (($self->{option_results}->{reload_cache_time} * 60)))) {
@@ -252,7 +302,7 @@ sub get_clusters {
 sub get_gateway_inventory {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_inventory_' . md5_hex($self->get_connection_info() . '_' . $self->{api_username}));
+    my $has_cache_file = $self->{cache}->read(statefile => 'thales_mistral_inventory_' . sha256_hex($self->get_connection_info() . '_' . $self->{api_username}));
     my $updated = $self->{cache}->get(name => 'updated');
     my $inventory = $self->{cache}->get(name => 'gwInventory');
     if ($has_cache_file == 0 || !defined($updated) || ((time() - $updated) > (($self->{option_results}->{reload_cache_time} * 60)))) {
@@ -277,6 +327,8 @@ sub get_gateway_inventory {
         for (my $i = 0; $i < scalar(@$inventory); $i++) {
             $inventory->[$i]->{certificates} = [];
             foreach my $cert (@{$result->{content}}) {
+                next if (!defined($cert->{ssIpsecGwHw}));
+
                 if ($inventory->[$i]->{serialNumber} eq $cert->{ssIpsecGwHw}->{serialNumber}) {
                     push @{$inventory->[$i]->{certificates}}, $cert;
                     last;
@@ -297,11 +349,11 @@ __END__
 
 =head1 NAME
 
-Mistral vs9 API
+Mistral VS9 API
 
 =head1 REST API OPTIONS
 
-Mistral vs9 API
+Mistral VS9 API
 
 =over 8
 

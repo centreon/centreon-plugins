@@ -1,0 +1,381 @@
+{
+    "uuid": "91018b05-cf25-49d2-a903-6a43cd43034c",
+    "lastMigration": 33,
+    "name": "Hp oneview",
+    "endpointPrefix": "rest/",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "16285b38-ff13-4826-95b4-d0cbbc612707",
+            "type": "http",
+            "documentation": "",
+            "method": "post",
+            "endpoint": "login-sessions",
+            "responses": [
+                {
+                    "uuid": "1869862d-4692-48ea-bd54-f183e3a3ea8c",
+                    "body": "{\r\n    \"sessionID\": \"ABC123\"\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "29288456-26cd-43e9-be99-86fc9fb4697a",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "version",
+            "responses": [
+                {
+                    "uuid": "6cda4817-2fe0-432b-8d56-6efebcd7e685",
+                    "body": "{\r\n  \"currentVersion\" : 8800,\r\n  \"minimumVersion\" : 1\r\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "3e54ce5d-498c-4e83-b07d-7e1d299ecb00",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "storage-pools",
+            "responses": [
+                {
+                    "uuid": "dc4e2ded-aea8-4a90-82a8-4d8c286c3a9c",
+                    "body": "{\r\n  \"type\": \"StoragePoolCollectionV300\",\r\n  \"category\": \"storage-pools\",\r\n  \"uri\": \"/rest/storage-pools?start=0&count=-1\",\r\n  \"created\": \"2026-01-10T08:40:00.000Z\",\r\n  \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n  \"eTag\": \"1441688301491\",\r\n  \"total\": 3,\r\n  \"count\": 2,\r\n  \"start\": 0,\r\n  \"prevPageUri\": null,\r\n  \"nextPageUri\": \"/rest/storage-pools?start=2&count=2\",\r\n  \"members\": [\r\n    {\r\n      \"type\": \"StoragePoolV300\",\r\n      \"category\": \"storage-pools\",\r\n      \"uri\": \"/rest/storage-pools/AD8CA323-D3DA-4257-A9CE-4B02A3B4671E\",\r\n      \"name\": \"CENTREON1\",\r\n      \"description\": \"Primera CPG used for VM datastores\",\r\n      \"status\": \"OK\",\r\n      \"state\": \"Configured\",\r\n      \"isManaged\": true,\r\n      \"storageSystemUri\": \"/rest/storage-systems/TXQ1010307\",\r\n      \"totalCapacity\": 21990232555520,\r\n      \"freeCapacity\": 8796093022208,\r\n      \"allocatedCapacity\": 13194139533312,\r\n      \"created\": \"2026-01-10T08:40:00.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441688301491\"\r\n    },\r\n    {\r\n      \"type\": \"StoragePoolV300\",\r\n      \"category\": \"storage-pools\",\r\n      \"uri\": \"/rest/storage-pools/AD8CA323-D3DA-4257-A9CE-4B02A3B4671F\",\r\n      \"name\": \"CENTREON2\",\r\n      \"description\": \"Primera CPG used for database volumes\",\r\n      \"status\": \"OK\",\r\n      \"state\": \"Configured\",\r\n      \"isManaged\": true,\r\n      \"storageSystemUri\": \"/rest/storage-systems/TXQ1010307\",\r\n      \"totalCapacity\": 10995116277760,\r\n      \"freeCapacity\": 2199023255552,\r\n      \"allocatedCapacity\": 8796093022208,\r\n      \"created\": \"2026-01-10T08:41:12.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441688301492\"\r\n    }\r\n  ]\r\n}\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "start",
+                            "value": "0",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "cout",
+                            "value": "0",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "abada47e-fced-4e0e-8a50-2e384a06c387",
+                    "body": "{\r\n  \"type\": \"StoragePoolCollectionV300\",\r\n  \"category\": \"storage-pools\",\r\n  \"uri\": \"/rest/storage-pools?start=2&count=2\",\r\n  \"created\": \"2026-01-10T08:40:00.000Z\",\r\n  \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n  \"eTag\": \"1441688301493\",\r\n  \"total\": 3,\r\n  \"count\": 1,\r\n  \"start\": 2,\r\n  \"prevPageUri\": \"/rest/storage-pools?start=0&count=2\",\r\n  \"nextPageUri\": null,\r\n  \"members\": [\r\n    {\r\n      \"type\": \"StoragePoolV300\",\r\n      \"category\": \"storage-pools\",\r\n      \"uri\": \"/rest/storage-pools/AD8CA323-D3DA-4257-A9CE-4B02A3B46720\",\r\n      \"name\": \"CENTREON3\",\r\n      \"description\": \"Primera CPG reserved for snapshots\",\r\n      \"status\": \"Warning\",\r\n      \"state\": \"Configured\",\r\n      \"isManaged\": true,\r\n      \"storageSystemUri\": \"/rest/storage-systems/TXQ1010307\",\r\n      \"totalCapacity\": 5497558138880,\r\n      \"freeCapacity\": 549755813888,\r\n      \"allocatedCapacity\": 4947802325,\r\n      \"created\": \"2026-01-10T08:42:30.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441688301493\"\r\n    }\r\n  ]\r\n}\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "start",
+                            "value": "2",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "count",
+                            "value": "2",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "81d2e67e-bddd-4b75-ae5a-273e316f485a",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "server-hardware",
+            "responses": [
+                {
+                    "uuid": "c14b5bf4-0422-4e94-9ed2-0732fac8389a",
+                    "body": "{\r\n  \"type\": \"server-hardware-list-3\",\r\n  \"category\": \"server-hardware\",\r\n  \"uri\": \"/rest/server-hardware?start=0&count=-1\",\r\n  \"created\": \"2026-01-10T08:20:00.000Z\",\r\n  \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n  \"eTag\": \"1441688301489\",\r\n  \"total\": 4,\r\n  \"count\": 2,\r\n  \"start\": 0,\r\n  \"prevPageUri\": null,\r\n  \"nextPageUri\": \"/rest/server-hardware?start=2&count=2\",\r\n  \"members\": [\r\n    {\r\n      \"type\": \"server-hardware-3\",\r\n      \"category\": \"server-hardware\",\r\n      \"uri\": \"/rest/server-hardware/30373237-3132-4D32-3235-303930524D57\",\r\n      \"uuid\": \"30373237-3132-4D32-3235-303930524D57\",\r\n      \"name\": \"se05, bay 16\",\r\n      \"serverName\": \"cent1.centreon.com.com\",\r\n      \"model\": \"ProLiant BL460c Gen9\",\r\n      \"shortModel\": \"BL460c Gen9\",\r\n      \"formFactor\": \"HalfHeight\",\r\n      \"position\": 16,\r\n      \"serialNumber\": \"2M25090RMW\",\r\n      \"partNumber\": \"727021-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"locationUri\": \"/rest/enclosures/09USE62519EE\",\r\n      \"serverGroupUri\": \"/rest/enclosure-groups/56ad0069-8362-42fd-b4e3-f5c5a69af039\",\r\n      \"serverHardwareTypeUri\": \"/rest/server-hardware-types/DB7726F7-F601-4EA8-B4A6-D1EE1B32C07C\",\r\n      \"serverProfileUri\": \"/rest/server-profiles/9979b3a4-646a-4c3e-bca6-80ca0b403a93\",\r\n      \"configurationState\": \"Managed\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"memoryMb\": 262144,\r\n      \"processorCoreCount\": 14,\r\n      \"processorCount\": 2,\r\n      \"processorSpeedMhz\": 2300,\r\n      \"processorType\": \"Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz\",\r\n      \"powerState\": \"On\",\r\n      \"powerLock\": false,\r\n      \"romVersion\": \"I36 11/03/2014\",\r\n      \"mpModel\": \"iLO4\",\r\n      \"mpFirmwareVersion\": \"2.71 Mar 22 2026\",\r\n      \"mpIpAddress\": \"172.28.3.136\",\r\n      \"mpDnsName\": \"ILO2M25090RMW\",\r\n      \"state\": \"ProfileApplied\",\r\n      \"stateReason\": \"NotApplicable\",\r\n      \"status\": \"Critical\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"uidState\": \"Off\",\r\n      \"created\": \"2026-01-10T08:20:00.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441147370086\"\r\n    },\r\n    {\r\n      \"type\": \"server-hardware-3\",\r\n      \"category\": \"server-hardware\",\r\n      \"uri\": \"/rest/server-hardware/30373237-3132-4D32-3235-303930524D58\",\r\n      \"uuid\": \"30373237-3132-4D32-3235-303930524D58\",\r\n      \"name\": \"se05, bay 15\",\r\n      \"serverName\": \"cent2.centreon.com\",\r\n      \"model\": \"ProLiant BL460c Gen9\",\r\n      \"shortModel\": \"BL460c Gen9\",\r\n      \"formFactor\": \"HalfHeight\",\r\n      \"position\": 15,\r\n      \"serialNumber\": \"2M25090RMX\",\r\n      \"partNumber\": \"727021-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"locationUri\": \"/rest/enclosures/09USE62519EE\",\r\n      \"serverGroupUri\": \"/rest/enclosure-groups/56ad0069-8362-42fd-b4e3-f5c5a69af039\",\r\n      \"serverHardwareTypeUri\": \"/rest/server-hardware-types/DB7726F7-F601-4EA8-B4A6-D1EE1B32C07C\",\r\n      \"serverProfileUri\": \"/rest/server-profiles/9979b3a4-646a-4c3e-bca6-80ca0b403a94\",\r\n      \"configurationState\": \"Managed\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"memoryMb\": 262144,\r\n      \"processorCoreCount\": 14,\r\n      \"processorCount\": 2,\r\n      \"processorSpeedMhz\": 2300,\r\n      \"processorType\": \"Intel(R) Xeon(R) CPU E5-2695 v3 @ 2.30GHz\",\r\n      \"powerState\": \"On\",\r\n      \"powerLock\": false,\r\n      \"romVersion\": \"I36 11/03/2014\",\r\n      \"mpModel\": \"iLO4\",\r\n      \"mpFirmwareVersion\": \"2.71 Mar 22 2026\",\r\n      \"mpIpAddress\": \"172.28.3.137\",\r\n      \"mpDnsName\": \"ILO2M25090RMX\",\r\n      \"state\": \"ProfileApplied\",\r\n      \"stateReason\": \"NotApplicable\",\r\n      \"status\": \"Critical\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"uidState\": \"Off\",\r\n      \"created\": \"2026-01-10T08:21:00.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441147370087\"\r\n    }\r\n  ]\r\n}\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "start",
+                            "value": "0",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "count",
+                            "value": "-1",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "c1a9daea-7463-4cea-8546-5cf8360e7243",
+                    "body": "{\r\n  \"type\": \"server-hardware-list-3\",\r\n  \"category\": \"server-hardware\",\r\n  \"uri\": \"/rest/server-hardware?start=2&count=2\",\r\n  \"created\": \"2026-01-10T08:20:00.000Z\",\r\n  \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n  \"eTag\": \"1441688301490\",\r\n  \"total\": 4,\r\n  \"count\": 2,\r\n  \"start\": 2,\r\n  \"prevPageUri\": \"/rest/server-hardware?start=0&count=2\",\r\n  \"nextPageUri\": null,\r\n  \"members\": [\r\n    {\r\n      \"type\": \"server-hardware-3\",\r\n      \"category\": \"server-hardware\",\r\n      \"uri\": \"/rest/server-hardware/30373237-3132-4D32-3235-303930524D59\",\r\n      \"uuid\": \"30373237-3132-4D32-3235-303930524D59\",\r\n      \"name\": \"se06, bay 1\",\r\n      \"serverName\": \"cent3\",\r\n      \"model\": \"ProLiant BL460c Gen9\",\r\n      \"shortModel\": \"BL460c Gen9\",\r\n      \"formFactor\": \"HalfHeight\",\r\n      \"position\": 1,\r\n      \"serialNumber\": \"2M25090RMY\",\r\n      \"partNumber\": \"727021-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"locationUri\": \"/rest/enclosures/09USE62519EF\",\r\n      \"serverGroupUri\": \"/rest/enclosure-groups/56ad0069-8362-42fd-b4e3-f5c5a69af039\",\r\n      \"serverHardwareTypeUri\": \"/rest/server-hardware-types/DB7726F7-F601-4EA8-B4A6-D1EE1B32C07C\",\r\n      \"serverProfileUri\": \"/rest/server-profiles/9979b3a4-646a-4c3e-bca6-80ca0b403a95\",\r\n      \"configurationState\": \"Managed\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"memoryMb\": 131072,\r\n      \"processorCoreCount\": 10,\r\n      \"processorCount\": 2,\r\n      \"processorSpeedMhz\": 2400,\r\n      \"processorType\": \"Intel(R) Xeon(R) CPU E5-2640 v4 @ 2.40GHz\",\r\n      \"powerState\": \"On\",\r\n      \"powerLock\": false,\r\n      \"romVersion\": \"I40 05/12/2016\",\r\n      \"mpModel\": \"iLO4\",\r\n      \"mpFirmwareVersion\": \"2.71 Mar 22 2026\",\r\n      \"mpIpAddress\": \"172.28.3.140\",\r\n      \"mpDnsName\": \"ILO2M25090RMY\",\r\n      \"state\": \"ProfileApplied\",\r\n      \"stateReason\": \"NotApplicable\",\r\n      \"status\": \"Critical\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"uidState\": \"Off\",\r\n      \"created\": \"2026-01-12T09:35:00.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441147370088\"\r\n    },\r\n    {\r\n      \"type\": \"server-hardware-3\",\r\n      \"category\": \"server-hardware\",\r\n      \"uri\": \"/rest/server-hardware/30373237-3132-4D32-3235-303930524D5A\",\r\n      \"uuid\": \"30373237-3132-4D32-3235-303930524D5A\",\r\n      \"name\": \"cent4\",\r\n      \"serverName\": \"cent4\",\r\n      \"model\": \"ProLiant DL380 Gen10\",\r\n      \"shortModel\": \"DL380 Gen10\",\r\n      \"formFactor\": \"Rack\",\r\n      \"position\": 0,\r\n      \"serialNumber\": \"CZ12345678\",\r\n      \"partNumber\": \"868703-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"locationUri\": null,\r\n      \"serverGroupUri\": null,\r\n      \"serverHardwareTypeUri\": \"/rest/server-hardware-types/EB7726F7-F601-4EA8-B4A6-D1EE1B32C07D\",\r\n      \"serverProfileUri\": \"/rest/server-profiles/1179b3a4-646a-4c3e-bca6-80ca0b403a96\",\r\n      \"configurationState\": \"Managed\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"memoryMb\": 524288,\r\n      \"processorCoreCount\": 24,\r\n      \"processorCount\": 2,\r\n      \"processorSpeedMhz\": 2100,\r\n      \"processorType\": \"Intel(R) Xeon(R) Gold 6152 CPU @ 2.10GHz\",\r\n      \"powerState\": \"On\",\r\n      \"powerLock\": false,\r\n      \"romVersion\": \"U30 06/20/2026\",\r\n      \"mpModel\": \"iLO5\",\r\n      \"mpFirmwareVersion\": \"2.44 Jan 15 2026\",\r\n      \"mpIpAddress\": \"172.28.3.150\",\r\n      \"mpDnsName\": \"ILOCZ12345678\",\r\n      \"state\": \"Monitored\",\r\n      \"stateReason\": \"NotApplicable\",\r\n      \"status\": \"Critical\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"uidState\": \"Off\",\r\n      \"created\": \"2026-01-12T09:36:20.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1441147370089\"\r\n    }\r\n  ]\r\n}\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "start",
+                            "value": "2",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "count",
+                            "value": "2",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "497f0fc4-1235-46fc-ad95-29e14573844b",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "enclosures",
+            "responses": [
+                {
+                    "uuid": "7448a8fc-95f9-4da5-acde-10bef1b6d498",
+                    "body": "{\r\n  \"type\": \"enclosure-list-3\",\r\n  \"category\": \"enclosures\",\r\n  \"uri\": \"/rest/enclosures?start=0&count=-1\",\r\n  \"created\": \"2026-01-10T08:12:03.451Z\",\r\n  \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n  \"eTag\": \"1735891923451\",\r\n  \"total\": 4,\r\n  \"count\": 2,\r\n  \"start\": 0,\r\n  \"prevPageUri\": null,\r\n  \"nextPageUri\": \"/rest/enclosures?start=2&count=2\",\r\n  \"members\": [\r\n    {\r\n      \"type\": \"enclosure-3\",\r\n      \"category\": \"enclosures\",\r\n      \"uri\": \"/rest/enclosures/09USE62519EE\",\r\n      \"uuid\": \"09USE62519EE\",\r\n      \"name\": \"e10\",\r\n      \"serialNumber\": \"USE62519EE\",\r\n      \"partNumber\": \"779215-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"enclosureType\": \"Synergy12000\",\r\n      \"enclosureModel\": \"Synergy 12000 Frame\",\r\n      \"enclosureGroupUri\": \"/rest/enclosure-groups/293e8efe-c6b1-4783-bf88-2d35a8e49071\",\r\n      \"rackName\": \"Rack-01\",\r\n      \"status\": \"OK\",\r\n      \"state\": \"Configured\",\r\n      \"stateReason\": \"None\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"vcmMode\": false,\r\n      \"created\": \"2026-01-10T08:12:03.451Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1735891923451/8\",\r\n      \"fanBayCount\": 10,\r\n      \"fanBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"state\": \"Ok\", \"model\": \"Synergy 12000 Frame Fan Module\", \"partNumber\": \"779222-001\", \"serialNumber\": \"\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Present\", \"status\": \"OK\", \"state\": \"Ok\", \"model\": \"Synergy 12000 Frame Fan Module\", \"partNumber\": \"779222-001\", \"serialNumber\": \"\" }\r\n      ],\r\n      \"powerSupplyBayCount\": 2,\r\n      \"powerSupplyBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"HPE 2650W Universal Hot Plug Power Supply\", \"outputCapacityWatts\": 2650, \"partNumber\": \"865414-001\", \"serialNumber\": \"5CT617BLM3\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"HPE 2650W Universal Hot Plug Power Supply\", \"outputCapacityWatts\": 2650, \"partNumber\": \"865414-001\", \"serialNumber\": \"5CT617BLM4\" }\r\n      ],\r\n      \"managerBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"Synergy Frame Link Module\", \"role\": \"Active\", \"partNumber\": \"802341-B21\", \"serialNumber\": \"CN7613V053\", \"fwVersion\": \"4.70\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"Synergy Frame Link Module\", \"role\": \"Standby\", \"partNumber\": \"802341-B21\", \"serialNumber\": \"CN7613V054\", \"fwVersion\": \"4.70\" }\r\n      ],\r\n      \"applianceBayCount\": 2,\r\n      \"applianceBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"Synergy Composer\", \"poweredOn\": true, \"partNumber\": \"804353-B21\", \"serialNumber\": \"CN7614W021\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Absent\", \"status\": \"Disabled\", \"model\": null, \"poweredOn\": false, \"partNumber\": \"\", \"serialNumber\": \"\" }\r\n      ]\r\n    },\r\n    {\r\n      \"type\": \"enclosure-3\",\r\n      \"category\": \"enclosures\",\r\n      \"uri\": \"/rest/enclosures/09USE62519EF\",\r\n      \"uuid\": \"09USE62519EF\",\r\n      \"name\": \"e11\",\r\n      \"serialNumber\": \"USE62519EF\",\r\n      \"partNumber\": \"779215-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"enclosureType\": \"Synergy12000\",\r\n      \"enclosureModel\": \"Synergy 12000 Frame\",\r\n      \"enclosureGroupUri\": \"/rest/enclosure-groups/293e8efe-c6b1-4783-bf88-2d35a8e49071\",\r\n      \"rackName\": \"Rack-01\",\r\n      \"status\": \"Warning\",\r\n      \"state\": \"Configured\",\r\n      \"stateReason\": \"None\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"vcmMode\": false,\r\n      \"created\": \"2026-01-10T08:14:22.118Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1735892023118/5\",\r\n      \"fanBayCount\": 10,\r\n      \"fanBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"Warning\", \"state\": \"Degraded\", \"model\": \"Synergy 12000 Frame Fan Module\", \"partNumber\": \"779222-001\", \"serialNumber\": \"\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Present\", \"status\": \"OK\", \"state\": \"Ok\", \"model\": \"Synergy 12000 Frame Fan Module\", \"partNumber\": \"779222-001\", \"serialNumber\": \"\" }\r\n      ],\r\n      \"powerSupplyBayCount\": 2,\r\n      \"powerSupplyBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"HPE 2650W Universal Hot Plug Power Supply\", \"outputCapacityWatts\": 2650, \"partNumber\": \"865414-001\", \"serialNumber\": \"5CT617BLM5\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Absent\", \"status\": \"Disabled\", \"model\": \"\", \"outputCapacityWatts\": 0, \"partNumber\": \"\", \"serialNumber\": \"\" }\r\n      ],\r\n      \"managerBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"Synergy Frame Link Module\", \"role\": \"Active\", \"partNumber\": \"802341-B21\", \"serialNumber\": \"CN7613V055\", \"fwVersion\": \"4.70\" }\r\n      ],\r\n      \"applianceBayCount\": 0,\r\n      \"applianceBays\": []\r\n    }\r\n  ]\r\n}\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "start",
+                            "value": "0",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "count",
+                            "value": "-1",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "8fc38475-c5a2-4a33-8776-65b7ac969972",
+                    "body": "{\r\n  \"type\": \"enclosure-list-3\",\r\n  \"category\": \"enclosures\",\r\n  \"uri\": \"/rest/enclosures?start=2&count=2\",\r\n  \"created\": \"2026-01-10T08:12:03.451Z\",\r\n  \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n  \"eTag\": \"1735891923452\",\r\n  \"total\": 4,\r\n  \"count\": 2,\r\n  \"start\": 2,\r\n  \"prevPageUri\": \"/rest/enclosures?start=0&count=2\",\r\n  \"nextPageUri\": null,\r\n  \"members\": [\r\n    {\r\n      \"type\": \"enclosure-3\",\r\n      \"category\": \"enclosures\",\r\n      \"uri\": \"/rest/enclosures/09USE62519F0\",\r\n      \"uuid\": \"09USE62519F0\",\r\n      \"name\": \"e12\",\r\n      \"serialNumber\": \"USE62519F0\",\r\n      \"partNumber\": \"779215-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"enclosureType\": \"Synergy12000\",\r\n      \"enclosureModel\": \"Synergy 12000 Frame\",\r\n      \"enclosureGroupUri\": \"/rest/enclosure-groups/293e8efe-c6b1-4783-bf88-2d35a8e49071\",\r\n      \"rackName\": \"Rack-02\",\r\n      \"status\": \"OK\",\r\n      \"state\": \"Configured\",\r\n      \"stateReason\": \"None\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"vcmMode\": false,\r\n      \"created\": \"2026-01-12T09:30:00.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1735981800000/3\",\r\n      \"fanBayCount\": 10,\r\n      \"fanBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"state\": \"Ok\", \"model\": \"Synergy 12000 Frame Fan Module\", \"partNumber\": \"779222-001\", \"serialNumber\": \"\" }\r\n      ],\r\n      \"powerSupplyBayCount\": 2,\r\n      \"powerSupplyBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"HPE 2650W Universal Hot Plug Power Supply\", \"outputCapacityWatts\": 2650, \"partNumber\": \"865414-001\", \"serialNumber\": \"5CT617BLM6\" },\r\n        { \"bayNumber\": 2, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"HPE 2650W Universal Hot Plug Power Supply\", \"outputCapacityWatts\": 2650, \"partNumber\": \"865414-001\", \"serialNumber\": \"5CT617BLM7\" }\r\n      ],\r\n      \"managerBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"Synergy Frame Link Module\", \"role\": \"Active\", \"partNumber\": \"802341-B21\", \"serialNumber\": \"CN7613V056\", \"fwVersion\": \"4.70\" }\r\n      ],\r\n      \"applianceBayCount\": 0,\r\n      \"applianceBays\": []\r\n    },\r\n    {\r\n      \"type\": \"enclosure-3\",\r\n      \"category\": \"enclosures\",\r\n      \"uri\": \"/rest/enclosures/09USE62519F1\",\r\n      \"uuid\": \"09USE62519F1\",\r\n      \"name\": \"e13\",\r\n      \"serialNumber\": \"USE62519F1\",\r\n      \"partNumber\": \"779215-B21\",\r\n      \"assetTag\": \"[Unknown]\",\r\n      \"enclosureType\": \"Synergy12000\",\r\n      \"enclosureModel\": \"Synergy 12000 Frame\",\r\n      \"enclosureGroupUri\": \"/rest/enclosure-groups/293e8efe-c6b1-4783-bf88-2d35a8e49071\",\r\n      \"rackName\": \"Rack-02\",\r\n      \"status\": \"Critical\",\r\n      \"state\": \"Configured\",\r\n      \"stateReason\": \"None\",\r\n      \"refreshState\": \"NotRefreshing\",\r\n      \"licensingIntent\": \"OneView\",\r\n      \"vcmMode\": false,\r\n      \"created\": \"2026-01-12T09:31:45.000Z\",\r\n      \"modified\": \"2026-08-01T14:05:11.902Z\",\r\n      \"eTag\": \"1735981905000/2\",\r\n      \"fanBayCount\": 10,\r\n      \"fanBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"Critical\", \"state\": \"Failed\", \"model\": \"Synergy 12000 Frame Fan Module\", \"partNumber\": \"779222-001\", \"serialNumber\": \"\" }\r\n      ],\r\n      \"powerSupplyBayCount\": 2,\r\n      \"powerSupplyBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"HPE 2650W Universal Hot Plug Power Supply\", \"outputCapacityWatts\": 2650, \"partNumber\": \"865414-001\", \"serialNumber\": \"5CT617BLM8\" }\r\n      ],\r\n      \"managerBays\": [\r\n        { \"bayNumber\": 1, \"devicePresence\": \"Present\", \"status\": \"OK\", \"model\": \"Synergy Frame Link Module\", \"role\": \"Active\", \"partNumber\": \"802341-B21\", \"serialNumber\": \"CN7613V057\", \"fwVersion\": \"4.70\" }\r\n      ],\r\n      \"applianceBayCount\": 0,\r\n      \"applianceBays\": []\r\n    }\r\n  ]\r\n}\r\n",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "query",
+                            "modifier": "start",
+                            "value": "2",
+                            "invert": false,
+                            "operator": "equals"
+                        },
+                        {
+                            "target": "query",
+                            "modifier": "count",
+                            "value": "2",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "16285b38-ff13-4826-95b4-d0cbbc612707"
+        },
+        {
+            "type": "route",
+            "uuid": "29288456-26cd-43e9-be99-86fc9fb4697a"
+        },
+        {
+            "type": "route",
+            "uuid": "3e54ce5d-498c-4e83-b07d-7e1d299ecb00"
+        },
+        {
+            "type": "route",
+            "uuid": "81d2e67e-bddd-4b75-ae5a-273e316f485a"
+        },
+        {
+            "type": "route",
+            "uuid": "497f0fc4-1235-46fc-ad95-29e14573844b"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        },
+        {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+        },
+        {
+            "key": "Access-Control-Allow-Methods",
+            "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+        },
+        {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
+}

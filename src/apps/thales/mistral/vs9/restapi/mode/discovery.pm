@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,10 +46,8 @@ sub check_options {
     if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
         $self->{option_results}->{resource_type} = 'device';
     }
-    if ($self->{option_results}->{resource_type} !~ /^device|mmc$/) {
-        $self->{output}->add_option_msg(short_msg => 'unknown resource type');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'unknown resource type')
+        unless $self->{option_results}->{resource_type} =~ /^device|mmc$/;
 }
 
 sub discovery_device {
@@ -84,23 +82,46 @@ sub discovery_device {
             }
         }
 
-        $entry->{gateway_name} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{name} : '';
+        $entry->{gateway_name} = '';
         $entry->{gateway_responder_only} = '';
-        $entry->{gateway_responder_only} = $device->{gatewayConf}->{responderOnly} =~ /true|1/i ? 'yes' : 'no'
-            if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{responderOnly}));
-        $entry->{gateway_administration_ip} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{administrationIp} : '';
+        $entry->{gateway_administration_ip} = '';
         $entry->{gateway_active} = '';
-        $entry->{gateway_active} = $device->{gatewayConf}->{active} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
         $entry->{gateway_offline} = '';
-        $entry->{gateway_offline} = $device->{gatewayConf}->{offline} =~ /true|1/i ? 'yes' : 'no' if (defined($device->{gatewayConf}));
-        $entry->{gateway_private_address} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{privateAddress}->{address} : '';
-        $entry->{gateway_private_address_netmask} = defined($device->{gatewayConf}) ? $device->{gatewayConf}->{privateAddress}->{netmask} : '';
-
+        $entry->{gateway_private_address} = '';
+        $entry->{gateway_private_address_netmask} = '';
         $entry->{gateway_blackIpRemote_address} = '';
         $entry->{gateway_blackIpRemote_address_netmask} = '';
-        if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{gatewayBlackIpRemote})) {
-            $entry->{gateway_blackIpRemote_address} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{address};
-            $entry->{gateway_blackIpRemote_address_netmask} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{netmask};
+        
+        # no more available in version 9.2.4.18
+        $entry->{gateway_responder_only} = $device->{gatewayConf}->{responderOnly} =~ /true|1/i ? 'yes' : 'no'
+            if (defined($device->{gatewayConf}) && defined($device->{gatewayConf}->{responderOnly}));
+
+        if (defined($device->{gatewayConf})) {
+            my $gateway = {};
+            # we try to get the gatewayconf directly.
+            if (defined($device->{gatewayConf}->{id}) && !defined($device->{gatewayConf}->{privateAddress})) {
+                $gateway = $options{custom}->request_api(
+                    endpoint => '/ssIpsecGws/' . $device->{gatewayConf}->{id},
+                    get_param => ['projection=gatewaySmallData']
+                );
+            }
+            
+            $entry->{gateway_name} = $device->{gatewayConf}->{name};
+            $entry->{gateway_administration_ip} = $device->{gatewayConf}->{administrationIp};
+            $entry->{gateway_active} = $device->{gatewayConf}->{active} =~ /true|1/i ? 'yes' : 'no';
+            $entry->{gateway_offline} = $device->{gatewayConf}->{offline} =~ /true|1/i ? 'yes' : 'no';
+            $entry->{gateway_private_address} = defined($device->{gatewayConf}->{privateAddress}) ? 
+                $device->{gatewayConf}->{privateAddress}->{address} : $gateway->{privateAddress}->{address};
+            $entry->{gateway_private_address_netmask} = defined($device->{gatewayConf}->{privateAddress}) ?
+                $device->{gatewayConf}->{privateAddress}->{netmask} : $gateway->{privateAddress}->{netmask};
+
+            if (defined($device->{gatewayConf}->{gatewayBlackIpRemote})) {
+                $entry->{gateway_blackIpRemote_address} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{address};
+                $entry->{gateway_blackIpRemote_address_netmask} = $device->{gatewayConf}->{gatewayBlackIpRemote}->{netmask};
+            } elsif (defined($gateway->{gatewayBlackIpRemote})) {
+                $entry->{gateway_blackIpRemote_address} = $gateway->{gatewayBlackIpRemote}->{address};
+                $entry->{gateway_blackIpRemote_address_netmask} = $gateway->{gatewayBlackIpRemote}->{netmask};
+            }
         }
 
         push @$disco_data, $entry;
@@ -181,7 +202,7 @@ Resources discovery.
 
 =item B<--resource-type>
 
-Choose the type of resources to discover (can be: 'device', 'mmc').
+Choose the type of resources to discover (can be: C<device>, C<mmc>).
 
 =back
 

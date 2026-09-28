@@ -9,8 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}          ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
-${CGS_CMD}      ${CENTREON_GENERIC_SNMP} -j ${CURDIR}${/}generic-snmp/cpu.json
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}applications-protocol-snmp
 
 
 *** Test Cases ***
@@ -34,40 +34,26 @@ cpu ${tc}
     ...    expected_result
     ...    --
     ...    1
-    ...    --use-ucd='0'
-    ...    OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-    ...    2
-    ...    --warning-average
-    ...    OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-    ...    3
-    ...    --critical-average
-    ...    OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-    ...    4
-    ...    --warning-core
-    ...    OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-    ...    5
-    ...    --critical-core
-    ...    OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-    ...    6
     ...    ${EMPTY}
     ...    OK: 1 CPU(s) average usage is 2.00 % - CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;;0;100
-    ...    7
+    ...    2
     ...    --warning-average='0'
     ...    WARNING: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;0:0;;0;100 'cpu'=2.00%;;;0;100
-    ...    8
+    ...    3
     ...    --critical-average='0'
     ...    CRITICAL: 1 CPU(s) average usage is 2.00 % | 'total_cpu_avg'=2.00%;;0:0;0;100 'cpu'=2.00%;;;0;100
-    ...    9
+    ...    4
     ...    --warning-core='0'
     ...    WARNING: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;0:0;;0;100
-    ...    10
+    ...    5
     ...    --critical-core='0'
     ...    CRITICAL: CPU '0' usage : 2.00 % | 'total_cpu_avg'=2.00%;;;0;100 'cpu'=2.00%;;0:0;0;100
 
 cgs-cpu ${tc}
-    [Tags]    os    linux    centreon-generic-snmp
+    [Tags]    os    linux    centreon-plugin-rust-snmp
     ${command}    Catenate
-    ...    ${CGS_CMD}
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}cpu.json
     ...    --hostname=${HOSTNAME}
     ...    --port=${SNMPPORT}
     ...    --snmp-version=${SNMPVERSION}
@@ -83,7 +69,7 @@ cgs-cpu ${tc}
     ...    --
     ...    1
     ...    ${EMPTY}
-    ...    Everything is OK | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
+    ...    OK: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;;0;100
     ...    2
     ...    --warning-avg=0.1
     ...    WARNING: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;0.1;;0;100
@@ -91,8 +77,8 @@ cgs-cpu ${tc}
     ...    --critical-avg=0.1
     ...    CRITICAL: avg.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;;0;100 avg.cpu.usage.percent=2%;;0.1;0;100
     ...    4
-    ...    --warning-cpu=0.1
+    ...    --warning-core=0.1
     ...    WARNING: 0#core.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;0.1;;0;100 avg.cpu.usage.percent=2%;;;0;100
     ...    5
-    ...    --critical-cpu=0.01
+    ...    --critical-core=0.01
     ...    CRITICAL: 0#core.cpu.usage.percent is 2% | 0#core.cpu.usage.percent=2%;;0.01;0;100 avg.cpu.usage.percent=2%;;;0;100

@@ -1,0 +1,154 @@
+{
+  "uuid": "09a83e8d-9112-477a-b6e0-6e97198d7a82",
+  "lastMigration": 33,
+  "name": "Docker cgroupv1",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3010,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "4f1c750c-6f0d-4add-b1ed-405c6d1293df",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "containers/json",
+      "responses": [
+        {
+          "uuid": "dfbfffb4-80e0-4f46-a563-d19a09486ed4",
+          "body": "[\r\n  {\r\n    \"Id\": \"containerId\",\r\n    \"Names\": [\r\n      \"/containerName\"\r\n    ],\r\n    \"State\": \"running\"\r\n      }\r\n]",
+          "latency": 0,
+          "statusCode": 404,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "2065e78c-856f-4ed5-9638-1be80c667602",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "containers/containerId/stats",
+      "responses": [
+        {
+          "uuid": "69d39aeb-c49b-414a-b3a3-24771b63c55f",
+          "body": "{\n  \"read\": \"2026-01-30T10:59:33.461577844Z\",\n  \"preread\": \"0001-01-01T00:00:00Z\",\n  \"pids_stats\": {\n    \"current\": 49\n  },\n  \"blkio_stats\": {\n    \"io_service_bytes_recursive\": [\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Read\",\n        \"value\": 233472\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Sync\",\n        \"value\": 233472\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Total\",\n        \"value\": 233472\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Read\",\n        \"value\": 3751530496\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Sync\",\n        \"value\": 3751530496\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Total\",\n        \"value\": 3751530496\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Read\",\n        \"value\": 3797504000\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Sync\",\n        \"value\": 3797504000\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Total\",\n        \"value\": 3797504000\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Read\",\n        \"value\": 45740032\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Sync\",\n        \"value\": 45740032\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Total\",\n        \"value\": 45740032\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Read\",\n        \"value\": 10327704064\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Sync\",\n        \"value\": 10327704064\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Total\",\n        \"value\": 10327704064\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Read\",\n        \"value\": 10327704064\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Sync\",\n        \"value\": 10327704064\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Total\",\n        \"value\": 10327704064\n      }\n    ],\n    \"io_serviced_recursive\": [\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Read\",\n        \"value\": 15\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Sync\",\n        \"value\": 15\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 12,\n        \"op\": \"Total\",\n        \"value\": 15\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Read\",\n        \"value\": 915901\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Sync\",\n        \"value\": 915901\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 1,\n        \"op\": \"Total\",\n        \"value\": 915901\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Read\",\n        \"value\": 916567\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Sync\",\n        \"value\": 916567\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 0,\n        \"op\": \"Total\",\n        \"value\": 916567\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Read\",\n        \"value\": 651\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Sync\",\n        \"value\": 651\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 11,\n        \"op\": \"Total\",\n        \"value\": 651\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Read\",\n        \"value\": 79559\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Sync\",\n        \"value\": 79559\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 8,\n        \"minor\": 16,\n        \"op\": \"Total\",\n        \"value\": 79559\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Read\",\n        \"value\": 79559\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Write\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Sync\",\n        \"value\": 79559\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Async\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Discard\",\n        \"value\": 0\n      },\n      {\n        \"major\": 252,\n        \"minor\": 3,\n        \"op\": \"Total\",\n        \"value\": 79559\n      }\n    ],\n    \"io_queue_recursive\": [],\n    \"io_service_time_recursive\": [],\n    \"io_wait_time_recursive\": [],\n    \"io_merged_recursive\": [],\n    \"io_time_recursive\": [],\n    \"sectors_recursive\": []\n  },\n  \"num_procs\": 0,\n  \"storage_stats\": {},\n  \"cpu_stats\": {\n    \"cpu_usage\": {\n      \"total_usage\": 1950723284902,\n      \"percpu_usage\": [\n        979658989188,\n        971064295714\n      ],\n      \"usage_in_kernelmode\": 617990000000,\n      \"usage_in_usermode\": 1294250000000\n    },\n    \"system_cpu_usage\": 4141020320000000,\n    \"online_cpus\": 2,\n    \"throttling_data\": {\n      \"periods\": 0,\n      \"throttled_periods\": 0,\n      \"throttled_time\": 0\n    }\n  },\n  \"precpu_stats\": {\n    \"cpu_usage\": {\n      \"total_usage\": 0,\n      \"usage_in_kernelmode\": 0,\n      \"usage_in_usermode\": 0\n    },\n    \"throttling_data\": {\n      \"periods\": 0,\n      \"throttled_periods\": 0,\n      \"throttled_time\": 0\n    }\n  },\n  \"memory_stats\": {\n    \"usage\": 458633216,\n    \"max_usage\": 641589248,\n    \"stats\": {\n      \"active_anon\": 19209912320,\n      \"active_file\": 10183770112,\n      \"cache\": 350861918208,\n      \"dirty\": 16777216,\n      \"hierarchical_memory_limit\": 9223372036854772000,\n      \"hierarchical_memsw_limit\": 9223372036854772000,\n      \"inactive_anon\": 1490638864384,\n      \"inactive_file\": 340678148096,\n      \"mapped_file\": 84590723072,\n      \"pgfault\": 1669709,\n      \"pgmajfault\": 454943,\n      \"pgpgin\": 3961601,\n      \"pgpgout\": 4101595,\n      \"rss\": 1469835116544,\n      \"rss_huge\": 1005022347264,\n      \"total_active_anon\": 4689920,\n      \"total_active_file\": 2486272,\n      \"total_cache\": 85659648,\n      \"total_dirty\": 4096,\n      \"total_inactive_anon\": 363925504,\n      \"total_inactive_file\": 83173376,\n      \"total_mapped_file\": 20652032,\n      \"total_pgfault\": 1669709,\n      \"total_pgmajfault\": 454943,\n      \"total_pgpgin\": 3961601,\n      \"total_pgpgout\": 4101595,\n      \"total_rss\": 358846464,\n      \"total_rss_huge\": 245366784,\n      \"total_unevictable\": 0,\n      \"total_writeback\": 0,\n      \"unevictable\": 0,\n      \"writeback\": 0\n    },\n    \"limit\": 8025042944\n  },\n  \"name\": \"/xxxxxxxxxxx\",\n  \"id\": \" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \",\n  \"networks\": {\n    \"eth0\": {\n      \"rx_bytes\": 5940812,\n      \"rx_packets\": 97854,\n      \"rx_errors\": 0,\n      \"rx_dropped\": 0,\n      \"tx_bytes\": 61768820,\n      \"tx_packets\": 107664,\n      \"tx_errors\": 0,\n      \"tx_dropped\": 0\n    }\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "4f1c750c-6f0d-4add-b1ed-405c6d1293df"
+    },
+    {
+      "type": "route",
+      "uuid": "2065e78c-856f-4ed5-9638-1be80c667602"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

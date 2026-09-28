@@ -1,0 +1,23 @@
+# Exclude everything except what the VMware connector build needs.
+# Build context root: centreon-plugins/
+#
+# Required paths:
+#   connectors/vmware/         — PACKAGE_SOURCE=local (local dev source)
+#   .github/docker/connector/  — Dockerfile assets (patch, entrypoint)
+#   sdks-vmware/               — RUN --mount=type=bind,source=sdks-vmware (WITH_SDK=true)
+#   packages-centreon/         — RUN --mount=type=bind,source=packages-centreon (PACKAGE_SOURCE=mount)
+
+# Default: exclude all
+**
+
+# Keep VMware connector source (PACKAGE_SOURCE=local)
+!connectors/vmware/
+
+# Keep Dockerfile assets (patch, entrypoint)
+!.github/docker/connector/
+
+# Keep SDK archives (WITH_SDK=true — bind-mounted in sdk-true stage)
+!sdks-vmware/
+
+# Keep pre-built packages dir (PACKAGE_SOURCE=mount — bind-mounted in extractor-mount stage)
+!packages-centreon/

@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package centreon::common::redfish::restapi::mode::components::drive;
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw(value_of);
 
 sub check {
     my ($self) = @_;
@@ -33,9 +34,9 @@ sub check {
     $self->get_storages() if (!defined($self->{storages}));
 
     foreach my $storage (@{$self->{storages}}) {
-        $storage->{'@odata.id'} =~ /Systems\/(\d+)\//;
+        $storage->{'@odata.id'} =~ /Systems\/([^\/]+)\//;
         my $system_id = $1;
-        my $system_name = 'system:' . $1;
+        my $system_name = 'system:' . $system_id;
 
         my $storage_name = $storage->{Id};
 
@@ -44,21 +45,22 @@ sub check {
 
             my $instance = $system_id . '.' . $storage->{Id} . '.' . $drive->{Id};
 
-            $drive->{Status}->{Health} = defined($drive->{Status}->{Health}) ? $drive->{Status}->{Health} : 'n/a';
-            $drive->{Status}->{State} = defined($drive->{Status}->{State}) ? $drive->{Status}->{State} : 'n/a';
+            $drive->{Status}->{Health} = value_of($drive, '->{Status}->{Health}', 'n/a');
+            $drive->{Status}->{State} = value_of($drive, '->{Status}->{State}', 'n/a');
+            my $location = value_of($drive, '->{PhysicalLocation}->{PartLocation}->{ServiceLabel}', 'n/a');
             next if ($self->check_filter(section => 'drive', instance => $instance));
             $self->{components}->{drive}->{total}++;
-            
+
             $self->{output}->output_add(
                 long_msg => sprintf(
                     "drive '%s/%s/%s' status is '%s' [instance: %s, state: %s, location: %s]",
                     $system_name,
                     $storage_name,
                     $drive->{Id},
-                    $drive->{Status}->{Health}, 
+                    $drive->{Status}->{Health},
                     $instance,
                     $drive->{Status}->{State},
-                    $drive->{PhysicalLocation}->{PartLocation}->{ServiceLabel}
+                    $location
                 )
             );
 

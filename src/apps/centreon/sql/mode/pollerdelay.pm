@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package apps::centreon::sql::mode::pollerdelay;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:values :counters);
 
 use strict;
 use warnings;
@@ -29,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'poller', type => 1, cb_prefix_output => 'prefix_poller_output', message_multiple => 'All poller delay for last update are ok', skipped_code => { -10 => 1 } }
+        { name => 'poller', type => COUNTER_TYPE_INSTANCE, prefix_output => "Poller '%{display}' ", message_multiple => 'All poller delay for last update are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{poller} = [
@@ -45,31 +46,34 @@ sub set_counters {
     ];
 }
 
-sub prefix_poller_output {
-    my ($self, %options) = @_;
-
-    return "Poller '" . $options{instance_value}->{display} . "' : ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s'               => { name => 'filter_name' },
+        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' },
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if ($self->{option_results}->{centreon_storage_database} !~ /^[a-zA-Z0-9_\-]+$/) {
+        $self->{output}->add_option_msg(short_msg => "Wrong value for --centreon-storage-database option (only alphanumeric characters, underscores and dashes are allowed).");
+        $self->{output}->option_exit();
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    $options{sql}->query(query => q{
-        SELECT instance_id, name, last_alive, running FROM centreon_storage.instances WHERE deleted = '0';
-    });
+    $options{sql}->query(query => "SELECT instance_id, name, last_alive, running FROM `" . $self->{option_results}->{centreon_storage_database} . "`.instances WHERE deleted = '0'");
 
     my $result = $options{sql}->fetchall_arrayref();
     $self->{poller} = {};
@@ -100,14 +104,19 @@ __END__
 
 =head1 MODE
 
-Check the delay of the last update from a poller to the Central server.
-The mode should be used with mysql plugin and dyn-mode option.
+Check the delay of the last data update sent from a poller to the Central server.
+The mode should be used with the database::mysql::plugin plugin and C<--dyn-mode> option.
+Example: C<perl centreon_plugins.pl --plugin=database::mysql::plugin --dyn-mode=apps::centreon::sql::mode::pollerdelay ...>.
 
 =over 8
 
 =item B<--filter-name>
 
 Filter by poller name (can be a regexp).
+
+=item B<--centreon-storage-database>
+
+Set the Centreon storage database name, only alphanumeric characters and underscores are allowed (default: 'centreon_storage').
 
 =item B<--warning-delay>
 

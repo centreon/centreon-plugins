@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -90,6 +90,10 @@ sub GetOptions {
                 if ($assigned ne '0') {
                     ${$opts{$option_selected}} = 1;
                 }
+            } elsif ($type_opt =~ /:i$/) {
+                ($num_args, my $assigned)  = get_assigned_value(num_args => $num_args, pos => $i, val => $value);
+                warn "UNKNOWN: option $option is not an integer (got '$assigned')." unless $assigned =~ /^[0-9]*$/;
+                ${$opts{$option_selected}} = $assigned;
             } elsif ($type_opt =~ /:s$/) {
                 ($num_args, my $assigned) = get_assigned_value(num_args => $num_args, pos => $i, val => $value);
                 ${$opts{$option_selected}} = $assigned;

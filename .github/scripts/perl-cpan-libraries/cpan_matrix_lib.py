@@ -17,7 +17,7 @@ import urllib.request
 # ── Matrix defaults ────────────────────────────────────────────────────────────
 
 RPM_DEFAULT_BUILD_DISTRIBS = "el8,el9,el10"
-DEB_DEFAULT_BUILD_NAMES    = "bullseye-amd64,bookworm,trixie,jammy,noble"
+DEB_DEFAULT_BUILD_NAMES    = "bookworm,trixie,jammy,noble"
 
 RPM_DEFAULTS = {
     "rpm_dependencies": "",
@@ -46,22 +46,29 @@ DEB_DEFAULTS = {
 # ── Fixed include entries ──────────────────────────────────────────────────────
 
 RPM_DISTRIB_INCLUDES = [
-    {"distrib": "el8",  "package_extension": "rpm", "image": "packaging-plugins-alma8"},
-    {"distrib": "el9",  "package_extension": "rpm", "image": "packaging-plugins-alma9"},
-    {"distrib": "el10", "package_extension": "rpm", "image": "packaging-plugins-alma10"},
+    {"distrib": "el8",  "package_extension": "rpm", "image": "packaging:alma8"},
+    {"distrib": "el9",  "package_extension": "rpm", "image": "packaging:alma9"},
+    {"distrib": "el10", "package_extension": "rpm", "image": "packaging:alma10"},
 ]
 
 DEB_BUILD_NAME_INCLUDES = [
-    {"build_name": "bullseye-amd64", "distrib": "bullseye", "package_extension": "deb", "image": "packaging-plugins-bullseye"},
-    {"build_name": "bookworm",       "distrib": "bookworm", "package_extension": "deb", "image": "packaging-plugins-bookworm"},
-    {"build_name": "trixie",         "distrib": "trixie",   "package_extension": "deb", "image": "packaging-plugins-trixie"},
-    {"build_name": "jammy",          "distrib": "jammy",    "package_extension": "deb", "image": "packaging-plugins-jammy"},
-    {"build_name": "noble",          "distrib": "noble",    "package_extension": "deb", "image": "packaging-plugins-noble"},
+    {"build_name": "bookworm",       "distrib": "bookworm", "package_extension": "deb", "image": "packaging:bookworm"},
+    {"build_name": "trixie",         "distrib": "trixie",   "package_extension": "deb", "image": "packaging:trixie"},
+    {"build_name": "jammy",          "distrib": "jammy",    "package_extension": "deb", "image": "packaging:jammy"},
+    {"build_name": "noble",          "distrib": "noble",    "package_extension": "deb", "image": "packaging:noble"},
     {
-        "build_name": "bullseye-arm64",
-        "distrib":    "bullseye",
+        "build_name": "bookworm-arm64",
+        "distrib":    "bookworm",
         "package_extension": "deb",
-        "image": "packaging-plugins-bullseye-arm64",
+        "image": "packaging:bookworm",
+        "arch": "arm64",
+        "runner_name": "ubuntu-24.04-arm",
+    },
+    {
+        "build_name": "trixie-arm64",
+        "distrib":    "trixie",
+        "package_extension": "deb",
+        "image": "packaging:trixie",
         "arch": "arm64",
         "runner_name": "ubuntu-24.04-arm",
     },
@@ -71,10 +78,10 @@ DEB_BUILD_NAME_INCLUDES = [
 
 RPM_DISTRIBS = [e["distrib"] for e in RPM_DISTRIB_INCLUDES]
 
-# image → check_distrib  (bullseye-arm64 → "bullseye": same official repos, different arch)
+# image → check_distrib  (same official repos can cover several arches/build names)
 DEB_IMAGE_TO_CHECK_DISTRIB = {e["image"]: e["distrib"] for e in DEB_BUILD_NAME_INCLUDES}
 
-# check_distrib → build_names it covers  (e.g. "bullseye" → ["bullseye-amd64", "bullseye-arm64"])
+# check_distrib → build_names it covers  (e.g. "bookworm" → ["bookworm"])
 DEB_CHECK_DISTRIB_TO_BUILD_NAMES: dict = {}
 for _e in DEB_BUILD_NAME_INCLUDES:
     DEB_CHECK_DISTRIB_TO_BUILD_NAMES.setdefault(_e["distrib"], []).append(_e["build_name"])
@@ -274,7 +281,7 @@ _DEB_VERSION_RE = re.compile(r"^([0-9v][0-9.]*)(?:[+\-]|$)")
 _deb_packages_cache: dict = {}  # (repo, distrib, arch) → {pkg_name: version}
 
 
-_ALLOWED_ARTIFACTORY_HOSTS = {"packages.centreon.com"}
+_ALLOWED_ARTIFACTORY_HOSTS = {"centreon.jfrog.io", "packages.centreon.com"}
 
 
 def _artifactory_list_folder(base_url, repo_path):

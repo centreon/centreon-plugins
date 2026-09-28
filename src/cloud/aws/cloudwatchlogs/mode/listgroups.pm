@@ -55,7 +55,7 @@ sub run {
         $self->{output}->output_add(
             long_msg => sprintf(
                 '[group name = %s]',
-                $_->{logGroupName}
+                defined($_->{logGroupName}) ? $_->{logGroupName} : $_->{LogGroupName}
             )
         );
     }

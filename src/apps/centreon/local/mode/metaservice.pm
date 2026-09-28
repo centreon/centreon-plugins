@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::common::db;
 use centreon::common::logger;
-
+use centreon::plugins::passwordmgr::centreonvault;
 use vars qw($centreon_config);
 
 my %DSTYPE = ( '0' => 'g', '1' => 'c', '2' => 'd', '3' => 'a');
@@ -41,6 +41,7 @@ sub new {
         'meta-id:s'         => { name => 'meta_id' }
     });
 
+    $self->{vault} = centreon::plugins::passwordmgr::centreonvault->new(output => $self->{output}, options => $options{options});
     $self->{metric_selected} = {};
     return $self;
 }
@@ -49,11 +50,17 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{meta_id}) || $self->{option_results}->{meta_id} !~ /^[0-9]+$/) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify meta-id (numeric value) option.");
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => "Need to specify meta-id (numeric value) option.")
+        if (!defined($self->{option_results}->{meta_id}) || $self->{option_results}->{meta_id} !~ /^[0-9]+$/);
+
     require $self->{option_results}->{centreon_config};
+    foreach my $key ('db_user', 'db_passwd') {
+        $self->{option_results}->{$key} //= $centreon_config->{$key} // "";
+    }
+    $self->{vault}->manage_options(option_results => $self->{option_results});
+    foreach my $key ('db_user', 'db_passwd') {
+        $centreon_config->{$key} = $self->{option_results}->{$key};
+    }
 }
 
 sub execute_query {

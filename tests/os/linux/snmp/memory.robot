@@ -9,7 +9,8 @@ Test Timeout        120s
 
 
 *** Variables ***
-${CMD}      ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CMD}                  ${CENTREON_PLUGINS} --plugin=os::linux::snmp::plugin
+${CGS_COLLECTIONS}      ${CURDIR}${/}..${/}..${/}..${/}..${/}rust-plugins${/}rs-collections${/}operatingsystems-linux-snmp
 
 
 *** Test Cases ***
@@ -199,3 +200,89 @@ memory ${tc}
     ...    2c
     ...    --patch-redhat='1'
     ...    OK: Ram Total: 5.91 TB Used (-buffers/cache): 5.89 TB (99.68%) Free: 19.12 GB (0.32%), Buffer: 694.54 MB, Cached: 219.41 GB, Shared: 9.31 GB | 'used'=6472685486080B;;;0;6493217484800 'free'=20531998720B;;;0;6493217484800 'used_prct'=99.68%;;;0;100 'buffer'=728276992B;;;0; 'cached'=235591376896B;;;0; 'shared'=9997410304B;;;0;
+
+cgs-mem ${tc}
+    [Tags]    os    linux    centreon-plugin-rust-snmp
+    ${command}    Catenate
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}memory.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/linux
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK: Memory Used: 736309248B - Free: 1326288896B - Total: 2062598144B | memory.free.bytes=1326288896B;;;0;2062598144 memory.usage.bytes=736309248B;;;0;2062598144 memory.usage.percent=35.7%;;;0;100 memory.total.bytes=2062598144B;;;0;
+    ...    2
+    ...    --warning-bytes=0.1
+    ...    WARNING: memory.usage.bytes is 736309248B | memory.free.bytes=1326288896B;;;0;2062598144 memory.usage.bytes=736309248B;0.1;;0;2062598144 memory.usage.percent=35.7%;;;0;100 memory.total.bytes=2062598144B;;;0;
+    ...    3
+    ...    --critical-bytes=0.1
+    ...    CRITICAL: memory.usage.bytes is 736309248B | memory.free.bytes=1326288896B;;;0;2062598144 memory.usage.bytes=736309248B;;0.1;0;2062598144 memory.usage.percent=35.7%;;;0;100 memory.total.bytes=2062598144B;;;0;
+    ...    4
+    ...    --warning-prct=0.1
+    ...    WARNING: memory.usage.percent is 35.7% | memory.free.bytes=1326288896B;;;0;2062598144 memory.usage.bytes=736309248B;;;0;2062598144 memory.usage.percent=35.7%;0.1;;0;100 memory.total.bytes=2062598144B;;;0;
+    ...    5
+    ...    --critical-prct=0.1
+    ...    CRITICAL: memory.usage.percent is 35.7% | memory.free.bytes=1326288896B;;;0;2062598144 memory.usage.bytes=736309248B;;;0;2062598144 memory.usage.percent=35.7%;;0.1;0;100 memory.total.bytes=2062598144B;;;0;
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CGS_COLLECTIONS}${/}memory.json' JSON is valid
+    ...    7
+    ...    --warning-free-bytes=1
+    ...    WARNING: memory.free.bytes is 1326288896B | memory.free.bytes=1326288896B;1;;0;2062598144 memory.usage.bytes=736309248B;;;0;2062598144 memory.usage.percent=35.7%;;;0;100 memory.total.bytes=2062598144B;;;0;
+    ...    8
+    ...    --critical-free-bytes=1
+    ...    CRITICAL: memory.free.bytes is 1326288896B | memory.free.bytes=1326288896B;;1;0;2062598144 memory.usage.bytes=736309248B;;;0;2062598144 memory.usage.percent=35.7%;;;0;100 memory.total.bytes=2062598144B;;;0;
+
+cgs-mem-64 ${tc}
+    [Tags]    os    linux    centreon-plugin-rust-snmp
+    ${command}    Catenate
+    ...    ${CENTREON_PLUGIN_RUST_SNMP}
+    ...    -j ${CGS_COLLECTIONS}${/}memory-64.json
+    ...    --hostname=${HOSTNAME}
+    ...    --port=${SNMPPORT}
+    ...    --snmp-version=${SNMPVERSION}
+    ...    --snmp-community=os/linux/snmp/linux
+    ...    ${extra_options}
+
+    Ctn Run Command Without Connector And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
+    ...    OK: Memory Used: 6236365832192B - Free: 256851652608B - Total: 6493217484800B | memory.free.bytes=256851652608B;;;0;6493217484800 memory.usage.bytes=6236365832192B;;;0;6493217484800 memory.usage.percent=96.04%;;;0;100 memory.total.bytes=6493217484800B;;;0;
+    ...    2
+    ...    --warning-bytes=0.1
+    ...    WARNING: memory.usage.bytes is 6236365832192B | memory.free.bytes=256851652608B;;;0;6493217484800 memory.usage.bytes=6236365832192B;0.1;;0;6493217484800 memory.usage.percent=96.04%;;;0;100 memory.total.bytes=6493217484800B;;;0;
+    ...    3
+    ...    --critical-bytes=0.1
+    ...    CRITICAL: memory.usage.bytes is 6236365832192B | memory.free.bytes=256851652608B;;;0;6493217484800 memory.usage.bytes=6236365832192B;;0.1;0;6493217484800 memory.usage.percent=96.04%;;;0;100 memory.total.bytes=6493217484800B;;;0;
+    ...    4
+    ...    --warning-prct=0.1
+    ...    WARNING: memory.usage.percent is 96.04% | memory.free.bytes=256851652608B;;;0;6493217484800 memory.usage.bytes=6236365832192B;;;0;6493217484800 memory.usage.percent=96.04%;0.1;;0;100 memory.total.bytes=6493217484800B;;;0;
+    ...    5
+    ...    --critical-prct=0.1
+    ...    CRITICAL: memory.usage.percent is 96.04% | memory.free.bytes=256851652608B;;;0;6493217484800 memory.usage.bytes=6236365832192B;;;0;6493217484800 memory.usage.percent=96.04%;;0.1;0;100 memory.total.bytes=6493217484800B;;;0;
+    ...    6
+    ...    --check-format
+    ...    Check format of JSON file '${CGS_COLLECTIONS}${/}memory-64.json' JSON is valid
+    ...    7
+    ...    --warning-free-bytes=1
+    ...    WARNING: memory.free.bytes is 256851652608B | memory.free.bytes=256851652608B;1;;0;6493217484800 memory.usage.bytes=6236365832192B;;;0;6493217484800 memory.usage.percent=96.04%;;;0;100 memory.total.bytes=6493217484800B;;;0;
+    ...    8
+    ...    --critical-free-bytes=1
+    ...    CRITICAL: memory.free.bytes is 256851652608B | memory.free.bytes=256851652608B;;1;0;6493217484800 memory.usage.bytes=6236365832192B;;;0;6493217484800 memory.usage.percent=96.04%;;;0;100 memory.total.bytes=6493217484800B;;;0;

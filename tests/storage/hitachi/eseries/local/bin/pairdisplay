@@ -1,0 +1,37 @@
+#!/bin/sh
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
+# Mock pairdisplay command for centreon-plugin tests
+# Usage: pairdisplay -ITC<horcm_id> -g <group> -CLI -fxce
+
+grp=""
+while [ $# -gt 0 ]; do
+    if [ "$1" = "-g" ]; then
+        grp=$2
+        shift 2
+    else
+        shift
+    fi
+done
+
+case "$grp" in
+    GRP1)
+        printf "Group\tPairVol\tL/R Port Tid Lu Seq# LDEV# P/S Status Fence %% P-LDEV# M CTG JID AP EM E-Seq# E-LDEV# R/W QM DM P PR\n"
+        printf "GRP1\tGRP1-PAIR01 L CL1-A 0 0 123456 0x0001 P-VOL PAIR - 100 0x0002 - - - - - - - W QM - - -\n"
+        printf "GRP1\tGRP1-PAIR01 R CL2-A 0 0 123457 0x0002 S-VOL PAIR - 100 0x0001 - - - - - - - W QM - - -\n"
+        printf "GRP1\tGRP1-PAIR02 L CL1-A 0 1 123456 0x0003 P-VOL COPY - 50 0x0004 - - - - - - - W QM - - -\n"
+        printf "GRP1\tGRP1-PAIR02 R CL2-A 0 1 123457 0x0004 S-VOL COPY - 50 0x0003 - - - - - - - W QM - - -\n"
+        ;;
+    GRP2)
+        printf "Group\tPairVol\tL/R Port Tid Lu Seq# LDEV# P/S Status Fence %% P-LDEV# M CTG JID AP EM E-Seq# E-LDEV# R/W QM DM P PR\n"
+        printf "GRP2\tGRP2-PAIR01 L CL1-B 0 0 123456 0x0010 P-VOL PAIR - 100 0x0020 - - - - - - - W QM - - -\n"
+        printf "GRP2\tGRP2-PAIR01 R CL2-B 0 0 123457 0x0020 S-VOL PAIR - 100 0x0010 - - - - - - - W QM - - -\n"
+        ;;
+    GRPERR)
+        printf "Group\tPairVol\tL/R Port Tid Lu Seq# LDEV# P/S Status Fence %% P-LDEV# M CTG JID AP EM E-Seq# E-LDEV# R/W QM DM P PR\n"
+        printf "GRPERR\tGRPERR-PAIR01 L CL1-A 0 0 123456 0x0030 P-VOL PSUE - 0 0x0040 - - - - - - - W QM - - -\n"
+        printf "GRPERR\tGRPERR-PAIR01 R CL2-A 0 0 123457 0x0040 S-VOL PSUE - 0 0x0030 - - - - - - - W QM - - -\n"
+        ;;
+    *)
+        exit 1
+        ;;
+esac

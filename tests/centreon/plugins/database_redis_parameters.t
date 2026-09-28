@@ -47,10 +47,10 @@ my $cust = database::redis::custom::cli->new(
 );
 $options->{custom} = $cust;
 
-foreach my $test ({ title => 'Test --key parameter',    param => { key => 'private.key'},       expect => q(--key 'private.key') },
-                  { title => 'Test --cert parameter',   param => { cert => 'dummy.crt'},        expect => q(--cert 'dummy.crt') },
-                  { title => 'Test --cacert parameter', param => { cacert => 'ca.crt'},         expect => q(--cacert 'ca.crt') },) {
-    $cust->set_options(option_results => $test->{param} );
+foreach my $test ({ title => 'Test --key parameter',    param => { cert => '', cacert => '', key => 'private.key' },       expect => q(--key 'private.key') },
+                  { title => 'Test --cert parameter',   param => { cert => 'dummy.crt', cacert => '', key => '' },         expect => q(--cert 'dummy.crt') },
+                  { title => 'Test --cacert parameter', param => { cert => '', cacert => 'ca.crt', key => '' },            expect => q(--cacert 'ca.crt') },) {
+    $cust->set_options(option_results => { %{$test->{param}}, ssh_hostname => '', tls => '', server => '', password => '', username => '', port => '' } );
     $cust->check_options();
 
     $plugin->manage_selection(%$options);

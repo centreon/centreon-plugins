@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,6 +27,7 @@ use warnings;
 use DateTime;
 use POSIX;
 use centreon::plugins::misc;
+use centreon::plugins::constants qw/:values :counters/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 my $unitdiv = { s => 1, w => 604800, d => 86400, h => 3600, m => 60 };
@@ -89,13 +90,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'all certificates are ok', skipped_code => { -10 => 1 } }
+        { name => 'certificates', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'all certificates are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{certificates} = [
         {
             label => 'certificate-status',
-            type => 2,
+            type => COUNTER_KIND_TEXT,
             set => {
                 key_values => [
                     { name => 'active' }, { name => 'revoked' },
@@ -189,16 +190,19 @@ sub add_certificate {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $certificates = $options{custom}->request_api(
-        endpoint => '/certificateCas',
-        get_param => ['projection=withSignedCertificates']
-    );
+    my $response = $options{custom}->get_certificates_ca_with_signed_certificates();
+    my $certificates = $response;
+    if (ref($response) eq 'HASH' && defined($response->{content})) {
+        $certificates = $response->{content};
+    }
 
     $self->{certificates} = {};
-    foreach my $cert (@{$certificates->{content}}) {
-        $self->add_certificate(cert => $cert);
-        foreach my $mmc (@{$cert->{certificatesMmc}}) {
-            $self->add_certificate(cert => $mmc);
+    if (ref($certificates) eq 'ARRAY') {
+        foreach my $cert (@$certificates) {
+            $self->add_certificate(cert => $cert);
+            foreach my $mmc (@{$cert->{certificatesMmc}}) {
+                $self->add_certificate(cert => $mmc);
+            }
         }
     }
 }
@@ -241,10 +245,13 @@ You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectComm
 Define the conditions to match for the status to be CRITICAL.
 You can use the following variables: %{active}, %{revoked}, %{sn}, %{subjectCommonName}, %{issuerCommonName}
 
-=item B<--warning-*> B<--critical-*>
+=item B<--warning-certificate-expires>
 
-Thresholds.
-Can be: 'certificate-expires'.
+Threshold.
+
+=item B<--critical-certificate-expires>
+
+Threshold.
 
 =back
 

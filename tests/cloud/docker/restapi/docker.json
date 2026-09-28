@@ -1,6 +1,6 @@
 {
   "uuid": "123def66-79b3-46a6-a645-ba1aa0fab6c2",
-  "lastMigration": 32,
+  "lastMigration": 33,
   "name": "Docker",
   "endpointPrefix": "",
   "latency": 0,
@@ -35,7 +35,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     },
     {
       "uuid": "e7e4e95d-f5d8-4e40-ba95-ffd76264b8ca",
@@ -64,7 +66,9 @@
           "callbacks": []
         }
       ],
-      "responseMode": null
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
     }
   ],
   "rootChildren": [

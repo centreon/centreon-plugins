@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -359,6 +359,26 @@ sub internal_api_list_services {
         );
     }
 
+    foreach my $service (@$services) {
+        $response = $self->{http}->request(
+        hostname => $options{node_name},
+        url_path => '/services/' . $service->{ID},
+        unknown_status => '', critical_status => '', warning_status => ''
+        );
+        my $service_info;
+        eval {
+            $service_info = JSON::XS->new->utf8->decode($response);
+        };
+        if ($@) {
+            $service_info = {};
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "Service '$options{node_name}' - " . $service->{ID} . "': cannot decode json get service response: $@"
+            );
+        }
+        $service->{Spec}->{TaskTemplate}->{RestartPolicy}->{Condition} = $service_info->{Spec}->{TaskTemplate}->{RestartPolicy}->{Condition} // 'none';
+    }
+
     return $services;
 }
 
@@ -398,16 +418,37 @@ sub api_list_services {
 
         my $list_services = $self->internal_api_list_services(node_name => $node_name);
         foreach my $task (@$list_tasks) {
-            $services->{ $task->{ServiceID} } = {} if (!defined($services->{ $task->{ServiceID} }));
             my $service = $self->internal_get_by_id(list => $list_services, Id => $task->{ServiceID});
-            $services->{ $task->{ServiceID} }->{ $task->{ID} } = {
-                node_id => $task->{NodeID},
-                node_name => $node_name,
-                service_name => $service->{Spec}->{Name},
-                container_id => $task->{Status}->{ContainerStatus}->{ContainerID},
+            if (!defined($services->{ $task->{ServiceID} })) {
+                $services->{ $task->{ServiceID} } = {
+                    service => {
+                        service_id     => $task->{ServiceID},
+                        service_name   => $service->{Spec}->{Name},
+                        replicas       => $service->{Spec}->{Mode}->{Replicated}->{Replicas} // 0,
+                        restart_policy => $service->{Spec}->{TaskTemplate}->{RestartPolicy}->{Condition},
+                        total          => 0,
+                        running        => 0,
+                        failed         => 0,
+                        shutdown       => 0,
+                        problems       => 0,
+                        restart        => -1,
+                        rate           => -1
+                    },
+                    tasks          => {}
+                }
+            }
+            
+            $services->{ $task->{ServiceID} }->{tasks}->{ $task->{ID} } = {
+                node_id       => $task->{NodeID},
+                node_name     => $node_name,
+                service_id    => $task->{ServiceID},
+                service_name  => $service->{Spec}->{Name},
+                container_id  => $task->{Status}->{ContainerStatus}->{ContainerID},
+                task_id       => $task->{ID},
                 desired_state => defined($task->{DesiredState}) && $task->{DesiredState} ne '' ? $task->{DesiredState} : '-',
-                state => defined($task->{Status}->{State}) && $task->{Status}->{State} ne '' ? $task->{Status}->{State} : '-',
-                state_message => defined($task->{Status}->{Message}) && $task->{Status}->{Message} ne '' ? $task->{Status}->{Message} : '-'
+                state         => defined($task->{Status}->{State}) && $task->{Status}->{State} ne '' ? $task->{Status}->{State} : '-',
+                state_message => defined($task->{Status}->{Message}) && $task->{Status}->{Message} ne '' ? $task->{Status}->{Message} : '-',
+                timestamp     => defined($task->{Status}->{Timestamp}) && $task->{Status}->{Timestamp} ne '' ? $task->{Status}->{Timestamp} : '-',
             };
         }
     }
@@ -503,11 +544,11 @@ __END__
 
 =head1 NAME
 
-Docker REST API
+Docker REST API.
 
 =head1 SYNOPSIS
 
-Docker Rest API custom mode
+Docker Rest API custom mode.
 
 =head1 REST API OPTIONS
 
@@ -519,23 +560,23 @@ IP Addr/FQDN of the docker node (can be multiple).
 
 =item B<--port>
 
-Port used (default: 8080)
+Port used (default: 8080).
 
 =item B<--proto>
 
-Specify https if needed (default: 'http')
+Specify https if needed (default: 'http').
 
 =item B<--credentials>
 
-Specify this option if you access server-status page with authentication
+Specify this option if you access server-status page with authentication.
 
 =item B<--username>
 
-Specify the username for authentication (mandatory if --credentials is specified)
+Specify the username for authentication (mandatory if --credentials is specified).
 
 =item B<--password>
 
-Specify the password for authentication (mandatory if --credentials is specified)
+Specify the password for authentication (mandatory if --credentials is specified).
 
 =item B<--basic>
 
@@ -547,35 +588,35 @@ Specify this option if you access server-status page over hidden basic authentic
 
 =item B<--timeout>
 
-Threshold for HTTP timeout (default: 10)
+Threshold for HTTP timeout (default: 10).
 
 =item B<--cert-file>
 
-Specify certificate to send to the web server
+Specify certificate to send to the web server.
 
 =item B<--key-file>
 
-Specify key to send to the web server
+Specify key to send to the web server.
 
 =item B<--cacert-file>
 
-Specify root certificate to send to the web server
+Specify root certificate to send to the web server.
 
 =item B<--cert-pwd>
 
-Specify certificate's password
+Specify certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12)
+Specify type of certificate (PKCS12).
 
 =item B<--api-display>
 
-Print json api.
+Print JSON API.
 
 =item B<--api-write-display>
 
-Print json api in a file (to be used with --api-display).
+Print json api in a file (to be used with C<--api-display>).
 
 =item B<--api-read-file>
 
@@ -583,7 +624,7 @@ Read API from file.
 
 =item B<--reload-cache-time>
 
-Time in seconds before reloading list containers cache (default: 300)
+Time in seconds before reloading list containers cache (default: 300).
 
 =back
 

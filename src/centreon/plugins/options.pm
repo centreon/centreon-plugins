@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,8 @@
 package centreon::plugins::options;
 
 use Pod::Usage;
+use centreon::plugins::misc qw/exprintf/;
+use List::Util qw/any/;
 use strict;
 use warnings;
 
@@ -31,6 +33,14 @@ sub new {
     my $self  = {};
     bless $self, $class;
 
+    # Template for default validation error messages
+    $self->{'validation_error_message'} = { DEFAULT => "Bad value provided for option %{option}: '%{value}'. Constraint '%{value}' %{validation} '%{validation_value}' is not verified.",
+                                            not_empty => "Need to specify --%{option} option.",
+                                            numeric =>  "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric value.",
+                                            port => "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a numeric TCP port value between 1 and 65535.",
+                                            protocol_http => "Bad value provided for option %{option}: '%{value}'. '%{value}' must be a valid HTTP protocol ('http' or 'https')."
+                                          };
+
     $self->{pod_where_loaded} = 0;
     $self->{sanity} = 0;
     $self->{options_stored} = {};
@@ -38,6 +48,7 @@ sub new {
     @{$self->{pod_package}} = ();
     $self->{pod_packages_once} = {};
     $self->{extra_arguments} = [];
+    $self->{validation} = {};
 
     if ($alternative == 0) {
         require Getopt::Long;
@@ -117,19 +128,85 @@ sub add_options {
     my ($self, %options) = @_;
     # $options{arguments} = ref to hash table with string and name to store (example: { 'mode:s' => { name => 'mode', default => 'defaultvalue' )
 
-    foreach (keys %{$options{arguments}}) {
-        if (defined($options{arguments}->{$_}->{redirect})) {
-            $self->{options}->{$_} = \$self->{options_stored}->{$options{arguments}->{$_}->{redirect}};
+    foreach my $arg (keys %{$options{arguments}}) {
+        if (defined($options{arguments}->{$arg}->{redirect})) {
+            $self->{options}->{$arg} = \$self->{options_stored}->{$options{arguments}->{$arg}->{redirect}};
             next;
         }
+        my $opt_name = $options{arguments}->{$arg}->{name};
 
-        if (defined($options{arguments}->{$_}->{default})) {
-            $self->{options_stored}->{$options{arguments}->{$_}->{name}} = $options{arguments}->{$_}->{default};
+        # handle option validation hints
+        for my $control ('greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'regexp_match', 'is_in', 'error_message', 'not_empty', 'type', 'numeric', 'port', 'protocol_http' ) {
+            if (defined($options{arguments}->{$arg}->{$control})) {
+                $self->{validation}->{$opt_name} //= {};
+                # store the control to perform as key and the reference value as value
+                my $ctl = $control ne 'type'
+                              ? $control
+                              : $options{arguments}->{$arg}->{$control};
+                $self->{validation}->{$opt_name}->{$ctl} = $options{arguments}->{$arg}->{$control};
+            }
+        }
+
+        if (defined($options{arguments}->{$arg}->{default})) {
+            $self->{options_stored}->{$opt_name} = $options{arguments}->{$arg}->{default};
         } else {
-            $self->{options_stored}->{$options{arguments}->{$_}->{name}} = undef;
+            $self->{options_stored}->{$opt_name} = undef;
         }
         
-        $self->{options}->{$_} = \$self->{options_stored}->{$options{arguments}->{$_}->{name}};
+        $self->{options}->{$arg} = \$self->{options_stored}->{$opt_name};
+    }
+}
+sub perform_validation {
+    my ($value, $operation, $reference) = @_;
+    # if all info is not given, skip the control
+    return 0 if $operation && $operation eq 'not_empty' && (!defined $value || $value eq '');
+    return 1 unless defined($value) && $value ne ''
+                   && defined($operation) && $operation ne ''
+                   && defined($reference) && $reference ne '';
+
+    # cases of numeric check
+    if ($operation =~ /_than/) {
+        # not numeric => not valid
+        return 0 if $value !~ /^-?[0-9\.]*$/;
+        # control ranges
+        return 0 if $operation eq 'greater_than' && $value <= $reference;
+        return 0 if $operation eq 'greater_than_or_equal' && $value < $reference;
+        return 0 if $operation eq 'less_than' && $value >= $reference;
+        return 0 if $operation eq 'less_than_or_equal' && $value > $reference;
+        # no range trespassing => valid
+        return 1;
+    }
+    # case of regex check
+    return 0 if $operation eq 'regexp_match' && $value !~ /$reference/;
+    return 0 if $operation eq 'is_in' && ! any { $value eq $_ } @$reference;
+    return 0 if $operation eq 'numeric' && $value !~ /^\d*$/;
+    return 0 if $operation eq 'protocol_http' && ! any { $value eq $_ } qw/http https/;
+    return 0 if $operation eq 'port' && ($value !~ /^\d*$/ || $value < 1 || $value > 65535);
+    return 1;
+}
+
+sub validate_options {
+    my ($self, %options) = @_;
+
+    for my $option (sort keys %{$self->{validation}}) {
+        next if $option eq 'error_message';
+        for my $validation (sort keys %{$self->{validation}->{$option}} ) {
+            my $value = $self->{options_stored}->{$option};
+            unless (perform_validation($value, $validation, $self->{validation}->{$option}->{$validation})) {
+                my $validation_value = ref $self->{validation}->{$option}->{$validation} eq 'ARRAY'
+                                         ? join ', ', @{$self->{validation}->{$option}->{$validation}}
+                                         : $self->{validation}->{$option}->{$validation};
+                my $data = { option => $option =~ s/_/-/gr, value => $value, $option => $value,
+                             validation => $validation,
+                             validation_value => $validation_value };
+                my $msg = exprintf( $self->{validation}->{$option}->{error_message}
+                                    // $self->{validation_error_message}->{$validation}
+                                    // $self->{validation_error_message}->{'DEFAULT'},
+                                    $data );
+
+                $self->{output}->option_exit(short_msg => $msg);
+            }
+        }
     }
 }
 
@@ -153,7 +230,7 @@ sub parse_options {
        %{$self->{options}}
     );
     %{$self->{options}} = ();
-
+    $self->validate_options(); # if $self->{sanity};
     $SIG{__WARN__} = $save_warn_handler if ($self->{sanity} == 1);
 }
 
@@ -206,3 +283,307 @@ sub clean {
 1;
 
 __END__
+
+=head1 NAME
+
+centreon::plugins::options - Command-line option management and validation
+
+=head1 DESCRIPTION
+
+This module wraps L<Getopt::Long> (or its alternative implementation) to provide
+option registration, parsing, and constraint-based validation for Centreon plugins.
+
+=head1 VALIDATION
+
+Constraints are declared alongside options in C<add_options> and evaluated
+automatically at the end of C<parse_options>. Several constraints may be
+combined on the same option: they are all evaluated and the first violated one
+exits the plugin (UNKNOWN) with an error message.
+
+    $options->add_options(arguments => {
+        'count:s' => {
+            name               => 'count',
+            default            => 10,
+            numeric            => 1,
+            greater_than       => 0,
+            less_than_or_equal => 100
+        },
+        'proto:s' => {
+            name      => 'proto',
+            default   => 'https',
+            type      => 'protocol_http',
+            not_empty => 1
+        },
+        'no-data-status:s' => {
+            name  => 'no_data_status',
+            is_in => [ 'ok', 'warning', 'critical', 'unknown' ]
+        },
+        'pattern:s' => {
+            name          => 'pattern',
+            regexp_match  => '^[a-z]+$',
+            error_message => "Invalid pattern '%{value}': lowercase letters only."
+        }
+    });
+
+=head2 Presence constraints
+
+=over 4
+
+=item B<not_empty> I<boolean>
+
+The option must be defined and not an empty string. This is the only constraint
+that rejects a missing value; all the others are skipped when the value is
+C<undef> or empty (see L</Skipping rules> below).
+
+Default message: C<< Need to specify --%{option} option. >>
+
+B<Caveat:> the check is driven by the mere presence of the key, so
+C<< not_empty => 0 >> enforces the constraint just like C<< not_empty => 1 >>.
+Omit the key entirely to make an option optional.
+
+=back
+
+=head2 Numeric constraints
+
+=over 4
+
+=item B<numeric> I<boolean>
+
+The value must match C<^\d*$>, i.e. only digits. Signed values (C<-1>) and
+decimals (C<1.5>) are B<rejected>; use C<regexp_match> or the C<*_than>
+constraints when those are legitimate.
+
+Default message: C<< '%{value}' must be a numeric value. >>
+
+=item B<port> I<boolean>
+
+The value must be a digits-only integer between 1 and 65535.
+
+Default message:
+C<< '%{value}' must be a numeric TCP port value between 1 and 65535. >>
+
+=item B<greater_than> I<number>
+
+The option value must be strictly greater than I<number>.
+
+=item B<greater_than_or_equal> I<number>
+
+The option value must be greater than or equal to I<number>.
+
+=item B<less_than> I<number>
+
+The option value must be strictly less than I<number>.
+
+=item B<less_than_or_equal> I<number>
+
+The option value must be less than or equal to I<number>.
+
+=back
+
+For the four C<*_than*> constraints, the value is first tested against
+C<^-?[0-9\.]*$>; a value that does not look numeric is rejected outright before
+the comparison is performed.
+
+=head2 String constraints
+
+=over 4
+
+=item B<regexp_match> I<pattern>
+
+The value must match the regular expression I<pattern>. The pattern is a plain
+string interpolated into a C<//> match, so it is unanchored unless you write the
+anchors yourself, and it is case-sensitive unless you prefix it with C<(?i)>.
+
+=item B<is_in> I<arrayref>
+
+The value must be equal (string C<eq>, hence case-sensitive) to one of the
+elements of the array reference. Passing anything other than an array reference
+makes the constraint fail at runtime.
+
+    'auth-mode:s' => { name => 'auth_mode', default => 'oauth2',
+                       is_in => [ 'oauth2', 'login' ], not_empty => 1 }
+
+An empty array reference rejects every non-empty value. There is no dedicated
+message for this constraint, so it falls back to the default one, which lists
+the accepted values:
+
+    Bad value provided for option auth-mode: 'ldap'. Constraint 'ldap'
+    is_in 'oauth2, login' is not verified.
+
+Combine it with C<error_message> for a friendlier wording.
+
+=item B<protocol_http> I<boolean>
+
+The value must be C<http> or C<https>.
+
+Default message:
+C<< '%{value}' must be a valid HTTP protocol ('http' or 'https'). >>
+
+=back
+
+=head2 Shorthand and message customization
+
+=over 4
+
+=item B<type> I<string>
+
+Shorthand for the boolean constraints: C<< type => 'port' >> is strictly
+equivalent to C<< port => 1 >>. Accepted values are the names of the boolean
+constraints, namely C<numeric>, C<port>, C<protocol_http> and C<not_empty>.
+
+Only one C<type> can be given per option; declare the constraint names directly
+when you need several of them.
+
+=item B<error_message> I<string>
+
+Overrides the message displayed when B<any> constraint of this option is
+violated (it is not per-constraint). The string is expanded by
+C<centreon::plugins::misc::exprintf>, so it accepts the following placeholders:
+
+=over 4
+
+=item * C<%{option}> - the option name, with underscores turned into dashes
+
+=item * C<%{value}> - the value provided by the user
+
+=item * C<%{E<lt>option_nameE<gt>}> - same as C<%{value}>, using the C<name> of
+the option (e.g. C<%{auth_mode}>); handy to keep messages readable
+
+=item * C<%{validation}> - the name of the violated constraint
+
+=item * C<%{validation_value}> - the reference value of the violated constraint
+(array references are joined with C<, >)
+
+=back
+
+An unknown placeholder expands to an empty string.
+
+    'resource-type:s' => { name          => 'resource_type',
+                           is_in         => [ 'node', 'vm' ],
+                           error_message => "Unknown resource type '%{value}'. Accepted values: %{validation_value}." }
+
+=back
+
+=head2 Skipping rules
+
+Except for C<not_empty>, a constraint is silently considered satisfied when the
+option value is C<undef> or an empty string. Constraints therefore validate the
+B<format> of a value, never its presence: pair them with C<not_empty> when the
+option is mandatory.
+
+The reference value is subject to the same rule: a constraint whose reference is
+C<undef> or an empty string is skipped as well (C<< less_than => 0 >> is
+evaluated, C<< less_than => '' >> is not).
+
+=head1 METHODS
+
+=head2 add_options
+
+    $self->add_options(arguments => \%arguments);
+
+Registers command-line options and their metadata. C<%arguments> is a hash whose
+keys are L<Getopt::Long> option specifiers and whose values are hashrefs
+describing each option.
+
+    $self->add_options(arguments => {
+        'hostname=s' => {
+            name    => 'hostname',
+        },
+        'port=i' => {
+            name    => 'port',
+            default => 443,
+            type    => 'port'
+        },
+        'timeout=i' => {
+            name                => 'timeout',
+            default             => 30,
+            greater_than        => 0,
+            less_than_or_equal  => 300,
+        },
+        'pattern=s' => {
+            name         => 'pattern',
+            regexp_match => '^[a-z]',
+        },
+        'user=s' => {
+            name     => 'user',
+            redirect => 'username',   # stores value under 'username' instead
+        },
+    });
+
+Each option descriptor accepts the following keys:
+
+=over 4
+
+=item B<name> I<string> (required)
+
+The key under which the parsed value is stored and later retrieved via
+C<get_option> or C<get_options>.
+
+=item B<default> I<scalar>
+
+Default value assigned before parsing. If omitted the stored value is C<undef>
+until the option is provided on the command line. A default value is validated
+like any user-provided value.
+
+=item B<redirect> I<string>
+
+Store the value under a different name than the one given by C<name>. When
+C<redirect> is set, no default and no validation constraints are registered for
+this specifier; it simply aliases to the target key.
+
+=item B<not_empty>, B<numeric>, B<port>, B<protocol_http>, B<greater_than>,
+B<greater_than_or_equal>, B<less_than>, B<less_than_or_equal>,
+B<regexp_match>, B<is_in>, B<type>, B<error_message>
+
+Validation constraints evaluated after parsing. See L</VALIDATION> for the full
+description of each constraint.
+
+=back
+
+=head2 validate_options
+
+    $self->validate_options();
+
+Iterates over every constraint registered by C<add_options> and calls
+C<< $self->{output}->option_exit >> for the first violated constraint.
+The error message includes the option name, the offending value, and the
+constraint that was not satisfied, unless an C<error_message> was provided for
+that option.
+
+This method is called automatically at the end of C<parse_options>; it does
+not need to be called directly in normal usage.
+
+=head1 FUNCTIONS
+
+=head2 perform_validation
+
+    my $ok = centreon::plugins::options::perform_validation($value, $operation, $reference);
+
+Low-level validation primitive used internally by C<validate_options>.
+Returns B<1> if the value satisfies the constraint, B<0> otherwise.
+
+Except for C<not_empty>, if any argument is C<undef> or an empty string, the
+function returns B<1> immediately (the check is skipped).
+
+=over 4
+
+=item B<$value>
+
+The value to validate.
+
+=item B<$operation>
+
+The constraint to apply. One of: C<not_empty>, C<numeric>, C<port>,
+C<protocol_http>, C<greater_than>, C<greater_than_or_equal>, C<less_than>,
+C<less_than_or_equal>, C<regexp_match>, C<is_in>. Any other operation name is
+considered satisfied.
+
+=item B<$reference>
+
+The expected value of the constraint: a threshold for the numeric constraints, a
+pattern for C<regexp_match>, an array reference of accepted values for C<is_in>,
+and any true scalar for the boolean constraints.
+
+=back
+
+=cut

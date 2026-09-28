@@ -1,3 +1,23 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 //! Entry point for the Centreon SNMP plugin.
 //!
 //! Parses CLI arguments (hostname, port, SNMP credentials, filters, thresholds),
@@ -28,6 +48,9 @@ mod snmp;
 
 use env_logger::Env;
 use generic::Command;
+use generic::FORMAT_VERSION;
+use generic::schema_url;
+use generic::Status;
 use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
@@ -39,16 +62,37 @@ lalrpop_mod!(grammar);
 /// Reads a JSON file and deserializes it into a [`Command`].
 ///
 /// # Errors
-/// Returns an error if the file cannot be read or if the JSON is malformed.
+/// Returns an error if the file cannot be read, if the JSON is malformed, or if the
+/// collection targets a format version this plugin does not support.
 fn json_to_command(file_name: &str) -> Result<Command, Error> {
     // Transform content of the file into a string
     let configuration = fs::read_to_string(file_name)?;
-    let command = serde_json::from_str(&configuration)?;
+    let command: Command = serde_json::from_str(&configuration)?;
+    // before anything else, so an incompatible collection is named as such instead of
+    // failing later on a key that moved or disappeared
+    command.check_format_version()?;
     Ok(command)
 }
 
-#[snafu::report]
 fn main() -> Result<(), Error> {
+    match std::panic::catch_unwind(|| snmp_plugin()) {
+        std::result::Result::Ok(plugin_result) => plugin_result,
+        Err(e) => {
+            let message = e
+                .downcast_ref::<&str>()
+                .map(|s| s.to_string())
+                .or_else(|| e.downcast_ref::<String>().cloned())
+                .unwrap_or_else(|| "unknown panic payload".to_string());
+            println!(
+                "Unexpected error : '{}' while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information ",
+                message
+            );
+            std::process::exit(3);
+        }
+    }
+}
+
+fn snmp_plugin() -> Result<(), Error> {
     env_logger::Builder::from_env(
         Env::default()
             .default_filter_or("info")
@@ -64,7 +108,14 @@ fn main() -> Result<(), Error> {
     let mut snmp_community = "public".to_string();
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
+    let mut no_data_status = Status::Unknown;
+    let mut check_format = false;
+    let mut check_response = false;
+    let mut list_counters = false;
+    let mut json_file: Option<String> = None;
     let mut cmd: Option<Command> = None;
+    let mut warnings: Vec<(String, String)> = Vec::new();
+    let mut criticals: Vec<(String, String)> = Vec::new();
     loop {
         let arg = parser.next();
         match arg {
@@ -80,16 +131,20 @@ fn main() -> Result<(), Error> {
                     }
                     Short('j') | Long("json") => {
                         let json = parser.value()?.into_string()?;
-                        trace!("json: {:?}", json);
-                        cmd = Some(json_to_command(&json)?);
+                        json_file = Some(json);
+                        trace!("json file: {:?}", json_file);
                     }
                     Short('v') | Long("snmp-version") => {
                         snmp_version = parser.value()?.into_string()?;
                         trace!("snmp_version: {}", snmp_version);
                     }
                     Short('c') | Long("snmp-community") => {
-                        snmp_community = parser.value()?.into_string()?;
-                        trace!("snmp_community: {}", snmp_community);
+                        /// For backward compatibility 'public' is used when the SNMP community is empty
+                        let s = parser.value()?.into_string()?;
+                        if !s.is_empty() {
+                            snmp_community = s;
+                            trace!("snmp_community: {}", snmp_community);
+                        }
                     }
                     Short('i') | Long("filter-in") => {
                         let f = parser.value()?.into_string()?;
@@ -101,41 +156,88 @@ fn main() -> Result<(), Error> {
                         trace!("New filter_out: {}", f);
                         filter_out.push(f);
                     }
+                    Long("no-data-status") => {
+                        let s = parser.value()?.into_string()?;
+                        no_data_status = s.parse::<Status>().unwrap_or_else(|e| {
+                            println!("UNKNOWN: {}", e);
+                            std::process::exit(3);
+                        });
+                        trace!("no_data_status: {:?}", no_data_status);
+                    }
+                    Short('h') | Long("help") => {
+                        let prog = std::env::args()
+                            .next()
+                            .unwrap_or_else(|| "plugin".to_string());
+                        println!("Usage: {} [OPTIONS]\n", prog);
+                        println!("OPTIONS:");
+                        println!("  -H, --hostname <HOST>            Hostname or IP address (default: localhost)");
+                        println!("  -p, --port <PORT>                SNMP port (default: 161)");
+                        println!("  -v, --snmp-version <VERSION>     SNMP version (default: 2c)");
+                        println!("  -c, --snmp-community <COMMUNITY> SNMP community (default: public)");
+                        println!("  -j, --json <FILE>                JSON command definition file (required)");
+                        println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
+                        println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
+                        println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
+                        println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
+                        println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
+                        println!("  --check-format                   Check JSON file validity and exit");
+                        println!("  --check-response                 Display raw SNMP response");
+                        println!("  --list-counters                  List all available metrics");
+                        println!("  -V, --version                    Print the plugin version and the collection format it supports");
+                        println!("  -h, --help                       Print this help message");
+                        std::process::exit(0);
+                    }
+                    Short('V') | Long("version") => {
+                        println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+                        println!("Supported collection format version: {}", FORMAT_VERSION);
+                        println!("Schema: {}", schema_url());
+                        // a 0 major is what semantic versioning calls an unstable release, so
+                        // the notice goes away on its own the day the crate reaches 1.0.0
+                        if env!("CARGO_PKG_VERSION_MAJOR") == "0" {
+                            println!(
+                                "Beta release: no stability guarantee, the collection format may still change in a way that breaks existing collections."
+                            );
+                        }
+                        std::process::exit(0);
+                    }
+                    Long("check-format") => {
+                        check_format = true;
+                    }
+                    Long("check-response") => {
+                        check_response = true;
+                    }
+                    Long("list-counters") => {
+                        list_counters = true;
+                    }
                     t => {
-                        if let Arg::Long(name) = t {
-                            if name.starts_with("warning-") {
+                        match t {
+                            Arg::Long(name) if name.starts_with("warning-") => {
                                 let wmetric = name[8..].to_string();
                                 let value = parser.value()?.into_string()?;
-                                match cmd.as_mut() {
-                                    Some(ref mut cmd) => {
-                                        if !value.is_empty() {
-                                            cmd.add_warning(&wmetric, value);
-                                        } else {
-                                            trace!("Warning metric '{}' is empty", wmetric);
-                                        }
-                                    }
-                                    None => {
-                                        println!("json is empty");
-                                        std::process::exit(3);
-                                    }
-                                }
-                            } else if name.starts_with("critical-") {
-                                let cmetric = name[9..].to_string();
-                                let value = parser.value()?.into_string()?;
-                                match cmd.as_mut() {
-                                    Some(ref mut cmd) => {
-                                        if !value.is_empty() {
-                                            cmd.add_critical(&cmetric, value);
-                                        } else {
-                                            trace!("Critical metric '{}' is empty", cmetric);
-                                        }
-                                    }
-                                    None => {
-                                        println!("json is empty");
-                                        std::process::exit(3);
-                                    }
+                                if !value.is_empty() {
+                                    trace!("Warning stored for metric '{}'", wmetric);
+                                    warnings.push((wmetric, value));
                                 }
                             }
+                            Arg::Long(name) if name.starts_with("critical-") => {
+                                let cmetric = name[9..].to_string();
+                                let value = parser.value()?.into_string()?;
+                                if !value.is_empty() {
+                                    trace!("Critical stored for metric '{}'", cmetric);
+                                    criticals.push((cmetric, value));
+                                }
+                            }
+                            Arg::Long(name) => {
+                                return Err(Error::UnknownArgument {
+                                    arg: format!("--{}", name),
+                                });
+                            }
+                            Arg::Short(c) => {
+                                return Err(Error::UnknownArgument {
+                                    arg: format!("-{}", c),
+                                });
+                            }
+                            _ => {}
                         }
                     }
                 },
@@ -144,27 +246,81 @@ fn main() -> Result<(), Error> {
                 }
             },
             Err(err) => {
-                println!("err: {:?}", err);
-                std::process::exit(3);
+                println!("Error: {}", err);
+                std::process::exit(1);
             }
         }
     }
-    let url = format!("{}:{}", hostname, port);
+    if let Some(file) = json_file {
+        if check_format {
+            println!("Check format of JSON file '{}'", file);
+        }
+        match json_to_command(&file) {
+            Ok(c) => {
+                cmd = Some(c);
+            }
+            Err(e) => {
+                if check_format {
+                    println!("JSON is INVALID: {}", e);
+                    std::process::exit(3);
+                } else {
+                    println!("UNKNOWN: Cannot read JSON file '{}': {}", file, e);
+                    std::process::exit(3);
+                }
+            }
+        }
+    } else {
+        println!("JSON file is required (use -j or --json argument)");
+        std::process::exit(3);
+    }
+    if let Some(ref mut cmd) = cmd {
+        for (metric, value) in warnings {
+            cmd.add_warning(&metric, value);
+        }
+        for (metric, value) in criticals {
+            cmd.add_critical(&metric, value);
+        }
+    }
 
-    let result = match cmd {
-        Some(ref cmd) => cmd.execute(
-            &url,
-            &snmp_version,
-            &snmp_community,
-            &filter_in,
-            &filter_out,
-        )?,
+    let cmd = match cmd {
+        Some(cmd) => cmd,
         None => {
-            println!("json is empty");
+            println!("UNKNOWN: JSON is empty");
             std::process::exit(3);
         }
     };
 
-    println!("{}", result.output);
+    if list_counters {
+        cmd.list_counters();
+        std::process::exit(0);
+    }
+
+    let url = format!("{}:{}", hostname, port);
+
+    let result = cmd.execute(
+        &url,
+        &snmp_version,
+        &snmp_community,
+        &filter_in,
+        &filter_out,
+        check_format,
+        check_response,
+        no_data_status,
+    ).unwrap_or_else(|e| {
+        if check_format {
+            println!("JSON is INVALID: {}", e);
+        } else {
+            println!("UNKNOWN: {}", e);
+        }
+        std::process::exit(3);
+    });
+
+    if check_format {
+        println!("JSON is valid");
+    } else {
+        println!("{}", result.output);
+        std::process::exit(result.status.into());
+    }
+
     Ok(())
 }

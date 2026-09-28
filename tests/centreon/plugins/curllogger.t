@@ -255,9 +255,17 @@ SKIP: {
                          username => 'User', http_peer_addr => "127.0.0.1",
                          password => 'Pa$$w@rd' , curl_opt => [ "CURLOPT_AWS_SIGV4 => osc" ] } };
 
+    my $curl = `curl --version 2>&1` // '';
+    if ($curl && $curl =~ /curl\s+(\d+\.\d+)/) {
+        my $version = $1;
+        if ($version < 7.75) {
+            print "test ".$test->{title}."\n";
+            skip "CURLOPT_AWS_SIGV4 is unsupported on this platform (cups $version)", 5;
+        }
+    }
+
     eval "CURLOPT_AWS_SIGV4";
-    my $curl = `curl --aws-sigv4 2>&1` // '';
-    if ($@ || $curl =~ /is unknown/) {
+    if ($@) {
         print "test ".$test->{title}."\n";
         skip "CURLOPT_AWS_SIGV4 is unsupported on this platform", 5;
     }
