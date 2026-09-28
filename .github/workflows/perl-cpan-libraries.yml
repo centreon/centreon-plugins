@@ -126,7 +126,7 @@ jobs:
       - name: Merge partial matrices into RPM and DEB matrices
         id: generate
         env:
-          STABILITY: ${{ needs.get-environment.outputs.stability }}
+          STABILITY: testing # TEMP CTOR-2557 test, revert before merge
         run: |
           python3 .github/scripts/perl-cpan-libraries/generate-matrices.py \
             --partial-matrices-dir official-repos \
@@ -512,7 +512,7 @@ jobs:
           package_extension: ${{ matrix.package_extension }}
           distrib: ${{ matrix.distrib }}
           arch: ${{ matrix.arch }}
-          stability: ${{ needs.get-environment.outputs.stability }}
+          stability: testing # TEMP CTOR-2557 test, revert before merge
 
       - name: Upload error log
         if: failure()
