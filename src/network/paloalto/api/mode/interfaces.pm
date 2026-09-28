@@ -405,7 +405,7 @@ sub manage_selection {
     );
 
     foreach my $interface ((@{$result->{hw}->{entry}}, @{$result->{ifnet}->{entry}})) {
-        next if is_excluded($interface->{name}, $self->{option_results}->{include_interface_name}, $self->{option_results}->{exclude_inteface_name});
+        next if is_excluded($interface->{name}, $self->{option_results}->{include_interface_name}, $self->{option_results}->{exclude_interface_name});
 
         my $speed_in = defined($interface->{speed}) && $interface->{speed} =~ /^([0-9]+)$/ ? $interface->{speed} * 1000000 : '';
         my $speed_out = defined($interface->{speed}) && $interface->{speed} =~ /^([0-9]+)$/ ? $interface->{speed} * 1000000 : '';
