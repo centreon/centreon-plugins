@@ -8,7 +8,6 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - '.github/workflows/spellchecker.yml'
       - 'src/**'
       - '.github/scripts/pod_spell_check.t'
 

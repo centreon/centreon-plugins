@@ -8,14 +8,12 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - ".github/workflows/plink.yml"
       - "dependencies/plink/**"
   push:
     branches:
       - develop
       - master
     paths:
-      - ".github/workflows/plink.yml"
       - "dependencies/plink/**"
 
 jobs:
