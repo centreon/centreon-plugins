@@ -11,7 +11,6 @@ on:
       - develop
       - master
     paths:
-      - ".github/workflows/packaging-plugins-windows.yml"
       - ".github/actions/setup-strawberry-perl/action.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
       - ".github/scripts/windows/**"
@@ -33,7 +32,6 @@ on:
       - develop
       - master
     paths:
-      - ".github/workflows/packaging-plugins-windows.yml"
       - ".github/actions/setup-strawberry-perl/action.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
       - ".github/scripts/windows/**"
