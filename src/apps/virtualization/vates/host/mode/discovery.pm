@@ -82,13 +82,7 @@ sub run {
             $host_disco->{memory_size} = $host->{memory}->{size} // '';
         }
 
-        # there can be empty tag in the api answer, this allows to trim empty tags.
-        $host_disco->{tags} = [];
-        for my $tag (@{$host->{tags}}) {
-            if (is_not_empty($tag)) {
-                push(@{$host_disco->{tags}}, $tag);
-            }
-        }
+        $host_disco->{tags} = $options{custom}->clean_tags_array($host->{tags});
 
         push(@{$disco_stats->{results}}, $host_disco);
     }
