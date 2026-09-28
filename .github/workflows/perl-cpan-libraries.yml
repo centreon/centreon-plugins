@@ -130,7 +130,7 @@ jobs:
         run: |
           python3 .github/scripts/perl-cpan-libraries/generate-matrices.py \
             --partial-matrices-dir official-repos \
-            --artifactory-url https://packages.centreon.com \
+            --repository-url https://packages.centreon.com \
             --stability "$STABILITY" \
             .github/packaging/cpan-libraries.json
         shell: bash
