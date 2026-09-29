@@ -1,0 +1,64 @@
+name: release-new
+run-name: "${{ inputs.dry_run && 'dry run of ' || '' }}${{ inputs.release_type }} of branch ${{ inputs.release_branch }} (release number ${{ inputs.release_number }})"
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_branch:
+        description: "Release or hotfix branch name (release-YYYYMMNN or hotfix-YYYYMMNN)"
+        required: true
+        default: "" # empty to avoid any accident
+        type: string
+      release_number:
+        description: "Release number using YYYYMMNN format (NN is the release iteration, 00 is the first one)"
+        required: true
+        default: "00000000" # rejected if left untouched
+        type: string
+      release_type:
+        description: "Release type, must match the branch prefix"
+        required: true
+        default: "release"
+        type: choice
+        options:
+          - hotfix
+          - release
+      dry_run:
+        description: "Only print the write operations (tag, github release, jira version, branch deletion)"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  dependency-scan:
+    uses: centreon/security-tools/.github/workflows/dependency-analysis.yml@main
+
+  release:
+    needs: [dependency-scan]
+    if: ${{ github.repository == 'centreon/centreon-plugins' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      # tags pushed with GITHUB_TOKEN do not trigger workflows, the release token is needed for promotion
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          token: ${{ secrets.CENTREON_TECHNIQUE_PAT || github.token }}
+
+      - name: Release
+        uses: ./.github/actions/release-new
+        with:
+          release_branch: ${{ inputs.release_branch }}
+          release_number: ${{ inputs.release_number }}
+          release_type: ${{ inputs.release_type }}
+          dry_run: ${{ inputs.dry_run }}
+          has_release_token: ${{ secrets.CENTREON_TECHNIQUE_PAT != '' }}
+          github_token: ${{ github.token }}
+          jira_base_url: ${{ secrets.JIRA_BASE_URL }}
+          jira_user_email: ${{ secrets.JIRA_RELEASE_USER }}
+          jira_api_token: ${{ secrets.JIRA_RELEASE_TOKEN }}
+          jira_ctor_project_id: ${{ secrets.JIRA_CTOR_PROJECT_ID }}
