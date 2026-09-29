@@ -422,7 +422,7 @@ def get_centreon_rpm_published(base_url, distrib, stability):
     Every published build is kept (noarch and x86_64), e.g. perl-JSON-Path 1.0.6-2.el9
       → "JSON-Path": {("1.0.6", "2")}
     """
-    cache_key = ("rpm", distrib, stability)
+    cache_key = ("rpm", base_url, distrib, stability)
     if cache_key in _published_cache:
         return _published_cache[cache_key]
     result: dict = {}
@@ -455,7 +455,7 @@ def get_centreon_deb_published(base_url, distrib, stability, arch="amd64", famil
       → "libssh-session-perl": {("1.1", "2")}
     """
     repo = f"ubuntu-plugins-{stability}" if family == "ubuntu" else f"apt-plugins-{stability}"
-    cache_key = ("deb", repo, distrib, arch)
+    cache_key = ("deb", base_url, repo, distrib, arch)
     if cache_key in _published_cache:
         return _published_cache[cache_key]
     result: dict = {}
