@@ -123,6 +123,12 @@ jobs:
           path: official-repos/
           merge-multiple: true
 
+      - name: Install python dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq python3-defusedxml
+        shell: bash
+
       - name: Merge partial matrices into RPM and DEB matrices
         id: generate
         env:

@@ -13,7 +13,6 @@ import subprocess
 import sys
 import urllib.parse
 import urllib.request
-import xml.etree.ElementTree as ET
 
 
 # ── Matrix defaults ────────────────────────────────────────────────────────────
@@ -422,6 +421,9 @@ def get_centreon_rpm_published(base_url, distrib, stability):
     Every published build is kept (noarch and x86_64), e.g. perl-JSON-Path 1.0.6-2.el9
       → "JSON-Path": {("1.0.6", "2")}
     """
+    # imported here: check-official-repos.py also imports this module, in containers without defusedxml
+    import defusedxml.ElementTree as ET
+
     cache_key = ("rpm", base_url, distrib, stability)
     if cache_key in _published_cache:
         return _published_cache[cache_key]
