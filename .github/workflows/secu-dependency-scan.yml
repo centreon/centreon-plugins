@@ -20,8 +20,6 @@ on:
       - "!infrastructure"
       - "!license-delivery"
       - "!redis"
-      - "!anomaly_detection/training/**"
-      - "!centreon-cloud-ml/**"
       - "!runners/**"
       - "!.github/workflows/runners-build.yml"
       - "!backplane/**/*.tf"
