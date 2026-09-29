@@ -1,3 +1,23 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 //! Formatting plugin output in Nagios/Centreon-compatible format.
 //!
 //! Produces output like: `STATUS message | metric1=value1;warn;crit;min;max metric2=...`
@@ -36,6 +56,10 @@ pub struct Output {
     /// If true, include affected metrics in the UNKNOWN message.
     #[serde(default = "default_bool_true")]
     detail_unknown: bool,
+    /// Message used when no metric is left once the filters are applied.
+    /// The status name given by `--no-data-status` is prepended to it.
+    #[serde(default = "default_no_data")]
+    pub no_data: String,
     /// String used to separate metric instances in the detail message.
     #[serde(default = "default_instance_separator")]
     instance_separator: String,
@@ -55,6 +79,9 @@ fn default_critical() -> String {
 }
 fn default_unknown() -> String {
     "UNKNOWN: ".to_string()
+}
+fn default_no_data() -> String {
+    "No data matching the filters".to_string()
 }
 fn default_instance_separator() -> String {
     " - ".to_string()
@@ -81,6 +108,7 @@ impl Output {
             detail_critical: true,
             unknown: default_unknown(),
             detail_unknown: true,
+            no_data: default_no_data(),
             instance_separator: default_instance_separator(),
             metric_separator: default_metric_separator(),
         }
@@ -249,6 +277,7 @@ pub fn float_string(val: &f64) -> String {
     s
 }
 
+#[cfg(test)]
 mod test {
 
     #[test]

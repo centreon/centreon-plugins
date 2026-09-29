@@ -1,3 +1,23 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 //! Entry point for the Centreon SNMP plugin.
 //!
 //! Parses CLI arguments (hostname, port, SNMP credentials, filters, thresholds),
@@ -28,6 +48,9 @@ mod snmp;
 
 use env_logger::Env;
 use generic::Command;
+use generic::FORMAT_VERSION;
+use generic::schema_url;
+use generic::Status;
 use generic::error::*;
 use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
@@ -39,11 +62,15 @@ lalrpop_mod!(grammar);
 /// Reads a JSON file and deserializes it into a [`Command`].
 ///
 /// # Errors
-/// Returns an error if the file cannot be read or if the JSON is malformed.
+/// Returns an error if the file cannot be read, if the JSON is malformed, or if the
+/// collection targets a format version this plugin does not support.
 fn json_to_command(file_name: &str) -> Result<Command, Error> {
     // Transform content of the file into a string
     let configuration = fs::read_to_string(file_name)?;
-    let command = serde_json::from_str(&configuration)?;
+    let command: Command = serde_json::from_str(&configuration)?;
+    // before anything else, so an incompatible collection is named as such instead of
+    // failing later on a key that moved or disappeared
+    command.check_format_version()?;
     Ok(command)
 }
 
@@ -51,8 +78,14 @@ fn main() -> Result<(), Error> {
     match std::panic::catch_unwind(|| snmp_plugin()) {
         std::result::Result::Ok(plugin_result) => plugin_result,
         Err(e) => {
+            let message = e
+                .downcast_ref::<&str>()
+                .map(|s| s.to_string())
+                .or_else(|| e.downcast_ref::<String>().cloned())
+                .unwrap_or_else(|| "unknown panic payload".to_string());
             println!(
-                "Unexpected error while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information"
+                "Unexpected error : '{}' while executing the plugin, please use RUST_BACKTRACE=1 or PLUGIN_LOG=trace to find more information ",
+                message
             );
             std::process::exit(3);
         }
@@ -75,6 +108,7 @@ fn snmp_plugin() -> Result<(), Error> {
     let mut snmp_community = "public".to_string();
     let mut filter_in = Vec::new();
     let mut filter_out = Vec::new();
+    let mut no_data_status = Status::Unknown;
     let mut check_format = false;
     let mut check_response = false;
     let mut list_counters = false;
@@ -122,6 +156,14 @@ fn snmp_plugin() -> Result<(), Error> {
                         trace!("New filter_out: {}", f);
                         filter_out.push(f);
                     }
+                    Long("no-data-status") => {
+                        let s = parser.value()?.into_string()?;
+                        no_data_status = s.parse::<Status>().unwrap_or_else(|e| {
+                            println!("UNKNOWN: {}", e);
+                            std::process::exit(3);
+                        });
+                        trace!("no_data_status: {:?}", no_data_status);
+                    }
                     Short('h') | Long("help") => {
                         let prog = std::env::args()
                             .next()
@@ -135,12 +177,27 @@ fn snmp_plugin() -> Result<(), Error> {
                         println!("  -j, --json <FILE>                JSON command definition file (required)");
                         println!("  -i, --filter-in <FILTER>         Include filter (can be used multiple times)");
                         println!("  -o, --filter-out <FILTER>        Exclude filter (can be used multiple times)");
+                        println!("  --no-data-status <STATUS>        Status when the filters keep no data: OK, WARNING, CRITICAL or UNKNOWN (default: UNKNOWN)");
                         println!("  --warning-<METRIC> <VALUE>       Warning threshold for metric");
                         println!("  --critical-<METRIC> <VALUE>      Critical threshold for metric");
                         println!("  --check-format                   Check JSON file validity and exit");
                         println!("  --check-response                 Display raw SNMP response");
                         println!("  --list-counters                  List all available metrics");
+                        println!("  -V, --version                    Print the plugin version and the collection format it supports");
                         println!("  -h, --help                       Print this help message");
+                        std::process::exit(0);
+                    }
+                    Short('V') | Long("version") => {
+                        println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+                        println!("Supported collection format version: {}", FORMAT_VERSION);
+                        println!("Schema: {}", schema_url());
+                        // a 0 major is what semantic versioning calls an unstable release, so
+                        // the notice goes away on its own the day the crate reaches 1.0.0
+                        if env!("CARGO_PKG_VERSION_MAJOR") == "0" {
+                            println!(
+                                "Beta release: no stability guarantee, the collection format may still change in a way that breaks existing collections."
+                            );
+                        }
                         std::process::exit(0);
                     }
                     Long("check-format") => {
@@ -248,6 +305,7 @@ fn snmp_plugin() -> Result<(), Error> {
         &filter_out,
         check_format,
         check_response,
+        no_data_status,
     ).unwrap_or_else(|e| {
         if check_format {
             println!("JSON is INVALID: {}", e);
@@ -261,6 +319,7 @@ fn snmp_plugin() -> Result<(), Error> {
         println!("JSON is valid");
     } else {
         println!("{}", result.output);
+        std::process::exit(result.status.into());
     }
 
     Ok(())

@@ -207,8 +207,10 @@ memBuffer
 memTotalReal
 Meraki
 MIB
+microcores
 Microkernel
 Mikrotik
+millicores
 milliwatt
 milliwatts
 MMC
@@ -239,6 +241,7 @@ nagios
 Nagios
 NagVis
 --nagvis-perfdata
+nanocores
 Netasq
 Netconf
 Netscaler
@@ -309,6 +312,7 @@ QoS
 Qtree
 queue-messages-inflighted
 quts
+qwinsta
 raidvolume
 redis-cli
 ReplicaJobSession
@@ -394,6 +398,7 @@ v1
 v2
 v2c
 v3
+Vates
 vCenter
 VCENTER
 vCPU
@@ -437,6 +442,8 @@ WildFire
 WLAN
 WLC
 WSMAN
+XCP-ng
+Xen
 XPath
 ZDX
 ZFS

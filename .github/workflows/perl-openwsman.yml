@@ -8,14 +8,12 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - ".github/workflows/perl-openwsman.yml"
       - "dependencies/perl-openwsman/**"
   push:
     branches:
       - develop
       - master
     paths:
-      - ".github/workflows/perl-openwsman.yml"
       - "dependencies/perl-openwsman/**"
 
 jobs:
@@ -51,11 +49,6 @@ jobs:
             package_extension: rpm
             runner: ubuntu-24.04
             arch: amd64
-          - image: packaging-plugins-bullseye
-            distrib: bullseye
-            package_extension: deb
-            runner: ubuntu-24.04
-            arch: amd64
           - image: packaging-plugins-bookworm
             distrib: bookworm
             package_extension: deb
@@ -76,11 +69,6 @@ jobs:
             package_extension: deb
             runner: ubuntu-24.04
             arch: amd64
-          - image: packaging-plugins-bullseye-arm64
-            distrib: bullseye
-            package_extension: deb
-            runner: ubuntu-24.04-arm
-            arch: arm64
 
     runs-on: ${{ matrix.runner }}
 
@@ -109,13 +97,8 @@ jobs:
             apt-get update
             apt-get install -y libcurl4-openssl-dev
             cd /tmp
-            if [ "$DISTRIB" = "bullseye" ]; then
-              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/refs/tags/SFCC_2_2_8.tar.gz|tar zxvf -
-              mv sblim-sfcc-SFCC_2_2_8 sblim-sfcc
-            else
-              wget -O - https://github.com/kkaempf/sblim-sfcc/archive/881fccbaf19e26cbef3da1bebe2b42b3a9de1147/.tar.gz|tar zxvf -
-              mv sblim-sfcc-881fccbaf19e26cbef3da1bebe2b42b3a9de1147 sblim-sfcc
-            fi
+            wget -O - https://github.com/kkaempf/sblim-sfcc/archive/881fccbaf19e26cbef3da1bebe2b42b3a9de1147/.tar.gz|tar zxvf -
+            mv sblim-sfcc-881fccbaf19e26cbef3da1bebe2b42b3a9de1147 sblim-sfcc
             cd sblim-sfcc
             ./autoconfiscate.sh
             ./configure --prefix=/usr
@@ -272,12 +255,6 @@ jobs:
           - distrib: el10
             package_extension: rpm
             arch: amd64
-          - distrib: bullseye
-            package_extension: deb
-            arch: amd64
-          - distrib: bullseye
-            package_extension: deb
-            arch: arm64
           - distrib: bookworm
             package_extension: deb
             arch: amd64
@@ -317,7 +294,6 @@ jobs:
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     runs-on: centreon-ubuntu-22.04
-    continue-on-error: true
     permissions:
       contents: read
       id-token: write
@@ -335,12 +311,6 @@ jobs:
           - distrib: el10
             package_extension: rpm
             arch: amd64
-          - distrib: bullseye
-            package_extension: deb
-            arch: amd64
-          - distrib: bullseye
-            package_extension: deb
-            arch: arm64
           - distrib: bookworm
             package_extension: deb
             arch: amd64
@@ -409,7 +379,6 @@ jobs:
       - name: Deliver packages on Pulp
         if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
-        continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
         with:
           module_name: wsman-${{ matrix.arch }}
@@ -427,7 +396,6 @@ jobs:
       - name: Promote packages on Pulp
         if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
         id: promote_pulp
-        continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
         with:
           module_name: wsman-${{ matrix.arch }}
@@ -440,12 +408,6 @@ jobs:
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
-
-      - name: Warn if the Pulp delivery failed
-        if: steps.deliver_pulp.outcome == 'failure' || steps.promote_pulp.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "::warning::Pulp delivery/promotion failed (non-blocking during the Artifactory-to-Pulp migration; Artifactory delivery remains authoritative). See the 'Deliver packages on Pulp' / 'Promote packages on Pulp' step."
 
   set-skip-label:
     needs: [get-environment, deliver-packages]

@@ -21,9 +21,12 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   echo "::group::Preparing $PLUGIN_NAME_LOWER"
 
   # Process package files
-  pkg_values=($(jq -r '.pkg_name,.plugin_name' "$PACKAGE_FILE"))
-  pkg_summary=$(echo "${pkg_values[0]}")
-  plugin_name=$(echo "${pkg_values[1]}")
+  pkg_summary=$(jq -r '.pkg_summary' "$PACKAGE_FILE")
+  # More than half the packages still carry the placeholder summary "Centreon Plugin", which says
+  # less than their own name. Keep the previous behaviour for those until they get a real summary.
+  if [[ "${pkg_summary}" == "Centreon Plugin" ]]; then
+    pkg_summary=$(jq -r '.pkg_name' "$PACKAGE_FILE")
+  fi
   contents=$(jq -r '.package_files // [] | map("  - src: \"" + .src + "\"\n    dst: \"" + .dst + "\"\n    file_info:\n      mode: " + (.file_mode // "0755")) | join("\n")' "$PACKAGE_FILE")
   conflicts=$(jq -r '.conflicts // [] | join(",")' "$PACKAGE_FILE")
   replaces=$(jq -r '.replaces // [] | join(",")' "$PACKAGE_FILE")
@@ -38,7 +41,17 @@ for PLUGIN in $(jq -r 'to_entries[] | select(.value.build == true) | .key' $plug
   rpm_provides=$(jq -r '.provides // [] | join(",")' "$RPM_PACKAGE_FILE")
   skip_default_dependencies=$(jq -r '.skip_default_dependencies // false' "$PACKAGE_FILE")
 
+  # Packages shipping only package_files (the rust collections) embed no perl plugin: without this
+  # guard the template would package the framework-only centreon_plugins.pl that fatpack-plugins.pl
+  # produces for an empty "files". The plugin name is resolved here rather than through
+  # @PLUGIN_NAME@, whose gsub runs before the one substituting this block.
+  fatpack_contents=""
+  if (( $(jq -r '(.files // []) | length' "$PACKAGE_FILE") > 0 )); then
+    fatpack_contents=$(printf '  - src: "../../build/%s/*"\n    dst: "/usr/lib/centreon/plugins/"\n    file_info:\n      mode: 0775' "$PLUGIN")
+  fi
+
 awk -v contents="$contents" \
+  -v fatpack_contents="$fatpack_contents" \
   -v pkg_summary="$pkg_summary" \
   -v plugin="$PLUGIN" \
   -v conflicts="$conflicts" \
@@ -55,6 +68,7 @@ awk -v contents="$contents" \
 '{
   gsub(/@PLUGIN_NAME@/, plugin)
   gsub(/@SUMMARY@/, pkg_summary)
+  gsub(/@FATPACK_CONTENTS@/, fatpack_contents)
   gsub(/@CONTENTS@/, contents)
   gsub(/@CONFLICTS@/, conflicts)
   gsub(/@REPLACES@/, replaces)

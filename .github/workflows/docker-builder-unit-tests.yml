@@ -10,11 +10,9 @@ on:
     branches:
       - develop
     paths:
-      - ".github/workflows/docker-builder-unit-tests.yml"
       - ".github/docker/unit-tests/*"
   pull_request:
     paths:
-      - ".github/workflows/docker-builder-unit-tests.yml"
       - ".github/docker/unit-tests/*"
 
 jobs:
@@ -43,12 +41,6 @@ jobs:
           - runner: ubuntu-24.04
             dockerfile: alma10
             image: alma10
-          - runner: ubuntu-24.04
-            dockerfile: bullseye
-            image: bullseye
-          - runner: ubuntu-24.04-arm
-            dockerfile: bullseye
-            image: bullseye-arm64
           - runner: ubuntu-24.04
             dockerfile: bookworm
             image: bookworm

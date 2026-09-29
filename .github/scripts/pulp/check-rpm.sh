@@ -125,10 +125,10 @@ resolve_pending() {
 
     if [[ -z "${primary_cache[$base_path]+set}" ]]; then
       cache_file=$(mktemp)
-      repomd=$(content_curl -fsSL "$PULP_CONTENT_URL/$PULP_DOMAIN/$base_path/repodata/repomd.xml" 2>/dev/null || true)
+      repomd=$(content_curl -fsSL "$PULP_CONTENT_URL/$base_path/repodata/repomd.xml" 2>/dev/null || true)
       primary_href=$(printf '%s' "$repomd" | grep -oP '<location href="\K[^"]+primary\.xml[^"]*' | head -1 || true)
       if [[ -n "$primary_href" ]]; then
-        content_curl -fsSL "$PULP_CONTENT_URL/$PULP_DOMAIN/$base_path/$primary_href" 2>/dev/null | gunzip -c 2>/dev/null > "$cache_file" || true
+        content_curl -fsSL "$PULP_CONTENT_URL/$base_path/$primary_href" 2>/dev/null | gunzip -c 2>/dev/null > "$cache_file" || true
       fi
       primary_cache[$base_path]=$cache_file
     fi

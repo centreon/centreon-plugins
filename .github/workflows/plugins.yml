@@ -17,8 +17,6 @@ on:
     - cron: "30 1 * * 1"
   pull_request:
     paths:
-      - '.github/workflows/plugins.yml'
-      - '.github/workflows/plugins-robot-tests.yml'
       - '.github/scripts/list-plugins-to-build-and-test.py'
       - '.github/scripts/prepare-package-plugins.sh'
       - '.github/scripts/fatpack-plugins.pl'
@@ -27,14 +25,14 @@ on:
       - 'src/**'
       - 'packaging/**'
       - 'tests/**'
+      # Collections are the payload of the centreon-plugin-*-snmp-rs packages: changing one must
+      # repackage and reinstall its package. The functional tests live in generic-plugins.yml.
       - 'rust-plugins/rs-collections/**'
   push:
     branches:
       - develop
       - master
     paths:
-      - '.github/workflows/plugins.yml'
-      - '.github/workflows/plugins-robot-tests.yml'
       - '.github/scripts/list-plugins-to-build-and-test.py'
       - '.github/scripts/prepare-package-plugins.sh'
       - '.github/scripts/fatpack-plugins.pl'
@@ -66,9 +64,11 @@ jobs:
       changes_packages: ${{ steps.filter.outputs.packages || 'false' }}
       changes_plugins: ${{ steps.filter.outputs.plugins || 'false' }}
       changes_tests: ${{ steps.filter.outputs.tests || 'false' }}
+      changes_collections: ${{ steps.filter.outputs.collections || 'false' }}
       packages_files: ${{ steps.filter.outputs.packages_files }}
       plugins_files: ${{ steps.filter.outputs.plugins_files }}
       tests_files: ${{ steps.filter.outputs.tests_files }}
+      collections_files: ${{ steps.filter.outputs.collections_files }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -82,7 +82,9 @@ jobs:
           list-files: shell
           filters: |
             common:
-              - added|deleted|modified: src/centreon/**
+              # Only the cross-plugin engine forces a full rebuild/test; src/centreon/common/**
+              # is already covered by the "plugins" filter below and resolved per package.
+              - added|deleted|modified: src/centreon/plugins/**
               - modified: .github/packaging/centreon-plugin.yaml.template
             packages:
               - added|modified: packaging/**
@@ -90,6 +92,8 @@ jobs:
               - added|modified: src/**
             tests:
               - added|modified: tests/**
+            collections:
+              - added|modified: rust-plugins/rs-collections/**
 
   get-plugins:
     runs-on: ubuntu-24.04
@@ -110,6 +114,7 @@ jobs:
           PACKAGES_FILES: ${{ needs.changes.outputs.packages_files }}
           PLUGINS_FILES: ${{ needs.changes.outputs.plugins_files }}
           TESTS_FILES: ${{ needs.changes.outputs.tests_files }}
+          COLLECTIONS_FILES: ${{ needs.changes.outputs.collections_files }}
         run: |
           packages_folders=()
           for package_file in $PACKAGES_FILES; do
@@ -138,11 +143,19 @@ jobs:
           done
           unique_tests_folders=($(printf "%s\n" "${tests_folders[@]}" | sort -u | tr '\n' ' '))
           jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_tests_folders[@]} > tests_directories.json
+
+          collections_folders=()
+          for collection_file in $COLLECTIONS_FILES; do
+              echo "Adding $(dirname $collection_file) to collections_folders"
+              collections_folders+=($(dirname $collection_file))
+          done
+          unique_collections_folders=($(printf "%s\n" "${collections_folders[@]}" | sort -u | tr '\n' ' '))
+          jq --compact-output --null-input '$ARGS.positional' --args -- ${unique_collections_folders[@]} > collections_directories.json
         shell: bash
 
       - name: Get plugins to build and/or test
         id: get_plugins
-        if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' }}
+        if: ${{ needs.changes.outputs.changes_common == 'true' || needs.changes.outputs.changes_packages == 'true' || needs.changes.outputs.changes_plugins == 'true' || needs.changes.outputs.changes_tests == 'true' || needs.changes.outputs.changes_collections == 'true' }}
         env:
           CHANGES_COMMON: ${{ needs.changes.outputs.changes_common == 'true' }}
           MAX_RUNNERS: ${{ env.max_testing_jobs }}
@@ -183,7 +196,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bullseye, unit-tests-bullseye-arm64, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
+        image: [unit-tests-alma8, unit-tests-alma9, unit-tests-alma10, unit-tests-bookworm, unit-tests-trixie, unit-tests-jammy, unit-tests-noble]
         include:
           - runner_name: ubuntu-24.04
           - package_extension: rpm
@@ -195,13 +208,6 @@ jobs:
           - package_extension: rpm
             image: unit-tests-alma10
             distrib: el10
-          - package_extension: deb
-            image: unit-tests-bullseye
-            distrib: bullseye
-          - package_extension: deb
-            image: unit-tests-bullseye-arm64
-            runner_name: ubuntu-24.04-arm
-            distrib: bullseye
           - package_extension: deb
             image: unit-tests-bookworm
             distrib: bookworm
@@ -304,9 +310,6 @@ jobs:
             image: packaging:alma10
             distrib: el10
           - package_extension: deb
-            image: packaging:bullseye
-            distrib: bullseye
-          - package_extension: deb
             image: packaging:bookworm
             distrib: bookworm
           - package_extension: deb
@@ -375,7 +378,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bullseye, testing:bookworm, testing:trixie, testing:noble]
+        image: [testing:alma8, testing:alma9, testing:alma10, testing:jammy, testing:bookworm, testing:trixie, testing:noble]
         include:
           - skip_robot_tests: false
           - package_extension: rpm
@@ -391,10 +394,6 @@ jobs:
             distrib: el10
             arch: amd64
             skip_robot_tests: true
-          - package_extension: deb
-            image: testing:bullseye
-            distrib: bullseye
-            arch: amd64
           - package_extension: deb
             image: testing:bookworm
             distrib: bookworm
@@ -412,10 +411,6 @@ jobs:
             image: testing:noble
             distrib: noble
             arch: amd64
-          - package_extension: deb
-            image: testing:bullseye
-            distrib: bullseye
-            arch: arm64
 
     name: "test-plugins ${{ matrix.distrib }} ${{ matrix.arch }}"
 
@@ -452,8 +447,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -488,7 +481,6 @@ jobs:
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     runs-on: centreon-ubuntu-22.04
-    continue-on-error: true
     permissions:
       contents: read
       id-token: write
@@ -503,8 +495,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -566,10 +556,8 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
-        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
+        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
-        continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
         with:
           module_name: plugins
@@ -585,10 +573,8 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
-        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
+        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
         id: promote_pulp
-        continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
         with:
           module_name: plugins
@@ -601,12 +587,6 @@ jobs:
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
-
-      - name: Warn if the Pulp delivery failed
-        if: steps.deliver_pulp.outcome == 'failure' || steps.promote_pulp.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "::warning::Pulp delivery/promotion failed (non-blocking during the Artifactory-to-Pulp migration; Artifactory delivery remains authoritative). See the 'Deliver packages on Pulp' / 'Promote packages on Pulp' step."
 
   deliver-sources:
     needs: [get-environment, fatpacker]

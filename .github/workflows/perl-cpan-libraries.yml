@@ -8,14 +8,12 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
       - ".github/packaging/cpan-libraries.json"
   push:
     branches:
       - develop
       - master
     paths:
-      - ".github/workflows/perl-cpan-libraries.yml"
       - ".github/packaging/cpan-libraries.json"
 
 jobs:
@@ -42,8 +40,6 @@ jobs:
             image: almalinux:9
           - distrib: el10
             image: almalinux:10
-          - distrib: bullseye
-            image: debian:bullseye
           - distrib: bookworm
             image: debian:bookworm
           - distrib: trixie
@@ -394,7 +390,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, trixie, jammy, noble]
+        distrib: [bookworm, trixie, jammy, noble]
 
     steps:
       - name: Merge Artifacts
@@ -419,7 +415,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        distrib: [bullseye, bookworm, trixie, jammy, noble]
+        distrib: [bookworm, trixie, jammy, noble]
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -453,11 +449,6 @@ jobs:
             arch: amd64
             runner_name: ubuntu-24.04
           - package_extension: deb
-            image: debian:bullseye
-            distrib: bullseye
-            arch: amd64
-            runner_name: ubuntu-24.04
-          - package_extension: deb
             image: debian:bookworm
             distrib: bookworm
             arch: amd64
@@ -477,11 +468,6 @@ jobs:
             distrib: noble
             arch: amd64
             runner_name: ubuntu-24.04
-          - package_extension: deb
-            image: debian:bullseye
-            distrib: bullseye
-            arch: arm64
-            runner_name: ubuntu-24.04-arm
           - package_extension: deb
             image: debian:bookworm
             distrib: bookworm
@@ -536,8 +522,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -571,7 +555,6 @@ jobs:
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     runs-on: centreon-ubuntu-22.04
-    continue-on-error: true
     permissions:
       contents: read
       id-token: write
@@ -586,8 +569,6 @@ jobs:
             package_extension: rpm
           - distrib: el10
             package_extension: rpm
-          - distrib: bullseye
-            package_extension: deb
           - distrib: bookworm
             package_extension: deb
           - distrib: trixie
@@ -649,10 +630,8 @@ jobs:
             core.setOutput('release_type', releaseType);
 
       - name: Deliver packages on Pulp
-        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
-        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
+        if: ${{ contains(fromJson('["testing", "unstable"]'), needs.get-environment.outputs.stability) }}
         id: deliver_pulp
-        continue-on-error: true
         uses: ./.github/actions/package-delivery-pulp
         with:
           module_name: perl-cpan-libraries
@@ -668,10 +647,8 @@ jobs:
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
 
       - name: Promote packages on Pulp
-        # ubuntu excluded: the plugins are not delivered to pulp for jammy/noble
-        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' && !contains(fromJson('["jammy", "noble"]'), matrix.distrib) }}
+        if: ${{ needs.get-environment.outputs.stability == 'stable' && steps.get_release_type.outputs.release_type != '' }}
         id: promote_pulp
-        continue-on-error: true
         uses: ./.github/actions/promote-to-stable-pulp
         with:
           module_name: perl-cpan-libraries
@@ -684,12 +661,6 @@ jobs:
           pulp_url: ${{ vars.PULP_API_URL }}
           pulp_content_url: ${{ vars.PULP_CONTENT_URL }}
           audience: ${{ vars.PULP_OIDC_AUDIENCE }}
-
-      - name: Warn if the Pulp delivery failed
-        if: steps.deliver_pulp.outcome == 'failure' || steps.promote_pulp.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "::warning::Pulp delivery/promotion failed (non-blocking during the Artifactory-to-Pulp migration; Artifactory delivery remains authoritative). See the 'Deliver packages on Pulp' / 'Promote packages on Pulp' step."
 
   set-skip-label:
     needs: [get-environment, deliver-packages]

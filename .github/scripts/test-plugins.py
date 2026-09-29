@@ -47,13 +47,16 @@ def refresh_packet_manager(archi, logs_dir):
 
 
 # Install plugin, from local file if build is true, from repository if false.
+# The globs below keep the name separator (_ for deb, - before the version for rpm): without it,
+# centreon-plugin-operatingsystems-windows-snmp also matches the -rs collection package built
+# alongside it, and apt/dnf would install both.
 def install_plugin(plugin, archi, build, logs_dir, dependencies=None):
     if dependencies:
         for dep in dependencies:
             if archi == "deb":
-                local_exists = len(glob.glob(f"./{dep.lower()}*.deb")) > 0
+                local_exists = len(glob.glob(f"./{dep.lower()}_*.deb")) > 0
             else:
-                local_exists = len(glob.glob(f"./{dep}*.rpm")) > 0
+                local_exists = len(glob.glob(f"./{dep}-[0-9]*.rpm")) > 0
             if local_exists:
                 print(f"Installing test dependency {dep} for {plugin}")
                 dep_status = install_plugin(dep, archi, True, logs_dir)
@@ -62,7 +65,7 @@ def install_plugin(plugin, archi, build, logs_dir, dependencies=None):
     with open(f'{logs_dir}/test-plugins-installation.log', "a") as outfile:
         if archi == "deb":
             if build:
-                install_name = f"./{plugin.lower()}*.deb"
+                install_name = f"./{plugin.lower()}_*.deb"
             else:
                 install_name = plugin.lower()
             command = f"apt install -o 'Binary::apt::APT::Keep-Downloaded-Packages=1;' -y --allow-downgrades {install_name}"
@@ -79,7 +82,7 @@ def install_plugin(plugin, archi, build, logs_dir, dependencies=None):
                                  stderr=subprocess.STDOUT, stdout=outfile)).returncode
         elif archi == "rpm":
             if build:
-                install_name = f"./{plugin}*.rpm"
+                install_name = f"./{plugin}-[0-9]*.rpm"
             else:
                 install_name = plugin
             command = f"dnf install --setopt=keepcache=True -y {install_name}"
@@ -228,6 +231,12 @@ if __name__ == '__main__':
         for plugin in plugins:
             if args.runner_id and plugins[plugin]["runner_id"] != args.runner_id:
                 continue
+
+            match = re.match(r"centreon-plugin-.*-rs$", plugin)
+            if match:
+                print("Skipping Rust collection plugin : ", plugin)
+                continue
+
             print("Testing plugin : ", plugin)
 
             nb_plugins += 1

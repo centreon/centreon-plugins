@@ -1,0 +1,15 @@
+{
+    "pkg_name": "centreon-plugin-applications-protocol-snmp-rs",
+    "pkg_summary": "Centreon Rust Plugin generic SNMP collections",
+    "plugin_name": "centreon-plugin-applications-protocol-snmp-rs",
+    "files": [
+    ],
+    "package_files": [
+        {
+            "src": "../../rust-plugins/rs-collections/applications-protocol-snmp/",
+            "dst": "/usr/lib/centreon/plugins/rs-collections/applications-protocol-snmp/",
+            "file_mode": "0644"
+        }
+    ],
+    "skip_default_dependencies": true
+}

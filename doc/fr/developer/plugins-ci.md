@@ -195,8 +195,6 @@ Exécute les tests unitaires Perl sur toutes les distributions supportées en pa
 | `unit-tests-alma8` | el8 (AlmaLinux 8) | amd64 |
 | `unit-tests-alma9` | el9 (AlmaLinux 9) | amd64 |
 | `unit-tests-alma10` | el10 (AlmaLinux 10) | amd64 |
-| `unit-tests-bullseye` | Debian 11 | amd64 |
-| `unit-tests-bullseye-arm64` | Debian 11 | arm64 |
 | `unit-tests-bookworm` | Debian 12 | amd64 |
 | `unit-tests-trixie` | Debian 13 | amd64 |
 | `unit-tests-jammy` | Ubuntu 22.04 | amd64 |
@@ -239,7 +237,6 @@ Distributions supportées :
 | el8 | RPM |
 | el9 | RPM |
 | el10 | RPM |
-| bullseye | DEB |
 | bookworm | DEB |
 | trixie | DEB |
 | jammy | DEB |
@@ -251,7 +248,7 @@ Installe, teste et désinstalle chaque plugin sur toutes les distributions suppo
 
 **Ignoré si :** `stability == 'stable'` ou `test_plugins != 'True'`
 
-La matrice de test est identique à celle du packaging, plus `bullseye-arm64`. Jusqu'à 25 runners sont utilisés en parallèle (contrôlé par `index_matrix`).
+La matrice de test est identique à celle du packaging. Jusqu'à 25 runners sont utilisés en parallèle (contrôlé par `index_matrix`).
 
 Pour chaque combinaison runner/distribution :
 1. L'image Docker est tirée et mise en cache.
@@ -330,7 +327,6 @@ Crée automatiquement un ticket Jira si un run nightly échoue (`is_nightly == '
 | el8 | AlmaLinux 8 | RPM | Oui | Oui | Oui | Oui |
 | el9 | AlmaLinux 9 | RPM | Oui | Oui | Oui | Oui |
 | el10 | AlmaLinux 10 | RPM | Oui | Oui | Oui | Non (--help seulement) |
-| bullseye | Debian 11 | DEB | Oui (amd64 + arm64) | Oui | Oui (amd64 + arm64) | Oui |
 | bookworm | Debian 12 | DEB | Oui | Oui | Oui | Oui |
 | trixie | Debian 13 | DEB | Oui | Oui | Oui | Non (--help seulement) |
 | jammy | Ubuntu 22.04 | DEB | Oui | Oui | Oui | Oui |

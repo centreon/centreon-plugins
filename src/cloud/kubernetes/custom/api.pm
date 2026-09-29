@@ -325,6 +325,18 @@ sub kubernetes_list_pods {
     return $response;
 }
 
+sub kubernetes_list_pod_metrics {
+    my ($self, %options) = @_;
+
+    my $url_path = $self->{namespace} ne ''
+        ? '/apis/metrics.k8s.io/v1beta1/namespaces/' . $self->{namespace} . '/pods'
+        : '/apis/metrics.k8s.io/v1beta1/pods';
+
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+
+    return $response->{items};
+}
+
 sub kubernetes_list_pvs {
     my ($self, %options) = @_;
 

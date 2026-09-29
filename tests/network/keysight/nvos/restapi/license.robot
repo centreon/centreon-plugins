@@ -32,8 +32,8 @@ license ${tc}
     Log    ${cmd}
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:         tc    extraoptions                                            expected_result    --
-            ...       1     --verbose                                               OK: status : skipped (no value(s))
-            ...       2     --unknown-status=\\\%{status}                           OK: status : skipped (no value(s))
-            ...       3     --warning-status='\\\%{status} =~ /MINOR/i'             OK: status : skipped (no value(s))
-            ...       4     --critical-status='\\\%{status} =~ /MAJOR|CRITICAL/i'   OK: status : skipped (no value(s))
+    Examples:    tc    extraoptions    expected_result    --
+    ...    1    --verbose    UNKNOWN: No data! status : skipped (no value(s))
+    ...    2    --unknown-status=\\\%{status}    UNKNOWN: No data!
+    ...    3    --warning-status='\\\%{status} =~ /MINOR/i'    UNKNOWN: No data!
+    ...    4    --critical-status='\\\%{status} =~ /MAJOR|CRITICAL/i'    UNKNOWN: No data!

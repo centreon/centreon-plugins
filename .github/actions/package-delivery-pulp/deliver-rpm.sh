@@ -8,8 +8,8 @@ source "$(dirname "$0")/../../scripts/pulp/manifest.sh"
 source "$(dirname "$0")/../../scripts/pulp/api.sh"
 
 # an unset org variable is forwarded as an empty string, overriding the default
-PULP_URL="${PULP_URL:-https://pulp-api.apps.centreon.com}"
-PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.apps.centreon.com}"
+PULP_URL="${PULP_URL:-https://pulp-api.int.centreon.com}"
+PULP_CONTENT_URL="${PULP_CONTENT_URL:-https://packages.int.centreon.com}"
 PULP_DOMAIN="${PULP_DOMAIN:-default}"
 # read-only grant into the stable domain, used by assert_not_in_stable below
 PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
@@ -17,6 +17,9 @@ PULP_STABLE_DOMAIN="${PULP_STABLE_DOMAIN:-default}"
 # refuse delivering a package version already published in the stable repository
 assert_not_in_stable() {
   local file=$1 arch=$2 base name version release stable_repository repository_version count
+  # unstable is never promoted to stable: a rebuilt package may reuse a version
+  # already published there (unversioned plugins/connectors packages)
+  [[ "${STABILITY:-}" == "unstable" ]] && return 0
   base=$(basename "$file" .rpm)
   base=${base%.$arch}
   release=${base##*-}
@@ -131,6 +134,8 @@ for ARCH in noarch x86_64; do
 
   REPOSITORY_NAME="$REPOSITORY_PREFIX-$ARCH"
   BASE_PATH="$BASE_PATH_PREFIX/$ARCH"
+  LEGACY_BASE_PATH=""
+  [[ -n "$LEGACY_BASE_PATH_PREFIX" ]] && LEGACY_BASE_PATH="$LEGACY_BASE_PATH_PREFIX/$ARCH"
 
   if ! pulp_resource_exists "repositories/rpm/rpm" "$REPOSITORY_NAME"; then
     echo "::error::rpm repository $REPOSITORY_NAME does not exist. Pulp repositories and distributions are provisioned centrally by delivery-tooling create-repos; run create-repos for this version before delivering."
@@ -194,7 +199,7 @@ for ARCH in noarch x86_64; do
     manifest_add "$(jq -cn \
       --arg filename "$FILENAME" --arg name "$name" --arg version "$version" \
       --arg release "$release" --arg arch "$ARCH" --arg sha256 "$sha256" \
-      --arg repository "$REPOSITORY_NAME" --arg base_path "$BASE_PATH" \
+      --arg repository "$REPOSITORY_NAME" --arg base_path "${LEGACY_BASE_PATH:-$PULP_DOMAIN/$BASE_PATH}" \
       '{filename:$filename,name:$name,version:$version,release:$release,arch:$arch,sha256:$sha256,repository:$repository,base_path:$base_path}')"
   done
   rm -rf "$UPLOAD_DIR"
@@ -249,7 +254,7 @@ for ARCH in noarch x86_64; do
   echo "[INFO] Publishing repository $REPOSITORY_NAME"
   create_publication rpm "$REPOSITORY_NAME"
 
-  echo "::notice::Packages are available at $PULP_CONTENT_URL/$PULP_DOMAIN/$BASE_PATH/"
+  echo "::notice::Packages are available at $PULP_CONTENT_URL/${LEGACY_BASE_PATH:-$PULP_DOMAIN/$BASE_PATH}/"
 done
 
 manifest_write "$MODULE_NAME" "${DISTRIB:-}" "rpm" "${STABILITY:-}" "delivery" "$PULP_CONTENT_URL"

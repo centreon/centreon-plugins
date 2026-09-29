@@ -5,8 +5,8 @@ Reads the partial-matrix JSON files produced by check-official-repos.py and
 generates flat include-only matrices written to GITHUB_OUTPUT (or printed to
 stdout when GITHUB_OUTPUT is not set, useful for local debugging).
 
-Optionally filters out packages already present in the Centreon stable
-Artifactory repository at the expected version.
+Optionally filters out packages already present in the Centreon repository
+(Pulp via packages.centreon.com or Artifactory) at the expected version.
 
 Usage:
     # CI (after all check-official-repos jobs)
@@ -218,7 +218,7 @@ def main():
     parser.add_argument(
         "--artifactory-url", metavar="URL",
         help="Base URL of the public Artifactory instance "
-             "(e.g. https://packages.centreon.com). When provided, packages already "
+             "(e.g. https://centreon.jfrog.io). When provided, packages already "
              "present in the Centreon repository at the expected version are "
              "skipped (not rebuilt).",
     )

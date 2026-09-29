@@ -141,6 +141,8 @@ runs:
       name: Upload package artifacts
       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
-        name: packages-${{ inputs.distrib }}
+        # The architecture is part of the name because a caller may package several architectures
+        # for the same distribution, and artifact names have to be unique within a run.
+        name: packages-${{ inputs.distrib }}${{ inputs.arch && format('-{0}', inputs.arch) || '' }}
         path: ./*.${{ inputs.package_extension}}
         retention-days: 1
