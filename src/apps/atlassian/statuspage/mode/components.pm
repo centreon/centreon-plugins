@@ -24,43 +24,31 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::constants qw(:counters :values);
+use centreon::plugins::constants qw(:counters);
+use centreon::plugins::misc qw(is_excluded value_of);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
-
-sub custom_component_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        'status: %s',
-        $self->{result_values}->{status}
-    );
-}
-
-sub prefix_component_output {
-    my ($self, %options) = @_;
-
-    return "Component '" . $options{instance_value}->{name} . "' ";
-}
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'components', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_component_output', message_multiple => 'All components are ok' }
+        {
+            name             => 'components',
+            type             => COUNTER_TYPE_INSTANCE,
+            prefix_output    => "Component '%{name}' ",
+            message_multiple => 'All components are ok'
+        }
     ];
 
     $self->{maps_counters}->{components} = [
         {
-            label => 'status',
-            type => COUNTER_KIND_TEXT,
-            warningd_default => '%{status} =~ /degraded_performance|partial_outage/',
+            label            => 'status',
+            type             => COUNTER_KIND_TEXT,
+            warning_default  => '%{status} =~ /degraded_performance|partial_outage/',
             critical_default => '%{status} =~ /major_outage/',
-            set => {
-                key_values => [
-                    { name => 'status' }, { name => 'name' }
-                ],
-                closure_custom_output => $self->can('custom_component_status_output'),
-                closure_custom_perfdata => sub { return 0; },
+            set              => {
+                key_values                     => [ { name => 'status' }, { name => 'name' } ],
+                output_template                => 'status: %s',
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
@@ -73,8 +61,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-       'filter-component-id:s'   => { name => 'filter_component_id' },
-       'filter-component-name:s' => { name => 'filter_component_name' }
+        'include-id:s'   => { name => 'include_id',   default => '' },
+        'exclude-id:s'   => { name => 'exclude_id',   default => '' },
+        'include-name:s' => { name => 'include_name', default => '' },
+        'exclude-name:s' => { name => 'exclude_name', default => '' }
     });
 
     return $self;
@@ -86,17 +76,18 @@ sub manage_selection {
     my $results = $options{custom}->get_components();
 
     $self->{components} = {};
-    foreach (@{$results->{components}}) {
-        next if (defined($self->{option_results}->{filter_component_id}) && $self->{option_results}->{filter_component_id} ne '' &&
-            $_->{id} !~ /$self->{option_results}->{filter_component_id}/);
-        next if (defined($self->{option_results}->{filter_component_name}) && $self->{option_results}->{filter_component_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_component_name}/);
+    foreach my $component (@{value_of($results, '->{components}', [])}) {
+        next if is_excluded($component->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}, output => $self->{output});
+        next if is_excluded($component->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
 
-        $self->{components}->{ $_->{id} } = {
-            name => $_->{name},
-            status => $_->{status}
+        $self->{components}->{ $component->{id} } = {
+            name   => $component->{name},
+            status => $component->{status}
         };
     }
+
+    $self->{output}->option_exit(short_msg => 'No component found.')
+        if (!keys %{$self->{components}});
 }
 
 1;
@@ -105,32 +96,40 @@ __END__
 
 =head1 MODE
 
-Check components.
+Check the status of Atlassian Statuspage components.
 
 =over 8
 
-=item B<--filter-component-id>
+=item B<--include-id>
 
-Filter components by ID (can be a regexp).
+Filter components by ID (regular expression).
 
-=item B<--filter-component-name>
+=item B<--exclude-id>
 
-Filter components by name (can be a regexp).
+Exclude components by ID (regular expression).
+
+=item B<--include-name>
+
+Filter components by name (regular expression).
+
+=item B<--exclude-name>
+
+Exclude components by name (regular expression).
 
 =item B<--unknown-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{status}, %{name}
+You can use the following variables: C<%{status}>, C<%{name}>.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: '%{status} =~ /degraded_performance|partial_outage/').
-You can use the following variables: %{status}, %{name}
+Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /degraded_performance|partial_outage/'>).
+You can use the following variables: C<%{status}>, C<%{name}>.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} =~ /major_outage/').
-You can use the following variables: %{status}, %{name}
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /major_outage/'>).
+You can use the following variables: C<%{status}>, C<%{name}>.
 
 =back
 

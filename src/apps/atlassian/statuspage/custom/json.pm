@@ -16,36 +16,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 package apps::atlassian::statuspage::custom::json;
 
 use strict;
 use warnings;
 use centreon::plugins::http;
-use JSON::XS;
-use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc qw(json_decode);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = {};
     bless $self, $class;
-
-    if (!defined($options{output})) {
-        print "Class Custom: Need to specify 'output' argument.\n";
-        exit 3;
-    }
-    if (!defined($options{options})) {
-        $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
-        $options{output}->option_exit();
-    }
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'        => { name => 'hostname' },
-            'port:s'            => { name => 'port' },
-            'proto:s'           => { name => 'proto' },
-            'timeout:s'         => { name => 'timeout' },
-            'api-endpoint:s'    => { name => 'api_endpoint' },
+            'hostname:s'             => { name => 'hostname',     default => '' },
+            'port:s'                 => { name => 'port' },
+            'proto:s'                => { name => 'proto',        default => 'https' },
+            'timeout:s'              => { name => 'timeout',      default => 30 },
+            'api-path:s'             => { name => 'api_path',     default => '/api/v2/' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
             'critical-http-status:s' => { name => 'critical_http_status' }
@@ -59,30 +50,11 @@ sub new {
     return $self;
 }
 
-sub set_options {
-    my ($self, %options) = @_;
-
-    $self->{option_results} = $options{option_results};
-}
-
-sub set_defaults {}
-
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{option_results}->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
-    $self->{option_results}->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{option_results}->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
-    $self->{option_results}->{api_endpoint} = (defined($self->{option_results}->{api_endpoint})) ? $self->{option_results}->{api_endpoint} : '/api/v2/';
-    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
-    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
-
-    if ($self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
-        $self->{output}->option_exit();
-    }
+    $self->{output}->option_exit(short_msg => 'Need to specify --hostname option.')
+        if ($self->{option_results}->{hostname} eq '');
 
     return 0;
 }
@@ -96,44 +68,28 @@ sub settings {
     $self->{settings_done} = 1;
 }
 
-sub get_connection_info {
-    my ($self, %options) = @_;
-
-    return $self->{option_results}->{hostname} . ':' . $self->{option_results}->{port};
-}
-
 sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
     my ($content) = $self->{http}->request(
-        url_path => $self->{option_results}->{api_endpoint} . $options{request},
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status}
+        url_path        => $self->{option_results}->{api_path} . $options{endpoint},
+        unknown_status  => $self->{option_results}->{unknown_http_status},
+        warning_status  => $self->{option_results}->{warning_http_status},
+        critical_status => $self->{option_results}->{critical_http_status}
     );
 
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
-        $self->{output}->option_exit();
+        $self->{output}->option_exit(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
     }
 
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->allow_nonref(1)->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
+    return json_decode($content, output => $self->{output}, errstr => 'Cannot decode response (add --debug option to display returned content)');
 }
 
 sub get_components {
     my ($self, %options) = @_;
 
-    return $self->request_api(request => 'components.json');
+    return $self->request_api(endpoint => 'components.json');
 }
 
 1;
@@ -142,11 +98,15 @@ __END__
 
 =head1 NAME
 
-Public JSON API
+Atlassian Statuspage public JSON API
+
+=head1 SYNOPSIS
+
+Atlassian Statuspage public JSON API custom mode
 
 =head1 API OPTIONS
 
-Public JSON API
+Atlassian Statuspage public JSON API
 
 =over 8
 
@@ -162,13 +122,25 @@ Port used (default: 443)
 
 Specify https if needed (default: 'https')
 
-=item B<--api-endpoint>
+=item B<--api-path>
 
-Argos API requests endpoint (default: '/api/v2/')
+API base url path (default: '/api/v2/').
 
 =item B<--timeout>
 
 Set timeout in seconds (default: 30).
+
+=item B<--unknown-http-status>
+
+Threshold for unknown HTTP status (default: '%{http_code} < 200 or %{http_code} >= 300').
+
+=item B<--warning-http-status>
+
+Threshold for warning HTTP status.
+
+=item B<--critical-http-status>
+
+Threshold for critical HTTP status.
 
 =back
 

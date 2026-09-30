@@ -33,6 +33,7 @@ ARN
 AS400
 ASAM
 Athonet
+Atlassian
 Aviat
 Avigilon
 Avocent
@@ -356,6 +357,7 @@ Stackdriver
 standAlone
 statefile
 --statefile-concat-cwd
+Statuspage
 Stormshield
 sudoers
 superseed

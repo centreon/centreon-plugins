@@ -45,10 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Atlassian statuspage using API or JSON public files.
-
-=over 8
-
-=back
+Check Atlassian Statuspage components using the public JSON API.
 
 =cut

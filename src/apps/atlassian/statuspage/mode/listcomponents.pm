@@ -24,14 +24,12 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc qw(value_of);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {
-    });
 
     return $self;
 }
@@ -44,31 +42,27 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $components = $options{custom}->get_components();
+    my $results = $options{custom}->get_components();
 
-    my $results = [];
-    foreach (@{$components->{components}}) {
-        push @$results, $_;
-    }
-    return $results;
+    return value_of($results, '->{components}', []);
 }
 
 sub run {
     my ($self, %options) = @_;
-  
-    my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+
+    foreach my $component (@{$self->manage_selection(%options)}) {
         $self->{output}->output_add(
             long_msg => sprintf(
-                '[id: %s][name: %s]',
-                $_->{id},
-                $_->{name}
+                '[id: %s][name: %s][status: %s]',
+                $component->{id},
+                $component->{name},
+                $component->{status}
             )
         );
     }
-    
+
     $self->{output}->output_add(
-        severity => 'OK',
+        severity  => 'OK',
         short_msg => 'List components:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -77,18 +71,18 @@ sub run {
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['id', 'name']);
+
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'status']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $results = $self->manage_selection(%options);
-    foreach (@$results) {
+    foreach my $component (@{$self->manage_selection(%options)}) {
         $self->{output}->add_disco_entry(
-            id => $_->{id},
-            name => $_->{name}
+            id     => $component->{id},
+            name   => $component->{name},
+            status => $component->{status}
         );
     }
 }
@@ -99,7 +93,7 @@ __END__
 
 =head1 MODE
 
-List components.
+List Atlassian Statuspage components.
 
 =over 8
 
