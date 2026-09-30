@@ -308,6 +308,9 @@ jobs:
               // Filter tags matching format plugins-YYYYMMDD
               for (const tag of tags) {
                 const match = tag.name.match(/^plugins-(\d{8})$/);
+                if (!match) {
+                  continue;
+                }
 
                 const tagDate = parseInt(match[1], 10);
 
