@@ -162,11 +162,10 @@ ensure_legacy_suite_associations() {
     return 1
   fi
   echo "[INFO] Mirroring $PACKAGES_COUNT package association(s) into $STABLE_LEGACY_REPOSITORY_NAME $STABLE_LEGACY_SUITE/main"
-  local units_file body_file sha href out code body prc n=0
+  local units_file body_file sha href out code body prc
   units_file=$(mktemp)
   while read -r sha; do
-    if ((n % 40 == 0)); then refresh_pulp_token; fi
-    n=$((n + 1))
+    refresh_pulp_token
     href=$(lookup_deb_content "packages" "--data-urlencode sha256=$sha")
     if [[ -z "$href" ]]; then
       echo "::error::Cannot resolve the promoted package (sha256 $sha) for the $STABLE_LEGACY_SUITE mirror"
@@ -427,9 +426,7 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
   MAX_PARALLEL=8
   PRC_DIR=$(mktemp -d)
   for i in "${!PACKAGE_HREFS[@]}"; do
-    if ((i % 40 == 0)); then
-      refresh_pulp_token
-    fi
+    refresh_pulp_token
     (
       refresh_pulp_token
       package_href="${PACKAGE_HREFS[$i]}"
