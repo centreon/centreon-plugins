@@ -68,11 +68,13 @@ suite_sha_file() {
 # resolve the served filename from the testing suite's Packages file by
 # sha256 (the published pool layout doesn't match the upload relative_path)
 download_testing_package() {
-  local sha256=$1 arch=$2 dest=$3 filename
-  filename=$(
-    content_curl -fsSL --retry 3 --retry-delay 5 "$PULP_CONTENT_URL/${LEGACY_TESTING_BASE_PATH:-$TESTING_DOMAIN/$BASE_PATH}/dists/$TESTING_SUITE/main/binary-$arch/Packages" |
-      awk -v sha="$sha256" 'BEGIN { RS = ""; FS = "\n" } index($0, "SHA256: " sha) { for (i = 1; i <= NF; i++) if ($i ~ /^Filename: /) { sub(/^Filename: /, "", $i); print $i; exit } }'
-  )
+  local sha256=$1 arch=$2 dest=$3 filename packages_file
+  # read the index from a file: awk exits on the first match, which would
+  # SIGPIPE a piped curl on a large index (curl 23, fatal under pipefail)
+  packages_file=$(mktemp)
+  content_curl -fsSL --retry 3 --retry-delay 5 -o "$packages_file" "$PULP_CONTENT_URL/${LEGACY_TESTING_BASE_PATH:-$TESTING_DOMAIN/$BASE_PATH}/dists/$TESTING_SUITE/main/binary-$arch/Packages"
+  filename=$(awk -v sha="$sha256" 'BEGIN { RS = ""; FS = "\n" } index($0, "SHA256: " sha) { for (i = 1; i <= NF; i++) if ($i ~ /^Filename: /) { sub(/^Filename: /, "", $i); print $i; exit } }' "$packages_file")
+  rm -f "$packages_file"
   if [[ -z "$filename" ]]; then
     echo "::error::Cannot locate the published file for sha256 $sha256 in $TESTING_SUITE ($arch)" >&2
     return 1
