@@ -221,6 +221,9 @@ jobs:
               switch (true) {
                 case /(^develop$)|(^dev-\d{2}\.\d{2}\.x$)/.test(branchName):
                   return 'unstable';
+                // temporary: forced stable promotion of release-20260900 (CTOR-2557)
+                case /^release-20260900-tun-next$/.test(branchName):
+                  return 'stable';
                 case /(^release.+)|(^hotfix.+)/.test(branchName):
                   return 'testing';
                 case /(^master$)|(^\d{2}\.\d{2}\.x$)/.test(branchName):
