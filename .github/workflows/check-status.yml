@@ -207,7 +207,7 @@ jobs:
   get-environment:
     if: |
       contains(fromJSON('["pull_request"]') , github.event_name) &&
-      (startsWith(github.base_ref, 'release-') || startsWith(github.base_ref, 'hotfix-'))
+      (github.base_ref == 'develop' || startsWith(github.base_ref, 'dev-') || startsWith(github.base_ref, 'release-') || startsWith(github.base_ref, 'hotfix-'))
     uses: ./.github/workflows/get-environment.yml
 
   check-cherry-pick:
@@ -281,3 +281,99 @@ jobs:
             errorMessage += `open the pull request on ${linkedDevBranch} and add label "skip-cherry-pick" to the PR and re-run all jobs of workflow check-status\n`;
 
             throw new Error(errorMessage);
+
+  check-jira-reference:
+    needs: [get-environment]
+    runs-on: ubuntu-24.04
+    # automated dependency PRs (dependabot, monthly aggregation by technique-ci) and community PRs from forks carry no ticket
+    if: |
+      (github.base_ref == 'develop' || startsWith(github.base_ref, 'dev-') || startsWith(github.base_ref, 'release-') || startsWith(github.base_ref, 'hotfix-')) &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.type != 'Bot' &&
+      ! contains(fromJSON('["technique-ci"]'), github.event.pull_request.user.login) &&
+      ! contains(fromJSON(needs.get-environment.outputs.labels), 'skip-jira-reference')
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check that the branch name or the description references a Jira issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        with:
+          script: |
+            const commentMarker = '<!-- check-jira-reference -->';
+            // any project key, not preceded or followed by an alphanumeric character
+            const jiraKeyPattern = /(?<![A-Za-z0-9_])([A-Z]{2}[A-Z0-9_]*)-[1-9][0-9]*(?![A-Za-z0-9])/g;
+            // uppercase identifiers followed by a number which are not Jira project keys
+            const ignoredPrefixes = ['CVE', 'CWE', 'GHSA', 'ISO', 'RFC', 'SHA', 'TLS', 'UTF'];
+
+            const findJiraKeys = (text) => [...(text ?? '').matchAll(jiraKeyPattern)]
+              .filter((match) => !ignoredPrefixes.includes(match[1]))
+              .map((match) => match[0]);
+
+            const upsertComment = async (body, createIfMissing) => {
+              try {
+                const comments = await github.paginate(github.rest.issues.listComments, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  per_page: 100
+                });
+                const existingComment = comments.find((comment) => comment.user?.type === 'Bot' && comment.body?.includes(commentMarker));
+                if (existingComment) {
+                  await github.rest.issues.updateComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: existingComment.id,
+                    body
+                  });
+                } else if (createIfMissing) {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body
+                  });
+                }
+              } catch (error) {
+                // read-only token on pull requests from forks
+                core.warning(`Cannot comment on pull request #${context.issue.number}: ${error.message}`);
+              }
+            };
+
+            // read the description from the API, the event payload is stale when a run is re-run after an edit
+            const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+
+            const branchKeys = findJiraKeys(process.env.HEAD_REF);
+            const descriptionKeys = findJiraKeys(pull.body);
+
+            if (branchKeys.length > 0 || descriptionKeys.length > 0) {
+              const foundIn = [
+                branchKeys.length > 0 ? `branch name (${[...new Set(branchKeys)].join(', ')})` : null,
+                descriptionKeys.length > 0 ? `description (${[...new Set(descriptionKeys)].join(', ')})` : null
+              ].filter(Boolean).join(' and ');
+              core.info(`Jira reference found in ${foundIn}`);
+              await upsertComment(`${commentMarker}\n✅ **Jira reference required**: Jira reference found in ${foundIn}.`, false);
+              return;
+            }
+
+            const message = [
+              commentMarker,
+              '❌ **Jira reference required**',
+              '',
+              `No Jira issue key (for example \`MON-12345\`) was found in the branch name \`${process.env.HEAD_REF}\` nor in the pull request description.`,
+              '',
+              'Every pull request targeting `develop`, `dev-*`, `release-*` or `hotfix-*` must be traceable to a Jira issue. To fix it:',
+              '- add the key of the Jira issue to the **pull request description** (for example `Refs: MON-12345` or a link to the issue),',
+              '- then re-run all jobs of workflow `check-status`.',
+              '',
+              'Prefix the branch name with the key for the next pull requests (for example `MON-12345-short-description`).',
+              'If this pull request legitimately has no Jira issue, add label `skip-jira-reference` and re-run all jobs of workflow `check-status`.'
+            ].join('\n');
+
+            await upsertComment(message, true);
+            core.setFailed(`No Jira issue key found in the branch name "${process.env.HEAD_REF}" nor in the pull request description: add one to the description (for example "Refs: MON-12345") and re-run all jobs of workflow check-status`);
