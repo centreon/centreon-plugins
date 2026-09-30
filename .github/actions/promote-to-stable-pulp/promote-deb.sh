@@ -162,11 +162,10 @@ ensure_legacy_suite_associations() {
     return 1
   fi
   echo "[INFO] Mirroring $PACKAGES_COUNT package association(s) into $STABLE_LEGACY_REPOSITORY_NAME $STABLE_LEGACY_SUITE/main"
-  local units_file body_file sha href out code body prc n=0
+  local units_file body_file sha href out code body prc
   units_file=$(mktemp)
   while read -r sha; do
-    if ((n % 40 == 0)); then refresh_pulp_token; fi
-    n=$((n + 1))
+    refresh_pulp_token
     href=$(lookup_deb_content "packages" "--data-urlencode sha256=$sha")
     if [[ -z "$href" ]]; then
       echo "::error::Cannot resolve the promoted package (sha256 $sha) for the $STABLE_LEGACY_SUITE mirror"
@@ -367,6 +366,11 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
   fi
   LEGACY_REF_AFTER=$(lookup_prcs "$LEGACY_REF_STABLE_HREF" | sort)
   STABLE_RC_SET=$(comm -13 <(echo "$LEGACY_REF_BEFORE") <(echo "$LEGACY_REF_AFTER") | grep . || true)
+  # testing and stable share their domain: a suite name used by both is one
+  # shared release component, already associated before the legacy upload
+  if [[ -z "$STABLE_RC_SET" && $(echo "$LEGACY_REF_AFTER" | grep -c .) -eq 1 ]]; then
+    STABLE_RC_SET=$LEGACY_REF_AFTER
+  fi
   if [[ $(echo "$STABLE_RC_SET" | grep -c .) -ne 1 ]]; then
     refresh_pulp_token
     STABLE_LATEST=$(pulp deb repository show --name "$STABLE_REPOSITORY_NAME" | jq -r '.latest_version_href')
@@ -422,9 +426,7 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
   MAX_PARALLEL=8
   PRC_DIR=$(mktemp -d)
   for i in "${!PACKAGE_HREFS[@]}"; do
-    if ((i % 40 == 0)); then
-      refresh_pulp_token
-    fi
+    refresh_pulp_token
     (
       refresh_pulp_token
       package_href="${PACKAGE_HREFS[$i]}"
