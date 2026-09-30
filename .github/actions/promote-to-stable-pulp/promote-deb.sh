@@ -367,6 +367,11 @@ if ((${#BATCH_PACKAGES[@]} > 0)); then
   fi
   LEGACY_REF_AFTER=$(lookup_prcs "$LEGACY_REF_STABLE_HREF" | sort)
   STABLE_RC_SET=$(comm -13 <(echo "$LEGACY_REF_BEFORE") <(echo "$LEGACY_REF_AFTER") | grep . || true)
+  # testing and stable share their domain: a suite name used by both is one
+  # shared release component, already associated before the legacy upload
+  if [[ -z "$STABLE_RC_SET" && $(echo "$LEGACY_REF_AFTER" | grep -c .) -eq 1 ]]; then
+    STABLE_RC_SET=$LEGACY_REF_AFTER
+  fi
   if [[ $(echo "$STABLE_RC_SET" | grep -c .) -ne 1 ]]; then
     refresh_pulp_token
     STABLE_LATEST=$(pulp deb repository show --name "$STABLE_REPOSITORY_NAME" | jq -r '.latest_version_href')
