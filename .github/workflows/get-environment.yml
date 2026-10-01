@@ -84,7 +84,19 @@ jobs:
       - name: Checkout sources (current branch)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: ${{ steps.has_skip_label.outputs.result == 'true' && 100 || 1 }}
+          fetch-depth: ${{ github.ref_type == 'tag' && '0' || (steps.has_skip_label.outputs.result == 'true' && 100 || 1) }}
+
+      - if: ${{ github.ref_type == 'tag' }}
+        name: Get release tag context
+        id: tag_context
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          WORKFLOW_FILE="${WORKFLOW_REF#"$GITHUB_REPOSITORY/"}"
+          export WORKFLOW_FILE="${WORKFLOW_FILE%%@*}"
+          .github/scripts/release/get-release-tag-context.sh
+        shell: bash
 
       - if: ${{ steps.has_skip_label.outputs.result == 'true' }}
         name: Get workflow triggered paths
@@ -156,6 +168,14 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           script: |
+            if ('${{ steps.tag_context.outputs.is_release_tag }}' === 'true') {
+              if ('${{ steps.tag_context.outputs.changed }}' !== 'true') {
+                core.notice('skipping workflow because its paths did not change since ${{ steps.tag_context.outputs.previous_tag }}');
+                return true;
+              }
+              return false;
+            }
+
             if (/^bump-.+/.test(process.env.BRANCH_NAME)) {
               core.notice('skipping workflow because it is a bump branch');
               return true;
@@ -230,7 +250,11 @@ jobs:
               }
             };
 
-            core.setOutput('stability', getStability('${{ github.head_ref || github.ref_name }}'));
+            if ('${{ steps.tag_context.outputs.is_release_tag }}' === 'true') {
+              core.setOutput('stability', 'stable');
+            } else {
+              core.setOutput('stability', getStability('${{ github.head_ref || github.ref_name }}'));
+            }
 
             let isTargetingFeatureBranch = false;
             if ("${{ github.event_name }}" === "pull_request") {
@@ -289,6 +313,8 @@ jobs:
             if ('${{ inputs.version_file }}'.match(/pom\.xml$/)) {
                 version = execSync(`grep -m 1 "<version>.*</version>" ${{ inputs.version_file }} | sed 's/.*<version>\\(.*\\)<\\/version>.*/\\1/'`).toString().trim();
 
+            } else if ('${{ steps.tag_context.outputs.is_release_tag }}' === 'true') {
+              version = '${{ steps.tag_context.outputs.version }}';
             } else if ('${{ steps.get_stability.outputs.stability }}' === 'stable') {
               const { owner, repo } = context.repo;
 
@@ -360,14 +386,62 @@ jobs:
 
       - name: "Get release type: hotfix, release or not defined if not a release"
         id: get_release_type
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
           HEAD_REF: ${{ github.head_ref || github.ref_name }}
-        run: |
-          RELEASE_TYPE=$(echo "$HEAD_REF" | cut -d '-' -f 1)
-          if [[ "$RELEASE_TYPE" == "hotfix" || "$RELEASE_TYPE" == "release" ]]; then
-            echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
-          fi
-        shell: bash
+        with:
+          script: |
+            if ('${{ steps.tag_context.outputs.is_release_tag }}' === 'true') {
+              core.setOutput('release_type', '${{ steps.tag_context.outputs.release_type }}');
+              return;
+            }
+
+            if ('${{ steps.get_stability.outputs.stability }}' !== 'stable') {
+              const releaseType = process.env.HEAD_REF.split('-')[0];
+              if (['hotfix', 'release'].includes(releaseType)) {
+                core.setOutput('release_type', releaseType);
+              }
+              return;
+            }
+
+            // stable branch push: release type comes from the merged release/hotfix pull request
+            if (context.eventName !== 'push') {
+              return;
+            }
+
+            const commitSha = context.sha;
+
+            const pulls = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sort: 'updated',
+              direction: 'desc',
+              state: 'closed',
+              per_page: 100
+            });
+
+            core.startGroup(`Checking pull request linked to commit ${commitSha}`);
+            const pr = pulls.data.find(p => {
+              console.log(`Checking pull request ${p.number}("${p.title}") with merge commit ${p.merge_commit_sha}`);
+              return p.merge_commit_sha === commitSha;
+            });
+            core.endGroup();
+            if (!pr) {
+              core.error(`No pull request found for merge commit ${commitSha}`);
+              return;
+            }
+
+            const prHeadRef = pr?.head?.ref || 'unknown';
+            switch (true) {
+              case /^release.+/.test(prHeadRef):
+                core.setOutput('release_type', 'release');
+                break;
+              case /^hotfix.+/.test(prHeadRef):
+                core.setOutput('release_type', 'hotfix');
+                break;
+              default:
+                core.error(`No packages are promoted because push of branch ${prHeadRef} is not related to a hotfix/release pull request.`);
+            }
 
       - name: Display info in job summary
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
