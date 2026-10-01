@@ -1,0 +1,163 @@
+{
+  "uuid": "abcdef00-0000-0000-0000-000000000001",
+  "lastMigration": 33,
+  "name": "Atlassian Statuspage",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "abcdef00-0000-0000-0000-000000000002",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/components.json",
+      "responses": [
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000003",
+          "body": "{\n  \"page\": {\n    \"id\": \"abcde0000000\",\n    \"name\": \"Example\",\n    \"url\": \"https://status.example.com\",\n    \"time_zone\": \"Etc/UTC\",\n    \"updated_at\": \"2026-09-30T09:49:25.217Z\"\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "No components",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^no-components\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000004",
+          "body": "not a json content",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "Invalid JSON",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "header",
+              "modifier": "Host",
+              "value": "^invalid-json\\.example\\.com(:\\d+)?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "abcdef00-0000-0000-0000-000000000005",
+          "body": "{\n  \"page\": {\n    \"id\": \"abcde0000000\",\n    \"name\": \"Example\",\n    \"url\": \"https://status.example.com\",\n    \"time_zone\": \"Etc/UTC\",\n    \"updated_at\": \"2026-09-30T09:49:25.217Z\"\n  },\n  \"components\": [\n    {\n      \"id\": \"abcde0000001\",\n      \"name\": \"Web services\",\n      \"status\": \"operational\",\n      \"created_at\": \"2019-07-31T14:19:15.300Z\",\n      \"updated_at\": \"2026-07-21T07:33:01.005Z\",\n      \"position\": 2,\n      \"description\": null,\n      \"showcase\": true,\n      \"start_date\": null,\n      \"group_id\": null,\n      \"page_id\": \"abcde0000000\",\n      \"group\": false,\n      \"only_show_if_degraded\": false\n    },\n    {\n      \"id\": \"abcde0000002\",\n      \"name\": \"API\",\n      \"status\": \"degraded_performance\",\n      \"created_at\": \"2019-07-31T16:03:41.243Z\",\n      \"updated_at\": \"2026-04-13T09:50:19.970Z\",\n      \"position\": 3,\n      \"description\": null,\n      \"showcase\": true,\n      \"start_date\": null,\n      \"group_id\": null,\n      \"page_id\": \"abcde0000000\",\n      \"group\": false,\n      \"only_show_if_degraded\": false\n    },\n    {\n      \"id\": \"abcde0000003\",\n      \"name\": \"Dashboard\",\n      \"status\": \"partial_outage\",\n      \"created_at\": \"2019-07-31T16:03:50.278Z\",\n      \"updated_at\": \"2026-07-20T06:59:38.252Z\",\n      \"position\": 4,\n      \"description\": null,\n      \"showcase\": true,\n      \"start_date\": null,\n      \"group_id\": null,\n      \"page_id\": \"abcde0000000\",\n      \"group\": false,\n      \"only_show_if_degraded\": false\n    },\n    {\n      \"id\": \"abcde0000004\",\n      \"name\": \"User space\",\n      \"status\": \"major_outage\",\n      \"created_at\": \"2019-07-31T16:04:25.294Z\",\n      \"updated_at\": \"2026-07-21T07:33:01.024Z\",\n      \"position\": 5,\n      \"description\": null,\n      \"showcase\": true,\n      \"start_date\": null,\n      \"group_id\": null,\n      \"page_id\": \"abcde0000000\",\n      \"group\": false,\n      \"only_show_if_degraded\": false\n    },\n    {\n      \"id\": \"abcde0000005\",\n      \"name\": \"Storage\",\n      \"status\": \"under_maintenance\",\n      \"created_at\": \"2019-07-31T16:04:37.842Z\",\n      \"updated_at\": \"2026-07-20T06:59:38.261Z\",\n      \"position\": 6,\n      \"description\": null,\n      \"showcase\": true,\n      \"start_date\": null,\n      \"group_id\": null,\n      \"page_id\": \"abcde0000000\",\n      \"group\": false,\n      \"only_show_if_degraded\": false\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "All components",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "abcdef00-0000-0000-0000-000000000002"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}
