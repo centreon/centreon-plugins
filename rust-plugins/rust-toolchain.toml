@@ -1,0 +1,6 @@
+# Pinned so every checkout runs the same rustc/clippy/rustfmt: the quality
+# gate (scripts/check.sh) enforces zero clippy warnings, which is only
+# meaningful with a fixed lint set. Bump deliberately, re-running the gate.
+[toolchain]
+channel = "1.97.1"
+components = ["rustfmt", "clippy"]
