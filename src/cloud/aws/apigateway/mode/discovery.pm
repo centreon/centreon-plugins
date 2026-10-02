@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,11 +30,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "prettify"  => { name => 'prettify' }
+        'api-gateway-type:s' =>
+            {
+                name         => 'api_gateway_type',
+                default      => 'REST',
+                regexp_match => '^(?:REST|HTTP|WebSocket)$'
+            },
+        'prettify'           => { name => 'prettify' }
     });
-    
+
     return $self;
 }
 
@@ -52,19 +58,30 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $apis = $options{custom}->discovery(
-        service => 'apigateway',
-        command => 'get-rest-apis'
+        service => $self->{option_results}->{api_gateway_type} eq "REST" ? 'apigateway' : 'apigatewayv2',
+        command => $self->{option_results}->{api_gateway_type} eq "REST" ? 'get-rest-apis' : 'get-apis'
     );
 
-    foreach my $api (@{$apis->{items}}) {
+    my $items = $self->{option_results}->{api_gateway_type} eq "REST" ? $apis->{items} : $apis->{Items};
+
+    foreach my $api (@{$items}) {
         my %api;
         $api{type} = "apigateway";
-        $api{id} = $api->{id};
-        $api{name} = $api->{name};
-        $api{description} = $api->{description};
-        $api{version} = $api->{version};
-        foreach my $type (@{$api->{endpointConfiguration}->{types}}) {
-            push @{$api{types}}, $type;
+
+        if ($self->{option_results}->{api_gateway_type} eq "REST") {
+            $api{id} = $api->{id};
+            $api{name} = $api->{name};
+            $api{description} = $api->{description};
+            $api{version} = $api->{version};
+
+            foreach my $type (@{$api->{endpointConfiguration}->{types}}) {
+                push @{$api{types}}, $type;
+            }
+        } else {
+            $api{id} = $api->{ApiId};
+            $api{apiEndPoint} = $api->{ApiEndpoint};
+            $api{name} = $api->{Name};
+            $api{protocolType} = $api->{ProtocolType};
         }
 
         push @disco_data, \%api;
@@ -86,9 +103,9 @@ sub run {
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
     }
-    
+
     return @disco_data if (defined($options{discover}));
-    
+
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();
@@ -103,6 +120,11 @@ __END__
 API Gateway discovery.
 
 =over 8
+
+=item B<--api-gateway-type>
+
+The type of the API gateway. Default C<REST>
+(Can be: C<REST>, C<HTTP>, C<WebSocket>).
 
 =item B<--prettify>
 
