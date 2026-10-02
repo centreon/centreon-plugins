@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::interfaces;
+package network::extreme::standard::snmp::mode::interfaces;
 
 use base qw(snmp_standard::mode::interfaces);
 

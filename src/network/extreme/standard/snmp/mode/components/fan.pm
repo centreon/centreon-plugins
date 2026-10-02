@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::components::fan;
+package network::extreme::standard::snmp::mode::components::fan;
 
 use strict;
 use warnings;

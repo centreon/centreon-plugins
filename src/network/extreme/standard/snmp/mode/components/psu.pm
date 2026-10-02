@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::extreme::snmp::mode::components::psu;
+package network::extreme::standard::snmp::mode::components::psu;
 
 use strict;
 use warnings;
