@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Apache-Camel-Jmx",
+    "pkg_summary": "Centreon Plugin to monitor Apache Camel using JMX protocol",
+    "plugin_name": "centreon_apache_camel_jmx.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "centreon/common/protocols/jmx/",
+        "apps/java/camel/jmx/"
+    ]
+}
