@@ -38,7 +38,7 @@ workflow_push_paths() {
 }
 
 main() {
-  local version release_type message tag_type previous_tag="" file_version changed="false"
+  local version release_type message tag_type previous_tag="" file_version changed="false" diff_output
   local -a patterns=() files=()
 
   if [[ ! "$TAG_NAME" =~ ^$TAG_PREFIX-([0-9]{8})$ ]]; then
@@ -74,7 +74,12 @@ main() {
   elif (( ${#patterns[@]} == 0 )); then
     changed="true"
   else
-    mapfile -t files < <(git diff --name-only "refs/tags/$previous_tag" "refs/tags/$TAG_NAME")
+    # a failed diff must fail the step, never read as "nothing changed" (which would skip promotion)
+    diff_output="$(git -c core.quotePath=false diff --no-renames --name-only "refs/tags/$previous_tag" "refs/tags/$TAG_NAME")" \
+      || fail "cannot diff $previous_tag and $TAG_NAME."
+    if [[ -n "$diff_output" ]]; then
+      mapfile -t files <<< "$diff_output"
+    fi
     for file in "${files[@]}"; do
       for pattern in "${patterns[@]}"; do
         # unquoted pattern: glob match where * also spans /, so ** behaves like the workflow filter
