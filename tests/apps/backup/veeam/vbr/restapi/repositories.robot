@@ -69,6 +69,14 @@ Repositories ${tc}
     ...    no-repositories.example.com
     ...    ${EMPTY}
     ...    UNKNOWN: Number of repositories detected: 0 | 'repositories.detected.count'=0;;;0;
+    ...    9
+    ...    vbr.example.com
+    ...    --include-id='^22222222-0000-0000-0000-000000000002$'
+    ...    WARNING: repository 'Default Backup Repository' [type: WinLocal] state: outOfDate | 'repositories.detected.count'=1;;;0; 'Default Backup Repository#repository.space.usage.bytes'=89120571392B;;;0;106729937305 'Default Backup Repository#repository.space.free.bytes'=17609365913B;;;0;106729937305 'Default Backup Repository#repository.space.usage.percentage'=83.50%;;;0;100
+    ...    10
+    ...    vbr.example.com
+    ...    --exclude-id='^22222222-0000-0000-0000-00000000000[2-9]$'
+    ...    OK: repository 'Backup Repository 1' [type: WinLocal] state: online - space usage total: 299.40 GB used: 81.60 GB (27.25%) free: 217.80 GB (72.75%) | 'repositories.detected.count'=1;;;0; 'Backup Repository 1#repository.space.usage.bytes'=87617332838B;;;0;321478302105 'Backup Repository 1#repository.space.free.bytes'=233860969267B;;;0;321478302105 'Backup Repository 1#repository.space.usage.percentage'=27.25%;;;0;100
 
 Repositories discovery ${tc}
     [Tags]    apps    backup    veeam    restapi

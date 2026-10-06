@@ -65,6 +65,14 @@ Managed servers ${tc}
     ...    no-servers.example.com
     ...    ${EMPTY}
     ...    UNKNOWN: Number of managed servers detected: 0 | 'managedservers.detected.count'=0;;;0; 'managedservers.available.count'=0;;;0;0 'managedservers.unavailable.count'=0;;;0;0
+    ...    8
+    ...    vbr.example.com
+    ...    --include-id='^33333333-0000-0000-0000-000000000003$'
+    ...    CRITICAL: managed server 'windows02.example.com' [type: WindowsHost] status: Unavailable | 'managedservers.detected.count'=1;;;0; 'managedservers.available.count'=0;;;0;1 'managedservers.unavailable.count'=1;;;0;1
+    ...    9
+    ...    vbr.example.com
+    ...    --exclude-id='^33333333-0000-0000-0000-000000000003$'
+    ...    OK: Number of managed servers detected: 3, available: 3, unavailable: 0 - All managed servers are ok | 'managedservers.detected.count'=3;;;0; 'managedservers.available.count'=3;;;0;3 'managedservers.unavailable.count'=0;;;0;3
 
 Managed servers discovery ${tc}
     [Tags]    apps    backup    veeam    restapi
