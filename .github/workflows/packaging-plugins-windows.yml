@@ -10,6 +10,8 @@ on:
     branches:
       - develop
       - master
+    tags:
+      - "plugins-*"
     paths:
       - ".github/actions/setup-strawberry-perl/action.yml"
       - ".github/scripts/build_centreon_plugins_64.bat"
