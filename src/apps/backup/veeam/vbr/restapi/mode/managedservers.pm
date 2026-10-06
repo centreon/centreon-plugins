@@ -95,6 +95,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'include-id:s' => { name => 'include_id', default => '' },
+        'exclude-id:s' => { name => 'exclude_id', default => '' },
         'include-name:s' => { name => 'include_name', default => '' },
         'exclude-name:s' => { name => 'exclude_name', default => '' },
         'include-type:s' => { name => 'include_type', default => '' },
@@ -113,7 +115,8 @@ sub manage_selection {
     $self->{servers} = {};
 
     foreach my $server (@$servers) {
-        next if is_excluded($server->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
+        next if is_excluded($server->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}, output => $self->{output})
+            || is_excluded($server->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
             || is_excluded($server->{type}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}, output => $self->{output});
 
         my $status = value_of($server, '->{status}', 'Unknown');
@@ -159,6 +162,14 @@ __END__
 Check managed servers (backup infrastructure hosts such as vCenter, Hyper-V, Windows or Linux servers) availability.
 
 =over 8
+
+=item B<--include-id>
+
+Filter managed servers by ID (can be a regexp).
+
+=item B<--exclude-id>
+
+Exclude managed servers by ID (can be a regexp).
 
 =item B<--include-name>
 

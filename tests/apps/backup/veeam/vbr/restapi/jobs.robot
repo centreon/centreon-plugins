@@ -77,6 +77,14 @@ Jobs ${tc}
     ...    no-jobs.example.com
     ...    ${EMPTY}
     ...    UNKNOWN: Number of jobs detected: 0 | 'jobs.detected.count'=0;;;0; 'jobs.success.count'=0;;;0;0 'jobs.warning.count'=0;;;0;0 'jobs.failed.count'=0;;;0;0
+    ...    11
+    ...    vbr.example.com
+    ...    --include-id='^11111111-0000-0000-0000-000000000003$'
+    ...    WARNING: job 'Backup copy job' [type: BackupCopy] status: Stopped, last result: Warning | 'jobs.detected.count'=1;;;0; 'jobs.success.count'=0;;;0;1 'jobs.warning.count'=1;;;0;1 'jobs.failed.count'=0;;;0;1
+    ...    12
+    ...    vbr.example.com
+    ...    --exclude-id='0000000000(04|05)$'
+    ...    WARNING: job 'Backup copy job' [type: BackupCopy] status: Stopped, last result: Warning | 'jobs.detected.count'=3;;;0; 'jobs.success.count'=1;;;0;3 'jobs.warning.count'=1;;;0;3 'jobs.failed.count'=0;;;0;3
 
 Jobs discovery ${tc}
     [Tags]    apps    backup    veeam    restapi

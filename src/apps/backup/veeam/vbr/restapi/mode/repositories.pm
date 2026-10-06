@@ -143,6 +143,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'include-id:s'    => { name => 'include_id', default => '' },
+        'exclude-id:s'    => { name => 'exclude_id', default => '' },
         'include-name:s'  => { name => 'include_name', default => '' },
         'exclude-name:s'  => { name => 'exclude_name', default => '' },
         'include-type:s'  => { name => 'include_type', default => '' },
@@ -162,7 +164,8 @@ sub manage_selection {
     $self->{repositories} = {};
 
     foreach my $repo (@$repositories) {
-        next if is_excluded($repo->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
+        next if is_excluded($repo->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}, output => $self->{output})
+            || is_excluded($repo->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
             || is_excluded($repo->{type}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}, output => $self->{output});
 
         my $type = value_of($repo, '->{type}', 'Unknown');
@@ -226,6 +229,14 @@ __END__
 Check repositories state and space usage.
 
 =over 8
+
+=item B<--include-id>
+
+Filter repositories by ID (can be a regexp).
+
+=item B<--exclude-id>
+
+Exclude repositories by ID (can be a regexp).
 
 =item B<--include-name>
 

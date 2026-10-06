@@ -108,6 +108,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'include-id:s'     => { name => 'include_id', default => '' },
+        'exclude-id:s'     => { name => 'exclude_id', default => '' },
         'include-name:s'   => { name => 'include_name', default => '' },
         'exclude-name:s'   => { name => 'exclude_name', default => '' },
         'include-type:s'   => { name => 'include_type', default => '' },
@@ -128,7 +130,8 @@ sub manage_selection {
     $self->{jobs} = {};
 
     foreach my $job (@$jobs) {
-        next if is_excluded($job->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
+        next if is_excluded($job->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}, output => $self->{output})
+            || is_excluded($job->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output})
             || is_excluded($job->{type}, $self->{option_results}->{include_type}, $self->{option_results}->{exclude_type}, output => $self->{output})
             || is_excluded($job->{status}, $self->{option_results}->{include_status}, $self->{option_results}->{exclude_status}, output => $self->{output});
 
@@ -178,6 +181,14 @@ __END__
 Check backup jobs states and last results.
 
 =over 8
+
+=item B<--include-id>
+
+Filter jobs by ID (can be a regexp).
+
+=item B<--exclude-id>
+
+Exclude jobs by ID (can be a regexp).
 
 =item B<--include-name>
 
