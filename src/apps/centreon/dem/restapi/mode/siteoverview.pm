@@ -1,5 +1,5 @@
 #
-# Copyright 2026 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'sites', type => 1, message_multiple => 'All sites are OK', cb_prefix_output => 'prefix_output' }
+        { name => 'sites', type => 'INSTANCE', message_multiple => 'All sites are OK', cb_prefix_output => 'prefix_output' }
     ];
 
     $self->{maps_counters}->{sites} = [
@@ -85,7 +85,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "site-id:s"   => { name => 'site_id',   default => '' },
-        "timeframe:s" => { name => 'timeframe', default => '3600' }
+        "timeframe:s" => { name => 'timeframe', default => '86400' }
     });
    
     return $self;
@@ -139,7 +139,7 @@ __END__
 
 =head1 MODE
 
-Check Centreon DEM (formerly Quanta) overview performance metrics for a given site.
+Check Centreon Experience Monitoring (formerly Quanta) overview performance metrics for a given site.
 
 =over 8
 
@@ -149,7 +149,9 @@ Set ID of the site (mandatory option).
 
 =item B<--timeframe>
 
-Set timeframe in seconds (default: 3600).
+Set timeframe in seconds (default: 86400).
+Site Performance Overview data are aggregated on a daily basis,
+so you won't see anything with a granularity under than 24 hours.
 
 =item B<--warning-performance-score>
 
