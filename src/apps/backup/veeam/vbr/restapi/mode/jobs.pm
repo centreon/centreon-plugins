@@ -179,6 +179,7 @@ __END__
 =head1 MODE
 
 Check backup jobs states and last results.
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 =over 8
 

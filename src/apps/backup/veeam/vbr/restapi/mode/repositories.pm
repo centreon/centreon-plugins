@@ -227,6 +227,7 @@ __END__
 =head1 MODE
 
 Check repositories state and space usage.
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 =over 8
 
