@@ -84,3 +84,35 @@ Components ${tc}
     ...    status.example.com
     ...    --api-path=/bad/api/path/ --unknown-http-status='' --warning-http-status='\\\%{http_code} == 404'
     ...    WARNING: 404 Not Found
+
+Components discovery ${tc}
+    [Tags]    apps    atlassian    statuspage    mockoon
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --hostname=${hostname}
+    ...    ${extra_options}
+
+    Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
+
+    Examples:
+    ...    tc
+    ...    hostname
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    status.example.com
+    ...    --disco-format
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <element>id</element>\n \ <element>name</element>\n \ <element>status</element>\n</data>
+    ...    2
+    ...    status.example.com
+    ...    --disco-show
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label id="abcde0000002" name="API" status="degraded_performance"/>\n \ <label id="abcde0000003" name="Dashboard" status="partial_outage"/>\n \ <label id="abcde0000005" name="Storage" status="under_maintenance"/>\n \ <label id="abcde0000004" name="User space" status="major_outage"/>\n \ <label id="abcde0000001" name="Web services" status="operational"/>\n</data>
+    ...    3
+    ...    status.example.com
+    ...    --disco-show --exclude-id='^abcde000000[234]$'
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label id="abcde0000005" name="Storage" status="under_maintenance"/>\n \ <label id="abcde0000001" name="Web services" status="operational"/>\n</data>
+    ...    4
+    ...    no-components.example.com
+    ...    --disco-show
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data/>

@@ -31,8 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'components'      => 'apps::atlassian::statuspage::api::mode::components',
-        'list-components' => 'apps::atlassian::statuspage::api::mode::listcomponents'
+        'components' => 'apps::atlassian::statuspage::api::mode::components'
     };
 
     $self->{custom_modes}->{json} = 'apps::atlassian::statuspage::api::custom::json';

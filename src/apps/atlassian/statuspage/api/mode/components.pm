@@ -81,13 +81,33 @@ sub manage_selection {
         next if is_excluded($component->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
 
         $self->{components}->{ $component->{id} } = {
+            id     => $component->{id},
             name   => $component->{name},
             status => $component->{status}
         };
     }
 
     $self->{output}->option_exit(short_msg => 'No component found.')
-        if (!keys %{$self->{components}});
+        if (!keys %{$self->{components}} && !$self->{output}->is_disco_show());
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'status']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    foreach my $component (sort { $a->{name} cmp $b->{name} } values %{$self->{components}}) {
+        $self->{output}->add_disco_entry(
+            id     => $component->{id},
+            name   => $component->{name},
+            status => $component->{status}
+        );
+    }
 }
 
 1;
@@ -97,6 +117,7 @@ __END__
 =head1 MODE
 
 Check the status of Atlassian Statuspage components.
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 =over 8
 
