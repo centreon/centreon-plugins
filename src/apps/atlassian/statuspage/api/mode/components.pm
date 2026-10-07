@@ -55,8 +55,8 @@ sub set_counters {
             label            => 'status',
             type             => COUNTER_KIND_TEXT,
             unknown_default  => '%{status} =~ /unknown/',
-            warning_default  => '%{status} =~ /degraded_performance|partial_outage/',
-            critical_default => '%{status} =~ /major_outage/',
+            warning_default  => '%{status} =~ /degraded performance|partial outage/',
+            critical_default => '%{status} =~ /major outage/',
             set              => {
                 key_values                     => [ { name => 'status' }, { name => 'name' }, { name => 'group' } ],
                 output_template                => 'status: %s',
@@ -103,12 +103,15 @@ sub manage_selection {
         next if is_excluded($component->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
         next if is_excluded($group, $self->{option_results}->{include_group}, $self->{option_results}->{exclude_group}, output => $self->{output});
 
+        # The authenticated API documents an empty status value.
+        my $status = value_of($component, '->{status}') || 'unknown';
+        $status =~ s/_/ /g;
+
         $self->{components}->{ $component->{id} } = {
             id     => $component->{id},
             name   => $component->{name},
             group  => $group,
-            # The authenticated API documents an empty status value.
-            status => value_of($component, '->{status}') || 'unknown'
+            status => $status
         };
     }
 
@@ -178,12 +181,12 @@ You can use the following variables: C<%{status}>, C<%{name}>, C<%{group}>.
 
 =item B<--warning-status>
 
-Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /degraded_performance|partial_outage/'>).
+Define the conditions to match for the status to be WARNING (default: C<'%{status} =~ /degraded performance|partial outage/'>).
 You can use the following variables: C<%{status}>, C<%{name}>, C<%{group}>.
 
 =item B<--critical-status>
 
-Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /major_outage/'>).
+Define the conditions to match for the status to be CRITICAL (default: C<'%{status} =~ /major outage/'>).
 You can use the following variables: C<%{status}>, C<%{name}>, C<%{group}>.
 
 =back
