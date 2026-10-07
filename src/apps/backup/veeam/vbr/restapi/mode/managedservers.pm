@@ -160,6 +160,7 @@ __END__
 =head1 MODE
 
 Check managed servers (backup infrastructure hosts such as vCenter, Hyper-V, Windows or Linux servers) availability.
+This mode also supports service discovery (C<--disco-format>, C<--disco-show>).
 
 =over 8
 
