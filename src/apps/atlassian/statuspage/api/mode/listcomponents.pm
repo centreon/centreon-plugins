@@ -18,13 +18,12 @@
 # limitations under the License.
 #
 
-package apps::atlassian::statuspage::mode::listcomponents;
+package apps::atlassian::statuspage::api::mode::listcomponents;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc qw(value_of);
 
 sub new {
     my ($class, %options) = @_;
@@ -42,9 +41,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->get_components();
-
-    return value_of($results, '->{components}', []);
+    return $options{custom}->get_components();
 }
 
 sub run {

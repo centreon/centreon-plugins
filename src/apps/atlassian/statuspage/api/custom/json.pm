@@ -18,12 +18,12 @@
 # limitations under the License.
 #
 
-package apps::atlassian::statuspage::custom::json;
+package apps::atlassian::statuspage::api::custom::json;
 
 use strict;
 use warnings;
 use centreon::plugins::http;
-use centreon::plugins::misc qw(json_decode);
+use centreon::plugins::misc qw(json_decode value_of);
 
 sub new {
     my ($class, %options) = @_;
@@ -89,7 +89,9 @@ sub request_api {
 sub get_components {
     my ($self, %options) = @_;
 
-    return $self->request_api(endpoint => 'components.json');
+    my $results = $self->request_api(endpoint => 'components.json');
+
+    return value_of($results, '->{components}', []);
 }
 
 1;

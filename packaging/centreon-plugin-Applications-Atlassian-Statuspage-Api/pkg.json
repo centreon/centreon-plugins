@@ -1,9 +1,9 @@
 {
-    "pkg_name": "centreon-plugin-Applications-Atlassian-Statuspage",
+    "pkg_name": "centreon-plugin-Applications-Atlassian-Statuspage-Api",
     "pkg_summary": "Centreon Plugin to monitor Atlassian Statuspage components using the public JSON API",
-    "plugin_name": "centreon_atlassian_statuspage.pl",
+    "plugin_name": "centreon_atlassian_statuspage_api.pl",
     "files": [
         "centreon/plugins/script_custom.pm",
-        "apps/atlassian/statuspage/"
+        "apps/atlassian/statuspage/api/"
     ]
 }

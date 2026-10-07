@@ -18,14 +18,14 @@
 # limitations under the License.
 #
 
-package apps::atlassian::statuspage::mode::components;
+package apps::atlassian::statuspage::api::mode::components;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters);
-use centreon::plugins::misc qw(is_excluded value_of);
+use centreon::plugins::misc qw(is_excluded);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub set_counters {
@@ -73,10 +73,10 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->get_components();
+    my $components = $options{custom}->get_components();
 
     $self->{components} = {};
-    foreach my $component (@{value_of($results, '->{components}', [])}) {
+    foreach my $component (@$components) {
         next if is_excluded($component->{id}, $self->{option_results}->{include_id}, $self->{option_results}->{exclude_id}, output => $self->{output});
         next if is_excluded($component->{name}, $self->{option_results}->{include_name}, $self->{option_results}->{exclude_name}, output => $self->{output});
 

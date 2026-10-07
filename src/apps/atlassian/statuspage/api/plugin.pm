@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::atlassian::statuspage::plugin;
+package apps::atlassian::statuspage::api::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
     bless $self, $class;
 
     $self->{modes} = {
-        'components'      => 'apps::atlassian::statuspage::mode::components',
-        'list-components' => 'apps::atlassian::statuspage::mode::listcomponents'
+        'components'      => 'apps::atlassian::statuspage::api::mode::components',
+        'list-components' => 'apps::atlassian::statuspage::api::mode::listcomponents'
     };
 
-    $self->{custom_modes}->{json} = 'apps::atlassian::statuspage::custom::json';
+    $self->{custom_modes}->{json} = 'apps::atlassian::statuspage::api::custom::json';
     return $self;
 }
 

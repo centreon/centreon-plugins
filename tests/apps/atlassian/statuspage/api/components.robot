@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation     Atlassian Statuspage components
 
-Resource          ${CURDIR}${/}..${/}..${/}..${/}resources/import.resource
+Resource          ${CURDIR}${/}..${/}..${/}..${/}..${/}resources/import.resource
 
 Suite Setup       Start Mockoon    ${MOCKOON_JSON}
 Suite Teardown    Stop Mockoon
@@ -12,7 +12,8 @@ Test Timeout      120s
 ${MOCKOON_JSON}    ${CURDIR}${/}atlassian-statuspage.mockoon.json
 
 ${CMD}             ${CENTREON_PLUGINS}
-...                --plugin=apps::atlassian::statuspage::plugin
+...                --plugin=apps::atlassian::statuspage::api::plugin
+...                --custommode=json
 ...                --http-peer-addr=${HOSTNAME}
 ...                --port=${APIPORT}
 ...                --proto=http
