@@ -84,6 +84,26 @@ Components ${tc}
     ...    status.example.com
     ...    --api-path=/bad/api/path/ --unknown-http-status='' --warning-http-status='\\\%{http_code} == 404'
     ...    WARNING: 404 Not Found
+    ...    13
+    ...    groups.example.com
+    ...    ${EMPTY}
+    ...    CRITICAL: Component 'Tokyo' [group: Asia] status: major_outage WARNING: Component 'Frankfurt' [group: Europe] status: partial_outage - Component 'Global' [group: Asia] status: degraded_performance UNKNOWN: Component 'Dashboard' status: unknown
+    ...    14
+    ...    groups.example.com
+    ...    --include-group='^Europe$'
+    ...    WARNING: Component 'Frankfurt' [group: Europe] status: partial_outage
+    ...    15
+    ...    groups.example.com
+    ...    --exclude-group='^Asia$'
+    ...    WARNING: Component 'Frankfurt' [group: Europe] status: partial_outage UNKNOWN: Component 'Dashboard' status: unknown
+    ...    16
+    ...    groups.example.com
+    ...    --include-name='^Global$' --verbose
+    ...    WARNING: Component 'Global' [group: Asia] status: degraded_performance \nComponent 'Global' [group: Europe] status: operational\nComponent 'Global' [group: Asia] status: degraded_performance
+    ...    17
+    ...    groups.example.com
+    ...    --unknown-status='' --warning-status='\\\%{group} eq "Europe" and \\\%{status} ne "operational"' --critical-status=''
+    ...    WARNING: Component 'Frankfurt' [group: Europe] status: partial_outage
 
 Components discovery ${tc}
     [Tags]    apps    atlassian    statuspage    mockoon
@@ -103,16 +123,20 @@ Components discovery ${tc}
     ...    1
     ...    status.example.com
     ...    --disco-format
-    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <element>id</element>\n \ <element>name</element>\n \ <element>status</element>\n</data>
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <element>id</element>\n \ <element>name</element>\n \ <element>group</element>\n \ <element>status</element>\n</data>
     ...    2
     ...    status.example.com
     ...    --disco-show
-    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label id="abcde0000002" name="API" status="degraded_performance"/>\n \ <label id="abcde0000003" name="Dashboard" status="partial_outage"/>\n \ <label id="abcde0000005" name="Storage" status="under_maintenance"/>\n \ <label id="abcde0000004" name="User space" status="major_outage"/>\n \ <label id="abcde0000001" name="Web services" status="operational"/>\n</data>
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label group="" id="abcde0000002" name="API" status="degraded_performance"/>\n \ <label group="" id="abcde0000003" name="Dashboard" status="partial_outage"/>\n \ <label group="" id="abcde0000005" name="Storage" status="under_maintenance"/>\n \ <label group="" id="abcde0000004" name="User space" status="major_outage"/>\n \ <label group="" id="abcde0000001" name="Web services" status="operational"/>\n</data>
     ...    3
     ...    status.example.com
     ...    --disco-show --exclude-id='^abcde000000[234]$'
-    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label id="abcde0000005" name="Storage" status="under_maintenance"/>\n \ <label id="abcde0000001" name="Web services" status="operational"/>\n</data>
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label group="" id="abcde0000005" name="Storage" status="under_maintenance"/>\n \ <label group="" id="abcde0000001" name="Web services" status="operational"/>\n</data>
     ...    4
     ...    no-components.example.com
     ...    --disco-show
     ...    <?xml version="1.0" encoding="utf-8"?>\n<data/>
+    ...    5
+    ...    groups.example.com
+    ...    --disco-show
+    ...    <?xml version="1.0" encoding="utf-8"?>\n<data>\n \ <label group="" id="abcde0000013" name="Billing" status="operational"/>\n \ <label group="" id="abcde0000014" name="Dashboard" status="unknown"/>\n \ <label group="Asia" id="abcde0000012" name="Global" status="degraded_performance"/>\n \ <label group="Asia" id="abcde0000011" name="Tokyo" status="major_outage"/>\n \ <label group="Europe" id="abcde0000008" name="Frankfurt" status="partial_outage"/>\n \ <label group="Europe" id="abcde0000009" name="Global" status="operational"/>\n \ <label group="Europe" id="abcde0000007" name="Paris" status="operational"/>\n</data>
