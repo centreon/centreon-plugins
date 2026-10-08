@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'bgp-state'        => 'network::barracuda::cloudgen::snmp::mode::bgppeerstate',
         'cpu'              => 'snmp_standard::mode::cpu',
         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
         'box-service'      => 'network::barracuda::cloudgen::snmp::mode::boxservice',
