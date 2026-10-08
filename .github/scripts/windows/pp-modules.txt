@@ -15,6 +15,7 @@ Tie::RefHash::Weak
 Win32::Job
 XML::LibXML::SAX
 Safe
+Specio::PP
 apps::backup::backupexec::local::plugin
 apps::backup::backupexec::local::mode::alerts
 apps::backup::backupexec::local::mode::disks
