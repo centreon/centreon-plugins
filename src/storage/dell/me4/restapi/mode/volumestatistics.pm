@@ -28,7 +28,7 @@ use Digest::MD5 qw(md5_hex);
 
 sub prefix_output {
     my ($self, %options) = @_;
-    
+
     return "Volume '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -130,6 +130,54 @@ sub set_counters {
                     { template => '%s', min => 0, label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'tier-ssd-percent', nlabel => 'volume.tier.ssd.percentage', set => {
+                key_values => [ { name => 'percent-tier-ssd' } ],
+                output_template => 'tier SSD: %s%%',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 100, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'tier-sata-percent', nlabel => 'volume.tier.archive.percentage', set => {
+                key_values => [ { name => 'percent-tier-sata' } ],
+                output_template => 'tier Archive (SATA): %s%%',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 100, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'tier-sas-percent', nlabel => 'volume.tier.sas.percentage', set => {
+                key_values => [ { name => 'percent-tier-sas' } ],
+                output_template => 'tier SAS: %s%%',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 100, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'tier-rfc-percent', nlabel => 'volume.tier.rfc.percentage', set => {
+                key_values => [ { name => 'percent-allocated-rfc' } ],
+                output_template => 'tier RFC: %s%%',
+                perfdatas => [
+                    { template => '%d', min => 0, max => 100, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'pages-alloc', nlabel => 'volume.pages.allocated.perminute', set => {
+                key_values => [ { name => 'pages-alloc-per-minute' } ],
+                output_template => 'pages alloc/min: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'pages-dealloc', nlabel => 'volume.pages.deallocated.perminute', set => {
+                key_values => [ { name => 'pages-dealloc-per-minute' } ],
+                output_template => 'pages dealloc/min: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 }
@@ -155,7 +203,7 @@ sub manage_selection {
     foreach my $volume (@{$results->{'volume-statistics'}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $volume->{'volume-name'} !~ /$self->{option_results}->{filter_name}/);
-        
+
         $self->{volumes}->{$volume->{'volume-name'}} = { display => $volume->{'volume-name'}, %{$volume} };
     }
 
@@ -191,7 +239,9 @@ Can be: 'data-read', 'data-written',
 'reads', 'writes',
 'data-transfer', 'iops',
 'write-cache-percent', 'write-cache-hits', 'write-cache-misses',
-'read-cache-hits', 'read-cache-misses'.
+'read-cache-hits', 'read-cache-misses',
+'tier-ssd-percent', 'tier-sata-percent', 'tier-sas-percent',
+'tier-rfc-percent', 'pages-alloc', 'pages-dealloc'.
 
 =back
 
