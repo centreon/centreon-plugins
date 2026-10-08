@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "libssh-session-perl"
+    ]
+}
