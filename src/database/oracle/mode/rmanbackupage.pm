@@ -232,11 +232,11 @@ Warning threshold in seconds.
 
 Critical threshold in seconds.
 
-=item B<--warning-crontrolfile>
+=item B<--warning-controlfile>
 
 Warning threshold in seconds.
 
-=item B<--critical-crontrolfile>
+=item B<--critical-controlfile>
 
 Critical threshold in seconds.
 
@@ -252,7 +252,7 @@ Skip error if never executed.
 
 Skip error if never executed.
 
-=item B<--no-crontrolfile>
+=item B<--no-controlfile>
 
 Skip error if never executed.
 
