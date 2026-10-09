@@ -151,7 +151,7 @@ Set ID of the site (mandatory option).
 
 Set timeframe in seconds (default: 86400).
 Site Performance Overview data are aggregated on a daily basis,
-so you won't see anything with a granularity under than 24 hours.
+so you won't see anything with a granularity lower than 24 hours.
 
 =item B<--warning-performance-score>
 
