@@ -266,41 +266,41 @@ Exclude cluster IDs (regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(clusterName) %(tunnelName)')
+Define perfdata instance (default: C<%(clusterName) %(tunnelName)>)
 
 =item B<--unit>
 
-Select the time unit for refresh thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks (default: 's').
+Select the time unit for refresh thresholds. May be C<s> for seconds, C<m> for minutes, C<h> for hours, C<d> for days, C<w> for weeks (default: C<s>).
 
 =item B<--unknown-sa-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{clusterName}, %{tunnelName}, %{saStatus}
+You can use the following variables: C<%{clusterName}>, C<%{tunnelName}>, C<%{saStatus}>
 
 =item B<--warning-sa-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{clusterName}, %{tunnelName}, %{saStatus}
+You can use the following variables: C<%{clusterName}>, C<%{tunnelName}>, C<%{saStatus}>
 
 =item B<--critical-sa-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{saStatus} !~ /established/').
-You can use the following variables: %{clusterName}, %{tunnelName}, %{saStatus}
+Define the conditions to match for the status to be CRITICAL (default: C<%{saStatus} !~ /established/>).
+You can use the following variables: C<%{clusterName}>, C<%{tunnelName}>, C<%{saStatus}>
 
 =item B<--unknown-ike-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{clusterName}, %{tunnelName}, %{ikeStatus}
+You can use the following variables: C<%{clusterName}>, C<%{tunnelName}>, C<%{ikeStatus}>
 
 =item B<--warning-ike-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{clusterName}, %{tunnelName}, %{ikeStatus}
+You can use the following variables: C<%{clusterName}>, C<%{tunnelName}>, C<%{ikeStatus}>
 
 =item B<--critical-ike-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{ikeStatus} !~ /established/').
-You can use the following variables: %{clusterName}, %{tunnelName}, %{ikeStatus}
+Define the conditions to match for the status to be CRITICAL (default: C<%{ikeStatus} !~ /established/>).
+You can use the following variables: C<%{clusterName}>, C<%{tunnelName}>, C<%{ikeStatus}>
 
 =item B<--warning-tunnels-ipsec-detected>
 

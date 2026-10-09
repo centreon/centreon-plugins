@@ -521,30 +521,31 @@ Exclude gateway IDs (regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(gatewayName) %(interfaceName)')
+Define perfdata instance (default: C<%(gatewayName) %(interfaceName)>)
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{interfaceName}>
 
 =item B<--traffic-unit>
 
-Units of thresholds for the traffic (default: 'percent_delta') ('percent_delta', 'bps', 'counter').
+Units of thresholds for the traffic (default: C<percent_delta>) (C<percent_delta>, C<bps>, C<counter>).
 
 =item B<--speed>
 
 Set interface speed (in Mb).
 
-=item B<--unknown-gateway-interface-status>
+=item B<--unknown-interface-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{interfaceName}, %{adminState}, %{operationalState}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{interfaceName}>, C<%{adminState}>, C<%{operationalState}>
 
-=item B<--warning-gateway-interface-status>
+=item B<--warning-interface-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{interfaceName}, %{adminState}, %{operationalState}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{interfaceName}>, C<%{adminState}>, C<%{operationalState}>
 
-=item B<--critical-gateway-interface-status>
+=item B<--critical-interface-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{adminState} =~ /up/ and %{operationalState} !~ /up/').
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{interfaceName}, %{adminState}, %{operationalState}
+Define the conditions to match for the status to be CRITICAL (default: C<%{adminState} =~ /up/ and %{operationalState} !~ /up/>).
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{interfaceName}>, C<%{adminState}>, C<%{operationalState}>
 
 =item B<--warning-gateways-detected>
 

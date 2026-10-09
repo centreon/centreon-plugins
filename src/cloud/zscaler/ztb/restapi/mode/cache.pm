@@ -57,7 +57,7 @@ __END__
 
 =head1 MODE
 
-Create cache files (other modes could use it with --cache-use option).
+Create cache files (other modes could use it with C<--cache-use> option).
 
 =over 8
 

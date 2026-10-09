@@ -343,11 +343,11 @@ Exclude gateway IDs (regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(gatewayName)')
+Define perfdata instance (default: C<%(gatewayName)>)
 
 =item B<--unit>
 
-Select the time unit for update thresholds. May be 's' for seconds, 'm' for minutes, 'h' for hours, 'd' for days, 'w' for weeks (default: 's').
+Select the time unit for update thresholds. May be C<s> for seconds, C<m> for minutes, C<h> for hours, C<d> for days, C<w> for weeks (default: C<s>).
 
 =item B<--warning-gateways-detected>
 
@@ -360,62 +360,62 @@ Threshold.
 =item B<--unknown-gateway-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{desiredState}>, C<%{operationalState}>
 
 =item B<--warning-gateway-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{desiredState}>, C<%{operationalState}>
 
 =item B<--critical-gateway-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{desiredState} ne %{operationalState}').
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{desiredState}, %{operationalState}
+Define the conditions to match for the status to be CRITICAL (default: C<%{desiredState} ne %{operationalState}>).
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{desiredState}>, C<%{operationalState}>
 
 =item B<--unknown-running-version>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{runningVersion}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{runningVersion}>
 
 =item B<--warning-running-version>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{runningVersion}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{runningVersion}>
 
 =item B<--critical-running-version>
 
 Define the conditions to match for the status to be CRITICAL.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{runningVersion}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{runningVersion}>
 
 =item B<--unknown-gateway-health>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{healthColor}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{healthColor}>
 
 =item B<--warning-gateway-health>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{healthColor}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{healthColor}>
 
 =item B<--critical-gateway-health>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{healthColor} !~ /green/').
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{healthColor}
+Define the conditions to match for the status to be CRITICAL (default: C<%{healthColor} !~ /green/>).
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{healthColor}>
 
 =item B<--unknown-gateway-vrrp-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{vrrpState}>
 
 =item B<--warning-gateway-vrrp-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{vrrpState}>
 
 =item B<--critical-gateway-vrrp-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{vrrpState} =~ /fault/i').
-You can use the following variables: %{siteName}, %{clusterName}, %{gatewayName}, %{vrrpState}
+Define the conditions to match for the status to be CRITICAL (default: C<%{vrrpState} =~ /fault/i>).
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{vrrpState}>
 
 =item B<--warning-last-update-time>
 
