@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'sites', type => 'INSTANCE', message_multiple => 'All sites are OK', cb_prefix_output => 'prefix_output' }
+        { name => 'sites', type => COUNTER_TYPE_INSTANCE, message_multiple => 'All sites are OK', cb_prefix_output => 'prefix_output' }
     ];
 
     $self->{maps_counters}->{sites} = [
