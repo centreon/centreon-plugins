@@ -322,7 +322,7 @@ Exclude gateway IDs (regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(gatewayName)')
+Define perfdata instance (default: C<%(gatewayName)>)
 
 =item B<--warning-gateways-detected>
 

@@ -1,0 +1,1190 @@
+{
+  "uuid": "bd5c7582-adcd-4d42-a1f6-15ee5f7587cc",
+  "lastMigration": 33,
+  "name": "Mockoon",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3000,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "2cfff4cc-f31f-4a4d-a87a-a980a2dae91b",
+      "type": "http",
+      "documentation": "",
+      "method": "post",
+      "endpoint": "oauth2/v1/token",
+      "responses": [
+        {
+          "uuid": "7545a9a2-5792-4fa7-a2fa-73fe7b90b4fc",
+          "body": "{\"access_token\": \"toto\"}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "e8db7c3c-626b-4599-b3f3-3467b55bca9c",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/Site/",
+      "responses": [
+        {
+          "uuid": "2af46c9a-82c1-4f78-b4b2-4789d51a0b7b",
+          "body": "{\"result\":{\"count\":2,\"rows\":[{\"id\":\"id1\",\"clusters\":[{\"cluster_id\":210,\"user_reachable_ip\":\"\",\"nat_enabled\":true}],\"name\":\"LOCATION_6\",\"display_name\":\"LOCATION_6\",\"public_ip\":\"\",\"dns\":[\"1.1.1.1\",\"8.8.8.8\"],\"secret_key\":\"\",\"airgapped_lans\":2,\"gateway_type\":\"isolation\",\"site_status\":\"active\",\"createdAt\":\"0001-01-01T00:00:00.000Z\",\"updatedAt\":\"0001-01-01T00:00:00.000Z\",\"template_id\":\"\",\"proxy_rt_vlan\":\"\",\"location_id\":\"\",\"use_appseg_static_ip_mapping\":false,\"dns_proxy_mode\":0,\"dnsproxy_ddns_enabled\":false,\"zpa_probe_endpoints\":\"\"},{\"id\":\"id2\",\"clusters\":[{\"cluster_id\":220,\"user_reachable_ip\":\"\",\"nat_enabled\":true}],\"name\":\"LOCATION_7\",\"display_name\":\"LOCATION_7\",\"public_ip\":\"\",\"dns\":[\"1.1.1.1\",\"8.8.8.8\"],\"secret_key\":\"\",\"airgapped_lans\":3,\"gateway_type\":\"isolation\",\"site_status\":\"active\",\"createdAt\":\"0001-01-01T00:00:00.000Z\",\"updatedAt\":\"0001-01-01T00:00:00.000Z\",\"template_id\":\"\",\"proxy_rt_vlan\":\"\",\"location_id\":\"\",\"use_appseg_static_ip_mapping\":false,\"dns_proxy_mode\":0,\"dnsproxy_ddns_enabled\":false,\"zpa_probe_endpoints\":\"\"}],\"md5\":\"5a530c9f42f7eae89a26548cb8e9761b\"}}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "f557bf30-35d8-49cd-9e2f-a00e2a967403",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v3/Gateway/",
+      "responses": [
+        {
+          "uuid": "c7042f84-34e7-4e79-8a34-bc660ae29d3c",
+          "body": "{\n  \"count\": 5,\n  \"rows\": [\n    {\n      \"location\": \"LOCATION_1\",\n      \"location_display_name\": \"LOCATION_1\",\n      \"cluster_info\": {\n        \"cluster_id\": 233,\n        \"site_id\": \"fake-id\",\n        \"cluster_name\": \"LOCATION_1-cluster\",\n        \"desired_version\": \"\",\n        \"created_at\": \"2025-11-19T13:02:04Z\",\n        \"updated_at\": \"2026-07-10T08:51:47Z\",\n        \"image_url\": \"\",\n        \"initiate_switchover\": \"2026-06-04T14:48:26Z\",\n        \"switchover_completed\": \"2026-06-04T14:48:27Z\",\n        \"gateway_type\": \"isolation\",\n        \"dhcp_options\": [],\n        \"debug_switch\": \"off\",\n        \"per_site_dns\": null,\n        \"secure_dns_domain\": null,\n        \"secure_dns_domain_controller\": null,\n        \"secure_dns_master_domain_controller\": null,\n        \"secure_dns_dns_zone\": null,\n        \"secure_dns_username\": null,\n        \"secure_dns_password\": null,\n        \"ad_query\": null,\n        \"ad_query_interval\": null,\n        \"ad_event_purge_interval\": null,\n        \"ad_event_server\": null,\n        \"aliveness_timeout_seconds\": 180,\n        \"user_reachable_ip\": null,\n        \"certificate_profile_id\": null,\n        \"web_oidc_callback_url\": null,\n        \"nat_enabled\": null,\n        \"syn_ack_target\": \"accept\",\n        \"dhcp_service\": null,\n        \"dhcp_server_ip\": null,\n        \"ad_query_start_time\": \"2026-07-10T08:51:47Z\",\n        \"ad_last_query_time\": null,\n        \"arp_scan_triggered\": null,\n        \"arp_scan_completed\": null,\n        \"bgp_status\": null,\n        \"protected_subnets\": null,\n        \"log_freq\": \"1/hour\",\n        \"docker_bridge_subnets\": {\n          \"bridge\": \"203.0.113.0/26\",\n          \"sgw_input\": \"203.0.113.64/26\"\n        },\n        \"allowed_commands\": \"ls,cat,docker,ifconfig,iptables,ipset,tail,ip,conntrack,service,arp,telnet,ping,ethtool,env,traceroute,tcpdump,grep,zgrep\",\n        \"snmp_enabled\": null,\n        \"connect_to_hub\": 0,\n        \"user_reachable_ip2\": null,\n        \"ziagre_bypass_local_routes\": true,\n        \"ntp_servers\": \"0.pool.ntp.org,1.pool.ntp.org\",\n        \"download\": null,\n        \"snmp_profile_id\": 1,\n        \"web_proxy\": \"\",\n        \"wanmon_config\": {\n          \"include_loss\": 1,\n          \"include_jitter\": 1,\n          \"include_latency\": 1,\n          \"score_diff_failover_threshold\": 6\n        },\n        \"vrrp_status\": \"master\"\n      },\n      \"gateways\": [\n        {\n          \"gateway_id\": \"id1\",\n          \"cluster_id\": 233,\n          \"desired_state\": \"standby\",\n          \"operational_state\": \"standby\",\n          \"gateway_name\": \"LOCATION_101\",\n          \"display_name\": \"LOCATION_102\",\n          \"control_plane_ip\": \"203.0.113.0\",\n          \"control_plane_subnet\": \"24\",\n          \"gateway_ip_address\": \"192.0.2.81\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"toto=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:41Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P2\",\n          \"is_deleted\": false,\n          \"created_at\": \"2025-11-19T13:02:04Z\",\n          \"updated_at\": \"2026-07-10T08:51:28Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": true,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": false,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000004\",\n          \"vrrp_state\": \"backup\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": null,\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-1\",\n          \"wan_ssh_source\": null,\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P2\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"standby\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        },\n        {\n          \"gateway_id\": \"id1\",\n          \"cluster_id\": 233,\n          \"desired_state\": \"active\",\n          \"operational_state\": \"active\",\n          \"gateway_name\": \"LOCATION_102\",\n          \"display_name\": \"LOCATION_101\",\n          \"control_plane_ip\": \"\",\n          \"control_plane_subnet\": \"\",\n          \"gateway_ip_address\": \"192.0.2.82\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:43Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P2\",\n          \"is_deleted\": false,\n          \"created_at\": \"2025-11-19T13:02:04Z\",\n          \"updated_at\": \"2026-07-10T08:51:43Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": true,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": false,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000003\",\n          \"vrrp_state\": \"master\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": null,\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-2\",\n          \"wan_ssh_source\": null,\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P2\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"active\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        }\n      ],\n      \"vlans_count\": 12,\n      \"region\": \"\",\n      \"public_ip\": \"1.2.3.4\",\n      \"dns\": \"\",\n      \"createdAt\": \"2025-11-19T13:02:03.000Z\",\n      \"updatedAt\": \"2025-11-19T13:02:19.000Z\",\n      \"template_id\": \"00000000-0000-4000-8000-000000000001\",\n      \"template_name\": \"TPL-ZT600-HA\",\n      \"permissions\": \"read-only\",\n      \"zia_location_name\": \"LOCATION_1\"\n    },\n    {\n      \"location\": \"LOCATION_2-1\",\n      \"location_display_name\": \"LOCATION_2\",\n      \"cluster_info\": {\n        \"cluster_id\": 213,\n        \"site_id\": \"fake-id\",\n        \"cluster_name\": \"LOCATION_2-1-cluster\",\n        \"desired_version\": \"\",\n        \"created_at\": \"2025-09-01T12:04:59Z\",\n        \"updated_at\": \"2026-07-10T08:51:20Z\",\n        \"image_url\": \"\",\n        \"initiate_switchover\": \"2025-11-14T10:40:57Z\",\n        \"switchover_completed\": \"2025-11-14T10:41:00Z\",\n        \"gateway_type\": \"isolation\",\n        \"dhcp_options\": [],\n        \"debug_switch\": \"off\",\n        \"per_site_dns\": \"1.1.1.1,8.8.8.8\",\n        \"secure_dns_domain\": null,\n        \"secure_dns_domain_controller\": null,\n        \"secure_dns_master_domain_controller\": null,\n        \"secure_dns_dns_zone\": null,\n        \"secure_dns_username\": null,\n        \"secure_dns_password\": null,\n        \"ad_query\": null,\n        \"ad_query_interval\": null,\n        \"ad_event_purge_interval\": null,\n        \"ad_event_server\": null,\n        \"aliveness_timeout_seconds\": 180,\n        \"user_reachable_ip\": null,\n        \"certificate_profile_id\": null,\n        \"web_oidc_callback_url\": null,\n        \"nat_enabled\": true,\n        \"syn_ack_target\": \"accept\",\n        \"dhcp_service\": \"server\",\n        \"dhcp_server_ip\": \"192.0.2.17\",\n        \"ad_query_start_time\": \"2026-07-10T08:51:20Z\",\n        \"ad_last_query_time\": null,\n        \"arp_scan_triggered\": null,\n        \"arp_scan_completed\": null,\n        \"bgp_status\": null,\n        \"protected_subnets\": null,\n        \"log_freq\": \"1/hour\",\n        \"docker_bridge_subnets\": {\n          \"bridge\": \"203.0.113.0/26\",\n          \"sgw_input\": \"203.0.113.64/26\"\n        },\n        \"allowed_commands\": \"ls,cat,docker,ifconfig,iptables,ipset,tail,ip,conntrack,service,arp,telnet,ping,ethtool,env,traceroute,tcpdump,grep,zgrep\",\n        \"snmp_enabled\": null,\n        \"connect_to_hub\": 0,\n        \"user_reachable_ip2\": null,\n        \"ziagre_bypass_local_routes\": false,\n        \"ntp_servers\": \"pool.ntp.org\",\n        \"download\": null,\n        \"snmp_profile_id\": 1,\n        \"web_proxy\": \"\",\n        \"wanmon_config\": {\n          \"include_loss\": 1,\n          \"include_jitter\": 1,\n          \"include_latency\": 1,\n          \"score_diff_failover_threshold\": 6\n        },\n        \"vrrp_status\": \"master\"\n      },\n      \"gateways\": [\n        {\n          \"gateway_id\": \"id3\",\n          \"cluster_id\": 213,\n          \"desired_state\": \"standby\",\n          \"operational_state\": \"standby\",\n          \"gateway_name\": \"LOCATION_2-1-gw-01\",\n          \"display_name\": \"LOCATION_201\",\n          \"control_plane_ip\": \"203.0.113.0\",\n          \"control_plane_subnet\": \"24\",\n          \"gateway_ip_address\": \"192.0.2.65\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:50Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2025-09-01T12:04:59Z\",\n          \"updated_at\": \"2026-07-10T08:51:12Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": false,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": true,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000001\",\n          \"vrrp_state\": \"backup\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": \"ge6\",\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-1\",\n          \"wan_ssh_source\": \"192.0.2.65/29\",\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P2\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"standby\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        },\n        {\n          \"gateway_id\": \"id3\",\n          \"cluster_id\": 213,\n          \"desired_state\": \"active\",\n          \"operational_state\": \"active\",\n          \"gateway_name\": \"LOCATION_2-1-gw-02\",\n          \"display_name\": \"LOCATION_202\",\n          \"control_plane_ip\": \"\",\n          \"control_plane_subnet\": \"\",\n          \"gateway_ip_address\": \"192.0.2.66\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:48Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2025-09-01T12:05:00Z\",\n          \"updated_at\": \"2026-07-10T08:51:33Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": false,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": true,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000002\",\n          \"vrrp_state\": \"master\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": \"ge6\",\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-2\",\n          \"wan_ssh_source\": \"192.0.2.66/29\",\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P2\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"active\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        }\n      ],\n      \"vlans_count\": 12,\n      \"region\": \"\",\n      \"public_ip\": \"1.2.3.4\",\n      \"dns\": \"\",\n      \"createdAt\": \"2025-09-01T12:04:59.000Z\",\n      \"updatedAt\": \"2025-09-30T08:35:05.000Z\",\n      \"template_id\": \"00000000-0000-4000-8000-000000000002\",\n      \"template_name\": \"zt600-ha-default\",\n      \"permissions\": \"read-only\",\n      \"zia_location_name\": \"LOCATION_2\"\n    },\n    {\n      \"location\": \"LOCATION_3\",\n      \"location_display_name\": \"LOCATION_3\",\n      \"cluster_info\": {\n        \"cluster_id\": 292,\n        \"site_id\": \"fake-id\",\n        \"cluster_name\": \"LOCATION_3-cluster\",\n        \"desired_version\": \"\",\n        \"created_at\": \"2026-04-22T14:29:34Z\",\n        \"updated_at\": \"2026-07-10T08:51:28Z\",\n        \"image_url\": \"\",\n        \"initiate_switchover\": null,\n        \"switchover_completed\": null,\n        \"gateway_type\": \"isolation\",\n        \"dhcp_options\": [],\n        \"debug_switch\": \"off\",\n        \"per_site_dns\": \"8.8.8.8,8.8.4.4\",\n        \"secure_dns_domain\": null,\n        \"secure_dns_domain_controller\": null,\n        \"secure_dns_master_domain_controller\": null,\n        \"secure_dns_dns_zone\": null,\n        \"secure_dns_username\": null,\n        \"secure_dns_password\": null,\n        \"ad_query\": null,\n        \"ad_query_interval\": null,\n        \"ad_event_purge_interval\": null,\n        \"ad_event_server\": null,\n        \"aliveness_timeout_seconds\": 180,\n        \"user_reachable_ip\": null,\n        \"certificate_profile_id\": null,\n        \"web_oidc_callback_url\": null,\n        \"nat_enabled\": null,\n        \"syn_ack_target\": \"accept\",\n        \"dhcp_service\": null,\n        \"dhcp_server_ip\": null,\n        \"ad_query_start_time\": \"2026-07-10T08:51:28Z\",\n        \"ad_last_query_time\": null,\n        \"arp_scan_triggered\": null,\n        \"arp_scan_completed\": null,\n        \"bgp_status\": null,\n        \"protected_subnets\": null,\n        \"log_freq\": \"1/hour\",\n        \"docker_bridge_subnets\": {\n          \"bridge\": \"203.0.113.0/26\",\n          \"sgw_input\": \"203.0.113.64/26\"\n        },\n        \"allowed_commands\": \"ls,cat,docker,ifconfig,iptables,ipset,tail,ip,conntrack,service,arp,telnet,ping,ethtool,env,traceroute,tcpdump,grep,zgrep\",\n        \"snmp_enabled\": null,\n        \"connect_to_hub\": 0,\n        \"user_reachable_ip2\": null,\n        \"ziagre_bypass_local_routes\": true,\n        \"ntp_servers\": \"0.pool.ntp.org,1.pool.ntp.org\",\n        \"download\": null,\n        \"snmp_profile_id\": 1,\n        \"web_proxy\": \"\",\n        \"wanmon_config\": {\n          \"include_loss\": 1,\n          \"include_jitter\": 1,\n          \"include_latency\": 1,\n          \"score_diff_failover_threshold\": 6\n        },\n        \"vrrp_status\": \"master\"\n      },\n      \"gateways\": [\n        {\n          \"gateway_id\": \"id4\",\n          \"cluster_id\": 292,\n          \"desired_state\": \"standby\",\n          \"operational_state\": \"standby\",\n          \"gateway_name\": \"LOCATION_301\",\n          \"display_name\": \"LOCATION_301\",\n          \"control_plane_ip\": \"\",\n          \"control_plane_subnet\": \"\",\n          \"gateway_ip_address\": \"192.0.2.33\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:50Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2026-04-22T14:29:34Z\",\n          \"updated_at\": \"2026-07-10T08:51:34Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": false,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": false,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000010\",\n          \"vrrp_state\": \"backup\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": \"ge8\",\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-1\",\n          \"wan_ssh_source\": \"192.0.2.33/29\",\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.7\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"standby\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        },\n        {\n          \"gateway_id\": \"id5\",\n          \"cluster_id\": 292,\n          \"desired_state\": \"active\",\n          \"operational_state\": \"active\",\n          \"gateway_name\": \"LOCATION_302\",\n          \"display_name\": \"LOCATION_302\",\n          \"control_plane_ip\": \"203.0.113.0\",\n          \"control_plane_subnet\": \"24\",\n          \"gateway_ip_address\": \"192.0.2.34\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"BgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgY=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:50Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2026-04-22T14:29:34Z\",\n          \"updated_at\": \"2026-07-10T08:51:24Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": false,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": false,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000009\",\n          \"vrrp_state\": \"master\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": \"ge8\",\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-2\",\n          \"wan_ssh_source\": \"192.0.2.34/29\",\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.7\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"active\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        }\n      ],\n      \"vlans_count\": 12,\n      \"region\": \"\",\n      \"public_ip\": \"1.2.3.4\",\n      \"dns\": \"\",\n      \"createdAt\": \"2026-04-22T14:29:33.000Z\",\n      \"updatedAt\": \"2026-04-22T14:29:51.000Z\",\n      \"template_id\": \"00000000-0000-4000-8000-000000000003\",\n      \"template_name\": \"TPL-ZT800-HA-SITE1\",\n      \"permissions\": \"read-only\",\n      \"zia_location_name\": \"LOCATION_3\"\n    },\n    {\n      \"location\": \"LOCATION_4\",\n      \"location_display_name\": \"LOCATION_4\",\n      \"cluster_info\": {\n        \"cluster_id\": 287,\n        \"site_id\": \"fake-id\",\n        \"cluster_name\": \"LOCATION_4-cluster\",\n        \"desired_version\": \"\",\n        \"created_at\": \"2026-04-02T06:30:15Z\",\n        \"updated_at\": \"2026-07-10T08:51:42Z\",\n        \"image_url\": \"\",\n        \"initiate_switchover\": \"2026-06-03T10:00:50Z\",\n        \"switchover_completed\": \"2026-06-03T10:00:59Z\",\n        \"gateway_type\": \"isolation\",\n        \"dhcp_options\": [],\n        \"debug_switch\": \"off\",\n        \"per_site_dns\": \"8.8.8.8,8.8.4.4\",\n        \"secure_dns_domain\": null,\n        \"secure_dns_domain_controller\": null,\n        \"secure_dns_master_domain_controller\": null,\n        \"secure_dns_dns_zone\": null,\n        \"secure_dns_username\": null,\n        \"secure_dns_password\": null,\n        \"ad_query\": null,\n        \"ad_query_interval\": null,\n        \"ad_event_purge_interval\": null,\n        \"ad_event_server\": null,\n        \"aliveness_timeout_seconds\": 180,\n        \"user_reachable_ip\": null,\n        \"certificate_profile_id\": null,\n        \"web_oidc_callback_url\": null,\n        \"nat_enabled\": true,\n        \"syn_ack_target\": \"accept\",\n        \"dhcp_service\": null,\n        \"dhcp_server_ip\": null,\n        \"ad_query_start_time\": \"2026-07-10T08:51:42Z\",\n        \"ad_last_query_time\": null,\n        \"arp_scan_triggered\": null,\n        \"arp_scan_completed\": null,\n        \"bgp_status\": null,\n        \"protected_subnets\": null,\n        \"log_freq\": \"1/hour\",\n        \"docker_bridge_subnets\": {\n          \"bridge\": \"203.0.113.0/26\",\n          \"sgw_input\": \"203.0.113.64/26\"\n        },\n        \"allowed_commands\": \"ls,cat,docker,ifconfig,iptables,ipset,tail,ip,conntrack,service,arp,telnet,ping,ethtool,env,traceroute,tcpdump,grep,zgrep\",\n        \"snmp_enabled\": null,\n        \"connect_to_hub\": 0,\n        \"user_reachable_ip2\": null,\n        \"ziagre_bypass_local_routes\": false,\n        \"ntp_servers\": \"0.pool.ntp.org,1.pool.ntp.org\",\n        \"download\": null,\n        \"snmp_profile_id\": 1,\n        \"web_proxy\": \"\",\n        \"wanmon_config\": {\n          \"include_loss\": 1,\n          \"include_jitter\": 1,\n          \"include_latency\": 1,\n          \"score_diff_failover_threshold\": 6\n        },\n        \"vrrp_status\": \"master\"\n      },\n      \"gateways\": [\n        {\n          \"gateway_id\": \"id6\",\n          \"cluster_id\": 287,\n          \"desired_state\": \"standby\",\n          \"operational_state\": \"standby\",\n          \"gateway_name\": \"LOCATION_401\",\n          \"display_name\": \"LOCATION_401\",\n          \"control_plane_ip\": \"203.0.113.0\",\n          \"control_plane_subnet\": \"24\",\n          \"gateway_ip_address\": \"192.0.2.35\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:42Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2026-04-02T06:30:15Z\",\n          \"updated_at\": \"2026-07-10T08:51:26Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": true,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"192.0.2.1\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": true,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000005\",\n          \"vrrp_state\": \"backup\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": null,\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-1\",\n          \"wan_ssh_source\": null,\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P4\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"standby\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        },\n        {\n          \"gateway_id\": \"id7\",\n          \"cluster_id\": 287,\n          \"desired_state\": \"active\",\n          \"operational_state\": \"active\",\n          \"gateway_name\": \"LOCATION_402\",\n          \"display_name\": \"LOCATION_402\",\n          \"control_plane_ip\": \"\",\n          \"control_plane_subnet\": \"\",\n          \"gateway_ip_address\": \"192.0.2.36\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"BAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:38Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2026-04-02T06:30:16Z\",\n          \"updated_at\": \"2026-07-10T08:51:36Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": true,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"192.0.2.2\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": true,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000006\",\n          \"vrrp_state\": \"master\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": null,\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-2\",\n          \"wan_ssh_source\": null,\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P4\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"active\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        }\n      ],\n      \"vlans_count\": 14,\n      \"region\": \"\",\n      \"public_ip\": \"1.2.3.4\",\n      \"dns\": \"\",\n      \"createdAt\": \"2026-04-02T06:30:15.000Z\",\n      \"updatedAt\": \"2026-06-15T11:47:34.000Z\",\n      \"template_id\": \"00000000-0000-4000-8000-000000000004\",\n      \"template_name\": \"TPL-ZT800-HA-SITE2\",\n      \"permissions\": \"read-only\",\n      \"zia_location_name\": \"LOCATION_4\"\n    },\n    {\n      \"location\": \"LOCATION_5\",\n      \"location_display_name\": \"LOCATION_5\",\n      \"cluster_info\": {\n        \"cluster_id\": 291,\n        \"site_id\": \"fake-id\",\n        \"cluster_name\": \"LOCATION_5-cluster\",\n        \"desired_version\": \"\",\n        \"created_at\": \"2026-04-22T12:57:35Z\",\n        \"updated_at\": \"2026-07-10T08:51:48Z\",\n        \"image_url\": \"\",\n        \"initiate_switchover\": \"2026-06-04T10:03:00Z\",\n        \"switchover_completed\": \"2026-06-04T10:03:01Z\",\n        \"gateway_type\": \"isolation\",\n        \"dhcp_options\": [],\n        \"debug_switch\": \"off\",\n        \"per_site_dns\": \"8.8.8.8,8.8.4.4\",\n        \"secure_dns_domain\": null,\n        \"secure_dns_domain_controller\": null,\n        \"secure_dns_master_domain_controller\": null,\n        \"secure_dns_dns_zone\": null,\n        \"secure_dns_username\": null,\n        \"secure_dns_password\": null,\n        \"ad_query\": null,\n        \"ad_query_interval\": null,\n        \"ad_event_purge_interval\": null,\n        \"ad_event_server\": null,\n        \"aliveness_timeout_seconds\": 180,\n        \"user_reachable_ip\": null,\n        \"certificate_profile_id\": null,\n        \"web_oidc_callback_url\": null,\n        \"nat_enabled\": true,\n        \"syn_ack_target\": \"accept\",\n        \"dhcp_service\": null,\n        \"dhcp_server_ip\": null,\n        \"ad_query_start_time\": \"2026-07-10T08:51:48Z\",\n        \"ad_last_query_time\": null,\n        \"arp_scan_triggered\": null,\n        \"arp_scan_completed\": null,\n        \"bgp_status\": null,\n        \"protected_subnets\": null,\n        \"log_freq\": \"1/hour\",\n        \"docker_bridge_subnets\": {\n          \"bridge\": \"203.0.113.0/26\",\n          \"sgw_input\": \"203.0.113.64/26\"\n        },\n        \"allowed_commands\": \"ls,cat,docker,ifconfig,iptables,ipset,tail,ip,conntrack,service,arp,telnet,ping,ethtool,env,traceroute,tcpdump,grep,zgrep\",\n        \"snmp_enabled\": null,\n        \"connect_to_hub\": 0,\n        \"user_reachable_ip2\": null,\n        \"ziagre_bypass_local_routes\": false,\n        \"ntp_servers\": \"0.pool.ntp.org,1.pool.ntp.org\",\n        \"download\": null,\n        \"snmp_profile_id\": 1,\n        \"web_proxy\": \"\",\n        \"wanmon_config\": {\n          \"include_loss\": 1,\n          \"include_jitter\": 1,\n          \"include_latency\": 1,\n          \"score_diff_failover_threshold\": 6\n        },\n        \"vrrp_status\": \"master\"\n      },\n      \"gateways\": [\n        {\n          \"gateway_id\": \"id8\",\n          \"cluster_id\": 291,\n          \"desired_state\": \"active\",\n          \"operational_state\": \"active\",\n          \"gateway_name\": \"LOCATION_501\",\n          \"display_name\": \"LOCATION_501\",\n          \"control_plane_ip\": \"203.0.113.0\",\n          \"control_plane_subnet\": \"24\",\n          \"gateway_ip_address\": \"192.0.2.49\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQU=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:51Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2026-04-22T12:57:35Z\",\n          \"updated_at\": \"2026-07-10T08:51:51Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": false,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": true,\n          \"web_proxy\": \"\",\n          \"error\": null,\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000007\",\n          \"vrrp_state\": \"master\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": \"ge8\",\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-1\",\n          \"wan_ssh_source\": \"192.0.2.49/29\",\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P4\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"active\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        },\n        {\n          \"gateway_id\": \"id10\",\n          \"cluster_id\": 291,\n          \"desired_state\": \"standby\",\n          \"operational_state\": \"standby\",\n          \"gateway_name\": \"LOCATION_502\",\n          \"display_name\": \"LOCATION_502\",\n          \"control_plane_ip\": \"203.0.113.0\",\n          \"control_plane_subnet\": \"24\",\n          \"gateway_ip_address\": \"192.0.2.50\",\n          \"vm_ip_address\": \"0.0.0.0\",\n          \"sgw_wireguard_public_key\": \"CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg=\",\n          \"last_poll_updated\": \"2026-07-10T08:51:42Z\",\n          \"desired_version\": \"\",\n          \"running_version\": \"8.0.8P3a\",\n          \"is_deleted\": false,\n          \"created_at\": \"2026-04-22T12:57:35Z\",\n          \"updated_at\": \"2026-07-10T08:51:13Z\",\n          \"wireguard_listen_port\": 0,\n          \"bastion_ip\": \"\",\n          \"bastion_wireguard_public_key\": \"\",\n          \"bastion_wireguard_ip\": \"\",\n          \"sgw_wireguard_ip\": \"\",\n          \"wireguard_enabled\": false,\n          \"trigger_techsupport\": null,\n          \"trigger_decommission\": null,\n          \"activation_code\": null,\n          \"decommissioning_customer_id\": null,\n          \"wg1_private_key\": null,\n          \"wg1_public_key\": null,\n          \"wg1_wg_ip\": null,\n          \"hub_wg_ip\": null,\n          \"mgmt_ip\": \"\",\n          \"hub_public_key\": null,\n          \"hub_port\": null,\n          \"health_color\": \"green\",\n          \"nat_enabled\": true,\n          \"web_proxy\": \"\",\n          \"error\": \"\",\n          \"deployment_type\": \"on_prem\",\n          \"system_serial_tag\": \"LR000000000008\",\n          \"vrrp_state\": \"backup\",\n          \"public_ip\": \"1.2.3.4\",\n          \"decommission_event_type\": null,\n          \"wan_ssh_enabled_if\": \"ge8\",\n          \"gateway_capabilities\": {\n            \"ztb_rfs_upgradable\": true\n          },\n          \"activation_link\": \"http://fake-link\",\n          \"template_gateway_id\": \"Gateway-2\",\n          \"wan_ssh_source\": \"192.0.2.50/29\",\n          \"download_status\": {\n            \"versions\": null\n          },\n          \"signed_cert_id\": null,\n          \"branch_connector_group_nonce\": null,\n          \"branch_connector_group_nonce_id\": null,\n          \"sw_image_status\": {\n            \"images\": [\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"active\",\n                \"status\": \"active\",\n                \"version\": \"8.0.8P3a\",\n                \"is_default\": true,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              },\n              {\n                \"url\": \"https://fake-url.local\",\n                \"state\": \"installed\",\n                \"status\": \"installed\",\n                \"version\": \"8.0.8P4\",\n                \"is_default\": false,\n                \"download_status\": {\n                  \"state\": \"\",\n                  \"total_bytes\": 0,\n                  \"received_bytes\": 0\n                }\n              }\n            ]\n          },\n          \"allow_zpa_reprovision\": false,\n          \"display_state\": \"standby\",\n          \"vrrp_status\": null,\n          \"region\": null,\n          \"template_id\": null,\n          \"template_name\": null,\n          \"permissions\": \"\"\n        }\n      ],\n      \"vlans_count\": 16,\n      \"region\": \"\",\n      \"public_ip\": \"1.2.3.4\",\n      \"dns\": \"\",\n      \"createdAt\": \"2026-04-22T12:57:34.000Z\",\n      \"updatedAt\": \"2026-05-27T11:24:30.000Z\",\n      \"template_id\": \"00000000-0000-4000-8000-000000000005\",\n      \"template_name\": \"TPL-ZT800-HA-SITE3\",\n      \"permissions\": \"read-only\",\n      \"zia_location_name\": \"LOCATION_5\"\n    }\n  ]\n}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "a10a52ab-e050-4292-a447-cfd1ab8c2fb2",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v3/debug-manager/resource-status",
+      "responses": [
+        {
+          "uuid": "df1620ef-b4e5-47b8-9667-8613d18c3716",
+          "body": "{\n  \"gateway_id\": \"id1\",\n  \"containers_stats\": {\n    \"container_stats\": [\n      {\n        \"cname\": \"container1\",\n        \"cpu\": \"4.20\",\n        \"memory\": \"160.4MiB\"\n      },\n      {\n        \"cname\": \"container2\",\n        \"cpu\": \"0.02\",\n        \"memory\": \"3.727MiB\"\n      },\n      {\n        \"cname\": \"container3\",\n        \"cpu\": \"0.34\",\n        \"memory\": \"14.27MiB\"\n      },\n      {\n        \"cname\": \"container4\",\n        \"cpu\": \"0.58\",\n        \"memory\": \"84.95MiB\"\n      },\n      {\n        \"cname\": \"container5\",\n        \"cpu\": \"0.41\",\n        \"memory\": \"115.8MiB\"\n      },\n      {\n        \"cname\": \"container6\",\n        \"cpu\": \"6.35\",\n        \"memory\": \"164MiB\"\n      },\n      {\n        \"cname\": \"container7\",\n        \"cpu\": \"83.68\",\n        \"memory\": \"1.444GiB\"\n      }\n    ]\n  },\n  \"system_stats\": {\n    \"memory\": {\n      \"total\": 31.302879333496097,\n      \"used\": 3.5830116271972656,\n      \"free\": 27.719867706298828\n    },\n    \"swap\": {\n      \"used\": 0\n    },\n    \"cpu\": {\n      \"used\": 4.7,\n      \"free\": 95.3\n    },\n    \"disk\": {\n      \"total\": 154.8,\n      \"used\": 19.95,\n      \"free\": 126.92\n    }\n  },\n  \"average_values\": {\n    \"hourly_stats\": [\n      {\n        \"start_time\": \"2026-01-16 08:00:00\",\n        \"end_time\": \"2026-01-16 08:45:54\",\n        \"cpu_used_avg\": 19.96,\n        \"mem_used_avg\": 3.58,\n        \"mem_free_avg\": 27.72,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.95,\n        \"disk_free_avg\": 126.92\n      },\n      {\n        \"start_time\": \"2026-01-16 07:00:00\",\n        \"end_time\": \"2026-01-16 08:00:00\",\n        \"cpu_used_avg\": 19.88,\n        \"mem_used_avg\": 3.57,\n        \"mem_free_avg\": 27.74,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.95,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-16 06:00:00\",\n        \"end_time\": \"2026-01-16 07:00:00\",\n        \"cpu_used_avg\": 10.35,\n        \"mem_used_avg\": 3.57,\n        \"mem_free_avg\": 27.73,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.95,\n        \"disk_free_avg\": 126.92\n      },\n      {\n        \"start_time\": \"2026-01-16 05:00:00\",\n        \"end_time\": \"2026-01-16 06:00:00\",\n        \"cpu_used_avg\": 13.42,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.75,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-16 04:00:00\",\n        \"end_time\": \"2026-01-16 05:00:00\",\n        \"cpu_used_avg\": 14.05,\n        \"mem_used_avg\": 3.58,\n        \"mem_free_avg\": 27.72,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.95,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-16 03:00:00\",\n        \"end_time\": \"2026-01-16 04:00:00\",\n        \"cpu_used_avg\": 13.57,\n        \"mem_used_avg\": 3.58,\n        \"mem_free_avg\": 27.72,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-16 02:00:00\",\n        \"end_time\": \"2026-01-16 03:00:00\",\n        \"cpu_used_avg\": 15.27,\n        \"mem_used_avg\": 3.57,\n        \"mem_free_avg\": 27.73,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-16 01:00:00\",\n        \"end_time\": \"2026-01-16 02:00:00\",\n        \"cpu_used_avg\": 14.38,\n        \"mem_used_avg\": 3.57,\n        \"mem_free_avg\": 27.74,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-16 00:00:00\",\n        \"end_time\": \"2026-01-16 01:00:00\",\n        \"cpu_used_avg\": 18.55,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.74,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-15 23:00:00\",\n        \"end_time\": \"2026-01-16 00:00:00\",\n        \"cpu_used_avg\": 14.19,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.74,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-15 22:00:00\",\n        \"end_time\": \"2026-01-15 23:00:00\",\n        \"cpu_used_avg\": 17.05,\n        \"mem_used_avg\": 3.55,\n        \"mem_free_avg\": 27.75,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-15 21:00:00\",\n        \"end_time\": \"2026-01-15 22:00:00\",\n        \"cpu_used_avg\": 14.01,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.75,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 20:00:00\",\n        \"end_time\": \"2026-01-15 21:00:00\",\n        \"cpu_used_avg\": 10.86,\n        \"mem_used_avg\": 3.57,\n        \"mem_free_avg\": 27.73,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-15 19:00:00\",\n        \"end_time\": \"2026-01-15 20:00:00\",\n        \"cpu_used_avg\": 23.04,\n        \"mem_used_avg\": 3.57,\n        \"mem_free_avg\": 27.73,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 18:00:00\",\n        \"end_time\": \"2026-01-15 19:00:00\",\n        \"cpu_used_avg\": 16.34,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.74,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.93\n      },\n      {\n        \"start_time\": \"2026-01-15 17:00:00\",\n        \"end_time\": \"2026-01-15 18:00:00\",\n        \"cpu_used_avg\": 18.21,\n        \"mem_used_avg\": 3.55,\n        \"mem_free_avg\": 27.75,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 16:00:00\",\n        \"end_time\": \"2026-01-15 17:00:00\",\n        \"cpu_used_avg\": 14.69,\n        \"mem_used_avg\": 3.54,\n        \"mem_free_avg\": 27.76,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.94,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 15:00:00\",\n        \"end_time\": \"2026-01-15 16:00:00\",\n        \"cpu_used_avg\": 21.04,\n        \"mem_used_avg\": 3.55,\n        \"mem_free_avg\": 27.76,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 14:00:00\",\n        \"end_time\": \"2026-01-15 15:00:00\",\n        \"cpu_used_avg\": 15.36,\n        \"mem_used_avg\": 3.54,\n        \"mem_free_avg\": 27.76,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 13:00:00\",\n        \"end_time\": \"2026-01-15 14:00:00\",\n        \"cpu_used_avg\": 15.36,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.74,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 12:00:00\",\n        \"end_time\": \"2026-01-15 13:00:00\",\n        \"cpu_used_avg\": 16.27,\n        \"mem_used_avg\": 3.56,\n        \"mem_free_avg\": 27.75,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 11:00:00\",\n        \"end_time\": \"2026-01-15 12:00:00\",\n        \"cpu_used_avg\": 20.77,\n        \"mem_used_avg\": 3.55,\n        \"mem_free_avg\": 27.75,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.94\n      },\n      {\n        \"start_time\": \"2026-01-15 10:00:00\",\n        \"end_time\": \"2026-01-15 11:00:00\",\n        \"cpu_used_avg\": 13.4,\n        \"mem_used_avg\": 3.54,\n        \"mem_free_avg\": 27.76,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.95\n      },\n      {\n        \"start_time\": \"2026-01-15 09:00:00\",\n        \"end_time\": \"2026-01-15 10:00:00\",\n        \"cpu_used_avg\": 13.05,\n        \"mem_used_avg\": 3.54,\n        \"mem_free_avg\": 27.77,\n        \"swap_used_avg\": 0,\n        \"swap_free_avg\": 0,\n        \"disk_used_avg\": 19.93,\n        \"disk_free_avg\": 126.95\n      }\n    ]\n  },\n  \"peak_low_values\": {\n    \"cpu_used_peak\": 57.9,\n    \"cpu_used_low\": 2.1,\n    \"mem_used_peak\": 3.64,\n    \"mem_used_low\": 3.52,\n    \"disk_used_peak\": 19.95,\n    \"disk_used_low\": 19.92,\n    \"swap_used_peak\": 0,\n    \"swap_used_low\": 0\n  },\n  \"device_uptime\": \"34d 21h 20m 03s\",\n  \"wanmon_status\": [\n    {\n      \"wan_intf_name\": \"ge5\",\n      \"loss\": \"0.01\",\n      \"jitter\": \"2.63\",\n      \"latency\": \"21.03\",\n      \"score\": \"23\"\n    }\n  ],\n  \"wanmon_avg_values\": [\n    {\n      \"start_time\": \"2026-01-16 08:00:00\",\n      \"end_time\": \"2026-01-16 08:45:54\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.04\",\n          \"jitter\": \"2.15\",\n          \"latency\": \"20.7\",\n          \"score\": \"23.4000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 07:00:00\",\n      \"end_time\": \"2026-01-16 08:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.01\",\n          \"jitter\": \"1.72\",\n          \"latency\": \"7.17\",\n          \"score\": \"27.0000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 06:00:00\",\n      \"end_time\": \"2026-01-16 07:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.16\",\n          \"latency\": \"4.14\",\n          \"score\": \"28.7500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 05:00:00\",\n      \"end_time\": \"2026-01-16 06:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.25\",\n          \"latency\": \"4.05\",\n          \"score\": \"28.5000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 04:00:00\",\n      \"end_time\": \"2026-01-16 05:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.18\",\n          \"latency\": \"4.08\",\n          \"score\": \"27.2500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 03:00:00\",\n      \"end_time\": \"2026-01-16 04:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.27\",\n          \"latency\": \"4.2\",\n          \"score\": \"28.7273\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 02:00:00\",\n      \"end_time\": \"2026-01-16 03:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.23\",\n          \"latency\": \"4.03\",\n          \"score\": \"27.0000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 01:00:00\",\n      \"end_time\": \"2026-01-16 02:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.01\",\n          \"jitter\": \"1.46\",\n          \"latency\": \"4.17\",\n          \"score\": \"26.7500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-16 00:00:00\",\n      \"end_time\": \"2026-01-16 01:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.49\",\n          \"latency\": \"4.33\",\n          \"score\": \"26.2500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 23:00:00\",\n      \"end_time\": \"2026-01-16 00:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.57\",\n          \"latency\": \"4.39\",\n          \"score\": \"26.2500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 22:00:00\",\n      \"end_time\": \"2026-01-15 23:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.29\",\n          \"latency\": \"4.1\",\n          \"score\": \"27.6364\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 21:00:00\",\n      \"end_time\": \"2026-01-15 22:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.91\",\n          \"latency\": \"9.76\",\n          \"score\": \"25.7500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 20:00:00\",\n      \"end_time\": \"2026-01-15 21:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"3.23\",\n          \"latency\": \"10.52\",\n          \"score\": \"24.0000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 19:00:00\",\n      \"end_time\": \"2026-01-15 20:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"2.75\",\n          \"latency\": \"6.98\",\n          \"score\": \"26.0000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 18:00:00\",\n      \"end_time\": \"2026-01-15 19:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"3.0\",\n          \"latency\": \"8.84\",\n          \"score\": \"24.9091\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 17:00:00\",\n      \"end_time\": \"2026-01-15 18:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"3.63\",\n          \"latency\": \"13.11\",\n          \"score\": \"24.0000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 16:00:00\",\n      \"end_time\": \"2026-01-15 17:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"4.06\",\n          \"latency\": \"15.72\",\n          \"score\": \"25.5000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 15:00:00\",\n      \"end_time\": \"2026-01-15 16:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"3.64\",\n          \"latency\": \"15.73\",\n          \"score\": \"23.9167\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 14:00:00\",\n      \"end_time\": \"2026-01-15 15:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"3.59\",\n          \"latency\": \"10.93\",\n          \"score\": \"24.9167\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 13:00:00\",\n      \"end_time\": \"2026-01-15 14:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"2.88\",\n          \"latency\": \"6.97\",\n          \"score\": \"26.2727\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 12:00:00\",\n      \"end_time\": \"2026-01-15 13:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"1.6\",\n          \"latency\": \"4.08\",\n          \"score\": \"29.0000\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 11:00:00\",\n      \"end_time\": \"2026-01-15 12:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"2.25\",\n          \"latency\": \"6.11\",\n          \"score\": \"27.2500\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 10:00:00\",\n      \"end_time\": \"2026-01-15 11:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"2.81\",\n          \"latency\": \"7.37\",\n          \"score\": \"26.5833\"\n        }\n      ]\n    },\n    {\n      \"start_time\": \"2026-01-15 09:00:00\",\n      \"end_time\": \"2026-01-15 10:00:00\",\n      \"interfaces\": [\n        {\n          \"wan_intf_name\": \"ge5\",\n          \"loss\": \"0.0\",\n          \"jitter\": \"3.47\",\n          \"latency\": \"9.12\",\n          \"score\": \"27.0000\"\n        }\n      ]\n    }\n  ]\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "ff3e9224-60bd-4d42-afc9-5b9bc638792a",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/Gateway/interfaces",
+      "responses": [
+        {
+          "uuid": "1298ef7d-f673-42d7-b40d-b87835d5ecc1",
+          "body": "[{\"gateway_id\":\"00000000-0000-4000-8000-000000000006\",\"gateway_name\":\"LOCATION_6-gw-01\",\"interfaces\":[{\"id\":\"00000000-0000-4000-8000-000000000007\",\"name\":\"dum_vrrp\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"internal\",\"admin_state\":\"up\",\"operational_state\":\"up\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:0b\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000008\",\"name\":\"ebond0\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"internal\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:0a\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000009\",\"name\":\"ebond1\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"internal\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:09\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000010\",\"name\":\"ge1\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"management\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:02\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000011\",\"name\":\"ge2\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"lan\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:01\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000012\",\"name\":\"ge2.10\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"lan\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:07\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000013\",\"name\":\"ge3\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"lan\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:03\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000014\",\"name\":\"ge4\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"lan\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:04\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000015\",\"name\":\"ge4.40\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"lan\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:08\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000016\",\"name\":\"ge5\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"wan\",\"admin_state\":\"up\",\"operational_state\":\"up\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:05\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000017\",\"name\":\"ge6\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"wan\",\"admin_state\":\"up\",\"operational_state\":\"down\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:5e:00:53:06\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000018\",\"name\":\"ipsec0\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"zia_ipsec\",\"admin_state\":\"up\",\"operational_state\":\"up\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000019\",\"name\":\"lo\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"internal\",\"admin_state\":\"up\",\"operational_state\":\"up\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"00:00:00:00:00:00\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true},{\"id\":\"00000000-0000-4000-8000-000000000020\",\"name\":\"zpa0\",\"description\":\"\",\"bonding_parent\":\"\",\"interface_type\":\"zpa\",\"admin_state\":\"up\",\"operational_state\":\"up\",\"ip\":\"\",\"subnet\":\"\",\"netmask\":0,\"nexthop\":\"\",\"mac\":\"\",\"wan_nexthop_ip\":\"\",\"if_speed\":\"Auto\",\"if_duplex\":\"Auto\",\"if_stats\":{},\"auto_neg\":true}]}]\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "d07afd4d-304f-44d1-90f0-bd381ff1ca68",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v3/appconnector/config",
+      "responses": [
+        {
+          "uuid": "8b16302b-5e4a-47a6-87c9-30df818cc5a5",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "No data provided for this endpoint",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{}"
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    },
+    {
+      "uuid": "af0b9c82-8279-459a-94d5-94755cb4a9a2",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v2/cluster/ipsec-status",
+      "responses": [
+        {
+          "uuid": "160f7680-8780-44dc-b8b3-61d08cec2ea0",
+          "body": "{\"cluster_id\":233,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:47Z\",\"user_id\":\"199190-clust-233@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #7, ESTABLISHED, IKEv2, 9f0663742f10ede4_i* f46e2daedfcc9d22_r\\n  local  '199190-clust-233@connectivityhub.example.com' @ 192.0.2.82[4500]\\n  remote '203.0.113.161' @ 203.0.113.161[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 461s ago, rekeying in 13841s\\n  net: #25, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 759s ago, rekeying in 2611s, expires in 3201s\\n    in  c60cf855 (-|0x0000002a), 666255 bytes, 10692 packets,     2s ago\\n    out 410c4c76 (-|0x0000002a), 19357675 bytes, 15390 packets,     2s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "233",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "233",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "09dc6e78-085e-48ce-8838-e3c12c7ef3f3",
+          "body": "{\"cluster_id\":213,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:45Z\",\"user_id\":\"012440-clust-213@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #38, ESTABLISHED, IKEv2, da70d22061535f80_i* c99e9915abf729dc_r\\n  local  '012440-clust-213@connectivityhub.example.com' @ 192.0.2.66[4500]\\n  remote '203.0.113.161' @ 203.0.113.161[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 4943s ago, rekeying in 9232s\\n  net: #141, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 2533s ago, rekeying in 766s, expires in 1427s\\n    in  c958a808 (-|0x0000002a), 9250984 bytes, 72571 packets,     0s ago\\n    out 7c7ad6a0 (-|0x0000002a), 74928482 bytes, 104104 packets,     0s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}\n",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "213",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "213",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "6b521e10-73eb-4abe-834d-32c0881c42c4",
+          "body": "{\"cluster_id\":287,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:42Z\",\"user_id\":\"612550-clust-287@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #15, ESTABLISHED, IKEv2, e8efae0d7518bbc3_i* b50a618026e748fd_r\\n  local  '612550-clust-287@connectivityhub.example.com' @ 192.0.2.36[4500]\\n  remote '203.0.113.161' @ 203.0.113.161[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 1166s ago, rekeying in 12200s\\n  net: #59, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 253s ago, rekeying in 3035s, expires in 3707s\\n    in  c996065f (-|0x0000002a), 646213 bytes,  6088 packets,     0s ago\\n    out 6b01a27c (-|0x0000002a), 16667195 bytes, 12953 packets,     0s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "287",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "287",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "e83e1628-4b7a-4069-862e-108b0c9c4b45",
+          "body": "{\"cluster_id\":291,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:40Z\",\"user_id\":\"677973-clust-291@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #29, ESTABLISHED, IKEv2, 07b135f01be6d6ec_i* bf1d36e57229385b_r\\n  local  '677973-clust-291@connectivityhub.example.com' @ 192.0.2.51[4500]\\n  remote '203.0.113.193' @ 203.0.113.193[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 2993s ago, rekeying in 10110s\\n  net: #118, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 473s ago, rekeying in 2844s, expires in 3487s\\n    in  ca68f0a7 (-|0x0000002a), 28867032 bytes, 71792 packets,     0s ago\\n    out 199a07a4 (-|0x0000002a), 23256352 bytes, 117599 packets,     0s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"},{\"time_stamp\":\"2026-07-10T08:51:40Z\",\"user_id\":\"214692-clust-291@connectivityhub.example.com\",\"status\":\"zia-tunnel1: #30, ESTABLISHED, IKEv2, 6d4818fcb537dfd3_i* 6937afe52b257ec6_r\\n  local  '214692-clust-291@connectivityhub.example.com' @ 192.0.2.49[4500]\\n  remote '203.0.113.161' @ 203.0.113.161[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 1423s ago, rekeying in 12936s\\n  net: #117, reqid 2, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 655s ago, rekeying in 2662s, expires in 3305s\\n    in  cf825c08 (-|0x0000002b),      0 bytes,     0 packets\\n    out 0d2004d7 (-|0x0000002b),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "291",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "291",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "74e806ac-2e14-4bc6-9c40-ce95236cab5d",
+          "body": "{\"cluster_id\":293,\"tun_status\":[]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "293",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "293",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "41565d85-2362-4d3c-a174-3316b1dba8e6",
+          "body": "{\"cluster_id\":282,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:38Z\",\"user_id\":\"762260-clust-282@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #30, ESTABLISHED, IKEv2, 7991ec7dfa5f00b2_i* aad4874fff60a65c_r\\n  local  '762260-clust-282@connectivityhub.example.com' @ 198.51.100.113[4500]\\n  remote '203.0.113.209' @ 203.0.113.209[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 2081s ago, rekeying in 11069s\\n  net: #116, reqid 1, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 1899s ago, rekeying in 1342s, expires in 2061s\\n    in  c472b70f (-|0x0000002a), 25762003 bytes, 28409 packets,     0s ago\\n    out 66fecc5e (-|0x0000002a), 2674895 bytes, 17566 packets,     0s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"},{\"time_stamp\":\"2026-07-10T08:51:38Z\",\"user_id\":\"216110-clust-282@connectivityhub.example.com\",\"status\":\"zia-tunnel1: #29, ESTABLISHED, IKEv2, 697ea051d40fa265_i* 0f02c34ad99ce3e8_r\\n  local  '216110-clust-282@connectivityhub.example.com' @ 198.51.100.97[4500]\\n  remote '198.51.100.33' @ 198.51.100.33[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 6004s ago, rekeying in 7825s\\n  net: #115, reqid 2, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 2338s ago, rekeying in 1007s, expires in 1622s\\n    in  c947091f (-|0x0000002b),      0 bytes,     0 packets\\n    out 18ed86b5 (-|0x0000002b),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "282",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "282",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "448eb2a4-4acf-4862-95e6-5227b6b34a30",
+          "body": "{\"cluster_id\":283,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:46Z\",\"user_id\":\"252752-clust-283@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #29, ESTABLISHED, IKEv2, 693b3801e8074128_i* e75d12612fd61269_r\\n  local  '252752-clust-283@connectivityhub.example.com' @ 198.51.100.114[4500]\\n  remote '203.0.113.209' @ 203.0.113.209[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 2042s ago, rekeying in 11743s\\n  net: #118, reqid 1, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 221s ago, rekeying in 3027s, expires in 3739s\\n    in  c00281e7 (-|0x0000002a),  22016 bytes,   467 packets,     1s ago\\n    out 1cc301a4 (-|0x0000002a),  20660 bytes,   467 packets,     1s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"},{\"time_stamp\":\"2026-07-10T08:51:46Z\",\"user_id\":\"871793-clust-283@connectivityhub.example.com\",\"status\":\"zia-tunnel1: #30, ESTABLISHED, IKEv2, cd32cc3eaac886bf_i* d0ef29aec48d245a_r\\n  local  '871793-clust-283@connectivityhub.example.com' @ 198.51.100.98[4500]\\n  remote '198.51.100.49' @ 198.51.100.49[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 1857s ago, rekeying in 11125s\\n  net: #117, reqid 2, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 572s ago, rekeying in 2803s, expires in 3388s\\n    in  c82600d6 (-|0x0000002b),      0 bytes,     0 packets\\n    out 20ee5fda (-|0x0000002b),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "283",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "283",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "0837b2b0-04ba-42f4-bc5b-9cffaf53dd86",
+          "body": "{\"cluster_id\":284,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:48Z\",\"user_id\":\"759758-clust-284@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #15, ESTABLISHED, IKEv2, 34b2ba842166ce4f_i* 8d800f29f8c9dc61_r\\n  local  '759758-clust-284@connectivityhub.example.com' @ 192.0.2.83[4500]\\n  remote '203.0.113.209' @ 203.0.113.209[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 3370s ago, rekeying in 10254s\\n  net: #58, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 3389s ago, rekeying in 134s, expires in 571s\\n    in  c358db92 (-|0x0000002a),      0 bytes,     0 packets\\n    out 39d70a73 (-|0x0000002a),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "284",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "284",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "830d53c5-e213-4f8c-9f5d-35c7ef431e2f",
+          "body": "{\"cluster_id\":299,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:52Z\",\"user_id\":\"634608-clust-299@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #106, ESTABLISHED, IKEv2, 80943d2221dd3873_i* cb2a393d24f17b7a_r\\n  local  '634608-clust-299@connectivityhub.example.com' @ 198.51.100.17[4500]\\n  remote '203.0.113.145' @ 203.0.113.145[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 10153s ago, rekeying in 4119s\\n  net: #165, reqid 1, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 3171s ago, rekeying in 170s, expires in 789s\\n    in  c36ef0db (-|0x0000002a), 75309077 bytes, 103760 packets,     0s ago\\n    out 00c41715 (-|0x0000002a), 40841666 bytes, 83071 packets,     0s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"},{\"time_stamp\":\"2026-05-20T10:51:17Z\",\"user_id\":\"634043-clust-299@connectivityhub.example.com\",\"status\":\"zia-tunnel1: #2, ESTABLISHED, IKEv2, 90247a9e6927791f_i* 3e1a49d704ecb7bf_r\\n  local  '634043-clust-299@connectivityhub.example.com' @ 198.51.100.65[4500]\\n  remote '198.51.100.81' @ 198.51.100.81[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 3171s ago, rekeying in 9987s\\n  net: #2, reqid 2, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96\\n    installed 3171s ago, rekeying in 180s, expires in 789s\\n    in  c0e5b755 (-|0x0000002b),      0 bytes,     0 packets\\n    out 099da449 (-|0x0000002b),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "299",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "299",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "c8dbc70e-58e3-4f8c-a83c-9ac260a8765b",
+          "body": "{\"cluster_id\":280,\"tun_status\":[{\"time_stamp\":\"2026-04-08T17:00:11Z\",\"user_id\":\"710198-clust-280@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #3, ESTABLISHED, IKEv2, 0cdde229549b03d0_i* 78b72441dfe23907_r\\n  local  '710198-clust-280@connectivityhub.example.com' @ 192.0.2.84[4500]\\n  remote '203.0.113.177' @ 203.0.113.177[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 2085s ago, rekeying in 11458s\\n  net: #9, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 1693s ago, rekeying in 1699s, expires in 2267s\\n    in  cea18fa7 (-|0x0000002a),      0 bytes,     0 packets\\n    out 7114905c (-|0x0000002a),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "280",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "280",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "cc7c2582-acab-4831-b161-6b89b15484a6",
+          "body": "{\"cluster_id\":275,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:42Z\",\"user_id\":\"171178-clust-275@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #15, ESTABLISHED, IKEv2, da3d126ef2b6ad4c_i* 9707a153d62670cb_r\\n  local  '171178-clust-275@connectivityhub.example.com' @ 198.51.100.1[4500]\\n  remote '203.0.113.177' @ 203.0.113.177[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 3759s ago, rekeying in 9289s\\n  net: #58, reqid 1, INSTALLED, TUNNEL, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 2288s ago, rekeying in 1084s, expires in 1672s\\n    in  cf3653b3 (-|0x0000002a),  82330 bytes,   438 packets,    74s ago\\n    out 65e3a641 (-|0x0000002a), 163689 bytes,   576 packets,    75s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "275",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "275",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "d8fe5f77-3daf-49ba-a862-ce349640a128",
+          "body": "{\"cluster_id\":289,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:46Z\",\"user_id\":\"342906-clust-289@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #16, ESTABLISHED, IKEv2, 32d7671b67da6e31_i* e1454e092f2b1691_r\\n  local  '342906-clust-289@connectivityhub.example.com' @ 192.0.2.97[4500]\\n  remote '203.0.113.129' @ 203.0.113.129[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 1721s ago, rekeying in 12228s\\n  net: #59, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 2963s ago, rekeying in 533s, expires in 997s\\n    in  cacce12f (-|0x0000002a),      0 bytes,     0 packets\\n    out 57ffe460 (-|0x0000002a),      0 bytes,     0 packets\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "289",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "289",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "4794bb33-9999-43d7-b674-f2e1bbd8bced",
+          "body": "{\"cluster_id\":288,\"tun_status\":[]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "288",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "288",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "10b2abbe-f145-4a6b-91bf-6041339fe9f3",
+          "body": "{\"cluster_id\":292,\"tun_status\":[{\"time_stamp\":\"2026-07-10T08:51:36Z\",\"user_id\":\"068757-clust-292@connectivityhub.example.com\",\"status\":\"zia-tunnel0: #14, ESTABLISHED, IKEv2, 46bb13fd20e52275_i* 0b850a6b9aab8f78_r\\n  local  '068757-clust-292@connectivityhub.example.com' @ 192.0.2.34[4500]\\n  remote '203.0.113.161' @ 203.0.113.161[4500]\\n  AES_CBC-128/HMAC_SHA1_96/PRF_HMAC_SHA1/MODP_1024\\n  established 1886s ago, rekeying in 11524s\\n  net: #51, reqid 1, INSTALLED, TUNNEL-in-UDP, ESP:NULL/HMAC_MD5_96/MODP_1024\\n    installed 2722s ago, rekeying in 622s, expires in 1238s\\n    in  cc353db3 (-|0x0000002a), 5741603 bytes, 75777 packets,     0s ago\\n    out 1fa5573e (-|0x0000002a), 112596163 bytes, 136582 packets,     0s ago\\n    local  0.0.0.0/0\\n    remote 0.0.0.0/0\",\"child_sa_status\":\"Established\"}]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "292",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "292",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": []
+        },
+        {
+          "uuid": "fa4197e4-d19b-4d6d-ba86-d9c19010a954",
+          "body": "{\"cluster_id\":288,\"tun_status\":[]}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "text/html; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "233",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "2cfff4cc-f31f-4a4d-a87a-a980a2dae91b"
+    },
+    {
+      "type": "route",
+      "uuid": "e8db7c3c-626b-4599-b3f3-3467b55bca9c"
+    },
+    {
+      "type": "route",
+      "uuid": "f557bf30-35d8-49cd-9e2f-a00e2a967403"
+    },
+    {
+      "type": "route",
+      "uuid": "a10a52ab-e050-4292-a447-cfd1ab8c2fb2"
+    },
+    {
+      "type": "route",
+      "uuid": "ff3e9224-60bd-4d42-afc9-5b9bc638792a"
+    },
+    {
+      "type": "route",
+      "uuid": "d07afd4d-304f-44d1-90f0-bd381ff1ca68"
+    },
+    {
+      "type": "route",
+      "uuid": "af0b9c82-8279-459a-94d5-94755cb4a9a2"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [],
+  "callbacks": []
+}

@@ -239,22 +239,22 @@ Exclude cluster IDs (regexp).
 
 =item B<--custom-perfdata-instances>
 
-Define perfdatas instance (default: '%(clusterName) %(appConnectorName)')
+Define perfdata instance (default: C<%(clusterName) %(appConnectorName)>)
 
 =item B<--unknown-appconnector-status>
 
 Define the conditions to match for the status to be UNKNOWN.
-You can use the following variables: %{clusterName}, %{appConnectorName}, %{status}
+You can use the following variables: C<%{clusterName}>, C<%{appConnectorName}>, C<%{status}>
 
 =item B<--warning-appconnector-status>
 
 Define the conditions to match for the status to be WARNING.
-You can use the following variables: %{clusterName}, %{appConnectorName}, %{status}
+You can use the following variables: C<%{clusterName}>, C<%{appConnectorName}>, C<%{status}>
 
 =item B<--critical-appconnector-status>
 
-Define the conditions to match for the status to be CRITICAL (default: '%{status} ne "connected"').
-You can use the following variables: %{clusterName}, %{appConnectorName}, %{status}
+Define the conditions to match for the status to be CRITICAL (default: C<%{status} ne "connected">).
+You can use the following variables: C<%{clusterName}>, C<%{appConnectorName}>, C<%{status}>
 
 =item B<--warning-appconnectors-detected>
 
