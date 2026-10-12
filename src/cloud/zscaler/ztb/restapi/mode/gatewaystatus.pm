@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::misc qw/is_excluded exprintf/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use POSIX;
 use DateTime;
@@ -95,7 +95,7 @@ sub gateway_long_output {
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
-    return $self->custom_output(option => 'custom_prefix_short_gateway_output', values => $options{instance_value});
+    return exprintf($self->{option_results}->{custom_prefix_short_gateway_output}, $options{instance_value});
 }
 
 sub set_counters {
@@ -229,7 +229,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{custom_prefix_short_gateway_output})) {
-        $self->{option_results}->{custom_prefix_short_gateway_output} = "gateway '%(gatewayName)' ";
+        $self->{option_results}->{custom_prefix_short_gateway_output} = "gateway '%{gatewayName}' ";
     }
 
     if (!defined($self->{option_results}->{custom_perfdata_instances}) || $self->{option_results}->{custom_perfdata_instances} eq '') {
@@ -344,6 +344,11 @@ Exclude gateway IDs (regexp).
 =item B<--custom-perfdata-instances>
 
 Define perfdata instance (default: C<%(gatewayName)>)
+
+=item B<--custom-prefix-short-gateway-output>
+
+Define the prefix of each gateway in the short output (default: C<gateway '%{gatewayName}' >).
+You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>
 
 =item B<--unit>
 
