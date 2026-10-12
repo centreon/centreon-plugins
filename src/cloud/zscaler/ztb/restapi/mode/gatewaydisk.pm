@@ -117,7 +117,7 @@ sub set_counters {
                     { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' },
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
-                closure_custom_output => $self->can('custom_memory_usage_output'),
+                closure_custom_output => $self->can('custom_disk_usage_output'),
                 closure_custom_perfdata => sub {
                     my ($self, %options) = @_;
                     

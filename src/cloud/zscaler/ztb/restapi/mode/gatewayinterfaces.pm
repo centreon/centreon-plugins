@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use Digest::SHA qw/sha256_hex/;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw/is_excluded exprintf convert_bytes_ng/;
+use centreon::plugins::misc qw/is_excluded is_empty is_not_empty exprintf convert_bytes_ng/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_traffic_perfdata {
@@ -61,6 +61,7 @@ sub custom_traffic_perfdata {
     } else {
         $self->{output}->perfdata_add(
             nlabel => $self->{nlabel},
+            unit => 'b/s',
             instances => $instances,
             value => sprintf('%.2f', $self->{result_values}->{traffic_per_seconds}),
             warning => $warning,
@@ -92,9 +93,8 @@ sub custom_traffic_calc {
 
     $self->{result_values}->{traffic_per_seconds} = sprintf('%d', $self->{result_values}->{traffic_per_seconds});
 
-    if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) &&
-        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} ne '' &&
-        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
+    if (is_not_empty($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}})
+        && $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
     }
@@ -285,7 +285,11 @@ sub new {
         'exclude-interface-name:s'    => { name => 'exclude_interface_name',  default => '' },
         'custom-perfdata-instances:s' => { name => 'custom_perfdata_instances' },
         'traffic-unit:s'              => { name => 'traffic_unit', default => 'percent_delta' },
-        'speed:s'                     => { name => 'speed' },
+        'speed:s'                     => {
+            name          => 'speed',
+            regexp_match  => '^[0-9]+(\.[0-9]+){0,1}$',
+            error_message => "Speed must be a positive number '%{value}' (can be a float also)"
+        },
         'custom-prefix-short-gateway-output:s' => { name => 'custom_prefix_short_gateway_output' }
     });
 
@@ -310,23 +314,14 @@ sub check_options {
         labels => { siteName => 1, clusterName => 1, gatewayName => 1, interfaceName => 1 }
     );
 
-    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-        if ($self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
-            $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also)");
-            $self->{output}->option_exit();
-        } else {
-            $self->{option_results}->{speed} *= 1000000;
-        }
-    }
+    $self->{option_results}->{speed} *= 1000000
+        if (is_not_empty($self->{option_results}->{speed}));
 
     $self->{option_results}->{traffic_unit} = 'percent_delta'
-        if (!defined($self->{option_results}->{traffic_unit}) ||
-            $self->{option_results}->{traffic_unit} eq '' ||
-            $self->{option_results}->{traffic_unit} eq '%');
-    if ($self->{option_results}->{traffic_unit} !~ /^(?:percent|percent_delta|bps|counter)$/) {
-        $self->{output}->add_option_msg(short_msg => 'Wrong option --traffic-unit');
-        $self->{output}->option_exit();
-    }
+        if (is_empty($self->{option_results}->{traffic_unit})
+            || $self->{option_results}->{traffic_unit} eq '%');
+    $self->{output}->option_exit(short_msg => 'Wrong option --traffic-unit')
+        if ($self->{option_results}->{traffic_unit} !~ /^(?:percent_delta|bps|counter)$/);
 }
 
 sub manage_selection {
@@ -368,8 +363,8 @@ sub manage_selection {
                 my $speed = convert_bytes_ng(value => $int->{if_stats}->{if_speed});
                 $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{in} = $int->{if_stats}->{rx_bytes} * 8;
                 $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{out} = $int->{if_stats}->{tx_bytes} * 8;
-                $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{speed_in} = defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $speed;
-                $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{speed_out} = defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $speed;
+                $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{speed_in} = is_not_empty($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $speed;
+                $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{speed_out} = is_not_empty($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : $speed;
             }
 
             if (defined($resource->{wanmon_avg_values_last}->{interfaces})) {
@@ -387,17 +382,19 @@ sub manage_selection {
         $self->{global}->{detected}++;
     }
 
-    $self->{cache_name} = 'zscaler_ztb_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_' .
-        sha256_hex(
-            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_' .
-            (defined($self->{option_results}->{include_site_name}) ? $self->{option_results}->{include_site_name} : '') . '_' .
-            (defined($self->{option_results}->{exclude_site_name}) ? $self->{option_results}->{exclude_site_name} : '') . '_' .
-            (defined($self->{option_results}->{include_cluster_name}) ? $self->{option_results}->{include_cluster_name} : '') . '_' .
-            (defined($self->{option_results}->{exclude_cluster_name}) ? $self->{option_results}->{exclude_cluster_name} : '') . '_' .
-            (defined($self->{option_results}->{include_gateway_name}) ? $self->{option_results}->{include_gateway_name} : '') . '_' .
-            (defined($self->{option_results}->{exclude_gateway_name}) ? $self->{option_results}->{exclude_gateway_name} : '') . '_' .
-            (defined($self->{option_results}->{include_interface_name}) ? $self->{option_results}->{include_interface_name} : '') . '_' .
-            (defined($self->{option_results}->{exclude_interface_name}) ? $self->{option_results}->{exclude_interface_name} : '')
+    $self->{cache_name} = 'zscaler_ztb_' . $options{custom}->get_connection_info()  . '_' . $self->{mode} . '_'
+        . sha256_hex(
+            (defined($self->{option_results}->{filter_counters}) ? $self->{option_results}->{filter_counters} : '') . '_'
+            . (defined($self->{option_results}->{include_site_name}) ? $self->{option_results}->{include_site_name} : '') . '_'
+            . (defined($self->{option_results}->{exclude_site_name}) ? $self->{option_results}->{exclude_site_name} : '') . '_'
+            . (defined($self->{option_results}->{include_cluster_name}) ? $self->{option_results}->{include_cluster_name} : '') . '_'
+            . (defined($self->{option_results}->{exclude_cluster_name}) ? $self->{option_results}->{exclude_cluster_name} : '') . '_'
+            . (defined($self->{option_results}->{include_gateway_name}) ? $self->{option_results}->{include_gateway_name} : '') . '_'
+            . (defined($self->{option_results}->{exclude_gateway_name}) ? $self->{option_results}->{exclude_gateway_name} : '') . '_'
+            . (defined($self->{option_results}->{include_gateway_id}) ? $self->{option_results}->{include_gateway_id} : '') . '_'
+            . (defined($self->{option_results}->{exclude_gateway_id}) ? $self->{option_results}->{exclude_gateway_id} : '') . '_'
+            . (defined($self->{option_results}->{include_interface_name}) ? $self->{option_results}->{include_interface_name} : '') . '_'
+            . (defined($self->{option_results}->{exclude_interface_name}) ? $self->{option_results}->{exclude_interface_name} : '')
         );
 }
 

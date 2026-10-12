@@ -87,7 +87,7 @@ Gateway-disk ${tc}
     ...    CRITICAL: gateway 'LOCATION_501' disk usage total: 154.80 GB used: 19.95 GB (18.01%) free: 126.92 GB (81.99%) | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.disk.usage.bytes'=21421149388B;;;0; 'LOCATION_501#gateway.disk.free.bytes'=136279312302B;;0:1;0; 'LOCATION_501#gateway.disk.usage.percentage'=18.01%;;;0;100
     ...    17
     ...    --warning-disk-usage-prct=1
-    ...    WARNING: gateway 'LOCATION_501' disk-usage-prct : 18.0103359173127 | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.disk.usage.bytes'=21421149388B;;;0; 'LOCATION_501#gateway.disk.free.bytes'=136279312302B;;;0; 'LOCATION_501#gateway.disk.usage.percentage'=18.01%;0:1;;0;100
+    ...    WARNING: gateway 'LOCATION_501' disk usage total: 154.80 GB used: 19.95 GB (18.01%) free: 126.92 GB (81.99%) | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.disk.usage.bytes'=21421149388B;;;0; 'LOCATION_501#gateway.disk.free.bytes'=136279312302B;;;0; 'LOCATION_501#gateway.disk.usage.percentage'=18.01%;0:1;;0;100
     ...    18
     ...    --critical-disk-usage-prct=1
-    ...    CRITICAL: gateway 'LOCATION_501' disk-usage-prct : 18.0103359173127 | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.disk.usage.bytes'=21421149388B;;;0; 'LOCATION_501#gateway.disk.free.bytes'=136279312302B;;;0; 'LOCATION_501#gateway.disk.usage.percentage'=18.01%;;0:1;0;100
+    ...    CRITICAL: gateway 'LOCATION_501' disk usage total: 154.80 GB used: 19.95 GB (18.01%) free: 126.92 GB (81.99%) | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.disk.usage.bytes'=21421149388B;;;0; 'LOCATION_501#gateway.disk.free.bytes'=136279312302B;;;0; 'LOCATION_501#gateway.disk.usage.percentage'=18.01%;;0:1;0;100
