@@ -35,12 +35,12 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-username:s'         => { name => 'api_username', default => '' },
-            'api-password:s'         => { name => 'api_password', default => '' },
-            'api-version:s'          => { name => 'api_version', default => '1.3-rev1' },
-            'hostname:s'             => { name => 'hostname', default => '' },
-            'port:s'                 => { name => 'port', default => 9419 },
-            'proto:s'                => { name => 'proto', default => 'https' },
+            'api-username:s'         => { name => 'api_username', not_empty => 1 },
+            'api-password:s'         => { name => 'api_password', not_empty => 1 },
+            'api-version:s'          => { name => 'api_version', default => '1.3-rev1', not_empty => 1 },
+            'hostname:s'             => { name => 'hostname', not_empty => 1 },
+            'port:s'                 => { name => 'port', default => 9419, type => 'port', not_empty => 1 },
+            'proto:s'                => { name => 'proto', default => 'https', type => 'protocol_http', not_empty => 1 },
             'timeout:s'              => { name => 'timeout', default => 30 },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
@@ -58,15 +58,6 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-
-    $self->{output}->option_exit(short_msg => 'Need to specify --hostname option.')
-        if $self->{option_results}->{hostname} eq '';
-    $self->{output}->option_exit(short_msg => 'Need to specify --api-username option.')
-        if $self->{option_results}->{api_username} eq '';
-    $self->{output}->option_exit(short_msg => 'Need to specify --api-password option.')
-        if $self->{option_results}->{api_password} eq '';
-    $self->{output}->option_exit(short_msg => 'Need to specify --api-version option.')
-        if $self->{option_results}->{api_version} eq '';
 
     $self->{cache_connect}->check_options(option_results => $self->{option_results});
 
