@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use Digest::SHA qw/sha256_hex/;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw/is_excluded exprintf/;
+use centreon::plugins::misc qw/is_excluded exprintf convert_bytes_ng/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_traffic_perfdata {
@@ -118,33 +118,6 @@ sub custom_traffic_output {
     );
 }
 
-sub custom_interface_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "operational state: %s [admin state: %s]",
-        $self->{result_values}->{operationalState},
-        $self->{result_values}->{adminState}
-    );
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Number of gateways ';
-}
-
-sub gateway_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking gateway '%s' [site: %s, cluster: %s]",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
-    );
-}
-
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
@@ -152,24 +125,15 @@ sub prefix_gateway_output {
 }
 
 
-sub prefix_interface_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "interface '%s' ",
-        $options{instance_value}->{interfaceName}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of gateways ' },
         {
-            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', long_output => "checking gateway '%{gatewayName}' [site: %{siteName}, cluster: %{clusterName}]", indent_long_output => '    ', message_multiple => 'All gateways are ok',
             group => [
-                { name => 'interfaces', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { NO_VALUE() => 1 } }
+                { name => 'interfaces', type => COUNTER_MULTIPLE_SUBINSTANCE, prefix_output => "interface '%{interfaceName}' ", message_multiple => 'All interfaces are ok', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -197,7 +161,7 @@ sub set_counters {
                     { name => 'adminState' }, { name => 'operationalState' },
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }, { name => 'interfaceName' }
                 ],
-                closure_custom_output => $self->can('custom_interface_status_output'),
+                output_template => 'operational state: %{operationalState} [admin state: %{adminState}]',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -401,7 +365,7 @@ sub manage_selection {
 
             if (defined($int->{if_stats}->{rx_bytes})) {
                 # format: 1G
-                my $speed = centreon::plugins::misc::convert_bytes_ng(value => $int->{if_stats}->{if_speed});
+                my $speed = convert_bytes_ng(value => $int->{if_stats}->{if_speed});
                 $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{in} = $int->{if_stats}->{rx_bytes} * 8;
                 $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{out} = $int->{if_stats}->{tx_bytes} * 8;
                 $self->{gateways}->{ $gw->{gw_id} }->{interfaces}->{ $int->{name} }->{speed_in} = defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ? $self->{option_results}->{speed} : $speed;

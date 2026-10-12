@@ -61,23 +61,6 @@ sub custom_disk_usage_output {
     );
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Number of gateways ';
-}
-
-sub gateway_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking gateway '%s' [site: %s, cluster: %s]",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
-    );
-}
-
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
@@ -88,9 +71,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of gateways ' },
         {
-            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', long_output => "checking gateway '%{gatewayName}' [site: %{siteName}, cluster: %{clusterName}]", indent_long_output => '    ', message_multiple => 'All gateways are ok',
             group => [
                 { name => 'disk', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } }
             ]

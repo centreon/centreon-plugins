@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw/is_excluded/;
+use centreon::plugins::misc qw/is_excluded change_seconds/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use POSIX;
 use DateTime;
@@ -65,28 +65,12 @@ sub custom_last_refresh_threshold {
     );
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Number of IPsec tunnels ';
-}
-
-sub prefix_tunnel_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "tunnel '%s' [cluster: %s] ",
-        $options{instance_value}->{tunnelName},
-        $options{instance_value}->{clusterName}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'tunnels', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All IPsec tunnels are ok', skipped_code => { NO_VALUE() => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of IPsec tunnels ' },
+        { name => 'tunnels', type => COUNTER_TYPE_INSTANCE, prefix_output => "tunnel '%{tunnelName}' [cluster: %{clusterName}] ", message_multiple => 'All IPsec tunnels are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -206,23 +190,23 @@ sub manage_selection {
 
             next if is_excluded($name, $self->{option_results}->{include_tunnel_name}, $self->{option_results}->{exclude_tunnel_name});
 
-            my $ikeStatus = 'unknown';
-            $ikeStatus = $1 if ($tun->{status} =~ /^.*?:.*?,\s*(.*?)\s*,\s*IKEv2/);
+            my $ike_status = 'unknown';
+            $ike_status = $1 if ($tun->{status} =~ /^.*?:.*?,\s*(.*?)\s*,\s*IKEv2/);
 
-            my ($lastRefreshTime, $lastRefreshTimeHuman);
+            my ($last_refresh_time, $last_refresh_time_human);
             if ($tun->{time_stamp} =~ /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/) {
                  my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, time_zone  => 'UTC');
-                 $lastRefreshTime = $ctime - $dt->epoch();
-                 $lastRefreshTimeHuman =  centreon::plugins::misc::change_seconds(value => $lastRefreshTime);
+                 $last_refresh_time = $ctime - $dt->epoch();
+                 $last_refresh_time_human =  change_seconds(value => $last_refresh_time);
             }
 
             $self->{tunnels}->{ $gw->{cluster_id} . $name } = {
                 clusterName          => $gw->{cluster_name},
                 tunnelName           => $name,
                 saStatus             => lc($tun->{child_sa_status}),
-                ikeStatus            => lc($ikeStatus),
-                lastRefreshTime      => $lastRefreshTime,
-                lastRefreshTimeHuman => $lastRefreshTimeHuman
+                ikeStatus            => lc($ike_status),
+                lastRefreshTime      => $last_refresh_time,
+                lastRefreshTimeHuman => $last_refresh_time_human
             };
 
             $self->{global}->{detected}++;

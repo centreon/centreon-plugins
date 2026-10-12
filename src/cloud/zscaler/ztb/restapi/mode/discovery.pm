@@ -24,7 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use JSON::XS;
+use centreon::plugins::misc qw/is_empty json_encode/;
 
 sub new {
     my ($class, %options) = @_;
@@ -32,7 +32,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'resource-type:s' => { name => 'resource_type' },
+        'resource-type:s' => {
+            name          => 'resource_type',
+            default       => 'gateway',
+            is_in         => ['gateway', 'site', 'cluster'],
+            error_message => 'unknown resource type'
+        },
         'prettify'        => { name => 'prettify' }
     });
 
@@ -43,13 +48,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{resource_type}) || $self->{option_results}->{resource_type} eq '') {
-        $self->{option_results}->{resource_type} = 'gateway';
-    }
-    if ($self->{option_results}->{resource_type} !~ /^gateway|site|cluster$/) {
-        $self->{output}->add_option_msg(short_msg => 'unknown resource type');
-        $self->{output}->option_exit();
-    }
+    $self->{option_results}->{resource_type} = 'gateway'
+        if (is_empty($self->{option_results}->{resource_type}));
 }
 
 sub discovery_gateway {
@@ -123,18 +123,9 @@ sub run {
     $disco_stats->{discovered_items} = scalar(@$results);
     $disco_stats->{results} = $results;
 
-    my $encoded_data;
-    eval {
-        if (defined($self->{option_results}->{prettify})) {
-            $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
-        } else {
-            $encoded_data = JSON::XS->new->utf8->encode($disco_stats);
-        }
-    };
-    if ($@) {
-        $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
-    }
-    
+    my $encoded_data = json_encode($disco_stats, prettify => $self->{option_results}->{prettify}, output => $self->{output}, no_exit => 1)
+        // '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
+
     $self->{output}->output_add(short_msg => $encoded_data);
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
     $self->{output}->exit();

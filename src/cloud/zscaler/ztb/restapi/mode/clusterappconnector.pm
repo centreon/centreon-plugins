@@ -28,28 +28,12 @@ use centreon::plugins::constants qw(:counters :values);
 use centreon::plugins::misc qw/is_excluded/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Number of App Connectors ';
-}
-
-sub prefix_appconnector_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "App Connector '%s' [cluster: %s] ",
-        $options{instance_value}->{appConnectorName},
-        $options{instance_value}->{clusterName}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
-        { name => 'appconnectors', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_appconnector_output', message_multiple => 'All App Connectors are ok', skipped_code => { NO_VALUE() => 1 } }
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of App Connectors ' },
+        { name => 'appconnectors', type => COUNTER_TYPE_INSTANCE, prefix_output => "App Connector '%{appConnectorName}' [cluster: %{clusterName}] ", message_multiple => 'All App Connectors are ok', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [

@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw/is_excluded exprintf/;
+use centreon::plugins::misc qw/is_excluded exprintf convert_bytes_ng/;
 
 sub custom_memory_perfdata {
     my ($self) = @_;
@@ -61,47 +61,21 @@ sub custom_memory_usage_output {
     );
 }
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Number of gateways ';
-}
-
-sub gateway_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking gateway '%s' [site: %s, cluster: %s]",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
-    );
-}
-
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
     return exprintf($self->{option_results}->{custom_prefix_short_gateway_output}, $options{instance_value});
 }
 
-sub prefix_container_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "container '%s' ",
-        $options{instance_value}->{containerName}
-    );
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of gateways ' },
         {
-            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', long_output => "checking gateway '%{gatewayName}' [site: %{siteName}, cluster: %{clusterName}]", indent_long_output => '    ', message_multiple => 'All gateways are ok',
             group => [
-                { name => 'containers', type => COUNTER_MULTIPLE_SUBINSTANCE, cb_prefix_output => 'prefix_container_output', message_multiple => 'all containers are ok', skipped_code => { NO_VALUE() => 1 } }
+                { name => 'containers', type => COUNTER_MULTIPLE_SUBINSTANCE, prefix_output => "container '%{containerName}' ", message_multiple => 'all containers are ok', skipped_code => { NO_VALUE() => 1 } }
             ]
         }
     ];
@@ -242,7 +216,7 @@ sub manage_selection {
             foreach my $cstat (@{$resource->{container_stats}}) {
                 next if is_excluded($cstat->{cname}, $self->{option_results}->{include_container_name}, $self->{option_results}->{exclude_container_name});
 
-                my $mem_used = centreon::plugins::misc::convert_bytes_ng(value => $cstat->{memory});
+                my $mem_used = convert_bytes_ng(value => $cstat->{memory});
                 $self->{gateways}->{ $gw->{gw_id} }->{containers}->{ $cstat->{cname} } = {
                     gatewayName => $gw->{gw_name},
                     clusterName => $gw->{cluster_name},

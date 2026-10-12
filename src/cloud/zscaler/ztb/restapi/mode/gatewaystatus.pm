@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::constants qw(:counters :values);
-use centreon::plugins::misc qw/is_excluded exprintf/;
+use centreon::plugins::misc qw/is_excluded exprintf change_seconds/;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use POSIX;
 use DateTime;
@@ -65,33 +65,6 @@ sub custom_last_update_threshold {
     );
 }
 
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "operational state: %s [desired state: %s]",
-        $self->{result_values}->{operationalState},
-        $self->{result_values}->{desiredState}
-    );
-}
-
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return 'Number of gateways ';
-}
-
-sub gateway_long_output {
-    my ($self, %options) = @_;
-
-    return sprintf(
-        "checking gateway '%s' [site: %s, cluster: %s]",
-        $options{instance_value}->{gatewayName},
-        $options{instance_value}->{siteName},
-        $options{instance_value}->{clusterName}
-    );
-}
-
 sub prefix_gateway_output {
     my ($self, %options) = @_;
 
@@ -102,9 +75,9 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => COUNTER_TYPE_GLOBAL, cb_prefix_output => 'prefix_global_output' },
+        { name => 'global', type => COUNTER_TYPE_GLOBAL, prefix_output => 'Number of gateways ' },
         {
-            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', cb_long_output => 'gateway_long_output', indent_long_output => '    ', message_multiple => 'All gateways are ok',
+            name => 'gateways', type => COUNTER_TYPE_MULTIPLE, cb_prefix_output => 'prefix_gateway_output', long_output => "checking gateway '%{gatewayName}' [site: %{siteName}, cluster: %{clusterName}]", indent_long_output => '    ', message_multiple => 'All gateways are ok',
             group => [
                 { name => 'status', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
                 { name => 'health', type => COUNTER_MULTIPLE_INSTANCE, skipped_code => { NO_VALUE() => 1 } },
@@ -136,7 +109,7 @@ sub set_counters {
                     { name => 'desiredState' }, { name => 'operationalState' },
                     { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
-                closure_custom_output => $self->can('custom_status_output'),
+                output_template => 'operational state: %{operationalState} [desired state: %{desiredState}]',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
@@ -290,7 +263,7 @@ sub manage_selection {
         if ($gw->{gw_last_poll_update} =~ /(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)/) {
             my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, time_zone  => 'UTC');
             $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTime} = $ctime - $dt->epoch();
-            $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTimeHuman} =  centreon::plugins::misc::change_seconds(
+            $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTimeHuman} =  change_seconds(
                 value => $self->{gateways}->{ $gw->{gw_id} }->{status}->{lastUpdateTime}
             );
         }

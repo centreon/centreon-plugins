@@ -42,10 +42,10 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'client-id:s'            => { name => 'client_id',      default => '' },
-            'client-secret:s'        => { name => 'client_secret',  default => '' },
-            'login-domain:s'         => { name => 'login_domain',   default => '' },
-            'api-domain:s'           => { name => 'api_domain',     default => '' },
+            'client-id:s'            => { name => 'client_id',      default => '', not_empty => 1 },
+            'client-secret:s'        => { name => 'client_secret',  default => '', not_empty => 1 },
+            'login-domain:s'         => { name => 'login_domain',   default => '', not_empty => 1 },
+            'api-domain:s'           => { name => 'api_domain',     default => '', not_empty => 1 },
             'port:s'                 => { name => 'port',           default => 443 },
             'proto:s'                => { name => 'proto',          default => 'https' },
             'timeout:s'              => { name => 'timeout',        default => 50 },
@@ -80,20 +80,11 @@ sub check_options {
 
     $self->{$_} = $self->{option_results}->{$_} foreach qw/login_domain api_domain api_path unknown_http_status warning_http_status critical_http_status client_id client_secret cache_lifetime/;
 
-    $self->{output}->option_exit(short_msg => "Need to specify --login-domain option.")
-        if ($self->{option_results}->{login_domain} eq '');
     $self->{login_domain} .= '.zslogin.net'
         if ($self->{login_domain} !~ /\./);
     
-    $self->{output}->option_exit(short_msg => "Need to specify --api-domain option.")
-        if ($self->{option_results}->{api_domain} eq '');
     $self->{api_domain} .= '-api.goairgap.com'
         if ($self->{api_domain} !~ /\./);
-
-    $self->{output}->option_exit(short_msg => "Need to specify --client-id option.")
-        if ($self->{client_id} eq '');
-    $self->{output}->option_exit(short_msg => "Need to specify --client-secret option.")
-        if ($self->{client_secret} eq '');
 
     $self->{cache_connect}->check_options(option_results => $self->{option_results});
     $self->{cache}->check_options(option_results => $self->{option_results});
@@ -130,9 +121,9 @@ sub get_access_token {
     my $sha_secret_cache = $self->{cache_connect}->get(name => 'sha_secret');
     my $sha_secret = sha256_hex($self->{client_id} . $self->{client_secret});
 
-    if ($has_cache_file == 0 ||
-        !defined($token) ||
-        (defined($sha_secret_cache) && $sha_secret_cache ne $sha_secret)
+    if ($has_cache_file == 0
+        || !defined($token)
+        || (defined($sha_secret_cache) && $sha_secret_cache ne $sha_secret)
         ) {
         my $content = $self->{http}->request(
             method => 'POST',
