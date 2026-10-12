@@ -25,12 +25,20 @@ Discovery ${tc}
 
     Ctn Run Command Without Connector And Check Result As Regexp    ${command}    ${expected_result}
 
-    Examples:    tc    extra_options    expected_result    --
-    ...    1    ${EMPTY}
+    Examples:
+    ...    tc
+    ...    extra_options
+    ...    expected_result
+    ...    --
+    ...    1
+    ...    ${EMPTY}
     ...    "discovered_items":3
-    ...    2    --filter-power-states=POWERED_ON
+    ...    2
+    ...    --filter-power-states=POWERED_ON
     ...    "discovered_items":2
-    ...    3    --filter-power-states=POWERED_OFF
+    ...    3
+    ...    --filter-power-states=POWERED_OFF
     ...    "discovered_items":1
-    ...    4    --filter-folders=My_Dir
+    ...    4
+    ...    --filter-folders=My_Dir
     ...    "discovered_items":1
