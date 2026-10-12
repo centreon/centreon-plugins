@@ -40,8 +40,6 @@ from cpan_matrix_lib import (
     extras_from_partials,
     get_cpanm_infos,
     dist_to_deb_package,
-    get_centreon_rpm_packages,
-    get_centreon_deb_packages,
     get_centreon_rpm_published,
     get_centreon_deb_published,
     published_matches,
@@ -118,13 +116,7 @@ def merge_matrices(partial_matrices_dir, libraries, repository_url=None, stabili
     if repository_url:
         print(f"Checking Centreon {lookup_stability} repository…", file=sys.stderr)
         for distrib in RPM_DISTRIBS:
-            if repo_stability == "testing":
-                rpm_published[distrib] = get_centreon_rpm_published(repository_url, distrib, lookup_stability)
-            else:
-                rpm_published[distrib] = {
-                    name: {(version, None)}
-                    for name, version in get_centreon_rpm_packages(repository_url, distrib, repo_stability).items()
-                }
+            rpm_published[distrib] = get_centreon_rpm_published(repository_url, distrib, lookup_stability)
             print(f"  RPM {distrib}: {len(rpm_published[distrib])} packages in {lookup_stability}", file=sys.stderr)
         seen: set = set()
         for bn_entry in DEB_BUILD_NAME_INCLUDES:
@@ -134,17 +126,9 @@ def merge_matrices(partial_matrices_dir, libraries, repository_url=None, stabili
             if key not in seen:
                 seen.add(key)
                 family = deb_distrib_meta.get(check_distrib, {}).get("family", "debian")
-                if repo_stability == "testing":
-                    deb_published[key] = get_centreon_deb_published(
-                        repository_url, check_distrib, lookup_stability, arch, family=family,
-                    )
-                else:
-                    deb_published[key] = {
-                        name: {(version, None)}
-                        for name, version in get_centreon_deb_packages(
-                            repository_url, check_distrib, repo_stability, arch, family=family,
-                        ).items()
-                    }
+                deb_published[key] = get_centreon_deb_published(
+                    repository_url, check_distrib, lookup_stability, arch, family=family,
+                )
                 print(f"  DEB {check_distrib} {arch}: {len(deb_published[key])} packages in {lookup_stability}",
                       file=sys.stderr)
 
