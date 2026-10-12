@@ -434,7 +434,7 @@ __END__
 
 =head1 NAME
 
-ZTB Rest API
+Zero Trust Branch (ZTB) Rest API
 
 =head1 REST API OPTIONS
 
@@ -444,11 +444,11 @@ Zero Trust Branch Rest API
 
 =item B<--login-domain>
 
-Define the domain for OAuth2 authentification (e.g.: 'test.zslogin.net')
+Define the domain for OAuth2 authentication (example: C<test.zslogin.net>)
 
 =item B<--api-domain>
 
-Define the domain for ZTB API (e.g.: 'totalenergies-api.goairgap.com')
+Define the domain for ZTB API (example: C<mycompany-api.goairgap.com>)
 
 =item B<--client-id>
 
@@ -460,23 +460,23 @@ Define client secret.
 
 =item B<--port>
 
-Port used (default: 443)
+Port used (default: C<443>)
 
 =item B<--proto>
 
-Define https if needed (default: 'https')
+Define C<https> if needed (default: C<https>)
 
 =item B<--timeout>
 
-Set timeout in seconds (default: 50).
+Set timeout in seconds (default: C<50>).
 
 =item B<--cache-use>
 
-Use the cache file (created with cache mode). 
+Use the cache file (created with C<cache> mode). 
 
 =item B<--cache-lifetime>
 
-Define the cache lifetime before raising an error (default: 1800 seconds).
+Define the cache lifetime before raising an error (default: C<1800> seconds).
 
 =back
 
