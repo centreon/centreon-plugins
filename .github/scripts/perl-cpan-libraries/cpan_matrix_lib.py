@@ -6,7 +6,6 @@ Used by:
 """
 
 import gzip
-import json
 import re
 import shutil
 import subprocess
@@ -86,10 +85,6 @@ DEB_IMAGE_TO_CHECK_DISTRIB = {e["image"]: e["distrib"] for e in DEB_BUILD_NAME_I
 DEB_CHECK_DISTRIB_TO_BUILD_NAMES: dict = {}
 for _e in DEB_BUILD_NAME_INCLUDES:
     DEB_CHECK_DISTRIB_TO_BUILD_NAMES.setdefault(_e["distrib"], []).append(_e["build_name"])
-
-# ── Centreon repository ────────────────────────────────────────────────────────
-
-CPAN_MODULE_NAME = "perl-cpan-libraries"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -277,117 +272,10 @@ def filter_to_includes(libs, pkg_key, cpanm_infos, available):
 # CENTREON REPOSITORY HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
 
-_RPM_PKG_RE = re.compile(r"^perl-(.+?)-([0-9v][0-9.]*)-\d+\.\w+\.(noarch|x86_64)\.rpm$")
 _DEB_VERSION_RE = re.compile(r"^([0-9v][0-9.]*)(?:[+\-]|$)")
 
-_deb_packages_cache: dict = {}  # (repo, distrib, arch) → {pkg_name: version}
-
-
-_ALLOWED_ARTIFACTORY_HOSTS = {"centreon.jfrog.io", "packages.centreon.com"}
-
-
-def _artifactory_list_folder(base_url, repo_path):
-    """Return list of filenames in an Artifactory folder (public API, no auth).
-
-    Uses the Artifactory storage API:  GET {base_url}/artifactory/api/storage/{repo_path}
-    Returns an empty list on any error (network, 404, unexpected format, etc.).
-    """
-    # Validate base_url before constructing the full URL (SSRF prevention).
-    parsed_base = urllib.parse.urlparse(base_url)
-    if parsed_base.scheme != "https" or parsed_base.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
-        print(f"  WARNING: {base_url} is not an allowed Artifactory base URL, skipping.", file=sys.stderr)
-        return []
-    url = f"{base_url}/artifactory/api/storage/{repo_path}"
-    # Re-validate the full URL after concatenation to catch any injection via repo_path.
-    parsed_url = urllib.parse.urlparse(url)
-    if parsed_url.scheme != "https" or parsed_url.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
-        print(f"  WARNING: {url} is not an allowed Artifactory URL, skipping.", file=sys.stderr)
-        return []
-    url = f"{base_url}/artifactory/api/storage/{repo_path}"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        return [c["uri"].lstrip("/") for c in data.get("children", []) if not c.get("folder")]
-    except Exception as exc:
-        print(f"  WARNING: could not list {url}: {exc}", file=sys.stderr)
-        return []
-
-
-def get_centreon_rpm_packages(base_url, distrib, stability):
-    """Return {cpan_dist_name: version} for packages already in the Centreon RPM repo.
-
-    Example filename: perl-JSON-Path-1.0.6-2.el9.noarch.rpm
-      → cpan_dist_name = "JSON-Path", version = "1.0.6"
-    """
-    files = _artifactory_list_folder(
-        base_url, f"rpm-plugins/{distrib}/{stability}/noarch/RPMS/{CPAN_MODULE_NAME}"
-    )
-    result = {}
-    for fname in files:
-        m = _RPM_PKG_RE.match(fname)
-        if m:
-            result[m.group(1)] = m.group(2)
-    return result
-
-
-def _fetch_packages_index(base_url, repo, distrib, arch):
-    """Fetch and parse the Packages index for a specific DEB distrib/arch.
-
-    Uses the direct download URL:
-      GET {base_url}/artifactory/{repo}/dists/{distrib}/main/binary-{arch}/Packages
-    Returns an empty dict on any error.
-    """
-    parsed_base = urllib.parse.urlparse(base_url)
-    if parsed_base.scheme != "https" or parsed_base.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
-        print(f"  WARNING: {base_url} is not an allowed Artifactory base URL, skipping.", file=sys.stderr)
-        return {}
-    url = f"{base_url}/artifactory/{repo}/dists/{distrib}/main/binary-{arch}/Packages"
-    parsed_url = urllib.parse.urlparse(url)
-    if parsed_url.scheme != "https" or parsed_url.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
-        print(f"  WARNING: {url} is not an allowed Artifactory URL, skipping.", file=sys.stderr)
-        return {}
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "generate-cpan-matrix/1.0"})
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            content = resp.read().decode("utf-8")
-    except Exception as exc:
-        print(f"  WARNING: could not fetch {url}: {exc}", file=sys.stderr)
-        return {}
-    result = {}
-    for stanza in content.split("\n\n"):
-        pkg_name = None
-        version = None
-        for line in stanza.splitlines():
-            if line.startswith("Package: "):
-                pkg_name = line[9:].strip()
-            elif line.startswith("Version: "):
-                m = _DEB_VERSION_RE.match(line[9:].strip())
-                if m:
-                    version = m.group(1)
-        if pkg_name and version:
-            result[pkg_name] = version
-    return result
-
-
-def get_centreon_deb_packages(base_url, distrib, stability, arch="amd64", family="debian"):
-    """Return {pkg_name: version} for packages already in the Centreon DEB repo.
-
-    Queries and merges the Packages indexes for the given arch and for 'all':
-      dists/{distrib}/main/binary-{arch}/Packages
-      dists/{distrib}/main/binary-all/Packages
-
-    Example entry: Package: libjson-path-perl, Version: 1.0.6+deb12u1-1
-      → pkg_name = "libjson-path-perl", version = "1.0.6"
-    """
-    repo = f"ubuntu-plugins-{stability}" if family == "ubuntu" else f"apt-plugins-{stability}"
-    cache_key = (repo, distrib, arch)
-    if cache_key not in _deb_packages_cache:
-        packages = _fetch_packages_index(base_url, repo, distrib, arch)
-        if arch != "all":
-            packages.update(_fetch_packages_index(base_url, repo, distrib, "all"))
-        _deb_packages_cache[cache_key] = packages
-    return _deb_packages_cache[cache_key]
+# Public pulp content host: plain repo metadata only (repomd.xml, Packages), no Artifactory API
+_ALLOWED_REPOSITORY_HOSTS = {"packages.centreon.com"}
 
 
 # ── Published (version, revision) lookups, read from the public repo metadata ──
@@ -403,7 +291,7 @@ def _fetch_bytes(base_url, path):
     url = f"{base_url}/{path}"
     for candidate in (base_url, url):
         parsed = urllib.parse.urlparse(candidate)
-        if parsed.scheme != "https" or parsed.hostname not in _ALLOWED_ARTIFACTORY_HOSTS:
+        if parsed.scheme != "https" or parsed.hostname not in _ALLOWED_REPOSITORY_HOSTS:
             print(f"  WARNING: {candidate} is not an allowed Centreon repository URL, skipping.", file=sys.stderr)
             return None
     try:
@@ -462,7 +350,7 @@ def get_centreon_deb_published(base_url, distrib, stability, arch="amd64", famil
         return _published_cache[cache_key]
     result: dict = {}
     for index_arch in {arch, "all"}:
-        content = _fetch_bytes(base_url, f"artifactory/{repo}/dists/{distrib}/main/binary-{index_arch}/Packages")
+        content = _fetch_bytes(base_url, f"{repo}/dists/{distrib}/main/binary-{index_arch}/Packages")
         if content is None:
             continue
         for stanza in content.decode("utf-8", errors="replace").split("\n\n"):
