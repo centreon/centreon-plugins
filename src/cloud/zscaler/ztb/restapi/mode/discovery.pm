@@ -145,6 +145,10 @@ Resources discovery.
 
 Choose the type of resources to discover (can be: C<gateway>, C<site>, C<cluster>).
 
+=item B<--prettify>
+
+Prettify JSON output.
+
 =back
 
 =cut

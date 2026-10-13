@@ -461,6 +461,26 @@ Define C<https> if needed (default: C<https>)
 
 Set timeout in seconds (default: C<50>).
 
+=item B<--api-path>
+
+Define the base path of the API endpoints (default: C</api>).
+
+=item B<--unknown-http-status>
+
+Define the conditions to match on the HTTP status for the returned status to be UNKNOWN
+(default: C<< %{http_code} < 200 or %{http_code} >= 300 >>).
+You can use the following variables: C<%{http_code}>
+
+=item B<--warning-http-status>
+
+Define the conditions to match on the HTTP status for the returned status to be WARNING.
+You can use the following variables: C<%{http_code}>
+
+=item B<--critical-http-status>
+
+Define the conditions to match on the HTTP status for the returned status to be CRITICAL.
+You can use the following variables: C<%{http_code}>
+
 =item B<--cache-use>
 
 Use the cache file (created with C<cache> mode). 
