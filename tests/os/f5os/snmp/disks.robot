@@ -45,7 +45,7 @@ disks ${tc}
     ...    CRITICAL: Disk 'controller-2-nvme0n1' space used: 82.00 % | 'controller-1-nvme0n1#disk.space.usage.percentage'=45.00%;;0:80;0;100 'controller-2-nvme0n1#disk.space.usage.percentage'=82.00%;;0:80;0;100
     ...    6
     ...    --snmp-community=os/f5os/snmp/f5os --exclude-name='nvme'
-    ...    UNKNOWN: No disk found. Can be: filters, cache file.
+    ...    UNKNOWN: No disk found. Please check filters or cache data using --show-cache
     ...    7
     ...    --snmp-community=os/f5os/snmp/f5os --warning-space-usage-prct=40
     ...    WARNING: Disk 'controller-1-nvme0n1' space used: 45.00 % - Disk 'controller-2-nvme0n1' space used: 82.00 % | 'controller-1-nvme0n1#disk.space.usage.percentage'=45.00%;0:40;;0;100 'controller-1-nvme0n1#disk.io.read.usage.iops'=0.00iops;;;0; 'controller-1-nvme0n1#disk.io.write.usage.iops'=0.00iops;;;0; 'controller-1-nvme0n1#disk.io.read.usage.bytespersecond'=0B/s;;;0; 'controller-1-nvme0n1#disk.io.write.usage.bytespersecond'=0B/s;;;0; 'controller-1-nvme0n1#disk.io.read.latency.milliseconds'=0.00ms;;;0; 'controller-1-nvme0n1#disk.io.write.latency.milliseconds'=0.00ms;;;0; 'controller-2-nvme0n1#disk.space.usage.percentage'=82.00%;0:40;;0;100 'controller-2-nvme0n1#disk.io.read.usage.iops'=0.00iops;;;0; 'controller-2-nvme0n1#disk.io.write.usage.iops'=0.00iops;;;0; 'controller-2-nvme0n1#disk.io.read.usage.bytespersecond'=0B/s;;;0; 'controller-2-nvme0n1#disk.io.write.usage.bytespersecond'=0B/s;;;0; 'controller-2-nvme0n1#disk.io.read.latency.milliseconds'=0.00ms;;;0; 'controller-2-nvme0n1#disk.io.write.latency.milliseconds'=0.00ms;;;0;
