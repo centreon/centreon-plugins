@@ -23,14 +23,10 @@ cpanm Module::Install
 cpanm Module::CoreList
 # Install fpm
 dnf install -y ruby ruby-devel
-gem install fpm -v 1.17.0
+gem install fpm -v 1.18.0
 
 dnf clean all
 
 EOF
-
-COPY .github/patch/fpm-cpan.rb.diff /tmp/fpm-cpan.rb.diff
-# Patch to fix fpm MetaCpan request
-RUN patch -i /tmp/fpm-cpan.rb.diff $(find / -type f -name "cpan.rb") && /bin/rm -rf /tmp/fpm-cpan.rb.diff
 
 WORKDIR /src
