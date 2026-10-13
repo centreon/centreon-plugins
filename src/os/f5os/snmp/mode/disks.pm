@@ -222,7 +222,8 @@ sub get_selection {
     }
 
     if (scalar(keys %$selection) <= 0) {
-        $self->{output}->option_exit(short_msg => 'No disk found. Can be: filters, cache file.');
+        $self->{output}->option_exit(short_msg => 'No disk found. Please check filters or cache data using --show-cache');
+
     }
 
     return $selection;
