@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cpu'             => 'cloud::prometheus::exporters::cadvisor::mode::cpu',
+        'discovery'       => 'cloud::prometheus::exporters::cadvisor::mode::discovery',
         'list-containers' => 'cloud::prometheus::exporters::cadvisor::mode::listcontainers',
         'load'            => 'cloud::prometheus::exporters::cadvisor::mode::load',
         'memory'          => 'cloud::prometheus::exporters::cadvisor::mode::memory',

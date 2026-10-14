@@ -49,6 +49,7 @@ blocked-by-uf
 bootable
 BPL
 --cacert-file
+cAdvisor
 cardtemperature
 CDN
 centreon
@@ -56,6 +57,7 @@ Centreon
 centreonvault
 --cert-pkcs12
 --cert-pwd
+cgroup
 CloudWatch
 CommServe
 Commvault
@@ -181,6 +183,7 @@ kccevent
 keepass
 Keysight
 kubectl
+kubelet
 Kubernetes
 LatenceTech
 ldap
