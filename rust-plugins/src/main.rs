@@ -52,12 +52,9 @@ use generic::FORMAT_VERSION;
 use generic::schema_url;
 use generic::Status;
 use generic::error::*;
-use lalrpop_util::lalrpop_mod;
 use lexopt::Arg;
 use log::trace;
 use std::fs;
-
-lalrpop_mod!(grammar);
 
 /// Reads a JSON file and deserializes it into a [`Command`].
 ///
