@@ -21,6 +21,17 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --include-gateway-name=LOCATION_501
 ...                 --timeout=10
+${CACHE_CMD}        ${CENTREON_PLUGINS}
+...                 --plugin=cloud::zscaler::ztb::restapi::plugin
+...                 --mode=cache
+...                 --login-domain=127.0.0.1
+...                 --api-domain=127.0.0.1
+...                 --client-id=client-id
+...                 --client-secret=client-secret
+...                 --port=${APIPORT}
+...                 --proto=http
+...                 --cache-lifetime=60
+...                 --timeout=10
 
 
 *** Test Cases ***
@@ -79,3 +90,14 @@ Gateway-cpu ${tc}
     ...    14
     ...    --critical-cpu-utilization=1
     ...    CRITICAL: gateway 'LOCATION_501' CPU average usage: 19.96 % | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.cpu.utilization.percentage'=19.96%;;0:1;0;100
+
+Gateway-cpu cache use after cache mode
+    [Tags]    cloud    zscaler    restapi
+    Ctn Run Command And Check Result As Strings    ${CACHE_CMD}    OK: Cache files created successfully
+
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --cache-use
+    Ctn Run Command And Check Result As Strings
+    ...    ${command}
+    ...    OK: gateway 'LOCATION_501' CPU average usage: 19.96 % | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.cpu.utilization.percentage'=19.96%;;;0;100

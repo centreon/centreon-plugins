@@ -21,6 +21,17 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --include-gateway-name=LOCATION_501
 ...                 --timeout=10
+${CACHE_CMD}        ${CENTREON_PLUGINS}
+...                 --plugin=cloud::zscaler::ztb::restapi::plugin
+...                 --mode=cache
+...                 --login-domain=127.0.0.1
+...                 --api-domain=127.0.0.1
+...                 --client-id=client-id
+...                 --client-secret=client-secret
+...                 --port=${APIPORT}
+...                 --proto=http
+...                 --cache-lifetime=60
+...                 --timeout=10
 
 
 *** Test Cases ***
@@ -97,3 +108,14 @@ Gateway-containers ${tc}
     ...    20
     ...    --disco-show
     ...    <?xml version="1.0" encoding="utf-8"?> <data> <label clusterName="LOCATION_5-cluster" containerName="container1" gatewayName="LOCATION_501" siteName="LOCATION_5"/> <label clusterName="LOCATION_5-cluster" containerName="container2" gatewayName="LOCATION_501" siteName="LOCATION_5"/> <label clusterName="LOCATION_5-cluster" containerName="container3" gatewayName="LOCATION_501" siteName="LOCATION_5"/> <label clusterName="LOCATION_5-cluster" containerName="container4" gatewayName="LOCATION_501" siteName="LOCATION_5"/> <label clusterName="LOCATION_5-cluster" containerName="container5" gatewayName="LOCATION_501" siteName="LOCATION_5"/> <label clusterName="LOCATION_5-cluster" containerName="container6" gatewayName="LOCATION_501" siteName="LOCATION_5"/> <label clusterName="LOCATION_5-cluster" containerName="container7" gatewayName="LOCATION_501" siteName="LOCATION_5"/> </data>
+
+Gateway-containers cache use after cache mode
+    [Tags]    cloud    zscaler    restapi
+    Ctn Run Command And Check Result As Strings    ${CACHE_CMD}    OK: Cache files created successfully
+
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --cache-use
+    Ctn Run Command And Check Result As Strings
+    ...    ${command}
+    ...    OK: gateway 'LOCATION_501' all containers are ok | 'gateways.detected.count'=1;;;0; 'LOCATION_501~container1#gateway.cpu.utilization.percentage'=4.20%;;;0;100 'LOCATION_501~container1#gateway.memory.usage.bytes'=168191590B;;;0; 'LOCATION_501~container2#gateway.cpu.utilization.percentage'=0.02%;;;0;100 'LOCATION_501~container2#gateway.memory.usage.bytes'=3908042B;;;0; 'LOCATION_501~container3#gateway.cpu.utilization.percentage'=0.34%;;;0;100 'LOCATION_501~container3#gateway.memory.usage.bytes'=14963179B;;;0; 'LOCATION_501~container4#gateway.cpu.utilization.percentage'=0.58%;;;0;100 'LOCATION_501~container4#gateway.memory.usage.bytes'=89076531B;;;0; 'LOCATION_501~container5#gateway.cpu.utilization.percentage'=0.41%;;;0;100 'LOCATION_501~container5#gateway.memory.usage.bytes'=121425100B;;;0; 'LOCATION_501~container6#gateway.cpu.utilization.percentage'=6.35%;;;0;100 'LOCATION_501~container6#gateway.memory.usage.bytes'=171966464B;;;0; 'LOCATION_501~container7#gateway.cpu.utilization.percentage'=83.68%;;;0;100 'LOCATION_501~container7#gateway.memory.usage.bytes'=1550483193B;;;0;

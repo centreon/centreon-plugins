@@ -234,9 +234,9 @@ sub manage_selection {
         
         my $resource = $options{custom}->get_gateway_resource(gateway_id => $gw->{gw_id});
         if (defined($resource->{system_stats})) {
-            my $total = $resource->{system_stats}->{memory}->{total} * 1024 * 1024 * 1024;
-            my $free = $resource->{system_stats}->{memory}->{free} * 1024 * 1024 * 1024;
-            my $used = $resource->{system_stats}->{memory}->{used} * 1024 * 1024 * 1024;
+            my $total = int($resource->{system_stats}->{memory}->{total} * 1024 * 1024 * 1024 + 0.5);
+            my $free = int($resource->{system_stats}->{memory}->{free} * 1024 * 1024 * 1024 + 0.5);
+            my $used = int($resource->{system_stats}->{memory}->{used} * 1024 * 1024 * 1024 + 0.5);
             $self->{gateways}->{ $gw->{gw_id} }->{memory} = {
                 gatewayName => $gw->{gw_name},
                 clusterName => $gw->{cluster_name},
@@ -248,7 +248,7 @@ sub manage_selection {
                 prct_free => $free * 100 / $total
             };
  
-            my $swap_used = $resource->{system_stats}->{swap}->{used} * 1024 * 1024 * 1024;
+            my $swap_used = int($resource->{system_stats}->{swap}->{used} * 1024 * 1024 * 1024 + 0.5);
             $self->{gateways}->{ $gw->{gw_id} }->{swap} = {
                 gatewayName => $gw->{gw_name},
                 clusterName => $gw->{cluster_name},

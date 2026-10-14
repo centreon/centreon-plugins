@@ -22,6 +22,17 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --proto=http
 ...                 --include-gateway-name=LOCATION_501
 ...                 --timeout=10
+${CACHE_CMD}        ${CENTREON_PLUGINS}
+...                 --plugin=cloud::zscaler::ztb::restapi::plugin
+...                 --mode=cache
+...                 --login-domain=127.0.0.1
+...                 --api-domain=127.0.0.1
+...                 --client-id=client-id
+...                 --client-secret=client-secret
+...                 --port=${APIPORT}
+...                 --proto=http
+...                 --cache-lifetime=60
+...                 --timeout=10
 
 
 *** Test Cases ***
@@ -122,3 +133,22 @@ Gateway-status ${tc}
     ...    26
     ...    --critical-last-update-time=1
     ...    CRITICAL: gateway 'LOCATION_501' last update: 8m 9s | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.update.time.last.seconds'=489s;;0:1;0;
+
+Gateway-status cache use after cache mode
+    [Tags]    cloud    zscaler    restapi
+
+    ${OLD_PERL5OPT}=    Get Environment Variable    PERL5OPT    default=
+    Set Environment Variable    PERL5OPT    ${INJECT_PERL} ${OLD_PERL5OPT}
+
+    Ctn Run Command Without Connector And Check Result As Strings
+    ...    ${CACHE_CMD}
+    ...    OK: Cache files created successfully
+
+    ${command}=    Catenate
+    ...    ${CMD}
+    ...    --cache-use
+    Ctn Run Command Without Connector And Check Result As Strings
+    ...    ${command}
+    ...    OK: gateway 'LOCATION_501' operational state: active [desired state: active], running version: 8.0.8P3a, last update: 8m 9s - health color: green - VRRP state: master | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.update.time.last.seconds'=489s;;;0;
+
+    Set Environment Variable    PERL5OPT    ${OLD_PERL5OPT}

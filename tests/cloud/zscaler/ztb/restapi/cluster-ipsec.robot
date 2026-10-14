@@ -21,6 +21,17 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --port=${APIPORT}
 ...                 --proto=http
 ...                 --timeout=10
+${CACHE_CMD}        ${CENTREON_PLUGINS}
+...                 --plugin=cloud::zscaler::ztb::restapi::plugin
+...                 --mode=cache
+...                 --login-domain=127.0.0.1
+...                 --api-domain=127.0.0.1
+...                 --client-id=client-id
+...                 --client-secret=client-secret
+...                 --port=${APIPORT}
+...                 --proto=http
+...                 --cache-lifetime=60
+...                 --timeout=10
 
 
 *** Test Cases ***
@@ -97,3 +108,22 @@ Cluster-ipsec ${tc}
     ...    18
     ...    --critical-last-refresh-time=1
     ...    CRITICAL: tunnel 'zia-tunnel0' [cluster: LOCATION_2-1-cluster] last refresh: 8m 15s - tunnel 'zia-tunnel0' [cluster: LOCATION_1-cluster] last refresh: 8m 13s - tunnel 'zia-tunnel0' [cluster: LOCATION_4-cluster] last refresh: 8m 18s - tunnel 'zia-tunnel0' [cluster: LOCATION_5-cluster] last refresh: 8m 20s - tunnel 'zia-tunnel1' [cluster: LOCATION_5-cluster] last refresh: 8m 20s - tunnel 'zia-tunnel0' [cluster: LOCATION_3-cluster] last refresh: 8m 24s | 'tunnels.ipsec.detected.count'=6;;;0; 'LOCATION_2-1-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=495s;;0:1;0; 'LOCATION_1-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=493s;;0:1;0; 'LOCATION_4-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=498s;;0:1;0; 'LOCATION_5-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=500s;;0:1;0; 'LOCATION_5-cluster~zia-tunnel1#tunnel.ipsec.refresh.time.last.seconds'=500s;;0:1;0; 'LOCATION_3-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=504s;;0:1;0;
+
+Cluster-ipsec cache use after cache mode
+    [Tags]    cloud    zscaler    restapi
+
+    ${OLD_PERL5OPT}=    Get Environment Variable    PERL5OPT    default=
+    Set Environment Variable    PERL5OPT    ${INJECT_PERL} ${OLD_PERL5OPT}
+
+    Ctn Run Command Without Connector And Check Result As Strings
+    ...    ${CACHE_CMD}
+    ...    OK: Cache files created successfully
+
+    ${command}=    Catenate
+    ...    ${CMD}
+    ...    --cache-use
+    Ctn Run Command Without Connector And Check Result As Strings
+    ...    ${command}
+    ...    OK: All IPsec tunnels are ok | 'tunnels.ipsec.detected.count'=6;;;0; 'LOCATION_2-1-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=495s;;;0; 'LOCATION_1-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=493s;;;0; 'LOCATION_4-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=498s;;;0; 'LOCATION_5-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=500s;;;0; 'LOCATION_5-cluster~zia-tunnel1#tunnel.ipsec.refresh.time.last.seconds'=500s;;;0; 'LOCATION_3-cluster~zia-tunnel0#tunnel.ipsec.refresh.time.last.seconds'=504s;;;0;
+
+    Set Environment Variable    PERL5OPT    ${OLD_PERL5OPT}
