@@ -49,6 +49,8 @@ sub new {
             'protocol:s' => { name => 'protocol' },
             'username:s' => { name => 'username' },
             'password:s' => { name => 'password' },
+            'auth-source:s' => { name => 'auth_source' },
+            'replica-set:s' => { name => 'replica_set' },
             'timeout:s'  => { name => 'timeout' },
             'ssl-opt:s@' => { name => 'ssl_opt' },
             'no-ssl'     => { name => 'no_ssl' }
@@ -79,6 +81,8 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+    $self->{auth_source} = (defined($self->{option_results}->{auth_source})) ? $self->{option_results}->{auth_source} : '';
+    $self->{replica_set} = (defined($self->{option_results}->{replica_set})) ? $self->{option_results}->{replica_set} : '';
     $self->{no_ssl} = (defined($self->{option_results}->{no_ssl})) ? 1 : 0;
 
     if ($self->{hostname} eq '') {
@@ -106,25 +110,58 @@ sub get_port {
     return $self->{port};
 }
 
-sub connect {
+sub build_uri {
     my ($self, %options) = @_;
 
-    my $uri = URI::Encode->new({encode_reserved => 1});
-    my $encoded_username = $uri->encode($self->{username});
-    my $encoded_password = $uri->encode($self->{password});
+    my $encoder = URI::Encode->new({encode_reserved => 1});
+    my $encoded_username = $encoder->encode($self->{username});
+    my $encoded_password = $encoder->encode($self->{password});
 
-    $uri = $self->{protocol} . '://';
+    my $host = defined($options{host}) && $options{host} ne '' ? $options{host} : $self->{hostname};
+    my $port = defined($options{port}) ? $options{port} : $self->{port};
+
+    my $uri = $self->{protocol} . '://';
     $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
-    $uri .= $self->{hostname} if ($self->{hostname} ne '');
-    $uri .= ':' . $self->{port} if ($self->{port} ne '' && $self->{protocol} ne 'mongodb+srv');
+    $uri .= $host if ($host ne '');
+    $uri .= ':' . $port if ($port ne '' && $host !~ /:\d+$/ && $self->{protocol} ne 'mongodb+srv');
 
-    $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
+    my @params = ();
+    push @params, 'authSource=' . $encoder->encode($self->{auth_source}) if ($self->{auth_source} ne '');
+    push @params, 'replicaSet=' . $encoder->encode($self->{replica_set}) if ($self->{replica_set} ne '');
+    # MongoDB URI parser requires a '/' between the host list and the
+    # query string, even when no default database is specified.
+    $uri .= '/?' . join('&', @params) if (scalar(@params) > 0);
+
+    return $uri;
+}
+
+sub redact_uri {
+    my ($self, $uri) = @_;
+
+    # Hide the password between ':' and '@' in 'scheme://user:password@host...'
+    # so that --debug never leaks credentials.
+    $uri =~ s{(://[^:/@]+):[^@]+@}{$1:***\@};
+    return $uri;
+}
+
+sub build_mongodb_options {
+    my ($self, %options) = @_;
 
     my %mongodb_options = ();
     if ($self->{no_ssl} == 0) {
         $mongodb_options{ssl} = (defined($self->{ssl_opts}) && scalar(keys %{$self->{ssl_opts}}) > 0) ? $self->{ssl_opts} : 1;
     }
 
+    return %mongodb_options;
+}
+
+sub connect {
+    my ($self, %options) = @_;
+
+    my $uri = $self->build_uri();
+    $self->{output}->output_add(long_msg => 'Connection URI: ' . $self->redact_uri($uri), debug => 1);
+
+    my %mongodb_options = $self->build_mongodb_options();
     $self->{client} = MongoDB::MongoClient->new(host => $uri, %mongodb_options);
     $self->{client}->connect();
 
@@ -158,6 +195,20 @@ sub run_command {
     }
 
     my $db = $self->{client}->get_database($options{database});
+    return $db->run_command($options{command});
+}
+
+sub run_command_on_host {
+    my ($self, %options) = @_;
+
+    my $uri = $self->build_uri(host => $options{host}, port => $options{port});
+    $self->{output}->output_add(long_msg => 'Connection URI: ' . $self->redact_uri($uri), debug => 1);
+
+    my %mongodb_options = $self->build_mongodb_options();
+    my $client = MongoDB::MongoClient->new(host => $uri, %mongodb_options);
+    $client->connect();
+
+    my $db = $client->get_database($options{database});
     return $db->run_command($options{command});
 }
 
@@ -220,6 +271,14 @@ MongoDB username.
 =item B<--password>
 
 MongoDB password.
+
+=item B<--auth-source>
+
+Authentication database (authSource connection string option).
+
+=item B<--replica-set>
+
+Replica set name (replicaSet connection string option).
 
 =item B<--timeout>
 
