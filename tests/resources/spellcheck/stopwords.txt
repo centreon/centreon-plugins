@@ -290,6 +290,7 @@ Palo
 partiallyActive
 passthrough
 --patch-redhat
+PDU
 perfdata
 pfSense
 physicaldrive
