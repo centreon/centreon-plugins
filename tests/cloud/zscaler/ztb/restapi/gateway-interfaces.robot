@@ -22,6 +22,17 @@ ${CMD}              ${CENTREON_PLUGINS}
 ...                 --include-gateway-name=LOCATION_102
 ...                 --include-interface-name=ge5
 ...                 --timeout=10
+${CACHE_CMD}        ${CENTREON_PLUGINS}
+...                 --plugin=cloud::zscaler::ztb::restapi::plugin
+...                 --mode=cache
+...                 --login-domain=127.0.0.1
+...                 --api-domain=127.0.0.1
+...                 --client-id=client-id
+...                 --client-secret=client-secret
+...                 --port=${APIPORT}
+...                 --proto=http
+...                 --cache-lifetime=60
+...                 --timeout=10
 
 
 *** Test Cases ***
@@ -122,3 +133,23 @@ Gateway-interfaces ${tc}
     ...    28
     ...    --critical-interface-loss=1:
     ...    CRITICAL: gateway 'LOCATION_102' interface 'ge5' loss: 0.04 % | 'gateways.detected.count'=1;;;0; 'LOCATION_102~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_102~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_102~ge5#gateway.interface.loss.percentage'=0.04%;;1:;0;100
+    ...    29
+    ...    --disco-format
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <element>siteName</element> <element>clusterName</element> <element>gatewayName</element> <element>interfaceName</element> <element>adminState</element> <element>operationalState</element> </data>
+    ...    30
+    ...    --disco-show
+    ...    <?xml version="1.0" encoding="utf-8"?> <data> <label adminState="up" clusterName="LOCATION_1-cluster" gatewayName="LOCATION_102" interfaceName="ge5" operationalState="up" siteName="LOCATION_1"/> </data>
+    ...    31
+    ...    --client-id=robot-no-cache-client --cache-use
+    ...    UNKNOWN: Cache file missing
+
+Gateway-interfaces cache use after cache mode
+    [Tags]    cloud    zscaler    restapi
+    Ctn Run Command And Check Result As Strings    ${CACHE_CMD}    OK: Cache files created successfully
+
+    ${command}    Catenate
+    ...    ${CMD}
+    ...    --cache-use
+    Ctn Run Command And Check Result As Strings
+    ...    ${command}
+    ...    OK: gateway 'LOCATION_102' interface 'ge5' operational state: up [admin state: up], jitter: 2.15 ms, latency: 20.7 ms, loss: 0.04 % | 'gateways.detected.count'=1;;;0; 'LOCATION_102~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_102~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_102~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100
