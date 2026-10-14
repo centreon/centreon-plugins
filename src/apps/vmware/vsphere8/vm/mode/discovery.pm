@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc qw(json_encode is_empty);
+use Socket qw(inet_pton AF_INET AF_INET6);
 
 sub new {
     my ($class, %options) = @_;
@@ -45,6 +46,16 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+}
+
+sub validate_ip {
+    my ($ip) = @_;
+
+    return '' if is_empty($ip);
+    if (defined(inet_pton(AF_INET, $ip)) || defined(inet_pton(AF_INET6, $ip))){
+        return $ip
+    }
+    return '';
 }
 
 sub run {
@@ -87,6 +98,14 @@ sub run {
         $vm->{guest_os}      = $identity->{name} // '';
         $vm->{ip_address}    = $identity->{ip_address} // '';
         $vm->{guest_os_full} = $identity->{full_name}->{default_message} // '';
+        $vm->{vm_hostname}   = $identity->{host_name} // '';
+        # address usable as host address, never empty: the IP address if valid, or else the VM hostname,
+        # with the characters forbidden in a hostname (spaces...) replaced by underscores
+        $vm->{clean_hostname} = validate_ip($vm->{ip_address});
+        if  (is_empty($vm->{clean_hostname})) {
+            $vm->{clean_hostname} = !is_empty($vm->{vm_hostname}) ? $vm->{vm_hostname} : $vm->{vm_name};
+            $vm->{clean_hostname} =~ s/[^A-Za-z0-9_.-]/_/g;
+        }
 
         $vm->{tags} = $options{custom}->get_tags_for_resource(rsrc_id => $vm->{vmw_vm_id})
             unless $self->{option_results}->{no_tags};
@@ -116,6 +135,10 @@ __END__
 
 Discover VMware 8+ virtual machines.
 
+The C<clean_hostname> attribute contains the IP address reported by the VMware Tools if it is valid, or else the
+VM hostname reported by the VMware Tools, or else the VM name as defined in the vCenter. In the last two cases, the characters that are
+not allowed in a hostname (spaces...) are replaced by underscores (e.g. C<RHEL 9> becomes C<RHEL_9>).
+
 =over 8
 
 =item B<--filter-folders>
@@ -139,7 +162,8 @@ Supported values:
 Collecting identity information for all VMs can take a very long time.
 If you want to speed up the discovery you can narrow the scope by using C<--filter-power-states> and/or
 C<--filter-folders> or, if you only need the VMs names and power states, you may use this option to avoid collecting the
-following information: Guest OS, Guest OS family, IP address.
+following information: Guest OS, Guest OS family, IP address, hostname.
+In this case, the C<clean_hostname> attribute and the subsequent address in Centreon will always be built from the VM name.
 
 =item B<--prettify>
 
