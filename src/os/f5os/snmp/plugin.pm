@@ -1,5 +1,5 @@
 #
-# Copyright 2025 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,6 +31,7 @@ sub new {
 
     $self->{modes} = {
         'cpu-usage'            => 'os::f5os::snmp::mode::cpuusage',
+        'disks'                => 'os::f5os::snmp::mode::disks',
         'hardware'             => 'os::f5os::snmp::mode::hardware',
         'memory'               => 'os::f5os::snmp::mode::memory',
     };
