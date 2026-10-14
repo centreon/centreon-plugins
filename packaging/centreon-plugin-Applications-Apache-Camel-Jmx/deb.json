@@ -1,0 +1,5 @@
+{
+    "dependencies": [
+        "libjmx4perl-perl"
+    ]
+}
