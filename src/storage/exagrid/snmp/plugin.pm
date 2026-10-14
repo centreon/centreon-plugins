@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2023 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'server-usage' => 'storage::exagrid::snmp::mode::serverusage',
+	'data-protection' => 'storage::exagrid::snmp::mode::dataprotection',
     );
 
     return $self;
