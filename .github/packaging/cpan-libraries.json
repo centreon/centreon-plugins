@@ -79,12 +79,6 @@
       }
     },
     {
-      "name": "Crypt::SSLeay",
-      "rpm": {
-        "build_distribs": "el10"
-      }
-    },
-    {
       "name": "Data::Compare",
       "comment": "needed by perl-Paws-0.46-2.el10",
       "rpm": {
