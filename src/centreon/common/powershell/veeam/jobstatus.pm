@@ -41,12 +41,31 @@ our %EXPORT_TAGS = (
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{job_source} } );
 
+# Prevent attacker-controllable strings embedded into the powershell script.
+sub sanitize_ps_string {
+    my ($str) = @_;
+
+    return '' if !defined($str);
+    $str =~ s/`/``/g;
+    $str =~ s/"/`"/g;
+    $str =~ s/\$/`\$/g;
+    return $str;
+}
 
 sub get_powershell {
     my (%options) = @_;
 
 
     my $job_source = $options{job_source} // VEEAM_JOB_SOURCE_ALL;
+    my $name_filter_ps = '';
+    if (defined($options{filter_name}) && $options{filter_name} ne '') {
+        $name_filter_ps .= '
+            if ($_.Name -notmatch "' . sanitize_ps_string($options{filter_name}) . '") { return }';
+    }
+    if (defined($options{exclude_name}) && $options{exclude_name} ne '') {
+        $name_filter_ps .= '
+            if ($_.Name -match "' . sanitize_ps_string($options{exclude_name}) . '") { return }';
+    }
 
     my $ps = '
 $ProgressPreference = "SilentlyContinue"
@@ -72,7 +91,7 @@ Try {
     if ( $job_source ne VEEAM_JOB_SOURCE_AGENT) {
 
         $ps .= '
-        Get-VBRJob | ForEach-Object {
+        Get-VBRJob | ForEach-Object {' . $name_filter_ps . '
             $guid = $_.Id.Guid.toString()
             $jobIds[$guid] = $true
 
@@ -104,7 +123,7 @@ Try {
 
     if ( $job_source ne VEEAM_JOB_SOURCE_STANDARD) {
         $ps .= '
-        Get-VBRComputerBackupJob | ForEach-Object {
+        Get-VBRComputerBackupJob | ForEach-Object {' . $name_filter_ps . '
             $id = $_.Id.toString()
             if ($jobIds.ContainsKey($id)) {
                 return
