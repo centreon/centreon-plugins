@@ -1,0 +1,51 @@
+name: release-new
+description: "Tag a release or hotfix branch with its release bundle tag, create the draft github release and the jira version, then delete the branch."
+inputs:
+  release_branch:
+    description: "Release or hotfix branch to release (release-YYYYMMNN or hotfix-YYYYMMNN)."
+    required: true
+  release_number:
+    description: "Release number with format YYYYMMNN."
+    required: true
+  release_type:
+    description: "Release type (release or hotfix)."
+    required: true
+  dry_run:
+    description: "Only print the write operations."
+    required: true
+  has_release_token:
+    description: "Whether the checkout uses the token allowed to push release tags."
+    required: true
+  github_token:
+    description: "Token used to create the github release."
+    required: true
+  jira_base_url:
+    description: "Jira base url."
+    required: true
+  jira_user_email:
+    description: "Email linked to the jira token."
+    required: true
+  jira_api_token:
+    description: "Token to authenticate to jira."
+    required: true
+  jira_ctor_project_id:
+    description: "Id of the CTOR jira project holding the plugins versions."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Release
+      env:
+        RELEASE_BRANCH: ${{ inputs.release_branch }}
+        RELEASE_NUMBER: ${{ inputs.release_number }}
+        RELEASE_TYPE: ${{ inputs.release_type }}
+        DRY_RUN: ${{ inputs.dry_run }}
+        HAS_RELEASE_TOKEN: ${{ inputs.has_release_token }}
+        GH_TOKEN: ${{ inputs.github_token }}
+        JIRA_BASE_URL: ${{ inputs.jira_base_url }}
+        JIRA_USER_EMAIL: ${{ inputs.jira_user_email }}
+        JIRA_API_TOKEN: ${{ inputs.jira_api_token }}
+        JIRA_CTOR_PROJECT_ID: ${{ inputs.jira_ctor_project_id }}
+      run: ${{ github.action_path }}/../../scripts/release/release-new.sh
+      shell: bash

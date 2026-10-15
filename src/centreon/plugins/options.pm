@@ -296,24 +296,71 @@ option registration, parsing, and constraint-based validation for Centreon plugi
 =head1 VALIDATION
 
 Constraints are declared alongside options in C<add_options> and evaluated
-automatically at the end of C<parse_options>.
+automatically at the end of C<parse_options>. Several constraints may be
+combined on the same option: they are all evaluated and the first violated one
+exits the plugin (UNKNOWN) with an error message.
 
     $options->add_options(arguments => {
-        'count=i' => {
-            name                  => 'count',
-            default               => 10,
-            greater_than          => 0,
-            less_than_or_equal    => 100,
+        'count:s' => {
+            name               => 'count',
+            default            => 10,
+            numeric            => 1,
+            greater_than       => 0,
+            less_than_or_equal => 100
         },
-        'pattern=s' => {
-            name         => 'pattern',
-            regexp_match => '^[a-z]+$',
+        'proto:s' => {
+            name      => 'proto',
+            default   => 'https',
+            type      => 'protocol_http',
+            not_empty => 1
         },
+        'no-data-status:s' => {
+            name  => 'no_data_status',
+            is_in => [ 'ok', 'warning', 'critical', 'unknown' ]
+        },
+        'pattern:s' => {
+            name          => 'pattern',
+            regexp_match  => '^[a-z]+$',
+            error_message => "Invalid pattern '%{value}': lowercase letters only."
+        }
     });
 
-The following constraint keys are supported:
+=head2 Presence constraints
 
 =over 4
+
+=item B<not_empty> I<boolean>
+
+The option must be defined and not an empty string. This is the only constraint
+that rejects a missing value; all the others are skipped when the value is
+C<undef> or empty (see L</Skipping rules> below).
+
+Default message: C<< Need to specify --%{option} option. >>
+
+B<Caveat:> the check is driven by the mere presence of the key, so
+C<< not_empty => 0 >> enforces the constraint just like C<< not_empty => 1 >>.
+Omit the key entirely to make an option optional.
+
+=back
+
+=head2 Numeric constraints
+
+=over 4
+
+=item B<numeric> I<boolean>
+
+The value must match C<^\d*$>, i.e. only digits. Signed values (C<-1>) and
+decimals (C<1.5>) are B<rejected>; use C<regexp_match> or the C<*_than>
+constraints when those are legitimate.
+
+Default message: C<< '%{value}' must be a numeric value. >>
+
+=item B<port> I<boolean>
+
+The value must be a digits-only integer between 1 and 65535.
+
+Default message:
+C<< '%{value}' must be a numeric TCP port value between 1 and 65535. >>
 
 =item B<greater_than> I<number>
 
@@ -331,18 +378,102 @@ The option value must be strictly less than I<number>.
 
 The option value must be less than or equal to I<number>.
 
-=item B<regexp_match> I<pattern>
-
-The option value must match the regular expression I<pattern>.
-
 =back
 
-For numeric constraints (C<*_than*>), the value is first tested against
+For the four C<*_than*> constraints, the value is first tested against
 C<^-?[0-9\.]*$>; a value that does not look numeric is rejected outright before
 the comparison is performed.
 
-If the option value, the constraint key, or the reference value is C<undef> or
-an empty string, the constraint is silently skipped (considered valid).
+=head2 String constraints
+
+=over 4
+
+=item B<regexp_match> I<pattern>
+
+The value must match the regular expression I<pattern>. The pattern is a plain
+string interpolated into a C<//> match, so it is unanchored unless you write the
+anchors yourself, and it is case-sensitive unless you prefix it with C<(?i)>.
+
+=item B<is_in> I<arrayref>
+
+The value must be equal (string C<eq>, hence case-sensitive) to one of the
+elements of the array reference. Passing anything other than an array reference
+makes the constraint fail at runtime.
+
+    'auth-mode:s' => { name => 'auth_mode', default => 'oauth2',
+                       is_in => [ 'oauth2', 'login' ], not_empty => 1 }
+
+An empty array reference rejects every non-empty value. There is no dedicated
+message for this constraint, so it falls back to the default one, which lists
+the accepted values:
+
+    Bad value provided for option auth-mode: 'ldap'. Constraint 'ldap'
+    is_in 'oauth2, login' is not verified.
+
+Combine it with C<error_message> for a friendlier wording.
+
+=item B<protocol_http> I<boolean>
+
+The value must be C<http> or C<https>.
+
+Default message:
+C<< '%{value}' must be a valid HTTP protocol ('http' or 'https'). >>
+
+=back
+
+=head2 Shorthand and message customization
+
+=over 4
+
+=item B<type> I<string>
+
+Shorthand for the boolean constraints: C<< type => 'port' >> is strictly
+equivalent to C<< port => 1 >>. Accepted values are the names of the boolean
+constraints, namely C<numeric>, C<port>, C<protocol_http> and C<not_empty>.
+
+Only one C<type> can be given per option; declare the constraint names directly
+when you need several of them.
+
+=item B<error_message> I<string>
+
+Overrides the message displayed when B<any> constraint of this option is
+violated (it is not per-constraint). The string is expanded by
+C<centreon::plugins::misc::exprintf>, so it accepts the following placeholders:
+
+=over 4
+
+=item * C<%{option}> - the option name, with underscores turned into dashes
+
+=item * C<%{value}> - the value provided by the user
+
+=item * C<%{E<lt>option_nameE<gt>}> - same as C<%{value}>, using the C<name> of
+the option (e.g. C<%{auth_mode}>); handy to keep messages readable
+
+=item * C<%{validation}> - the name of the violated constraint
+
+=item * C<%{validation_value}> - the reference value of the violated constraint
+(array references are joined with C<, >)
+
+=back
+
+An unknown placeholder expands to an empty string.
+
+    'resource-type:s' => { name          => 'resource_type',
+                           is_in         => [ 'node', 'vm' ],
+                           error_message => "Unknown resource type '%{value}'. Accepted values: %{validation_value}." }
+
+=back
+
+=head2 Skipping rules
+
+Except for C<not_empty>, a constraint is silently considered satisfied when the
+option value is C<undef> or an empty string. Constraints therefore validate the
+B<format> of a value, never its presence: pair them with C<not_empty> when the
+option is mandatory.
+
+The reference value is subject to the same rule: a constraint whose reference is
+C<undef> or an empty string is skipped as well (C<< less_than => 0 >> is
+evaluated, C<< less_than => '' >> is not).
 
 =head1 METHODS
 
@@ -361,8 +492,7 @@ describing each option.
         'port=i' => {
             name    => 'port',
             default => 443,
-            greater_than => 0,
-            less_than => 65536
+            type    => 'port'
         },
         'timeout=i' => {
             name                => 'timeout',
@@ -392,7 +522,8 @@ C<get_option> or C<get_options>.
 =item B<default> I<scalar>
 
 Default value assigned before parsing. If omitted the stored value is C<undef>
-until the option is provided on the command line.
+until the option is provided on the command line. A default value is validated
+like any user-provided value.
 
 =item B<redirect> I<string>
 
@@ -400,7 +531,9 @@ Store the value under a different name than the one given by C<name>. When
 C<redirect> is set, no default and no validation constraints are registered for
 this specifier; it simply aliases to the target key.
 
-=item B<greater_than>, B<greater_than_or_equal>, B<less_than>, B<less_than_or_equal>, B<regexp_match>
+=item B<not_empty>, B<numeric>, B<port>, B<protocol_http>, B<greater_than>,
+B<greater_than_or_equal>, B<less_than>, B<less_than_or_equal>,
+B<regexp_match>, B<is_in>, B<type>, B<error_message>
 
 Validation constraints evaluated after parsing. See L</VALIDATION> for the full
 description of each constraint.
@@ -414,7 +547,8 @@ description of each constraint.
 Iterates over every constraint registered by C<add_options> and calls
 C<< $self->{output}->option_exit >> for the first violated constraint.
 The error message includes the option name, the offending value, and the
-constraint that was not satisfied.
+constraint that was not satisfied, unless an C<error_message> was provided for
+that option.
 
 This method is called automatically at the end of C<parse_options>; it does
 not need to be called directly in normal usage.
@@ -428,8 +562,8 @@ not need to be called directly in normal usage.
 Low-level validation primitive used internally by C<validate_options>.
 Returns B<1> if the value satisfies the constraint, B<0> otherwise.
 
-If any argument is C<undef> or an empty string, the function returns B<1>
-immediately (the check is skipped).
+Except for C<not_empty>, if any argument is C<undef> or an empty string, the
+function returns B<1> immediately (the check is skipped).
 
 =over 4
 
@@ -439,13 +573,16 @@ The value to validate.
 
 =item B<$operation>
 
-The constraint to apply. One of: C<greater_than>, C<greater_than_or_equal>,
-C<less_than>, C<less_than_or_equal>, C<regexp_match>.
+The constraint to apply. One of: C<not_empty>, C<numeric>, C<port>,
+C<protocol_http>, C<greater_than>, C<greater_than_or_equal>, C<less_than>,
+C<less_than_or_equal>, C<regexp_match>, C<is_in>. Any other operation name is
+considered satisfied.
 
 =item B<$reference>
 
-The threshold (numeric constraints) or pattern (C<regexp_match>) to validate
-against.
+The expected value of the constraint: a threshold for the numeric constraints, a
+pattern for C<regexp_match>, an array reference of accepted values for C<is_in>,
+and any true scalar for the boolean constraints.
 
 =back
 

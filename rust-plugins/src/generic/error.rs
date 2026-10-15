@@ -1,3 +1,23 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 use snafu::prelude::Snafu;
 use std::io;
 
@@ -32,6 +52,20 @@ pub enum Error {
 
     #[snafu(display("{message}"))]
     InvalidJSON { message: String },
+
+    #[snafu(display(
+        "The collection declares no format version: add \"format_version\": {} to it",
+        expected
+    ))]
+    MissingFormatVersion { expected: u32 },
+
+    #[snafu(display(
+        "The collection targets the format version {}, this plugin only supports the version {}. Upgrade the plugin, or use a collection written for the version {}.",
+        found,
+        expected,
+        expected
+    ))]
+    UnsupportedFormatVersion { found: u32, expected: u32 },
 
     #[snafu(display("Could not parse oid {}", oid))]
     InvalidOidParser { oid: String },

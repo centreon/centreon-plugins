@@ -1,0 +1,607 @@
+{
+    "uuid": "d948d45b-c1d3-42d5-9fb7-a8f94bb2d44f",
+    "lastMigration": 33,
+    "name": "Hp ilo restapi",
+    "endpointPrefix": "",
+    "latency": 0,
+    "port": 3000,
+    "hostname": "",
+    "folders": [],
+    "routes": [
+        {
+            "uuid": "18f2846c-e3ad-4f15-8fef-41acd4ab2934",
+            "type": "http",
+            "documentation": "",
+            "method": "post",
+            "endpoint": "redfish/v1/SessionService/Sessions",
+            "responses": [
+                {
+                    "uuid": "fbaea5d0-e752-48ff-831d-5c01f99d4d97",
+                    "body": "{\n  \"Id\": \"1\",\n  \"UserName\": \"toto\"\n}",
+                    "latency": 0,
+                    "statusCode": 201,
+                    "label": "",
+                    "headers": [
+                        {
+                            "key": "X-Auth-Token",
+                            "value": "test-token-123"
+                        }
+                    ],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "9031e87b-5012-44d3-865f-a8370a93147a",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "redfish/v1/Systems",
+            "responses": [
+                {
+                    "uuid": "c208b09c-a988-4de9-8d4e-8260427e45c8",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/ABCDE123\"\n    },\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456\"\n    },\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/1234\"\n    }\n  ],\n  \"Members@odata.count\": 3\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "9e94db30-0641-4db5-b938-1d96ed07bff8",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "redfish/v1/Systems/:sysid/Storage",
+            "responses": [
+                {
+                    "uuid": "02ccc289-680b-4840-9664-18ff5d775f97",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/ABCDE123/Storage/1\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "ABCDE123",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "7a0e50c0-9749-4657-a555-94cc084df3df",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456/Storage/1\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "FGHIJ456",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "e4c31203-03c3-4c1b-97f5-08b9d570cabf",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/1234/Storage/1\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "1234",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "8e7d2ff1-37d5-47e5-b5a7-626fb27de8b4",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "redfish/v1/Systems/:sysid/Storage/:storageid",
+            "responses": [
+                {
+                    "uuid": "d7769ffd-f407-4f1f-bd67-b77647ed4b6a",
+                    "body": "{\n  \"@odata.id\": \"/redfish/v1/Systems/ABCDE123/Storage/1\",\n  \"Id\": \"1\",\n  \"StorageControllers\": [\n    {\n      \"MemberId\": \"0\",\n      \"FirmwareVersion\": \"6.22\",\n      \"Model\": \"HPE Smart Array P408i-a SR Gen10\",\n      \"SerialNumber\": \"ANON-SN-A0\",\n      \"Status\": {\n        \"Health\": \"OK\",\n        \"State\": \"Enabled\"\n      }\n    }\n  ],\n  \"Drives\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/ABCDE123/Storage/1/Drives/1\"\n    },\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/ABCDE123/Storage/1/Drives/2\"\n    }\n  ],\n  \"Volumes\": {\n    \"@odata.id\": \"/redfish/v1/Systems/ABCDE123/Storage/1/Volumes\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "ABCDE123",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "3d2ff40d-4a53-4542-9e24-ed4ee2c6d1c7",
+                    "body": "{\n  \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456/Storage/1\",\n  \"Id\": \"1\",\n  \"StorageControllers\": [\n    {\n      \"MemberId\": \"0\",\n      \"FirmwareVersion\": \"4.02\",\n      \"Model\": \"Smart Array P440ar Controller\",\n      \"SerialNumber\": \"ANON-SN-B0\",\n      \"Status\": {\n        \"Health\": \"Warning\",\n        \"State\": \"Enabled\"\n      }\n    }\n  ],\n  \"Drives\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456/Storage/1/Drives/1\"\n    },\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456/Storage/1/Drives/2\"\n    }\n  ],\n  \"Volumes\": {\n    \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456/Storage/1/Volumes\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "FGHIJ456",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "2b11eb29-73a0-4c5b-8a92-d3161ed7e897",
+                    "body": "{\n  \"@odata.id\": \"/redfish/v1/Systems/1234/Storage/1\",\n  \"Id\": \"1\",\n  \"StorageControllers\": [\n    {\n      \"MemberId\": \"0\",\n      \"FirmwareVersion\": \"1.00\",\n      \"Model\": \"Synthetic Controller\",\n      \"SerialNumber\": \"ANON-SN-C0\",\n      \"Status\": {\n        \"Health\": \"OK\",\n        \"State\": \"Enabled\"\n      }\n    }\n  ],\n  \"Drives\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/1234/Storage/1/Drives/1\"\n    }\n  ],\n  \"Volumes\": {\n    \"@odata.id\": \"/redfish/v1/Systems/1234/Storage/1/Volumes\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "1234",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "39f68352-1ba4-4038-af00-d4086b9209ff",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "redfish/v1/Systems/:sysid/Storage/:storageid/Drives/:driveid",
+            "responses": [
+                {
+                    "uuid": "da14ad07-f5d2-4adb-a95a-f25970aedd58",
+                    "body": "{\n  \"MediaType\": \"HDD\",\n  \"Model\": \"EG000300JWEBF\",\n  \"Revision\": \"HPD5\",\n  \"RotationSpeedRPM\": 0,\n  \"CapacityBytes\": 286102,\n  \"SerialNumber\": \"ANON-DRV-A\",\n  \"Id\": \"1\",\n  \"Status\": {\n    \"Health\": \"OK\",\n    \"State\": \"Enabled\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "ABCDE123",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "8abc72f5-206f-46ec-a4fc-4abd3002dcff",
+                    "body": "{\n  \"MediaType\": \"HDD\",\n  \"Model\": \"EG0300FCSPH\",\n  \"Revision\": \"HPD0\",\n  \"RotationSpeedRPM\": 0,\n  \"CapacityBytes\": 286102,\n  \"SerialNumber\": \"ANON-DRV-B\",\n  \"Id\": \"1\",\n  \"Status\": {\n    \"Health\": \"OK\",\n    \"State\": \"Enabled\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "FGHIJ456",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "721b76b9-40ae-432c-905f-4af614c918dd",
+                    "body": "{\n  \"MediaType\": \"SSD\",\n  \"Model\": \"SYNTH-DRIVE\",\n  \"Revision\": \"1.0\",\n  \"RotationSpeedRPM\": 0,\n  \"CapacityBytes\": 100000,\n  \"SerialNumber\": \"ANON-DRV-C\",\n  \"Id\": \"1\",\n  \"Status\": {\n    \"Health\": \"OK\",\n    \"State\": \"Enabled\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "1234",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "025be1ba-bdee-432f-9e00-7a05bcd1e665",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "redfish/v1/Systems/:sysid/Storage/:storageid/Volumes",
+            "responses": [
+                {
+                    "uuid": "0fd0ede0-189d-4002-98e7-21881563ebda",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/ABCDE123/Storage/1/Volumes/1\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "ABCDE123",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "6483779e-b056-4b3f-9515-6f21b6644d50",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/FGHIJ456/Storage/1/Volumes/1\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "FGHIJ456",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "abd380f2-adeb-4877-a32d-4d8aa9ea8df9",
+                    "body": "{\n  \"Members\": [\n    {\n      \"@odata.id\": \"/redfish/v1/Systems/1234/Storage/1/Volumes/1\"\n    }\n  ]\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "1234",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        },
+        {
+            "uuid": "d1d84f10-49cc-4df2-964b-a8a1c97d827e",
+            "type": "http",
+            "documentation": "",
+            "method": "get",
+            "endpoint": "redfish/v1/Systems/:sysid/Storage/:storageid/Volumes/:volid",
+            "responses": [
+                {
+                    "uuid": "0e182dc1-10c7-4a62-8689-341434d2572c",
+                    "body": "{\n  \"CapacityBytes\": 285696,\n  \"Encrypted\": false,\n  \"Id\": \"1\",\n  \"Status\": {\n    \"Health\": \"OK\",\n    \"State\": \"Enabled\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "ABCDE123",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": true,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "f738c9fe-818a-4f33-bc4d-a382c61a63c6",
+                    "body": "{\n  \"CapacityBytes\": 286070,\n  \"Encrypted\": false,\n  \"Id\": \"1\",\n  \"Status\": {\n    \"Health\": \"OK\",\n    \"State\": \"Enabled\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "FGHIJ456",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                },
+                {
+                    "uuid": "5d643a4f-124e-47e5-90ec-6054af8d1686",
+                    "body": "{\n  \"CapacityBytes\": 100000,\n  \"Encrypted\": false,\n  \"Id\": \"1\",\n  \"Status\": {\n    \"Health\": \"OK\",\n    \"State\": \"Enabled\"\n  }\n}",
+                    "latency": 0,
+                    "statusCode": 200,
+                    "label": "",
+                    "headers": [],
+                    "bodyType": "INLINE",
+                    "filePath": "",
+                    "databucketID": "",
+                    "sendFileAsBody": false,
+                    "rules": [
+                        {
+                            "target": "params",
+                            "modifier": "sysid",
+                            "value": "1234",
+                            "invert": false,
+                            "operator": "equals"
+                        }
+                    ],
+                    "rulesOperator": "OR",
+                    "disableTemplating": false,
+                    "fallbackTo404": false,
+                    "default": false,
+                    "crudKey": "id",
+                    "callbacks": []
+                }
+            ],
+            "responseMode": null,
+            "streamingMode": null,
+            "streamingInterval": 0
+        }
+    ],
+    "rootChildren": [
+        {
+            "type": "route",
+            "uuid": "18f2846c-e3ad-4f15-8fef-41acd4ab2934"
+        },
+        {
+            "type": "route",
+            "uuid": "9031e87b-5012-44d3-865f-a8370a93147a"
+        },
+        {
+            "type": "route",
+            "uuid": "9e94db30-0641-4db5-b938-1d96ed07bff8"
+        },
+        {
+            "type": "route",
+            "uuid": "8e7d2ff1-37d5-47e5-b5a7-626fb27de8b4"
+        },
+        {
+            "type": "route",
+            "uuid": "39f68352-1ba4-4038-af00-d4086b9209ff"
+        },
+        {
+            "type": "route",
+            "uuid": "025be1ba-bdee-432f-9e00-7a05bcd1e665"
+        },
+        {
+            "type": "route",
+            "uuid": "d1d84f10-49cc-4df2-964b-a8a1c97d827e"
+        }
+    ],
+    "proxyMode": false,
+    "proxyHost": "",
+    "proxyRemovePrefix": false,
+    "tlsOptions": {
+        "enabled": false,
+        "type": "CERT",
+        "pfxPath": "",
+        "certPath": "",
+        "keyPath": "",
+        "caPath": "",
+        "passphrase": ""
+    },
+    "cors": true,
+    "headers": [
+        {
+            "key": "Content-Type",
+            "value": "application/json"
+        }
+    ],
+    "proxyReqHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "proxyResHeaders": [
+        {
+            "key": "",
+            "value": ""
+        }
+    ],
+    "data": [],
+    "callbacks": []
+}

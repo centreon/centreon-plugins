@@ -37,7 +37,7 @@ Backend-usage-legacy ${tc}
     ...    OK: Backend 'bk_web' status: UP, current queue: 2, current sessions: 1, total-sessions : Buffer creation, traffic-in : Buffer creation, traffic-out : Buffer creation | 'bk_web#backend.queue.current.count'=2;;;0; 'bk_web#backend.sessions.current.count'=1;;;0;
     ...    2
     ...    --filter-counters=NONE
-    ...    OK: Backend 'bk_web'
+    ...    UNKNOWN: No data!
     ...    3
     ...    --filter-name=NONE
     ...    UNKNOWN: No backend found.
@@ -78,7 +78,6 @@ Backend-usage-legacy ${tc}
     ...    --critical-traffic-out=1:
     ...    CRITICAL: Backend 'bk_web' traffic out: 0.00 b/s | 'bk_web#backend.queue.current.count'=2;;;0; 'bk_web#backend.sessions.current.count'=1;;;0; 'bk_web#backend.sessions.total.count'=0;;;0; 'bk_web#backend.traffic.in.bitpersecond'=0.00b/s;;;0; 'bk_web#backend.traffic.out.bitpersecond'=0.00b/s;;1:;0;
 
-*** Test Cases ***
 Backend-usage-new ${tc}
     [Tags]    apps    haproxy    snmp
     ${command}    Catenate
@@ -98,7 +97,7 @@ Backend-usage-new ${tc}
     ...    OK: Backend 'bk_web' status: UP, current queue: 2, current sessions: 1, total sessions: 0, traffic in: 0.00 b/s, traffic out: 0.00 b/s | 'bk_web#backend.queue.current.count'=2;;;0; 'bk_web#backend.sessions.current.count'=1;;;0; 'bk_web#backend.sessions.total.count'=0;;;0; 'bk_web#backend.traffic.in.bitpersecond'=0.00b/s;;;0; 'bk_web#backend.traffic.out.bitpersecond'=0.00b/s;;;0;
     ...    2
     ...    --filter-counters=NONE
-    ...    OK: Backend 'bk_web'
+    ...    UNKNOWN: No data!
     ...    3
     ...    --filter-name=NONE
     ...    UNKNOWN: No backend found.

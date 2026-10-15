@@ -26,7 +26,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::values;
-use centreon::plugins::constants qw/:counters/;
+use centreon::plugins::constants qw/:counters :values/;
 use centreon::plugins::misc qw/is_empty exprintf/;
 use JSON::XS;
 
@@ -185,7 +185,13 @@ sub new {
         'filter-counters-block:s' => { name => 'filter_counters_block' },
         'filter-counters:s'       => { name => 'filter_counters' },
         'display-ok-counters:s'   => { name => 'display_ok_counters' },
-        'list-counters'           => { name => 'list_counters' }
+        'list-counters'           => { name => 'list_counters' },
+        'no-data-status:s'        => {
+            name      => 'no_data_status',
+            default   => 'unknown',
+            is_in     => [ 'ok', 'warning', 'critical', 'unknown' ],
+            not_empty => 1
+        }
     });
     $self->{statefile_value} = undef;
     if ($options{statefile}) {
@@ -328,6 +334,8 @@ sub run_global {
         $options{config}->{message_separator}: ', ';
     my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
     my @exits;
+    # Number of counters that actually got a value, to tell an empty block from a filled one
+    my $values_count = 0;
     foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
         my $obj = $_->{obj};
 
@@ -337,6 +345,13 @@ sub run_global {
         $obj->set(instance => defined($force_instance) ? $force_instance : $options{config}->{name});
 
         my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{$options{config}->{name}});
+
+        # Only NO_VALUE means the counter got nothing. Any other code (buffer creation,
+        # counter not moved...) means data was collected but is not exploitable yet.
+        if ($value_check != NO_VALUE) {
+            $values_count++;
+            $self->{counters_with_values}++;
+        }
 
         next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
         if ($value_check != 0) {
@@ -398,8 +413,13 @@ sub run_global {
     } else {
         if ($long_msg ne '' && $multiple_parent == 0) {
             if ($called_multiple == 0) {
-                $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
-                    if ($display_short == 1);
+                if ($values_count == 0) {
+                    # Every counter was skipped for lack of value: this block collected nothing.
+                    # Keep the detail in the long output and let run() report --no-data-status.
+                    $self->{output}->output_add(long_msg => $prefix_output . $long_msg . $suffix_output);
+                } elsif ($display_short == 1) {
+                    $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
+                }
             } else {
                 $self->run_multiple_prefix_output(
                     severity => 'ok',
@@ -453,6 +473,7 @@ sub run_instances {
                 new_datas => $self->{new_datas},
                 values => $self->{$options{config}->{name}}->{$id}
             );
+            $self->{counters_with_values}++ if ($value_check != NO_VALUE);
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -515,13 +536,13 @@ sub run_instances {
         }
         
         if ($self->{multiple} == 0)  {
-            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output)
+            $self->add_template_short_output(short_msg => $prefix_output . $long_msg . $suffix_output)
                 if ($display_short == 1);
         }
     }
     
     if ($no_message_multiple == 0 && $self->{multiple} == 1 && $resume == 0) {
-        $self->{output}->output_add(short_msg => $options{config}->{message_multiple})
+        $self->add_template_short_output(short_msg => $options{config}->{message_multiple})
             if ($display_short == 1);
     }
 }
@@ -534,13 +555,9 @@ sub run_group {
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
     }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => $options{config}->{message_multiple}
-        );
-    }
+
+    $self->add_template_short_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
+        if ($multiple == 1);
 
     my $format_output = defined($options{config}->{format_output}) ? $options{config}->{format_output} : '%s problem(s) detected';
 
@@ -579,14 +596,14 @@ sub run_group {
             $prefix_output = '' if (!defined($prefix_output));
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
-                $self->{output}->output_add(
+                $self->add_template_short_output(
                     severity => $self->{most_critical_instance},
                     short_msg => sprintf("${prefix_output}" . $format_output, $self->{lproblems})
                 );
             }
         }
     }
-    
+
     if ($multiple == 1) {
         my $exit = $self->{output}->get_most_critical(status => [ @{$global_exit} ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
@@ -605,6 +622,9 @@ sub run_group {
             value => $total_problems,
             min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max}
         );
+        # counting the problems of the block, zero included, is a measurement: the block
+        # reports '0 problem(s) detected' backed by a perfdata, not an absence of data.
+        $self->{counters_with_values}++;
     }
 }
 
@@ -657,6 +677,7 @@ sub run_multiple_instances {
                 new_datas => $self->{new_datas},
                 values => $self->{$options{config}->{name}}->{$id}
             );
+            $self->{counters_with_values}++ if ($value_check != NO_VALUE);
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -715,15 +736,42 @@ sub run_multiple_instances {
         }
 
         if ($multiple == 0 && $multiple_parent == 0) {
-            $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output)
+            $self->add_template_short_output(severity => 'ok', use_prefix => 1, short_msg => $prefix_output . $long_msg . $suffix_output)
                 if ($display_short == 1);
         }
     }
 
     if ($no_message_multiple == 0 && $multiple == 1 && $multiple_parent == 0) {
-        $self->run_multiple_prefix_output(severity => 'ok', short_msg => $options{config}->{message_multiple})
+        $self->add_template_short_output(severity => 'ok', use_prefix => 1, short_msg => $options{config}->{message_multiple})
             if ($display_short == 1);
     }
+}
+
+sub add_template_short_output {
+    my ($self, %options) = @_;
+
+    # Short output the template builds on its own: a 'message_multiple' claim coming from
+    # the block configuration, or an instance line made of prefix, counter output and
+    # suffix. None of them proves a value was collected, so run() must be able to tell
+    # them apart from a message a mode deliberately emitted. Counting what they add is the
+    # only reliable way: run_multiple_prefix_output() may emit a prefix message on top.
+    # A line holding real values is counted here too, harmlessly: counters_with_values is
+    # then above zero and blocks the fallback on its own.
+    my $before = $self->{output}->short_output_count();
+
+    if ($options{use_prefix}) {
+        $self->run_multiple_prefix_output(
+            severity => $options{severity} // 'OK',
+            short_msg => $options{short_msg}
+        );
+    } else {
+        $self->{output}->output_add(
+            severity => $options{severity} // 'OK',
+            short_msg => $options{short_msg}
+        );
+    }
+
+    $self->{template_short_output_count} += $self->{output}->short_output_count() - $before;
 }
 
 sub run_multiple_prefix_output {
@@ -750,12 +798,8 @@ sub run_multiple {
         $multiple = 0;
     }
 
-    if ($multiple == 1) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => $options{config}->{message_multiple}
-        );
-    }
+    $self->add_template_short_output(severity => 'OK', short_msg => $options{config}->{message_multiple})
+        if ($multiple == 1);
 
     foreach my $instance (sort keys %{$self->{$options{config}->{name}}}) {
         if (defined($options{config}->{long_output})) {
@@ -820,6 +864,8 @@ sub run {
     
     $self->manage_selection(%options);
     
+    $self->{counters_with_values} = 0;
+    $self->{template_short_output_count} = 0;
     $self->{new_datas} = undef;
     if (defined($self->{statefile_value})) {
         $self->{new_datas} = {};
@@ -838,6 +884,17 @@ sub run {
             $self->run_multiple(config => $entry);
         }
     }
+
+    # No counter got a value and every short message was emitted by the template itself:
+    # the mode collected nothing and would display an empty 'OK:' output, an unearned
+    # 'All xxx are ok' or a lone prefix. Report --no-data-status instead. A mode that added
+    # a short message of its own is left alone, and so is a counter waiting for its next run
+    # (buffer creation, counter not moved...) since it does hold data.
+    $self->{output}->output_add(
+        severity => $self->{option_results}->{no_data_status},
+        short_msg => 'No data!'
+    ) if ($self->{counters_with_values} == 0
+          && $self->{output}->short_output_count() == $self->{template_short_output_count});
 
     if (defined($self->{statefile_value})) {
         $self->{statefile_value}->write(data => $self->{new_datas});
@@ -949,6 +1006,13 @@ Warning threshold.
 =item B<--critical-xxx>
 
 Critical threshold.
+
+=item B<--no-data-status>
+
+Status to return when the mode collects no data at all: no instance was found,
+or every counter was skipped for lack of value. Without this option the plugin
+would display an empty (or meaningless) C<OK:> output.
+Can be: 'ok', 'warning', 'critical', 'unknown' (default: 'unknown').
 
 =back
 

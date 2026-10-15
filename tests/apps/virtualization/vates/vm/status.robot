@@ -50,4 +50,4 @@ Status ${tc}
     ...    CRITICAL: 'XOA' vm is Running. OS : Debian 12
     ...    6
     ...    --vm-name=DontExist
-    ...    UNKNOWN: no vm found, api did not return an array with one element. Please check --vm-uuid and --vm-name parameter or --debug.
+    ...    UNKNOWN: no object 'DontExist' found. Please check filtering parameter or --debug.

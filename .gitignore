@@ -11,3 +11,6 @@ node_modules
 # VMware proprietary SDK archives (Broadcom license — download manually)
 sdks-vmware/*.tar.gz
 sdks-vmware/*.zip
+
+# JSON schema reference rendered by rs-collection-schema.yml (published to GitHub Pages)
+/site/

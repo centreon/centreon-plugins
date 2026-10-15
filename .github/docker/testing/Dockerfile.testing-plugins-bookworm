@@ -53,7 +53,7 @@ pnpm install \
 echo 'export PATH="~/node_modules/.bin/:$PATH"' >> ~/.bashrc
 
 # Add Centreon plugins repositories
-echo "deb https://packages.centreon.com/apt-standard-24.10-stable bookworm main" | tee /etc/apt/sources.list.d/centreon.list
+echo "deb https://packages.centreon.com/apt-standard bookworm-25.10-stable main" | tee /etc/apt/sources.list.d/centreon.list
 echo "deb https://packages.centreon.com/apt-plugins-stable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins-stable.list
 echo "deb https://packages.centreon.com/apt-plugins-testing/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins-testing.list
 echo "deb https://packages.centreon.com/apt-plugins-unstable/ bookworm main" | tee /etc/apt/sources.list.d/centreon-plugins-unstable.list

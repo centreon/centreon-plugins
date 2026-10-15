@@ -1,3 +1,23 @@
+//
+// Copyright 2026-Present Centreon (http://www.centreon.com/)
+//
+// Centreon is a full-fledged industry-strength solution that meets
+// the needs in IT infrastructure and application monitoring for
+// service performance.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 //! Core plugin logic: command definition, SNMP collection, metric evaluation, and status reporting.
 //!
 //! A [`Command`] is deserialized from JSON and describes what to collect via SNMP
@@ -112,6 +132,21 @@ fn worst(a: Status, b: Status) -> Status {
     if a.severity() > b.severity() { a } else { b }
 }
 
+/// Version of the collection format this plugin understands.
+///
+/// Versioned independently of the plugin package: only a change breaking existing
+/// collections increments it. Version 0 is the beta format and carries no stability
+/// guarantee; the first stable format will be version 1.
+pub const FORMAT_VERSION: u32 = 0;
+
+/// Base URL the collection format schemas are published under.
+const SCHEMA_BASE_URL: &str = "https://centreon.github.io/centreon-plugins/rs-collections/snmp";
+
+/// URL of the published schema of the collection format this plugin supports.
+pub fn schema_url() -> String {
+    format!("{SCHEMA_BASE_URL}/v{FORMAT_VERSION}/rs-collection.schema.json")
+}
+
 /// Type of SNMP query to perform for a given OID.
 #[derive(Deserialize, Debug)]
 enum QueryType {
@@ -146,10 +181,34 @@ pub struct Collect {
 /// formatting.  Use [`Command::execute`] to run the full pipeline.
 #[derive(Deserialize, Debug)]
 pub struct Command {
+    /// Version of the collection format the file targets, checked against
+    /// [`FORMAT_VERSION`] before anything is collected.  Read as an option so that
+    /// a missing key is reported on its own rather than as a deserialization error.
+    format_version: Option<u32>,
     collect: Collect,
     compute: Compute,
     #[serde(default = "default_output")]
     pub output: Output,
+}
+
+impl Command {
+    /// Checks that this plugin supports the format version the collection targets.
+    ///
+    /// # Errors
+    /// Returns an error when the collection declares no version, or one this plugin
+    /// does not support.
+    pub fn check_format_version(&self) -> Result<()> {
+        match self.format_version {
+            None => Err(error::Error::MissingFormatVersion {
+                expected: FORMAT_VERSION,
+            }),
+            Some(found) if found != FORMAT_VERSION => Err(error::Error::UnsupportedFormatVersion {
+                found,
+                expected: FORMAT_VERSION,
+            }),
+            Some(_) => Ok(()),
+        }
+    }
 }
 
 fn default_output() -> Output {
@@ -713,6 +772,23 @@ impl Command {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_advertised_schema_url_is_the_one_the_supported_format_publishes() {
+        // the schema of the format this plugin enforces has to be the one the URL points
+        // at, so that --version cannot send anyone to another format's reference
+        let path = format!(
+            "{}/schema/v{}/rs-collection.schema.json",
+            env!("CARGO_MANIFEST_DIR"),
+            FORMAT_VERSION
+        );
+        let schema: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}")),
+        )
+        .unwrap_or_else(|e| panic!("{path}: {e}"));
+
+        assert_eq!(schema["$id"].as_str(), Some(schema_url().as_str()));
+    }
 
     #[test]
     fn status_exit_codes_follow_the_monitoring_plugins_guidelines() {

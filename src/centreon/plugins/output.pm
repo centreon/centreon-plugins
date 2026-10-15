@@ -250,6 +250,18 @@ sub output_add {
     }
 }
 
+sub short_output_count {
+    my ($self, %options) = @_;
+
+    # Number of short messages added so far, whatever their severity. The counter
+    # template uses it to tell apart the messages that report something from the ones
+    # it emitted itself before knowing anything.
+    my $count = 0;
+    $count += scalar(@$_) foreach (values(%{$self->{global_short_outputs}}));
+
+    return $count;
+}
+
 sub perfdata_add {
     my ($self, %options) = @_;
 

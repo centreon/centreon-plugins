@@ -55,16 +55,11 @@ pnpm install \
   --config.blockExoticSubdeps=true
 
 # Add Centreon plugins repositories
-echo "deb https://packages.centreon.com/ubuntu-standard-24.10-stable/ noble main" | tee /etc/apt/sources.list.d/centreon.list
 echo "deb https://packages.centreon.com/ubuntu-plugins-stable/ noble main" | tee /etc/apt/sources.list.d/centreon-plugins-stable.list
 echo "deb https://packages.centreon.com/ubuntu-plugins-testing/ noble main" | tee /etc/apt/sources.list.d/centreon-plugins-testing.list
 echo "deb https://packages.centreon.com/ubuntu-plugins-unstable/ noble main" | tee /etc/apt/sources.list.d/centreon-plugins-unstable.list
 wget -O- https://apt-key.centreon.com | gpg --dearmor | tee /etc/apt/trusted.gpg.d/centreon.gpg > /dev/null 2>&1
 apt-get update
-
-apt-get install -y centreon-connector-perl centreon-clib
-
-rm -f /etc/apt/sources.list.d/centreon.list
 
 mkdir -p /var/lib/centreon/centplugins/
 chmod 777 /var/lib/centreon/centplugins/

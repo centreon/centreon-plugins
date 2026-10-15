@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,14 +33,14 @@ sub check {
     $self->get_storages() if (!defined($self->{storages}));
 
     foreach my $storage (@{$self->{storages}}) {
-        $storage->{'@odata.id'} =~ /Systems\/(\d+)\//;
+        $storage->{'@odata.id'} =~ /Systems\/([^\/]+)\//;
         my $system_id = $1;
-        my $system_name = 'system:' . $1;
+        my $system_name = 'system:' . $system_id;
 
         my $storage_name = $storage->{Id};
 
         foreach my $sc (@{$storage->{StorageControllers}}) {
-            my $instance .= $system_id . '.' . $storage->{Id} . '.' . $sc->{MemberId};
+            my $instance = $system_id . '.' . $storage->{Id} . '.' . $sc->{MemberId};
 
             my $sc_name = $sc->{MemberId};
 

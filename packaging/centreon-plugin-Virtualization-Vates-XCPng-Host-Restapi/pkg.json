@@ -1,0 +1,10 @@
+{
+    "pkg_name": "centreon-plugin-Virtualization-Vates-XCPng-Host-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Vates XCP-ng hosts using Xen Orchestra REST API",
+    "plugin_name": "centreon_vates_xcpng_host_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/virtualization/vates/host/",
+        "apps/virtualization/vates/custom/"
+    ]
+}

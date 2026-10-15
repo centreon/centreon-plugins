@@ -9,11 +9,10 @@ Test Timeout        120s
 
 
 *** Variables ***
-${MOCKOON_JSON}         ${CURDIR}${/}mockoon.json
+${MOCKOON_JSON}     ${CURDIR}${/}mockoon.json
 
-${BASE_URL}             http://${HOSTNAME}:${APIPORT}
-${CMD}                  ${CENTREON_PLUGINS} --plugin=cloud::prometheus::exporters::nodeexporter::plugin --mode=storage --hostname=${HOSTNAME} --port=${APIPORT}
-
+${BASE_URL}         http://${HOSTNAME}:${APIPORT}
+${CMD}              ${CENTREON_PLUGINS} --plugin=cloud::prometheus::exporters::nodeexporter::plugin --mode=storage --hostname=${HOSTNAME} --port=${APIPORT}
 
 
 *** Test Cases ***
@@ -25,5 +24,5 @@ Storage ${tc}
 
     Ctn Run Command And Check Result As Strings    ${command}    ${expected_result}
 
-    Examples:         tc  extra_options                expected_result    --
-            ...       1   ${EMPTY}                     OK: Node '127.0.0.1:9101' All storages usage are ok
+    Examples:    tc    extra_options    expected_result    --
+    ...    1    ${EMPTY}    UNKNOWN: No data!

@@ -19,7 +19,7 @@
 #
 package apps::virtualization::vates::pool::plugin;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 use base qw(centreon::plugins::script_custom);
 
 

@@ -1,0 +1,9 @@
+{
+    "pkg_name": "centreon-plugin-Applications-Veeam-Vbr-Restapi",
+    "pkg_summary": "Centreon Plugin to monitor Veeam Backup & Replication using its Rest API",
+    "plugin_name": "centreon_veeam_vbr_restapi.pl",
+    "files": [
+        "centreon/plugins/script_custom.pm",
+        "apps/backup/veeam/vbr/restapi/"
+    ]
+}

@@ -1,4 +1,4 @@
-# centreon-plugins
+# centreon-plugins 
 
 [![License](https://img.shields.io/badge/License-APACHE2-brightgreen.svg)](https://github.com/centreon/centreon-plugins/blob/master/LICENSE.txt)
 

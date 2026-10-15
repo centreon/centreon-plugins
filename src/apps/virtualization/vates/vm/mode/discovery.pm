@@ -73,17 +73,15 @@ sub run {
         $vm_disco->{os_name} = "";
         $vm_disco->{os_distro} = "";
         $vm_disco->{os_uname} = "";
-        if (is_not_empty($vm->{os_version}) && ref($vm->{os_version} eq "HASH")) {
+        if (is_not_empty($vm->{os_version}) && ref($vm->{os_version}) eq "HASH") {
             $vm_disco->{os_name} = $vm->{os_version}->{name} // '';
             $vm_disco->{os_distro} = $vm->{os_version}->{distro} // '';
             $vm_disco->{os_uname} = $vm->{os_version}->{uname} // '';
         }
-        # Example : { "0/ipv4/0": "192.168.122.2", "0/ipv6/0": "fe80::c4eb:d6ff:fec6:41f3" },
-        $vm_disco->{ip_addresses} = {};
+        $vm_disco->{ip_addresses} = [];
         if (is_not_empty($vm->{addresses}) and ref $vm->{addresses} eq "HASH") {
-            $vm_disco->{ip_addresses} = $vm->{addresses};
             while ( my ($k, $v) = each %{$vm->{addresses}} ) {
-
+                push(@{$vm_disco->{ip_addresses}}, $v);
                 if ($v eq "127.0.0.1" or $v eq "localhost") {
                     next;
                 }
@@ -99,14 +97,7 @@ sub run {
             }
 
         }
-
-        # there can be empty tag in the api answer, this allows to trim empty tags.
-        $vm_disco->{tags} = [];
-        for my $tag (@{$vm->{tags}}){
-            if (is_not_empty($tag)) {
-                push(@{$vm_disco->{tags}}, $tag);
-            }
-        }
+        $vm_disco->{tags} = $options{custom}->clean_tags_array($vm->{tags});
 
         push(@{$disco_stats->{results}}, $vm_disco);
     }
