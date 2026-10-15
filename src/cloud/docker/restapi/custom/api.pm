@@ -344,7 +344,7 @@ sub internal_api_list_services {
 
     my $response = $self->{http}->request(
         hostname => $options{node_name},
-        url_path => '/services',
+        url_path => '/services?status=true',
         unknown_status => '', critical_status => '', warning_status => ''
     );
     my $services;
@@ -424,7 +424,7 @@ sub api_list_services {
                     service => {
                         service_id     => $task->{ServiceID},
                         service_name   => $service->{Spec}->{Name},
-                        replicas       => $service->{Spec}->{Mode}->{Replicated}->{Replicas} // 0,
+                        replicas       => $service->{ServiceStatus}->{DesiredTasks},
                         restart_policy => $service->{Spec}->{TaskTemplate}->{RestartPolicy}->{Condition},
                         total          => 0,
                         running        => 0,
@@ -608,19 +608,19 @@ Specify certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12).
+Specify type of certificate (C<PKCS12>).
 
 =item B<--api-display>
 
-Print JSON API.
+Print the API response.
 
 =item B<--api-write-display>
 
-Print json api in a file (to be used with C<--api-display>).
+Write the API response into a file (to be used with C<--api-display>).
 
 =item B<--api-read-file>
 
-Read API from file.
+Read the API response from a file.
 
 =item B<--reload-cache-time>
 
