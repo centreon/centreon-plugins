@@ -608,19 +608,19 @@ Specify certificate's password.
 
 =item B<--cert-pkcs12>
 
-Specify type of certificate (PKCS12).
+Specify type of certificate (C<PKCS12>).
 
 =item B<--api-display>
 
-Print JSON API.
+Print the API response.
 
 =item B<--api-write-display>
 
-Print json api in a file (to be used with C<--api-display>).
+Write the API response into a file (to be used with C<--api-display>).
 
 =item B<--api-read-file>
 
-Read API from file.
+Read the API response from a file.
 
 =item B<--reload-cache-time>
 
