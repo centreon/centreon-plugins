@@ -189,7 +189,7 @@ sub load_memory_xml_v3 {
     foreach my $node ($node_memory->getChildNodes()) {
         my $name = $node->getLocalName();
         next if (!defined($name));
-        if ($name eq 'TotalUse') {
+        if ($name eq 'Malloced') {
             $memory->{total_use} = $node->string_value;
         }
         if ($name eq 'InUse') {
