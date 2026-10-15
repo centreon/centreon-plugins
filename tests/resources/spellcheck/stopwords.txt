@@ -33,6 +33,7 @@ ARN
 AS400
 ASAM
 Athonet
+Atlassian
 Aviat
 Avigilon
 Avocent
@@ -207,8 +208,10 @@ memBuffer
 memTotalReal
 Meraki
 MIB
+microcores
 Microkernel
 Mikrotik
+millicores
 milliwatt
 milliwatts
 MMC
@@ -239,6 +242,7 @@ nagios
 Nagios
 NagVis
 --nagvis-perfdata
+nanocores
 Netasq
 Netconf
 Netscaler
@@ -307,9 +311,9 @@ psu
 PVX
 QoS
 Qtree
-qwinsta
 queue-messages-inflighted
 quts
+qwinsta
 raidvolume
 redis-cli
 ReplicaJobSession
@@ -353,6 +357,7 @@ Stackdriver
 standAlone
 statefile
 --statefile-concat-cwd
+Statuspage
 Stormshield
 sudoers
 superseed
@@ -439,6 +444,7 @@ WildFire
 WLAN
 WLC
 WSMAN
+XCP-ng
 Xen
 XPath
 ZDX

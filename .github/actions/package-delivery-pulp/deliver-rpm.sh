@@ -159,9 +159,7 @@ for ARCH in noarch x86_64; do
   MAX_PARALLEL_UPLOADS=8
   for i in "${!ARCH_FILES[@]}"; do
     FILE=${ARCH_FILES[$i]}
-    if ((i % 40 == 0)); then
-      refresh_pulp_token
-    fi
+    refresh_pulp_token
     (
       # subshell-local: the inherited token can go stale between parent refreshes
       refresh_pulp_token
@@ -208,9 +206,7 @@ for ARCH in noarch x86_64; do
   # parallelized like the uploads: sequential took one task GET per package (~6 min at 675)
   RESOLVE_DIR=$(mktemp -d)
   for i in "${!TASK_HREFS[@]}"; do
-    if ((i % 40 == 0)); then
-      refresh_pulp_token
-    fi
+    refresh_pulp_token
     (
       resolve_uploaded_content "${TASK_HREFS[$i]}" "${SHA256S[$i]}" > "$RESOLVE_DIR/$i.content"
     ) &

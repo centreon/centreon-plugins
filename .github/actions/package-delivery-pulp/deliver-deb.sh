@@ -210,9 +210,7 @@ for i in "${!FILES[@]}"; do
   if [[ -n "${LEGACY_FRESH[$arch]+set}" ]]; then
     continue
   fi
-  if ((i % 40 == 0)); then
-    refresh_pulp_token
-  fi
+  refresh_pulp_token
   sha=$(sha256sum "$FILE" | cut -d' ' -f1)
   existing=$(lookup_deb_content "packages" "--data-urlencode sha256=$sha")
   if [[ -z "$existing" ]]; then
@@ -312,9 +310,7 @@ UPLOAD_DIR=$(mktemp -d)
 MAX_PARALLEL_UPLOADS=8
 for i in "${!ORPHAN_FILES[@]}"; do
   FILE=${ORPHAN_FILES[$i]}
-  if ((i % 40 == 0)); then
-    refresh_pulp_token
-  fi
+  refresh_pulp_token
   (
     # subshell-local: the inherited token can go stale between parent refreshes
     refresh_pulp_token
@@ -343,9 +339,7 @@ for i in "${!ORPHAN_FILES[@]}"; do
   ORPHAN_SHA256S+=("$(sha256sum "$FILE" | cut -d' ' -f1)")
 done
 for i in "${!ORPHAN_FILES[@]}"; do
-  if ((i % 40 == 0)); then
-    refresh_pulp_token
-  fi
+  refresh_pulp_token
   (
     resolve_task_content "$(cat "$UPLOAD_DIR/$i.task")" "packages" \
       "--data-urlencode sha256=${ORPHAN_SHA256S[$i]}" > "$UPLOAD_DIR/$i.content"
@@ -368,9 +362,7 @@ done
 # task); a failed create (already existing on a job re-run) falls back to a lookup
 echo "[INFO] Associating ${#PACKAGE_HREFS[@]} package(s) with $SUITE/main"
 for i in "${!PACKAGE_HREFS[@]}"; do
-  if ((i % 40 == 0)); then
-    refresh_pulp_token
-  fi
+  refresh_pulp_token
   (
     refresh_pulp_token
     out=$(post_json "$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/package_release_components/" \

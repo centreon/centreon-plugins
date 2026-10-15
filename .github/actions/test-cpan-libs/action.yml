@@ -37,21 +37,26 @@ runs:
         curl -sSL $GPG_KEY_URL -o RPM-GPG-KEY-CES
         rpm --import RPM-GPG-KEY-CES
         # Add Centreon repository matching the current stability so that pre-existing packaged dependencies are available
-        {
-          echo "[centreon-plugins-${REPO_STABILITY}]"
-          echo "name=centreon plugins ${REPO_STABILITY} x86_64"
-          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${REPO_STABILITY}/x86_64"
-          echo 'enabled=1'
-          echo 'gpgcheck=1'
-          echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
-          echo ''
-          echo "[centreon-plugins-${REPO_STABILITY}-noarch]"
-          echo "name=centreon plugins ${REPO_STABILITY} noarch"
-          echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${REPO_STABILITY}/noarch"
-          echo 'enabled=1'
-          echo 'gpgcheck=1'
-          echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
-        } > /etc/yum.repos.d/centreon-plugins-${REPO_STABILITY}.repo
+        # testing only holds the libs rebuilt for the release: unchanged dependencies come from stable
+        REPO_CHANNELS="$REPO_STABILITY"
+        [[ "$REPO_STABILITY" == "testing" ]] && REPO_CHANNELS="testing stable"
+        for CHANNEL in $REPO_CHANNELS; do
+          {
+            echo "[centreon-plugins-${CHANNEL}]"
+            echo "name=centreon plugins ${CHANNEL} x86_64"
+            echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${CHANNEL}/x86_64"
+            echo 'enabled=1'
+            echo 'gpgcheck=1'
+            echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
+            echo ''
+            echo "[centreon-plugins-${CHANNEL}-noarch]"
+            echo "name=centreon plugins ${CHANNEL} noarch"
+            echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${CHANNEL}/noarch"
+            echo 'enabled=1'
+            echo 'gpgcheck=1'
+            echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
+          } > /etc/yum.repos.d/centreon-plugins-${CHANNEL}.repo
+        done
       shell: bash
 
     - if: ${{ inputs.package_extension == 'deb' }}
@@ -70,12 +75,18 @@ runs:
           *) REPO_STABILITY="unstable" ;;
         esac
         # Add Centreon repository matching the current stability so that pre-existing packaged dependencies are available
-        if [[ "$DISTRIB" == "jammy" || "$DISTRIB" == "noble" ]]; then
-          repo="ubuntu-plugins-${REPO_STABILITY}"
-        else
-          repo="apt-plugins-${REPO_STABILITY}"
-        fi
-        echo "deb https://packages.centreon.com/$repo/ $DISTRIB main" | tee /etc/apt/sources.list.d/centreon-plugins.list
+        # testing only holds the libs rebuilt for the release: unchanged dependencies come from stable
+        REPO_CHANNELS="$REPO_STABILITY"
+        [[ "$REPO_STABILITY" == "testing" ]] && REPO_CHANNELS="testing stable"
+        : > /etc/apt/sources.list.d/centreon-plugins.list
+        for CHANNEL in $REPO_CHANNELS; do
+          if [[ "$DISTRIB" == "jammy" || "$DISTRIB" == "noble" ]]; then
+            repo="ubuntu-plugins-${CHANNEL}"
+          else
+            repo="apt-plugins-${CHANNEL}"
+          fi
+          echo "deb https://packages.centreon.com/$repo/ $DISTRIB main" | tee -a /etc/apt/sources.list.d/centreon-plugins.list
+        done
         # Avoid apt to clean packages cache directory
         rm -f /etc/apt/apt.conf.d/docker-clean
         apt-get update

@@ -105,29 +105,23 @@ sub set_counters {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my ($filter_name, $filter_value) = ('uuid', $self->{option_results}->{pool_uuid});
     # default filter use uuid, or name if not present.
-    my $filter = "uuid:" . $self->{option_results}->{pool_uuid};
-    if (is_empty($self->{option_results}->{pool_uuid})) {
-        $filter = "name_label:" . $self->{option_results}->{pool_name};
+    if (is_empty($self->{option_results}->{pool_uuid})){
+        ($filter_name, $filter_value) = ('name_label', $self->{option_results}->{pool_name});
     }
-    my $response = $options{custom}->request_api_get(
-        endpoint  => "pools",
-        get_param => [ "fields=name_label,uuid,master,HA_enabled", "filter=" . $filter ]
-    );
-    if (!defined($response) or ref($response) ne "ARRAY" or scalar @$response != 1) {
-        $self->{output}->option_exit(short_msg => "no pool found, api did not return an array with one element. Please check --pool-uuid and --pool-name parameter or --debug.");
-    }
-    my $pool = $response->[0];
 
-    my $master = $options{custom}->request_api_get(
+    my $pool = $options{custom}->request_api_get_one(
+        endpoint => "pools",
+        fields   => "name_label,uuid,master,HA_enabled",
+        filter   => [$filter_name, $filter_value ]
+    );
+
+    my $master = $options{custom}->request_api_get_one(
         endpoint  => "hosts",
-                get_param => [ "fields=name_label,uuid,power_state", "filter=uuid:" .  $pool->{master} ]
-
+        fields => "name_label,uuid,power_state",
+        filter => ["uuid", $pool->{master} ],
     );
-    if (!defined($master) or ref($master) ne "ARRAY" or scalar @$response != 1) {
-        $self->{output}->option_exit(short_msg => "no host found, api did not return an array with one element. Please check --pool-uuid and --pool-name parameter or --debug.");
-    }
-    $master = $master->[0];
     if (!defined($master) or !defined($master->{name_label})) {
         $self->{output}->option_exit(short_msg => "unable to retrieve the master host '" . $pool->{master} . "' of pool '" . $pool->{name_label} . "'.");
     }

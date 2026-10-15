@@ -299,6 +299,24 @@ sub kubernetes_list_pods {
     return $response;
 }
 
+sub kubernetes_list_pod_metrics {
+    my ($self, %options) = @_;
+
+    my $namespace = defined($self->{option_results}->{namespace}) && $self->{option_results}->{namespace} ne ''
+        ? $self->{option_results}->{namespace} : '';
+    my $raw_path = $namespace ne ''
+        ? '/apis/metrics.k8s.io/v1beta1/namespaces/' . $namespace . '/pods'
+        : '/apis/metrics.k8s.io/v1beta1/pods';
+
+    my $cmd = "get --raw='$raw_path' --kubeconfig='" . $self->{config_file} . "'"
+        . " --request-timeout='" . $self->{timeout} . "'";
+    $cmd .= " --context='" . $self->{context} . "'" if (defined($self->{context}) && $self->{context} ne '');
+
+    my $response = $self->execute(cmd_options => $cmd);
+
+    return $response;
+}
+
 sub kubernetes_list_pvs {
     my ($self, %options) = @_;
 

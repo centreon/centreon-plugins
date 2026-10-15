@@ -51,6 +51,7 @@ sub new {
         'node-usage'                    => 'cloud::kubernetes::mode::nodeusage',
         'persistentvolume-status'       => 'cloud::kubernetes::mode::persistentvolumestatus',
         'pod-status'                    => 'cloud::kubernetes::mode::podstatus',
+        'pod-usage'                     => 'cloud::kubernetes::mode::podusage',
         'replicaset-status'             => 'cloud::kubernetes::mode::replicasetstatus',
         'replicationcontroller-status'  => 'cloud::kubernetes::mode::replicationcontrollerstatus',
         'resourcequota-status'          => 'cloud::kubernetes::mode::resourcequotastatus',

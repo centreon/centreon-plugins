@@ -73,7 +73,7 @@ sub run {
         $vm_disco->{os_name} = "";
         $vm_disco->{os_distro} = "";
         $vm_disco->{os_uname} = "";
-        if (is_not_empty($vm->{os_version}) && ref($vm->{os_version} eq "HASH")) {
+        if (is_not_empty($vm->{os_version}) && ref($vm->{os_version}) eq "HASH") {
             $vm_disco->{os_name} = $vm->{os_version}->{name} // '';
             $vm_disco->{os_distro} = $vm->{os_version}->{distro} // '';
             $vm_disco->{os_uname} = $vm->{os_version}->{uname} // '';
@@ -97,14 +97,7 @@ sub run {
             }
 
         }
-
-        # there can be empty tag in the api answer, this allows to trim empty tags.
-        $vm_disco->{tags} = [];
-        for my $tag (@{$vm->{tags}}){
-            if (is_not_empty($tag)) {
-                push(@{$vm_disco->{tags}}, $tag);
-            }
-        }
+        $vm_disco->{tags} = $options{custom}->clean_tags_array($vm->{tags});
 
         push(@{$disco_stats->{results}}, $vm_disco);
     }

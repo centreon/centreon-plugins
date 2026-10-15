@@ -48,6 +48,8 @@ mod snmp;
 
 use env_logger::Env;
 use generic::Command;
+use generic::FORMAT_VERSION;
+use generic::schema_url;
 use generic::Status;
 use generic::error::*;
 use lalrpop_util::lalrpop_mod;
@@ -60,11 +62,15 @@ lalrpop_mod!(grammar);
 /// Reads a JSON file and deserializes it into a [`Command`].
 ///
 /// # Errors
-/// Returns an error if the file cannot be read or if the JSON is malformed.
+/// Returns an error if the file cannot be read, if the JSON is malformed, or if the
+/// collection targets a format version this plugin does not support.
 fn json_to_command(file_name: &str) -> Result<Command, Error> {
     // Transform content of the file into a string
     let configuration = fs::read_to_string(file_name)?;
-    let command = serde_json::from_str(&configuration)?;
+    let command: Command = serde_json::from_str(&configuration)?;
+    // before anything else, so an incompatible collection is named as such instead of
+    // failing later on a key that moved or disappeared
+    command.check_format_version()?;
     Ok(command)
 }
 
@@ -177,7 +183,21 @@ fn snmp_plugin() -> Result<(), Error> {
                         println!("  --check-format                   Check JSON file validity and exit");
                         println!("  --check-response                 Display raw SNMP response");
                         println!("  --list-counters                  List all available metrics");
+                        println!("  -V, --version                    Print the plugin version and the collection format it supports");
                         println!("  -h, --help                       Print this help message");
+                        std::process::exit(0);
+                    }
+                    Short('V') | Long("version") => {
+                        println!("{} {}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
+                        println!("Supported collection format version: {}", FORMAT_VERSION);
+                        println!("Schema: {}", schema_url());
+                        // a 0 major is what semantic versioning calls an unstable release, so
+                        // the notice goes away on its own the day the crate reaches 1.0.0
+                        if env!("CARGO_PKG_VERSION_MAJOR") == "0" {
+                            println!(
+                                "Beta release: no stability guarantee, the collection format may still change in a way that breaks existing collections."
+                            );
+                        }
                         std::process::exit(0);
                     }
                     Long("check-format") => {

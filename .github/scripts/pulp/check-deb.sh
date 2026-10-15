@@ -42,7 +42,7 @@ for i in "${!E_FILENAME[@]}"; do
   PRESENT_IDX[$i]=false
   version_href=${VERSION_BY_REPO[${E_REPOSITORY[$i]}]}
   [[ -n "$version_href" ]] || continue
-  ((i % 40 == 0)) && refresh_pulp_token
+  refresh_pulp_token
   url="$PULP_URL/$PULP_DOMAIN/api/v3/content/deb/packages/?$(
     printf 'repository_version=%s&sha256=%s&fields=pulp_href&limit=1' \
       "$(jq -rn --arg v "$version_href" '$v | @uri')" "${E_SHA256[$i]}"
