@@ -56,6 +56,14 @@ sub check_options {
         push @{$options{request}->{ssl_opt}}, 'SSL_ca_file => "' . $options{request}->{cacert_file} . '"'
             if (defined($options{request}->{cacert_file}));
     }
+    if (defined($options{request}->{cert_pkcs12}) && defined($options{request}->{cert_file}) && $options{request}->{cert_file} ne '') {
+        # IO::Socket::SSL loads the certificate and key from the file when it has a .p12 extension
+        $self->{cert_pwd} = $options{request}->{cert_pwd};
+        push @{$options{request}->{ssl_opt}}, 'SSL_use_cert => 1';
+        push @{$options{request}->{ssl_opt}}, 'SSL_cert_file => "' . $options{request}->{cert_file} . '"';
+        push @{$options{request}->{ssl_opt}}, 'SSL_passwd_cb => sub { return $self->{cert_pwd} }'
+            if (defined($options{request}->{cert_pwd}) && $options{request}->{cert_pwd} ne '');
+    }
     my $append = '';
     foreach (@{$options{request}->{ssl_opt}}) {
         if ($_ ne '') {
@@ -153,12 +161,6 @@ sub request {
     }
 
     $self->set_proxy(request => $request_options, url => $url);
-
-    if (defined($request_options->{cert_pkcs12}) && $request_options->{cert_file} ne '' && $request_options->{cert_pwd} ne '') {
-        eval "use Net::SSL"; die $@ if $@;
-        $ENV{HTTPS_PKCS12_FILE} = $request_options->{cert_file};
-        $ENV{HTTPS_PKCS12_PASSWORD} = $request_options->{cert_pwd};
-    }
 
     if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
         my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
