@@ -1,0 +1,44 @@
+name: "check-artifactory"
+description: "Check that Artifactory answers an authenticated request. Artifactory is a non-blocking backup of Pulp: when it is unavailable, the Artifactory steps are skipped with a warning."
+inputs:
+  artifactory_token:
+    description: "Artifactory token"
+    required: true
+outputs:
+  available:
+    description: "true when Artifactory is reachable with the given token"
+    value: ${{ steps.check.outputs.available }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check Artifactory availability
+      id: check
+      shell: bash
+      env:
+        JF_URL: https://centreon.jfrog.io
+        JF_ACCESS_TOKEN: ${{ inputs.artifactory_token }}
+      run: |
+        # The version endpoint also answers anonymous requests: an empty token must count as
+        # unavailable, while an invalid one is rejected.
+        if [ -z "$JF_ACCESS_TOKEN" ]; then
+          reason="the token is empty"
+        else
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 --retry 2 \
+            -H "Authorization: Bearer $JF_ACCESS_TOKEN" \
+            "$JF_URL/artifactory/api/system/version" || true)
+          case "$code" in
+            200)
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+            000) reason="the host is unreachable" ;;
+            400|401|403) reason="the token is rejected (HTTP $code)" ;;
+            *) reason="it answers HTTP $code" ;;
+          esac
+        fi
+
+        message="Artifactory ($JF_URL) is unavailable, $reason: the Artifactory steps are skipped. Pulp is not affected."
+        echo "::warning title=Artifactory unavailable::$message"
+        echo "$message" >> "$GITHUB_STEP_SUMMARY"
+        echo "available=false" >> "$GITHUB_OUTPUT"
