@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -14,7 +14,7 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and 
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -44,12 +44,12 @@ sub check_options {
     my $resource = $self->{option_results}->{resource};
     my $server = $self->{option_results}->{server};
     if ($resource !~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\.Sql\/servers\/.*\/databases\/.*$/) {
-        if (!defined($server) || $server eq '') {
+        if (defined($server) && $server ne '') {
+            $self->{az_resource_type} = 'servers/' . $server . '/databases';
+        } elsif (!defined($self->{az_resource_type}) || $self->{az_resource_type} eq '') {
             $self->{output}->add_option_msg(short_msg => 'Need to specify either --resource <name> with --resource-group and --server option OR --resource <id>.');
             $self->{output}->option_exit();
         }
-
-        $self->{az_resource_type} = 'servers/' . $server . '/databases';
     }
 
     $self->{az_resource_namespace} = 'Microsoft.Sql' if (!defined($self->{az_resource_namespace}) || $self->{az_resource_namespace} eq '');
