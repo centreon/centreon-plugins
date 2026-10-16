@@ -271,6 +271,58 @@
       "endpoint": "api/v3/appconnector/config",
       "responses": [
         {
+          "uuid": "35197f29-a0ad-4941-a783-94f911c36726",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [
+            {
+              "key": "access-control-allow-headers",
+              "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+            },
+            {
+              "key": "access-control-allow-methods",
+              "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+            },
+            {
+              "key": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "key": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "x-content-type-options",
+              "value": "nosniff"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "cluster_id",
+              "value": "291",
+              "invert": false,
+              "operator": "equals"
+            }
+          ],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "body": "{\n  \"cluster_id\": \"291\",\n  \"result\": [\n    {\n      \"app_connector_id\": 110,\n      \"name\": \"container7\",\n      \"cluster_id\": 291,\n      \"provision_key\": \"dummy-provision-key\",\n      \"created_at\": \"2026-10-01T08:26:43Z\",\n      \"updated_at\": \"2026-10-01T08:29:19Z\",\n      \"status\": \"connected\"\n    }\n  ]\n}"
+        },
+        {
           "uuid": "8b16302b-5e4a-47a6-87c9-30df818cc5a5",
           "latency": 0,
           "statusCode": 200,
@@ -309,7 +361,7 @@
           "rulesOperator": "OR",
           "disableTemplating": false,
           "fallbackTo404": false,
-          "default": false,
+          "default": true,
           "crudKey": "id",
           "callbacks": [],
           "body": "{}"
