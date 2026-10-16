@@ -117,46 +117,36 @@ jobs:
       matrix:
         include:
           - package_extension: rpm
-            image: almalinux:8
+            image: alma8
             distrib: el8
           - package_extension: rpm
-            image: almalinux:9
+            image: alma9
             distrib: el9
           - package_extension: rpm
-            image: almalinux:10
+            image: alma10
             distrib: el10
           - package_extension: deb
-            image: debian:bookworm
+            image: bookworm
             distrib: bookworm
           - package_extension: deb
-            image: debian:trixie
+            image: trixie
             distrib: trixie
           - package_extension: deb
-            image: ubuntu:jammy
+            image: jammy
             distrib: jammy
           - package_extension: deb
-            image: ubuntu:noble
+            image: noble
             distrib: noble
 
     container:
-      image: ${{ matrix.image }}
+      # Testing image built by docker-builder-testing-plugins.yml, with zstd and the Centreon repositories
+      image: ghcr.io/${{ github.repository }}/testing:${{ matrix.image }}
 
     name: test ${{ matrix.distrib }}
 
     steps:
       - name: Checkout sources
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      # The cache was saved with zstd compression: without zstd, the restore looks for a gzip cache and misses it
-      - if: ${{ matrix.package_extension == 'rpm' }}
-        name: Install zstd
-        run: dnf install -y zstd
-        shell: bash
-
-      - if: ${{ matrix.package_extension == 'deb' }}
-        name: Install zstd
-        run: apt-get update && apt-get install -y zstd
-        shell: bash
 
       - name: Restore ${{ matrix.distrib }} package from cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -168,8 +158,6 @@ jobs:
       - name: Install, launch and uninstall the daemon
         env:
           PACKAGE_EXTENSION: ${{ matrix.package_extension }}
-          DISTRIB: ${{ matrix.distrib }}
-          STABILITY: ${{ needs.get-environment.outputs.stability }}
         run: bash .github/scripts/connector-vmware/test-daemon-package.sh
         shell: bash
 

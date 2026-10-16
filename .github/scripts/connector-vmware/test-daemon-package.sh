@@ -5,13 +5,12 @@
 # replaced by the stubs from tests/connectors/vmware, and the daemon is
 # launched without any vCenter, so only the daemon itself is tested.
 #
-# Must be run as root from the repository root, in a disposable container,
-# with the package to test in the current directory.
+# Must be run as root from the repository root, in a disposable "testing" container
+# (the Centreon repositories are already configured), with the package to test
+# in the current directory.
 #
 # Required environment variables:
 #   PACKAGE_EXTENSION    Package extension (rpm or deb)
-#   DISTRIB              Distribution (e.g. el9, bookworm)
-#   STABILITY            Repository stability (stable, testing, unstable...)
 set -euo pipefail
 
 DAEMON_PORT=5700
@@ -26,57 +25,15 @@ fail() {
   exit 1
 }
 
-# Map stability to repo channel: stable → stable, testing → testing, anything else → unstable
-case "$STABILITY" in
-  stable|testing) REPO_STABILITY="$STABILITY" ;;
-  *) REPO_STABILITY="unstable" ;;
-esac
-# testing only holds the packages rebuilt for the release: unchanged dependencies come from stable
-REPO_CHANNELS="$REPO_STABILITY"
-[[ "$REPO_STABILITY" == "testing" ]] && REPO_CHANNELS="testing stable"
-
-echo "=== Configure repositories ==="
-if [[ "$PACKAGE_EXTENSION" == "rpm" ]]; then
-  dnf install -y epel-release 'dnf-command(config-manager)'
-  dnf config-manager --set-enabled powertools || true # alma 8
-  dnf config-manager --set-enabled crb || true # alma 9 and 10
-  rpm --import https://yum-gpg.centreon.com/RPM-GPG-KEY-CES
-  for CHANNEL in $REPO_CHANNELS; do
-    for REPO_ARCH in x86_64 noarch; do
-      {
-        echo "[centreon-plugins-${CHANNEL}-${REPO_ARCH}]"
-        echo "name=centreon plugins ${CHANNEL} ${REPO_ARCH}"
-        echo "baseurl=https://packages.centreon.com/rpm-plugins/${DISTRIB}/${CHANNEL}/${REPO_ARCH}"
-        echo 'enabled=1'
-        echo 'gpgcheck=1'
-        echo 'gpgkey=https://yum-gpg.centreon.com/RPM-GPG-KEY-CES'
-        echo ''
-      } >> /etc/yum.repos.d/centreon-plugins.repo
-    done
-  done
-else
-  export DEBIAN_FRONTEND=noninteractive
-  apt-get update
-  apt-get install -y wget gpg
-  wget -O- https://apt-key.centreon.com | gpg --dearmor > /etc/apt/trusted.gpg.d/centreon.gpg
-  for CHANNEL in $REPO_CHANNELS; do
-    if [[ "$DISTRIB" == "jammy" || "$DISTRIB" == "noble" ]]; then
-      repo="ubuntu-plugins-${CHANNEL}"
-    else
-      repo="apt-plugins-${CHANNEL}"
-    fi
-    echo "deb https://packages.centreon.com/$repo/ $DISTRIB main" >> /etc/apt/sources.list.d/centreon-plugins.list
-  done
-  apt-get update
-fi
-
 echo "=== Prepare the system ==="
+# runuser is not installed in all base images (e.g. almalinux:10)
+[[ "$PACKAGE_EXTENSION" == "rpm" ]] && dnf install -y util-linux
 # The postinstall script gives the configuration file to centreon-gorgone:centreon.
 # On a real poller, these users are created by the Centreon packages.
-groupadd -r centreon
-useradd -r -M -g centreon -s /bin/bash centreon
-groupadd -r centreon-gorgone
-useradd -r -M -g centreon-gorgone -G centreon -s /bin/bash centreon-gorgone
+getent group centreon >/dev/null || groupadd -r centreon
+id centreon >/dev/null 2>&1 || useradd -r -M -g centreon -s /bin/bash centreon
+getent group centreon-gorgone >/dev/null || groupadd -r centreon-gorgone
+id centreon-gorgone >/dev/null 2>&1 || useradd -r -M -g centreon-gorgone -G centreon -s /bin/bash centreon-gorgone
 # systemd is not running in the container: replace systemctl to record the calls of the postinstall script
 cat > /usr/bin/systemctl <<EOF
 #!/bin/sh
@@ -87,6 +44,16 @@ chmod 755 /usr/bin/systemctl
 PACKAGE_FILES=(./*."$PACKAGE_EXTENSION")
 [[ ${#PACKAGE_FILES[@]} -eq 1 && -f "${PACKAGE_FILES[0]}" ]] || fail "Expected exactly one .$PACKAGE_EXTENSION file, found: ${PACKAGE_FILES[*]}"
 PACKAGE_FILE="${PACKAGE_FILES[0]}"
+
+# The daemon is used through this plugin, which brings the common Perl dependencies of the plugins
+echo "=== Install the VMware connector plugin ==="
+if [[ "$PACKAGE_EXTENSION" == "rpm" ]]; then
+  dnf install -y centreon-plugin-Virtualization-Vmware2-Connector-Plugin
+else
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get update
+  apt-get install -y centreon-plugin-virtualization-vmware2-connector-plugin
+fi
 
 echo "=== Install $PACKAGE_FILE ==="
 if [[ "$PACKAGE_EXTENSION" == "rpm" ]]; then
