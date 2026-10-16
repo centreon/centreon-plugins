@@ -72,7 +72,7 @@ Gateway-status ${tc}
     ...    OK: gateway 'LOCATION_501' operational state: active [desired state: active], running version: 8.0.8P3a, last update: 8m 9s - health color: green - VRRP state: master | 'gateways.detected.count'=1;;;0; 'LOCATION_501#gateway.update.time.last.seconds'=489s;;;0;
     ...    6
     ...    --include-gateway-name=1
-    ...    OK: All gateways are ok | 'gateways.detected.count'=7;;;0; 'LOCATION_102#gateway.update.time.last.seconds'=497s;;;0; 'LOCATION_2-1-gw-02#gateway.update.time.last.seconds'=492s;;;0; 'LOCATION_301#gateway.update.time.last.seconds'=490s;;;0; 'LOCATION_401#gateway.update.time.last.seconds'=498s;;;0; 'LOCATION_501#gateway.update.time.last.seconds'=489s;;;0;
+    ...    OK: All gateways are ok | 'gateways.detected.count'=7;;;0; 'LOCATION_101#gateway.update.time.last.seconds'=499s;;;0; 'LOCATION_102#gateway.update.time.last.seconds'=497s;;;0; 'LOCATION_2-1-gw-01#gateway.update.time.last.seconds'=490s;;;0; 'LOCATION_301#gateway.update.time.last.seconds'=490s;;;0; 'LOCATION_401#gateway.update.time.last.seconds'=498s;;;0; 'LOCATION_501#gateway.update.time.last.seconds'=489s;;;0; 'LOCATION_2-1-gw-02#gateway.update.time.last.seconds'=492s;;;0;
     ...    7
     ...    --exclude-gateway-name=1
     ...    UNKNOWN: Number of gateways detected: 0 | 'gateways.detected.count'=0;;;0;

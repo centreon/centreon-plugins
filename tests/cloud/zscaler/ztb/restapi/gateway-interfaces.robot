@@ -72,15 +72,15 @@ Gateway-interfaces ${tc}
     ...    UNKNOWN: Number of gateways detected: 0 | 'gateways.detected.count'=0;;;0;
     ...    8
     ...    --include-gateway-name=1
-    ...    OK: All gateways are ok | 'gateways.detected.count'=7;;;0; 'LOCATION_102~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_102~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_102~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_2-1-gw-02~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_2-1-gw-02~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_2-1-gw-02~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_301~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_301~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_301~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_401~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_401~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_401~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_501~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_501~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_501~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100
+    ...    OK: All gateways are ok | 'gateways.detected.count'=7;;;0; 'LOCATION_101~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_101~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_101~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_102~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_102~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_102~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_2-1-gw-01~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_2-1-gw-01~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_2-1-gw-01~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_301~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_301~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_301~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_401~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_401~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_401~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_501~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_501~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_501~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100 'LOCATION_2-1-gw-02~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_2-1-gw-02~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_2-1-gw-02~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100
     ...    9
     ...    --exclude-gateway-name=1
     ...    UNKNOWN: Number of gateways detected: 0 | 'gateways.detected.count'=0;;;0;
     ...    10
-    ...    --include-gateway-id=1
+    ...    --include-gateway-id='^id2$'
     ...    OK: gateway 'LOCATION_102' interface 'ge5' operational state: up [admin state: up], jitter: 2.15 ms, latency: 20.7 ms, loss: 0.04 % | 'gateways.detected.count'=1;;;0; 'LOCATION_102~ge5#gateway.interface.jitter.milliseconds'=2.15ms;;;0; 'LOCATION_102~ge5#gateway.interface.latency.milliseconds'=20.7ms;;;0; 'LOCATION_102~ge5#gateway.interface.loss.percentage'=0.04%;;;0;100
     ...    11
-    ...    --exclude-gateway-id=1
+    ...    --exclude-gateway-id='^id2$'
     ...    UNKNOWN: Number of gateways detected: 0 | 'gateways.detected.count'=0;;;0;
     ...    12
     ...    --custom-perfdata-instances='%(siteName) %(clusterName) %(gatewayName) %(interfaceName)'
