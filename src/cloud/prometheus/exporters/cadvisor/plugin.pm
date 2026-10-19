@@ -35,6 +35,7 @@ sub new {
         'list-containers' => 'cloud::prometheus::exporters::cadvisor::mode::listcontainers',
         'load'            => 'cloud::prometheus::exporters::cadvisor::mode::load',
         'memory'          => 'cloud::prometheus::exporters::cadvisor::mode::memory',
+        'presence'        => 'cloud::prometheus::exporters::cadvisor::mode::presence',
         'storage'         => 'cloud::prometheus::exporters::cadvisor::mode::storage',
         'task-state'      => 'cloud::prometheus::exporters::cadvisor::mode::taskstate'
     };
