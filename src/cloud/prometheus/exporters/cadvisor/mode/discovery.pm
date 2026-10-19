@@ -70,6 +70,17 @@ sub check_options {
     }
 }
 
+# A container can have several series (restarts, image updates): keep the image of the most recent one
+sub update_image {
+    my ($self, %options) = @_;
+
+    my $last_seen = $options{result}->{value}->[1] // 0;
+    return if (defined($options{item}->{_last_seen}) && $options{item}->{_last_seen} >= $last_seen);
+
+    $options{item}->{_last_seen} = $last_seen;
+    $options{item}->{container_image} = $options{result}->{metric}->{image} // '';
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -111,6 +122,7 @@ sub manage_selection {
                 kubernetes_pod       => '',
                 kubernetes_namespace => ''
             };
+            $self->update_image(item => $containers->{$id}, result => $result);
             next;
         }
 
@@ -146,8 +158,10 @@ sub manage_selection {
             container_name  => $container,
             container_image => $metric->{image} // ''
         };
+        $self->update_image(item => $containers->{$container_id}, result => $result);
     }
 
+    delete $_->{_last_seen} foreach (values %$containers);
     my @disco_data = (
         map({ $pods->{$_} } sort(keys %$pods)),
         map({ $containers->{$_} } sort(keys %$containers))
