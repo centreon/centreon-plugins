@@ -37,22 +37,25 @@ Load ${tc}
     ...    --
     ...    1
     ...    --verbose
-    ...    OK: All containers load are ok | 'load_multi_app'=2.00;;;0; 'load_multi_sidecar'=0.00;;;0; 'load_web-1_nginx'=3.00;;;0;\nContainer 'app' [pod: multi] Load: 2.00\nContainer 'sidecar' [pod: multi] Load: 0.00\nContainer 'nginx' [pod: web-1] Load: 3.00
+    ...    OK: All containers load are ok | 'load_web-1_nginx'=3.00;;;0; 'load_multi_app'=2.00;;;0; 'load_multi_sidecar'=0.00;;;0;\nContainer 'nginx' [pod: web-1] Load: 3.00\nContainer 'app' [pod: multi] Load: 2.00\nContainer 'sidecar' [pod: multi] Load: 0.00
     ...    2
     ...    --container='container=""'
-    ...    OK: All containers load are ok | 'load_multi'=1.00;;;0; 'load_web-1'=4.00;;;0;
+    ...    OK: All containers load are ok | 'load_web-1'=4.00;;;0; 'load_multi'=1.00;;;0;
     ...    3
     ...    --container='name="haproxy"'
     ...    OK: Container 'haproxy' Load: 7.00 | 'load'=7.00;;;0;
     ...    4
-    ...    --warning-load=2.5
-    ...    WARNING: Container 'nginx' [pod: web-1] Load: 3.00 | 'load_multi_app'=2.00;0:2.5;;0; 'load_multi_sidecar'=0.00;0:2.5;;0; 'load_web-1_nginx'=3.00;0:2.5;;0;
+    ...    --pod='pod="web-1"' --verbose
+    ...    OK: All containers load are ok | 'load_web-1_nginx'=3.00;;;0; 'load_web-1_nginx'=5.00;;;0;\nContainer 'nginx' [pod: web-1] Load: 3.00\nContainer 'nginx' [pod: web-1] Load: 5.00
     ...    5
-    ...    --critical-load=1.5
-    ...    CRITICAL: Container 'app' [pod: multi] Load: 2.00 - Container 'nginx' [pod: web-1] Load: 3.00 | 'load_multi_app'=2.00;;0:1.5;0; 'load_multi_sidecar'=0.00;;0:1.5;0; 'load_web-1_nginx'=3.00;;0:1.5;0;
+    ...    --warning-load=2.5
+    ...    WARNING: Container 'nginx' [pod: web-1] Load: 3.00 | 'load_web-1_nginx'=3.00;0:2.5;;0; 'load_multi_app'=2.00;0:2.5;;0; 'load_multi_sidecar'=0.00;0:2.5;;0;
     ...    6
+    ...    --critical-load=1.5
+    ...    CRITICAL: Container 'nginx' [pod: web-1] Load: 3.00 - Container 'app' [pod: multi] Load: 2.00 | 'load_web-1_nginx'=3.00;;0:1.5;0; 'load_multi_app'=2.00;;0:1.5;0; 'load_multi_sidecar'=0.00;;0:1.5;0;
+    ...    7
     ...    --container='container="absent"'
     ...    UNKNOWN: No containers found.
-    ...    7
+    ...    8
     ...    --pod='not a filter'
     ...    UNKNOWN: Need to specify --pod option as a PromQL filter.

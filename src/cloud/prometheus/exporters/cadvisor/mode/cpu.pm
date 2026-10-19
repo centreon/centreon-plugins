@@ -76,6 +76,7 @@ sub new {
         "cpu-attribute:s"       => { name => 'cpu_attribute', default => 'cpu="total"' },
         "container:s"           => { name => 'container', default => 'container!~"|.*POD.*"' },
         "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
+        "namespace:s"           => { name => 'namespace', default => 'namespace=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
     });
@@ -97,7 +98,7 @@ sub check_options {
     }
 
     $self->{labels} = {};
-    foreach my $label (('container', 'pod')) {
+    foreach my $label (('container', 'pod', 'namespace')) {
         if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
             $self->{output}->option_exit();
@@ -124,11 +125,11 @@ sub manage_selection {
             'label_replace((irate({__name__=~"' . $self->{metrics}->{usage} . '",' .
                 $self->{option_results}->{cpu_attribute} . ',' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} .
                 $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "usage", "", "")',
             'label_replace((irate({__name__=~"' . $self->{metrics}->{throttled} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} .
                 $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "throttled", "", "")'
         ],
         timeframe => $self->{prom_timeframe},
@@ -142,7 +143,8 @@ sub manage_selection {
         # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
         next if ($container eq '' && defined($result->{metric}->{name}));
 
-        my $name = join("_", $pod, $container);
+        my $namespace = $result->{metric}->{$self->{labels}->{namespace}} // '';
+        my $name = join("_", $namespace, $pod, $container);
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
         $self->{containers}->{$name}->{container} = $container;
         $self->{containers}->{$name}->{pod} = $pod;
@@ -220,6 +222,12 @@ both label sets in 4.2 (Kubernetes 1.14), C<container> and C<pod> only from 4.3 
 =back
 
 On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
+
+=item B<--namespace>
+
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"').
+Two pods with the same name in different namespaces are reported separately, but with the
+same output and performance data names: filter on the namespace to tell them apart.
 
 =item B<--warning-usage>
 

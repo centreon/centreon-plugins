@@ -79,6 +79,45 @@
           ]
         },
         {
+          "uuid": "58dd9998-791b-5636-96cb-359d35a552db",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"73400320\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_usage_bytes pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_usage_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "b0ccd2be-b2c7-5f6c-9db3-1335b7dec9a2",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"31457280\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"8388608\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -261,6 +300,45 @@
               "target": "query",
               "modifier": "query",
               "value": "name=\"haproxy\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "cd67c046-1087-5ef0-9da5-14edc0797c13",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_spec_memory_limit_bytes pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_spec_memory_limit_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
               "invert": false,
               "operator": "regex"
             }
@@ -455,6 +533,45 @@
           ]
         },
         {
+          "uuid": "58e9da92-7811-56c7-a430-7dec725f7eb4",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"41943040\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"68157440\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_working_set_bytes pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_working_set_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "bbb96a62-e973-531e-9d7c-512e618f886e",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"41943040\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"26214400\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"6291456\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -637,6 +754,45 @@
               "target": "query",
               "modifier": "query",
               "value": "name=\"haproxy\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "6cc766db-4147-5897-a231-3009d6954ee4",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"10485760\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_cache pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_cache",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
               "invert": false,
               "operator": "regex"
             }
@@ -831,6 +987,45 @@
           ]
         },
         {
+          "uuid": "d9c832b6-cc41-5bf8-a0d1-1344583b901d",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"39845888\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"62914560\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_rss pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_rss",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "e95d4ed8-968e-5f04-bfeb-7770beee1c9e",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"39845888\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"23068672\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -1013,6 +1208,45 @@
               "target": "query",
               "modifier": "query",
               "value": "name=\"haproxy\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "c755e5bf-2bc9-5d6a-80ce-22d93dc41ba3",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_swap pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_swap",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
               "invert": false,
               "operator": "regex"
             }
@@ -1207,6 +1441,45 @@
           ]
         },
         {
+          "uuid": "8ce6d986-8ff4-5aa7-8c94-67fb712eef89",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"209715200\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"629145600\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_fs_usage_bytes pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_fs_usage_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "63c9899f-25f2-5c7b-888c-ecadb0ccf9ec",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"209715200\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -1395,6 +1668,45 @@
           ]
         },
         {
+          "uuid": "16f418b6-02c2-58df-9a8f-a5a0da11df1e",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_fs_limit_bytes pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_fs_limit_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "d4fd6615-fc7c-5efe-9362-a934e9182b3d",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -1577,6 +1889,45 @@
               "target": "query",
               "modifier": "query",
               "value": "name=\"haproxy\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "f5cb171a-e058-5271-84b0-c9d26603e85f",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"4\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"7\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"3\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_tasks_state pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_tasks_state",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
               "invert": false,
               "operator": "regex"
             }
@@ -1807,6 +2158,45 @@
           ]
         },
         {
+          "uuid": "ed37c84f-b45f-574f-b23d-d5bd278e6f15",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"12\"\n          ],\n          [\n            1775655779.707,\n            \"16\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"40\"\n          ],\n          [\n            1775655779.707,\n            \"44\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_cpu_usage_seconds_total pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_cpu_usage_seconds_total",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "2cf0d59b-23b6-59f9-8bc6-6477a6141475",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"12\"\n          ],\n          [\n            1775655779.707,\n            \"16\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"20\"\n          ],\n          [\n            1775655779.707,\n            \"24\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"5\"\n          ],\n          [\n            1775655779.707,\n            \"7\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -1995,6 +2385,45 @@
           ]
         },
         {
+          "uuid": "27155fea-a3fe-5d8b-93f5-109265af34bf",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"throttled\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"3\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"throttled\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"0\"\n          ],\n          [\n            1775655779.707,\n            \"0\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_cpu_cfs_throttled_seconds_total pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_cpu_cfs_throttled_seconds_total",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
           "uuid": "f9ed35e0-8f30-5cb7-af0a-ae58366aae26",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"throttled\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"3\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
@@ -2177,6 +2606,45 @@
               "target": "query",
               "modifier": "query",
               "value": "name=\"haproxy\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "c44e6fa6-4977-523e-bd51-84b6cb1b1cc3",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"4\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"other\",\n          \"container\": \"nginx\",\n          \"name\": \"gggg7777\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1other/gggg7777\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"5\"\n          ],\n          [\n            1775655779.707,\n            \"5\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_cpu_load_average_10s pod=\"web-1\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_cpu_load_average_10s",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "pod=\"web-1\"",
               "invert": false,
               "operator": "regex"
             }

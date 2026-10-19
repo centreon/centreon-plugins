@@ -160,6 +160,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "container:s"           => { name => 'container', default => 'container!~"|.*POD.*"' },
         "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
+        "namespace:s"           => { name => 'namespace', default => 'namespace=~".*"' },
         "device:s"              => { name => 'device', default => 'device=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "units:s"               => { name => 'units', default => '%' },
@@ -184,7 +185,7 @@ sub check_options {
     }
 
     $self->{labels} = {};
-    foreach my $label (('container', 'pod', 'device')) {
+    foreach my $label (('container', 'pod', 'namespace', 'device')) {
         if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
             $self->{output}->option_exit();
@@ -207,12 +208,12 @@ sub manage_selection {
         queries => [
             'label_replace({__name__=~"' . $self->{metrics}->{used} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} . ',' .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} . ',' .
                 $self->{option_results}->{device} .
                 $self->{extra_filter} . '}, "__name__", "used", "", "")',
             'label_replace({__name__=~"' . $self->{metrics}->{limit} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} . ',' .
+                $self->{option_results}->{pod} . ',' . $self->{option_results}->{namespace} . ',' .
                 $self->{option_results}->{device} .
                 $self->{extra_filter} . '}, "__name__", "limit", "", "")'
         ]
@@ -224,7 +225,8 @@ sub manage_selection {
         next if ($pod eq '' && $container eq '');
         # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
         next if ($container eq '' && defined($result->{metric}->{name}));
-        my $name = join("_", $pod, $container);
+        my $namespace = $result->{metric}->{$self->{labels}->{namespace}} // '';
+        my $name = join("_", $namespace, $pod, $container);
 
         $self->{containers}->{$name}->{display} = $name;
         $self->{containers}->{$name}->{container} = $container;
@@ -298,6 +300,12 @@ available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and th
 =back
 
 On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
+
+=item B<--namespace>
+
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"').
+Two pods with the same name in different namespaces are reported separately, but with the
+same output and performance data names: filter on the namespace to tell them apart.
 
 =item B<--device>
 
