@@ -115,17 +115,23 @@ sub set_counters {
             { name=> 'performance', type => 1, cb_prefix_output => 'custom_performance_output', message_multiple => 'All performances checks are ok', skipped_code => { -10 => 1 } }
     ];
 
-    my $values = [ { name => 'connectivity' }, { name => 'operational' }, { name => 'last_connected' }, { name => 'connected_since' }, { name => 'pop_name' } ];
+    my $values = [ { name => 'connectivity' }, { name => 'operational' }, {name => 'hastatus'},{ name => 'last_connected' }, { name => 'connected_since' }, { name => 'pop_name' } ];
 
     # "global" counter is related to connectivity status
     $self->{maps_counters}->{global} = [
-        { label => 'connectivity-status', type => 2, critical_default => '%{connectivity} !~ /Connected/', set => {
+        { label => 'connectivity-status', type => 2, critical_default => '%{connectivity} !~ /connected/', set => {
                 key_values => $values, output_use => 'connectivity',
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             },
         },
         { label => 'operational-status', type => 2, critical_default => '%{operational} !~ /active|new/', set => {
                 key_values => $values, output_use => 'operational',
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
+            },
+        },
+        { label => 'ha-status', type => 2, critical_default => '%{hastatus} =~ /not_ready/', set => {
+                key_values => $values, output_use => 'hastatus',
+                closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
             },
         },
@@ -265,6 +271,7 @@ sub manage_selection {
     $self->{global} = { display => $results->{name},
                         connectivity => $results->{connectivity_status},
                         operational => $results->{operational_status},
+                        hastatus => $results->{hastatus},
                         last_connected_date => $results->{last_connected},
                         connected_since_date => $results->{connected_since},
                         last_connected => $last_connected_seconds,
@@ -458,6 +465,11 @@ Example: --warning-operational-status='%{operational} !~ /active/'
 
 Define the operational status conditions to match for the status to be CRITICAL.
 Default: --critical-operational-status='%{operational} !~ /active|new/'
+
+=item B<--critical-ha-status>
+
+Define the ha status conditions to match for the status to be CRITICAL.
+Default: --critical-ha-status='%{hastatus} =~ /not_ready/'
 
 =item B<--warning-pop-name>
 
