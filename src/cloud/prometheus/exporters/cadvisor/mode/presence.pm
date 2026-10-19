@@ -261,13 +261,18 @@ Threshold on the number of pods and containers detected (default: '1:').
 
 =item B<--warning-last-seen>
 
-Threshold on the number of seconds since the container was last seen.
-The value is computed at the Prometheus query time: in normal conditions, it stays
-below the cAdvisor housekeeping interval plus the Prometheus scrape interval.
+Threshold on the number of seconds since the pod or container was last seen.
+
+cAdvisor sets C<container_last_seen> to the scrape time, with an explicit timestamp: in
+normal conditions, the value stays below the Prometheus scrape interval. Prometheus does
+not mark these series as stale when a container disappears, it keeps returning their last
+value during C<--query.lookback-delta> (5 minutes by default): the value then grows up to
+this delay, before the series disappears. A threshold above this delay never triggers, and
+the C<resources-detected> threshold is reached after this delay.
 
 =item B<--critical-last-seen>
 
-Threshold on the number of seconds since the container was last seen.
+Threshold on the number of seconds since the pod or container was last seen.
 
 =back
 
