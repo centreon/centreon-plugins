@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package cloud::prometheus::exporters::cadvisor::mode::load;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters);
 
 use strict;
 use warnings;
@@ -29,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
+        { name => 'containers', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_containers_output',
           message_multiple => 'All containers load are ok' },
     ];
 

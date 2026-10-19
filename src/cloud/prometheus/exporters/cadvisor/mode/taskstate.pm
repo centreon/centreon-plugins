@@ -1,5 +1,5 @@
 #
-# Copyright 2024 Centreon (http://www.centreon.com/)
+# Copyright 2026-Present Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -21,6 +21,7 @@
 package cloud::prometheus::exporters::cadvisor::mode::taskstate;
 
 use base qw(centreon::plugins::templates::counter);
+use centreon::plugins::constants qw(:counters :values);
 
 use strict;
 use warnings;
@@ -29,8 +30,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
-          message_multiple => 'All containers tasks states are ok', skipped_code => { -10 => 1 } },
+        { name => 'containers', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_containers_output',
+          message_multiple => 'All containers tasks states are ok', skipped_code => { NO_VALUE() => 1 } },
     ];
 
     $self->{maps_counters}->{containers} = [
@@ -187,15 +188,45 @@ Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
 
 Filter on a specific state (must be a PromQL filter, Default: 'state=~".*"')
 
-=item B<--warning-*>
+=item B<--warning-sleeping>
 
 Warning threshold.
-Can be: 'sleeping', 'running', 'stopped', 'uninterruptible', 'iowaiting'.
 
-=item B<--critical-*>
+=item B<--warning-running>
+
+Warning threshold.
+
+=item B<--warning-stopped>
+
+Warning threshold.
+
+=item B<--warning-uninterruptible>
+
+Warning threshold.
+
+=item B<--warning-iowaiting>
+
+Warning threshold.
+
+=item B<--critical-sleeping>
 
 Critical threshold.
-Can be: 'sleeping', 'running', 'stopped', 'uninterruptible', 'iowaiting'.
+
+=item B<--critical-running>
+
+Critical threshold.
+
+=item B<--critical-stopped>
+
+Critical threshold.
+
+=item B<--critical-uninterruptible>
+
+Critical threshold.
+
+=item B<--critical-iowaiting>
+
+Critical threshold.
 
 =item B<--extra-filter>
 
