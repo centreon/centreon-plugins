@@ -32,14 +32,14 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => COUNTER_TYPE_GLOBAL },
-        { name => 'containers', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_containers_output',
-          message_multiple => 'All containers are present', skipped_code => { NO_VALUE() => 1 } }
+        { name => 'resources', type => COUNTER_TYPE_INSTANCE, cb_prefix_output => 'prefix_resources_output',
+          message_multiple => 'All resources are present', skipped_code => { NO_VALUE() => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'containers-detected', nlabel => 'containers.detected.count', critical_default => '1:', set => {
+        { label => 'resources-detected', nlabel => 'resources.detected.count', critical_default => '1:', set => {
                 key_values => [ { name => 'detected' } ],
-                output_template => 'Containers detected: %d',
+                output_template => 'Resources detected: %d',
                 perfdatas => [
                     { template => '%d', min => 0 }
                 ]
@@ -47,8 +47,8 @@ sub set_counters {
         }
     ];
 
-    $self->{maps_counters}->{containers} = [
-        { label => 'last-seen', nlabel => 'container.last_seen.seconds', set => {
+    $self->{maps_counters}->{resources} = [
+        { label => 'last-seen', nlabel => 'resource.last_seen.seconds', set => {
                 key_values => [ { name => 'last_seen' }, { name => 'display' }, { name => 'perf' } ],
                 output_template => 'last seen %.2fs ago',
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
     ];
 }
 
-sub prefix_containers_output {
+sub prefix_resources_output {
     my ($self, %options) = @_;
 
     return $options{instance_value}->{display} . ' ';
@@ -120,7 +120,7 @@ sub manage_selection {
         ]
     );
 
-    $self->{containers} = {};
+    $self->{resources} = {};
     foreach my $result (@{$results}) {
         my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
         my $container = $result->{metric}->{$self->{labels}->{container}} // '';
@@ -137,7 +137,7 @@ sub manage_selection {
         $last_seen = 0 if ($last_seen < 0);
 
         my $id = join('~', grep { $_ ne '' } ($instance, $namespace, $pod, $container));
-        next if (defined($self->{containers}->{$id}) && $self->{containers}->{$id}->{last_seen} <= $last_seen);
+        next if (defined($self->{resources}->{$id}) && $self->{resources}->{$id}->{last_seen} <= $last_seen);
 
         my $display = "Container '" . $container . "' [pod: " . $pod . "]";
         $display = "Pod '" . $pod . "'" if ($container eq '');
@@ -145,14 +145,14 @@ sub manage_selection {
         $display .= " [namespace: " . $namespace . "]" if ($namespace ne '');
         $display .= " [instance: " . $instance . "]" if ($instance ne '');
 
-        $self->{containers}->{$id} = {
+        $self->{resources}->{$id} = {
             display   => $display,
             perf      => $id,
             last_seen => $last_seen
         };
     }
 
-    $self->{global} = { detected => scalar(keys %{$self->{containers}}) };
+    $self->{global} = { detected => scalar(keys %{$self->{resources}}) };
 }
 
 1;
@@ -251,13 +251,13 @@ Example : --extra-filter='namespace="monitoring"'
 Regular expression matching the name of the Prometheus metric holding the last time
 a container was seen (default: '^container_last_seen$').
 
-=item B<--warning-containers-detected>
+=item B<--warning-resources-detected>
 
-Threshold on the number of containers detected.
+Threshold on the number of pods and containers detected.
 
-=item B<--critical-containers-detected>
+=item B<--critical-resources-detected>
 
-Threshold on the number of containers detected (default: '1:').
+Threshold on the number of pods and containers detected (default: '1:').
 
 =item B<--warning-last-seen>
 
