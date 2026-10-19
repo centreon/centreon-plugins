@@ -74,7 +74,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "cpu-attribute:s"       => { name => 'cpu_attribute', default => 'cpu="total"' },
-        "container:s"           => { name => 'container', default => 'container!~".*POD.*"' },
+        "container:s"           => { name => 'container', default => 'container!~"|.*POD.*"' },
         "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
@@ -169,6 +169,7 @@ Each series matching the filters is reported as:
 =over 4
 
 =item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+These series are excluded by the default C<--container> filter.
 
 =item * a container of a pod, when it has both labels.
 
@@ -196,7 +197,7 @@ Set the CPU attribute to match element (must be a PromQL filter, Default: 'cpu="
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container!~"|.*POD.*"')
 
 =item B<--pod>
 
@@ -218,7 +219,7 @@ both label sets in 4.2 (Kubernetes 1.14), C<container> and C<pod> only from 4.3 
 
 =back
 
-On older platforms, use for example: --container='container_name!~".*POD.*"' --pod='pod_name=~".*"'
+On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
 
 =item B<--warning-usage>
 

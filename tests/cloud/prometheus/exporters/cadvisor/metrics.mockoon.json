@@ -1,5 +1,5 @@
 {
-  "uuid": "762be428-968d-4005-bc67-d9afe956fdad",
+  "uuid": "f907a660-1f28-5cb2-ac7b-655d49def5c8",
   "lastMigration": 33,
   "name": "Prometheus cAdvisor metrics",
   "endpointPrefix": "",
@@ -9,14 +9,14 @@
   "folders": [],
   "routes": [
     {
-      "uuid": "eab75336-9efe-4089-b062-8a28840ea06d",
+      "uuid": "b2928723-4237-5d56-bed1-e3590f683ffa",
       "type": "http",
       "documentation": "",
       "method": "get",
       "endpoint": "api/v1/query",
       "responses": [
         {
-          "uuid": "01f11264-c087-419a-a9fb-92edd31f5aca",
+          "uuid": "14ae8cbb-2525-5643-a083-a7d22ace7904",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -40,7 +40,7 @@
           "rules": []
         },
         {
-          "uuid": "e88a5d20-0231-45d6-9c42-603443d4a557",
+          "uuid": "f9120710-95fc-50b8-9ba4-03d8f49eb4d8",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"20971520\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -79,7 +79,46 @@
           ]
         },
         {
-          "uuid": "81654aa9-76c2-470c-9015-fb0b50d47dc9",
+          "uuid": "b0ccd2be-b2c7-5f6c-9db3-1335b7dec9a2",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"31457280\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"8388608\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_usage_bytes container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_usage_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "8f97707f-bc1e-5077-9ddd-a021a26d691d",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"62914560\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"41943040\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -118,7 +157,7 @@
           ]
         },
         {
-          "uuid": "ccdff433-7cf0-4053-aba0-225eb1ffd3ea",
+          "uuid": "78d69c9b-f031-53d8-b67c-32a76c36d555",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -157,7 +196,7 @@
           ]
         },
         {
-          "uuid": "934da63e-64a1-4127-b8d0-57721e1fbd81",
+          "uuid": "937927c2-1718-5f41-bc28-6f74a3becea8",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"943718400\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"62914560\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"41943040\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"31457280\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"8388608\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"usage\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"20971520\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -189,7 +228,7 @@
           ]
         },
         {
-          "uuid": "abb5a575-4c27-4234-8857-78e06dabec43",
+          "uuid": "6388b603-0c70-532d-9261-dbdea0a652e5",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -228,7 +267,46 @@
           ]
         },
         {
-          "uuid": "93a301c2-0a0f-455b-8f87-27354c478fcb",
+          "uuid": "e42b8c78-cce5-5a55-9c80-ee6df01fd5ec",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_spec_memory_limit_bytes container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_spec_memory_limit_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "4f9be6d9-ff27-5d23-8132-9b7bfb456e90",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -267,7 +345,7 @@
           ]
         },
         {
-          "uuid": "1c0ed901-35c6-4e3c-8e89-356429c82ecb",
+          "uuid": "09c90e8f-e1e1-5d8d-882b-0f7a71fe839d",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -306,7 +384,7 @@
           ]
         },
         {
-          "uuid": "4339f5d7-b2db-4823-801a-748e38df2e4d",
+          "uuid": "62ed3036-4ab6-52a6-86ad-26f3bde52fc0",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"limits\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -338,7 +416,7 @@
           ]
         },
         {
-          "uuid": "512dce05-1a2d-4b10-94a0-0e5d5b41dc2f",
+          "uuid": "3845bbd3-6ee3-59b6-991c-df8d436ec73c",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"15728640\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -377,7 +455,46 @@
           ]
         },
         {
-          "uuid": "25324354-1e87-4a9c-98e0-5ec0b4041045",
+          "uuid": "bbb96a62-e973-531e-9d7c-512e618f886e",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"41943040\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"26214400\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"6291456\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_working_set_bytes container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_working_set_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "170a0742-0079-5bb8-8c67-da8214a2d331",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"36700160\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -416,7 +533,7 @@
           ]
         },
         {
-          "uuid": "79a57538-0d43-4d22-8cf9-317a8417b4bc",
+          "uuid": "7b8f59c2-71d3-5441-98f3-63f05d5cc92f",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -455,7 +572,7 @@
           ]
         },
         {
-          "uuid": "beb9df2e-5d77-4e13-b791-5b44677fdfc9",
+          "uuid": "228b51fe-eb30-5c1b-b73c-aef15b4a50fc",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"838860800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"41943040\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"36700160\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"26214400\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"6291456\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"working\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"15728640\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -487,7 +604,7 @@
           ]
         },
         {
-          "uuid": "a2abbd09-e144-47ea-a81a-89bbf75ddfb0",
+          "uuid": "6dfe5a22-3516-5711-8774-8a10fe70190d",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -526,7 +643,46 @@
           ]
         },
         {
-          "uuid": "ca5e6dd2-5d08-4a4c-8f1e-2018539a54d5",
+          "uuid": "cf8fbc46-3152-5e78-95aa-753a90b7bade",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"10485760\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"2097152\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_cache container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_cache",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "271afab4-1ac5-576f-a6c6-93783767ccb3",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"10485760\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -565,7 +721,7 @@
           ]
         },
         {
-          "uuid": "d93216f1-e698-4b4c-a9c5-fb4f297894ed",
+          "uuid": "5bf2c542-a635-53ca-8398-ead6b025c23c",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -604,7 +760,7 @@
           ]
         },
         {
-          "uuid": "cdcb64b6-3186-4f67-b9a5-818b49a54d99",
+          "uuid": "51f930f9-05ee-5fa1-9c37-265b25c501da",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"10485760\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"10485760\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"2097152\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"cache\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -636,7 +792,7 @@
           ]
         },
         {
-          "uuid": "2d23e982-6a9d-4c47-b93a-2d93a88b3fe1",
+          "uuid": "915b3727-b12b-58bf-8d7f-c4781180f618",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"12582912\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -675,7 +831,46 @@
           ]
         },
         {
-          "uuid": "85c637ad-3d73-460d-9e90-52879c120913",
+          "uuid": "e95d4ed8-968e-5f04-bfeb-7770beee1c9e",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"39845888\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"23068672\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_rss container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_rss",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "d1294142-3a1d-5d73-8090-778af6745e9a",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"47185920\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"31457280\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -714,7 +909,7 @@
           ]
         },
         {
-          "uuid": "79b42b18-17e3-4bec-bed6-890c6a5e7cef",
+          "uuid": "70570d81-dbb2-57fc-9b0a-a2beadeff7bd",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -753,7 +948,7 @@
           ]
         },
         {
-          "uuid": "9fb92a65-11a4-49d4-a208-b987182dc174",
+          "uuid": "571779eb-2e93-5e75-9df7-a53e11fe60b0",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"734003200\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"47185920\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"39845888\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"31457280\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"23068672\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5242880\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"rss\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"12582912\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -785,7 +980,7 @@
           ]
         },
         {
-          "uuid": "a65230b7-e44e-4493-ae04-39204f8a4836",
+          "uuid": "38a9953d-1bb2-57b1-942b-a2b33bbab58a",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -824,7 +1019,46 @@
           ]
         },
         {
-          "uuid": "e7b51008-e382-46ca-89c4-1f1202e3d88b",
+          "uuid": "baa3febe-2b32-55a8-94af-0ffbedcf9d4e",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_memory_swap container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_memory_swap",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "c377aeec-69d3-5c70-8c31-1d4f88ea2340",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -863,7 +1097,7 @@
           ]
         },
         {
-          "uuid": "2351385e-6a75-4247-902c-a98b1299cd4c",
+          "uuid": "4a5c8915-b5d9-5326-ad1a-3c134fc1a42b",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -902,7 +1136,7 @@
           ]
         },
         {
-          "uuid": "93bb571b-2d6c-494d-9aa8-f6a230d517c7",
+          "uuid": "284b55eb-856a-5220-a2cb-9cc6da58b687",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"swap\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -934,7 +1168,7 @@
           ]
         },
         {
-          "uuid": "f163c0f8-d9fe-432d-8b5b-59ab32caf4c8",
+          "uuid": "1fd503f8-ccb2-5633-956a-13a932c7165e",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"943718400\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -973,7 +1207,46 @@
           ]
         },
         {
-          "uuid": "63b3e68f-1c76-4a3e-b2f8-3a2c21502933",
+          "uuid": "63c9899f-25f2-5c7b-888c-ecadb0ccf9ec",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"209715200\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_fs_usage_bytes container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_fs_usage_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "1637dce4-a804-533e-9fd5-47bbab9ec80a",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"314572800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1012,7 +1285,7 @@
           ]
         },
         {
-          "uuid": "a8c3ded1-d5d0-4372-a1e2-9036bc67df04",
+          "uuid": "8c6d7ad1-9416-51a6-b530-df38e3f5c72e",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1051,7 +1324,7 @@
           ]
         },
         {
-          "uuid": "0d3859dd-cf01-4b51-befe-aa214d6e4c51",
+          "uuid": "27b3d44f-2561-5aee-9a21-8eed141adca5",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"31457280000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"314572800\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"209715200\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"104857600\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"used\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"943718400\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1083,7 +1356,7 @@
           ]
         },
         {
-          "uuid": "bd116b62-164e-4ddd-a515-d6b803c90e3d",
+          "uuid": "1989cfee-5144-5002-b453-bbb136238b19",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1122,7 +1395,46 @@
           ]
         },
         {
-          "uuid": "32f13128-fdae-46b8-9722-13eb683a1267",
+          "uuid": "d4fd6615-fc7c-5efe-9362-a934e9182b3d",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_fs_limit_bytes container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_fs_limit_bytes",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "7e2847ba-0f94-55be-ae09-b2405f6a7ed2",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1161,7 +1473,7 @@
           ]
         },
         {
-          "uuid": "61975a6b-089b-4a46-aa40-9cc1ff018c77",
+          "uuid": "26dac0d3-92cd-509f-a479-22a6f6b7fb19",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1200,7 +1512,7 @@
           ]
         },
         {
-          "uuid": "c8f51135-b3d4-457e-84f0-3c6103939544",
+          "uuid": "941f8eae-d551-5067-93ce-a9f078ca7ab4",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"52428800000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"limit\",\n          \"device\": \"/dev/vda1\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1048576000\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1232,7 +1544,7 @@
           ]
         },
         {
-          "uuid": "951398fc-d2e5-47fd-acf6-ddb04948a3be",
+          "uuid": "1262bb67-9d31-5f20-aa84-3cdad5dc11aa",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"8\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"2\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1271,7 +1583,46 @@
           ]
         },
         {
-          "uuid": "d0d88845-decc-4244-8db1-e1abb22947df",
+          "uuid": "dfe392a7-7c77-5af5-adb2-04b7ef4c3582",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"4\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"2\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_tasks_state container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_tasks_state",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "5cd139f7-a4a7-5876-8aa3-6eda2f2297ea",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"3\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1310,7 +1661,7 @@
           ]
         },
         {
-          "uuid": "76c7cff6-46ff-4755-b162-2401cb2305d2",
+          "uuid": "33732315-ecad-5159-a3da-65b6add43d1c",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1349,7 +1700,7 @@
           ]
         },
         {
-          "uuid": "3031860c-fb7c-4a9d-8ae2-4faf79aa1e7e",
+          "uuid": "2c4141cb-2315-508a-92d3-be2bb82d4c1e",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"vector\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"90\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"9\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"5\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"4\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"3\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"2\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"sleeping\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"8\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"running\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"2\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"stopped\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"0\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"uninterruptible\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"tasks_state\",\n          \"state\": \"iowaiting\"\n        },\n        \"value\": [\n          1775655779.707,\n          \"1\"\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1386,14 +1737,14 @@
       "streamingInterval": 0
     },
     {
-      "uuid": "f8265fcb-59e8-46a2-8130-b0abfa9653f4",
+      "uuid": "9072f03f-52fc-5588-a555-1e4702b99934",
       "type": "http",
       "documentation": "",
       "method": "get",
       "endpoint": "api/v1/query_range",
       "responses": [
         {
-          "uuid": "2c4586cf-decc-43a6-b025-6232ffb5eb09",
+          "uuid": "846dda61-66a3-585a-a331-03c0bf77fb77",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1417,7 +1768,7 @@
           "rules": []
         },
         {
-          "uuid": "c5172e6b-8b3f-490c-a6bc-4cf2ca3fa487",
+          "uuid": "db392c27-c14e-5e34-875c-ba61a9a19451",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"4\"\n          ],\n          [\n            1775655779.707,\n            \"6\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1456,7 +1807,46 @@
           ]
         },
         {
-          "uuid": "742b96f3-1007-4d3e-a86a-d47eea484ff1",
+          "uuid": "2cf0d59b-23b6-59f9-8bc6-6477a6141475",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"12\"\n          ],\n          [\n            1775655779.707,\n            \"16\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"20\"\n          ],\n          [\n            1775655779.707,\n            \"24\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"5\"\n          ],\n          [\n            1775655779.707,\n            \"7\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_cpu_usage_seconds_total container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_cpu_usage_seconds_total",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "2d4a375e-a8b7-504d-aa74-4a998de257d1",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"10\"\n          ],\n          [\n            1775655779.707,\n            \"20\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"90\"\n          ],\n          [\n            1775655779.707,\n            \"90\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"30\"\n          ],\n          [\n            1775655779.707,\n            \"30\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"80\"\n          ],\n          [\n            1775655779.707,\n            \"80\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1495,7 +1885,7 @@
           ]
         },
         {
-          "uuid": "635c1328-382d-48e7-ab33-b9b832f39f8e",
+          "uuid": "f351eebf-f4fc-547b-a553-49ee633badaa",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1534,7 +1924,7 @@
           ]
         },
         {
-          "uuid": "96af0bc8-eea1-4b21-8146-52836965ad51",
+          "uuid": "eca5221a-04f5-5bad-ac59-760542cd7cd0",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"50\"\n          ],\n          [\n            1775655779.707,\n            \"70\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"10\"\n          ],\n          [\n            1775655779.707,\n            \"20\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"90\"\n          ],\n          [\n            1775655779.707,\n            \"90\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"12\"\n          ],\n          [\n            1775655779.707,\n            \"16\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"30\"\n          ],\n          [\n            1775655779.707,\n            \"30\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"80\"\n          ],\n          [\n            1775655779.707,\n            \"80\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"20\"\n          ],\n          [\n            1775655779.707,\n            \"24\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"5\"\n          ],\n          [\n            1775655779.707,\n            \"7\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"usage\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"4\"\n          ],\n          [\n            1775655779.707,\n            \"6\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1566,7 +1956,7 @@
           ]
         },
         {
-          "uuid": "0a1cf8b9-b34c-43b8-990e-a461e1d70e59",
+          "uuid": "cfaf9c8a-f254-5013-9b8c-e00cc4f6deec",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1605,7 +1995,46 @@
           ]
         },
         {
-          "uuid": "4914d279-f23a-49ae-b79f-4cf843d3154d",
+          "uuid": "f9ed35e0-8f30-5cb7-af0a-ae58366aae26",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"throttled\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"3\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_cpu_cfs_throttled_seconds_total container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_cpu_cfs_throttled_seconds_total",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "3081e487-6ec1-596c-b159-cc1d4f8b8941",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1644,7 +2073,7 @@
           ]
         },
         {
-          "uuid": "6400d198-0287-4fd4-aa21-e22cbbbeeda8",
+          "uuid": "842198eb-79bb-57d4-b1ef-0ae97dce798c",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1683,7 +2112,7 @@
           ]
         },
         {
-          "uuid": "97799bb3-719e-4ef3-a0b8-a5340f046781",
+          "uuid": "7608e74b-4e3f-5be6-b727-bb83ae415fef",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"throttled\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"3\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1715,7 +2144,7 @@
           ]
         },
         {
-          "uuid": "fdd475d3-4ac0-46b1-86aa-f8157a7425f3",
+          "uuid": "03de5dfc-8c60-5cf4-8cc3-63abc884c990",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"6\"\n          ],\n          [\n            1775655779.707,\n            \"8\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1754,7 +2183,46 @@
           ]
         },
         {
-          "uuid": "729e5ace-346a-4277-b0b3-028a0bb85f10",
+          "uuid": "89ee3781-3445-5b37-9092-f8bfed483a45",
+          "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"4\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"1\"\n          ],\n          [\n            1775655779.707,\n            \"3\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"0\"\n          ],\n          [\n            1775655779.707,\n            \"0\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "container_cpu_load_average_10s container!~\"\\|\\.\\*POD\\.\\*\"",
+          "headers": [
+            {
+              "key": "content-type",
+              "value": "application/json"
+            }
+          ],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false,
+          "crudKey": "id",
+          "callbacks": [],
+          "rules": [
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container_cpu_load_average_10s",
+              "invert": false,
+              "operator": "regex"
+            },
+            {
+              "target": "query",
+              "modifier": "query",
+              "value": "container!~\"\\|\\.\\*POD\\.\\*\"",
+              "invert": false,
+              "operator": "regex"
+            }
+          ]
+        },
+        {
+          "uuid": "3262c8ac-2d87-5081-ae48-4de642b8194f",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"3\"\n          ],\n          [\n            1775655779.707,\n            \"5\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"7\"\n          ],\n          [\n            1775655779.707,\n            \"7\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"1\"\n          ],\n          [\n            1775655779.707,\n            \"1\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"8\"\n          ],\n          [\n            1775655779.707,\n            \"8\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1793,7 +2261,7 @@
           ]
         },
         {
-          "uuid": "2c5c6061-6490-4af6-a60e-0e045f895358",
+          "uuid": "54486e9a-0fb7-5882-924e-7fe3bd39b9dd",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": []\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1832,7 +2300,7 @@
           ]
         },
         {
-          "uuid": "cc954d47-017c-4ffb-ba6e-5e77403946fd",
+          "uuid": "ed0383fc-3302-506b-9986-b986e135cb46",
           "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"resultType\": \"matrix\",\n    \"result\": [\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"id\": \"/\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"9\"\n          ],\n          [\n            1775655779.707,\n            \"9\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"id\": \"/kubepods/podweb1\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"3\"\n          ],\n          [\n            1775655779.707,\n            \"5\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"name\": \"aaaa1111\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podweb1/aaaa1111\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"7\"\n          ],\n          [\n            1775655779.707,\n            \"7\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"web-1\",\n          \"namespace\": \"default\",\n          \"container\": \"nginx\",\n          \"name\": \"bbbb2222\",\n          \"image\": \"nginx:1.27\",\n          \"id\": \"/kubepods/podweb1/bbbb2222\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"2\"\n          ],\n          [\n            1775655779.707,\n            \"4\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"id\": \"/kubepods/podmulti\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"1\"\n          ],\n          [\n            1775655779.707,\n            \"1\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"name\": \"cccc3333\",\n          \"image\": \"registry.k8s.io/pause:3.10\",\n          \"id\": \"/kubepods/podmulti/cccc3333\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"8\"\n          ],\n          [\n            1775655779.707,\n            \"8\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"app\",\n          \"name\": \"dddd4444\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/dddd4444\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"1\"\n          ],\n          [\n            1775655779.707,\n            \"3\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"pod\": \"multi\",\n          \"namespace\": \"demo\",\n          \"container\": \"sidecar\",\n          \"name\": \"eeee5555\",\n          \"image\": \"busybox:1.36.1\",\n          \"id\": \"/kubepods/podmulti/eeee5555\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"0\"\n          ],\n          [\n            1775655779.707,\n            \"0\"\n          ]\n        ]\n      },\n      {\n        \"metric\": {\n          \"instance\": \"10.224.4.59:10250\",\n          \"job\": \"kubelet\",\n          \"node\": \"ks-node-01\",\n          \"name\": \"haproxy\",\n          \"image\": \"haproxy:2.8\",\n          \"id\": \"/system.slice/docker-ffff6666.scope\",\n          \"__name__\": \"load\"\n        },\n        \"values\": [\n          [\n            1775655719.707,\n            \"6\"\n          ],\n          [\n            1775655779.707,\n            \"8\"\n          ]\n        ]\n      }\n    ]\n  }\n}",
           "latency": 0,
           "statusCode": 200,
@@ -1872,11 +2340,11 @@
   "rootChildren": [
     {
       "type": "route",
-      "uuid": "eab75336-9efe-4089-b062-8a28840ea06d"
+      "uuid": "b2928723-4237-5d56-bed1-e3590f683ffa"
     },
     {
       "type": "route",
-      "uuid": "f8265fcb-59e8-46a2-8130-b0abfa9653f4"
+      "uuid": "9072f03f-52fc-5588-a555-1e4702b99934"
     }
   ],
   "proxyMode": false,

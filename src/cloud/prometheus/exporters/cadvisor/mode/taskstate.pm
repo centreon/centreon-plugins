@@ -98,7 +98,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "container:s"           => { name => 'container', default => 'container!~".*POD.*"' },
+        "container:s"           => { name => 'container', default => 'container!~"|.*POD.*"' },
         "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
         "state:s"               => { name => 'state', default => 'state=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
@@ -186,6 +186,7 @@ Each series matching the filters is reported as:
 =over 4
 
 =item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+These series are excluded by the default C<--container> filter.
 
 =item * a container of a pod, when it has both labels.
 
@@ -197,7 +198,7 @@ Each series matching the filters is reported as:
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container!~"|.*POD.*"')
 
 =item B<--pod>
 
@@ -222,7 +223,7 @@ available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and th
 
 =back
 
-On older platforms, use for example: --container='container_name!~".*POD.*"' --pod='pod_name=~".*"'
+On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
 
 =item B<--state>
 
