@@ -29,11 +29,11 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my $nlabel = 'storage.space.usage.bytes';
     my $value_perf = $self->{result_values}->{used};
 
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        $nlabel = 'storage.space.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
     my %total_options = ();
@@ -43,8 +43,7 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        nlabel => 'storage.space.usage.bytes',
+        nlabel => $nlabel, unit => 'B',
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
@@ -154,7 +153,7 @@ sub prefix_storage_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
