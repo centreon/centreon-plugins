@@ -219,6 +219,9 @@ The kubelet cAdvisor metrics label names depend on the platform version:
 =item * OpenShift: C<container_name> and C<pod_name> only up to 4.1 (Kubernetes 1.13),
 both label sets in 4.2 (Kubernetes 1.14), C<container> and C<pod> only from 4.3 (Kubernetes 1.16).
 
+=item * Rancher: depends on the Kubernetes version of the managed cluster. Kubernetes 1.16 is
+available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and the default in 2.3.3.
+
 =back
 
 On older platforms, use for example: --container='container_name!~"|.*POD.*"' --pod='pod_name=~".*"'
