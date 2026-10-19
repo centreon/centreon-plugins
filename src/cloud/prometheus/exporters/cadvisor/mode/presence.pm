@@ -203,11 +203,11 @@ check for a host modeling a pod or a container.
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, default: 'container!~".*POD.*"').
 
 =item B<--pod>
 
-Filter on a specific pod (must be a PromQL filter, Default: 'pod=~".*"')
+Filter on a specific pod (must be a PromQL filter, default: 'pod=~".*"').
 
 The label filtered is the first word of the C<--container> and C<--pod> filters.
 The kubelet cAdvisor metrics label names depend on the platform version:
@@ -235,7 +235,7 @@ label, for example: --container='name="haproxy"'
 
 =item B<--namespace>
 
-Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"').
+Filter on a specific namespace (must be a PromQL filter, default: 'namespace=~".*"').
 
 =item B<--name-label>
 
@@ -244,7 +244,7 @@ Kubernetes, used when a series has neither pod nor container label (default: 'na
 
 =item B<--extra-filter>
 
-Add a PromQL filter (can be defined multiple times)
+Add a PromQL filter (can be defined multiple times).
 
 Example : --extra-filter='namespace="monitoring"'
 

@@ -319,11 +319,11 @@ Examples:
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container!~"|.*POD.*"')
+Filter on a specific container (must be a PromQL filter, default: 'container!~"|.*POD.*"').
 
 =item B<--pod>
 
-Filter on a specific pod (must be a PromQL filter, Default: 'pod=~".*"')
+Filter on a specific pod (must be a PromQL filter, default: 'pod=~".*"').
 
 The label filtered is the first word of the C<--container> and C<--pod> filters.
 The kubelet cAdvisor metrics label names depend on the platform version:
@@ -348,7 +348,7 @@ On older platforms, use for example: --container='container_name!~"|.*POD.*"' --
 
 =item B<--namespace>
 
-Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"').
+Filter on a specific namespace (must be a PromQL filter, default: 'namespace=~".*"').
 Two pods with the same name in different namespaces are reported separately, but with the
 same output and performance data names: filter on the namespace to tell them apart.
 
@@ -398,13 +398,13 @@ Units of thresholds (default: '%') ('%', 'B').
 
 =item B<--extra-filter>
 
-Add a PromQL filter (can be defined multiple times)
+Add a PromQL filter (can be defined multiple times).
 
 Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (can be defined multiple times)
+Overload default metrics name (can be defined multiple times).
 
 Example : --metric-overload='metric,^my_metric_name$'
 
