@@ -32,13 +32,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
+    my %label_name = (
+        not_empty     => 1,
+        regexp_match  => '^[a-zA-Z_][a-zA-Z0-9_]*$',
+        error_message => 'Need to specify --%{option} option as a Prometheus label name.'
+    );
     $options{options}->add_options(arguments => {
-        'container-label:s'  => { name => 'container_label', default => 'container' },
-        'pod-label:s'        => { name => 'pod_label', default => 'pod' },
-        'namespace-label:s'  => { name => 'namespace_label', default => 'namespace' },
-        'name-label:s'       => { name => 'name_label', default => 'name' },
+        'container-label:s'  => { name => 'container_label', default => 'container', %label_name },
+        'pod-label:s'        => { name => 'pod_label', default => 'pod', %label_name },
+        'namespace-label:s'  => { name => 'namespace_label', default => 'namespace', %label_name },
+        'name-label:s'       => { name => 'name_label', default => 'name', %label_name },
         'extra-filter:s@'    => { name => 'extra_filter' },
-        'metric-last-seen:s' => { name => 'metric_last_seen', default => '^container_last_seen$' },
+        'metric-last-seen:s' => { name => 'metric_last_seen', default => '^container_last_seen$', not_empty => 1 },
         'prettify'           => { name => 'prettify' }
     });
 
@@ -49,20 +54,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
-    if (is_empty($self->{option_results}->{metric_last_seen})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --metric-last-seen option.");
-        $self->{output}->option_exit();
-    }
-
-    $self->{labels} = {};
-    foreach my $label (('container', 'pod', 'namespace', 'name')) {
-        my $value = $self->{option_results}->{$label . '_label'};
-        if (!defined($value) || $value !~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
-            $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . "-label option as a Prometheus label name.");
-            $self->{output}->option_exit();
-        }
-        $self->{labels}->{$label} = $value;
-    }
+    $self->{labels} = { map { $_ => $self->{option_results}->{$_ . '_label'} } ('container', 'pod', 'namespace', 'name') };
 
     $self->{extra_filter} = '';
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {

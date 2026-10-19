@@ -74,7 +74,13 @@ sub new {
         'container:s'        => { name => 'container', default => 'container!~".*POD.*"' },
         'pod:s'              => { name => 'pod', default => 'pod=~".*"' },
         'namespace:s'        => { name => 'namespace', default => 'namespace=~".*"' },
-        'name-label:s'       => { name => 'name_label', default => 'name' },
+        'name-label:s'       => {
+            name          => 'name_label',
+            default       => 'name',
+            not_empty     => 1,
+            regexp_match  => '^[a-zA-Z_][a-zA-Z0-9_]*$',
+            error_message => 'Need to specify --%{option} option as a Prometheus label name.'
+        },
         'extra-filter:s@'    => { name => 'extra_filter' },
         'metric-last-seen:s' => { name => 'metric_last_seen', default => '^container_last_seen$', not_empty => 1 }
     });
@@ -95,10 +101,6 @@ sub check_options {
         $self->{labels}->{$label} = $1;
     }
 
-    if (is_empty($self->{option_results}->{name_label}) || $self->{option_results}->{name_label} !~ /^[a-zA-Z_][a-zA-Z0-9_]*$/) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --name-label option as a Prometheus label name.");
-        $self->{output}->option_exit();
-    }
     $self->{labels}->{name} = $self->{option_results}->{name_label};
 
     $self->{extra_filter} = '';
