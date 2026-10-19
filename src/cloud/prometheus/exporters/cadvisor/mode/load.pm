@@ -21,10 +21,10 @@
 package cloud::prometheus::exporters::cadvisor::mode::load;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::constants qw(:counters);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters);
 
 sub set_counters {
     my ($self, %options) = @_;

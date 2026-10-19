@@ -21,10 +21,10 @@
 package cloud::prometheus::exporters::cadvisor::mode::storage;
 
 use base qw(centreon::plugins::templates::counter);
-use centreon::plugins::constants qw(:counters :values);
 
 use strict;
 use warnings;
+use centreon::plugins::constants qw(:counters :values);
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
