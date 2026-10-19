@@ -98,11 +98,13 @@ sub manage_selection {
             my $name = $metric->{$self->{labels}->{name}};
             next if (is_empty($name));
 
-            $containers->{$name} //= {
+            # the same container name can exist on several Docker hosts
+            my $id = is_empty($target_labels->{instance}) ? $name : $target_labels->{instance} . '/' . $name;
+            $containers->{$id} //= {
                 %$target_labels,
                 type                 => 'container',
                 source               => 'standalone',
-                id                   => $name,
+                id                   => $id,
                 name                 => $name,
                 container_name       => $name,
                 container_image      => $metric->{image} // '',
@@ -198,8 +200,8 @@ Each discovered item has the following properties:
 running outside Kubernetes (identified by the C<--name-label> label).
 
 =item * C<id>: unique identifier (C<namespace/pod> for a pod,
-C<namespace/pod/container> for a Kubernetes container, the container name
-for a standalone container).
+C<namespace/pod/container> for a Kubernetes container, C<instance/name> for a
+standalone container).
 
 =item * C<name>: pod or container name.
 
@@ -252,6 +254,13 @@ available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and th
 =back
 
 On older platforms, use: --container-label='container_name' --pod-label='pod_name'
+
+With a standalone cAdvisor deployed in Kubernetes (DaemonSet), the series do not have the
+pod and container labels set by the kubelet, only the labels of the container runtime
+(exported by cAdvisor with its default C<--store_container_labels> option). Use:
+--container-label='container_label_io_kubernetes_container_name'
+--pod-label='container_label_io_kubernetes_pod_name'
+--namespace-label='container_label_io_kubernetes_pod_namespace'
 
 =item B<--namespace-label>
 
