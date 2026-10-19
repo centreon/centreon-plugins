@@ -38,7 +38,6 @@ sub set_counters {
         { label => 'load', nlabel => 'container.load.count', set => {
                 key_values => [ { name => 'load' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Load: %.2f',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'load', value => 'load', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -51,7 +50,10 @@ sub set_counters {
 sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' " if ($container eq '');
+    return "Container '" . $container . "' " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] ";
 }
 
 sub new {
@@ -116,12 +118,18 @@ sub manage_selection {
     );
 
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+        my $name = join("_", $pod, $container);
+
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{__name__}} = $average;
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+        $self->{containers}->{$name}->{perf} = join('_', grep { $_ ne '' } ($pod, $container));
+        $self->{containers}->{$name}->{$result->{metric}->{__name__}} = $average;
     }
     
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -137,6 +145,21 @@ __END__
 =head1 MODE
 
 Check containers load.
+
+The C<container_cpu_load_average_10s> metric is not exported by the cAdvisor built in the
+kubelet (C</metrics/cadvisor>): this mode needs a standalone cAdvisor.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
 
 =over 8
 

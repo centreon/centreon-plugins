@@ -38,7 +38,6 @@ sub set_counters {
         { label => 'sleeping', nlabel => 'tasks.sleeping.count', set => {
                 key_values => [ { name => 'sleeping' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Sleeping: %d',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'tasks_sleeping', value => 'sleeping', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -48,7 +47,6 @@ sub set_counters {
         { label => 'running', nlabel => 'tasks.running.count', set => {
                 key_values => [ { name => 'running' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Running: %d',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'tasks_running', value => 'running', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -58,7 +56,6 @@ sub set_counters {
         { label => 'stopped', nlabel => 'tasks.stopped.count', set => {
                 key_values => [ { name => 'stopped' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Stopped: %d',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'tasks_stopped', value => 'stopped', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -68,7 +65,6 @@ sub set_counters {
         { label => 'uninterruptible', nlabel => 'tasks.uninterruptible.count', set => {
                 key_values => [ { name => 'uninterruptible' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Uninterruptible: %d',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'tasks_uninterruptible', value => 'uninterruptible', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -78,7 +74,6 @@ sub set_counters {
         { label => 'iowaiting', nlabel => 'tasks.iowaiting.count', set => {
                 key_values => [ { name => 'iowaiting' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Iowaiting: %d',
-                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'tasks_iowaiting', value => 'iowaiting', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'perf' },
@@ -91,7 +86,10 @@ sub set_counters {
 sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] Tasks ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' Tasks " if ($container eq '');
+    return "Container '" . $container . "' Tasks " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] Tasks ";
 }
 
 sub new {
@@ -153,11 +151,17 @@ sub manage_selection {
     );
 
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{$self->{labels}->{state}}} = ${$result->{value}}[1];
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+        my $name = join("_", $pod, $container);
+
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+        $self->{containers}->{$name}->{perf} = join('_', grep { $_ ne '' } ($pod, $container));
+        $self->{containers}->{$name}->{$result->{metric}->{$self->{labels}->{state}}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -173,6 +177,21 @@ __END__
 =head1 MODE
 
 Check containers number of tasks in given state.
+
+The C<container_tasks_state> metric is not exported by the cAdvisor built in the kubelet
+(C</metrics/cadvisor>): this mode needs a standalone cAdvisor.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
 
 =over 8
 

@@ -32,7 +32,7 @@ sub custom_perfdata {
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
         unit => 'B',
-        instances => [ $self->{result_values}->{pod}, $self->{result_values}->{container} ],
+        instances => $self->{result_values}->{perf},
         value => sprintf('%s', $self->{result_values}->{ $self->{key_values}->[0]->{name} }),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
@@ -55,7 +55,7 @@ sub custom_usage_perfdata {
     $self->{output}->perfdata_add(
         nlabel => 'memory.' . $label . '.bytes',
         unit => 'B',
-        instances => [ $self->{result_values}->{pod}, $self->{result_values}->{container} ],
+        instances => $self->{result_values}->{perf},
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
@@ -109,6 +109,7 @@ sub custom_usage_calc {
     $self->{result_values}->{perfdata} = $options{extra_options}->{perfdata_ref};
     $self->{result_values}->{container} = $options{new_datas}->{$self->{instance} . '_container'};
     $self->{result_values}->{pod} = $options{new_datas}->{$self->{instance} . '_pod'};
+    $self->{result_values}->{perf} = $options{new_datas}->{$self->{instance} . '_perf'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_limits'};    
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
     return 0 if ($self->{result_values}->{total} == 0);
@@ -121,7 +122,10 @@ sub custom_usage_calc {
 sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] Memory ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' Memory " if ($container eq '');
+    return "Container '" . $container . "' Memory " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] Memory ";
 }
 
 sub set_counters {
@@ -134,7 +138,7 @@ sub set_counters {
 
     $self->{maps_counters}->{containers} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'limits' }, { name => 'usage' }, { name => 'container' }, { name => 'pod' } ],
+                key_values => [ { name => 'limits' }, { name => 'usage' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'usage', perfdata_ref => 'used' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -143,7 +147,7 @@ sub set_counters {
             }
         },
         { label => 'working', set => {
-                key_values => [ { name => 'limits' }, { name => 'working' }, { name => 'container' }, { name => 'pod' } ],
+                key_values => [ { name => 'limits' }, { name => 'working' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'working', perfdata_ref => 'working' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -152,21 +156,21 @@ sub set_counters {
             }
         },
         { label => 'cache', nlabel => 'cache.usage.bytes', set => {
-                key_values => [ { name => 'cache' }, { name => 'container' }, { name => 'pod' } ],
+                key_values => [ { name => 'cache' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Cache: %.2f %s',
                 output_change_bytes => 1,
                 closure_custom_perfdata => $self->can('custom_perfdata')
             }
         },
         { label => 'rss', nlabel => 'rss.usage.bytes', set => {
-                key_values => [ { name => 'rss' }, { name => 'container' }, { name => 'pod' } ],
+                key_values => [ { name => 'rss' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Rss: %.2f %s',
                 output_change_bytes => 1,
                 closure_custom_perfdata => $self->can('custom_perfdata')
             }
         },
         { label => 'swap', nlabel => 'swap.usage.bytes', set => {
-                key_values => [ { name => 'swap' }, { name => 'container' }, { name => 'pod' } ],
+                key_values => [ { name => 'swap' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Swap: %.2f %s',
                 output_change_bytes => 1,
                 closure_custom_perfdata => $self->can('custom_perfdata')
@@ -257,10 +261,17 @@ sub manage_selection {
 
     $self->{containers} = {};
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . '_' . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . '_' . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . '_' . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+        my $name = join("_", $pod, $container);
+
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+        $self->{containers}->{$name}->{perf} = join('~', grep { $_ ne '' } ($pod, $container));
+        $self->{containers}->{$name}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -276,6 +287,30 @@ __END__
 =head1 MODE
 
 Check containers memory usage.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
+
+Examples:
+
+=over 4
+
+=item * a pod: --pod='pod="my-pod"' --container='container=""'
+
+=item * a container of a pod: --pod='pod="my-pod"' --container='container="my-container"'
+
+=item * a container outside Kubernetes: --container='name="my-container"'
+
+=back
 
 =over 8
 

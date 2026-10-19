@@ -61,7 +61,10 @@ sub set_counters {
 sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] CPU ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' CPU " if ($container eq '');
+    return "Container '" . $container . "' CPU " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] CPU ";
 }
 
 sub new {
@@ -133,12 +136,18 @@ sub manage_selection {
     );
 
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+
+        my $name = join("_", $pod, $container);
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{$result->{metric}->{__name__}} = $average;
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+        $self->{containers}->{$name}->{perf} = join('_', grep { $_ ne '' } ($pod, $container));
+        $self->{containers}->{$name}->{$result->{metric}->{__name__}} = $average;
     }
     
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -154,6 +163,30 @@ __END__
 =head1 MODE
 
 Check containers CPU usage and throttled.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
+
+Examples:
+
+=over 4
+
+=item * a pod: --pod='pod="my-pod"' --container='container=""'
+
+=item * a container of a pod: --pod='pod="my-pod"' --container='container="my-container"'
+
+=item * a container outside Kubernetes: --container='name="my-container"'
+
+=back
 
 =over 8
 

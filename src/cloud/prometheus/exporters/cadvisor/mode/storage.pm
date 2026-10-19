@@ -49,7 +49,7 @@ sub custom_usage_perfdata {
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
         min => 0, max => $self->{result_values}->{total},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{perf} : undef,
     );
 }
 
@@ -86,8 +86,7 @@ sub custom_usage_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{label} = $self->{instance};
-    $self->{result_values}->{container} = $options{new_datas}->{$self->{instance} . '_container'};
-    $self->{result_values}->{pod} = $options{new_datas}->{$self->{instance} . '_pod'};
+    $self->{result_values}->{perf} = $options{new_datas}->{$self->{instance} . '_perf'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_limit'};    
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
@@ -119,7 +118,7 @@ sub set_counters {
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'limit' } ],
+                key_values => [ { name => 'used' }, { name => 'limit' }, { name => 'perf' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -129,16 +128,22 @@ sub set_counters {
     ];
 }
 
-sub prefix_container_output {
+sub prefix_containers_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Pod '" . $pod . "' " if ($container eq '');
+    return "Container '" . $container . "' " if ($pod eq '');
+    return "Container '" . $container . "' [pod: " . $pod . "] ";
 }
 
 sub long_output {
     my ($self, %options) = @_;
 
-    return "Checking container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "]";
+    my ($pod, $container) = ($options{instance_value}->{pod}, $options{instance_value}->{container});
+    return "Checking pod '" . $pod . "'" if ($container eq '');
+    return "Checking container '" . $container . "'" if ($pod eq '');
+    return "Checking container '" . $container . "' [pod: " . $pod . "]";
 }
 
 sub prefix_storage_output {
@@ -214,12 +219,23 @@ sub manage_selection {
     );
 
     foreach my $result (@{$results}) {
-        next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{display} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{display} = $result->{metric}->{$self->{labels}->{device}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
+        my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
+        my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        next if ($pod eq '' && $container eq '');
+        # without container label, keep the pod cgroup: the pause container has a name and would overwrite it
+        next if ($container eq '' && defined($result->{metric}->{name}));
+        my $name = join("_", $pod, $container);
+
+        $self->{containers}->{$name}->{display} = $name;
+        $self->{containers}->{$name}->{container} = $container;
+        $self->{containers}->{$name}->{pod} = $pod;
+
+        my $device = $result->{metric}->{$self->{labels}->{device}};
+        my $storage = $self->{containers}->{$name}->{storage}->{$device} //= {
+            display => $device,
+            perf    => [ grep { $_ ne '' } ($pod, $container, $device) ]
+        };
+        $storage->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
     if (scalar(keys %{$self->{containers}}) <= 0) {
@@ -235,6 +251,21 @@ __END__
 =head1 MODE
 
 Check containers storages usage.
+
+The cAdvisor built in the kubelet (C</metrics/cadvisor>) does not export the disk usage of
+C<containerd> containers: this mode needs a standalone cAdvisor.
+
+Each series matching the filters is reported as:
+
+=over 4
+
+=item * a pod, when it has no container label (pod cgroup). The pause container of the pod is ignored.
+
+=item * a container of a pod, when it has both labels.
+
+=item * a container running outside Kubernetes, when it has no pod label.
+
+=back
 
 =over 8
 
