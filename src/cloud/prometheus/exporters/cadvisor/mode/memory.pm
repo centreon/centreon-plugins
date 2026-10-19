@@ -181,8 +181,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
-        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "container:s"           => { name => 'container', default => 'container!~".*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "units:s"               => { name => 'units', default => '%' },
         "metric-overload:s@"    => { name => 'metric_overload' }
@@ -281,12 +281,32 @@ Check containers memory usage.
 
 =item B<--container>
 
-Filter on a specific container (must be a PromQL filter, Default: 'container_name!~".*POD.*"')
+Filter on a specific container (must be a PromQL filter, Default: 'container!~".*POD.*"')
 
 =item B<--pod>
 
-Filter on a specific pod (must be a PromQL filter, Default: 'pod_name=~".*"')
+Filter on a specific pod (must be a PromQL filter, Default: 'pod=~".*"')
 
+The label filtered is the first word of the C<--container> and C<--pod> filters.
+The kubelet cAdvisor metrics label names depend on the platform version:
+
+=over 4
+
+=item * Kubernetes < 1.14: C<container_name> and C<pod_name> only.
+
+=item * Kubernetes 1.14 and 1.15: both C<container_name>/C<pod_name> and C<container>/C<pod>.
+
+=item * Kubernetes >= 1.16: C<container> and C<pod> only.
+
+=item * OpenShift: C<container_name> and C<pod_name> only up to 4.1 (Kubernetes 1.13),
+both label sets in 4.2 (Kubernetes 1.14), C<container> and C<pod> only from 4.3 (Kubernetes 1.16).
+
+=item * Rancher: depends on the Kubernetes version of the managed cluster. Kubernetes 1.16 is
+available from Rancher 2.3.0 (experimental), generally available in 2.3.2 and the default in 2.3.3.
+
+=back
+
+On older platforms, use for example: --container='container_name!~".*POD.*"' --pod='pod_name=~".*"'
 
 =item B<--warning-usage>
 
