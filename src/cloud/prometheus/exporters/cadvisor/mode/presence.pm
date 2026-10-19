@@ -73,6 +73,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'container:s'        => { name => 'container', default => 'container!~".*POD.*"' },
         'pod:s'              => { name => 'pod', default => 'pod=~".*"' },
+        'namespace:s'        => { name => 'namespace', default => 'namespace=~".*"' },
         'name-label:s'       => { name => 'name_label', default => 'name' },
         'extra-filter:s@'    => { name => 'extra_filter' },
         'metric-last-seen:s' => { name => 'metric_last_seen', default => '^container_last_seen$', not_empty => 1 }
@@ -86,7 +87,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{labels} = {};
-    foreach my $label (('container', 'pod')) {
+    foreach my $label (('container', 'pod', 'namespace')) {
         if ($self->{option_results}->{$label} !~ /^(\w+)[!~=]+\".*\"$/) {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label . " option as a PromQL filter.");
             $self->{output}->option_exit();
@@ -113,7 +114,8 @@ sub manage_selection {
         queries => [
             '{__name__=~"' . $self->{option_results}->{metric_last_seen} . '",' .
                 $self->{option_results}->{container} . ',' .
-                $self->{option_results}->{pod} .
+                $self->{option_results}->{pod} . ',' .
+                $self->{option_results}->{namespace} .
                 $self->{extra_filter} . '}'
         ]
     );
@@ -122,21 +124,26 @@ sub manage_selection {
     foreach my $result (@{$results}) {
         my $pod = $result->{metric}->{$self->{labels}->{pod}} // '';
         my $container = $result->{metric}->{$self->{labels}->{container}} // '';
+        my $namespace = $result->{metric}->{$self->{labels}->{namespace}} // '';
         if ($pod eq '' && $container eq '') {
             $container = $result->{metric}->{$self->{labels}->{name}} // '';
             next if ($container eq '');
         }
+        # outside Kubernetes, the same container name can exist on several hosts
+        my $instance = $pod eq '' ? $result->{metric}->{instance} // '' : '';
 
         my ($evaluation_time, $last_seen_time) = @{$result->{value}};
         my $last_seen = $evaluation_time - $last_seen_time;
         $last_seen = 0 if ($last_seen < 0);
 
-        my $id = join('~', grep { $_ ne '' } ($pod, $container));
+        my $id = join('~', grep { $_ ne '' } ($instance, $namespace, $pod, $container));
         next if (defined($self->{containers}->{$id}) && $self->{containers}->{$id}->{last_seen} <= $last_seen);
 
         my $display = "Container '" . $container . "' [pod: " . $pod . "]";
         $display = "Pod '" . $pod . "'" if ($container eq '');
         $display = "Container '" . $container . "'" if ($pod eq '');
+        $display .= " [namespace: " . $namespace . "]" if ($namespace ne '');
+        $display .= " [instance: " . $instance . "]" if ($instance ne '');
 
         $self->{containers}->{$id} = {
             display   => $display,
@@ -169,9 +176,11 @@ the C<--name-label> label.
 
 =back
 
-The series without any name (root cgroup, system slices) are ignored. When several series
-match the same pod or container (for example the pod cgroup and the pause container), the
-most recent one is used.
+The series without any name (root cgroup, system slices) are ignored. A pod or a container
+of a pod is identified by its namespace, a container outside Kubernetes by the Prometheus
+C<instance> it comes from: a container that disappeared from one host is not hidden by a
+container with the same name on another host. When several series match the same pod or
+container (for example the pod cgroup and the pause container), the most recent one is used.
 
 Examples:
 
@@ -181,7 +190,7 @@ Examples:
 
 =item * a container of a pod: --pod='pod="my-pod"' --container='container="my-container"'
 
-=item * a container outside Kubernetes: --container='name="my-container"'
+=item * a container outside Kubernetes: --container='name="my-container"' --extra-filter='instance="my-host:8080"'
 
 =back
 
@@ -221,7 +230,10 @@ On older platforms, use for example: --container='container_name!~".*POD.*"' --p
 
 A container running outside Kubernetes has no pod label: filter it on its C<name>
 label, for example: --container='name="haproxy"'
-Its output and performance data only show the container name.
+
+=item B<--namespace>
+
+Filter on a specific namespace (must be a PromQL filter, Default: 'namespace=~".*"').
 
 =item B<--name-label>
 
