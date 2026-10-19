@@ -94,7 +94,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{containers} = [
-        { label => 'cpu-utilization', nlabel => 'gateway.cpu.utilization.percentage', set => {
+        { label => 'cpu-utilization', nlabel => 'container.cpu.utilization.percentage', set => {
                 key_values => [
                     { name => 'cpu_used' }, { name => 'containerName' }, { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
@@ -120,7 +120,7 @@ sub set_counters {
                 }
             }
         },
-        { label => 'memory-usage', nlabel => 'gateway.memory.usage.bytes', set => {
+        { label => 'memory-usage', nlabel => 'container.memory.usage.bytes', set => {
                 key_values => [
                     { name => 'mem_used' }, { name => 'containerName' }, { name => 'gatewayName' }, { name => 'clusterName' }, { name => 'siteName' }
                 ],
@@ -317,6 +317,7 @@ Exclude gateway IDs (regexp).
 =item B<--custom-perfdata-instances>
 
 Define perfdata instance (default: C<%(gatewayName) %(containerName)>)
+You can use the following variables: C<%(siteName)>, C<%(clusterName)>, C<%(gatewayName)>, C<%(containerName)>
 
 =item B<--custom-prefix-short-gateway-output>
 

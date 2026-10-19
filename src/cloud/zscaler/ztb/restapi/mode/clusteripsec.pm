@@ -251,6 +251,7 @@ Exclude cluster IDs (regexp).
 =item B<--custom-perfdata-instances>
 
 Define perfdata instance (default: C<%(clusterName) %(tunnelName)>)
+You can use the following variables: C<%(clusterName)>, C<%(tunnelName)>
 
 =item B<--unit>
 

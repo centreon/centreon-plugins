@@ -483,7 +483,7 @@ Exclude gateway IDs (regexp).
 =item B<--custom-perfdata-instances>
 
 Define perfdata instance (default: C<%(gatewayName) %(interfaceName)>)
-You can use the following variables: C<%{siteName}>, C<%{clusterName}>, C<%{gatewayName}>, C<%{interfaceName}>
+You can use the following variables: C<%(siteName)>, C<%(clusterName)>, C<%(gatewayName)>, C<%(interfaceName)>
 
 =item B<--custom-prefix-short-gateway-output>
 

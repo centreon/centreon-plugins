@@ -224,6 +224,7 @@ Exclude cluster IDs (regexp).
 =item B<--custom-perfdata-instances>
 
 Define perfdata instance (default: C<%(clusterName) %(appConnectorName)>)
+You can use the following variables: C<%(clusterName)>, C<%(appConnectorName)>
 
 =item B<--unknown-appconnector-status>
 
